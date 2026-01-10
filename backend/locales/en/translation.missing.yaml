@@ -1,0 +1,63 @@
+auth:
+  invalid_user: auth.invalid_user
+  invalid_login: auth.invalid_login
+  seesion_error: auth.seesion_error
+  invalid_password_reset_id: auth.invalid_password_reset_id
+  invalid_invitationId: auth.invalid_invitationId
+  invalid_email: auth.invalid_email
+aaaProfile: aaaProfile
+barev dzez: barev dzez
+validate:
+  material_id: validate.material_id
+  estimate_id: validate.estimate_id
+  user_already_invited: validate.user_already_invited
+requireq:
+  catregory_name_&_code: requireq.catregory_name_&_code
+error:
+  category_already_exists: error.category_already_exists
+  category_name_already_exists: error.category_name_already_exists
+  item_not_found: error.item_not_found
+  item_already_exists: error.item_already_exists
+  subcategory_already_exists: error.subcategory_already_exists
+  measurement_unit_not_found: error.measurement_unit_not_found
+  subcategory_not_found: error.subcategory_not_found
+  subcategory_name_required: error.subcategory_name_required
+  category_not_found: error.category_not_found
+  category_name_and_code_required: error.category_name_and_code_required
+Welcome to Mudbase!: Welcome to Mudbase!
+Inviting user id is missing:
+  '': Inviting user id is missing.
+Inviting user in not found:
+  '': Inviting user in not found.
+Inviting user account in not found:
+  '': Inviting user account in not found.
+univsersalEmail:
+  email_subject: univsersalEmail.email_subject
+  welcome_text: univsersalEmail.welcome_text
+  dear_text: univsersalEmail.dear_text
+  inviting_message: univsersalEmail.inviting_message
+  inviting_for_company_text: univsersalEmail.inviting_for_company_text
+  accept_invitation_text: univsersalEmail.accept_invitation_text
+  confirm_text: univsersalEmail.confirm_text
+  button_not_working_text: univsersalEmail.button_not_working_text
+  thanks_text: univsersalEmail.thanks_text
+  regards_text_first_line: univsersalEmail.regards_text_first_line
+  regards_text_second_line: univsersalEmail.regards_text_second_line
+  accept_invitation_button_label: univsersalEmail.accept_invitation_button_label
+Account not found: Account not found
+usersLimit:
+  pendingInviteCountMoreThanZero: usersLimit.pendingInviteCountMoreThanZero
+  activeUserCountMoreThanThree: usersLimit.activeUserCountMoreThanThree
+share:
+  not_found: share.not_found
+estimate:
+  not_found: estimate.not_found
+unforeseenWorks: unforeseenWorks
+typeOfCost: typeOfCost
+overheadCosts: overheadCosts
+temporaryStructures: temporaryStructures
+Unforeseen works: Unforeseen works
+turnoverTax: turnoverTax
+renovation: renovation
+construction: construction
+currentRenovation: currentRenovation

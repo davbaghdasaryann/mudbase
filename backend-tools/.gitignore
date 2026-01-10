@@ -1,0 +1,17 @@
+.deploy.ini
+
+.pnp.*
+.yarn/*
+.yarn/install-state.gz
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+package-lock.json
+
+src/tsback
+src/tscli
+src/tslib
+src/tsmudbase

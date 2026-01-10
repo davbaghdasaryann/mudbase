@@ -1,0 +1,87 @@
+{
+  "name": "mudbase",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "node --preserve-symlinks dev.js",
+    "start": "node --preserve-symlinks dev.js",
+    "build": "next build",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@auth/core": "0.41.1",
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource-variable/noto-sans-armenian": "^5.2.8",
+    "@fontsource/dejavu-serif": "^5.2.5",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/roboto": "^5.2.8",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/lab": "7.0.1-beta.18",
+    "@mui/material": "^7.3.4",
+    "@mui/material-nextjs": "^7.3.3",
+    "@mui/styles": "6.4.8",
+    "@mui/system": "^7.3.3",
+    "@mui/x-data-grid": "8.15.0",
+    "@mui/x-data-grid-premium": "^8.15.0",
+    "@mui/x-data-grid-pro": "8.15.0",
+    "@mui/x-date-pickers": "8.15.0",
+    "@mui/x-license": "8.15.0",
+    "@toolpad/core": "^0.16.0",
+    "color2k": "^2.0.3",
+    "dotenv": "^16.6.1",
+    "i18next": "^25.6.0",
+    "i18next-http-backend": "^3.0.2",
+    "js-cookie": "^3.0.5",
+    "lodash": "^4.17.21",
+    "moment": "^2.30.1",
+    "next": "15.5.6",
+    "next-auth": "^4.24.11",
+    "next-i18next": "^15.4.2",
+    "react": "^19.2.0",
+    "react-device-detect": "^2.2.3",
+    "react-dom": "^19.2.0",
+    "react-easy-crop": "^5.5.3",
+    "react-i18next": "^15.7.4",
+    "react-pdf": "^9.2.1",
+    "react-router-dom": "^7.9.4",
+    "react-textfit": "^1.1.1",
+    "react-world-flags": "^1.6.0",
+    "sweetalert2": "^11.26.3",
+    "sweetalert2-react-content": "^5.1.0",
+    "yaml": "^2.8.1",
+    "zod": "^3.25.76"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/js-cookie": "^3.0.6",
+    "@types/lodash": "^4.17.20",
+    "@types/node": "^24.9.1",
+    "@types/prop-types": "^15.7.15",
+    "@types/react": "^19.2.2",
+    "@types/react-textfit": "^1.1.4",
+    "@types/react-world-flags": "^1.6.0",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "^15.5.6",
+    "open-cli": "^8.0.0",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "yarn@4.10.3"
+}

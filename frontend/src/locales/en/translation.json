@@ -1,0 +1,56 @@
+{
+    "Login": "Login",
+    "Logout": "Logout",
+    "Join": "Join",
+    "Error": "Error",
+    "Close": "Close",
+
+    "recover_login_text": "Did you forget your password?",
+    
+    "User": "User",
+    "Change Password": "Change Password",
+    
+    "Loading": "Loading",
+    "Removing": "Removing",
+
+    "Password_forget" : "Password?",
+
+    "Error: Password did not conform with policy: Password not long enough": "Password did not conform with policy: Password not long enough.",
+    "Error: Attempt limit exceeded, please try after some time": "Error: Attempt limit exceeded, please try after some time.",
+    "Error: Required query param missing: content": "Required query param missing: content",
+    "Error: ERR_INVALID_URL" : "Invalid URL",
+    "Error: ENOTFOUND" : "Invalid URL",
+    "Error: ECONNREFUSED" : "Invalid URL",
+    "Error: EAI_AGAIN" : "Invalid URL",
+    "User not found" : "Incorrect username or password",
+
+    "NotAuthorizedException: Incorrect username or password." : "Incorrect username or password.",
+    "NotAuthorizedException: Password attempts exceeded": "Login attempts exceeded",
+
+
+    "auth.password_reset_link_sent": "Recovery link was send, please check your mailbox",
+
+    "signup.received_title": "Thank You for Submission",
+    "signup.received_message": "We received your request. You will receive email with further instructoins shortly.",
+    "signup.signup_company_received_message": "Your application has been accepted. Please wait while our moderators review your organization registration application and activate it, after which you can log in to your account.",
+    "signup.received_instruction": "You can now safely close this window.",
+
+    "signup.verified_title": "Email Verified Successfully",
+    "signup.verified_message": "Your email has been successfully verified. You can now log in.",
+    "signup.verified_invitation": "You can now log in.",
+    "signup.verified_instruction": "Click Close to proceed to the login page.",
+
+    "page.copyright": "© 2005 Your Company Name. All rights reserved.",
+    "website_title": "Mudbase - Construction cost estimating system",
+
+    "user_account_change_warning" : "Please note that in the event of a change or addition to the type of activity of the organization, the user account will be temporarily deactivated. If the change involves a change in the terms of the subscription package, the user account will be activated only after the new subscription package is approved.",
+
+    "share_question_mark" : "?",
+    "share_word_with" : "with",
+    "share_word_with_in_armenian" : "",
+
+    "Test": "Test"
+   
+}
+
+

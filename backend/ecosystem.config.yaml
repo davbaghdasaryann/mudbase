@@ -1,0 +1,9 @@
+
+apps:
+  - name: mudbase
+    script: /srv/mudbase/backend/build/index.js
+    node_args: --experimental-modules
+    env:
+      NODE_ENV: production
+      NEXTAUTH_URL: https://mudbase.am
+

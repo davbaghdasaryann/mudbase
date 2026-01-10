@@ -1,0 +1,39 @@
+env: dev
+
+dev:
+  rootToken: 1234
+
+server:
+  port: 7762
+  api: http://localhost:7762/api
+
+
+local:
+  templates: /<home>/srv/evocard/cards/t
+  cards: /<home>/srv/evocard/cards
+  uploads: /<home>/srv/evocard/uploads
+
+
+db:
+  type: mongo
+  host: akatek.biz
+  port: 27017
+  dbse: <>
+  user: <>
+  pswd: <>
+
+aws:
+  storage:
+    bucket: evocard.me
+    region: us-east-2
+
+  credentials: 
+    access_key: XXX
+    secret_key: XXX
+
+  cognito:
+    identity_pool_id: XXX
+    region: XXX
+    user_pool_id: XXX
+    user_pool_client_id: XXX
+  

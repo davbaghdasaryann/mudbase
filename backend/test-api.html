@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MudBase Backend API Tester</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+      }
+
+      .config-section {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 6px;
+        margin-bottom: 30px;
+      }
+
+      .config-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: center;
+      }
+
+      label {
+        min-width: 120px;
+        font-weight: 600;
+        color: #555;
+      }
+
+      input[type='text'],
+      input[type='email'],
+      input[type='password'] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #0056b3;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      button.danger {
+        background: #dc3545;
+      }
+
+      button.danger:hover {
+        background: #c82333;
+      }
+
+      button.success {
+        background: #28a745;
+      }
+
+      button.success:hover {
+        background: #218838;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      .section h2 {
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+      }
+
+      .test-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .test-card {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 15px;
+        background: #fafafa;
+      }
+
+      .test-card h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .test-card .method {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+
+      .method.get {
+        background: #28a745;
+        color: white;
+      }
+
+      .method.post {
+        background: #007bff;
+        color: white;
+      }
+
+      .test-card .endpoint {
+        font-family: monospace;
+        font-size: 12px;
+        color: #666;
+        margin: 8px 0;
+        word-break: break-all;
+      }
+
+      .result-area {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+      }
+
+      .result-area h2 {
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .result-box {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .status-success {
+        color: #4ec9b0;
+      }
+
+      .status-error {
+        color: #f48771;
+      }
+
+      .status-info {
+        color: #569cd6;
+      }
+
+      .auth-status {
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+
+      .auth-status.authenticated {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .auth-status.not-authenticated {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .quick-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+
+      .endpoint-tester {
+        margin-top: 20px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 6px;
+      }
+
+      .endpoint-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+      }
+
+      .endpoint-form input {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .params-area {
+        margin-top: 15px;
+      }
+
+      .param-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .param-row input {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 MudBase Backend API Tester</h1>
+      <p class="subtitle">Test all backend API endpoints with this simple interface</p>
+
+      <div class="config-section">
+        <h2>⚙️ Configuration</h2>
+        <div class="config-row">
+          <label>Backend URL:</label>
+          <input
+            type="text"
+            id="backendUrl"
+            value="http://localhost:7787"
+            placeholder="http://localhost:7787"
+          />
+        </div>
+        <div class="config-row">
+          <label>API Version:</label>
+          <input type="text" id="apiVersion" value="v1" placeholder="v1" />
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>🔐 Authentication</h2>
+        <div id="authStatus" class="auth-status not-authenticated">⚠️ Not authenticated</div>
+        <div class="config-row">
+          <label>Email:</label>
+          <input type="email" id="authEmail" placeholder="user@example.com" />
+        </div>
+        <div class="config-row">
+          <label>Password:</label>
+          <input type="password" id="authPassword" placeholder="password" />
+        </div>
+        <div class="quick-actions">
+          <button onclick="testAuth()" class="success">Sign In</button>
+          <button onclick="checkSession()">Check Session</button>
+          <button onclick="signOut()" class="danger">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>📋 Public Endpoints (No Auth Required)</h2>
+        <div class="test-grid">
+          <div class="test-card">
+            <h3><span class="method get">GET</span> CSRF Token</h3>
+            <div class="endpoint">/api/auth/csrf</div>
+            <button onclick="testEndpoint('GET', '/api/auth/csrf', null, false)">Test</button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method post">POST</span> Check User Account</h3>
+            <div class="endpoint">/api/v1/user/has_account?email=...</div>
+            <input
+              type="email"
+              id="checkEmail"
+              placeholder="email@example.com"
+              style="width: 100%; margin: 8px 0; padding: 6px"
+            />
+            <button
+              onclick="testEndpoint('GET', '/api/v1/user/has_account', {email: document.getElementById('checkEmail').value}, false)"
+            >
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method post">POST</span> Send Password Reset</h3>
+            <div class="endpoint">/api/v1/auth/send_password_reset_email</div>
+            <input
+              type="email"
+              id="resetEmail"
+              placeholder="email@example.com"
+              style="width: 100%; margin: 8px 0; padding: 6px"
+            />
+            <button
+              onclick="testEndpoint('GET', '/api/v1/auth/send_password_reset_email', {email: document.getElementById('resetEmail').value}, false)"
+            >
+              Test
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>🔒 Authenticated Endpoints (Requires Login)</h2>
+        <div class="test-grid">
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Get Profile</h3>
+            <div class="endpoint">/api/v1/profile/get</div>
+            <button onclick="testEndpoint('GET', '/api/v1/profile/get', null, true)">Test</button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Get Account</h3>
+            <div class="endpoint">/api/v1/profile/get_account</div>
+            <button onclick="testEndpoint('GET', '/api/v1/profile/get_account', null, true)">
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Dashboard Data</h3>
+            <div class="endpoint">/api/v1/dashboard/fetch_data</div>
+            <button onclick="testEndpoint('GET', '/api/v1/dashboard/fetch_data', null, true)">
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Fetch Estimates</h3>
+            <div class="endpoint">/api/v1/estimates/fetch</div>
+            <input
+              type="text"
+              id="searchVal"
+              placeholder="searchVal or 'empty'"
+              style="width: 100%; margin: 8px 0; padding: 6px"
+            />
+            <button
+              onclick="testEndpoint('GET', '/api/v1/estimates/fetch', {searchVal: document.getElementById('searchVal').value || 'empty'}, true)"
+            >
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Fetch Users</h3>
+            <div class="endpoint">/api/v1/users/fetch</div>
+            <button onclick="testEndpoint('GET', '/api/v1/users/fetch', null, true)">Test</button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Fetch Accounts</h3>
+            <div class="endpoint">/api/v1/accounts/fetch</div>
+            <button onclick="testEndpoint('GET', '/api/v1/accounts/fetch', null, true)">
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Get Account</h3>
+            <div class="endpoint">/api/v1/account/get</div>
+            <input
+              type="text"
+              id="accountId"
+              placeholder="accountId"
+              style="width: 100%; margin: 8px 0; padding: 6px"
+            />
+            <button
+              onclick="testEndpoint('GET', '/api/v1/account/get', {accountId: document.getElementById('accountId').value}, true)"
+            >
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Get User</h3>
+            <div class="endpoint">/api/v1/user/get</div>
+            <input
+              type="text"
+              id="userId"
+              placeholder="userId (ObjectId)"
+              style="width: 100%; margin: 8px 0; padding: 6px"
+            />
+            <button
+              onclick="testEndpoint('GET', '/api/v1/user/get', {userId: document.getElementById('userId').value}, true)"
+            >
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Measurement Units</h3>
+            <div class="endpoint">/api/v1/measurement_unit/fetch</div>
+            <button onclick="testEndpoint('GET', '/api/v1/measurement_unit/fetch', null, true)">
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method post">POST</span> Labor Categories</h3>
+            <div class="endpoint">/api/v1/labor/fetch_categories</div>
+            <input
+              type="text"
+              id="laborSearchVal"
+              placeholder="searchVal (optional)"
+              style="width: 100%; margin: 8px 0; padding: 6px"
+            />
+            <button
+              onclick="testEndpoint('POST', '/api/v1/labor/fetch_categories', {searchVal: document.getElementById('laborSearchVal').value || ''}, true)"
+            >
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Material Categories</h3>
+            <div class="endpoint">/api/v1/catalog/material/category/fetch</div>
+            <button
+              onclick="testEndpoint('GET', '/api/v1/catalog/material/category/fetch', null, true)"
+            >
+              Test
+            </button>
+          </div>
+          <div class="test-card">
+            <h3><span class="method get">GET</span> Estimate Shares</h3>
+            <div class="endpoint">/api/v1/estimates_shares/fetch</div>
+            <button onclick="testEndpoint('GET', '/api/v1/estimates_shares/fetch', null, true)">
+              Test
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>🎯 Custom Endpoint Tester</h2>
+        <div class="endpoint-tester">
+          <div class="endpoint-form">
+            <select id="customMethod">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+            </select>
+            <input
+              type="text"
+              id="customEndpoint"
+              placeholder="/api/v1/endpoint/path"
+              style="flex: 2"
+            />
+            <button onclick="testCustomEndpoint()">Test Endpoint</button>
+          </div>
+          <div class="params-area">
+            <h4>Query Parameters (for GET) or Body (for POST):</h4>
+            <div id="paramRows">
+              <div class="param-row">
+                <input type="text" placeholder="Key" class="param-key" />
+                <input type="text" placeholder="Value" class="param-value" />
+                <button onclick="this.parentElement.remove()">Remove</button>
+              </div>
+            </div>
+            <button onclick="addParamRow()" style="margin-top: 10px">+ Add Parameter</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-area">
+        <h2>📊 Results</h2>
+        <div id="resultBox" class="result-box">Ready to test endpoints...\n</div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:7787';
+      let isAuthenticated = false;
+
+      function log(message, type = 'info') {
+        const resultBox = document.getElementById('resultBox');
+        const timestamp = new Date().toLocaleTimeString();
+        const colorClass =
+          type === 'success' ? 'status-success' : type === 'error' ? 'status-error' : 'status-info';
+        resultBox.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+        resultBox.scrollTop = resultBox.scrollHeight;
+      }
+
+      function getBackendUrl() {
+        return document.getElementById('backendUrl').value || API_BASE;
+      }
+
+      function getApiPath() {
+        const version = document.getElementById('apiVersion').value || 'v1';
+        return `/api/${version}`;
+      }
+
+      async function makeRequest(method, endpoint, params = null, requireAuth = false) {
+        const backendUrl = getBackendUrl();
+        let url = backendUrl + endpoint;
+
+        const options = {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Important for cookies/sessions
+        };
+
+        if (params) {
+          if (method === 'GET') {
+            const queryString = new URLSearchParams(params).toString();
+            url += '?' + queryString;
+          } else {
+            options.body = JSON.stringify(params);
+          }
+        }
+
+        try {
+          log(`${method} ${url}${params ? ' ' + JSON.stringify(params) : ''}`, 'info');
+          const response = await fetch(url, options);
+          const data = await response.json();
+
+          const statusClass = response.ok ? 'status-success' : 'status-error';
+          log(
+            `Response (${response.status}): ${JSON.stringify(data, null, 2)}`,
+            response.ok ? 'success' : 'error'
+          );
+
+          return {ok: response.ok, status: response.status, data};
+        } catch (error) {
+          log(`Error: ${error.message}`, 'error');
+          return {ok: false, error: error.message};
+        }
+      }
+
+      async function testAuth() {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+
+        if (!email || !password) {
+          log('Please enter email and password', 'error');
+          return;
+        }
+
+        log('Attempting to sign in...', 'info');
+
+        const backendUrl = getBackendUrl();
+
+        // First, get CSRF token
+        try {
+          const csrfResponse = await fetch(`${backendUrl}/api/auth/csrf`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.csrfToken;
+
+          log(`CSRF Token obtained: ${csrfToken.substring(0, 20)}...`, 'info');
+
+          const formData = new URLSearchParams();
+          formData.append('email', email);
+          formData.append('password', password);
+          formData.append('csrfToken', csrfToken);
+          formData.append('redirect', 'false');
+          formData.append('json', 'true');
+
+          // Use callback endpoint (Auth.js standard endpoint for credentials)
+          const response = await fetch(`${backendUrl}/api/auth/callback/credentials`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+            credentials: 'include',
+            redirect: 'manual', // Don't automatically follow redirects
+            body: formData.toString(),
+          });
+
+          // Handle redirect (3xx status codes) or empty response
+          if (response.status >= 300 && response.status < 400) {
+            const redirectUrl = response.headers.get('Location');
+            log(`Redirect received to: ${redirectUrl}`, 'info');
+
+            // Build full URL if redirect is relative
+            let fullRedirectUrl = redirectUrl;
+            if (redirectUrl && !redirectUrl.startsWith('http')) {
+              fullRedirectUrl = new URL(redirectUrl, backendUrl).href;
+            }
+
+            // If redirect is to _redirect_dummy or _redirect_signin, fetch it to get the JSON response
+            if (fullRedirectUrl && (fullRedirectUrl.includes('_redirect_dummy') || fullRedirectUrl.includes('_redirect_signin'))) {
+              try {
+                // Use the backendUrl (proxy server) for the redirect fetch
+                // Extract the path from the redirect URL
+                const redirectPath = new URL(fullRedirectUrl).pathname + new URL(fullRedirectUrl).search;
+                const redirectFetchUrl = `${backendUrl}${redirectPath}`;
+                
+                log(`Fetching redirect endpoint: ${redirectFetchUrl}`, 'info');
+                
+                const redirectResponse = await fetch(redirectFetchUrl, {
+                  method: 'GET',
+                  credentials: 'include',
+                  headers: {
+                    Accept: 'application/json',
+                  },
+                });
+
+                if (redirectResponse.ok) {
+                  const contentType = redirectResponse.headers.get('content-type');
+                  if (contentType && contentType.includes('application/json')) {
+                    const redirectData = await redirectResponse.json();
+                    log('✅ Sign in successful!', 'success');
+                    log(`Response: ${JSON.stringify(redirectData)}`, 'info');
+                    isAuthenticated = true;
+                    updateAuthStatus(true);
+                    // Check session to get user info
+                    await checkSession();
+                    return;
+                  } else {
+                    const text = await redirectResponse.text();
+                    log('✅ Sign in successful! (non-JSON response)', 'success');
+                    if (text) log(`Response: ${text}`, 'info');
+                    isAuthenticated = true;
+                    updateAuthStatus(true);
+                    await checkSession();
+                    return;
+                  }
+                } else {
+                  log(`⚠️ Redirect endpoint returned status ${redirectResponse.status}`, 'error');
+                  // Still check session in case signin worked despite the error
+                }
+              } catch (redirectError) {
+                log(`Redirect fetch error: ${redirectError.message}`, 'error');
+                log(`Attempted URL: ${fullRedirectUrl}`, 'error');
+                // Continue to session check below
+              }
+            }
+
+            // If redirect, check session - if session exists, signin was successful
+            log('Checking session after redirect...', 'info');
+            const sessionCheck = await fetch(`${backendUrl}/api/auth/session`, {
+              method: 'GET',
+              credentials: 'include',
+            });
+            const sessionData = await sessionCheck.json();
+
+            if (sessionData && sessionData.user) {
+              log('✅ Sign in successful! (session found after redirect)', 'success');
+              isAuthenticated = true;
+              updateAuthStatus(true, sessionData.user);
+              return;
+            }
+
+            // If no session, redirect might have failed
+            log('⚠️ Redirect received but no session found', 'error');
+            return;
+          }
+
+          // Handle JSON response
+          // Check if response has content before parsing
+          const contentType = response.headers.get('content-type');
+          const text = await response.text();
+
+          log(`Response status: ${response.status}, Content-Type: ${contentType}`, 'info');
+          log(`Response body (first 200 chars): ${text.substring(0, 200)}`, 'info');
+
+          let data;
+          try {
+            if (text && contentType && contentType.includes('application/json')) {
+              data = JSON.parse(text);
+            } else if (text) {
+              // If not JSON, treat as text response
+              data = {message: text};
+            } else {
+              // Empty response
+              data = {message: 'Empty response'};
+            }
+          } catch (parseError) {
+            log(`Failed to parse JSON: ${parseError.message}`, 'error');
+            log(`Raw response: ${text}`, 'error');
+            data = {error: 'Failed to parse response', raw: text};
+          }
+
+          if (response.ok || response.status === 200) {
+            log('✅ Sign in successful!', 'success');
+            log(`Response: ${JSON.stringify(data)}`, 'info');
+            isAuthenticated = true;
+            updateAuthStatus(true);
+            await checkSession();
+          } else {
+            log(`❌ Sign in failed (${response.status}): ${JSON.stringify(data)}`, 'error');
+            isAuthenticated = false;
+            updateAuthStatus(false);
+          }
+        } catch (error) {
+          log(`❌ Sign in error: ${error.message}`, 'error');
+          if (error.message.includes('Unexpected end of input')) {
+            log('⚠️ Server may have returned empty response. Check backend logs.', 'error');
+          }
+          isAuthenticated = false;
+          updateAuthStatus(false);
+        }
+      }
+
+      async function checkSession() {
+        log('Checking session...', 'info');
+        const backendUrl = getBackendUrl();
+
+        try {
+          const response = await fetch(`${backendUrl}/api/auth/session`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+
+          const data = await response.json();
+
+          if (data && data.user) {
+            log('✅ Session active: ' + JSON.stringify(data, null, 2), 'success');
+            isAuthenticated = true;
+            updateAuthStatus(true, data.user);
+          } else {
+            log('⚠️ No active session', 'error');
+            isAuthenticated = false;
+            updateAuthStatus(false);
+          }
+        } catch (error) {
+          log(`❌ Session check error: ${error.message}`, 'error');
+          isAuthenticated = false;
+          updateAuthStatus(false);
+        }
+      }
+
+      async function signOut() {
+        log('Signing out...', 'info');
+        const backendUrl = getBackendUrl();
+
+        try {
+          // First, get CSRF token (required by Auth.js)
+          const csrfResponse = await fetch(`${backendUrl}/api/auth/csrf`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.csrfToken;
+
+          log(`CSRF Token obtained: ${csrfToken.substring(0, 20)}...`, 'info');
+
+          // Auth.js signout expects form-encoded data with csrfToken
+          const formData = new URLSearchParams();
+          formData.append('csrfToken', csrfToken);
+
+          const response = await fetch(`${backendUrl}/api/auth/signout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'manual', // Don't follow redirects automatically
+            body: formData.toString(),
+          });
+
+          // Handle redirect responses (308, 307, 302, 301)
+          if (
+            response.type === 'opaqueredirect' ||
+            (response.status >= 300 && response.status < 400)
+          ) {
+            log('✅ Signed out successfully (redirect ignored)', 'success');
+            isAuthenticated = false;
+            updateAuthStatus(false);
+            return;
+          }
+
+          // Handle JSON response
+          if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const data = await response.json();
+              log('✅ Signed out successfully: ' + JSON.stringify(data), 'success');
+            } else {
+              const text = await response.text();
+              log('✅ Signed out successfully', 'success');
+              if (text) {
+                log(`Response: ${text}`, 'info');
+              }
+            }
+            isAuthenticated = false;
+            updateAuthStatus(false);
+          } else {
+            // Even if response is not ok, consider signout successful for API testing
+            log('✅ Signout processed', 'success');
+            isAuthenticated = false;
+            updateAuthStatus(false);
+          }
+        } catch (error) {
+          // CORS errors on redirect are expected - consider it a success
+          if (error.message.includes('CORS') || error.message.includes('redirect')) {
+            log('✅ Signed out successfully (redirect blocked, but signout processed)', 'success');
+            isAuthenticated = false;
+            updateAuthStatus(false);
+          } else {
+            log(`❌ Sign out error: ${error.message}`, 'error');
+            isAuthenticated = false;
+            updateAuthStatus(false);
+          }
+        }
+      }
+
+      function updateAuthStatus(auth, user = null) {
+        const statusDiv = document.getElementById('authStatus');
+        if (auth && user) {
+          statusDiv.className = 'auth-status authenticated';
+          statusDiv.innerHTML = `✅ Authenticated as: ${user.email || user.name || 'User'}`;
+        } else if (auth) {
+          statusDiv.className = 'auth-status authenticated';
+          statusDiv.innerHTML = '✅ Authenticated';
+        } else {
+          statusDiv.className = 'auth-status not-authenticated';
+          statusDiv.innerHTML = '⚠️ Not authenticated';
+        }
+      }
+
+      async function testEndpoint(method, endpoint, params, requireAuth) {
+        if (requireAuth && !isAuthenticated) {
+          log('❌ This endpoint requires authentication. Please sign in first.', 'error');
+          return;
+        }
+
+        const result = await makeRequest(method, endpoint, params, requireAuth);
+
+        if (!result.ok && result.status === 401) {
+          log('⚠️ Authentication may have expired. Try signing in again.', 'error');
+          isAuthenticated = false;
+          updateAuthStatus(false);
+        }
+      }
+
+      function addParamRow() {
+        const paramRows = document.getElementById('paramRows');
+        const row = document.createElement('div');
+        row.className = 'param-row';
+        row.innerHTML = `
+                <input type="text" placeholder="Key" class="param-key">
+                <input type="text" placeholder="Value" class="param-value">
+                <button onclick="this.parentElement.remove()">Remove</button>
+            `;
+        paramRows.appendChild(row);
+      }
+
+      async function testCustomEndpoint() {
+        const method = document.getElementById('customMethod').value;
+        let endpoint = document.getElementById('customEndpoint').value;
+
+        if (!endpoint) {
+          log('❌ Please enter an endpoint', 'error');
+          return;
+        }
+
+        if (!endpoint.startsWith('/')) {
+          endpoint = '/' + endpoint;
+        }
+
+        // Build params from input fields
+        const paramRows = document.querySelectorAll('.param-row');
+        const params = {};
+        paramRows.forEach((row) => {
+          const key = row.querySelector('.param-key').value.trim();
+          const value = row.querySelector('.param-value').value.trim();
+          if (key) {
+            params[key] = value || '';
+          }
+        });
+
+        const requireAuth =
+          endpoint.includes('/profile/') ||
+          endpoint.includes('/dashboard/') ||
+          endpoint.includes('/estimates/') ||
+          endpoint.includes('/account/') ||
+          (endpoint.includes('/user/') && !endpoint.includes('/has_account'));
+
+        await testEndpoint(
+          method,
+          endpoint,
+          Object.keys(params).length > 0 ? params : null,
+          requireAuth
+        );
+      }
+
+      // Auto-check session on load
+      window.addEventListener('load', () => {
+        checkSession();
+      });
+
+      // Clear results button
+      document.addEventListener('keydown', (e) => {
+        try {
+          if (e.ctrlKey && e.key === 'k') {
+            const resultBox = document.getElementById('resultBox');
+            if (resultBox) {
+              resultBox.innerHTML = '';
+              e.preventDefault();
+            }
+          }
+        } catch (error) {
+          console.error('Error in keydown handler:', error);
+        }
+      });
+
+      // Add keyboard shortcut hint
+      log('💡 Tip: Press Ctrl+K to clear results', 'info');
+    </script>
+  </body>
+</html>

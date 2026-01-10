@@ -1,0 +1,117 @@
+auth:
+  invalid_user: Օգտատերը չի գտնվել
+  invalid_login: Սխալ մուտքանուն կամ գաղտնաբառ
+  invalid_email: Էլեկտրոնային հասցեի սխալ ֆորմատ
+  password_recovery: Էլեկտրոնային հասցեն և ստացված կոդը չեն համապատասխանում
+  email_not_found: Այդ մուտքանունով օգտատեր չի գտնվել
+  session_error: Կրկին մուտք գործեք
+  invalid_invitation_id: Սխալ հրավերի id
+  permission_denied: Թույլտվությունը մերժված է
+  user_not_found: Օգտատերը չի գտնվել
+  account_not_found: Կազմակերպությունը չի գտնվել
+  role_not_found: Օգտատերի կարգավիճակը որոշված չէ
+  invalid_invitationId: Այս հրավերն արդեն ընդունել եք կամ այն չեղարկվել է ադմինիստրատորի կողմից
+
+  
+error:
+  duplicate_item: Նման կոդով կամ անունով գրառում արդեն գոյություն ունի
+
+req: 
+  empty_data: Տվյալներ չեն ստացվել
+
+
+insert:
+  success: Հաջող ավելացում
+  fail: Ավելացումը չհաջողվեց
+
+share:
+  fail: Չհաջողվեց կիսվել
+
+fetch:
+  estimate: Չհաջողվեց բեռնել նախահաշիվները
+
+
+required:
+   category_name_&_code: Կարգի անունը և կոդը պարտադիր են
+   category_name: Կագրի անունը պարտադիր է
+   subcategory_name: Ենթակարգի անունը պարտադիր է
+   name: Անունը պարտադիր է
+   email: Էլ․ հասցեն պարտադիր է
+   password: Գաղտնաբառը պարտադիր է
+
+
+validate:
+  integer: Թույլատրվում է գրել միայն դրական ամբողջ թվեր
+  already_offered: Դուք արդեն կատարել եք նման առաջարկ
+  already_added: Արդեն ավելացված է
+  estimated_labor_item: Աշխատանքը չի գտնվել
+  id: Նշված id-ն չի գտնվել
+  labor_id: Նշված աշխատանքի id-ն չի գտնվել
+  material_not_found: Նյութը չի գտնվել
+  material_id: Նշված նյութի id-ն չի գտնվել
+  pending_user_not_found: Չհաստատված օգտատերը չի գտնվել
+  account_not_set: Կազմակերպություն կցված չէ
+  user_already_invited: Օգտատերը արդեն հրավիրվել է
+  user_not_invited: Օգտատերը հրավիրված չէ
+  user_reg_pending: Օգտատերի գրանցումը սպասման մեջ է
+  user_already_reg: Օգտատերը արդեն գրանցված է
+  not_allowed_deleteing_material_offers: Օգտատերը ունի նյութերի առաջարկներ
+  not_allowed_deleteing_labor_offers: Օգտատերը ունի աշխատանքի առաջարկներ
+  not_allowed_deleteing_estimates: Օգտատերը ունի նախահաշիվներ
+  float: Թույլատրվում է գրել միայն դրական թվեր
+  user_have_not_company: Օգտատերը կցված չէ որևէ կազմակերպության
+  expense_type_exists: Ծախսի տեսակը արդեն առկա է։ Խնդրում ենք լրացնել դրա արժեքը, մինչև նորը ավելացնելը
+
+
+univsersalEmail:
+  email_subject: Մադբեյզ
+  email_subject_invite_from_admin: Հրավեր Մադբեյզ էլեկտրոնային համակարգ
+  reset_password_email_subject: Մադբեյզ Գաղտանաբառի Վերականգնում
+  default_company_name: Մադբեյզ
+  welcome_text: Բարի գալուստ Մադբեյզ 
+  dear_text: Հարգելի
+  inviting_message : "-ը հրավիրում է Ձեզ միանալու"
+  inviting_for_company_text: "կազմակերպության էջին։"
+  accept_invitation_text: "Հրավերը հաստատելու համար խնդրում ենք սեղմել հետևյալ կոճակը՝"
+  sign_up_confirmation_msg: "Գրանցումը հաստատելու համար խնդրում ենք սեղմել հետևյալ կոճակը՝"
+  password_reset_email_msg: "Ձեր գաղտնաբառը վերականգնելու համար խնդրում ենք անցնել ստորև նշված հղումով՝"
+  button_not_working_text: "Եթե կոճակը չի աշխատում, խնդրում ենք անցնել ստորև նշված հղումով՝"
+  thanks_text: "Շնորհակալ ենք, որ մեզ հետ եք։"
+  regards_text_first_line: Սիրով, 
+  regards_text_second_line: "Mudbase թիմ։"
+  confirm_button_label: Հաստատել
+  accept_invitation_button_label: "Ընդունել Հրավերը"
+  reset_password_button_label: Վերականգնել գաղտնաբառը
+
+
+
+usersLimit:
+  pendingInviteCountMoreThanZero: "Թույլատրելի օգտատերերի սահմանաչափը լրացել է: Ձեր կազմակերպությունն ունի արդեն 3 ակտիվ օգտատեր կամ սպասման մեջ գտնվող հրավեր: Խնդրում ենք չեղարկել գոյություն ունեցող հրավերներից՝ նոր օգտատերեր ավելացնելու համար: Խնդիրների դեպքում կարող եք դիմել Մադբեյզ էլեկտրոնային համակարգի աջակցության և սպասարկման կենտրոն։ Կենտրոնի հետ կարող եք կապ հաստատել ուղարկելով նամակ support@mudbase.am էլետրոնային հասցեյին։"
+  activeUserCountMoreThanThree: "Հարգելի օգտատեր, տեղեկացնում ենք, որ յուրաքանչյուր կազամակերպություն Մադբեյզ էլեկտրոնային համակարգում, բաժանորդագրության փաթեթի շրջանակում, անվճար  կարող է գրանցել մինչև երեք օգտահաշիվ։  Լրացուցիչ օգտահաշվի ավելացման համար խնդրում ենք դիմել Մադբեյզ էլեկտրոնային համակարգի աջակցության և սպասարկման կենտրոն։ Կենտրոնի հետ կարող եք կապ հաստատել ուղարկելով նամակ support@mudbase.am էլետրոնային հասցեյին։"
+
+
+unforeseenWorks: "Չնախատեսված աշխատանքներ"
+climaticImpactCosts: "Կլիմայական ազդեցության ծախսեր"
+temporaryStructures: "Ժամանակավոր կառույցներ"
+operationHandoverCosts: "Շահագործման հանձնման ծախսեր"
+stateDutiesAndFees: "Պետական տուրքեր և վճարներ"
+valueAddedTax: "Ավելացված արժեքի հարկ"
+turnoverTax: "Շրջանառության հարկ"
+overheadCosts: "Վերադիր ծախսեր"
+profit: "Շահույթ"
+transportationCosts: "Տրանսպորտային ծախսեր"
+smallScaleConstructionWork: "Փոքրածավալ շինարարական աշխատանքներ"
+smallScaleConstructionMaterials: "Փոքրածավալ շինարարական նյութեր"
+typeOfCost: ""
+
+
+currentRenovation: "Ընթացիկ նորոգում"
+renovation: "Վերանորոգում"
+majorRepairs: "Հիմնանորոգում"
+reconstruction: "Վերակառուցում"
+reinforcement: "Ուժեղացում"
+restorationWork: "Վերականգնողական աշխատանքներ"
+construction: "Կառուցում"
+
+
+

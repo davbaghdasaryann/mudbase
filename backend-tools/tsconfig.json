@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    //"baseUrl": "./src",
+    "rootDir": "./src",
+    "outDir": "./build",
+
+    //"target": "esnext",
+    // "target": "esnext",
+    // "module": "commonjs",
+    // //"module": "esnext",
+    // "moduleResolution": "node",
+
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+
+    "preserveSymlinks": true,
+
+
+    "isolatedModules": true,
+    "esModuleInterop": true,
+
+    "strict": true,
+    "allowJs": false,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    "paths": {
+      "/*": ["./src/*"],
+    }
+  },
+  "exclude": ["node_modules", "doc", "code", "**/*.spec.ts"],
+  "typeRoots": ["./src/types"],
+  "include": ["./src/**/*.ts"],
+  "files": ["src/index.ts", "src/types/global.d.ts"],
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MudBase</title>
+    <style type="text/css">
+      /* * {
+        margin: 0px;
+        padding: 0px;
+      } */
+
+      body {
+        background-color: white;
+        color: black;
+      }
+      a:link,
+      a:visited {
+        color: teal;
+        text-decoration: none;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: teal !important;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        text-align: center;
+        /* transition: background-color 0.3s ease; */
+      }
+
+      .action-button {
+        margin: 10px 40px;
+      }
+
+      .link {
+        color: teal !important;
+      }
+
+      .root {
+        width: 40%;
+      }
+      .regards {
+        margin-top: 2rem;
+        font-style: italic;
+        color: #777;
+      }
+      /* @media (prefers-color-scheme: dark) {
+        body {
+          background-color: black !important;
+          color: white !important;
+        }
+        .link {
+          color: white;
+        }
+      } */
+    </style>
+  </head>
+
+  <body>
+    <div class="root">
+      <h2>Welcome to MudBase!</h2>
+      ${children}
+      <p class="regards">
+        Thanks for being with us. <br />
+        Best regards,<br />Mudbase
+      </p>
+    </div>
+  </body>
+</html>

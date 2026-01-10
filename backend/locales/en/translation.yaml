@@ -1,0 +1,89 @@
+auth:
+  invalid_user: auth.invalid_user
+  invalid_login: auth.invalid_login
+  invalid_email: Invalid email format
+  password_recovery: recovery code and email doest match
+  email_not_found: There is no user with this email
+  session_error: Session error. Please log out and log in again
+  invalid_invitation_id: Invalid invitation id
+  permission_denied: Permission denied
+  user_not_found: User not found
+  account_not_found: Account not found
+  role_not_found: User role is missing
+  invalid_invitationId: This invitation has already been accepted or cancelled by an administrator. Please check your email or contact support for further assistance.
+
+
+error:
+  duplicate_item: Duplicate
+
+req: 
+  empty_data: "No data"
+  
+
+insert:
+  success: Insert successfully
+  fail: Insert failed
+
+
+share:
+  fail: Share failed
+
+fetch: 
+  estimate: Estimate fetch failed  
+
+required:
+  category_name_&_code: Category name and code are required
+  category_name: Category name is required
+  subcategory_name: Subcategory name is required
+  name: Name is required
+  email: Email is required
+  password: Password is required
+  
+
+validate:
+  integer: Must be an positive integer
+  already_offered: You have already added this offer
+  already_added: Already added
+  estimated_labor_item: Estimated labor item not found
+  id: Id not found
+  material_not_found: Estimated material item not found
+  pending_user_not_found: Pending user not found
+  account_not_set: Account not set
+  user_already_invited: User already invited
+  user_not_invited: User not invited
+  user_reg_pending: User registration pending
+  user_already_reg: User already registered
+  not_allowed_deleting_material_offers: User has material offers
+  not_allowed_deleting_labor_offers: User has labor offers
+  not_allowed_deleting_estimates: User has estimates
+  float: Must be a float number
+  user_have_not_company: The user is not affiliated with any company
+  expense_type_exists: Expense type 'Type of cost' already exists. Please fill it before adding a new one
+
+
+univsersalEmail:
+  email_subject: Mudbase
+  email_subject_invite_from_admin: Invitation to the Madbase electronic system
+  reset_password_email_subject: Mudbase Login Password Reset
+  default_company_name: Mudbase
+  welcome_text: Welcome to Mudbase!
+  dear_text: Dear
+  inviting_message : is inviting you to join the
+  inviting_for_company_text: organization page.
+  accept_invitation_text: To accept the invitation, please click the button below
+  sign_up_confirmation_msg: To confirm your registration, please click the button below
+  password_reset_email_msg: Click the button below to reset your password
+  button_not_working_text: If the button does not work, please use the link below
+  thanks_text: Thanks for being with us.
+  regards_text_first_line: Best regards,
+  regards_text_second_line: Mudbase team
+  confirm_button_label: Confirm
+  accept_invitation_button_label: Accept Invitation
+  reset_password_button_label: Reset Password
+
+
+usersLimit:
+  pendingInviteCountMoreThanZero: "The limit of allowed users has been reached. Your organization already has 3 active users or pending invitations. Please cancel existing invitations to add new users. In case of problems, you can contact the Mudbase electronic system support and service center. You can contact the center by sending an email to support@mudbase.am"
+  activeUserCountMoreThanThree: "Dear user, we inform you that each organization can register up to three user accounts in the Mudbase electronic system for free within the framework of the subscription package. To add an additional user account, please contact the Mudbase electronic system support and service center. You can contact the center by sending an email to support@mudbase.am."
+
+  

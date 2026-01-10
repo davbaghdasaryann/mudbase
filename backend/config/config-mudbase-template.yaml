@@ -1,0 +1,39 @@
+env: dev
+
+dev:
+  rootToken: 1234
+
+server:
+  host: localhost
+  port: 7787
+  base: api
+
+
+auth: 
+  frontUrl: http://localhost:3007
+  authSecret: <>
+
+  sessdb: 
+    type: mysql
+    host: <>
+    port: <>
+    dbse: <>
+    user: <>
+    pswd: <>
+
+email:
+  from: noreply@apps4ever.com
+
+db:
+  type: mongo
+  host: akatek.biz
+  port: 27017
+  dbse: <>
+  user: <>
+  pswd: <>
+
+
+
+aws:
+  ses: 
+    region: us-east-2

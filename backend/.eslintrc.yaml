@@ -1,0 +1,20 @@
+#parser: babel-eslint
+parser: "@typescript-eslint/parser"
+
+# parserOptions:
+#    ecmaVersion: 2018
+#    sourceType: module
+#    ecmaFeatures:
+#        jsx: true
+#    project: tsconfig.json
+
+plugins:
+    - import
+
+rules:
+    no-unused-vars: off
+#    no-undef: [ 1 ]
+
+env:
+    browser: false
+    node: true

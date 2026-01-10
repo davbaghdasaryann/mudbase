@@ -1,0 +1,351 @@
+'use client'
+
+import { Box, Button, Divider, IconButton, InputBase, Menu, MenuItem } from "@mui/material";
+import React from "react";
+import UserPageAddOfferDialog from "./UserPageAddOfferDIalog";
+import { LaborOfferDisplayData, MaterialOfferDisplayData } from "../../data/offer_display_data";
+import * as Api from 'api';
+import * as OffersApi from 'api/offer'
+import { DataGrid } from "@mui/x-data-grid";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PageContents from '@/components/PageContents';
+import Tab from '@mui/material/Tab';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import moment from 'moment'
+import { UserPageOfferEditDialog } from "./UserPageOfferEditDIalog";
+import SearchIcon from '@mui/icons-material/Search';
+import DirectionsIcon from '@mui/icons-material/Directions';
+import { OfferItemArchiveUnarchiveDialog } from "./OfferItemArchiveDIalog";
+
+
+export default function UserPageOffer() {
+    const mounted = React.useRef(false);
+    const [dataRequested, setDataRequested] = React.useState(false);
+    const [progIndic, setProgIndic] = React.useState(false)
+    const [offers, setOffers] = React.useState<LaborOfferDisplayData[] | MaterialOfferDisplayData[] | null>(null);
+    const [openAddOfferDialogType, setOpenAddOfferDialogType] = React.useState<'labor' | 'material' | null>(null);
+    const [value, setValue] = React.useState('labor');
+    const [offerItemEditId, setOfferItemEditId] = React.useState<string | null>(null);
+    const [offerItemArchiveId, setOfferItemArchiveId] = React.useState<string | null>(null);
+    const [offerItemDetailsd, setOfferItemDetailsId] = React.useState<string | null>(null);
+    const [offerItemName, setOfferItemName] = React.useState<string | null>(null);
+
+    const [offerType, setOfferType] = React.useState<'labor' | 'material'>('labor')
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+
+    //Searching
+    const [searchVal, setSearchVal] = React.useState('');
+
+
+
+    const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+        setValue(newValue);
+        if (newValue === 'labor' || newValue === 'material')
+            setOfferType(newValue);
+        setDataRequested(false)
+        setOffers(null)
+    };
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+    const handleEdit = (currentOfferItemEditId: string) => {
+        setOfferItemEditId(currentOfferItemEditId)
+        setAnchorEl(null);
+    };
+    const handleArchive = (currentOfferItemEditId: string) => {
+        setOfferItemArchiveId(currentOfferItemEditId)
+        setAnchorEl(null);
+    };
+
+
+
+
+    const searchTextSubmit = React.useCallback((e) => {
+        // setIssuedStatusString('false');
+        // setIssuedStatus(false)
+        // setPrintedStatusString('false');
+        // setPrintedStatus(false);
+        // setActivatedStatusString('false');
+        // setActivatedStatus(false);
+        setDataRequested(false)
+    }, [])
+
+    const searchTextChange = React.useCallback((e) => {
+        setSearchVal(e.target.value)
+        if (e.target.value === '') {
+            setDataRequested(false)
+        }
+    }, [])
+
+    const onSubmit = React.useCallback((e) => {
+
+        e.preventDefault();
+        setDataRequested(false)
+
+    }, [])
+
+
+    React.useEffect(() => {
+        setProgIndic(true)
+
+        mounted.current = true;
+        if (!dataRequested) {
+
+            if (offerType === 'labor') {
+                Api.requestSession<OffersApi.ApiLaborOffer[]>({
+                    command: `labor/fetch_offers`,
+                    args: { searchVal: searchVal === '' ? 'empty' : searchVal, }
+                })
+                    .then(laborOffersResData => {
+                        if (mounted.current) {
+
+                            console.log('laborOffersResData: ', laborOffersResData)
+                            let laborOffersData: LaborOfferDisplayData[] = [];
+
+                            for (let laborOffer of laborOffersResData) {
+                                laborOffersData.push(new LaborOfferDisplayData(laborOffer));
+                            }
+                            console.log('laborOffersData', laborOffersData)
+
+                            setOffers(laborOffersData)
+                        }
+                        setProgIndic(false)
+
+                    })
+            } else if (offerType === 'material') {
+                Api.requestSession<OffersApi.ApiMaterialOffer[]>({
+                    command: `material/fetch_offers`,
+                    args: { searchVal: searchVal === '' ? 'empty' : searchVal, }
+                })
+                    .then(materialOffersResData => {
+                        if (mounted.current) {
+                            console.log('materialOffersResData', materialOffersResData)
+                            // if (!materialOffersResData) {
+                            //     setOffers(null);
+                            //     return;
+                            // }
+
+                            // console.log('labor categories: ', d)
+                            let materialOffersData: MaterialOfferDisplayData[] = [];
+
+                            for (let materialOffer of materialOffersResData) {
+                                materialOffersData.push(new MaterialOfferDisplayData(materialOffer));
+                            }
+
+                            setOffers(materialOffersData)
+                        }
+                        setProgIndic(false)
+
+                    })
+            }
+
+
+            setDataRequested(true);
+            return;
+        }
+        return () => { mounted.current = false }
+    }, [dataRequested]);
+
+    if (!offers) {
+        return <PageContents>
+            {offerType === 'labor' &&
+                <Button onClick={() => setOpenAddOfferDialogType('labor')}>add labor</Button>
+            }
+            {offerType === 'material' &&
+                <Button onClick={() => setOpenAddOfferDialogType('material')}>add material</Button>
+            }
+            <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', backgroundColor: '#242c37', width: 300, justifySelf: 'right', }}>
+
+                <InputBase
+                    sx={{ ml: 1, flex: 1, }}
+                    placeholder='Search'
+                    inputProps={{ 'aria-label': 'search google maps' }}
+                    // onChange={(e) => {setSearchVal(e.target.value)}}
+                    onChange={searchTextChange}
+                    value={searchVal}
+                />
+                {/* <IconButton type='button' sx={{ p: '10px' }} aria-label='search'>
+<SearchIcon />
+</IconButton> */}
+                <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
+                <Button onClick={searchTextSubmit}>
+                    <DirectionsIcon />
+                </Button>
+            </Box>
+
+            <TabContext value={value}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <TabList onChange={handleChange}>
+                        <Tab label="Labor" value="labor" />
+                        <Tab label="Material" value="material" />
+                    </TabList>
+                </Box>
+                {/* <TabPanel value="1">Labor</TabPanel>
+                <TabPanel value="2">Materials</TabPanel>
+                <TabPanel value="3">Item Three</TabPanel> */}
+            </TabContext>
+        </PageContents>
+    }
+
+    return (
+        <PageContents>
+            {offerType === 'labor' &&
+                <Button onClick={() => setOpenAddOfferDialogType('labor')}>add labor</Button>
+            }
+
+            {offerType === 'material' &&
+                <Button onClick={() => setOpenAddOfferDialogType('material')}>add material</Button>
+            }
+
+
+            <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', backgroundColor: '#242c37', width: 300, justifySelf: 'right', }}>
+
+                <InputBase
+                    sx={{ ml: 1, flex: 1, }}
+                    placeholder='Search'
+                    inputProps={{ 'aria-label': 'search google maps' }}
+                    // onChange={(e) => {setSearchVal(e.target.value)}}
+                    onChange={searchTextChange}
+                    value={searchVal}
+                />
+                {/* <IconButton type='button' sx={{ p: '10px' }} aria-label='search'>
+    <SearchIcon />
+</IconButton> */}
+                <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
+                <Button onClick={searchTextSubmit}>
+                    <DirectionsIcon />
+                </Button>
+            </Box>
+
+            <TabContext value={value}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <TabList onChange={handleChange}>
+                        <Tab label="Labor" value="labor" />
+                        <Tab label="Material" value="material" />
+                    </TabList>
+                </Box>
+                {/* <TabPanel value="1">Labor</TabPanel>
+                <TabPanel value="2">Materials</TabPanel>
+                <TabPanel value="3">Item Three</TabPanel> */}
+            </TabContext>
+
+            {(offers && offerType === 'labor') &&
+
+                <DataGrid
+                    sx={{
+                        width: '100%',
+                        // color: "red"
+                    }}
+                    columns={[
+                        { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 160, disableColumnMenu:true },
+                        { field: 'itemName', headerName: 'Name', headerAlign: 'left', flex: 1, disableColumnMenu:true },
+                        { field: 'laborHours', headerName: 'Labor Hours', headerAlign: 'left', width: 200, disableColumnMenu:true },
+                        { field: 'measurementUnitRepresentationSymbol', headerName: 'Unit', headerAlign: 'left', width: 200, disableColumnMenu:true },
+                        { field: 'price', headerName: 'Price', headerAlign: 'left', width: 200, disableColumnMenu:true },
+                        {
+                            field: 'updateDate', type: 'dateTime', headerName: 'Date', headerAlign: 'center', align: 'center', width: 200, valueFormatter: (params: any) =>
+                                moment(params).format('DD.MM.YYYY HH:mm'),
+                                disableColumnMenu:true
+                        },
+                        {
+                            field: 'info', type: 'actions', headerName: '', width: 20, renderCell: (cell) => {
+                                return <>
+                                    <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
+
+                                        // props.onSelected(cell.id as string);
+                                        // setOfferItemId(cell.id as string)
+                                        setOfferItemName(cell.row.itemName)
+                                        setOfferItemDetailsId(cell.id as string)
+                                        handleClick(event);
+
+                                    }
+                                    }
+                                    >
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                </>;
+                            }
+                        }, // width: 600 },
+                    ]}
+                    rows={offers as LaborOfferDisplayData[]}
+                    autoPageSize={true}
+                    disableRowSelectionOnClick
+                    getRowId={row => row._id}
+                    onRowDoubleClick={(row) => { setOfferItemEditId(row.id as string); setOfferItemName(row.row.itemName) }}
+                />
+
+
+            }
+
+            {(offers && offerType === 'material') &&
+
+                <DataGrid
+                    sx={{
+                        width: '100%',
+                        // color: "red"
+                    }}
+                    columns={[
+                        { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 160, disableColumnMenu:true },
+                        { field: 'itemName', headerName: 'Name', headerAlign: 'left', flex: 1, disableColumnMenu:true },
+                        { field: 'measurementUnitRepresentationSymbol', headerName: 'Unit', headerAlign: 'left', width: 200, disableColumnMenu:true },
+                        { field: 'price', headerName: 'Price', headerAlign: 'left', width: 200, disableColumnMenu:true },
+                        {
+                            field: 'updateDate', type: 'dateTime', headerName: 'Date', headerAlign: 'center', align: 'center', width: 200, valueFormatter: (params: any) =>
+                                moment(params).format('DD.MM.YYYY HH:mm'),
+                                disableColumnMenu:true
+                        },
+                        {
+                            field: 'info', type: 'actions', headerName: '', width: 20, renderCell: (cell) => {
+                                return <>
+                                    <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
+
+                                        // props.onSelected(cell.id as string);
+                                        setOfferItemName(cell.row.itemName)
+                                        setOfferItemDetailsId(cell.id as string)
+                                        handleClick(event);
+
+                                    }
+                                    }
+                                    >
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                </>;
+                            }
+                        }, // width: 600 },
+                    ]}
+                    rows={offers as MaterialOfferDisplayData[]}
+                    autoPageSize={true}
+                    disableRowSelectionOnClick
+                    getRowId={row => row._id}
+                    onRowDoubleClick={(row) => { setOfferItemEditId(row.id as string); setOfferItemName(row.row.itemName) }}
+                />
+            }
+
+
+
+
+            {openAddOfferDialogType && <UserPageAddOfferDialog offerType={openAddOfferDialogType} onClose={() => { setOpenAddOfferDialogType(null); setDataRequested(false) }} />}
+            {offerItemEditId && <UserPageOfferEditDialog offerItemName={offerItemName} offerType={offerType} offerMongoId={offerItemEditId} onClose={() => {
+                setOfferItemEditId(null); setOfferItemDetailsId(null); setOfferItemName(null)
+            }} onConfirm={() => {setDataRequested(false)}} />}
+            {(offerItemArchiveId && offerItemName && offerType) && <OfferItemArchiveUnarchiveDialog offerMongoId={offerItemArchiveId} title={offerItemName} message="Do you want to archive this offer?" offerArchiveType={offerType} onClose={() => { setOfferItemArchiveId(null); setOfferItemName(null) }} onConfirm={() => { setDataRequested(false) }} />}
+            {offerItemDetailsd && <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+            >
+                <MenuItem onClick={() => { handleEdit(offerItemDetailsd) }}>Edit</MenuItem>
+                <MenuItem onClick={() => { handleArchive(offerItemDetailsd) }}>Archive</MenuItem>
+                {/* <MenuItem onClick={() => { }}>Remove</MenuItem> */}
+            </Menu>
+            }
+
+        </PageContents>
+    );
+}

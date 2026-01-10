@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "target": "es2019",
+    "module": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    // "jsx": "react-jsx",
+    "jsx": "preserve",
+    "strict": true,
+    "allowJs": false,
+    // "preserveSymlinks": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    //// Linter checks
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    // "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": false,
+    "incremental": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@tslib/*": ["./tslib*"],
+      "@tsui/*": ["./tsui*"],
+      "@tsfront/*": ["./tsfront*"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next-env.d.ts", "build/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

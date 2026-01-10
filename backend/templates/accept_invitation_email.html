@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${emailSubject}</title>
+  <style type="text/css">
+    body {
+      background-color: white;
+      color: black;
+    }
+
+    a:link,
+    a:visited {
+      color: teal;
+      text-decoration: none;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: teal !important;
+      color: white !important;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+      /* transition: background-color 0.3s ease; */
+    }
+
+    .action-button {
+      margin: 10px 40px;
+    }
+
+    .link {
+      color: teal !important;
+    }
+
+    .root {
+      width: 100%;
+    }
+
+    .regards {
+      margin-top: 2rem;
+      font-style: italic;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="root">
+    <h2>${mainTitle}</h2>
+    <p>${subTitle} ${invitedUserFirstName} ${invitedUserLastName},</p>
+    <p>${invitingUserFirstName} ${invitingUserLastName} ${invitingMessage} ${invitingCompanyName}
+      ${invitingForCompanyText}</p>
+    <p>${acceptInvitationText}</p>
+
+    <p><a href="${linkUrl}" class="button action-button"> ${activeLinkButtonLabel} </a></p>
+
+
+    <p> ${buttonNotWorksText} </p>
+    <p><a href="${linkUrl}" class="link">${linkUrl}</a></p>
+
+    <p class="regards">
+      ${thanksText} <br />
+      ${regardsText1}<br />${regardsText2}
+    </p>
+
+  </div>
+</body>
+
+</html>

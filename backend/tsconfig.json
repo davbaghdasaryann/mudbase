@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    // "baseUrl": "./src",
+    // "rootDir": "src",
+    "outDir": "build",
+
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "esModuleInterop": true,
+
+    "strict": true,
+    "allowJs": false,
+
+    // "composite": true,
+    "preserveSymlinks": true,
+
+    //"noEmit": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    "paths": {
+      "@/*": ["./src/*"],
+      "@src/*": ["./src/*"],
+      "@tslib/*": ["./src/tslib/*"],
+      "@tsback/*": ["./src/tsback/*"]
+      //   "/*": ["./src/*"],
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "doc", "**/*.spec.ts", "src/tsback/token.ts", "src/tsback/aws/**/*"],
+  "typeRoots": ["src/types", "./node_modules/@types"]
+}
