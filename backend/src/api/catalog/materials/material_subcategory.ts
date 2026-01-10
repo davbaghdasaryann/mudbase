@@ -386,3 +386,23 @@ registerApiSession('material/update_subcategory', async (req, res, session) => {
 
     respondJsonData(res, { ok: true });
 });
+
+// Delete subcategory - cascades to delete all items
+registerApiSession('material/delete_subcategory', async (req, res, session) => {
+    const subcategoryId = new ObjectId(requireQueryParam(req, 'entityMongoId'));
+
+    const subcatColl = Db.getMaterialSubcategoriesCollection();
+    const itemsColl = Db.getMaterialItemsCollection();
+
+    // Verify subcategory exists
+    const subcategory = await subcatColl.findOne({ _id: subcategoryId });
+    verify(subcategory, req.t('error.subcategory_not_found'));
+
+    // Delete all items in this subcategory
+    await itemsColl.deleteMany({ subcategoryId });
+
+    // Delete the subcategory
+    const result = await subcatColl.deleteOne({ _id: subcategoryId });
+
+    respondJsonData(res, { ok: true, deletedCount: result.deletedCount });
+});

@@ -743,30 +743,31 @@ registerHandlerSession('labor', 'update_category', async (req, res, session) => 
 
 
 
-// registerHandlerSession('labor', 'archive_category', async (req, res, session) => {
-//     let laborCategoryNewName = requireQueryParam(req, 'entityName');
-//     let laborCategoryId = new ObjectId(requireQueryParam(req, 'entityMongoId'));
+// Delete category - cascades to delete all subcategories and their items
+registerHandlerSession('labor', 'delete_category', async (req, res, session) => {
+    const categoryId = new ObjectId(requireQueryParam(req, 'entityMongoId'));
 
-//     verify(laborCategoryNewName, req.t('required.category_name'));
+    const catColl = Db.getLaborCategoriesCollection();
+    const subcatColl = Db.getLaborSubcategoriesCollection();
+    const itemsColl = Db.getLaborItemsCollection();
 
-//     let laborCategories = Db.getLaborCategoriesCollection();
-//     await laborCategories.updateOne({ _id: laborCategoryId }, { $set: { isArchived: true } });
+    // Verify category exists
+    const category = await catColl.findOne({ _id: categoryId });
+    verify(category, req.t('error.category_not_found'));
 
+    // Get all subcategories for this category
+    const subcategories = await subcatColl.find({ categoryId }).toArray();
 
+    // Delete all items in all subcategories
+    for (const subcat of subcategories) {
+        await itemsColl.deleteMany({ subcategoryId: subcat._id });
+    }
 
-//     respondJsonData(res, 'new laber category updated');
-// });
+    // Delete all subcategories
+    await subcatColl.deleteMany({ categoryId });
 
-// registerHandlerSession('labor', 'unarchive_category', async (req, res, session) => {
-//     let laborCategoryNewName = requireQueryParam(req, 'entityName');
-//     let laborCategoryId = new ObjectId(requireQueryParam(req, 'entityMongoId'));
+    // Delete the category
+    const result = await catColl.deleteOne({ _id: categoryId });
 
-//     verify(laborCategoryNewName, req.t('required.category_name'));
-
-//     let laborCategories = Db.getLaborCategoriesCollection();
-//     await laborCategories.updateOne({ _id: laborCategoryId }, { $set: { isArchived: false } });
-
-
-
-//     respondJsonData(res, 'new laber category updated');
-// });
+    respondJsonData(res, { ok: true, deletedCount: result.deletedCount });
+});

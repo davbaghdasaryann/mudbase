@@ -734,6 +734,36 @@
       </div>
     </div>
 
+    <!-- Catalog Edit Modal -->
+    <div id="catalogEditModal" class="modal" style="display: none;" onclick="if(event.target === this) closeCatalogEditModal()">
+      <div class="modal-content" style="max-width: 500px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3 id="catalogEditModalTitle">Edit Catalog</h3>
+          <button class="modal-close" onclick="closeCatalogEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-field">
+            <label for="catalogEditEntityCode">Code <span style="color: red;">*</span></label>
+            <input type="text" id="catalogEditEntityCode" class="form-input" placeholder="Enter code" required />
+          </div>
+          <div id="catalogEditMeasurementUnitDiv" class="form-field" style="display: none;">
+            <label for="catalogEditMeasurementUnit">Measurement Unit <span style="color: red;">*</span></label>
+            <select id="catalogEditMeasurementUnit" class="form-input">
+              <option value="">Select Measurement Unit</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="catalogEditEntityName">Name <span style="color: red;">*</span></label>
+            <input type="text" id="catalogEditEntityName" class="form-input" placeholder="Enter name" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeCatalogEditModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="confirmCatalogEdit()">Save</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Load modules in dependency order -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>

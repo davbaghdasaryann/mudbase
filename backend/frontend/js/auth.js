@@ -9,6 +9,12 @@ async function checkSession() {
     if (data && data.user) {
       currentUser = data.user;
       isAuthenticated = true;
+      // Parse permissions from comma-separated string to array
+      if (data.user.permissions) {
+        userPermissions = data.user.permissions.split(',').map((p) => p.trim());
+      } else {
+        userPermissions = [];
+      }
       showMainApp();
       updateUserInfo();
       // Load data for the active page
@@ -41,6 +47,8 @@ async function checkSession() {
   } catch (error) {
     console.error('Session check error:', error);
     isAuthenticated = false;
+    currentUser = null;
+    userPermissions = null;
     showLogin();
   }
 }
@@ -177,6 +185,7 @@ async function handleSignOut() {
     isAuthenticated = false;
     currentUser = null;
     accountData = null;
+    userPermissions = null;
     showLogin();
     showAlert('✅ Signed out successfully', 'success', 'loginAlert');
   } catch (error) {

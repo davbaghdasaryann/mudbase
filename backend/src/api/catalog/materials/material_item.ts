@@ -218,6 +218,22 @@ registerApiSession('material/update_item', async (req, res, session) => {
     respondJsonData(res, result);
 });
 
+// Delete item
+registerApiSession('material/delete_item', async (req, res, session) => {
+    const materialItemId = requireMongoIdParam(req, 'entityMongoId');
+
+    const materialItemsColl = Db.getMaterialItemsCollection();
+
+    // Verify item exists
+    const item = await materialItemsColl.findOne({ _id: materialItemId });
+    verify(item, req.t('error.item_not_found'));
+
+    // Delete the item
+    const result = await materialItemsColl.deleteOne({ _id: materialItemId });
+
+    respondJsonData(res, { ok: true, deletedCount: result.deletedCount });
+});
+
 registerApiSession('material/fetch_items_with_average_price', async (req, res, session) => {
     const calledFromPage = getReqParam(req, 'calledFromPage');
     const isSorting = getReqParam(req, 'isSorting');

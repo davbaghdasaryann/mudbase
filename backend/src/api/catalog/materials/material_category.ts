@@ -486,3 +486,32 @@ registerApiSession('material/update_category', async (req, res, session) => {
 
     respondJsonData(res, {ok: true});
 });
+
+// Delete category - cascades to delete all subcategories and their items
+registerApiSession('material/delete_category', async (req, res, session) => {
+    const categoryId = new ObjectId(requireQueryParam(req, 'entityMongoId'));
+
+    const catColl = Db.getMaterialCategoriesCollection();
+    const subcatColl = Db.getMaterialSubcategoriesCollection();
+    const itemsColl = Db.getMaterialItemsCollection();
+
+    // Verify category exists
+    const category = await catColl.findOne({ _id: categoryId });
+    verify(category, req.t('error.category_not_found'));
+
+    // Get all subcategories for this category
+    const subcategories = await subcatColl.find({ categoryId }).toArray();
+
+    // Delete all items in all subcategories
+    for (const subcat of subcategories) {
+        await itemsColl.deleteMany({ subcategoryId: subcat._id });
+    }
+
+    // Delete all subcategories
+    await subcatColl.deleteMany({ categoryId });
+
+    // Delete the category
+    const result = await catColl.deleteOne({ _id: categoryId });
+
+    respondJsonData(res, { ok: true, deletedCount: result.deletedCount });
+});

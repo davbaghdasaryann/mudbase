@@ -584,6 +584,41 @@ body {
   border-left: 2px solid #e0e0e0;
 }
 
+.catalog-item-children .catalog-item {
+  margin-bottom: 8px;
+}
+
+.catalog-item-children .catalog-item-children {
+  margin-left: 20px;
+  border-left: 2px solid #d0d0d0;
+}
+
+/* Table styling for catalog items */
+.catalog-item-content .table-wrapper {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.catalog-item-content .estimate-table {
+  font-size: 13px;
+}
+
+.catalog-item-content .estimate-table th {
+  background: #f5f5f5;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.catalog-item-content .estimate-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.catalog-item-content .estimate-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
 /* Modal */
 .modal {
   position: fixed;

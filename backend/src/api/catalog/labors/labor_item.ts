@@ -626,3 +626,19 @@ registerApiSession('labor/update_item', async (req, res, session) => {
 
     respondJson(res, result);
 });
+
+// Delete item
+registerApiSession('labor/delete_item', async (req, res, session) => {
+    const laborItemId = requireMongoIdParam(req, 'entityMongoId');
+
+    const laborItems = Db.getLaborItemsCollection();
+
+    // Verify item exists
+    const item = await laborItems.findOne({ _id: laborItemId });
+    verify(item, req.t('error.item_not_found'));
+
+    // Delete the item
+    const result = await laborItems.deleteOne({ _id: laborItemId });
+
+    respondJsonData(res, { ok: true, deletedCount: result.deletedCount });
+});
