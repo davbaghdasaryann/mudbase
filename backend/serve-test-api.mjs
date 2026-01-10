@@ -24,17 +24,17 @@ const __dirname = path.dirname(__filename);
 const PREFERRED_PORT = 3000;
 const FALLBACK_PORT = 3001;
 const TEST_API_FILE = path.join(__dirname, 'test-api.html');
-const FRONTEND_FILE = path.join(__dirname, 'frontend.html');
+const FRONTEND_DIR = path.join(__dirname, 'frontend');
+const FRONTEND_INDEX = path.join(FRONTEND_DIR, 'index.html');
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7787';
 
 let testApiContent = null;
-let frontendContent = null;
 let server = null;
 
 function loadHtml() {
     try {
         testApiContent = fs.readFileSync(TEST_API_FILE, 'utf8');
-        frontendContent = fs.readFileSync(FRONTEND_FILE, 'utf8');
+        // Frontend is now served dynamically from frontend/ directory
         return true;
     } catch (err) {
         console.error('❌ Error loading HTML files:', err.message);
@@ -215,25 +215,63 @@ function createServer() {
 
         const url = req.url || '/';
 
-        // Serve frontend.html as main page
+        // Serve static files from frontend directory
         if (url === '/' || url === '/index.html') {
-            if (!frontendContent) {
+            try {
+                const content = fs.readFileSync(FRONTEND_INDEX, 'utf8');
+                res.writeHead(200, {
+                    'Content-Type': 'text/html; charset=utf-8',
+                });
+                res.end(content);
+            } catch (err) {
                 res.writeHead(500, {'Content-Type': 'text/plain'});
-                res.end('Frontend HTML file not loaded');
-                return;
+                res.end('Error loading frontend: ' + err.message);
             }
+            return;
+        }
 
-            res.writeHead(200, {
-                'Content-Type': 'text/html; charset=utf-8',
-            });
-            res.end(frontendContent);
+        // Serve static assets (CSS, JS, images, etc.)
+        if (url.startsWith('/css/') || url.startsWith('/js/') || url.startsWith('/images/')) {
+            try {
+                const filePath = path.join(FRONTEND_DIR, url);
+                // Security: ensure file is within frontend directory
+                if (!filePath.startsWith(FRONTEND_DIR)) {
+                    res.writeHead(403, {'Content-Type': 'text/plain'});
+                    res.end('Forbidden');
+                    return;
+                }
+                
+                const content = fs.readFileSync(filePath);
+                const ext = path.extname(filePath).toLowerCase();
+                const mimeTypes = {
+                    '.css': 'text/css',
+                    '.js': 'application/javascript',
+                    '.json': 'application/json',
+                    '.png': 'image/png',
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
+                    '.gif': 'image/gif',
+                    '.svg': 'image/svg+xml',
+                    '.html': 'text/html',
+                };
+                const contentType = mimeTypes[ext] || 'application/octet-stream';
+                
+                res.writeHead(200, {
+                    'Content-Type': contentType,
+                });
+                res.end(content);
+            } catch (err) {
+                res.writeHead(404, {'Content-Type': 'text/plain'});
+                res.end('File not found: ' + url);
+            }
+            return;
         }
         // Serve test-api.html for testing
         else if (url === '/test-api.html' || url === '/test') {
             if (!testApiContent) {
                 res.writeHead(500, {'Content-Type': 'text/plain'});
                 res.end('Test API HTML file not loaded');
-                return;
+        return;
             }
 
             // Modify HTML to route API calls through this proxy
@@ -288,11 +326,11 @@ function createServer() {
         // Proxy API requests
         else if (url.startsWith('/api/')) {
             proxyRequest(req, res);
-        } else {
+  } else {
             res.writeHead(404, {'Content-Type': 'text/plain'});
-            res.end('Not Found');
-        }
-    });
+    res.end('Not Found');
+  }
+});
 
     return server;
 }

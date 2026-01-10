@@ -1450,9 +1450,9 @@
           <div
             id="addMaterialModal"
             class="modal hidden"
-            onclick="if(event.target.id === 'addMaterialModal') closeAddMaterialModal()"
+            onclick="handleAddMaterialModalClick(event)"
           >
-            <div class="modal-backdrop" onclick="closeAddMaterialModal()"></div>
+            <div class="modal-backdrop" onclick="handleAddMaterialModalBackdropClick(event)"></div>
             <div class="modal-content modal-large" onclick="event.stopPropagation()">
               <div class="modal-header">
                 <h3>Add Material</h3>
@@ -3867,9 +3867,9 @@
                 <td class="readonly-cell">${priceWithMaterial.toFixed(2)}</td>
                 <td class="readonly-cell">${unitPrice.toFixed(2)}</td>
                 <td>
-                  <button class="table-action-icon" onclick="openAddMaterialDialogForLabor('${laborItemId}', '${escapeHtml(
+                  <button class="table-action-icon" onclick="openMaterialsDialog('${laborItemId}', '${escapeHtml(
               laborItemName
-            )}')" title="Add Materials">
+            )}')" title="View Materials">
                     📦
                   </button>
                 </td>
@@ -4086,18 +4086,29 @@
         }
       }
 
+      // Store if materials modal was open (to reopen after adding)
+      let wasMaterialsModalOpen = false;
+      let savedMaterialsLaborId = null;
+      let savedMaterialsLaborName = null;
+
       // Open add material dialog from materials modal (uses current labor ID)
+      // Don't close materials modal - just open add material dialog on top (like production)
       function openAddMaterialDialogFromMaterialsModal() {
         if (!currentMaterialsLaborId || !currentMaterialsLaborName) {
           showAlert('No labor item selected', 'error', 'dashboardAlert');
           return;
         }
-        // Close materials modal first
-        closeMaterialsModal();
-        // Then open add material dialog
-        setTimeout(() => {
-          openAddMaterialDialogForLabor(currentMaterialsLaborId, currentMaterialsLaborName);
-        }, 100);
+        // Remember that materials modal was open (but keep it open, just open add dialog on top)
+        wasMaterialsModalOpen = true;
+        savedMaterialsLaborId = currentMaterialsLaborId;
+        savedMaterialsLaborName = currentMaterialsLaborName;
+        console.log('Opening add material dialog while materials modal is open:', {
+          wasMaterialsModalOpen,
+          savedMaterialsLaborId,
+          savedMaterialsLaborName,
+        });
+        // Open add material dialog without closing materials modal (like production)
+        openAddMaterialDialogForLabor(currentMaterialsLaborId, currentMaterialsLaborName);
       }
 
       async function loadMaterials(laborId) {
@@ -5019,6 +5030,38 @@
 
         const modal = document.getElementById('addMaterialModal');
         if (modal) {
+          // Check if materials modal is open - if so, set higher z-index and make background transparent
+          const materialsModal = document.getElementById('materialsModal');
+          const backdrop = modal.querySelector('.modal-backdrop');
+
+          const modalContent = modal.querySelector('.modal-content');
+
+          if (materialsModal && !materialsModal.classList.contains('hidden')) {
+            // Materials modal is open - set higher z-index for add material modal
+            modal.style.zIndex = '3000'; // Higher than materials modal (2000)
+            // Make modal background transparent so it doesn't cover materials modal
+            modal.style.background = 'transparent';
+            // Ensure modal content is above everything
+            if (modalContent) {
+              modalContent.style.zIndex = '3001';
+              modalContent.style.position = 'relative';
+            }
+            // Hide backdrop so it doesn't cover materials modal and interfere
+            if (backdrop) {
+              backdrop.style.display = 'none';
+            }
+          } else {
+            // Materials modal is not open - use default z-index and show backdrop
+            modal.style.zIndex = '';
+            modal.style.background = ''; // Reset to default (rgba(0, 0, 0, 0.5))
+            if (modalContent) {
+              modalContent.style.zIndex = '';
+            }
+            if (backdrop) {
+              backdrop.style.display = '';
+            }
+          }
+
           modal.classList.remove('hidden');
           document.body.style.overflow = 'hidden';
 
@@ -5029,10 +5072,47 @@
         }
       }
 
+      // Handle clicks on add material modal - don't close if materials modal is open
+      function handleAddMaterialModalClick(event) {
+        // Only close if clicking directly on the modal div (not on children) and materials modal is not open
+        if (event.target.id === 'addMaterialModal') {
+          const materialsModal = document.getElementById('materialsModal');
+          if (materialsModal && !materialsModal.classList.contains('hidden')) {
+            // Materials modal is open - don't close add material modal
+            return;
+          }
+          closeAddMaterialModal();
+        }
+      }
+
+      // Handle clicks on backdrop - don't close if materials modal is open
+      function handleAddMaterialModalBackdropClick(event) {
+        const materialsModal = document.getElementById('materialsModal');
+        if (materialsModal && !materialsModal.classList.contains('hidden')) {
+          // Materials modal is open - don't close add material modal
+          return;
+        }
+        closeAddMaterialModal();
+      }
+
       function closeAddMaterialModal() {
         const modal = document.getElementById('addMaterialModal');
         if (modal) {
           modal.classList.add('hidden');
+          // Reset z-index to default
+          modal.style.zIndex = '';
+          // Reset background to default
+          modal.style.background = '';
+          // Reset modal content z-index
+          const modalContent = modal.querySelector('.modal-content');
+          if (modalContent) {
+            modalContent.style.zIndex = '';
+          }
+          // Reset backdrop display
+          const backdrop = modal.querySelector('.modal-backdrop');
+          if (backdrop) {
+            backdrop.style.display = '';
+          }
           // Don't clear labor ID here - we need it for the details modal
           expandedMaterialAccordions.clear();
           // Don't restore body overflow - details modal will handle it
@@ -5689,12 +5769,52 @@
 
           console.log('API response:', response);
 
+          // Save values before closing modal (in case closeAddMaterialDetailsModal clears anything)
+          const shouldReopenMaterialsModal =
+            wasMaterialsModalOpen && savedMaterialsLaborId && savedMaterialsLaborName;
+          const laborIdToReopen = savedMaterialsLaborId;
+          const laborNameToReopen = savedMaterialsLaborName;
+
           closeAddMaterialDetailsModal();
 
           // Reload estimate details to show the new material item
           if (currentEstimateId) {
             console.log('Reloading estimate details for ID:', currentEstimateId);
             await loadEstimateDetails(currentEstimateId);
+          }
+
+          // If materials modal was open before adding, refresh it with the new material
+          if (shouldReopenMaterialsModal && laborIdToReopen && laborNameToReopen) {
+            console.log('Refreshing materials modal with:', {
+              laborId: laborIdToReopen,
+              laborName: laborNameToReopen,
+            });
+            wasMaterialsModalOpen = false; // Reset flag
+            savedMaterialsLaborId = null; // Reset saved ID
+            savedMaterialsLaborName = null; // Reset saved name
+
+            // Check if materials modal is still open (it should be)
+            const materialsModal = document.getElementById('materialsModal');
+            if (materialsModal && !materialsModal.classList.contains('hidden')) {
+              // Materials modal is still open - just refresh it with new materials list
+              await loadMaterials(laborIdToReopen);
+            } else {
+              // Materials modal was closed somehow - reopen it
+              setTimeout(async () => {
+                await openMaterialsDialog(laborIdToReopen, laborNameToReopen);
+              }, 200);
+            }
+          } else if (currentAddMaterialLaborId) {
+            // If materials modal wasn't explicitly tracked but is visible, refresh it
+            const materialsModal = document.getElementById('materialsModal');
+            if (
+              materialsModal &&
+              !materialsModal.classList.contains('hidden') &&
+              currentMaterialsLaborId
+            ) {
+              // Reload materials list to show newly added material
+              await loadMaterials(currentMaterialsLaborId);
+            }
           }
 
           showAlert('Material item added successfully', 'success', 'dashboardAlert');
