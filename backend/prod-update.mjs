@@ -27,9 +27,9 @@ try {
     await $`zx linkshared.mjs`;
 
 
-    // Build the packcage
-    await $`yarn`;
-    await $`yarn build`;
+    // Build the package
+    await $`npm install`;
+    await $`npm run build`;
 
     // fs.mkdirSync(backupsDir, {recursive: true});
     //await $`7z a ${backupsDir}/${deployName}-${timestamp}.7z build node_modules`;

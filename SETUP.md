@@ -5,7 +5,7 @@ This is a full-stack application with a Next.js frontend and Express backend. Fo
 ## Prerequisites
 
 - Node.js >= 20.0.0 (you have v23.11.0 ✅)
-- Yarn 4.x (you have 4.10.3 ✅)
+- npm (included with Node.js)
 - MongoDB instance (for main database)
 - MySQL instance (for session storage)
 
@@ -18,15 +18,15 @@ Install dependencies for all three parts of the project:
 ```bash
 # Install backend dependencies
 cd backend
-yarn install
+npm install
 
 # Install frontend dependencies
 cd ../frontend
-yarn install
+npm install
 
 # Install backend-tools dependencies (optional, for database tools)
 cd ../backend-tools
-yarn install
+npm install
 ```
 
 ### 2. Configure Backend
@@ -65,7 +65,7 @@ The backend uses Drizzle ORM for MySQL. Run migrations:
 
 ```bash
 cd backend
-yarn drizzle
+npm run drizzle
 ```
 
 #### MongoDB (Main Database)
@@ -80,7 +80,7 @@ You need to run both backend and frontend:
 
 ```bash
 cd backend
-yarn start
+npm start
 ```
 
 The backend will start on `http://localhost:7787` (or the port specified in config)
@@ -89,7 +89,7 @@ The backend will start on `http://localhost:7787` (or the port specified in conf
 
 ```bash
 cd frontend
-yarn dev
+npm run dev
 ```
 
 The frontend will start on `http://localhost:3008` (or PORT from env)
@@ -112,26 +112,26 @@ Open your browser and navigate to:
 
 1. **Database Connection Issues**: Verify your MongoDB and MySQL instances are running and accessible
 2. **Port Conflicts**: Check if ports 3008 (frontend) and 7787 (backend) are available
-3. **Missing Dependencies**: Run `yarn install` in each directory
-4. **Type Errors**: Run `yarn check-types` in the backend directory
+3. **Missing Dependencies**: Run `npm install` in each directory
+4. **Type Errors**: Run `npm run check-types` in the backend directory
 
 ## Development Scripts
 
 ### Backend
 
-- `yarn start` - Start development server with hot reload
-- `yarn build` - Build for production
-- `yarn check-types` - Type check TypeScript
-- `yarn drizzle` - Run database migrations
+- `npm start` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run check-types` - Type check TypeScript
+- `npm run drizzle` - Run database migrations
 
 ### Frontend
 
-- `yarn dev` - Start Next.js development server
-- `yarn build` - Build for production
-- `yarn lint` - Run ESLint
+- `npm run dev` - Start Next.js development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
 
 ## Notes
 
-- The project uses Yarn v4 (Berry) with zero-installs. Dependencies should be committed to the repository.
+- The project uses npm. Run `npm install` in each package directory; `package-lock.json` is generated and can be committed.
 - Configuration files contain production credentials - ensure they are not committed to public repositories
 - Check `TODO.md` for known issues and planned features

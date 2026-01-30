@@ -1,9 +1,11 @@
 import * as Db from '../../db';
 import { registerApiSession } from '@src/server/register';
 import { respondJsonData } from '@tsback/req/req_response';
+import { Permissions } from '@src/tsmudbase/permissions_setup';
 
 registerApiSession('dashboard/fetch_data', async (req, res, session) => {
-
+    // Only superadmin (or users with ALL permission) can access dashboard
+    session.assertPermission(Permissions.DashboardUse);
 
     const usersCollection = Db.getUsersCollection();
     const pendingUsersCollection = Db.getPendingUsersCollection();

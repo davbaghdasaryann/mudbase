@@ -18,8 +18,8 @@ try {
     await $`zx linkshared.mjs`;
 
 
-    await $`yarn`;
-    await $`yarn build`;
+    await $`npm install`;
+    await $`npm run build`;
 
     // fs.mkdirSync(backupsDir, {recursive: true});
     // await $`7z a ${backupsDir}/${deployName}-${timestamp}.7z build`;

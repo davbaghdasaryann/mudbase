@@ -10,7 +10,8 @@ import {Permissions} from '@src/tsmudbase/permissions_setup';
 import {getPendingUserFields} from '@/permissions/db_get_fields';
 
 registerApiSession('signup/pending_users', async (req, res, session) => {
-    session.assertPermission(Permissions.UsersFetchAll);
+    // Only users with PND_USR_FCH permission can fetch pending users
+    session.assertPermission(Permissions.PendingUsersFetch);
 
     let pendingUsers = Db.getPendingUsersCollection();
 

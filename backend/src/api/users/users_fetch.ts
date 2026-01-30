@@ -12,6 +12,7 @@ import { getPendingUserFields, getUsersFetchFields } from '@src/permissions/db_g
 registerApiSession('users/fetch', async (req, res, session) => {
     const usersCollection = Db.getUsersCollection();
     const search = getReqParam(req, 'search');
+    const accountId = getReqParam(req, 'accountId'); // Filter by account (superadmin only)
 
     const pipeline = [];
 
@@ -24,6 +25,15 @@ registerApiSession('users/fetch', async (req, res, session) => {
     }
 
     if (session.checkPermissionsOr([Permissions.UsersFetchAll, Permissions.All])) {
+        // Superadmin: can filter by accountId if provided
+        if (accountId) {
+            try {
+                const accountObjectId = new ObjectId(accountId);
+                pipeline.push({ $match: { accountId: accountObjectId } });
+            } catch (error) {
+                // Invalid ObjectId, ignore filter
+            }
+        }
         if (search) {
             pipeline.push({
                 $match: {
@@ -174,6 +184,9 @@ registerApiSession('users/fetch', async (req, res, session) => {
 // });
 
 registerApiSession('pending_users/fetch_invited', async (req, res, session) => {
+    // Only users with INV_FCH permission can fetch invited users
+    session.assertPermission(Permissions.InvitesFetch);
+
     let search = getReqParam(req, 'search');
 
     let pendingUsers = Db.getPendingUsersCollection();
@@ -208,6 +221,9 @@ registerApiSession('pending_users/fetch_invited', async (req, res, session) => {
 });
 
 registerApiSession('users/fetch_free', async (req, res, session) => {
+    // Only users with PND_USR_FCH permission can fetch free users
+    session.assertPermission(Permissions.PendingUsersFetch);
+
     const usersCollection = Db.getUsersCollection();
     const search = getReqParam(req, 'search');
 

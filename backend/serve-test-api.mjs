@@ -24,8 +24,6 @@ const __dirname = path.dirname(__filename);
 const PREFERRED_PORT = 3000;
 const FALLBACK_PORT = 3001;
 const TEST_API_FILE = path.join(__dirname, 'test-api.html');
-const FRONTEND_DIR = path.join(__dirname, 'frontend');
-const FRONTEND_INDEX = path.join(FRONTEND_DIR, 'index.html');
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7787';
 
 let testApiContent = null;
@@ -34,10 +32,9 @@ let server = null;
 function loadHtml() {
     try {
         testApiContent = fs.readFileSync(TEST_API_FILE, 'utf8');
-        // Frontend is now served dynamically from frontend/ directory
         return true;
     } catch (err) {
-        console.error('❌ Error loading HTML files:', err.message);
+        console.error('❌ Error loading test-api.html:', err.message);
         return false;
     }
 }
@@ -52,7 +49,6 @@ function proxyRequest(req, res) {
         const options = {
             method: req.method,
             headers: {
-                'Content-Type': req.headers['content-type'] || 'application/json',
                 Cookie: req.headers.cookie || '',
                 // Set origin to what backend expects (localhost:3000)
                 Origin: 'http://localhost:3000',
@@ -61,10 +57,31 @@ function proxyRequest(req, res) {
             },
         };
 
-        // Forward other important headers
-        if (req.headers['accept']) options.headers['Accept'] = req.headers['accept'];
-        if (req.headers['authorization'])
+        // Forward important headers - Content-Type only for requests with body
+        if (req.headers['content-type']) {
+            options.headers['Content-Type'] = req.headers['content-type'];
+        }
+
+        // Always forward Accept header (important for images, JSON, etc.)
+        if (req.headers['accept']) {
+            options.headers['Accept'] = req.headers['accept'];
+        } else if (backendPath.startsWith('/api/static/')) {
+            // For static files, default to accepting images and all types
+            options.headers['Accept'] = '*/*';
+        }
+
+        // Forward authorization if present
+        if (req.headers['authorization']) {
             options.headers['Authorization'] = req.headers['authorization'];
+        }
+
+        // Forward other headers that might be needed
+        if (req.headers['if-none-match']) {
+            options.headers['If-None-Match'] = req.headers['if-none-match'];
+        }
+        if (req.headers['if-modified-since']) {
+            options.headers['If-Modified-Since'] = req.headers['if-modified-since'];
+        }
 
         // Handle requests with potential body (POST, PUT, PATCH)
         const hasBody = ['POST', 'PUT', 'PATCH'].includes(req.method);
@@ -82,6 +99,13 @@ function proxyRequest(req, res) {
 
             const proxyReq = http.request(backendUrl, options, (proxyRes) => {
                 try {
+                    // Log static file requests for debugging
+                    if (backendPath.startsWith('/api/static/')) {
+                        console.log(
+                            `[Proxy] Static file request: ${backendPath} -> Status: ${proxyRes.statusCode}`
+                        );
+                    }
+
                     // Collect response headers
                     const responseHeaders = {...proxyRes.headers};
 
@@ -97,7 +121,24 @@ function proxyRequest(req, res) {
                         responseHeaders['Set-Cookie'] = proxyRes.headers['set-cookie'];
                     }
 
-                    res.writeHead(proxyRes.statusCode || 200, responseHeaders);
+                    // Remove Content-Length from headers if present - let the pipe handle it
+                    // This is important for binary data like images
+                    delete responseHeaders['content-length'];
+
+                    // Set proper status code
+                    const statusCode = proxyRes.statusCode || 200;
+
+                    // If backend returns error for static files, log it
+                    if (backendPath.startsWith('/api/static/') && statusCode >= 400) {
+                        console.error(
+                            `[Proxy] Backend returned ${statusCode} for static file: ${backendPath}`
+                        );
+                        console.error(`[Proxy] Response headers:`, responseHeaders);
+                    }
+
+                    res.writeHead(statusCode, responseHeaders);
+
+                    // Pipe the response - this handles binary data correctly
                     proxyRes.pipe(res);
                 } catch (err) {
                     console.error('Error processing proxy response:', err.message || err);
@@ -215,63 +256,26 @@ function createServer() {
 
         const url = req.url || '/';
 
-        // Serve static files from frontend directory
+        // Root: simple info page (main app is Next.js in frontend/)
         if (url === '/' || url === '/index.html') {
-            try {
-                const content = fs.readFileSync(FRONTEND_INDEX, 'utf8');
-                res.writeHead(200, {
-                    'Content-Type': 'text/html; charset=utf-8',
-                });
-                res.end(content);
-            } catch (err) {
-                res.writeHead(500, {'Content-Type': 'text/plain'});
-                res.end('Error loading frontend: ' + err.message);
-            }
+            const infoHtml = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>MudBase</title></head>
+<body>
+  <h1>MudBase</h1>
+  <p>API proxy server. Use the <strong>Next.js app</strong> in <code>frontend/</code> for the main UI.</p>
+  <p><a href="/test-api.html">Test API</a> – manual API testing</p>
+</body></html>`;
+            res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+            res.end(infoHtml);
             return;
         }
 
-        // Serve static assets (CSS, JS, images, etc.)
-        if (url.startsWith('/css/') || url.startsWith('/js/') || url.startsWith('/images/')) {
-            try {
-                const filePath = path.join(FRONTEND_DIR, url);
-                // Security: ensure file is within frontend directory
-                if (!filePath.startsWith(FRONTEND_DIR)) {
-                    res.writeHead(403, {'Content-Type': 'text/plain'});
-                    res.end('Forbidden');
-                    return;
-                }
-                
-                const content = fs.readFileSync(filePath);
-                const ext = path.extname(filePath).toLowerCase();
-                const mimeTypes = {
-                    '.css': 'text/css',
-                    '.js': 'application/javascript',
-                    '.json': 'application/json',
-                    '.png': 'image/png',
-                    '.jpg': 'image/jpeg',
-                    '.jpeg': 'image/jpeg',
-                    '.gif': 'image/gif',
-                    '.svg': 'image/svg+xml',
-                    '.html': 'text/html',
-                };
-                const contentType = mimeTypes[ext] || 'application/octet-stream';
-                
-                res.writeHead(200, {
-                    'Content-Type': contentType,
-                });
-                res.end(content);
-            } catch (err) {
-                res.writeHead(404, {'Content-Type': 'text/plain'});
-                res.end('File not found: ' + url);
-            }
-            return;
-        }
         // Serve test-api.html for testing
         else if (url === '/test-api.html' || url === '/test') {
             if (!testApiContent) {
                 res.writeHead(500, {'Content-Type': 'text/plain'});
                 res.end('Test API HTML file not loaded');
-        return;
+                return;
             }
 
             // Modify HTML to route API calls through this proxy
@@ -326,11 +330,11 @@ function createServer() {
         // Proxy API requests
         else if (url.startsWith('/api/')) {
             proxyRequest(req, res);
-  } else {
+        } else {
             res.writeHead(404, {'Content-Type': 'text/plain'});
-    res.end('Not Found');
-  }
-});
+            res.end('Not Found');
+        }
+    });
 
     return server;
 }
@@ -340,8 +344,8 @@ function startServer(port) {
 
     srv.listen(port, () => {
         const actualPort = srv.address()?.port || port;
-        console.log('\n✅ MudBase Frontend Server running');
-        console.log(`   Frontend: http://localhost:${actualPort}/`);
+        console.log('\n✅ MudBase API proxy server running');
+        console.log(`   Root: http://localhost:${actualPort}/`);
         console.log(`   Test API: http://localhost:${actualPort}/test-api.html`);
         console.log(`   Backend: ${BACKEND_URL}`);
         console.log(`\n   Open http://localhost:${actualPort} in your browser`);

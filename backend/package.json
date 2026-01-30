@@ -70,6 +70,5 @@
     "@src": "./src",
     "@tslib": "./src/tslib",
     "@tsback": "./src/tsback"
-  },
-  "packageManager": "yarn@4.10.3"
+  }
 }
