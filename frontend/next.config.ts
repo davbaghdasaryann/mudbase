@@ -1,8 +1,5 @@
 import type {NextConfig} from 'next';
 
-import dotenv from 'dotenv';
-dotenv.config(); // Load .env variables
-
 const isDev = process.env.NODE_ENV === 'development';
 const serverPort = process.env.SERVER_PORT ?? '7787';
 

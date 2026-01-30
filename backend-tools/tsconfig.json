@@ -1,22 +1,14 @@
 {
   "compilerOptions": {
-    //"baseUrl": "./src",
+    "baseUrl": "./src",
     "rootDir": "./src",
     "outDir": "./build",
-
-    //"target": "esnext",
-    // "target": "esnext",
-    // "module": "commonjs",
-    // //"module": "esnext",
-    // "moduleResolution": "node",
 
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
 
-
     "preserveSymlinks": true,
-
 
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -29,7 +21,9 @@
     "sourceMap": true,
 
     "paths": {
-      "/*": ["./src/*"],
+      "@/*": ["./*"],
+      "@tslib/*": ["./tslib/*"],
+      "@tsback/*": ["./tsback/*"]
     }
   },
   "exclude": ["node_modules", "doc", "code", "**/*.spec.ts"],

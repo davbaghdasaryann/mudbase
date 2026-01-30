@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 import { EstimateRootAccordion, EstimateRootAccordionDetails, EstimateRootAccordionSummary } from '@/components/AccordionComponent';
@@ -13,6 +14,8 @@ import { formatQuantityParens } from '@/components/pages/CatalogAccordion';
 import { catalogConvertToFixedString, useCatalogData } from '@/components/catalog/CatalogAccordionDataContext';
 import CatalogSubAccordion from '@/components/catalog/CatalogAccordionSub';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
+import { confirmDialog } from '@/components/ConfirmationDialog';
+import * as Api from 'api';
 
 interface CatalogRootAccordionProps {
     catalogType: CatalogType;
@@ -94,6 +97,29 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
         }
     }, [ctx, item, props.catalogType, props.searchVal, props.filter]);
 
+    const handleDeleteCategory = useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
+
+        const result = await confirmDialog(
+            `Are you sure you want to delete category "${item.label}" (${item.code})? This will also delete all subcategories and items within this category.`,
+            'Delete Category'
+        );
+
+        if (result.isConfirmed) {
+            try {
+                await Api.requestSession({
+                    command: `${props.catalogType}/delete_category`,
+                    args: { entityMongoId: item._id }
+                });
+
+                // Refresh the catalog data after successful deletion
+                await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
+            } catch (error) {
+                console.error('Error deleting category:', error);
+            }
+        }
+    }, [ctx, item, props.catalogType, props.searchVal, props.filter]);
+
     return (
         <EstimateRootAccordion
             expanded={ctx.isExpanded(item.code)}
@@ -134,6 +160,15 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                                 }}
                             >
                                 {t('Add Category')}
+                            </Button>
+
+                            <Button
+                                component='div'
+                                color='error'
+                                onClick={handleDeleteCategory}
+                                startIcon={<DeleteIcon />}
+                            >
+                                {t('Delete Category')}
                             </Button>
                         </>
                     )}

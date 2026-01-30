@@ -1,5 +1,4 @@
 const {spawn, execSync, exec} = require('child_process');
-require('dotenv').config();
 
 const port = process.env.PORT || 3000;
 const url = `http://localhost:${port}`;

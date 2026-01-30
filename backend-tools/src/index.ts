@@ -19,11 +19,6 @@ program
 program.command('test').description('Test');
 program.command('labor').description('Labor');
 
-// program.option('--config <path>', 'Configuration path');
-// program.option('--date <date>', 'Requested date');
-// program.option('--output <path>', 'Output file or directory');
-
-
 async function mainWrapper(): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
         let startDir = process.cwd();

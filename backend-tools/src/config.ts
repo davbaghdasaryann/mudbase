@@ -2,12 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 
-import {ConfigDatabase} from './tsback/config_database';
-import {ConfigServer} from './tsback/config_server';
-import {ConfigAws} from './tsback/config_aws';
+import {ConfigDatabase} from './tsback/config/config_database';
+import {ConfigServer} from './tsback/config/config_server';
+import {ConfigAws} from './tsback/config/config_aws';
 
 import { makeFilePath } from './tslib/filename';
-import { ConfigDev } from './tsback/config_dev';
+import { ConfigDev } from './tsback/config/config_dev';
 
 // Get __dirname in ESM
 import { dirname } from 'path';
