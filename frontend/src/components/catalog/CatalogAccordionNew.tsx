@@ -1,7 +1,9 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
 import * as Api from 'api';
+import {useTranslation} from 'react-i18next';
 
-import {Stack, Toolbar} from '@mui/material';
+import {Stack, Toolbar, Button, Box} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import CatalogRootAccordion from '@/components/catalog/CatalogAccordionRoot';
 import {CatalogDataProvider, useCatalogData} from '@/components/catalog/CatalogAccordionDataContext';
 
@@ -11,6 +13,7 @@ import SpacerComponent from '@/components/SpacerComponent';
 import {PageSelect} from '@/tsui/PageSelect';
 import {filtersSelecteWidth} from '@/theme';
 import {useApiFetchMany} from '@/components/ApiDataFetch';
+import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 
 interface Props {
     catalogType: CatalogType;
@@ -67,6 +70,9 @@ function CatalogAccordionBody({
 }) {
     const {items, refreshOpenNodes} = useCatalogData();
     const ctx = useCatalogData();
+    const {t} = useTranslation();
+
+    const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
 
     const categorySelectList = useApiFetchMany<Api.ApiLaborCategory | Api.ApiMaterialCategory>({
         api: {
@@ -208,11 +214,40 @@ function CatalogAccordionBody({
                     />
                 </Stack>
             </Toolbar>
+
+            {ctx.permCatEdit && (
+                <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-start' }}>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setShowAddCategoryDialog(true)}
+                    >
+                        {t('Add Category')}
+                    </Button>
+                </Box>
+            )}
+
             <Stack spacing={0} direction='column' sx={{overflowY: 'auto'}}>
                 {items.map((item) => (
                     <CatalogRootAccordion key={item._id} item={item} catalogType={catalogType} searchVal={searchVal} filter={filter} />
                 ))}
             </Stack>
+
+            {showAddCategoryDialog && (
+                <AddOrEditEntityDialog
+                    entityMongoId={null}
+                    entityName={null}
+                    entityCode={null}
+                    catalogType={catalogType}
+                    actionType="add"
+                    entityType="category"
+                    onClose={() => setShowAddCategoryDialog(false)}
+                    onConfirm={async () => {
+                        await refreshOpenNodes(catalogType, searchVal, filter);
+                        setShowAddCategoryDialog(false);
+                    }}
+                />
+            )}
         </>
     );
 }

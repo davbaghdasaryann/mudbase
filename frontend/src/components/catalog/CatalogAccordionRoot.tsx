@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 
 
 import { EstimateRootAccordion, EstimateRootAccordionDetails, EstimateRootAccordionSummary } from '@/components/AccordionComponent';
@@ -146,8 +148,9 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                                     setEntityMongoId(item._id);
                                     entityParentMongoId.current = item._id;
                                 }}
+                                sx={{ minWidth: 'auto', px: 1 }}
                             >
-                                {t('Edit Category')}
+                                <EditIcon />
                             </Button>
 
                             <Button
@@ -155,20 +158,22 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                                 onClick={(event) => {
                                     event.stopPropagation();
                                     setActionType('add');
-                                    setEntityType('category');
+                                    setEntityType('subcategory');
+                                    setEntityMongoId(item._id);
                                     entityParentMongoId.current = item._id;
                                 }}
+                                sx={{ minWidth: 'auto', px: 1 }}
                             >
-                                {t('Add Category')}
+                                <AddIcon />
                             </Button>
 
                             <Button
                                 component='div'
                                 color='error'
                                 onClick={handleDeleteCategory}
-                                startIcon={<DeleteIcon />}
+                                sx={{ minWidth: 'auto', px: 1 }}
                             >
-                                {t('Delete Category')}
+                                <DeleteIcon />
                             </Button>
                         </>
                     )}

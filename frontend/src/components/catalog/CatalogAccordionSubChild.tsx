@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { EstimateRootAccordionSummary, EstimateSubChildAccordion, EstimateSubChildAccordionDetails } from '@/components/AccordionComponent';
 import { AccordionItem, CatalogSelectedFiltersDataProps, CatalogType } from '@/components/catalog/CatalogAccordionTypes';
@@ -11,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 import CatalogAccordionItems from '@/components/catalog/CatalogAccordionItems';
 import { formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
+import { confirmDialog } from '@/components/ConfirmationDialog';
+import * as Api from 'api';
 
 interface CatalogSubAccordionProps {
     catalogType: CatalogType;
@@ -93,6 +97,30 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         }
     }, []);
 
+    const handleDeleteItem = React.useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
+
+        const result = await confirmDialog(
+            `Are you sure you want to delete item "${item.label}" (${item.code})?`,
+            'Delete Item'
+        );
+
+        if (result.isConfirmed) {
+            try {
+                await Api.requestSession({
+                    command: `${props.catalogType}/delete_item`,
+                    args: { entityMongoId: item._id }
+                });
+
+                // Refresh the catalog data after successful deletion
+                await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
+                await props.onSubChildsChange();
+            } catch (error) {
+                console.error('Error deleting item:', error);
+            }
+        }
+    }, [ctx, item, props]);
+
     return (
         <EstimateSubChildAccordion
             // key={props.key}
@@ -146,21 +174,18 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                     setEntityMongoId(item._id);
                                     entityParentMongoId.current = props.subChildParentId;
                                 }}
+                                sx={{ minWidth: 'auto', px: 1 }}
                             >
-                                {t('Edit Item')}
+                                <EditIcon />
                             </Button>
 
                             <Button
                                 component='div'
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    setActionType('add');
-                                    setEntityType('item');
-                                    setEntityMongoId(props.subChildParentId);
-                                    entityParentMongoId.current = props.subChildParentId;
-                                }}
+                                color='error'
+                                onClick={handleDeleteItem}
+                                sx={{ minWidth: 'auto', px: 1 }}
                             >
-                                {t('Add Item')}
+                                <DeleteIcon />
                             </Button>
                         </>
                     )}
