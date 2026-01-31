@@ -15,6 +15,7 @@ import { LaborOfferDisplayData, MaterialOfferDisplayData } from '@/data/offer_di
 interface GlobalCatalogAccordionData {
     permCatEdit: boolean;
     permCanCrtOffr: boolean;
+    isSignedIn: boolean;
 }
 
 export interface CatalogContextValue extends GlobalCatalogAccordionData {
@@ -259,6 +260,7 @@ export function CatalogDataProvider({
     const value: CatalogContextValue = {
         permCatEdit: !!session?.user && permissionsSet.has('CAT_EDT'),
         permCanCrtOffr: canCreateOffer,
+        isSignedIn: !!session?.user,
         mounted: (id: string) => { },
         unmounted: (id: string) => { },
         isExpanded: isExpanded,

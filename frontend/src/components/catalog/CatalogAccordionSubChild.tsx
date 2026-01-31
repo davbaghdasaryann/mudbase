@@ -271,15 +271,6 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
                             <Button
                                 component='div'
-                                color='info'
-                                onClick={handleOpenInfoDialog}
-                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
-                            >
-                                <ImgElement src='/images/icons/info.svg' sx={{ height: { xs: 16, sm: 20 } }} />
-                            </Button>
-
-                            <Button
-                                component='div'
                                 color='error'
                                 onClick={handleDeleteItem}
                                 sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
@@ -287,6 +278,17 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                 <ImgElement src='/images/icons/delete.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                             </Button>
                         </>
+                    )}
+
+                    {ctx.isSignedIn && (
+                        <Button
+                            component='div'
+                            color='info'
+                            onClick={handleOpenInfoDialog}
+                            sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
+                        >
+                            <ImgElement src='/images/icons/info.svg' sx={{ height: { xs: 16, sm: 20 } }} />
+                        </Button>
                     )}
                 </Stack>
             </Box>
