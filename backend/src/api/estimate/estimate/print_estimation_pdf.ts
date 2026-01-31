@@ -6,7 +6,7 @@ import {respondHtml, respondJsonData, respondPdf} from '@tsback/req/req_response
 import * as Db from '@/db';
 
 import htmlPdf from 'html-pdf-node';
-import * as htmlDocx from 'html-docx-js';
+import HTMLtoDOCX from 'html-to-docx';
 import {requireQueryParam} from '@src/tsback/req/req_params';
 import {verifyObject} from '@src/tslib/verify';
 import {generateEstimateHTML, generateBoQHTML} from '@/lib/estimate_pdf';
@@ -69,30 +69,39 @@ registerApiSession('estimate/generate_pdf', async (req, res, session) => {
 });
 
 registerApiSession('estimate/generate_word', async (req, res, session) => {
-    const estimateId = requireQueryParam(req, 'estimateId');
+    try {
+        const estimateId = requireQueryParam(req, 'estimateId');
 
-    const estimateData = await genEstimateDataWithPipeline(estimateId);
-    const html = generateEstimateHTML(estimateData, req.t);
+        const estimateData = await genEstimateDataWithPipeline(estimateId);
+        const html = generateEstimateHTML(estimateData, req.t);
 
-    const docx = htmlDocx.asBlob(html, {
-        orientation: 'landscape',
-        margins: {
-            top: 1440,
-            right: 1440,
-            bottom: 1440,
-            left: 1440,
-        },
-    });
+        console.log('=== Word generation (Estimation) ===');
+        console.log('HTML length:', html.length);
 
-    // In Node.js, asBlob returns a Buffer
-    const buffer = docx instanceof Buffer ? docx : Buffer.from(await (docx as Blob).arrayBuffer());
+        // @ts-ignore - html-to-docx doesn't have type definitions
+        const buffer = await HTMLtoDOCX(html, null, {
+            orientation: 'landscape',
+            margins: {
+                top: 1440,
+                right: 1440,
+                bottom: 1440,
+                left: 1440,
+            },
+        });
 
-    res.status(200)
-        .set({
-            'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'Content-Disposition': `attachment; filename="estimate_${estimateId}.docx"`,
-        })
-        .send(buffer);
+        console.log('Final buffer length:', buffer.length);
+
+        res.status(200)
+            .set({
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'Content-Disposition': `attachment; filename="estimate_${estimateId}.docx"`,
+            })
+            .send(buffer);
+    } catch (error) {
+        console.error('=== Word generation error (Estimation) ===');
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Word generation failed', message: String(error) });
+    }
 });
 
 // Bill of Quantities endpoints
@@ -148,30 +157,39 @@ registerApiSession('estimate/generate_boq_pdf', async (req, res, session) => {
 });
 
 registerApiSession('estimate/generate_boq_word', async (req, res, session) => {
-    const estimateId = requireQueryParam(req, 'estimateId');
+    try {
+        const estimateId = requireQueryParam(req, 'estimateId');
 
-    const estimateData = await genEstimateDataWithPipeline(estimateId);
-    const html = generateBoQHTML(estimateData, req.t);
+        const estimateData = await genEstimateDataWithPipeline(estimateId);
+        const html = generateBoQHTML(estimateData, req.t);
 
-    const docx = htmlDocx.asBlob(html, {
-        orientation: 'landscape',
-        margins: {
-            top: 1440,
-            right: 1440,
-            bottom: 1440,
-            left: 1440,
-        },
-    });
+        console.log('=== Word generation (BoQ) ===');
+        console.log('HTML length:', html.length);
 
-    // In Node.js, asBlob returns a Buffer
-    const buffer = docx instanceof Buffer ? docx : Buffer.from(await (docx as Blob).arrayBuffer());
+        // @ts-ignore - html-to-docx doesn't have type definitions
+        const buffer = await HTMLtoDOCX(html, null, {
+            orientation: 'landscape',
+            margins: {
+                top: 1440,
+                right: 1440,
+                bottom: 1440,
+                left: 1440,
+            },
+        });
 
-    res.status(200)
-        .set({
-            'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'Content-Disposition': `attachment; filename="boq_${estimateId}.docx"`,
-        })
-        .send(buffer);
+        console.log('Final buffer length:', buffer.length);
+
+        res.status(200)
+            .set({
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'Content-Disposition': `attachment; filename="boq_${estimateId}.docx"`,
+            })
+            .send(buffer);
+    } catch (error) {
+        console.error('=== Word generation error (BoQ) ===');
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Word generation failed', message: String(error) });
+    }
 });
 
 async function getSectionsData(estimatedId: ObjectId) {

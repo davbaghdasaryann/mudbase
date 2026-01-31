@@ -27,8 +27,8 @@
     "drizzle-kit": "^0.31.5",
     "drizzle-orm": "^0.44.7",
     "express": "4.21.2",
-    "html-docx-js": "^0.3.1",
     "html-pdf-node": "^1.0.8",
+    "html-to-docx": "^1.8.0",
     "i18next": "^25.6.0",
     "i18next-fs-backend": "^2.6.0",
     "i18next-http-middleware": "^3.8.1",
@@ -48,7 +48,6 @@
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.4",
-    "@types/html-docx-js": "^0.3.4",
     "@types/html-pdf-node": "^1.0.2",
     "@types/js-beautify": "^1.14.3",
     "@types/js-yaml": "^4.0.9",
