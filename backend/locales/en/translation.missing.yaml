@@ -62,3 +62,5 @@ turnoverTax: turnoverTax
 renovation: renovation
 construction: construction
 currentRenovation: currentRenovation
+majorRepairs: majorRepairs
+profit: profit

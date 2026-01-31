@@ -2,9 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
+import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 
@@ -139,59 +137,86 @@ export default function EstimateInfoAccordionContent(props: Props) {
     }
 
     return (
-        <>
-            <Accordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>{t('Information')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <F.PageForm form={form} size='xl' onFieldUpdate={handleChange}>
-                        <F.InputText xsHalf id='name' value={data?.name} label='Title' placeholder='Title' />
-                        <F.InputText xsHalf id='address' value={data?.address} label='Address' placeholder='Address' />
+        <Box sx={{
+            '& .MuiPaper-root': {
+                backgroundColor: 'transparent !important',
+                boxShadow: 'none !important',
+            },
+            '& .MuiPaper-elevation': {
+                backgroundColor: 'transparent !important',
+            },
+            '& .MuiPaper-rounded': {
+                backgroundColor: 'transparent !important',
+            },
+            '& .MuiBox-root': {
+                backgroundColor: 'transparent !important',
+            }
+        }}>
+            <F.PageForm
+                form={form}
+                size='xl'
+                onFieldUpdate={handleChange}
+                sx={{
+                    backgroundColor: 'transparent !important',
+                    '& .MuiTextField-root': {
+                        '& .MuiInputBase-root': {
+                            backgroundColor: 'transparent',
+                        },
+                        '& .MuiOutlinedInput-root': {
+                            backgroundColor: 'transparent',
+                        }
+                    },
+                    '& .MuiFormControl-root': {
+                        '& .MuiInputBase-root': {
+                            backgroundColor: 'transparent',
+                        }
+                    }
+                }}
+            >
+                <F.InputText xsHalf id='name' value={data?.name} label='Title' placeholder='Title' />
+                <F.InputText xsHalf id='address' value={data?.address} label='Address' placeholder='Address' />
 
-                        <F.InputText
-                            isThousandsSeparator={true}
-                            readonly
-                            xsQuarter
-                            id='totalCost'
-                            value={fixedNumber(data?.totalCost) ?? '0'}
-                            label='Total Cost AMD'
-                            placeholder='Total Cost AMD'
-                        />
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='totalCost'
+                    value={fixedNumber(data?.totalCost) ?? '0'}
+                    label='Total Cost AMD'
+                    placeholder='Total Cost AMD'
+                />
 
-                        <F.InputText
-                            isThousandsSeparator={true}
-                            readonly
-                            xsQuarter
-                            id='totalCostWithOtherExpenses'
-                            value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'}
-                            label='Total Cost With Other Expenses AMD'
-                            placeholder='Total Cost With Other Expenses AMD'
-                        />
-                        <F.SelectField
-                            xsQuarter
-                            id='constructionType'
-                            items={constrData}
-                            value={data?.constructionType}
-                            label={data?.constructionType ?? 'Type of construction'}
-                        />
-                        {/* <F.InputText
-                            xsQuarter
-                            id='buildingType'
-                            value={data?.buildingType}
-                            label={data?.buildingType ?? 'Type of building'}
-                            placeholder={data?.buildingType ?? 'Type of building'}
-                        /> */}
-                        <F.InputText
-                            id='constructionSurface'
-                            value={data?.constructionSurface}
-                            label={data?.constructionSurface ?? 'Construction surface'}
-                            placeholder={data?.constructionSurface ?? 'Construction surface'}
-                            xsQuarter
-                        />
-                    </F.PageForm>
-                </AccordionDetails>
-            </Accordion>
-        </>
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='totalCostWithOtherExpenses'
+                    value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'}
+                    label='Total Cost With Other Expenses AMD'
+                    placeholder='Total Cost With Other Expenses AMD'
+                />
+                <F.SelectField
+                    xsQuarter
+                    id='constructionType'
+                    items={constrData}
+                    value={data?.constructionType}
+                    label={data?.constructionType ?? 'Type of construction'}
+                />
+                {/* <F.InputText
+                    xsQuarter
+                    id='buildingType'
+                    value={data?.buildingType}
+                    label={data?.buildingType ?? 'Type of building'}
+                    placeholder={data?.buildingType ?? 'Type of building'}
+                /> */}
+                <F.InputText
+                    id='constructionSurface'
+                    value={data?.constructionSurface}
+                    label={data?.constructionSurface ?? 'Construction surface'}
+                    placeholder={data?.constructionSurface ?? 'Construction surface'}
+                    xsQuarter
+                />
+            </F.PageForm>
+        </Box>
     );
 }
