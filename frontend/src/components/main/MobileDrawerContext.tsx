@@ -24,14 +24,25 @@ export function useMobileDrawer(): MobileDrawerContextValue {
 
 export function MobileDrawerProvider({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = React.useState(false);
+    
+    // Use useCallback to create stable function references
+    const openDrawer = React.useCallback(() => {
+        setOpen(true);
+    }, []);
+    
+    const closeDrawer = React.useCallback(() => {
+        setOpen(false);
+    }, []);
+    
     const value: MobileDrawerContextValue = React.useMemo(
         () => ({
             open,
-            openDrawer: () => setOpen(true),
-            closeDrawer: () => setOpen(false),
+            openDrawer,
+            closeDrawer,
         }),
-        [open]
+        [open, openDrawer, closeDrawer]
     );
+    
     return (
         <MobileDrawerContext.Provider value={value}>
             {children}
