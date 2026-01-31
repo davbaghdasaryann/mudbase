@@ -4,6 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
+import InfoIcon from '@mui/icons-material/Info';
 
 import { EstimateRootAccordionSummary, EstimateSubChildAccordion, EstimateSubChildAccordionDetails } from '@/components/AccordionComponent';
 import { AccordionItem, CatalogSelectedFiltersDataProps, CatalogType } from '@/components/catalog/CatalogAccordionTypes';
@@ -42,6 +43,9 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
     const entityParentMongoId = React.useRef<string | null>(null);
 
     const [items, setItems] = useState<AccordionItem[] | null>(null);
+
+    // Info dialog state
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
 
     // Move item dialog state
     const [showMoveDialog, setShowMoveDialog] = useState(false);
@@ -84,10 +88,11 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         setItems(normalized);
     }, [ctx, props.item._id, props.catalogType, props.searchVal, props.filter]);
 
-    const handleAccordionChange = React.useCallback(async (isExpanded: boolean) => {
-        ctx.setExpanded(item.fullCode!, isExpanded);
+    const handleOpenInfoDialog = React.useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
 
-        if (isExpanded) {
+        // Fetch items if not already loaded
+        if (!items) {
             let fetchedData = (await ctx.fetchData(item._id, 4, props.catalogType, props.searchVal, props.filter)) as AccordionItem[];
             for (let item of fetchedData) {
                 item.label = item.name;
@@ -100,10 +105,10 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                 item.children = [];
             }
             setItems(fetchedData);
-        } else {
-            setItems(null);
         }
-    }, []);
+
+        setShowInfoDialog(true);
+    }, [items, ctx, item._id, props.catalogType, props.searchVal, props.filter]);
 
     const handleDeleteItem = React.useCallback(async (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -200,18 +205,21 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
     }, [ctx, item, props, selectedSubcategoryId]);
 
     return (
-        <EstimateSubChildAccordion
-            // key={props.key}
-            expanded={ctx.isExpanded(item.fullCode!)}
-            // onChange={handleAccordionChange(item._id, item.fullCode, 2)}
-            onChange={(event, isExpanded) => handleAccordionChange(isExpanded)}
-        >
-            <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <>
+            <Box
+                sx={{
+                    borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+                    '&:hover': {
+                        backgroundColor: (theme) => theme.palette.action.hover,
+                    },
+                }}
+            >
                 <Stack
                     direction='row'
                     alignItems='flex-start'
                     width='100%'
                     spacing={1}
+                    sx={{ py: 1, px: 2 }}
                 >
                     <Typography>{item.code}</Typography>
                     <Typography
@@ -267,6 +275,15 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
                             <Button
                                 component='div'
+                                color='info'
+                                onClick={handleOpenInfoDialog}
+                                sx={{ minWidth: 'auto', px: 1 }}
+                            >
+                                <InfoIcon />
+                            </Button>
+
+                            <Button
+                                component='div'
                                 color='error'
                                 onClick={handleDeleteItem}
                                 sx={{ minWidth: 'auto', px: 1 }}
@@ -276,32 +293,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         </>
                     )}
                 </Stack>
-            </EstimateRootAccordionSummary>
-
-            <EstimateSubChildAccordionDetails>
-                <CatalogAccordionItems
-                    item={item}
-                    catalogType={props.catalogType}
-                    searchVal={props.searchVal}
-                    filter={props.filter}
-                    items={items}
-                    onItemsChange={refreshItems}
-                />
-                {/* {items === null ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                        <CircularProgress size={24} />
-                    </Box>
-                ) : (
-                    <CatalogAccordionItems
-                        item={item}
-                        catalogType={props.catalogType}
-                        searchVal={props.searchVal}
-                        filter={props.filter}
-                        items={items}
-                        onItemsChange={refreshItems}
-                    />
-                )} */}
-            </EstimateSubChildAccordionDetails>
+            </Box>
 
 
             {actionType && entityType && (
@@ -331,6 +323,36 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         entityParentMongoId.current = null;
                     }}
                 />
+            )}
+
+            {showInfoDialog && (
+                <Dialog
+                    open={showInfoDialog}
+                    onClose={() => setShowInfoDialog(false)}
+                    maxWidth="lg"
+                    fullWidth
+                >
+                    <DialogTitle>
+                        {item.code} - {item.label} - {t('Company Offers')}
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <CatalogAccordionItems
+                                item={item}
+                                catalogType={props.catalogType}
+                                searchVal={props.searchVal}
+                                filter={props.filter}
+                                items={items}
+                                onItemsChange={refreshItems}
+                            />
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowInfoDialog(false)}>
+                            {t('Close')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             )}
 
             {showMoveDialog && (
@@ -388,6 +410,6 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                     </DialogActions>
                 </Dialog>
             )}
-        </EstimateSubChildAccordion>
+        </>
     );
 }
