@@ -81,10 +81,38 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                     slotProps={{
                         preview: {
                             slotProps: {
-                                avatar: {
-                                    children: initials || undefined, 
+                                avatarIconButton: {
                                     sx: {
-                                        bgcolor: '#8800FF',
+                                        transition: 'all 0.2s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                        },
+                                    },
+                                },
+                                avatar: {
+                                    children: initials || undefined,
+                                    sx: {
+                                        bgcolor: (theme) => theme.palette.primary.main,
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        fontWeight: 600,
+                                        fontSize: '0.95rem',
+                                        border: (theme) =>
+                                            `2px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
+                                    },
+                                },
+                            },
+                        },
+
+                        popover: {
+                            slotProps: {
+                                paper: {
+                                    sx: {
+                                        borderRadius: 2,
+                                        mt: 1,
+                                        boxShadow: (theme) =>
+                                            theme.palette.mode === 'dark'
+                                                ? '0 8px 24px rgba(0, 0, 0, 0.5)'
+                                                : '0 8px 24px rgba(0, 0, 0, 0.12)',
                                     },
                                 },
                             },
@@ -95,24 +123,8 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                         },
 
                         signOutButton: {
-                            // color: 'success',
                             startIcon: <Logout />,
                         },
-
-                        // preview: {
-                        //     variant: 'expanded',
-                        //     slotProps: {
-                        //         avatarIconButton: {
-                        //             sx: {
-                        //                 width: 'fit-content',
-                        //                 margin: 'auto',
-                        //             },
-                        //         },
-                        //         avatar: {
-                        //             variant: 'rounded',
-                        //         },
-                        //     },
-                        // },
                     }}
                 />
             </SessionContext.Provider>

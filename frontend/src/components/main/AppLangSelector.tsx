@@ -82,19 +82,61 @@ export default function AppLangSelector() {
             <IconButton
                 onClick={handleClick}
                 sx={{
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    transition: 'all 0.2s ease-in-out',
+                    border: (theme) =>
+                        `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
+                    '&:hover': {
+                        transform: 'scale(1.05)',
+                        backgroundColor: (theme) =>
+                            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+                        borderColor: (theme) =>
+                            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.12)',
+                    },
                 }}
             >
-                <Flag code={langItem.countryCode} />
+                <Flag code={langItem.countryCode} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </IconButton>
-            <Menu id='language-menu' anchorEl={anchorEl} open={open} onClose={handleClose}>
+            <Menu
+                id='language-menu'
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            mt: 1,
+                            borderRadius: 2,
+                            minWidth: 180,
+                            boxShadow: (theme) =>
+                                theme.palette.mode === 'dark'
+                                    ? '0 8px 24px rgba(0, 0, 0, 0.5)'
+                                    : '0 8px 24px rgba(0, 0, 0, 0.12)',
+                        }
+                    }
+                }}
+            >
                 {languages.map((lang) => (
-                    <MenuItem key={lang.code} onClick={() => handleLanguageChange(lang)}>
+                    <MenuItem
+                        key={lang.code}
+                        onClick={() => handleLanguageChange(lang)}
+                        sx={{
+                            borderRadius: 1,
+                            mx: 0.5,
+                            my: 0.25,
+                            '&:hover': {
+                                backgroundColor: (theme) =>
+                                    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+                            }
+                        }}
+                    >
                         <ListItemIcon>
-                            <Flag code={lang.countryCode} />
+                            <Flag code={lang.countryCode} style={{ width: 28, height: 20, borderRadius: 4 }} />
                         </ListItemIcon>
-                        <ListItemText sx={{ml: 2}}>{lang.label}</ListItemText>
+                        <ListItemText sx={{ml: 1}}>{lang.label}</ListItemText>
                     </MenuItem>
                 ))}
             </Menu>

@@ -7,7 +7,7 @@ import AccountViewPageContents from './AccountAboutPageContents';
 
 export default function AccountViewPage() {
     return (
-        <PageContents>
+        <PageContents title='Company Profile'>
             <AccountViewPageContents />
         </PageContents>
     );

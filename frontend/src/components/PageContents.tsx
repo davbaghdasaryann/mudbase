@@ -171,9 +171,9 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                     flexDirection: 'column',
                     flex: 1,
                     overflow: 'auto',
-                    pt: 0,
-                    py: 1,
-                    px: 4, // with App bar
+                    pt: 9, // Account for fixed header height (64px + spacing)
+                    pb: 1,
+                    px: 4,
                 }}
             >
                 {props.type === 'dev' && (
@@ -188,11 +188,6 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                 )}
 
                 <Stack direction='column' spacing={2} height='100%' justifyContent='flex-start'>
-                    {props.title && (
-                        <Typography variant='h4' sx={{pt: 4, pb: 2, fontWeight: 'bold'}}>
-                            {t(props.title)}
-                        </Typography>
-                    )}
                     {props.children}
                 </Stack>
             </Box>

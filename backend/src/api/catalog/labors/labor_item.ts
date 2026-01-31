@@ -642,3 +642,70 @@ registerApiSession('labor/delete_item', async (req, res, session) => {
 
     respondJsonData(res, { ok: true, deletedCount: result.deletedCount });
 });
+
+// Move item to a different subcategory
+registerApiSession('labor/move_item', async (req, res, session) => {
+    const laborItemId = requireMongoIdParam(req, 'itemMongoId');
+    const newSubcategoryId = requireMongoIdParam(req, 'newSubcategoryMongoId');
+
+    const laborItems = Db.getLaborItemsCollection();
+    const subcatColl = Db.getLaborSubcategoriesCollection();
+
+    // Verify item exists
+    const item = (await laborItems.findOne({ _id: laborItemId })) as Db.EntityLaborItems;
+    verify(item, req.t('error.item_not_found'));
+
+    // Verify new subcategory exists
+    const newSubcat = (await subcatColl.findOne({ _id: newSubcategoryId })) as Db.EntityLaborSubcategories;
+    verify(newSubcat, req.t('error.subcategory_not_found'));
+
+    // Check if item with same code already exists in target subcategory
+    const duplicate = await laborItems.findOne({
+        subcategoryId: newSubcategoryId,
+        code: item.code,
+        _id: { $ne: laborItemId }
+    });
+
+    let newCode = item.code;
+
+    // If duplicate exists, generate a new code by finding the highest code number and adding 1
+    if (duplicate) {
+        const allItemsInTargetSubcat = await laborItems.find({
+            subcategoryId: newSubcategoryId
+        }).toArray() as Db.EntityLaborItems[];
+
+        let maxCodeNum = 0;
+        let maxCodeLength = 2; // Default length
+        for (const existingItem of allItemsInTargetSubcat) {
+            // Try to extract numeric part from code
+            const numMatch = existingItem.code.match(/(\d+)$/);
+            if (numMatch) {
+                const num = parseInt(numMatch[1], 10);
+                if (num > maxCodeNum) {
+                    maxCodeNum = num;
+                    maxCodeLength = numMatch[1].length; // Track the length of the max code
+                }
+            }
+        }
+
+        // Generate new code by incrementing the max
+        const newCodeNum = maxCodeNum + 1;
+        // Pad with zeros to match the existing code format length
+        newCode = String(newCodeNum).padStart(maxCodeLength, '0');
+    }
+
+    // Update item's subcategory, code, and fullCode
+    const newFullCode = newSubcat.categoryFullCode + newCode;
+    const result = await laborItems.updateOne(
+        { _id: laborItemId },
+        {
+            $set: {
+                subcategoryId: newSubcategoryId,
+                code: newCode,
+                fullCode: newFullCode
+            }
+        }
+    );
+
+    respondJsonData(res, { ok: true, modifiedCount: result.modifiedCount, newCode });
+});

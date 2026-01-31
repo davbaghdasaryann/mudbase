@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
 
     return (
-        <PageContents requiredPermission='DASH_USE'>
+        <PageContents requiredPermission='DASH_USE' title='Dashboard'>
             {/* <Box sx={{display: 'flex'}}>
                 <Stack
                     spacing={2}

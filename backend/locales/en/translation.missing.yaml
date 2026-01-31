@@ -24,6 +24,7 @@ error:
   subcategory_name_required: error.subcategory_name_required
   category_not_found: error.category_not_found
   category_name_and_code_required: error.category_name_and_code_required
+  duplicate_item_code: error.duplicate_item_code
 Welcome to Mudbase!: Welcome to Mudbase!
 Inviting user id is missing:
   '': Inviting user id is missing.

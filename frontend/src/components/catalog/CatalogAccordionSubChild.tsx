@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 
 import { EstimateRootAccordionSummary, EstimateSubChildAccordion, EstimateSubChildAccordionDetails } from '@/components/AccordionComponent';
 import { AccordionItem, CatalogSelectedFiltersDataProps, CatalogType } from '@/components/catalog/CatalogAccordionTypes';
-import { Box, Button, CircularProgress, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Stack, Tooltip, Typography, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { formatQuantityParens } from '@/components/pages/CatalogAccordion';
 import { catalogConvertToFixedString, useCatalogData } from '@/components/catalog/CatalogAccordionDataContext';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +42,13 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
     const entityParentMongoId = React.useRef<string | null>(null);
 
     const [items, setItems] = useState<AccordionItem[] | null>(null);
+
+    // Move item dialog state
+    const [showMoveDialog, setShowMoveDialog] = useState(false);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+    const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>('');
+    const [categories, setCategories] = useState<any[]>([]);
+    const [subcategories, setSubcategories] = useState<any[]>([]);
 
     const item = props.item;
 
@@ -121,6 +129,76 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         }
     }, [ctx, item, props]);
 
+    const handleOpenMoveDialog = React.useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
+
+        // Fetch categories
+        const cats = await Api.requestSession<any[]>({
+            command: `${props.catalogType}/fetch_categories`
+        });
+        setCategories(cats);
+        setShowMoveDialog(true);
+    }, [props.catalogType]);
+
+    const handleCategoryChange = React.useCallback(async (categoryId: string) => {
+        setSelectedCategoryId(categoryId);
+        setSelectedSubcategoryId('');
+
+        if (categoryId) {
+            // Fetch subcategories for selected category
+            const subcats = await Api.requestSession<any[]>({
+                command: `${props.catalogType}/fetch_subcategories`,
+                args: { categoryMongoId: categoryId }
+            });
+            setSubcategories(subcats);
+        } else {
+            setSubcategories([]);
+        }
+    }, [props.catalogType]);
+
+    const handleMoveItem = React.useCallback(async () => {
+        if (!selectedSubcategoryId) {
+            return;
+        }
+
+        // Check if trying to move to the same subcategory
+        if (selectedSubcategoryId === props.subChildParentId) {
+            await confirmDialog(
+                'The item is already in this subcategory.',
+                'Cannot Move'
+            );
+            return;
+        }
+
+        try {
+            await Api.requestSession({
+                command: `${props.catalogType}/move_item`,
+                args: {
+                    itemMongoId: item._id,
+                    newSubcategoryMongoId: selectedSubcategoryId
+                }
+            });
+
+            // Close dialog and reset
+            setShowMoveDialog(false);
+            setSelectedCategoryId('');
+            setSelectedSubcategoryId('');
+            setCategories([]);
+            setSubcategories([]);
+
+            // Refresh the catalog data
+            await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
+            await props.onSubChildsChange();
+        } catch (error: any) {
+            console.error('Error moving item:', error);
+            // Show error message to user
+            await confirmDialog(
+                error.message || 'Failed to move item. Please try again.',
+                'Move Failed'
+            );
+        }
+    }, [ctx, item, props, selectedSubcategoryId]);
+
     return (
         <EstimateSubChildAccordion
             // key={props.key}
@@ -177,6 +255,14 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                 sx={{ minWidth: 'auto', px: 1 }}
                             >
                                 <EditIcon />
+                            </Button>
+
+                            <Button
+                                component='div'
+                                onClick={handleOpenMoveDialog}
+                                sx={{ minWidth: 'auto', px: 1 }}
+                            >
+                                <DriveFileMoveIcon />
                             </Button>
 
                             <Button
@@ -245,6 +331,62 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         entityParentMongoId.current = null;
                     }}
                 />
+            )}
+
+            {showMoveDialog && (
+                <Dialog
+                    open={showMoveDialog}
+                    onClose={() => setShowMoveDialog(false)}
+                    maxWidth="sm"
+                    fullWidth
+                >
+                    <DialogTitle>{t('Move Item')}</DialogTitle>
+                    <DialogContent>
+                        <Stack spacing={3} sx={{ mt: 2 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>{t('Category')}</InputLabel>
+                                <Select
+                                    value={selectedCategoryId}
+                                    onChange={(e) => handleCategoryChange(e.target.value)}
+                                    label={t('Category')}
+                                >
+                                    {categories.map((cat) => (
+                                        <MenuItem key={cat._id} value={cat._id}>
+                                            {cat.code} - {cat.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <FormControl fullWidth disabled={!selectedCategoryId}>
+                                <InputLabel>{t('Subcategory')}</InputLabel>
+                                <Select
+                                    value={selectedSubcategoryId}
+                                    onChange={(e) => setSelectedSubcategoryId(e.target.value)}
+                                    label={t('Subcategory')}
+                                >
+                                    {subcategories.map((subcat) => (
+                                        <MenuItem key={subcat._id} value={subcat._id}>
+                                            {subcat.code} - {subcat.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowMoveDialog(false)}>
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            onClick={handleMoveItem}
+                            variant="contained"
+                            disabled={!selectedSubcategoryId}
+                        >
+                            {t('Move')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             )}
         </EstimateSubChildAccordion>
     );

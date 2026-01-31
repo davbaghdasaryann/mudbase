@@ -56,7 +56,7 @@ export default function AccountPage() {
     // console.log(mainNavigationDrawerWidth);
 
     return (
-        <PageContents>
+        <PageContents title='My Company'>
             <Box sx={{
                 position: 'absolute',
                 backgroundColor: 'white',
