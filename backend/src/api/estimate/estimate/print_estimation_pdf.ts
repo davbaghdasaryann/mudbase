@@ -6,9 +6,10 @@ import {respondHtml, respondJsonData, respondPdf} from '@tsback/req/req_response
 import * as Db from '@/db';
 
 import htmlPdf from 'html-pdf-node';
+import * as htmlDocx from 'html-docx-js';
 import {requireQueryParam} from '@src/tsback/req/req_params';
 import {verifyObject} from '@src/tslib/verify';
-import {generateEstimateHTML} from '@/lib/estimate_pdf';
+import {generateEstimateHTML, generateBoQHTML} from '@/lib/estimate_pdf';
 import { assertObject } from '@/tslib/assert';
 
 registerApiSession('estimate/generate_html', async (req, res, session) => {
@@ -26,10 +27,10 @@ registerApiSession('estimate/generate_html', async (req, res, session) => {
 });
 
 registerApiSession('estimate/generate_pdf', async (req, res, session) => {
-    let estimateId = requireQueryParam(req, 'estimateId');
+    const estimateId = requireQueryParam(req, 'estimateId');
 
-    let data = await genEstimateData(estimateId);
-    let html = generateEstimateHTML(data, req.t);
+    const data = await genEstimateDataWithPipeline(estimateId);
+    const html = generateEstimateHTML(data, req.t);
 
     const margins = 30;
     const options: htmlPdf.Options = {
@@ -42,13 +43,21 @@ registerApiSession('estimate/generate_pdf', async (req, res, session) => {
             left: margins,
             right: margins,
         },
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
     };
     const file = {content: html};
 
     htmlPdf.generatePdf(file, options, (err: Error, buffer: Buffer) => {
         if (err) {
-            console.error('PDF generation error:', err);
-            return res.status(500).send(err.message);
+            console.error('=== PDF generation error (Estimation) ===');
+            console.error('Error message:', err.message);
+            console.error('Error stack:', err.stack);
+            console.error('Error details:', JSON.stringify(err, null, 2));
+            return res.status(500).json({
+                error: 'PDF generation failed',
+                message: err.message,
+                details: err.toString()
+            });
         }
         res.status(200)
             .set({
@@ -57,6 +66,112 @@ registerApiSession('estimate/generate_pdf', async (req, res, session) => {
             })
             .send(buffer);
     });
+});
+
+registerApiSession('estimate/generate_word', async (req, res, session) => {
+    const estimateId = requireQueryParam(req, 'estimateId');
+
+    const estimateData = await genEstimateDataWithPipeline(estimateId);
+    const html = generateEstimateHTML(estimateData, req.t);
+
+    const docx = htmlDocx.asBlob(html, {
+        orientation: 'landscape',
+        margins: {
+            top: 1440,
+            right: 1440,
+            bottom: 1440,
+            left: 1440,
+        },
+    });
+
+    // In Node.js, asBlob returns a Buffer
+    const buffer = docx instanceof Buffer ? docx : Buffer.from(await (docx as Blob).arrayBuffer());
+
+    res.status(200)
+        .set({
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition': `attachment; filename="estimate_${estimateId}.docx"`,
+        })
+        .send(buffer);
+});
+
+// Bill of Quantities endpoints
+registerApiSession('estimate/generate_boq_html', async (req, res, session) => {
+    const estimateId = requireQueryParam(req, 'estimateId');
+
+    const estimateData = await genEstimateDataWithPipeline(estimateId);
+    const html = generateBoQHTML(estimateData, req.t);
+
+    respondHtml(res, html);
+});
+
+registerApiSession('estimate/generate_boq_pdf', async (req, res, session) => {
+    const estimateId = requireQueryParam(req, 'estimateId');
+
+    const data = await genEstimateDataWithPipeline(estimateId);
+    const html = generateBoQHTML(data, req.t);
+
+    const margins = 30;
+    const options: htmlPdf.Options = {
+        format: 'A4',
+        landscape: true,
+        printBackground: true,
+        margin: {
+            top: margins,
+            bottom: margins,
+            left: margins,
+            right: margins,
+        },
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    };
+    const file = {content: html};
+
+    htmlPdf.generatePdf(file, options, (err: Error, buffer: Buffer) => {
+        if (err) {
+            console.error('=== PDF generation error (BoQ) ===');
+            console.error('Error message:', err.message);
+            console.error('Error stack:', err.stack);
+            console.error('Error details:', JSON.stringify(err, null, 2));
+            return res.status(500).json({
+                error: 'PDF generation failed',
+                message: err.message,
+                details: err.toString()
+            });
+        }
+        res.status(200)
+            .set({
+                'Content-Type': 'application/pdf',
+                'Content-Length': buffer.length,
+            })
+            .send(buffer);
+    });
+});
+
+registerApiSession('estimate/generate_boq_word', async (req, res, session) => {
+    const estimateId = requireQueryParam(req, 'estimateId');
+
+    const estimateData = await genEstimateDataWithPipeline(estimateId);
+    const html = generateBoQHTML(estimateData, req.t);
+
+    const docx = htmlDocx.asBlob(html, {
+        orientation: 'landscape',
+        margins: {
+            top: 1440,
+            right: 1440,
+            bottom: 1440,
+            left: 1440,
+        },
+    });
+
+    // In Node.js, asBlob returns a Buffer
+    const buffer = docx instanceof Buffer ? docx : Buffer.from(await (docx as Blob).arrayBuffer());
+
+    res.status(200)
+        .set({
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition': `attachment; filename="boq_${estimateId}.docx"`,
+        })
+        .send(buffer);
 });
 
 async function getSectionsData(estimatedId: ObjectId) {

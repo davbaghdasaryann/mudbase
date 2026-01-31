@@ -138,18 +138,22 @@ export default function EstimateInfoAccordionContent(props: Props) {
 
     return (
         <Box sx={{
-            '& .MuiPaper-root': {
+            backgroundColor: 'transparent !important',
+            '& *': {
+                backgroundColor: 'transparent !important',
+            },
+            '& .MuiPaper-root, & .MuiPaper-elevation, & .MuiPaper-rounded, & .MuiPaper-elevation1': {
                 backgroundColor: 'transparent !important',
                 boxShadow: 'none !important',
-            },
-            '& .MuiPaper-elevation': {
-                backgroundColor: 'transparent !important',
-            },
-            '& .MuiPaper-rounded': {
-                backgroundColor: 'transparent !important',
+                background: 'none !important',
             },
             '& .MuiBox-root': {
                 backgroundColor: 'transparent !important',
+                background: 'none !important',
+            },
+            '& > *': {
+                backgroundColor: 'transparent !important',
+                background: 'none !important',
             }
         }}>
             <F.PageForm
@@ -158,17 +162,26 @@ export default function EstimateInfoAccordionContent(props: Props) {
                 onFieldUpdate={handleChange}
                 sx={{
                     backgroundColor: 'transparent !important',
+                    background: 'none !important',
+                    '& *': {
+                        backgroundColor: 'transparent !important',
+                    },
+                    '& .MuiPaper-root, & .MuiPaper-elevation, & .MuiPaper-rounded': {
+                        backgroundColor: 'transparent !important',
+                        background: 'none !important',
+                        boxShadow: 'none !important',
+                    },
                     '& .MuiTextField-root': {
                         '& .MuiInputBase-root': {
-                            backgroundColor: 'transparent',
+                            backgroundColor: 'transparent !important',
                         },
                         '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'transparent',
+                            backgroundColor: 'transparent !important',
                         }
                     },
                     '& .MuiFormControl-root': {
                         '& .MuiInputBase-root': {
-                            backgroundColor: 'transparent',
+                            backgroundColor: 'transparent !important',
                         }
                     }
                 }}

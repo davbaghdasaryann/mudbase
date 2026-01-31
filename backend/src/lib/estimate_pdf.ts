@@ -610,3 +610,288 @@ function formatEstimateCurrency(value: number | null | undefined) {
 function formatEstimateCurrencySymbol(value: number) {
     return formatEstimateCurrency(value) + ' AMD';
 }
+
+export function generateBoQHTML(data: any, t: TFunction) {
+    const estimate = data.estimate;
+    const headerTableCol1Width = '200px';
+
+    const ts = createTypeStyle();
+
+    ts.cssRule('body', {
+        fontFamily: 'Noto Sans Armenian, Arial, sans-serif',
+        fontOpticalSizing: 'auto',
+        margin: 0,
+        padding: 0,
+        fontSize: 12,
+    });
+
+    ts.cssRule('h1, h3', {
+        textAlign: 'center',
+    });
+
+    ts.cssRule('.container', {
+        paddingTop: 10,
+        paddingLeft: 10,
+        paddingRight: 10,
+    });
+
+    ts.cssRule('.stackContainer', {
+        display: 'flex',
+    });
+
+    ts.cssRule('.columnHalf', {
+        flex: 1,
+        boxSizing: 'border-box',
+    });
+
+    ts.cssRule('.header', {
+        width: '100%',
+    });
+
+    ts.cssRule('.lightBlue', {
+        backgroundColor: '#b4ccd6',
+    });
+
+    ts.cssRule('.lightGreen', {
+        backgroundColor: '#e2efd9',
+    });
+
+    ts.cssRule('.lightGray', {
+        backgroundColor: 'lightgray',
+    });
+
+    ts.cssRule('.headerTable', {
+        borderCollapse: 'collapse',
+        width: '100%',
+    });
+
+    ts.cssRule('.headerTableName', {
+        border: '1px solid black',
+        fontStyle: 'italic',
+        width: headerTableCol1Width,
+        paddingLeft: 4,
+        paddingRight: 4,
+    });
+
+    ts.cssRule('.headerTableValue', {
+        paddingLeft: 4,
+        paddingRight: 4,
+    });
+
+    ts.cssRule('.center', {
+        textAlign: 'center',
+    });
+
+    ts.cssRule('.bold', {
+        fontWeight: 'bolder',
+    });
+
+    ts.cssRule('.boqTable', {
+        borderCollapse: 'collapse',
+        width: '100%',
+    });
+
+    ts.cssRule('.boqTable td, .boqTable th', {
+        border: '1px solid black',
+        textAlign: 'center',
+        paddingLeft: 4,
+        paddingRight: 4,
+        paddingTop: 6,
+        paddingBottom: 6,
+    });
+
+    ts.cssRule('.section', {
+        fontWeight: 'bold',
+        textTransform: 'capitalize',
+        textAlign: 'left',
+        paddingTop: 8,
+        paddingBottom: 8,
+    });
+
+    ts.cssRule('.subsection', {
+        fontWeight: 'bold',
+        textAlign: 'left',
+        paddingTop: 8,
+        paddingBottom: 8,
+        paddingLeft: 20,
+    });
+
+    const styles = beautify.css(ts.getStyles());
+    const vertSpacer = `<div>&nbsp;</div>\n`;
+
+    let html = `
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bill of Quantities</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet">
+<style>
+${styles}
+</style>
+</head>
+<body>
+<div class="container">
+`;
+
+    // Header
+    html += `
+<div class="stackContainer">
+<div style="flex: 1; box-sizing: border-box">
+    <table class="headerTable">
+        <tr>
+            <td class="headerTableName lightGreen">Նախահաշվի անվանումը</td>
+            <td class="headerTableValue bold">${ensureNotUndefined(estimate.name)}</td>
+        </tr>
+        <tr>
+            <td class="headerTableName lightGreen">Հասցե</td>
+            <td class="headerTableValue">${ensureNotUndefined(estimate.address)}</td>
+        </tr>
+        <tr>
+            <td class="headerTableName lightGreen">Գեներացման ամսաթիվ</td>
+            <td class="headerTableValue bold">${formatEstimateDate(new Date())}</td>
+        </tr>
+    </table>
+</div>
+<div style="box-sizing: border-box">
+<img src="/images/logo_wide.png" alt="Logo" style="height: 38px; width: auto; margin-right: 20px; margin-top: 5px;"/>
+</div>
+</div>
+`;
+
+    html += vertSpacer;
+
+    html += `
+<div class="stackContainer">
+<div class="columnHalf">
+<table class="headerTable">
+    <tr>
+        <td class="headerTableName lightGray">Կազմակերպության անվանումը</td>
+        <td class="headerTableValue">${ensureNotUndefined(data.accountName)}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Շինարարության տեսակը</td>
+        <td class="headerTableValue">${ensureNotUndefined(t(estimate.constructionType))}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
+        <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
+    </tr>
+</table>
+</div>
+<div class="columnHalf">
+<table class="headerTable">
+    <tr>
+        <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
+        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
+        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Այլ ծախսեր</td>
+        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
+    </tr>
+</table>
+</div>
+</div>
+`;
+
+    html += vertSpacer;
+
+    // BoQ Table - simplified version showing just items and quantities
+    html += `
+<h3 style="margin-top: 20px; margin-bottom: 10px;">ՔԱՆԱԿԱԿԱՆ ՎԵՐԼՈՒԾՈՒԹՅՈՒՆ (Bill of Quantities)</h3>
+<table class="boqTable">
+    <thead>
+        <tr class="lightBlue">
+            <th style="width: 40px;">Հ/հ</th>
+            <th style="width: 70px;">Կոդը</th>
+            <th>Անվանումը</th>
+            <th style="width: 60px;">Չ․Մ․</th>
+            <th style="width: 80px;">Քանակը</th>
+            <th style="width: 100px;">Միավորի արժեքը</th>
+            <th style="width: 120px;">Ընդհանուր արժեքը</th>
+        </tr>
+    </thead>
+    <tbody>
+`;
+
+    let itemIndex = 0;
+    let sectionIndex = 0;
+
+    for (const sectionData of data.sections) {
+        ++sectionIndex;
+
+        html += `
+        <tr>
+            <td class="section lightGray" colspan="7">${sectionIndex}. ${ensureNotUndefined(sectionData.section.name || sectionData.section._id)}</td>
+        </tr>`;
+
+        let subSectIndex = 0;
+        for (const subsectionData of sectionData.subsections) {
+            ++subSectIndex;
+
+            if (subsectionData.subsection.name) {
+                html += `
+                <tr>
+                    <td class="subsection lightBlue" colspan="7">${sectionIndex}.${subSectIndex} ${ensureNotUndefined(subsectionData.subsection.name)}</td>
+                </tr>`;
+            }
+
+            for (const laborData of subsectionData.labors) {
+                ++itemIndex;
+
+                const totalCost = laborData.labor.changableAveragePrice * laborData.labor.quantity;
+
+                html += `
+                <tr>
+                    <td>${itemIndex}</td>
+                    <td>${laborData.labor.laborItemId}</td>
+                    <td style="text-align:left;">${laborData.labor.laborOfferItemName}</td>
+                    <td>${laborData.labor.measurementUnitMongoId}</td>
+                    <td>${fmt(laborData.labor.quantity)}</td>
+                    <td>${formatEstimateCurrency(laborData.labor.changableAveragePrice)}</td>
+                    <td>${formatEstimateCurrency(totalCost)}</td>
+                </tr>`;
+
+                // Add materials if any
+                if (laborData.materials && laborData.materials.length > 0) {
+                    for (const material of laborData.materials) {
+                        ++itemIndex;
+                        const matTotal = material.changableAveragePrice * material.quantity;
+
+                        html += `
+                        <tr style="background-color: #f9f9f9;">
+                            <td>${itemIndex}</td>
+                            <td>${ensureNotUndefined(material.materialItemId)}</td>
+                            <td style="text-align:left; padding-left: 20px;">└ ${ensureNotUndefined(material.materialOfferItemName)}</td>
+                            <td>${ensureNotUndefined(material.measurementUnitMongoId)}</td>
+                            <td>${fmt(material.quantity)}</td>
+                            <td>${formatEstimateCurrency(material.changableAveragePrice)}</td>
+                            <td>${formatEstimateCurrency(matTotal)}</td>
+                        </tr>`;
+                    }
+                }
+            }
+        }
+    }
+
+    html += `
+    <tr><td style="border:none;">&nbsp;</td></tr>
+    <tr class="lightGray bold">
+        <td colspan="6" style="text-align: right; padding-right: 10px;">ԸՆԴԱՄԵՆԸ՝</td>
+        <td>${formatEstimateCurrency(estimate.totalCost)}</td>
+    </tr>
+    </tbody>
+</table>
+`;
+
+    html += `
+</div>
+</body>
+</html>
+`;
+
+    return html;
+}

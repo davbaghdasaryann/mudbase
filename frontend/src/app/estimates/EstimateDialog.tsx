@@ -15,6 +15,7 @@ import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherE
 
 import {runPrintEstimate} from '@/lib/print_estimate';
 import {usePermissions} from '@/api/auth';
+import * as Api from '@/api';
 
 interface EstimatePageDialogProps {
     estimateId: string;
@@ -50,6 +51,39 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         //     //     setProgIndic(false);
         //     // }, 3000);
         // }
+    };
+
+    // Download handlers
+    const handleDownloadEstimation = (format: 'html' | 'word' | 'pdf') => {
+        const commandMap = {
+            html: 'estimate/generate_html',
+            word: 'estimate/generate_word',
+            pdf: 'estimate/generate_pdf'
+        };
+
+        window.open(
+            Api.makeApiUrl({
+                command: commandMap[format],
+                args: { estimateId: props.estimateId },
+            }),
+            '_blank'
+        );
+    };
+
+    const handleDownloadBoQ = (format: 'html' | 'word' | 'pdf') => {
+        const commandMap = {
+            html: 'estimate/generate_boq_html',
+            word: 'estimate/generate_boq_word',
+            pdf: 'estimate/generate_boq_pdf'
+        };
+
+        window.open(
+            Api.makeApiUrl({
+                command: commandMap[format],
+                args: { estimateId: props.estimateId },
+            }),
+            '_blank'
+        );
     };
 
     return (
@@ -275,12 +309,13 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     {[
-                                        { label: 'HTML', icon: '📄', color: '#E34F26' },
-                                        { label: 'Word', icon: '📘', color: '#2B579A' },
-                                        { label: 'PDF', icon: '📕', color: '#FF0000' },
+                                        { label: 'HTML', icon: '📄', color: '#E34F26', format: 'html' as const },
+                                        { label: 'Word', icon: '📘', color: '#2B579A', format: 'word' as const },
+                                        { label: 'PDF', icon: '📕', color: '#FF0000', format: 'pdf' as const },
                                     ].map((format, index) => (
                                         <Box
                                             key={index}
+                                            onClick={() => handleDownloadEstimation(format.format)}
                                             sx={{
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -313,12 +348,13 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     {[
-                                        { label: 'HTML', icon: '📄', color: '#E34F26' },
-                                        { label: 'Word', icon: '📘', color: '#2B579A' },
-                                        { label: 'PDF', icon: '📕', color: '#FF0000' },
+                                        { label: 'HTML', icon: '📄', color: '#E34F26', format: 'html' as const },
+                                        { label: 'Word', icon: '📘', color: '#2B579A', format: 'word' as const },
+                                        { label: 'PDF', icon: '📕', color: '#FF0000', format: 'pdf' as const },
                                     ].map((format, index) => (
                                         <Box
                                             key={index}
+                                            onClick={() => handleDownloadBoQ(format.format)}
                                             sx={{
                                                 display: 'flex',
                                                 flexDirection: 'column',
