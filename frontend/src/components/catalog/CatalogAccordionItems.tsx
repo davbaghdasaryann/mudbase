@@ -12,8 +12,6 @@ import DataTableComponent from '@/components/DataTableComponent';
 import Link from 'next/link';
 import { GridActionsColDef } from '@mui/x-data-grid-pro';
 import { formatDate } from '@/lib/format_date';
-import { usePermissions } from '@/api/auth';
-import UserPageAddOfferDetailsDialog from '@/app/offers/UserPageAddOfferDetailsDIalog';
 
 interface CatalogAccordionItemsProps {
     catalogType: CatalogType;
@@ -26,10 +24,7 @@ interface CatalogAccordionItemsProps {
 }
 
 export default function CatalogAccordionItems(props: CatalogAccordionItemsProps) {
-    const ctx = useCatalogData();
     const { t } = useTranslation();
-    const { session } = usePermissions();
-    const [offerItemIdDialog, setOfferItemIdDialog] = React.useState<string | null>(null);
 
     // const mounted = React.useRef(false);
 
@@ -110,35 +105,6 @@ export default function CatalogAccordionItems(props: CatalogAccordionItemsProps)
                 disableRowSelectionOnClick
                 getRowId={(row) => row?._id ?? crypto.randomUUID()}
             />
-
-
-            {ctx.permCanCrtOffr &&
-                !props.items?.some(c => c.accountId === session?.user.accountId) && (
-                    <Button
-                        fullWidth
-                        sx={{
-                            border: '1px dashed rgba(151, 71, 255)',
-                            color: 'rgba(151, 71, 255)',
-                            background: 'rgba(151, 71, 255, 0.04)',
-                        }}
-                        onClick={() => setOfferItemIdDialog(props.item._id)}
-                    >
-                        {t('Add Offer')}
-                    </Button>
-                )}
-
-
-            {offerItemIdDialog && (
-                <UserPageAddOfferDetailsDialog
-                    catalogType={props.catalogType}
-                    offerItemMongoId={offerItemIdDialog}
-                    onClose={() => setOfferItemIdDialog(null)}
-                    // onConfirm={refreshOffersData}
-                    onConfirm={async () => {
-                        await props.onItemsChange();
-                    }}
-                />
-            )}
         </>
     );
 }

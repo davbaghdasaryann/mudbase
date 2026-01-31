@@ -14,6 +14,9 @@ import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import * as Api from 'api';
 import ImgElement from '@/tsui/DomElements/ImgElement';
+import { usePermissions } from '@/api/auth';
+import UserPageAddOfferDetailsDialog from '@/app/offers/UserPageAddOfferDetailsDIalog';
+import { UserPageOfferEditDialog } from '@/app/offers/UserPageOfferEditDIalog';
 
 interface CatalogSubAccordionProps {
     catalogType: CatalogType;
@@ -30,6 +33,7 @@ interface CatalogSubAccordionProps {
 export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps) {
     const ctx = useCatalogData();
     const { t } = useTranslation();
+    const { session } = usePermissions();
     const mounted = React.useRef(false);
 
     const [actionType, setActionType] = React.useState<'add' | 'update' | 'archive' | null>(null);
@@ -44,6 +48,9 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
     // Info dialog state
     const [showInfoDialog, setShowInfoDialog] = useState(false);
 
+    // Offer dialog state (for both add and edit)
+    const [showOfferDialog, setShowOfferDialog] = useState(false);
+
     // Move item dialog state
     const [showMoveDialog, setShowMoveDialog] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -56,6 +63,26 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
     useEffect(() => {
         mounted.current = true;
         ctx.mounted(item.fullCode!);
+
+        // Fetch offers on mount to determine if user has an offer (for button color)
+        if (ctx.permCanCrtOffr && session?.user.accountId) {
+            ctx.fetchData(item._id, 4, props.catalogType, props.searchVal, props.filter)
+                .then((fetchedData) => {
+                    if (!mounted.current) return;
+
+                    const normalized = (fetchedData as AccordionItem[]).map(i => ({
+                        ...i,
+                        label: i.name,
+                        averagePrice: i.averagePrice != null
+                            ? catalogConvertToFixedString(i.averagePrice)
+                            : undefined,
+                        isLoading: false,
+                        children: [],
+                    }));
+
+                    setItems(normalized);
+                });
+        }
 
         return () => {
             mounted.current = false;
@@ -106,6 +133,37 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
         setShowInfoDialog(true);
     }, [items, ctx, item._id, props.catalogType, props.searchVal, props.filter]);
+
+    const handleOpenOfferDialog = React.useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
+
+        // Fetch items if not already loaded to check if user has an offer
+        if (!items) {
+            let fetchedData = (await ctx.fetchData(item._id, 4, props.catalogType, props.searchVal, props.filter)) as AccordionItem[];
+            for (let item of fetchedData) {
+                item.label = item.name;
+
+                if (item.averagePrice) {
+                    item.averagePrice = catalogConvertToFixedString(item.averagePrice);
+                }
+
+                item.isLoading = false;
+                item.children = [];
+            }
+            setItems(fetchedData);
+        }
+
+        setShowOfferDialog(true);
+    }, [items, ctx, item._id, props.catalogType, props.searchVal, props.filter]);
+
+    // Check if user has an existing offer
+    const userOffer = React.useMemo(() => {
+        if (!items || !session?.user.accountId) return null;
+        return items.find(c => c.accountId === session.user.accountId) || null;
+    }, [items, session?.user.accountId]);
+
+    // Show offer button if user can create offers
+    const showOfferButton = ctx.permCanCrtOffr;
 
     const handleDeleteItem = React.useCallback(async (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -290,6 +348,22 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                             <ImgElement src='/images/icons/info.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                         </Button>
                     )}
+
+                    {showOfferButton && (
+                        <Button
+                            component='div'
+                            onClick={handleOpenOfferDialog}
+                            sx={{
+                                minWidth: 'auto',
+                                px: { xs: 0.5, sm: 1 },
+                                '& img': {
+                                    filter: userOffer ? 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' : 'none'
+                                }
+                            }}
+                        >
+                            <ImgElement src='/images/icons/edit.svg' sx={{ height: { xs: 16, sm: 20 } }} />
+                        </Button>
+                    )}
                 </Stack>
             </Box>
 
@@ -407,6 +481,33 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         </Button>
                     </DialogActions>
                 </Dialog>
+            )}
+
+            {showOfferDialog && !userOffer && (
+                <UserPageAddOfferDetailsDialog
+                    catalogType={props.catalogType}
+                    offerItemMongoId={item._id}
+                    onClose={() => setShowOfferDialog(false)}
+                    onConfirm={async () => {
+                        await refreshItems();
+                        await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
+                        setShowOfferDialog(false);
+                    }}
+                />
+            )}
+
+            {showOfferDialog && userOffer && (
+                <UserPageOfferEditDialog
+                    offerMongoId={userOffer._id}
+                    offerType={props.catalogType}
+                    offerItemName={item.label}
+                    onClose={() => setShowOfferDialog(false)}
+                    onConfirm={async () => {
+                        await refreshItems();
+                        await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
+                        setShowOfferDialog(false);
+                    }}
+                />
             )}
         </>
     );
