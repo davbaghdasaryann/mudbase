@@ -3,5 +3,20 @@
     "6 Months": "6 месяцев",
     "1 Year": "1 год",
     "3 Years": "3 года",
-    "Company": "Компания"
+    "Company": "Компания",
+    "Move Item": "Переместить позицию",
+    "Move": "Переместить",
+    "Category": "Категория",
+    "Subcategory": "Подкатегория",
+    "Cancel": "Отменить",
+    "catalog.delete_category_title": "Удалить категорию",
+    "catalog.delete_category_message": "Вы уверены, что хотите удалить категорию «{{label}}» ({{code}})? Будут удалены все подкатегории и позиции в этой категории.",
+    "catalog.delete_subcategory_title": "Удалить подкатегорию",
+    "catalog.delete_subcategory_message": "Вы уверены, что хотите удалить подкатегорию «{{label}}» ({{code}})? Будут удалены все позиции в этой подкатегории.",
+    "catalog.delete_item_title": "Удалить позицию",
+    "catalog.delete_item_message": "Вы уверены, что хотите удалить позицию «{{label}}» ({{code}})?",
+    "catalog.move_cannot_title": "Невозможно переместить",
+    "catalog.move_already_in_subcategory_message": "Позиция уже находится в этой подкатегории.",
+    "catalog.move_failed_title": "Ошибка перемещения",
+    "catalog.move_failed_message": "Не удалось переместить позицию. Попробуйте ещё раз."
 }

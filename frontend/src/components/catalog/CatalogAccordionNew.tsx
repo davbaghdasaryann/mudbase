@@ -1,25 +1,25 @@
-import React, {useState, useRef, useEffect, useCallback} from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import * as Api from 'api';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-import {Stack, Toolbar, Button, Box} from '@mui/material';
+import { Stack, Toolbar, Button, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CatalogRootAccordion from '@/components/catalog/CatalogAccordionRoot';
-import {CatalogDataProvider, useCatalogData} from '@/components/catalog/CatalogAccordionDataContext';
+import { CatalogDataProvider, useCatalogData } from '@/components/catalog/CatalogAccordionDataContext';
 
-import {CatalogSelectedFiltersDataProps, CatalogType} from '@/components/catalog/CatalogAccordionTypes';
+import { CatalogSelectedFiltersDataProps, CatalogType } from '@/components/catalog/CatalogAccordionTypes';
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
-import {PageSelect} from '@/tsui/PageSelect';
-import {filtersSelecteWidth} from '@/theme';
-import {useApiFetchMany} from '@/components/ApiDataFetch';
+import { PageSelect } from '@/tsui/PageSelect';
+import { filtersSelecteWidth } from '@/theme';
+import { useApiFetchMany } from '@/components/ApiDataFetch';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 
 interface Props {
     catalogType: CatalogType;
 }
 
-export default function CatalogAccordionNew({catalogType}: Props) {
+export default function CatalogAccordionNew({ catalogType }: Props) {
     const [searchVal, setSearchVal] = useState('');
 
     // const selectedFiltersDataRef = useRef<CatalogSelectedFiltersDataProps>({
@@ -36,7 +36,7 @@ export default function CatalogAccordionNew({catalogType}: Props) {
 
     // patch-style updater:
     const handleFiltersChange = useCallback((patch: Partial<CatalogSelectedFiltersDataProps>) => {
-        setFilters((f) => ({...f, ...patch}));
+        setFilters((f) => ({ ...f, ...patch }));
     }, []);
 
     return (
@@ -69,9 +69,9 @@ function CatalogAccordionBody({
     filter: CatalogSelectedFiltersDataProps;
     onFiltersChange: (patch: Partial<CatalogSelectedFiltersDataProps>) => void;
 }) {
-    const {items, refreshOpenNodes, dataVersion} = useCatalogData();
+    const { items, refreshOpenNodes, dataVersion } = useCatalogData();
     const ctx = useCatalogData();
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
 
@@ -97,16 +97,16 @@ function CatalogAccordionBody({
     }, [searchVal, filter.accountId, filter.timePeriod]);
 
     const handleAccountSelect = useCallback(
-        (sel: {id: string} | null) => {
-            onFiltersChange({accountId: sel?.id === 'all' ? null : sel?.id});
+        (sel: { id: string } | null) => {
+            onFiltersChange({ accountId: sel?.id === 'all' ? null : sel?.id });
         },
         [onFiltersChange]
     );
 
     const handleTimePeriodSelect = useCallback(
-        (sel: {id: string} | null) => {
+        (sel: { id: string } | null) => {
             if (sel && (sel.id === '6months' || sel.id === '1year' || sel.id === '3years')) {
-                onFiltersChange({timePeriod: sel.id});
+                onFiltersChange({ timePeriod: sel.id });
             }
         },
         [onFiltersChange]
@@ -114,59 +114,68 @@ function CatalogAccordionBody({
 
     return (
         <>
-            <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
-                <SearchComponent onSearch={(v) => onSearchChange(v)} />
-                <SpacerComponent />
+            <Stack 
+                direction={{ xs: 'column', md: 'row' }} 
+                spacing={{ xs: 2, md: 0 }}
+                sx={{ 
+                    mb: 2,
+                    width: '100%',
+                }}
+            >
+                <Box sx={{ width: { xs: '100%', md: 'auto' }, flexGrow: { md: 1 } }}>
+                    <SearchComponent onSearch={(v) => onSearchChange(v)} />
+                </Box>
 
-                <Stack direction={{xs: 'column', sm: 'row'}} spacing={1} alignItems='center'>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', md: 'auto' } }}>
                     <PageSelect
                         withAll={false}
-                        sx={{minWidth: filtersSelecteWidth}}
+                        sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
                         label={t('Time Period')}
                         value={filter.timePeriod}
                         items={[
-                            {key: '6months', id: '6months', name: t('6 Months'), label: t('6 Months')},
-                            {key: '1year', id: '1year', name: t('1 Year'), label: t('1 Year')},
-                            {key: '3years', id: '3years', name: t('3 Years'), label: t('3 Years')},
+                            { key: '6months', id: '6months', name: t('6 Months'), label: t('6 Months') },
+                            { key: '1year', id: '1year', name: t('1 Year'), label: t('1 Year') },
+                            { key: '3years', id: '3years', name: t('3 Years'), label: t('3 Years') },
                         ]}
                         onSelected={handleTimePeriodSelect}
                     />
 
                     <PageSelect
                         withAll={true}
-                        sx={{minWidth: filtersSelecteWidth}}
+                        sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
                         label={t('Company')}
                         value={filter.accountId ?? 'all'}
                         items={
                             accountsSelectList.data
                                 ? accountsSelectList.data
-                                      .filter((unit, index, self) => index === self.findIndex((u) => u.companyName === unit.companyName))
-                                      .map((unit) => ({
-                                          key: unit._id,
-                                          id: unit._id,
-                                          name: unit.companyName,
-                                          label: unit.companyName,
-                                      }))
+                                    .filter((unit, index, self) => index === self.findIndex((u) => u.companyName === unit.companyName))
+                                    .map((unit) => ({
+                                        key: unit._id,
+                                        id: unit._id,
+                                        name: unit.companyName,
+                                        label: unit.companyName,
+                                    }))
                                 : []
                         }
                         onSelected={handleAccountSelect}
                     />
                 </Stack>
-            </Toolbar>
+            </Stack>
 
             {ctx.permCatEdit && (
-                <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-start' }}>
+                <Box sx={{ py: 1, display: 'flex', justifyContent: 'flex-start' }}>
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={() => setShowAddCategoryDialog(true)}
+                        size="small"
                     >
                         {t('Add Category')}
                     </Button>
                 </Box>
             )}
 
-            <Stack spacing={0} direction='column' sx={{overflowY: 'auto'}}>
+            <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8 }}>
                 {items.map((item) => (
                     <CatalogRootAccordion
                         key={`${item._id}-${filter.timePeriod}-${filter.accountId || 'all'}`}

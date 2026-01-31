@@ -15,6 +15,7 @@ import AppProviderWrapper from './main/AppProviderWrapper';
 import {usePermissions} from '../api/auth';
 import MainNavigationNoAppBar from './main/MainNavigationNoAppBar';
 import AppHeaderNoAppBar from './main/AppHeaderNoAppBar';
+import { MobileDrawerProvider } from './main/MobileDrawerContext';
 import AppFooterCopyrightNotice from './main/AppFooterCopyrightNotice';
 import AppCentralCompanyLogo from './main/AppCentralCompanyLogo';
 import Env from '../env';
@@ -130,19 +131,21 @@ function PageContentsProtected(props: PageContentsProps) {
     }
 
     return (
-        <Box
-            sx={{
-                position: 'relative',
-                display: 'flex',
-                overflow: 'hidden',
-                height: '100vh',
-                width: '100vw',
-            }}
-        >
-            <AppErrorAlert />
-            <MainNavigationNoAppBar {...props} />
-            <PageContentsProtectedBody {...props} />
-        </Box>
+        <MobileDrawerProvider>
+            <Box
+                sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    overflow: 'hidden',
+                    height: '100vh',
+                    width: '100vw',
+                }}
+            >
+                <AppErrorAlert />
+                <MainNavigationNoAppBar {...props} />
+                <PageContentsProtectedBody {...props} />
+            </Box>
+        </MobileDrawerProvider>
     );
 }
 
@@ -157,6 +160,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
     return (
         <Box
             sx={{
+                position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 flex: 1,
@@ -171,9 +175,9 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                     flexDirection: 'column',
                     flex: 1,
                     overflow: 'auto',
-                    pt: 9, // Account for fixed header height (64px + spacing)
+                    pt: { xs: 7, md: 9 },
                     pb: 1,
-                    px: 4,
+                    px: { xs: 2, sm: 3, md: 4 },
                 }}
             >
                 {props.type === 'dev' && (

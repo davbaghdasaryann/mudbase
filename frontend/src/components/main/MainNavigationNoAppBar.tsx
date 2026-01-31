@@ -3,7 +3,7 @@ import {usePathname} from 'next/navigation';
 
 import {NavigationPageItem, type Navigation} from '@toolpad/core';
 
-import {Box, ListItem, ListItemText, Collapse, List, ListItemButton, Drawer, ListItemIcon, Divider, useTheme, Stack} from '@mui/material';
+import {Box, ListItem, ListItemText, Collapse, List, ListItemButton, Drawer, ListItemIcon, Divider, useTheme, useMediaQuery, Stack} from '@mui/material';
 
 import Link from 'next/link';
 
@@ -26,15 +26,22 @@ import {usePermissions} from '../../api/auth';
 import {isPathnameEqual} from '../../lib/urllib';
 import ImgElement from '../../tsui/DomElements/ImgElement';
 import {facebookUrl, instagramUrl, telegramUrl} from '@/theme';
+import {useMobileDrawer} from './MobileDrawerContext';
 
-const drawerWidth = 300;
+export const drawerWidth = 300;
 const listItemIconSize = 34;
 
 export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const theme = useTheme();
     const pathname = usePathname();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { open: mobileOpen, closeDrawer } = useMobileDrawer();
 
     const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({});
+
+    React.useEffect(() => {
+        if (isMobile) closeDrawer();
+    }, [pathname, isMobile, closeDrawer]);
 
     const {nav} = useMainNavigation();
 
@@ -55,7 +62,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 const href = `${path}/${segment}`;
                 return (
                     <ListItem sx={{px: 1, py: 0, overflowX: 'hidden'}}>
-                        <ListItemButton selected={isPathnameEqual(pathname, href)} component={Link} href={href} sx={{textDecoration: 'none', color: iconColor}}>
+                        <ListItemButton selected={isPathnameEqual(pathname, href)} component={Link} href={href} onClick={isMobile ? closeDrawer : undefined} sx={{textDecoration: 'none', color: iconColor}}>
                             {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: iconColor}}>{item.icon}</ListItemIcon>}
                             <ListItemText primary={item.title} />
                         </ListItemButton>
@@ -101,19 +108,12 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 return <React.Fragment key={`${depth}-${index}`} />;
             });
         },
-        [iconColor, pathname, openItems, handleToggle]
+        [iconColor, pathname, openItems, handleToggle, isMobile, closeDrawer]
     );
 
-    return (
-        <Drawer
-            variant='permanent'
-            sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                [`& .MuiDrawer-paper`]: {width: drawerWidth, boxSizing: 'border-box'},
-            }}
-        >
-            <Link href='/'>
+    const drawerContent = (
+        <>
+            <Link href='/' onClick={isMobile ? closeDrawer : undefined}>
                 <Box sx={{p: 2, cursor: 'pointer'}}>
                     <ImgElement src='/images/mudbase_header_title.svg' sx={{ml: 1, height: 30}} />
                 </Box>
@@ -135,6 +135,37 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     </Link>
                 </Stack>
             </Stack>
+        </>
+    );
+
+    if (isMobile) {
+        return (
+            <Drawer
+                variant='temporary'
+                open={mobileOpen}
+                onClose={closeDrawer}
+                ModalProps={{ keepMounted: true }}
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    [`& .MuiDrawer-paper`]: { width: drawerWidth, maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box', top: 0, left: 0 },
+                }}
+            >
+                {drawerContent}
+            </Drawer>
+        );
+    }
+
+    return (
+        <Drawer
+            variant='permanent'
+            sx={{
+                display: { xs: 'none', md: 'block' },
+                width: drawerWidth,
+                flexShrink: 0,
+                [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', top: 0, left: 0, borderRight: 0 },
+            }}
+        >
+            {drawerContent}
         </Drawer>
     );
 }

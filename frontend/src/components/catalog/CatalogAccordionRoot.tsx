@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 
 
@@ -18,6 +16,7 @@ import CatalogSubAccordion from '@/components/catalog/CatalogAccordionSub';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import * as Api from 'api';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 
 interface CatalogRootAccordionProps {
     catalogType: CatalogType;
@@ -103,8 +102,8 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
         event.stopPropagation();
 
         const result = await confirmDialog(
-            `Are you sure you want to delete category "${item.label}" (${item.code})? This will also delete all subcategories and items within this category.`,
-            'Delete Category'
+            t('catalog.delete_category_message', { label: item.label, code: item.code }),
+            t('catalog.delete_category_title')
         );
 
         if (result.isConfirmed) {
@@ -128,12 +127,12 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
             onChange={(event, isExpanded) => handleAccordionChange(isExpanded)}
         >
             <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Stack direction='row' spacing={1} justifyContent='space-between' alignItems='center' width='100%'>
-                    <Typography>{item.code}</Typography>
+                <Stack direction='row' spacing={{ xs: 0.5, sm: 1 }} justifyContent='space-between' alignItems='center' width='100%'>
+                    <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>{item.code}</Typography>
                     <Typography>{item.label}</Typography>
-                    <Typography>{formatQuantityParens(item.childrenQuantity)}</Typography>
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, whiteSpace: 'nowrap' }}>{formatQuantityParens(item.childrenQuantity)}</Typography>
 
-                    <Box flex={2}>&nbsp;</Box>
+                    <Box sx={{ flexGrow: 1 }} />
 
                     {ctx.permCatEdit && (
                         <>
@@ -148,9 +147,9 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                                     setEntityMongoId(item._id);
                                     entityParentMongoId.current = item._id;
                                 }}
-                                sx={{ minWidth: 'auto', px: 1 }}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                             >
-                                <EditIcon />
+                                <ImgElement src='/images/icons/edit.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                             </Button>
 
                             <Button
@@ -162,18 +161,18 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                                     setEntityMongoId(item._id);
                                     entityParentMongoId.current = item._id;
                                 }}
-                                sx={{ minWidth: 'auto', px: 1 }}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                             >
-                                <AddIcon />
+                                <AddIcon sx={{ fontSize: { xs: 18, sm: 24 } }} />
                             </Button>
 
                             <Button
                                 component='div'
                                 color='error'
                                 onClick={handleDeleteCategory}
-                                sx={{ minWidth: 'auto', px: 1 }}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                             >
-                                <DeleteIcon />
+                                <ImgElement src='/images/icons/delete.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                             </Button>
                         </>
                     )}
@@ -181,7 +180,7 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
             </EstimateRootAccordionSummary>
 
             <EstimateRootAccordionDetails>
-                <Stack spacing={0} sx={{ ml: 4 }}>
+                <Stack spacing={0} sx={{ ml: { xs: 1, sm: 2, md: 4 } }}>
                     {/* {items.map(child => (
                         <CatalogSubAccordion
                             key={child._id}

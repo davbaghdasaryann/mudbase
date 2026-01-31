@@ -331,9 +331,7 @@
     "TIN must contain 8 digits": "ՀՎՀՀ֊ն պետք է պարունակի 8 թվանշան",
     "Passwords don't match": "Նոր գաղտնաբառերը չեն համընկնում",
     "Accept invitation": "Ընդունել հրավերը",
-
     "Market Prices": "Թարմացնել արժեքները",
-    
     "currentRenovation": "Ընթացիկ նորոգում",
     "renovation": "Նորոգում",
     "majorRepairs": "Մեծ վերանորոգում",
@@ -341,11 +339,21 @@
     "reinforcement": "Ամրացում",
     "restorationWork": "Վերականգնողական աշխատանքներ",
     "construction": "Կառուցում",
-
     "user_account_change_warning": "Տեղեկացնում ենք, որ կազմակերպության գործունեւթյան տեսակի փոփոխության կամ ավելացման դեպքում օգտահաշիվը ժամանակավորապես ապաակտիվացվելու է։ Եթե փոփոխությունը նախատեսում է բաժանորդագրության փաթեթի պայմանների փոփոխություն, ապա օգտահաշիվը ակտիվացվելու է միայն նոր բաժանորդագրության փաթեթի հաստատումից հետո։",
-
     "Time Period": "Ժամանակահատված",
     "6 Months": "6 ամիս",
     "1 Year": "1 տարի",
-    "3 Years": "3 տարի"
+    "3 Years": "3 տարի",
+    "Move Item": "Տեղափոխել հոդվածը",
+    "Move": "Տեղափոխել",
+    "catalog.delete_category_title": "Ջնջել բաժինը",
+    "catalog.delete_category_message": "Հաստատու՞մ եք «{{label}}» ({{code}}) բաժինը ջնջելը։ ԿՋնջվեն նաև այդ բաժնի բոլոր ենթաբաժիններն ու հոդվածները։",
+    "catalog.delete_subcategory_title": "Ջնջել ենթաբաժինը",
+    "catalog.delete_subcategory_message": "Հաստատու՞մ եք «{{label}}» ({{code}}) ենթաբաժինը ջնջելը։ ԿՋնջվեն նաև այդ ենթաբաժնի բոլոր հոդվածները։",
+    "catalog.delete_item_title": "Ջնջել հոդվածը",
+    "catalog.delete_item_message": "Հաստատու՞մ եք «{{label}}» ({{code}}) հոդվածը ջնջելը։",
+    "catalog.move_cannot_title": "Տեղափոխումն անհնար է",
+    "catalog.move_already_in_subcategory_message": "Հոդվածն արդեն այս ենթաբաժինում է։",
+    "catalog.move_failed_title": "Տեղափոխումը ձախողվեց",
+    "catalog.move_failed_message": "Հոդվածը տեղափոխել չհաջողվեց։ Խնդրում ենք կրկին փորձել։"
 }

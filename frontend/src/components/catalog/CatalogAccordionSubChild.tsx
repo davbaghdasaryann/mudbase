@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
-import InfoIcon from '@mui/icons-material/Info';
 
 import { EstimateRootAccordionSummary, EstimateSubChildAccordion, EstimateSubChildAccordionDetails } from '@/components/AccordionComponent';
 import { AccordionItem, CatalogSelectedFiltersDataProps, CatalogType } from '@/components/catalog/CatalogAccordionTypes';
@@ -17,6 +13,7 @@ import { formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import * as Api from 'api';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 
 interface CatalogSubAccordionProps {
     catalogType: CatalogType;
@@ -114,8 +111,8 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         event.stopPropagation();
 
         const result = await confirmDialog(
-            `Are you sure you want to delete item "${item.label}" (${item.code})?`,
-            'Delete Item'
+            t('catalog.delete_item_message', { label: item.label, code: item.code }),
+            t('catalog.delete_item_title')
         );
 
         if (result.isConfirmed) {
@@ -169,8 +166,8 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         // Check if trying to move to the same subcategory
         if (selectedSubcategoryId === props.subChildParentId) {
             await confirmDialog(
-                'The item is already in this subcategory.',
-                'Cannot Move'
+                t('catalog.move_already_in_subcategory_message'),
+                t('catalog.move_cannot_title')
             );
             return;
         }
@@ -198,8 +195,8 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
             console.error('Error moving item:', error);
             // Show error message to user
             await confirmDialog(
-                error.message || 'Failed to move item. Please try again.',
-                'Move Failed'
+                error.message || t('catalog.move_failed_message'),
+                t('catalog.move_failed_title')
             );
         }
     }, [ctx, item, props, selectedSubcategoryId]);
@@ -218,37 +215,44 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                     direction='row'
                     alignItems='flex-start'
                     width='100%'
-                    spacing={1}
-                    sx={{ py: 1, px: 2 }}
+                    spacing={{ xs: 0.5, sm: 1 }}
+                    sx={{ py: 1, px: { xs: 1, sm: 2 } }}
                 >
-                    <Typography>{item.code}</Typography>
+                    <Typography sx={{ display: { xs: 'none', sm: 'block' }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{item.code}</Typography>
                     <Typography
                         sx={{
-                            flexGrow: 1,
-                            flexShrink: 1,
-                            flexBasis: 'auto',
                             minWidth: 0, // <— the magic: lets it go narrower than its “min-content” width
                             overflowWrap: 'break-word',
+                            fontSize: { xs: '0.875rem', sm: '1rem' },
                         }}
                     >
                         {item.label}
                     </Typography>
 
-                    <Box flex={20}>&nbsp;</Box>
-                    <Typography>{formatQuantityParens(item.childrenQuantity)}</Typography>
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: { xs: '0.875rem', sm: '1rem' }, whiteSpace: 'nowrap' }}>{formatQuantityParens(item.childrenQuantity)}</Typography>
+
+                    <Box sx={{ flexGrow: 1 }} />
 
                     <Tooltip title={t('Average market price')} arrow placement='top'>
-                        <Typography sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                        <Typography sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             {formatCurrencyRoundedSymbol(item.averagePrice)}
                         </Typography>
                     </Tooltip>
 
-                    <Typography>({item.measurementUnitRepresentationSymbol})</Typography>
+                    <Typography sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>({item.measurementUnitRepresentationSymbol})</Typography>
 
-                    <Box>&nbsp;</Box>
+                    <Box sx={{ display: { xs: 'none', sm: 'block' } }}>&nbsp;</Box>
 
                     {ctx.permCatEdit && (
                         <>
+                            <Button
+                                component='div'
+                                onClick={handleOpenMoveDialog}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
+                            >
+                                <ImgElement src='/images/icons/move.svg' sx={{ height: { xs: 16, sm: 20 } }} />
+                            </Button>
+
                             <Button
                                 component='div'
                                 onClick={(event) => {
@@ -260,35 +264,27 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                     setEntityMongoId(item._id);
                                     entityParentMongoId.current = props.subChildParentId;
                                 }}
-                                sx={{ minWidth: 'auto', px: 1 }}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                             >
-                                <EditIcon />
-                            </Button>
-
-                            <Button
-                                component='div'
-                                onClick={handleOpenMoveDialog}
-                                sx={{ minWidth: 'auto', px: 1 }}
-                            >
-                                <DriveFileMoveIcon />
+                                <ImgElement src='/images/icons/edit.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                             </Button>
 
                             <Button
                                 component='div'
                                 color='info'
                                 onClick={handleOpenInfoDialog}
-                                sx={{ minWidth: 'auto', px: 1 }}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                             >
-                                <InfoIcon />
+                                <ImgElement src='/images/icons/info.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                             </Button>
 
                             <Button
                                 component='div'
                                 color='error'
                                 onClick={handleDeleteItem}
-                                sx={{ minWidth: 'auto', px: 1 }}
+                                sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                             >
-                                <DeleteIcon />
+                                <ImgElement src='/images/icons/delete.svg' sx={{ height: { xs: 16, sm: 20 } }} />
                             </Button>
                         </>
                     )}
