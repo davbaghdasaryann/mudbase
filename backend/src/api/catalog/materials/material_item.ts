@@ -320,9 +320,22 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
     }
 
     // If an accountId filter is provided in the request body, convert it to ObjectId
-    let {accountId} = req.body || {};
+    let {accountId, timePeriod} = req.body || {};
     if (accountId) {
         accountId = new ObjectId(String(accountId));
+    }
+
+    // Calculate date threshold based on timePeriod
+    let dateThreshold: Date | null = null;
+    if (timePeriod) {
+        const now = new Date();
+        if (timePeriod === '6months') {
+            dateThreshold = new Date(now.setMonth(now.getMonth() - 6));
+        } else if (timePeriod === '1year') {
+            dateThreshold = new Date(now.setFullYear(now.getFullYear() - 1));
+        } else if (timePeriod === '3years') {
+            dateThreshold = new Date(now.setFullYear(now.getFullYear() - 3));
+        }
     }
 
     const materialItemsColl = Db.getMaterialItemsCollection();
@@ -430,12 +443,22 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
     const offersLookup: any = {
         $lookup: {
             from: 'material_offers',
-            let: {itemIdVar: '$_id'},
+            let: {
+                itemIdVar: '$_id',
+                ...(dateThreshold ? {thresholdDate: dateThreshold} : {}),
+            },
             pipeline: [
                 // Match only offers for this material item
                 {
                     $match: {
-                        $expr: {$eq: ['$itemId', '$$itemIdVar']},
+                        $expr: {
+                            $and: [
+                                {$eq: ['$itemId', '$$itemIdVar']},
+                                ...(dateThreshold
+                                    ? [{$gte: ['$updatedAt', '$$thresholdDate']}]
+                                    : []),
+                            ],
+                        },
                     },
                 },
                 // Join the account document to inspect its isDev flag
@@ -502,17 +525,17 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
     });
 
     // 5) Compute averagePrice only among filteredOffers
-    // pipeline.push({
-    //     $addFields: {
-    //         averagePrice: {
-    //             $cond: {
-    //                 if: {$gt: [{$size: '$filteredOffers'}, 0]},
-    //                 then: {$avg: '$filteredOffers.price'},
-    //                 else: null,
-    //             },
-    //         },
-    //     },
-    // });
+    pipeline.push({
+        $addFields: {
+            averagePrice: {
+                $cond: {
+                    if: {$gt: [{$size: '$filteredOffers'}, 0]},
+                    then: {$round: [{$avg: '$filteredOffers.price'}]},
+                    else: null,
+                },
+            },
+        },
+    });
 
     // 6) Count how many filteredOffers there are
     pipeline.push({

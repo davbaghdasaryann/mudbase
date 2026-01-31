@@ -51,9 +51,22 @@ registerApiSession('labor/fetch_items_with_average_price', async (req, res, sess
     let searchVal = getReqParam(req, 'searchVal');
 
     // If an accountId filter is provided in the request body, convert it to ObjectId
-    let {accountId} = req.body || {};
+    let {accountId, timePeriod} = req.body || {};
     if (accountId) {
         accountId = new ObjectId(String(accountId));
+    }
+
+    // Calculate date threshold based on timePeriod
+    let dateThreshold: Date | null = null;
+    if (timePeriod) {
+        const now = new Date();
+        if (timePeriod === '6months') {
+            dateThreshold = new Date(now.setMonth(now.getMonth() - 6));
+        } else if (timePeriod === '1year') {
+            dateThreshold = new Date(now.setFullYear(now.getFullYear() - 1));
+        } else if (timePeriod === '3years') {
+            dateThreshold = new Date(now.setFullYear(now.getFullYear() - 3));
+        }
     }
 
     let accountIdStr = getReqParam(req, 'accountViewId');
@@ -172,12 +185,22 @@ registerApiSession('labor/fetch_items_with_average_price', async (req, res, sess
     const laborOffersLookup: any = {
         $lookup: {
             from: 'labor_offers',
-            let: {itemIdVar: '$_id'},
+            let: {
+                itemIdVar: '$_id',
+                ...(dateThreshold ? {thresholdDate: dateThreshold} : {}),
+            },
             pipeline: [
                 // Match only offers for this labor item
                 {
                     $match: {
-                        $expr: {$eq: ['$itemId', '$$itemIdVar']},
+                        $expr: {
+                            $and: [
+                                {$eq: ['$itemId', '$$itemIdVar']},
+                                ...(dateThreshold
+                                    ? [{$gte: ['$updatedAt', '$$thresholdDate']}]
+                                    : []),
+                            ],
+                        },
                     },
                 },
                 // Join the account document for each offer to inspect its isDev flag
@@ -211,7 +234,7 @@ registerApiSession('labor/fetch_items_with_average_price', async (req, res, sess
                           },
                       ]
                     : []),
-                // We don’t need that accountInfo array after filtering
+                // We don't need that accountInfo array after filtering
                 {
                     $project: {
                         accountInfo: 0,
@@ -243,18 +266,18 @@ registerApiSession('labor/fetch_items_with_average_price', async (req, res, sess
         },
     });
 
-    // // 5) Compute averagePrice only among filteredOffers
-    // pipeline.push({
-    //     $addFields: {
-    //         averagePrice: {
-    //             $cond: {
-    //                 if: {$gt: [{$size: '$filteredOffers'}, 0]},
-    //                 then: {$avg: '$filteredOffers.price'},
-    //                 else: null,
-    //             },
-    //         },
-    //     },
-    // });
+    // 5) Compute averagePrice only among filteredOffers
+    pipeline.push({
+        $addFields: {
+            averagePrice: {
+                $cond: {
+                    if: {$gt: [{$size: '$filteredOffers'}, 0]},
+                    then: {$round: [{$avg: '$filteredOffers.price'}]},
+                    else: null,
+                },
+            },
+        },
+    });
 
     // 6) Compute laborHours (rounded to 3 decimals) among filteredOffers
     pipeline.push({

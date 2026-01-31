@@ -31,6 +31,7 @@ export default function CatalogAccordionNew({catalogType}: Props) {
         categoryId: null,
         subcategoryId: null,
         accountId: null,
+        timePeriod: '1year',
     });
 
     // patch-style updater:
@@ -68,24 +69,11 @@ function CatalogAccordionBody({
     filter: CatalogSelectedFiltersDataProps;
     onFiltersChange: (patch: Partial<CatalogSelectedFiltersDataProps>) => void;
 }) {
-    const {items, refreshOpenNodes} = useCatalogData();
+    const {items, refreshOpenNodes, dataVersion} = useCatalogData();
     const ctx = useCatalogData();
     const {t} = useTranslation();
 
     const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
-
-    const categorySelectList = useApiFetchMany<Api.ApiLaborCategory | Api.ApiMaterialCategory>({
-        api: {
-            command: catalogType === 'labor' ? `labor/fetch_categories` : `material/fetch_categories`,
-        },
-    });
-
-    const subcategorySelectList = useApiFetchMany<Api.ApiLaborSubcategory | Api.ApiMaterialSubcategory>({
-        defer: true,
-        api: {
-            command: catalogType === 'labor' ? 'labor/fetch_subcategories' : 'material/fetch_subcategories',
-        },
-    });
 
     const accountsSelectList = useApiFetchMany<Api.ApiAccount>({
         api: {
@@ -94,53 +82,32 @@ function CatalogAccordionBody({
     });
 
     useEffect(() => {
-        if (filter.categoryId) {
-            subcategorySelectList.setApi({
-                command: catalogType === 'labor' ? 'labor/fetch_subcategories' : 'material/fetch_subcategories',
-                args: {categoryMongoId: filter.categoryId, searchVal},
-            });
-
-            accountsSelectList.invalidate();
-        }
-    }, [catalogType, filter.categoryId, searchVal]);
-
-    useEffect(() => {
         refreshOpenNodes(catalogType, searchVal, filter);
     }, [
         catalogType,
         searchVal,
-        filter.categoryId,
-        filter.subcategoryId,
         filter.accountId,
-        // refreshOpenNodes,
+        filter.timePeriod,
+        refreshOpenNodes,
     ]);
 
     useEffect(() => {
         // collapse every opened root accordion
         items.forEach((i) => ctx.setExpanded(i.code, false));
-    }, [searchVal, filter.categoryId, filter.subcategoryId, filter.accountId]);
-
-    // When category changes:
-    const handleCategorySelect = useCallback(
-        (sel: {id: string} | null) => {
-            onFiltersChange({
-                categoryId: sel?.id === 'all' ? null : sel?.id,
-                subcategoryId: null, // clear child when parent changes
-            });
-        },
-        [onFiltersChange]
-    );
-
-    const handleSubcategorySelect = useCallback(
-        (sel: {id: string} | null) => {
-            onFiltersChange({subcategoryId: sel?.id === 'all' ? null : sel?.id});
-        },
-        [onFiltersChange]
-    );
+    }, [searchVal, filter.accountId, filter.timePeriod]);
 
     const handleAccountSelect = useCallback(
         (sel: {id: string} | null) => {
             onFiltersChange({accountId: sel?.id === 'all' ? null : sel?.id});
+        },
+        [onFiltersChange]
+    );
+
+    const handleTimePeriodSelect = useCallback(
+        (sel: {id: string} | null) => {
+            if (sel && (sel.id === '6months' || sel.id === '1year' || sel.id === '3years')) {
+                onFiltersChange({timePeriod: sel.id});
+            }
         },
         [onFiltersChange]
     );
@@ -153,44 +120,16 @@ function CatalogAccordionBody({
 
                 <Stack direction={{xs: 'column', sm: 'row'}} spacing={1} alignItems='center'>
                     <PageSelect
-                        withAll={true}
+                        withAll={false}
                         sx={{minWidth: filtersSelecteWidth}}
-                        label='Category'
-                        value={filter.categoryId ?? 'all'}
-                        items={
-                            categorySelectList.data
-                                ? categorySelectList.data
-                                      .filter((unit, index, self) => index === self.findIndex((u) => u.name === unit.name))
-                                      .map((unit) => ({
-                                          key: unit._id,
-                                          id: unit._id,
-                                          name: unit.name,
-                                          label: unit.name,
-                                      }))
-                                : []
-                        }
-                        onSelected={handleCategorySelect}
-                    />
-
-                    <PageSelect
-                        withAll={true}
-                        sx={{minWidth: filtersSelecteWidth}}
-                        label='Subcategory'
-                        value={filter.subcategoryId ?? 'all'}
-                        readonly={!filter.categoryId}
-                        items={
-                            subcategorySelectList.data
-                                ? subcategorySelectList.data
-                                      .filter((unit, index, self) => index === self.findIndex((u) => u.name === unit.name))
-                                      .map((unit) => ({
-                                          key: unit._id,
-                                          id: unit._id,
-                                          name: unit.name,
-                                          label: unit.name,
-                                      }))
-                                : []
-                        }
-                        onSelected={handleSubcategorySelect}
+                        label='Time Period'
+                        value={filter.timePeriod}
+                        items={[
+                            {key: '6months', id: '6months', name: '6 Months', label: '6 Months'},
+                            {key: '1year', id: '1year', name: '1 Year', label: '1 Year'},
+                            {key: '3years', id: '3years', name: '3 Years', label: '3 Years'},
+                        ]}
+                        onSelected={handleTimePeriodSelect}
                     />
 
                     <PageSelect
@@ -229,7 +168,14 @@ function CatalogAccordionBody({
 
             <Stack spacing={0} direction='column' sx={{overflowY: 'auto'}}>
                 {items.map((item) => (
-                    <CatalogRootAccordion key={item._id} item={item} catalogType={catalogType} searchVal={searchVal} filter={filter} />
+                    <CatalogRootAccordion
+                        key={`${item._id}-${filter.timePeriod}-${filter.accountId || 'all'}`}
+                        item={item}
+                        catalogType={catalogType}
+                        searchVal={searchVal}
+                        filter={filter}
+                        dataVersion={dataVersion}
+                    />
                 ))}
             </Stack>
 

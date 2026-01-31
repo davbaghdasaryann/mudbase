@@ -26,6 +26,7 @@ export interface CatalogContextValue extends GlobalCatalogAccordionData {
     isExpanded: (id: string) => boolean;
     setExpanded: (id: string, expanded: boolean) => void;
     items: AccordionItem[];
+    dataVersion: number;
 
     fetchData: (
         parentId: string,
@@ -63,6 +64,7 @@ export function CatalogDataProvider({
 }: React.PropsWithChildren<CatalogDataProviderProps>) {
     const { session, status, permissionsSet } = usePermissions();
     const [items, setItems] = useState<AccordionItem[]>([]);
+    const [dataVersion, setDataVersion] = useState(0);
 
     const expandedIdsRef = useRef(new Set<string>());
 
@@ -211,9 +213,10 @@ export function CatalogDataProvider({
 
             console.log('newTree', newTree)
 
-            setItems(newTree);
+            setItems([...newTree]);
+            setDataVersion(v => v + 1);
         },
-        [items]
+        []
     );
 
     function updateNestedChildren(
@@ -266,7 +269,8 @@ export function CatalogDataProvider({
 
         refreshOpenNodes: refreshOpenNodes,
 
-        items
+        items,
+        dataVersion
     };
 
     return <CatalogDataContext.Provider value={value}>{children}</CatalogDataContext.Provider>;
