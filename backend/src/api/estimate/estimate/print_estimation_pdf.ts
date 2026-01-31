@@ -49,14 +49,10 @@ registerApiSession('estimate/generate_pdf', async (req, res, session) => {
 
     htmlPdf.generatePdf(file, options, (err: Error, buffer: Buffer) => {
         if (err) {
-            console.error('=== PDF generation error (Estimation) ===');
-            console.error('Error message:', err.message);
-            console.error('Error stack:', err.stack);
-            console.error('Error details:', JSON.stringify(err, null, 2));
+            console.error('PDF generation error (Estimation):', err.message);
             return res.status(500).json({
                 error: 'PDF generation failed',
-                message: err.message,
-                details: err.toString()
+                message: err.message
             });
         }
         res.status(200)
@@ -75,9 +71,6 @@ registerApiSession('estimate/generate_word', async (req, res, session) => {
         const estimateData = await genEstimateDataWithPipeline(estimateId);
         const html = generateEstimateHTML(estimateData, req.t);
 
-        console.log('=== Word generation (Estimation) ===');
-        console.log('HTML length:', html.length);
-
         // @ts-ignore - html-to-docx doesn't have type definitions
         const buffer = await HTMLtoDOCX(html, null, {
             orientation: 'landscape',
@@ -89,8 +82,6 @@ registerApiSession('estimate/generate_word', async (req, res, session) => {
             },
         });
 
-        console.log('Final buffer length:', buffer.length);
-
         res.status(200)
             .set({
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -98,8 +89,7 @@ registerApiSession('estimate/generate_word', async (req, res, session) => {
             })
             .send(buffer);
     } catch (error) {
-        console.error('=== Word generation error (Estimation) ===');
-        console.error('Error:', error);
+        console.error('Word generation error (Estimation):', error);
         res.status(500).json({ error: 'Word generation failed', message: String(error) });
     }
 });
@@ -137,14 +127,10 @@ registerApiSession('estimate/generate_boq_pdf', async (req, res, session) => {
 
     htmlPdf.generatePdf(file, options, (err: Error, buffer: Buffer) => {
         if (err) {
-            console.error('=== PDF generation error (BoQ) ===');
-            console.error('Error message:', err.message);
-            console.error('Error stack:', err.stack);
-            console.error('Error details:', JSON.stringify(err, null, 2));
+            console.error('PDF generation error (BoQ):', err.message);
             return res.status(500).json({
                 error: 'PDF generation failed',
-                message: err.message,
-                details: err.toString()
+                message: err.message
             });
         }
         res.status(200)
@@ -163,9 +149,6 @@ registerApiSession('estimate/generate_boq_word', async (req, res, session) => {
         const estimateData = await genEstimateDataWithPipeline(estimateId);
         const html = generateBoQHTML(estimateData, req.t);
 
-        console.log('=== Word generation (BoQ) ===');
-        console.log('HTML length:', html.length);
-
         // @ts-ignore - html-to-docx doesn't have type definitions
         const buffer = await HTMLtoDOCX(html, null, {
             orientation: 'landscape',
@@ -177,8 +160,6 @@ registerApiSession('estimate/generate_boq_word', async (req, res, session) => {
             },
         });
 
-        console.log('Final buffer length:', buffer.length);
-
         res.status(200)
             .set({
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -186,8 +167,7 @@ registerApiSession('estimate/generate_boq_word', async (req, res, session) => {
             })
             .send(buffer);
     } catch (error) {
-        console.error('=== Word generation error (BoQ) ===');
-        console.error('Error:', error);
+        console.error('Word generation error (BoQ):', error);
         res.status(500).json({ error: 'Word generation failed', message: String(error) });
     }
 });
