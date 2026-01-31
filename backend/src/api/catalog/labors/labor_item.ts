@@ -149,7 +149,12 @@ registerApiSession('labor/fetch_items_with_average_price', async (req, res, sess
     if (calledFromPage === 'offers') {
         offerFilterCond = {$eq: ['$$offer.accountId', accountViewId ?? session.mongoAccountId]};
     } else {
-        offerFilterCond = {$eq: ['$$offer.isArchived', false]};
+        offerFilterCond = {
+            $and: [
+                {$eq: ['$$offer.isArchived', false]},
+                {$eq: ['$$offer.isActive', true]}
+            ]
+        };
     }
     // log_.info('offerFilterCond', offerFilterCond);
 

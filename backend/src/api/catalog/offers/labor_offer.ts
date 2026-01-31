@@ -62,6 +62,17 @@ registerApiSession('labor/fetch_offers', async (req, res, session) => {
                 $and: matchingCodeArray
             }
         },
+        // Filter to show: (isActive:true) OR (user's own offer regardless of isActive)
+        ...(calledFromPage !== 'offers' ? [
+            {
+                $match: {
+                    $or: [
+                        {isActive: true},
+                        {accountId: session.mongoAccountId}
+                    ]
+                }
+            }
+        ] : []),
         {
             $lookup: {
                 from: 'labor_items',

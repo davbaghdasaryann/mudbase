@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import { EstimateRootAccordionSummary, EstimateSubChildAccordion, EstimateSubChildAccordionDetails } from '@/components/AccordionComponent';
 import { AccordionItem, CatalogSelectedFiltersDataProps, CatalogType } from '@/components/catalog/CatalogAccordionTypes';
@@ -164,6 +166,49 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
     // Show offer button if user can create offers
     const showOfferButton = ctx.permCanCrtOffr;
+
+    const handleToggleOfferVisibility = React.useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
+
+        if (!userOffer) return;
+
+        try {
+            const newIsActive = !userOffer.isActive;
+
+            if (props.catalogType === 'labor') {
+                await Api.requestSession({
+                    command: 'labor/update_offer',
+                    args: {
+                        laborOfferId: userOffer._id,
+                        laborOfferPrice: userOffer.price,
+                        laborOfferLaborHours: (userOffer as any).laborHours || 0,
+                        laborOfferCurrency: 'AMD',
+                        laborOfferAnonymous: false,
+                        laborOfferPublic: true,
+                        isActive: newIsActive
+                    }
+                });
+            } else {
+                await Api.requestSession({
+                    command: 'material/update_offer',
+                    args: {
+                        materialOfferId: userOffer._id,
+                        materialOfferPrice: userOffer.price,
+                        materialOfferCurrency: 'AMD',
+                        materialOfferAnonymous: false,
+                        materialOfferPublic: true,
+                        isActive: newIsActive
+                    }
+                });
+            }
+
+            // Refresh items to reflect the change
+            await refreshItems();
+            await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
+        } catch (error) {
+            console.error('Error toggling offer visibility:', error);
+        }
+    }, [userOffer, props.catalogType, refreshItems, ctx, props.searchVal, props.filter]);
 
     const handleDeleteItem = React.useCallback(async (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -350,19 +395,34 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                     )}
 
                     {showOfferButton && (
-                        <Button
-                            component='div'
-                            onClick={handleOpenOfferDialog}
-                            sx={{
-                                minWidth: 'auto',
-                                px: { xs: 0.5, sm: 1 },
-                                '& img': {
-                                    filter: userOffer ? 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' : 'none'
-                                }
-                            }}
-                        >
-                            <ImgElement src='/images/icons/edit.svg' sx={{ height: { xs: 16, sm: 20 } }} />
-                        </Button>
+                        <>
+                            {userOffer && (
+                                <Button
+                                    component='div'
+                                    onClick={handleToggleOfferVisibility}
+                                    sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
+                                >
+                                    {userOffer.isActive ? (
+                                        <VisibilityIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                                    ) : (
+                                        <VisibilityOffIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: 'text.disabled' }} />
+                                    )}
+                                </Button>
+                            )}
+                            <Button
+                                component='div'
+                                onClick={handleOpenOfferDialog}
+                                sx={{
+                                    minWidth: 'auto',
+                                    px: { xs: 0.5, sm: 1 },
+                                    '& img': {
+                                        filter: userOffer ? 'brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)' : 'none'
+                                    }
+                                }}
+                            >
+                                <ImgElement src='/images/icons/edit.svg' sx={{ height: { xs: 16, sm: 20 } }} />
+                            </Button>
+                        </>
                     )}
                 </Stack>
             </Box>

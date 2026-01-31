@@ -404,6 +404,7 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
         offerFilterCond = {
             $and: [
                 {$eq: ['$$offer.isArchived', false]},
+                {$eq: ['$$offer.isActive', true]},
                 {$ne: ['$$offer.price', 0]},
                 // { $gt: [{ $type: '$$offer.price' }, 'missing'] },
             ],
