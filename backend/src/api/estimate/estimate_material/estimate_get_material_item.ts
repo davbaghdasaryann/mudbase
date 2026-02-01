@@ -110,7 +110,7 @@ registerApiSession('estimate/fetch_materials_list', async (req, res, session) =>
                     { $unwind: { path: '$subcat', preserveNullAndEmptyArrays: true } },
                     { $lookup: { from: 'material_categories', localField: 'subcat.categoryId', foreignField: '_id', as: 'cat' } },
                     { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
-                    { $project: { fullCode: 1, name: 1, categoryName: '$cat.name', subcategoryName: '$subcat.name', _id: 0 } },
+                    { $project: { fullCode: 1, name: 1, averagePrice: 1, categoryName: '$cat.name', subcategoryName: '$subcat.name', _id: 0 } },
                 ],
                 as: 'estimateMaterialItemData',
             },

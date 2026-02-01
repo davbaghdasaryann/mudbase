@@ -43,8 +43,9 @@ export class EstimateLaborItemDisplayData {
         // this.laborMeasurementUnit = estimateLaborItem.measurementUnit
 
         this.itemChangableAveragePrice = roundToThree(estimateLaborItem.changableAveragePrice);
-        if (estimateLaborItem.averagePrice) {
-            this.itemAveragePrice = fixedToThree(estimateLaborItem.averagePrice);
+        const catalogAveragePrice = estimateLaborItem.estimateLaborItemData?.[0]?.averagePrice ?? estimateLaborItem.averagePrice;
+        if (catalogAveragePrice != null) {
+            this.itemAveragePrice = fixedToThree(catalogAveragePrice);
         }
         this.itemLaborHours = estimateLaborItem.laborHours; //🔴 TODO: this will need us in version 2 🔴
         this.presentItemOfferAveragePrice = roundToThree(estimateLaborItem.presentLaborOfferAveragePrice);

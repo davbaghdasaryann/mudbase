@@ -26,6 +26,8 @@ import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 
+const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
+
 interface WorkItem {
     laborItemId: string;
     itemName: string;
@@ -36,6 +38,8 @@ interface WorkItem {
     totalQuantity: number;
     itemLaborHours: number;
     itemChangableAveragePrice: number;
+    /** Catalog market/average price (from refresh prices). Used to highlight market-price cells. */
+    itemMarketPrice?: number | null;
     instanceIds: string[];
 }
 
@@ -118,6 +122,7 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                         totalQuantity: item.quantity || 0,
                         itemLaborHours: item.laborHours || 0,
                         itemChangableAveragePrice: item.changableAveragePrice || 0,
+                        itemMarketPrice: laborItemData.averagePrice != null ? Number(laborItemData.averagePrice) : null,
                         instanceIds: [estimatedLaborIdStr],
                     });
                 }
@@ -305,7 +310,15 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                         />
                                                                     </TableCell>
                                                                     <TableCell>{work.itemMeasurementUnit}</TableCell>
-                                                                    <TableCell>
+                                                                    <TableCell
+                                                                        sx={{
+                                                                            backgroundColor:
+                                                                                work.itemMarketPrice != null &&
+                                                                                Math.abs((edited?.price ?? work.itemChangableAveragePrice) - work.itemMarketPrice) < MARKET_PRICE_EPS
+                                                                                    ? '#e3f2fd'
+                                                                                    : undefined,
+                                                                        }}
+                                                                    >
                                                                         <TextField
                                                                             type="number"
                                                                             size="small"

@@ -31,6 +31,8 @@ interface MaterialInstance {
     estimatedLaborId: string;
 }
 
+const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
+
 interface MaterialItem {
     materialItemId: string;
     itemName: string;
@@ -40,6 +42,8 @@ interface MaterialItem {
     subcategoryName: string;
     quantity: number;
     itemChangableAveragePrice: number;
+    /** Catalog market/average price (from refresh prices). Used to highlight market-price cells. */
+    itemMarketPrice?: number | null;
     instances: MaterialInstance[];
 }
 
@@ -112,6 +116,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                         subcategoryName: materialData.subcategoryName || '',
                         quantity: item.quantity ?? 0,
                         itemChangableAveragePrice: item.changableAveragePrice ?? 0,
+                        itemMarketPrice: materialData.averagePrice != null ? Number(materialData.averagePrice) : null,
                         instances: [{ estimatedMaterialId: estimatedMaterialIdStr, estimatedLaborId: estimatedLaborIdStr }],
                     });
                 }
@@ -249,7 +254,15 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                                     </TableCell>
                                                                     <TableCell>{mat.itemName}</TableCell>
                                                                     <TableCell>{mat.itemMeasurementUnit}</TableCell>
-                                                                    <TableCell>
+                                                                    <TableCell
+                                                                        sx={{
+                                                                            backgroundColor:
+                                                                                mat.itemMarketPrice != null &&
+                                                                                Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS
+                                                                                    ? '#e3f2fd'
+                                                                                    : undefined,
+                                                                        }}
+                                                                    >
                                                                         <TextField
                                                                             type="number"
                                                                             size="small"

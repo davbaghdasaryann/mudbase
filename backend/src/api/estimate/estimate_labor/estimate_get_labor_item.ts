@@ -57,6 +57,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                         $project: {
                             fullCode: 1,
                             name: 1,
+                            averagePrice: 1,
                             categoryName: '$cat.name',
                             subcategoryName: '$subcat.name',
                             _id: 0,
@@ -324,7 +325,7 @@ registerApiSession('estimate/fetch_works_list', async (req, res, session) => {
                     { $unwind: { path: '$subcat', preserveNullAndEmptyArrays: true } },
                     { $lookup: { from: 'labor_categories', localField: 'subcat.categoryId', foreignField: '_id', as: 'cat' } },
                     { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
-                    { $project: { fullCode: 1, name: 1, categoryName: '$cat.name', subcategoryName: '$subcat.name', _id: 0 } },
+                    { $project: { fullCode: 1, name: 1, averagePrice: 1, categoryName: '$cat.name', subcategoryName: '$subcat.name', _id: 0 } },
                 ],
                 as: 'estimateLaborItemData',
             },

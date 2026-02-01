@@ -76,6 +76,12 @@ interface AccordionItem {
     unitPrice?: number;
 }
 
+const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
+const isMarketPriceRow = (row: AccordionItem) =>
+    row.itemAveragePrice != null &&
+    row.itemChangableAveragePrice != null &&
+    Math.abs(row.itemChangableAveragePrice - row.itemAveragePrice!) < MARKET_PRICE_EPS;
+
 // ✅ Simulated API Call (Replace with real API)
 const fetchData = async (parentId: string, level: number) => {
     return new Promise<any[]>((resolve) => {
@@ -391,7 +397,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.companyNameMadeOffer = item.accountName;
         itemArr.quantity = roundToThree(item.quantity);
         itemArr.itemChangableAveragePrice = roundToThree(item.itemChangableAveragePrice);
-        itemArr.itemAveragePrice = item.itemAveragePrice;
+        itemArr.itemAveragePrice = roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0));
         itemArr.itemMeasurementUnit = item.itemMeasurementUnit;
         itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
@@ -465,7 +471,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             itemLaborHours: item.itemLaborHours, //🔴 TODO: this will need us in version 2 🔴
                             quantity: roundToThree(item.quantity),
                             itemChangableAveragePrice: roundToThree(item.itemChangableAveragePrice),
-                            itemAveragePrice: roundToThree(item.itemAveragePrice),
+                            itemAveragePrice: roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0)),
                             materialUnitPrice: roundToThree(item.materialUnitPrice),
                             materialQuantity: item.materialQuantity,
                         };
@@ -528,7 +534,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.companyNameMadeOffer = item.accountName;
             itemArr.quantity = roundToThree(item.quantity);
             itemArr.itemChangableAveragePrice = roundToThree(item.itemChangableAveragePrice);
-            itemArr.itemAveragePrice = item.itemAveragePrice;
+            itemArr.itemAveragePrice = roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0));
             itemArr.itemMeasurementUnit = item.itemMeasurementUnit;
             itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
 
@@ -857,6 +863,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     paddingTop: '8px',
                                                     paddingBottom: '8px',
                                                 },
+                                                '& .marketPriceCell': {
+                                                    backgroundColor: '#e3f2fd !important', /* visible on both white and grey alternating rows */
+                                                },
                                             }}
                                             columns={[
                                                 // { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 80, },
@@ -916,7 +925,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 120,
                                                     editable: true,
-                                                    cellClassName: 'editableCell',
+                                                    cellClassName: (params) =>
+                                                        params.row && isMarketPriceRow(params.row as AccordionItem)
+                                                            ? 'editableCell marketPriceCell'
+                                                            : 'editableCell',
                                                     valueFormatter: (value) => formatCurrency(value),
                                                 },
                                                 {
@@ -1178,6 +1190,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         paddingTop: '8px',
                                                                         paddingBottom: '8px',
                                                                     },
+                                                                    '& .marketPriceCell': {
+                                                                        backgroundColor: '#e3f2fd !important', /* visible on both white and grey alternating rows */
+                                                                    },
                                                                 }}
                                                                 columns={[
                                                                     // { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 80 },
@@ -1245,7 +1260,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerAlign: 'left',
                                                                         width: 120,
                                                                         editable: true,
-                                                                        cellClassName: 'editableCell',
+                                                                        cellClassName: (params) =>
+                                                                            params.row && isMarketPriceRow(params.row as AccordionItem)
+                                                                                ? 'editableCell marketPriceCell'
+                                                                                : 'editableCell',
                                                                         disableColumnMenu: true,
                                                                         valueFormatter: (value) => formatCurrency(value),
                                                                     },
