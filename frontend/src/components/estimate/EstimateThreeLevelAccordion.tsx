@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle} from 'react';
 import {CircularProgress, Typography, IconButton, Button, MenuItem, Menu, Box, Stack, Tooltip} from '@mui/material';
 import {Accordion, AccordionSummary, AccordionDetails} from '@mui/material';
 
@@ -137,7 +137,12 @@ interface EstimateThreeLevelNestedAccordionProps {
     onDataUpdated?: (updated: boolean) => void;
 }
 
-export default function EstimateThreeLevelNestedAccordion(props: EstimateThreeLevelNestedAccordionProps) {
+export interface EstimateThreeLevelNestedAccordionRef {
+    openAddSectionDialog: () => void;
+    calcMarketPrices: () => void;
+}
+
+const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAccordionRef, EstimateThreeLevelNestedAccordionProps>(function EstimateThreeLevelNestedAccordion(props, ref) {
     const {session, status, permissionsSet} = usePermissions();
 
     const permAddFields = session?.user && permissionsSet?.has?.('EST_ADD_FLDS');
@@ -145,6 +150,7 @@ export default function EstimateThreeLevelNestedAccordion(props: EstimateThreeLe
     const [openAddSubsectionDialog, setOpenAddSubsectionDialog] = useState(false);
     const [openAddSubsectionDialogCurrentSectionId, setOpenAddSubsectionDialogCurrentSectionId] = useState<string | null>(null);
     const [openAddSectionDialog, setOpenAddSectionDialog] = useState(false);
+    
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
     const [estimateRenameDialogLabel, setEstimateRenameDialogLabel] = useState<string | null>(null);
     const [estimateRenameDialogType, setEstimateRenameDialogType] = useState<'section' | 'subsection' | null>(null);
@@ -767,22 +773,18 @@ export default function EstimateThreeLevelNestedAccordion(props: EstimateThreeLe
         });
     };
 
+    // Expose methods to parent via ref
+    useImperativeHandle(ref, () => ({
+        openAddSectionDialog: () => setOpenAddSectionDialog(true),
+        calcMarketPrices: handleCalcMarketPrices,
+    }), [handleCalcMarketPrices]);
+
     if (!sections) {
         return null;
     }
 
     return (
         <>
-            {(permAddFields || !props.isOnlyEstInfo) && (
-                // <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
-                <Stack direction='row'>
-                    <PageButton variant='contained' onClick={() => handleCalcMarketPrices()} label='Market Prices' />
-                    <MSpacer />
-                    <PageButton variant='contained' onClick={() => setOpenAddSectionDialog(true)} label='Add Section' />
-                </Stack>
-                // </Box>
-            )}
-
             <Stack direction='column' spacing={0} sx={{mt: 1}}>
                 {sections.map((item) => (
                     <EstimateRootAccordion key={item._id} expanded={expandedAccordions.includes(item._id)} onChange={handleAccordionChange(item._id, 2)}>
@@ -1653,4 +1655,6 @@ export default function EstimateThreeLevelNestedAccordion(props: EstimateThreeLe
             )}
         </>
     );
-}
+});
+
+export default EstimateThreeLevelNestedAccordion;

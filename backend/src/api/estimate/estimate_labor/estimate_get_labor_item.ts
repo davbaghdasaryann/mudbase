@@ -1,10 +1,10 @@
-import {registerApiSession} from '@/server/register';
+import { registerApiSession } from '@/server/register';
 
 import * as Db from '@/db';
 
-import {respondJson, respondJsonData} from '@/tsback/req/req_response';
-import {verify} from '@/tslib/verify';
-import {requireMongoIdParam} from '@/tsback/mongodb/mongodb_params';
+import { respondJson, respondJsonData } from '@/tsback/req/req_response';
+import { verify } from '@/tslib/verify';
+import { requireMongoIdParam } from '@/tsback/mongodb/mongodb_params';
 
 registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
     let estimateSubsectionId = requireMongoIdParam(req, 'estimateSubsectionId');
@@ -22,7 +22,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         {
             $lookup: {
                 from: 'labor_items',
-                let: {itemIdVar: '$laborItemId'},
+                let: { itemIdVar: '$laborItemId' },
                 pipeline: [
                     {
                         $match: {
@@ -32,10 +32,34 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                         },
                     },
                     {
+                        $lookup: {
+                            from: 'labor_subcategories',
+                            localField: 'subcategoryId',
+                            foreignField: '_id',
+                            as: 'subcat',
+                        },
+                    },
+                    {
+                        $unwind: { path: '$subcat', preserveNullAndEmptyArrays: true },
+                    },
+                    {
+                        $lookup: {
+                            from: 'labor_categories',
+                            localField: 'subcat.categoryId',
+                            foreignField: '_id',
+                            as: 'cat',
+                        },
+                    },
+                    {
+                        $unwind: { path: '$cat', preserveNullAndEmptyArrays: true },
+                    },
+                    {
                         $project: {
                             fullCode: 1,
                             name: 1,
-                            _id: 0, // Optional: Exclude _id if you don't need it
+                            categoryName: '$cat.name',
+                            subcategoryName: '$subcat.name',
+                            _id: 0,
                         },
                     },
                 ],
@@ -44,7 +68,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         },
         {
             $match: {
-                itemData: {$ne: []}, // Keep only laborOffers with a valid item
+                estimateLaborItemData: { $ne: [] }, // Keep only items with valid labor item data
             },
         },
         {
@@ -58,7 +82,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         {
             $lookup: {
                 from: 'estimate_material_items',
-                let: {estimatedLaborMongoIdVar: '$_id'},
+                let: { estimatedLaborMongoIdVar: '$_id' },
                 pipeline: [
                     {
                         $match: {
@@ -89,11 +113,11 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                 pipeline: [
                     {
                         $match: {
-                            $expr: {$eq: ['$_id', '$$materialOfferIdVar']},
+                            $expr: { $eq: ['$_id', '$$materialOfferIdVar'] },
                         },
                     },
                     {
-                        $project: {price: 1},
+                        $project: { price: 1 },
                     },
                 ],
                 as: 'estimateMaterialOfferData',
@@ -109,7 +133,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         },
         {
             $addFields: {
-                laborOfferData: {$ifNull: ['$laborOfferData', []]}, // 🔹 Ensure it's always an array
+                laborOfferData: { $ifNull: ['$laborOfferData', []] }, // 🔹 Ensure it's always an array
             },
         },
         {
@@ -118,7 +142,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                     $filter: {
                         input: '$laborOfferData', // 🔹 Use correct reference
                         as: 'offer',
-                        cond: {$eq: ['$$offer.isArchived', false]}, // ✅ Correct reference inside $filter
+                        cond: { $eq: ['$$offer.isArchived', false] }, // ✅ Correct reference inside $filter
                     },
                 },
             },
@@ -127,8 +151,8 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
             $addFields: {
                 presentLaborOfferAveragePrice: {
                     $cond: {
-                        if: {$gt: [{$size: '$filteredOffers'}, 0]},
-                        then: {$avg: '$filteredOffers.price'}, // ✅ Uses only non-archived offers
+                        if: { $gt: [{ $size: '$filteredOffers' }, 0] },
+                        then: { $avg: '$filteredOffers.price' }, // ✅ Uses only non-archived offers
                         else: null,
                     },
                 },
@@ -269,7 +293,7 @@ registerApiSession('estimate/get_labor_item', async (req, res, session) => {
 
     let estimatedLaborColl = Db.getEstimateLaborItemsCollection();
 
-    let estimatedLaborItem = await estimatedLaborColl.findOne({_id: estimatedLaborId});
+    let estimatedLaborItem = await estimatedLaborColl.findOne({ _id: estimatedLaborId });
 
     // log_.info('estimatedLaborItem', estimatedLaborItem);
 
@@ -280,7 +304,7 @@ registerApiSession('estimate/get_labor_item_for_view', async (req, res, session)
     let estimatedLaborId = requireMongoIdParam(req, 'estimatedItemId');
 
     let estimatedLaborCollection = Db.getEstimateLaborItemsCollection();
-    let estimatedLaborItem = await estimatedLaborCollection.findOne({_id: estimatedLaborId});
+    let estimatedLaborItem = await estimatedLaborCollection.findOne({ _id: estimatedLaborId });
 
     verify(estimatedLaborItem, 'Estimated labor item not found');
 
@@ -289,7 +313,7 @@ registerApiSession('estimate/get_labor_item_for_view', async (req, res, session)
     verify(laborItemId, 'Labor Item ID not found in estimated labor item');
 
     let laborItemsColl = Db.getLaborItemsCollection();
-    let laborItem = await laborItemsColl.findOne({_id: laborItemId}, {projection: {name: 1, averagePrice: 1}});
+    let laborItem = await laborItemsColl.findOne({ _id: laborItemId }, { projection: { name: 1, averagePrice: 1 } });
 
     respondJson(res, laborItem);
 

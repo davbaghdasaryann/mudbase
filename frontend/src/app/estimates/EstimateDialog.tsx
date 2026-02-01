@@ -8,7 +8,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
 
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
-import EstimateThreeLevelNestedAccordion from '@/components/estimate/EstimateThreeLevelAccordion';
+import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
+import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherExpensesAccordion';
@@ -29,7 +30,9 @@ interface EstimatePageDialogProps {
 export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const {session, permissionsSet} = usePermissions();
     const dataUpdatedRef = useRef(false);
+    const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
     const [activeTab, setActiveTab] = useState(1); // 0: Tools, 1: General Info, 2: Export
+    const [showWorksListDialog, setShowWorksListDialog] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -51,6 +54,27 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         //     //     setProgIndic(false);
         //     // }, 3000);
         // }
+    };
+
+    // Handler for Create Section button
+    const handleCreateSection = () => {
+        accordionRef.current?.openAddSectionDialog();
+    };
+
+    // Handler for Update/Market Prices button
+    const handleUpdate = () => {
+        accordionRef.current?.calcMarketPrices();
+    };
+
+    // Handler for Works List button
+    const handleWorksListClick = () => {
+        setShowWorksListDialog(true);
+    };
+
+    // Handler for Works List save
+    const handleWorksListSave = () => {
+        dataUpdatedRef.current = true;
+        // Refresh will happen when dialog closes and user confirms main dialog
     };
 
     // Download handlers
@@ -176,50 +200,53 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 {activeTab === 0 && (
                     <Box sx={{
                         mb: 2,
-                        p: 3,
+                        p: 2,
                         backgroundColor: 'rgba(25, 118, 210, 0.08)',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        minHeight: 200
+                        minHeight: 140,
+                        overflow: 'visible',
                     }}>
                         <Box sx={{
                             display: 'flex',
                             gap: 1.5,
                             flexWrap: 'nowrap',
-                            overflowX: 'auto',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            py: 1.5,
+                            px: 0.5,
                         }}>
                             {/* Tool buttons */}
                             {[
-                                { label: 'Create Section', icon: '➕' },
-                                { label: 'Favorites', icon: '⭐' },
-                                { label: 'Works List', icon: '📋' },
-                                { label: 'Materials List', icon: '🟢' },
-                                { label: 'Update', icon: '🔄' },
-                                { label: 'Import from Library', icon: '⬇️' },
-                                { label: 'Select', icon: '✓' },
+                                { label: 'Create Section', icon: '➕', onClick: handleCreateSection },
+                                { label: 'Favorites', icon: '⭐', onClick: () => {} },
+                                { label: 'Works List', icon: '📋', onClick: handleWorksListClick },
+                                { label: 'Materials List', icon: '🟢', onClick: () => {} },
+                                { label: 'Update', icon: '🔄', onClick: handleUpdate },
+                                { label: 'Import from Library', icon: '⬇️', onClick: () => {} },
+                                { label: 'Select', icon: '✓', onClick: () => {} },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
+                                    onClick={tool.onClick}
                                     sx={{
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        p: 1.5,
-                                        backgroundColor: 'white',
-                                        borderRadius: 1,
+                                        p: 1.25,
+                                        backgroundColor: 'transparent',
+                                        borderRadius: 2,
                                         cursor: 'pointer',
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                        transition: 'all 0.2s',
                                         '&:hover': {
-                                            boxShadow: 2,
+                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                             transform: 'translateY(-2px)',
-                                            transition: 'all 0.2s'
                                         },
-                                        minWidth: 100,
-                                        maxWidth: 110,
-                                        minHeight: 90,
-                                        flexShrink: 0
+                                        minWidth: 85,
+                                        minHeight: 80,
+                                        flex: '1 1 auto',
                                     }}
                                 >
                                     <Box sx={{ fontSize: '1.75rem', mb: 0.5 }}>{tool.icon}</Box>
@@ -250,19 +277,19 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        p: 1.5,
-                                        backgroundColor: 'white',
-                                        borderRadius: 1,
+                                        p: 1.25,
+                                        backgroundColor: 'transparent',
+                                        borderRadius: 2,
                                         cursor: 'pointer',
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                        transition: 'all 0.2s',
                                         '&:hover': {
-                                            boxShadow: 2,
+                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                             transform: 'translateY(-2px)',
-                                            transition: 'all 0.2s'
                                         },
-                                        minWidth: 100,
-                                        maxWidth: 110,
-                                        minHeight: 90,
-                                        flexShrink: 0
+                                        minWidth: 85,
+                                        minHeight: 80,
+                                        flex: '1 1 auto',
                                     }}
                                 >
                                     <Box sx={{ fontSize: '1.75rem', mb: 0.5 }}>{tool.icon}</Box>
@@ -384,10 +411,19 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 )}
 
                 {/* Tables and accordions - Always visible regardless of active tab */}
-                <EstimateThreeLevelNestedAccordion isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} />
+                <EstimateThreeLevelNestedAccordion ref={accordionRef} isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} />
 
                 {session?.user && !permissionsSet?.has?.('EST_CRT_BY_BNK') && <EstimateOtherExpensesAccordion estimateId={props.estimateId} />}
             </DialogContent>
+
+            {/* Works List Dialog */}
+            {showWorksListDialog && (
+                <EstimateWorksListDialog
+                    estimateId={props.estimateId}
+                    onClose={() => setShowWorksListDialog(false)}
+                    onSave={handleWorksListSave}
+                />
+            )}
         </Dialog>
     );
 }
