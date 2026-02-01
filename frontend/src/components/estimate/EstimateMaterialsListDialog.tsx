@@ -1,285 +1,287 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Button, Dialog, IconButton } from '@mui/material';
+'use client';
 
+import React, { useState, useEffect } from 'react';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    TextField,
+    Typography,
+    IconButton,
+    Box,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
+import * as Api from '@/api';
+import ProgressIndicator from '@/tsui/ProgressIndicator';
 
-
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-
-
-import * as F from 'tsui/Form';
-import * as Api from 'api';
-import ProgressIndicator from '../../tsui/ProgressIndicator';
-import { EstimateMaterialItemDisplayData } from '../../data/estimate_items_data';
-import { EstimateMaterialEditDialog } from './EstimateMaterialEditDialog';
-import EstimatedItemPresentViewDialog from './EstimatedItemPresentViewDialog';
-import { validateDoubleInteger } from '../../tslib/validate';
-import { confirmDialog } from '../ConfirmationDialog';
-import DataTableComponent from '../DataTableComponent';
-import { normalizeArmenianDecimalPoint } from '../../tslib/parse';
-import { formatCurrency } from '@/lib/format_currency';
-
-
-interface Props {
+interface MaterialInstance {
+    estimatedMaterialId: string;
     estimatedLaborId: string;
-    estimatedLaborName: string;
-    onClose: () => void;
-    onConfirm: () => void;
-
 }
 
-export function EstimateMaterialsListDialog(props: Props) {
-    const [t] = useTranslation();
-    const form = F.useUpdateForm();
+interface MaterialItem {
+    materialItemId: string;
+    itemName: string;
+    itemFullCode: string;
+    itemMeasurementUnit: string;
+    categoryName: string;
+    subcategoryName: string;
+    quantity: number;
+    itemChangableAveragePrice: number;
+    instances: MaterialInstance[];
+}
 
-    const mounted = useRef(false);
-    const [dataRequested, setDataRequested] = useState(false);
+interface CatalogCategory {
+    categoryId: string;
+    categoryName: string;
+    subcategories: CatalogSubcategory[];
+}
 
-    const [estimatedMaterialOfferViewId, setEstimatedMaterialOfferViewId] = React.useState<string | null>(null);
-    const [estimatedMaterialOfferViewChangableItemName, setEstimatedMaterialOfferViewChangableItemName] = React.useState<string | null>(null);
+interface CatalogSubcategory {
+    subcategoryId: string;
+    subcategoryName: string;
+    materials: MaterialItem[];
+}
 
-    const [estimatedMaterialsData, setEstimatedMaterialsData] = React.useState<EstimateMaterialItemDisplayData[] | null>(null);
-    let [estimatedMaterialId, setEstimatedMaterialId] = React.useState<string | null>(null);
-    let estimatedMaterialIdRef = React.useRef<string | null>(null);
-    let [estimatedMaterialDetailsId, setEstimatedMaterialDetailsId] = React.useState<string | null>(null);
-    let [estimatedMaterialName, setEstimatedMaterialName] = React.useState<string | null>(null);
+interface EstimateMaterialsListDialogProps {
+    estimateId: string;
+    onClose: () => void;
+    onSave: () => void;
+}
 
-    const [progIndicator, setProgIndicator] = React.useState(false);
+function toIdString(id: unknown): string {
+    if (id == null) return '';
+    if (typeof id === 'string') return id;
+    if (typeof id === 'object' && id !== null && 'oid' in id && typeof (id as { oid: string }).oid === 'string')
+        return (id as { oid: string }).oid;
+    return String(id);
+}
 
-    // console.log('props.offerItemName', props.offerItemName)
-    const onSubmit = React.useCallback(async (evt: F.InputFormEvent) => {
+export default function EstimateMaterialsListDialog(props: EstimateMaterialsListDialogProps) {
+    const { t } = useTranslation();
+    const [categories, setCategories] = useState<CatalogCategory[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [editedPrices, setEditedPrices] = useState<Map<string, number>>(new Map());
 
-    }, [])
+    useEffect(() => {
+        fetchMaterialsData();
+    }, [props.estimateId]);
 
+    const fetchMaterialsData = async () => {
+        setLoading(true);
+        try {
+            const allMaterialItems = await Api.requestSession<any[]>({
+                command: 'estimate/fetch_materials_list',
+                args: { estimateId: props.estimateId },
+            });
 
-    const handleUpdateRow = async (newRow, oldRow) => {
+            const materialsMap = new Map<string, MaterialItem>();
 
-        // Prevent unnecessary updates when no changes were made
-        if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-            console.log("No changes detected, skipping update");
-            return oldRow; // Return the old row without sending an update
+            for (const item of allMaterialItems) {
+                const materialItemId = toIdString(item.materialItemId);
+                const materialData = item.estimateMaterialItemData?.[0];
+                if (!materialData || !materialItemId) continue;
+
+                const estimatedMaterialIdStr = toIdString(item._id);
+                const estimatedLaborIdStr = toIdString(item.estimatedLaborId);
+                if (!estimatedMaterialIdStr || !estimatedLaborIdStr) continue;
+
+                if (materialsMap.has(materialItemId)) {
+                    const existing = materialsMap.get(materialItemId)!;
+                    existing.quantity += item.quantity ?? 0;
+                    existing.instances.push({ estimatedMaterialId: estimatedMaterialIdStr, estimatedLaborId: estimatedLaborIdStr });
+                } else {
+                    materialsMap.set(materialItemId, {
+                        materialItemId,
+                        itemName: materialData.name || '',
+                        itemFullCode: materialData.fullCode || '',
+                        itemMeasurementUnit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
+                        categoryName: materialData.categoryName || '',
+                        subcategoryName: materialData.subcategoryName || '',
+                        quantity: item.quantity ?? 0,
+                        itemChangableAveragePrice: item.changableAveragePrice ?? 0,
+                        instances: [{ estimatedMaterialId: estimatedMaterialIdStr, estimatedLaborId: estimatedLaborIdStr }],
+                    });
+                }
+            }
+
+            const categoriesMap = new Map<string, CatalogCategory>();
+            for (const material of materialsMap.values()) {
+                const catKey = material.categoryName || '(Uncategorized)';
+                if (!categoriesMap.has(catKey)) {
+                    categoriesMap.set(catKey, { categoryId: catKey, categoryName: catKey, subcategories: [] });
+                }
+                const category = categoriesMap.get(catKey)!;
+                const subKey = material.subcategoryName || '(Uncategorized)';
+                let subcategory = category.subcategories.find((s) => s.subcategoryName === subKey);
+                if (!subcategory) {
+                    subcategory = { subcategoryId: subKey, subcategoryName: subKey, materials: [] };
+                    category.subcategories.push(subcategory);
+                }
+                subcategory.materials.push(material);
+            }
+
+            const sortedCategories = Array.from(categoriesMap.values()).sort((a, b) =>
+                a.categoryName.localeCompare(b.categoryName)
+            );
+            sortedCategories.forEach((cat) => {
+                cat.subcategories.sort((a, b) => a.subcategoryName.localeCompare(b.subcategoryName));
+                cat.subcategories.forEach((sub) => {
+                    sub.materials.sort((a, b) => a.itemFullCode.localeCompare(b.itemFullCode));
+                });
+            });
+
+            setCategories(sortedCategories);
+        } catch (error) {
+            console.error('Error fetching materials data:', error);
+        } finally {
+            setLoading(false);
         }
-
-        if (!newRow || !newRow._id || !oldRow || !oldRow._id) {
-            console.error("Invalid row data:", { newRow, oldRow });
-            return oldRow; // Revert to oldRow if newRow is invalid
-        }
-
-        newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity)
-        newRow.materialConsumptionNorm = normalizeArmenianDecimalPoint(newRow.materialConsumptionNorm)
-        newRow.itemChangableAveragePrice = normalizeArmenianDecimalPoint(newRow.itemChangableAveragePrice)
-
-        const isPositiveInteger: boolean = validateDoubleInteger(newRow.materialConsumptionNorm);
-        // const isPositiveIntegerPrice: boolean = validatePositiveDoubleInteger(newRow.itemChangableAveragePrice);
-        const isPositiveIntegerPrice: boolean = validateDoubleInteger(newRow.itemChangableAveragePrice);
-        if ((newRow.materialConsumptionNorm && !isPositiveInteger) || (newRow.itemChangableAveragePrice && !isPositiveIntegerPrice)) {
-            return oldRow;
-        }
-
-        // try {
-        const response = await Api.requestSession<Api.ApiEstimateMaterialItem>({
-            command: `estimate/update_material_item`,
-            args: { estimatedMaterialId: oldRow._id, estimatedLaborId: props.estimatedLaborId },
-            json: newRow
-        });
-
-        console.log(" Successfully updated row:", response);
-        props.onConfirm();
-        setDataRequested(false)
-
-        // //  Ensure state updates correctly
-        // setRows((prevRows) =>
-        //     prevRows.map((row) => (row.id === newRow.id ? newRow : row))
-        // );
-
-        return { ...newRow }; //  Ensure a new object is returned
-        // } catch (error) {
-        //     console.error("Error updating row:", error);
-        //     return oldRow; // Prevent DataGrid from breaking
-        // }
     };
 
+    const handlePriceChange = (materialItemId: string, value: string) => {
+        const numValue = parseFloat(value) || 0;
+        setEditedPrices(new Map(editedPrices.set(materialItemId, numValue)));
+    };
 
-    const onRemove = useCallback(() => {
-        console.log('estimatedMaterialId', estimatedMaterialId)
-
-        if (!estimatedMaterialIdRef.current)
-            return
-
-        confirmDialog(t('Are you sure?')).then((result) => {
-            if (result.isConfirmed) {
-
-                Api.requestSession<any>({ //TODO change any to interface
-                    command: 'estimate/remove_material_item',
-                    args: {
-                        estimateMaterialItemId: estimatedMaterialIdRef.current,
-                    }
-                })
-                    .then((removedMaterial) => {
-                        console.log(removedMaterial);
-                        props.onConfirm();
-                    })
-                    .finally(() => {
-                        setDataRequested(false);
-                        setEstimatedMaterialId(null);
-                        estimatedMaterialIdRef.current = null;
-                        setEstimatedMaterialName(null);
-                    });
-            }
-        });
-
-
-    }, [])
-
-
-    React.useEffect(() => {
-        console.log('props.estimatedLaborName', props.estimatedLaborName)
-        setProgIndicator(true)
-
-        mounted.current = true;
-        if (!dataRequested) {
-
-            Api.requestSession<Api.ApiEstimateMaterialItem[]>({
-                command: `estimate/fetch_material_items`,
-                args: { estimatedLaborId: props.estimatedLaborId }
-                // args: { searchVal: searchVal === '' ? 'empty' : searchVal, }
-            })
-                .then(estimatedMaterialsResData => {
-                    if (mounted.current) {
-                        console.log('estimatedMaterialsResData', estimatedMaterialsResData)
-                        let estimatedMaterialsData: EstimateMaterialItemDisplayData[] = [];
-
-                        for (let estimatedMaterial of estimatedMaterialsResData) {
-                            estimatedMaterialsData.push(new EstimateMaterialItemDisplayData(estimatedMaterial));
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            for (const [materialItemId, price] of editedPrices.entries()) {
+                if (price < 0) continue;
+                let instances: MaterialInstance[] = [];
+                for (const cat of categories) {
+                    for (const sub of cat.subcategories) {
+                        const mat = sub.materials.find((m) => m.materialItemId === materialItemId);
+                        if (mat) {
+                            instances = mat.instances;
+                            break;
                         }
-
-                        console.log('estimatedMaterialsData', estimatedMaterialsData)
-                        setEstimatedMaterialsData(estimatedMaterialsData)
                     }
-                    setProgIndicator(false)
-
-                })
-
-
-            setDataRequested(true);
-            return;
-        }
-        return () => { mounted.current = false }
-    }, [dataRequested]);
-
-
-    if (progIndicator || !estimatedMaterialsData) {
-        return <ProgressIndicator show={progIndicator} background='backdrop' />
-    }
-
-    return <F.PageFormDialog title={`${t('Edit Materials:')} ${props.estimatedLaborName}`} form={form} size='lg' onSubmit={onSubmit} onClose={props.onClose}>
-
-        <DataTableComponent
-            sx={{
-                width: '100%',
-                '& .editableCell': {
-                    border: '1px solid #00BFFF	', // ✅ Blue border
-                    borderRadius: '5px',
-                    // backgroundColor: '#f8f9fa', // Light background
-                    // transition: 'border 0.3s ease',
-                },
-                '& .editableCell:focus-within': {
-                    // border: '2px solid darkOrange',
+                    if (instances.length) break;
                 }
-            }}
-            columns={[
-                {
-                    field: 'estimatedMaterialFullCode', headerName: 'ID', headerAlign: 'left', flex: 0.15, disableColumnMenu: true, renderCell: (params) => {
-                        return (
-                            <Button
-                                onClick={() => {
-                                    console.log("🆔 Cell Value:", params.value);
-                                    setEstimatedMaterialOfferViewId(params.row._id as string);
-                                    setEstimatedMaterialOfferViewChangableItemName(params.row.materialOfferItemName as string);
-                                }}
-                            >
-                                {params.value}
-                            </Button>
-                        );
-                    }
-                },
-                { field: 'materialOfferItemName', headerName: t('Material'), headerAlign: 'left', editable: true, flex: 0.5, disableColumnMenu: true },
-                { field: 'estimatedMaterialMeasurementUnit', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true },
-                { field: 'materialConsumptionNorm', headerName: t('Material consumption norm'), headerAlign: 'left', flex: 0.2, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
-                { field: 'quantity', headerName: t('Quantity'), headerAlign: 'left', flex: 0.15, disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
-                { field: 'changableAveragePrice', headerName: t('Price'), headerAlign: 'left', flex: 0.23, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
-                { field: 'materialTotalCost', headerName: t('Total Cost'), headerAlign: 'center', align: 'center', flex: 0.23, valueFormatter: (value) => formatCurrency(value) },
-
-
-                {
-                    field: 'remove', type: 'actions', headerName: t('Remove'), flex: 0.15, renderCell: (cell) => {
-                        return <>
-                            <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
-
-                                // setOfferItemDetailsId(cell.id as string)
-                                // handleClick(event);
-                                // console.log('material cell', cell)
-                                setEstimatedMaterialName(cell.row.materialOfferItemName as string)
-                                setEstimatedMaterialId(cell.row._id as string)
-                                estimatedMaterialIdRef.current = cell.row._id as string
-                                onRemove();
-                            }
-                            }
-                            >
-                                <DeleteForeverIcon />
-                            </IconButton>
-                        </>;
-                    }
-                }, // width: 600 },
-                {
-                    field: 'info', type: 'actions', headerName: t('Edit'), flex: 0.1, renderCell: (cell) => {
-                        return <>
-                            {/* <IconButton onClick={() => setCompanyDetailsId(cell.id as string)}> */}
-                            <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                // setAccountDetailsId(cell.id as string)
-
-                                // console.log('esitmate cell', cell)
-                                // setEstimatedLaborItemName(cell.row.itemChangableName as string)
-                                // setEstimatedLaborItemDetailsId(cell.id as string)
-                                // handleClick(event);
-                                setEstimatedMaterialName(cell.row.materialOfferItemName as string)
-                                setEstimatedMaterialDetailsId(cell.row._id as string)
-
-                            }
-                            }
-                            >
-                                <EditOutlinedIcon />
-                            </IconButton>
-                        </>;
-                    }
-                }, // width: 600 },
-
-            ]}
-            rows={estimatedMaterialsData}
-            // autoPageSize={true}
-            processRowUpdate={handleUpdateRow} // Handle updates
-            disableRowSelectionOnClick
-            getRowId={row => row._id}
-        // onRowDoubleClick={(row) => { setOfferItemEditId(row.id as string); setOfferItemName(row.row.itemName) }}
-        />
-
-
-        {/* {(estimatedMaterialId && estimatedMaterialName) && <EstimateMaterialDeleteDialog title={props.estimatedLaborName} message='Are you sure you want to remove this?' onConfirm={onRemoveConfirm} onClose={() => { setEstimatedMaterialId(null); setEstimatedMaterialName(null); estimatedMaterialIdRef.current = null }} />} */}
-        {(estimatedMaterialDetailsId && estimatedMaterialName) && <EstimateMaterialEditDialog estimatedLaborId={props.estimatedLaborId} estimatedMaterialId={estimatedMaterialDetailsId} estimatedMaterialName={estimatedMaterialName} onConfirm={() => { props.onConfirm(); setDataRequested(false) }} onClose={() => { setEstimatedMaterialDetailsId(null); setEstimatedMaterialName(null) }} />}
-
-        {(estimatedMaterialOfferViewId && estimatedMaterialOfferViewChangableItemName)
-            &&
-            <EstimatedItemPresentViewDialog
-                itemType='material'
-                changableItemCurrentName={estimatedMaterialOfferViewChangableItemName}
-                itemId={estimatedMaterialOfferViewId}
-                onClose={() => { setEstimatedMaterialOfferViewId(null); setEstimatedMaterialOfferViewChangableItemName(null) }}
-            />
+                for (const inst of instances) {
+                    await Api.requestSession({
+                        command: 'estimate/update_material_item',
+                        args: { estimatedMaterialId: inst.estimatedMaterialId, estimatedLaborId: inst.estimatedLaborId },
+                        json: { changableAveragePrice: price },
+                    });
+                }
+            }
+            props.onSave();
+            await fetchMaterialsData();
+            setEditedPrices(new Map());
+        } catch (error) {
+            console.error('Error saving materials:', error);
+        } finally {
+            setLoading(false);
         }
+    };
 
-    </F.PageFormDialog>
-
-
+    return (
+        <Dialog
+            open={true}
+            onClose={props.onClose}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+                sx: { minHeight: '70vh', maxHeight: '85vh' },
+            }}
+        >
+            <DialogTitle>
+                {t('Materials List')}
+                <IconButton
+                    aria-label="close"
+                    onClick={props.onClose}
+                    sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+                {loading ? (
+                    <ProgressIndicator />
+                ) : (
+                    <Box>
+                        {categories.map((category) => (
+                            <Accordion key={category.categoryId} defaultExpanded>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography variant="h6">{category.categoryName}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    {category.subcategories.map((subcategory) => (
+                                        <Accordion key={subcategory.subcategoryId} defaultExpanded>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                <Typography>{subcategory.subcategoryName}</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Table size="small">
+                                                    <TableHead>
+                                                        <TableRow>
+                                                            <TableCell>{t('ID')}</TableCell>
+                                                            <TableCell>{t('Materials')}</TableCell>
+                                                            <TableCell>{t('Unit')}</TableCell>
+                                                            <TableCell>{t('Price')}</TableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {subcategory.materials.map((mat) => {
+                                                            const editedPrice = editedPrices.get(mat.materialItemId);
+                                                            const displayPrice = editedPrice !== undefined ? editedPrice : mat.itemChangableAveragePrice;
+                                                            return (
+                                                                <TableRow key={mat.materialItemId}>
+                                                                    <TableCell>
+                                                                        <Typography variant="body2" color="primary">
+                                                                            {mat.itemFullCode}
+                                                                        </Typography>
+                                                                    </TableCell>
+                                                                    <TableCell>{mat.itemName}</TableCell>
+                                                                    <TableCell>{mat.itemMeasurementUnit}</TableCell>
+                                                                    <TableCell>
+                                                                        <TextField
+                                                                            type="number"
+                                                                            size="small"
+                                                                            value={displayPrice}
+                                                                            onChange={(e) =>
+                                                                                handlePriceChange(mat.materialItemId, e.target.value)
+                                                                            }
+                                                                            sx={{ width: 120 }}
+                                                                        />
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            );
+                                                        })}
+                                                    </TableBody>
+                                                </Table>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    ))}
+                                </AccordionDetails>
+                            </Accordion>
+                        ))}
+                    </Box>
+                )}
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={props.onClose} color="primary">
+                    {t('Cancel')}
+                </Button>
+                <Button onClick={handleSave} variant="contained" color="primary" disabled={loading}>
+                    {t('Save')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
 }
-

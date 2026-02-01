@@ -1,15 +1,15 @@
-import {registerApiSession} from '@/server/register';
+import { registerApiSession } from '@/server/register';
 
 import * as Db from '@/db';
 
-import {respondJson, respondJsonData} from '@/tsback/req/req_response';
-import {verify} from '@/tslib/verify';
-import {requireMongoIdParam} from '@/tsback/mongodb/mongodb_params';
+import { respondJson, respondJsonData } from '@/tsback/req/req_response';
+import { verify } from '@/tslib/verify';
+import { requireMongoIdParam } from '@/tsback/mongodb/mongodb_params';
 
 registerApiSession('estimate/fetch_material_items', async (req, res, session) => {
 
     let estimatedLaborId = requireMongoIdParam(req, 'estimatedLaborId');
-    
+
     let estimatedMaterialsColl = Db.getEstimateMaterialItemsCollection();
 
     let pipeline: any[] = [
@@ -21,7 +21,7 @@ registerApiSession('estimate/fetch_material_items', async (req, res, session) =>
         {
             $lookup: {
                 from: 'material_items',
-                let: {materialItemIdIdVar: '$materialItemId'},
+                let: { materialItemIdIdVar: '$materialItemId' },
                 pipeline: [
                     {
                         $match: {
@@ -43,7 +43,7 @@ registerApiSession('estimate/fetch_material_items', async (req, res, session) =>
         },
         {
             $match: {
-                itemData: {$ne: []}, // Keep only laborOffers with a valid item
+                itemData: { $ne: [] }, // Keep only laborOffers with a valid item
             },
         },
         {
@@ -63,12 +63,79 @@ registerApiSession('estimate/fetch_material_items', async (req, res, session) =>
     respondJsonData(res, data);
 });
 
+/** Single-call endpoint for Materials List dialog: all material items for an estimate with catalog hierarchy. */
+registerApiSession('estimate/fetch_materials_list', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+    const estimateSectionsColl = Db.getEstimateSectionsCollection();
+    const estimateSubsectionsColl = Db.getEstimateSubsectionsCollection();
+    const estimateLaborItemsColl = Db.getEstimateLaborItemsCollection();
+    const estimateMaterialItemsColl = Db.getEstimateMaterialItemsCollection();
+
+    const sections = await estimateSectionsColl.find({ estimateId }).project({ _id: 1 }).toArray();
+    const sectionIds = sections.map((s) => s._id);
+    if (sectionIds.length === 0) {
+        respondJsonData(res, []);
+        return;
+    }
+
+    const subsections = await estimateSubsectionsColl
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .project({ _id: 1 })
+        .toArray();
+    const subsectionIds = subsections.map((s) => s._id);
+    if (subsectionIds.length === 0) {
+        respondJsonData(res, []);
+        return;
+    }
+
+    const laborItems = await estimateLaborItemsColl
+        .find({ estimateSubsectionId: { $in: subsectionIds } })
+        .project({ _id: 1 })
+        .toArray();
+    const laborIds = laborItems.map((l) => l._id);
+    if (laborIds.length === 0) {
+        respondJsonData(res, []);
+        return;
+    }
+
+    const pipeline: any[] = [
+        { $match: { estimatedLaborId: { $in: laborIds } } },
+        {
+            $lookup: {
+                from: 'material_items',
+                let: { materialItemIdVar: '$materialItemId' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$_id', '$$materialItemIdVar'] } } },
+                    { $lookup: { from: 'material_subcategories', localField: 'subcategoryId', foreignField: '_id', as: 'subcat' } },
+                    { $unwind: { path: '$subcat', preserveNullAndEmptyArrays: true } },
+                    { $lookup: { from: 'material_categories', localField: 'subcat.categoryId', foreignField: '_id', as: 'cat' } },
+                    { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
+                    { $project: { fullCode: 1, name: 1, categoryName: '$cat.name', subcategoryName: '$subcat.name', _id: 0 } },
+                ],
+                as: 'estimateMaterialItemData',
+            },
+        },
+        { $match: { estimateMaterialItemData: { $ne: [] } } },
+        {
+            $lookup: {
+                from: 'measurement_unit',
+                localField: 'measurementUnitMongoId',
+                foreignField: '_id',
+                as: 'estimateMeasurementUnitData',
+            },
+        },
+    ];
+
+    const data = await estimateMaterialItemsColl.aggregate(pipeline).toArray();
+    respondJsonData(res, data);
+});
+
 registerApiSession('estimate/get_material_item', async (req, res, session) => {
     let estimateMaterialId = requireMongoIdParam(req, 'estimatedMaterialId');
 
     let estimateMaterialsColl = Db.getEstimateMaterialItemsCollection();
 
-    let estimateMaterialItem = await estimateMaterialsColl.findOne({_id: estimateMaterialId});
+    let estimateMaterialItem = await estimateMaterialsColl.findOne({ _id: estimateMaterialId });
 
     // log_.info('estimatedLaborItem', materialItem)
 
@@ -79,7 +146,7 @@ registerApiSession('estimate/get_material_item_for_view', async (req, res, sessi
     let estimateItemId = requireMongoIdParam(req, 'estimatedItemId');
 
     let estimateMaterialItemsColl = Db.getEstimateMaterialItemsCollection();
-    let estimateMaterialItem = (await estimateMaterialItemsColl.findOne({_id: estimateItemId}))!;
+    let estimateMaterialItem = (await estimateMaterialItemsColl.findOne({ _id: estimateItemId }))!;
 
     log_.info(estimateMaterialItem);
 
@@ -93,8 +160,8 @@ registerApiSession('estimate/get_material_item_for_view', async (req, res, sessi
 
     let materialItemsColl = Db.getMaterialItemsCollection();
     let materialItem = await materialItemsColl.findOne(
-        {_id: materialItemId},
-        {projection: {name: 1, averagePrice: 1}}
+        { _id: materialItemId },
+        { projection: { name: 1, averagePrice: 1 } }
     );
 
     // // log_.info('materialItem', materialItem)

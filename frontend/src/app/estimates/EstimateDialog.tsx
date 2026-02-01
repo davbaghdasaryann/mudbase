@@ -10,6 +10,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
+import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
 
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherExpensesAccordion';
@@ -33,6 +34,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
     const [activeTab, setActiveTab] = useState(1); // 0: Tools, 1: General Info, 2: Export
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
+    const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -74,7 +76,14 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     // Handler for Works List save
     const handleWorksListSave = () => {
         dataUpdatedRef.current = true;
-        // Refresh will happen when dialog closes and user confirms main dialog
+    };
+
+    const handleMaterialsListClick = () => {
+        setShowMaterialsListDialog(true);
+    };
+
+    const handleMaterialsListSave = () => {
+        dataUpdatedRef.current = true;
     };
 
     // Download handlers
@@ -221,7 +230,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { label: 'Create Section', icon: '➕', onClick: handleCreateSection },
                                 { label: 'Favorites', icon: '⭐', onClick: () => { } },
                                 { label: 'Works List', icon: '📋', onClick: handleWorksListClick },
-                                { label: 'Materials List', icon: '🟢', onClick: () => { } },
+                                { label: 'Materials List', icon: '🟢', onClick: handleMaterialsListClick },
                                 { label: 'Update', icon: '🔄', onClick: handleUpdate },
                                 { label: 'Import from Library', icon: '⬇️', onClick: () => { } },
                                 { label: 'Select', icon: '✓', onClick: () => { } },
@@ -425,6 +434,16 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         accordionRef.current?.refreshEverything(false);
                     }}
                     onSave={handleWorksListSave}
+                />
+            )}
+            {showMaterialsListDialog && (
+                <EstimateMaterialsListDialog
+                    estimateId={props.estimateId}
+                    onClose={() => {
+                        setShowMaterialsListDialog(false);
+                        accordionRef.current?.refreshEverything(false);
+                    }}
+                    onSave={handleMaterialsListSave}
                 />
             )}
         </Dialog>
