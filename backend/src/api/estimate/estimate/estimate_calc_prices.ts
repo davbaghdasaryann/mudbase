@@ -131,8 +131,15 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     );
 }
 
+function parseOptionalLaborIds(body: any): ObjectId[] | undefined {
+    const ids = body?.estimatedLaborIds;
+    if (!Array.isArray(ids) || ids.length === 0) return undefined;
+    return ids.map((id: string) => new ObjectId(id)).filter(Boolean);
+}
+
 registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
     const estimateId = requireMongoIdParam(req, 'estimateId');
+    const estimatedLaborIds = parseOptionalLaborIds(req.body);
 
     const estimatesColl = Db.getEstimatesCollection();
 
@@ -140,16 +147,19 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
 
     assertObject(estimate, 'Invalid Estimate Id');
 
-    // log_.info('Estimate', estimate);
+    const laborMatch: any = {estimateId: estimateId};
+    if (estimatedLaborIds?.length) {
+        laborMatch._id = {$in: estimatedLaborIds};
+    }
 
     //
-    // Update all labor items
+    // Update labor items (all or selected)
     //
     const estimateLaborItemsColl = Db.getEstimateLaborItemsCollection();
 
     await estimateLaborItemsColl
         .aggregate([
-            {$match: {estimateId: estimateId}},
+            {$match: laborMatch},
             {
                 $lookup: {
                     from: 'labor_items',
@@ -175,13 +185,18 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
         .toArray(); // force execution
 
     //
-    // Update all material items
+    // Update material items (all or those under selected labor items)
     //
     const estimateMaterialItemsColl = Db.getEstimateMaterialItemsCollection();
 
+    const materialMatch: any = {estimateId: estimateId};
+    if (estimatedLaborIds?.length) {
+        materialMatch.estimatedLaborId = {$in: estimatedLaborIds};
+    }
+
     await estimateMaterialItemsColl
         .aggregate([
-            {$match: {estimateId: estimateId}},
+            {$match: materialMatch},
             {
                 $lookup: {
                     from: 'material_items',
@@ -205,8 +220,6 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
             },
         ])
         .toArray(); // force execution
-
-    // log_.info('currentEstimateData', currentEstimateData)
 
     await updateEstimateCostById(estimateId);
 

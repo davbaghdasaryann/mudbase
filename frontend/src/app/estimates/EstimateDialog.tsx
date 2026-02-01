@@ -35,6 +35,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [activeTab, setActiveTab] = useState(1); // 0: Tools, 1: General Info, 2: Export
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
     const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
+    const [isSelectMode, setIsSelectMode] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -63,10 +64,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         accordionRef.current?.openAddSectionDialog();
     };
 
-    // Handler for Update/Market Prices button
-    const handleUpdate = () => {
-        accordionRef.current?.calcMarketPrices();
-    };
 
     // Handler for Works List button
     const handleWorksListClick = () => {
@@ -84,6 +81,21 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
     const handleMaterialsListSave = () => {
         dataUpdatedRef.current = true;
+    };
+
+    const handleSelectClick = () => {
+        setIsSelectMode((prev) => !prev);
+    };
+
+    const handleUpdate = () => {
+        if (isSelectMode) {
+            const selectedIds = accordionRef.current?.getSelectedLaborIds() ?? [];
+            if (selectedIds.length > 0) {
+                accordionRef.current?.calcMarketPrices(selectedIds);
+                return;
+            }
+        }
+        accordionRef.current?.calcMarketPrices();
     };
 
     // Download handlers
@@ -233,7 +245,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { label: 'Materials List', icon: '🟢', onClick: handleMaterialsListClick },
                                 { label: 'Update', icon: '🔄', onClick: handleUpdate },
                                 { label: 'Import from Library', icon: '⬇️', onClick: () => { } },
-                                { label: 'Select', icon: '✓', onClick: () => { } },
+                                { label: 'Select', icon: '✓', onClick: handleSelectClick },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
@@ -420,7 +432,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 )}
 
                 {/* Tables and accordions - Always visible regardless of active tab */}
-                <EstimateThreeLevelNestedAccordion ref={accordionRef} isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} />
+                <EstimateThreeLevelNestedAccordion ref={accordionRef} isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} selectMode={isSelectMode} />
 
                 {session?.user && !permissionsSet?.has?.('EST_CRT_BY_BNK') && <EstimateOtherExpensesAccordion estimateId={props.estimateId} />}
             </DialogContent>

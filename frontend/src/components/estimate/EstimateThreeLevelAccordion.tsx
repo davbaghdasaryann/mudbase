@@ -141,12 +141,15 @@ interface EstimateThreeLevelNestedAccordionProps {
     estimateId: string;
     isOnlyEstInfo?: boolean;
     onDataUpdated?: (updated: boolean) => void;
+    /** When true, labor rows show checkboxes and selection is tracked for "Import from Library" (market prices for selected only). */
+    selectMode?: boolean;
 }
 
 export interface EstimateThreeLevelNestedAccordionRef {
     openAddSectionDialog: () => void;
-    calcMarketPrices: () => void;
+    calcMarketPrices: (estimatedLaborIds?: string[]) => void;
     refreshEverything: (showProgIndic?: boolean) => Promise<void>;
+    getSelectedLaborIds: () => string[];
 }
 
 const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAccordionRef, EstimateThreeLevelNestedAccordionProps>(function EstimateThreeLevelNestedAccordion(props, ref) {
@@ -170,6 +173,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [removeLaborEstimateLaborItemId, setRemoveLaborEstimateLaborItemId] = useState<string | null>(null);
 
     const [openAddOfferDialogType, setOpenAddOfferDialogType] = useState<'labor' | 'material' | null>(null);
+
+    /** Selected labor row ids by grid key (section_empty or subsection id). Used when selectMode is on. */
+    const [selectionByGridKey, setSelectionByGridKey] = useState<Record<string, string[]>>({});
     const [openAddOfferDialogTypeWithouSubsection, setOpenAddOfferDialogTypeWithouSubsection] = useState<'labor' | 'material' | null>(null);
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
@@ -751,18 +757,17 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         setProgIndic(false);
     };
 
-    const handleCalcMarketPrices = async () => {
-        // console.log(expandedAccordionsRef.current);
+    const handleCalcMarketPrices = (estimatedLaborIds?: string[]) => {
         setAnchorEl(null);
 
         confirmDialog(t('Are you sure?')).then((result) => {
             if (result.isConfirmed) {
                 setProgIndic(true);
+                const body = estimatedLaborIds?.length ? { estimatedLaborIds } : undefined;
                 Api.requestSession<any>({
                     command: 'estimate/calc_market_prices',
-                    args: {
-                        estimateId: props.estimateId,
-                    },
+                    args: { estimateId: props.estimateId },
+                    json: body,
                 }).then(() => {
                     refreshEverything(true);
                 });
@@ -780,12 +785,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         });
     };
 
+    const getSelectedLaborIds = useCallback(() => Object.values(selectionByGridKey).flat(), [selectionByGridKey]);
+
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
         openAddSectionDialog: () => setOpenAddSectionDialog(true),
         calcMarketPrices: handleCalcMarketPrices,
         refreshEverything,
-    }), [handleCalcMarketPrices, refreshEverything]);
+        getSelectedLaborIds,
+    }), [handleCalcMarketPrices, refreshEverything, getSelectedLaborIds]);
 
     if (!sections) {
         return null;
@@ -1054,6 +1062,17 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             ]}
                                             rows={item.children[0].children} // ✅ Show items from the empty subsection
                                             getRowId={(row) => row?._id ?? crypto.randomUUID()}
+                                            checkboxSelection={props.selectMode === true}
+                                            rowSelectionModel={{
+                                                type: 'include',
+                                                ids: new Set(selectionByGridKey[`${item._id}_empty`] ?? []),
+                                            }}
+                                            onRowSelectionModelChange={(newModel) =>
+                                                setSelectionByGridKey((prev) => ({
+                                                    ...prev,
+                                                    [`${item._id}_empty`]: Array.from((newModel as { ids?: Set<string> })?.ids ?? []),
+                                                }))
+                                            }
                                             processRowUpdate={handleUpdateRow} // Handle updates
                                             onProcessRowUpdateError={(error) => console.error('Error updating row:', error)} // ✅ Handle errors
                                             getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
@@ -1398,6 +1417,17 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 ]}
                                                                 rows={child.children}
                                                                 getRowId={(row) => row?._id ?? crypto.randomUUID()}
+                                                                checkboxSelection={props.selectMode === true}
+                                                                rowSelectionModel={{
+                                                                    type: 'include',
+                                                                    ids: new Set(selectionByGridKey[child._id] ?? []),
+                                                                }}
+                                                                onRowSelectionModelChange={(newModel) =>
+                                                                    setSelectionByGridKey((prev) => ({
+                                                                        ...prev,
+                                                                        [child._id]: Array.from((newModel as { ids?: Set<string> })?.ids ?? []),
+                                                                    }))
+                                                                }
                                                                 processRowUpdate={handleUpdateRow} // Handle updates
                                                                 onProcessRowUpdateError={(error) => console.error('Error updating row:', error)} // ✅ Handle errors
                                                                 getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
