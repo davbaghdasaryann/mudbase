@@ -1,8 +1,8 @@
-import React, {useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle} from 'react';
-import {CircularProgress, Typography, IconButton, Button, MenuItem, Menu, Box, Stack, Tooltip} from '@mui/material';
-import {Accordion, AccordionSummary, AccordionDetails} from '@mui/material';
+import React, { useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { CircularProgress, Typography, IconButton, Button, MenuItem, Menu, Box, Stack, Tooltip } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -14,33 +14,33 @@ import * as EstimateApi from '@/api/estimate';
 import * as EstimateItemsApi from '@/api/estimate_items';
 import * as GD from '@/data/global_dispatch';
 
-import {EstimateSubsectionsDisplayData} from '@/data/estimate_subsections_display_data';
+import { EstimateSubsectionsDisplayData } from '@/data/estimate_subsections_display_data';
 import UserPageAddEstimateItemDialog from '@/app/offers/UserPageAddEstimateItemDIalog';
-import {EstimateLaborItemDisplayData} from '@/data/estimate_items_data';
+import { EstimateLaborItemDisplayData } from '@/data/estimate_items_data';
 import EstimateSubsectionButtonDialog from './EstimateAddSubsectionDialog';
-import {EstimateLaborEditDialog} from './EstimateLaborEditDialog';
-import {EstimateMaterialsListDialog} from './EstimateMaterialsListDialog';
+import { EstimateLaborEditDialog } from './EstimateLaborEditDialog';
+import { EstimateMaterialsListDialog } from './EstimateMaterialsListDialog';
 
 import * as EstimateSectionsApi from '@/api/estimate';
-import {EstimateSectionsDisplayData} from '../../data/estimate_sections_display_data';
+import { EstimateSectionsDisplayData } from '../../data/estimate_sections_display_data';
 import ProgressIndicator from '../../tsui/ProgressIndicator';
 import EstimateSectionButtonDialog from './EstimateAddSectionDialog';
-import {EstimateRenameDialog} from './EstimateRenameDIalog';
+import { EstimateRenameDialog } from './EstimateRenameDIalog';
 import EstimatedItemPresentViewDialog from './EstimatedItemPresentViewDialog';
-import {validateDoubleInteger} from '@/tslib/validate';
-import {usePermissions} from '@/api/auth';
-import {confirmDialog} from '../ConfirmationDialog';
+import { validateDoubleInteger } from '@/tslib/validate';
+import { usePermissions } from '@/api/auth';
+import { confirmDialog } from '../ConfirmationDialog';
 import DataTableComponent from '../DataTableComponent';
-import {mainIconColor, materialIconHeight} from '../../theme';
+import { mainIconColor, materialIconHeight } from '../../theme';
 import ImgElement from '../../tsui/DomElements/ImgElement';
 
-import {normalizeArmenianDecimalPoint, parseThousandsSeparator, roundNumber, roundToThree} from '@/tslib/parse';
-import {PageButton} from '@/tsui/Buttons/PageButton';
-import {formatCurrency, formatCurrencyRoundedSymbol} from '@/lib/format_currency';
-import {EstimateRootAccordion, EstimateRootAccordionDetails, EstimateRootAccordionSummary} from '@/components/AccordionComponent';
+import { normalizeArmenianDecimalPoint, parseThousandsSeparator, roundNumber, roundToThree } from '@/tslib/parse';
+import { PageButton } from '@/tsui/Buttons/PageButton';
+import { formatCurrency, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
+import { EstimateRootAccordion, EstimateRootAccordionDetails, EstimateRootAccordionSummary } from '@/components/AccordionComponent';
 import MaterialsTwoPartDialog from '@/app/offers/MaterialsTwoPartDialog';
-import {makeMultilineTableCell} from '@/lib/format_date';
-import {MSpacer} from '@/tsui';
+import { makeMultilineTableCell } from '@/lib/format_date';
+import { MSpacer } from '@/tsui';
 
 // ✅ Define Interface
 interface AccordionItem {
@@ -82,7 +82,7 @@ const fetchData = async (parentId: string, level: number) => {
         if (level === 2) {
             Api.requestSession<EstimateApi.ApiEstimateSubsection[]>({
                 command: `estimate/fetch_subsections`,
-                args: {estimateSectionId: parentId},
+                args: { estimateSectionId: parentId },
             })
                 .then((estimateSubsectionsList) => {
                     let estimateSubsectionsData: EstimateSubsectionsDisplayData[] = [];
@@ -98,7 +98,7 @@ const fetchData = async (parentId: string, level: number) => {
         } else if (level === 3) {
             Api.requestSession<EstimateItemsApi.ApiEstimateLaborItem[]>({
                 command: 'estimate/fetch_labor_items',
-                args: {estimateSubsectionId: parentId},
+                args: { estimateSubsectionId: parentId },
             })
                 .then((estimateLaborItemsResData) => {
                     // console.log('estimateLaborItemsResData: ', estimateLaborItemsResData);
@@ -121,9 +121,9 @@ const fetchData = async (parentId: string, level: number) => {
 const updateNestedChildren = (items: AccordionItem[], parentId: string, newChildren: AccordionItem[], isLoading: boolean): AccordionItem[] => {
     return items.map((item) => {
         if (item._id === parentId) {
-            return {...item, children: isLoading ? undefined : newChildren, isLoading}; // ✅ Direct match
+            return { ...item, children: isLoading ? undefined : newChildren, isLoading }; // ✅ Direct match
         } else if (item.children) {
-            return {...item, children: updateNestedChildren(item.children, parentId, newChildren, isLoading)}; // ✅ Recursively search in children
+            return { ...item, children: updateNestedChildren(item.children, parentId, newChildren, isLoading) }; // ✅ Recursively search in children
         }
         return item;
     });
@@ -140,17 +140,18 @@ interface EstimateThreeLevelNestedAccordionProps {
 export interface EstimateThreeLevelNestedAccordionRef {
     openAddSectionDialog: () => void;
     calcMarketPrices: () => void;
+    refreshEverything: (showProgIndic?: boolean) => Promise<void>;
 }
 
 const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAccordionRef, EstimateThreeLevelNestedAccordionProps>(function EstimateThreeLevelNestedAccordion(props, ref) {
-    const {session, status, permissionsSet} = usePermissions();
+    const { session, status, permissionsSet } = usePermissions();
 
     const permAddFields = session?.user && permissionsSet?.has?.('EST_ADD_FLDS');
 
     const [openAddSubsectionDialog, setOpenAddSubsectionDialog] = useState(false);
     const [openAddSubsectionDialogCurrentSectionId, setOpenAddSubsectionDialogCurrentSectionId] = useState<string | null>(null);
     const [openAddSectionDialog, setOpenAddSectionDialog] = useState(false);
-    
+
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
     const [estimateRenameDialogLabel, setEstimateRenameDialogLabel] = useState<string | null>(null);
     const [estimateRenameDialogType, setEstimateRenameDialogType] = useState<'section' | 'subsection' | null>(null);
@@ -284,14 +285,14 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                 if (type === 'section') {
                     Api.requestSession<any>({
                         command: 'estimate/remove_section',
-                        args: {estimateSectionId: id},
+                        args: { estimateSectionId: id },
                     }).then(() => {
                         refreshEverythingAfterRemovingSecOrSubsec(true);
                     });
                 } else if (type === 'subsection') {
                     Api.requestSession<any>({
                         command: 'estimate/remove_subsection',
-                        args: {estimateSubsectionId: id},
+                        args: { estimateSubsectionId: id },
                     }).then(() => {
                         refreshEverythingAfterRemovingSecOrSubsec(true);
                     });
@@ -307,7 +308,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         }
 
         if (!newRow || !newRow._id || !oldRow || !oldRow._id) {
-            console.error('Invalid row data:', {newRow, oldRow});
+            console.error('Invalid row data:', { newRow, oldRow });
             return oldRow; // Revert to oldRow if newRow is invalid
         }
 
@@ -328,14 +329,14 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
         const response = await Api.requestSession<Api.ApiEstimateLaborItem>({
             command: `estimate/update_labor_item`,
-            args: {estimatedLaborId: oldRow._id},
+            args: { estimatedLaborId: oldRow._id },
             json: newRow,
         });
 
         // console.log(' Successfully updated row:', response);
         refreshEverything(true);
 
-        return {...newRow}; //  Ensure a new object is returned
+        return { ...newRow }; //  Ensure a new object is returned
     };
 
     // Recursively gather descendant IDs for an accordion item.
@@ -425,7 +426,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
         // Set loading state for the current parent item
         // setSections((prevItems) => prevItems.map((item) => (item._id === parentId ? {...item, isLoading: true} : item)));
-        sectionsRef.current = sectionsRef.current.map((item) => (item._id === parentId ? {...item, isLoading: true} : item));
+        sectionsRef.current = sectionsRef.current.map((item) => (item._id === parentId ? { ...item, isLoading: true } : item));
         setSections(sectionsRef.current);
 
         const fetchedData = await fetchData(parentId, level);
@@ -584,12 +585,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 fetchedLevel3Data.forEach((level3Item) => {
                                     level3Items.push(mapLevelItem(level3Item));
                                 });
-                                return {...subItem, children: level3Items, isLoading: false};
+                                return { ...subItem, children: level3Items, isLoading: false };
                             }
                             return subItem;
                         })
                     );
-                    return {...item, children: updatedLevel2Children, isLoading: false};
+                    return { ...item, children: updatedLevel2Children, isLoading: false };
                 }
                 return item;
             })
@@ -618,13 +619,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         const mergedLevel2Items = newLevel2Items.map((backendSub) => {
                             const existingSub = item.children?.find((sub) => sub._id === backendSub._id);
                             if (existingSub && existingSub.children && existingSub.children.length > 0) {
-                                return {...backendSub, children: existingSub.children};
+                                return { ...backendSub, children: existingSub.children };
                             }
                             return backendSub;
                         });
                         newLevel2Items.splice(0, newLevel2Items.length, ...mergedLevel2Items);
                     }
-                    return {...item, children: newLevel2Items, isLoading: false};
+                    return { ...item, children: newLevel2Items, isLoading: false };
                 }
                 return item;
             })
@@ -638,7 +639,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         // Fetch new sections data from the backend.
         const fetchedSections = await Api.requestSession<EstimateSectionsApi.ApiEstimateSecttion[]>({
             command: 'estimate/fetch_sections',
-            args: {estimateId: props.estimateId},
+            args: { estimateId: props.estimateId },
         });
 
         // Merge new sections with existing ones to preserve children.
@@ -700,7 +701,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         // 1. Re-fetch the top-level sections.
         const fetchedSections = await Api.requestSession<EstimateSectionsApi.ApiEstimateSecttion[]>({
             command: 'estimate/fetch_sections',
-            args: {estimateId: props.estimateId},
+            args: { estimateId: props.estimateId },
         });
 
         // 2. Build a fresh array of sections with empty children.
@@ -777,7 +778,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     useImperativeHandle(ref, () => ({
         openAddSectionDialog: () => setOpenAddSectionDialog(true),
         calcMarketPrices: handleCalcMarketPrices,
-    }), [handleCalcMarketPrices]);
+        refreshEverything,
+    }), [handleCalcMarketPrices, refreshEverything]);
 
     if (!sections) {
         return null;
@@ -785,7 +787,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
     return (
         <>
-            <Stack direction='column' spacing={0} sx={{mt: 1}}>
+            <Stack direction='column' spacing={0} sx={{ mt: 1 }}>
                 {sections.map((item) => (
                     <EstimateRootAccordion key={item._id} expanded={expandedAccordions.includes(item._id)} onChange={handleAccordionChange(item._id, 2)}>
                         <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -795,7 +797,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 <Box flex={2}>&nbsp;</Box>
 
                                 <Tooltip title={t('Total Cost')} arrow placement='top'>
-                                    <Typography sx={{whiteSpace: 'nowrap'}}>{formatCurrencyRoundedSymbol(item.totalCost)}</Typography>
+                                    <Typography sx={{ whiteSpace: 'nowrap' }}>{formatCurrencyRoundedSymbol(item.totalCost)}</Typography>
                                 </Tooltip>
 
                                 {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
@@ -1006,7 +1008,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     }}
                                                                 >
                                                                     {/* <ScienceIcon sx={{ color: mainIconColor }} /> */}
-                                                                    <ImgElement src='/images/icons/material.svg' sx={{height: materialIconHeight}} />
+                                                                    <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
                                                                 </IconButton>
                                                             </>
                                                         );
@@ -1042,14 +1044,14 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             getRowId={(row) => row?._id ?? crypto.randomUUID()}
                                             processRowUpdate={handleUpdateRow} // Handle updates
                                             onProcessRowUpdateError={(error) => console.error('Error updating row:', error)} // ✅ Handle errors
-                                            getRowHeight={({model}) => makeMultilineTableCell(model.itemChangableName as string)}
+                                            getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
                                         />
 
                                         {(permAddFields || !props.isOnlyEstInfo) && (
-                                            <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                 <Button
                                                     variant='contained'
-                                                    sx={{ml: 1, mt: 2}}
+                                                    sx={{ ml: 1, mt: 2 }}
                                                     onClick={() => {
                                                         setOpenAddOfferDialogTypeWithouSubsection('labor');
                                                         setCurrentSectionId(item._id);
@@ -1103,17 +1105,17 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 alignItems: 'center',
                                                                 gap: 1,
                                                                 // Disable rotation on the icon itself
-                                                                '& .MuiSvgIcon-root': {transform: 'none'},
+                                                                '& .MuiSvgIcon-root': { transform: 'none' },
                                                             }}
                                                         >
-                                                            <Typography sx={{whiteSpace: 'nowrap'}}>
+                                                            <Typography sx={{ whiteSpace: 'nowrap' }}>
                                                                 {t('Total Cost: ') + `${parseThousandsSeparator(child.totalCost) ?? 0}`}
                                                             </Typography>
                                                             <ExpandMoreIcon />
                                                         </Box>
                                                     }
                                                 >
-                                                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                         <Typography>{child.label}</Typography>
                                                         {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                                             <>
@@ -1347,7 +1349,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                         {/* <ScienceIcon sx={{ color: mainIconColor }} /> */}
                                                                                         <ImgElement
                                                                                             src='/images/icons/material.svg'
-                                                                                            sx={{height: materialIconHeight}}
+                                                                                            sx={{ height: materialIconHeight }}
                                                                                         />
                                                                                     </IconButton>
                                                                                 </>
@@ -1380,13 +1382,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 getRowId={(row) => row?._id ?? crypto.randomUUID()}
                                                                 processRowUpdate={handleUpdateRow} // Handle updates
                                                                 onProcessRowUpdateError={(error) => console.error('Error updating row:', error)} // ✅ Handle errors
-                                                                getRowHeight={({model}) => makeMultilineTableCell(model.itemChangableName as string)}
+                                                                getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
                                                             />
                                                             {(permAddFields || !props.isOnlyEstInfo) && (
-                                                                <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                                     <Button
                                                                         variant='contained'
-                                                                        sx={{ml: 1, mt: 2}}
+                                                                        sx={{ ml: 1, mt: 2 }}
                                                                         onClick={() => {
                                                                             setOpenAddOfferDialogType('labor');
                                                                             setSelectedChildId(child._id);
@@ -1426,7 +1428,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             ) : (
                                 <>
                                     {(permAddFields || !props.isOnlyEstInfo) && (
-                                        <Box sx={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center'}}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                                             <Button
                                                 fullWidth
                                                 onClick={() => {
@@ -1448,7 +1450,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             </Button>
                                             <Button
                                                 variant='contained'
-                                                sx={{ml: 1, mt: 2, height: 40}}
+                                                sx={{ ml: 1, mt: 2, height: 40 }}
                                                 onClick={() => {
                                                     setOpenAddOfferDialogTypeWithouSubsection('labor');
                                                     setCurrentSectionId(item._id);
@@ -1462,7 +1464,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             )}
 
                             {(permAddFields || !props.isOnlyEstInfo) && item.children?.[0] && item.children[0].label !== '' && (
-                                <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                     <Button
                                         fullWidth
                                         onClick={() => {

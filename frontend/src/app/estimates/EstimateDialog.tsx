@@ -1,8 +1,8 @@
 'use client';
 
-import React, {useRef, useState} from 'react';
+import React, { useRef, useState } from 'react';
 
-import {Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography} from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
@@ -14,8 +14,8 @@ import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDial
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherExpensesAccordion';
 
-import {runPrintEstimate} from '@/lib/print_estimate';
-import {usePermissions} from '@/api/auth';
+import { runPrintEstimate } from '@/lib/print_estimate';
+import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
 
 interface EstimatePageDialogProps {
@@ -28,7 +28,7 @@ interface EstimatePageDialogProps {
 }
 
 export default function EstimatePageDialog(props: EstimatePageDialogProps) {
-    const {session, permissionsSet} = usePermissions();
+    const { session, permissionsSet } = usePermissions();
     const dataUpdatedRef = useRef(false);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
     const [activeTab, setActiveTab] = useState(1); // 0: Tools, 1: General Info, 2: Export
@@ -135,7 +135,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 },
             }}
         >
-            <DialogTitle sx={{m: 0, pt: 1, pb: 0}} id='customized-dialog-title'>
+            <DialogTitle sx={{ m: 0, pt: 1, pb: 0 }} id='customized-dialog-title'>
                 {props.estimateTitle}
             </DialogTitle>
 
@@ -219,12 +219,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {/* Tool buttons */}
                             {[
                                 { label: 'Create Section', icon: '➕', onClick: handleCreateSection },
-                                { label: 'Favorites', icon: '⭐', onClick: () => {} },
+                                { label: 'Favorites', icon: '⭐', onClick: () => { } },
                                 { label: 'Works List', icon: '📋', onClick: handleWorksListClick },
-                                { label: 'Materials List', icon: '🟢', onClick: () => {} },
+                                { label: 'Materials List', icon: '🟢', onClick: () => { } },
                                 { label: 'Update', icon: '🔄', onClick: handleUpdate },
-                                { label: 'Import from Library', icon: '⬇️', onClick: () => {} },
-                                { label: 'Select', icon: '✓', onClick: () => {} },
+                                { label: 'Import from Library', icon: '⬇️', onClick: () => { } },
+                                { label: 'Select', icon: '✓', onClick: () => { } },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
@@ -420,7 +420,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             {showWorksListDialog && (
                 <EstimateWorksListDialog
                     estimateId={props.estimateId}
-                    onClose={() => setShowWorksListDialog(false)}
+                    onClose={() => {
+                        setShowWorksListDialog(false);
+                        accordionRef.current?.refreshEverything(false);
+                    }}
                     onSave={handleWorksListSave}
                 />
             )}

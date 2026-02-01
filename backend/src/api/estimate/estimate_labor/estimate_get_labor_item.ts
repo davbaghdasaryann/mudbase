@@ -288,6 +288,62 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
     respondJsonData(res, data);
 });
 
+/** Single-call endpoint for Works List dialog: all labor items for an estimate with minimal lookups. */
+registerApiSession('estimate/fetch_works_list', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+    const estimateSectionsColl = Db.getEstimateSectionsCollection();
+    const estimateSubsectionsColl = Db.getEstimateSubsectionsCollection();
+    const estimateLaborItemsColl = Db.getEstimateLaborItemsCollection();
+
+    const sections = await estimateSectionsColl.find({ estimateId }).project({ _id: 1 }).toArray();
+    const sectionIds = sections.map((s) => s._id);
+    if (sectionIds.length === 0) {
+        respondJsonData(res, []);
+        return;
+    }
+
+    const subsections = await estimateSubsectionsColl
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .project({ _id: 1 })
+        .toArray();
+    const subsectionIds = subsections.map((s) => s._id);
+    if (subsectionIds.length === 0) {
+        respondJsonData(res, []);
+        return;
+    }
+
+    const pipeline: any[] = [
+        { $match: { estimateSubsectionId: { $in: subsectionIds } } },
+        {
+            $lookup: {
+                from: 'labor_items',
+                let: { itemIdVar: '$laborItemId' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
+                    { $lookup: { from: 'labor_subcategories', localField: 'subcategoryId', foreignField: '_id', as: 'subcat' } },
+                    { $unwind: { path: '$subcat', preserveNullAndEmptyArrays: true } },
+                    { $lookup: { from: 'labor_categories', localField: 'subcat.categoryId', foreignField: '_id', as: 'cat' } },
+                    { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
+                    { $project: { fullCode: 1, name: 1, categoryName: '$cat.name', subcategoryName: '$subcat.name', _id: 0 } },
+                ],
+                as: 'estimateLaborItemData',
+            },
+        },
+        { $match: { estimateLaborItemData: { $ne: [] } } },
+        {
+            $lookup: {
+                from: 'measurement_unit',
+                localField: 'measurementUnitMongoId',
+                foreignField: '_id',
+                as: 'estimateMeasurementUnitData',
+            },
+        },
+    ];
+
+    const data = await estimateLaborItemsColl.aggregate(pipeline).toArray();
+    respondJsonData(res, data);
+});
+
 registerApiSession('estimate/get_labor_item', async (req, res, session) => {
     let estimatedLaborId = requireMongoIdParam(req, 'estimatedLaborId');
 

@@ -79,30 +79,13 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
     const fetchWorksData = async () => {
         setLoading(true);
         try {
-            // Step 1: Fetch ALL labor items from the entire estimate
-            const allSections = await Api.requestSession<any[]>({
-                command: 'estimate/fetch_sections',
+            // Single API call: all labor items for the estimate (fast even for large estimates)
+            const allLaborItems = await Api.requestSession<any[]>({
+                command: 'estimate/fetch_works_list',
                 args: { estimateId: props.estimateId },
             });
 
-            const allLaborItems: any[] = [];
-            
-            for (const section of allSections) {
-                const subsections = await Api.requestSession<any[]>({
-                    command: 'estimate/fetch_subsections',
-                    args: { estimateSectionId: section._id },
-                });
-
-                for (const subsection of subsections) {
-                    const laborItems = await Api.requestSession<any[]>({
-                        command: 'estimate/fetch_labor_items',
-                        args: { estimateSubsectionId: subsection._id },
-                    });
-                    allLaborItems.push(...laborItems);
-                }
-            }
-
-            // Step 2: Group all labor items by laborItemId across entire estimate
+            // Group all labor items by laborItemId across entire estimate
             const worksMap = new Map<string, WorkItem>();
 
             for (const item of allLaborItems) {
@@ -235,7 +218,9 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
             }
 
             props.onSave();
-            props.onClose();
+            // Refresh table from server so it shows saved values
+            await fetchWorksData();
+            setEditedWorks(new Map());
         } catch (error) {
             console.error('Error saving works:', error);
         } finally {
