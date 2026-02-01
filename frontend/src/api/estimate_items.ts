@@ -17,6 +17,9 @@ export interface ApiEstimateLaborItem{
 
     priceSource?: 'market' | 'my_offer';
 
+    /** When true, not counted in estimation; can be unhidden. */
+    isHidden?: boolean;
+
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;
     estimateAccountMadeOfferData?: any;

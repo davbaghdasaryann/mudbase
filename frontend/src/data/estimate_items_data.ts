@@ -22,6 +22,7 @@ export class EstimateLaborItemDisplayData {
     itemChangableAveragePrice!: number; // but this is changable for estimation
     presentItemOfferAveragePrice?: number;
     priceSource?: 'market' | 'my_offer';
+    isHidden?: boolean;
 
     itemLaborHours?: number; //🔴 TODO: this will need us in version 2 🔴
 
@@ -51,6 +52,7 @@ export class EstimateLaborItemDisplayData {
         this.itemLaborHours = estimateLaborItem.laborHours; //🔴 TODO: this will need us in version 2 🔴
         this.presentItemOfferAveragePrice = roundToThree(estimateLaborItem.presentLaborOfferAveragePrice);
         this.priceSource = estimateLaborItem.priceSource;
+        this.isHidden = estimateLaborItem.isHidden === true;
 
         if (estimateLaborItem.estimateLaborItemData) {
             if (estimateLaborItem.estimateLaborItemData.length > 0) {

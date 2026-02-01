@@ -77,6 +77,9 @@ interface AccordionItem {
 
     /** 'market' | 'my_offer' - for cell background (blue = market, yellow = my price) */
     priceSource?: 'market' | 'my_offer';
+
+    /** When true, not counted in estimation; row shown as inactive. */
+    isHidden?: boolean;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -85,6 +88,7 @@ const isMarketPriceRow = (row: AccordionItem) =>
     row.itemChangableAveragePrice != null &&
     Math.abs(row.itemChangableAveragePrice - row.itemAveragePrice!) < MARKET_PRICE_EPS;
 const isMyPriceRow = (row: AccordionItem) => row.priceSource === 'my_offer';
+const isHiddenRow = (row: AccordionItem) => row.isHidden === true;
 
 // ✅ Simulated API Call (Replace with real API)
 const fetchData = async (parentId: string, level: number) => {
@@ -157,6 +161,7 @@ export interface EstimateThreeLevelNestedAccordionRef {
     importMyPrices: (estimatedLaborIds?: string[]) => void;
     refreshEverything: (showProgIndic?: boolean) => Promise<void>;
     getSelectedLaborIds: () => string[];
+    getSelectedLaborDetails: () => { id: string; isHidden: boolean }[];
 }
 
 const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAccordionRef, EstimateThreeLevelNestedAccordionProps>(function EstimateThreeLevelNestedAccordion(props, ref) {
@@ -517,6 +522,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             itemChangableAveragePrice: roundToThree(item.itemChangableAveragePrice),
                             itemAveragePrice: roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0)),
                             priceSource: item.priceSource,
+                            isHidden: item.isHidden === true,
                             materialUnitPrice: roundToThree(item.materialUnitPrice),
                             materialQuantity: item.materialQuantity,
                         };
@@ -845,6 +851,25 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
     const getSelectedLaborIds = useCallback(() => Object.values(selectionByGridKey).flat(), [selectionByGridKey]);
 
+    const findLaborRowById = useCallback((sectionsList: AccordionItem[], id: string): AccordionItem | null => {
+        for (const sec of sectionsList) {
+            for (const sub of sec.children ?? []) {
+                const row = (sub.children ?? []).find((r) => r._id === id);
+                if (row) return row;
+            }
+        }
+        return null;
+    }, []);
+
+    const getSelectedLaborDetails = useCallback((): { id: string; isHidden: boolean }[] => {
+        const ids = Object.values(selectionByGridKey).flat();
+        const current = sectionsRef.current;
+        return ids.map((id) => {
+            const row = findLaborRowById(current, id);
+            return { id, isHidden: row?.isHidden === true };
+        });
+    }, [selectionByGridKey, findLaborRowById]);
+
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
         openAddSectionDialog: () => setOpenAddSectionDialog(true),
@@ -852,7 +877,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         importMyPrices: handleImportMyPrices,
         refreshEverything,
         getSelectedLaborIds,
-    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds]);
+        getSelectedLaborDetails,
+    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds, getSelectedLaborDetails]);
 
     if (!sections) {
         return null;
@@ -936,7 +962,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 '& .myPriceCell': {
                                                     backgroundColor: '#fff9c4 !important', /* yellow - builder's own price */
                                                 },
+                                                '& .MuiDataGrid-row.hiddenRow': {
+                                                    opacity: 0.65,
+                                                    fontStyle: 'italic',
+                                                },
+                                                '& .MuiDataGrid-row.hiddenRow .MuiDataGrid-cell': {
+                                                    color: 'text.secondary',
+                                                },
                                             }}
+                                            getRowClassName={(params) => (params.row && isHiddenRow(params.row as AccordionItem)) ? 'hiddenRow' : ''}
                                             columns={[
                                                 // { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 80, },
                                                 {
@@ -1281,7 +1315,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     '& .myPriceCell': {
                                                                         backgroundColor: '#fff9c4 !important', /* yellow - builder's own price */
                                                                     },
+                                                                    '& .MuiDataGrid-row.hiddenRow': {
+                                                                        opacity: 0.65,
+                                                                        fontStyle: 'italic',
+                                                                    },
+                                                                    '& .MuiDataGrid-row.hiddenRow .MuiDataGrid-cell': {
+                                                                        color: 'text.secondary',
+                                                                    },
                                                                 }}
+                                                                getRowClassName={(params) => (params.row && isHiddenRow(params.row as AccordionItem)) ? 'hiddenRow' : ''}
                                                                 columns={[
                                                                     // { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 80 },
                                                                     {

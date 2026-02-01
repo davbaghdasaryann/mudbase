@@ -61,8 +61,10 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
 
     const estimateLaborColl = Db.getEstimateLaborItemsCollection();
     const laborItems = await estimateLaborColl.find({estimateId: estimate._id}).toArray();
+    const hiddenLaborIds = new Set(laborItems.filter((l) => l.isHidden).map((l) => l._id.toString()));
     let laborTotalWithoutMaterial: number = 0;
     for (let labor of laborItems) {
+        if (labor.isHidden) continue;
         if (labor.quantity && labor.changableAveragePrice) {
             let laborCost = labor.quantity * labor.changableAveragePrice
             let subSection = subSectionsById.get(labor.estimateSubsectionId.toString());
@@ -82,6 +84,7 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     const estimateMaterialItemsColl = Db.getEstimateMaterialItemsCollection();
     const materialItems = await estimateMaterialItemsColl.find({estimateId: estimate._id}).toArray();
     for (let material of materialItems) {
+        if (hiddenLaborIds.has(material.estimatedLaborId.toString())) continue;
         if (material.quantity && material.changableAveragePrice) {
             let materialCost = material.quantity * material.changableAveragePrice;
 

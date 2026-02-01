@@ -133,6 +133,23 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         });
     };
 
+    const handleSetHidden = (hidden: boolean) => {
+        if (selectedLaborIds.length === 0) return;
+        Api.requestSession({
+            command: 'estimate/set_labor_items_hidden',
+            args: { estimateId: props.estimateId },
+            json: { estimatedLaborIds: selectedLaborIds, hidden },
+        }).then(() => {
+            dataUpdatedRef.current = true;
+            accordionRef.current?.refreshEverything(false);
+        });
+    };
+
+    const selectedDetails = accordionRef.current?.getSelectedLaborDetails?.() ?? [];
+    const anySelectedHidden = selectedDetails.some((d) => d.isHidden);
+    const hideUnhideLabel = anySelectedHidden ? 'Unhide' : 'Hide';
+    const handleHideUnhide = () => (anySelectedHidden ? handleSetHidden(false) : handleSetHidden(true));
+
     // Download handlers
     const handleDownloadEstimation = (format: 'html' | 'word' | 'pdf') => {
         const commandMap = {
@@ -326,7 +343,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {[
                                 { label: 'Delete', icon: '🗑️', onClick: handleDeleteSelected },
                                 { label: 'Move', icon: '➡️', onClick: () => setShowMoveDialog(true) },
-                                { label: 'Hide', icon: '👁️', onClick: () => { } },
+                                { label: hideUnhideLabel, icon: anySelectedHidden ? '👁️' : '👁️‍🗨️', onClick: handleHideUnhide },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
