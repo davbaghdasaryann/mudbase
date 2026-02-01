@@ -74,6 +74,9 @@ interface AccordionItem {
     priceWithMaterial?: number;
 
     unitPrice?: number;
+
+    /** 'market' | 'my_offer' - for cell background (blue = market, yellow = my price) */
+    priceSource?: 'market' | 'my_offer';
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -81,6 +84,7 @@ const isMarketPriceRow = (row: AccordionItem) =>
     row.itemAveragePrice != null &&
     row.itemChangableAveragePrice != null &&
     Math.abs(row.itemChangableAveragePrice - row.itemAveragePrice!) < MARKET_PRICE_EPS;
+const isMyPriceRow = (row: AccordionItem) => row.priceSource === 'my_offer';
 
 // ✅ Simulated API Call (Replace with real API)
 const fetchData = async (parentId: string, level: number) => {
@@ -143,11 +147,14 @@ interface EstimateThreeLevelNestedAccordionProps {
     onDataUpdated?: (updated: boolean) => void;
     /** When true, labor rows show checkboxes and selection is tracked for "Import from Library" (market prices for selected only). */
     selectMode?: boolean;
+    /** Called when row selection changes (for toolbar: disable Delete/Move/Hide until selection). */
+    onSelectionChange?: (selectedIds: string[]) => void;
 }
 
 export interface EstimateThreeLevelNestedAccordionRef {
     openAddSectionDialog: () => void;
     calcMarketPrices: (estimatedLaborIds?: string[]) => void;
+    importMyPrices: (estimatedLaborIds?: string[]) => void;
     refreshEverything: (showProgIndic?: boolean) => Promise<void>;
     getSelectedLaborIds: () => string[];
 }
@@ -176,6 +183,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
     /** Selected labor row ids by grid key (section_empty or subsection id). Used when selectMode is on. */
     const [selectionByGridKey, setSelectionByGridKey] = useState<Record<string, string[]>>({});
+
+    useEffect(() => {
+        props.onSelectionChange?.(Object.values(selectionByGridKey).flat());
+    }, [selectionByGridKey, props.onSelectionChange]);
     const [openAddOfferDialogTypeWithouSubsection, setOpenAddOfferDialogTypeWithouSubsection] = useState<'labor' | 'material' | null>(null);
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
@@ -351,6 +362,32 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         return { ...newRow }; //  Ensure a new object is returned
     };
 
+    const updateSubsectionChildren = (sectionsList: AccordionItem[], subsectionId: string, newChildren: AccordionItem[]): AccordionItem[] =>
+        sectionsList.map((sec) => ({
+            ...sec,
+            children: sec.children?.map((sub) => (sub._id === subsectionId ? { ...sub, children: newChildren } : sub)) ?? [],
+        }));
+
+    const handleRowOrderChange = (subsectionId: string, currentRows: AccordionItem[]) => (params: { row: AccordionItem; targetIndex: number; oldIndex: number }) => {
+        const { oldIndex, targetIndex } = params;
+        const rows = [...(currentRows || [])];
+        const [removed] = rows.splice(oldIndex, 1);
+        if (!removed) return;
+        rows.splice(targetIndex, 0, removed);
+        const orderedIds = rows.map((r) => r._id);
+        Api.requestSession({
+            command: 'estimate/reorder_labor_items',
+            args: { estimateSubsectionId: subsectionId },
+            json: { estimatedLaborIds: orderedIds },
+        }).then(() => {
+            setSections((prev) => {
+                const next = updateSubsectionChildren(prev, subsectionId, rows);
+                sectionsRef.current = next;
+                return next;
+            });
+        });
+    };
+
     // Recursively gather descendant IDs for an accordion item.
     const getDescendantIds = (item: AccordionItem): string[] => {
         let ids: string[] = [];
@@ -407,6 +444,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.itemMeasurementUnit = item.itemMeasurementUnit;
         itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
+        itemArr.priceSource = item.priceSource;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -478,6 +516,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             quantity: roundToThree(item.quantity),
                             itemChangableAveragePrice: roundToThree(item.itemChangableAveragePrice),
                             itemAveragePrice: roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0)),
+                            priceSource: item.priceSource,
                             materialUnitPrice: roundToThree(item.materialUnitPrice),
                             materialQuantity: item.materialQuantity,
                         };
@@ -545,6 +584,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
 
             itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
+            itemArr.priceSource = item.priceSource;
 
             if (item.itemUnitPrice) {
                 console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
@@ -771,6 +811,24 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                 }).then(() => {
                     refreshEverything(true);
                 });
+            }
+        });
+    };
+
+    const handleImportMyPrices = (estimatedLaborIds?: string[]) => {
+        setAnchorEl(null);
+
+        confirmDialog(t('Import your own prices for selected works?')).then((result) => {
+            if (result.isConfirmed) {
+                setProgIndic(true);
+                const body = estimatedLaborIds?.length ? { estimatedLaborIds } : undefined;
+                Api.requestSession<any>({
+                    command: 'estimate/import_my_prices',
+                    args: { estimateId: props.estimateId },
+                    json: body,
+                }).then(() => {
+                    refreshEverything(true);
+                });
                 // .finally(() => {
                 //     setRemoveLaborEstimateLaborItemId(null);
                 //     setEstimatedLaborItemName(null);
@@ -791,9 +849,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     useImperativeHandle(ref, () => ({
         openAddSectionDialog: () => setOpenAddSectionDialog(true),
         calcMarketPrices: handleCalcMarketPrices,
+        importMyPrices: handleImportMyPrices,
         refreshEverything,
         getSelectedLaborIds,
-    }), [handleCalcMarketPrices, refreshEverything, getSelectedLaborIds]);
+    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds]);
 
     if (!sections) {
         return null;
@@ -874,6 +933,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 '& .marketPriceCell': {
                                                     backgroundColor: '#e3f2fd !important', /* visible on both white and grey alternating rows */
                                                 },
+                                                '& .myPriceCell': {
+                                                    backgroundColor: '#fff9c4 !important', /* yellow - builder's own price */
+                                                },
                                             }}
                                             columns={[
                                                 // { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 80, },
@@ -933,10 +995,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 120,
                                                     editable: true,
-                                                    cellClassName: (params) =>
-                                                        params.row && isMarketPriceRow(params.row as AccordionItem)
-                                                            ? 'editableCell marketPriceCell'
-                                                            : 'editableCell',
+                                                    cellClassName: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        if (row && isMyPriceRow(row)) return 'editableCell myPriceCell';
+                                                        if (row && isMarketPriceRow(row)) return 'editableCell marketPriceCell';
+                                                        return 'editableCell';
+                                                    },
                                                     valueFormatter: (value) => formatCurrency(value),
                                                 },
                                                 {
@@ -1062,6 +1126,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             ]}
                                             rows={item.children[0].children} // ✅ Show items from the empty subsection
                                             getRowId={(row) => row?._id ?? crypto.randomUUID()}
+                                            rowReordering
+                                            onRowOrderChange={handleRowOrderChange(item.children[0]._id, item.children[0].children ?? [])}
                                             checkboxSelection={props.selectMode === true}
                                             rowSelectionModel={{
                                                 type: 'include',
@@ -1212,6 +1278,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     '& .marketPriceCell': {
                                                                         backgroundColor: '#e3f2fd !important', /* visible on both white and grey alternating rows */
                                                                     },
+                                                                    '& .myPriceCell': {
+                                                                        backgroundColor: '#fff9c4 !important', /* yellow - builder's own price */
+                                                                    },
                                                                 }}
                                                                 columns={[
                                                                     // { field: 'itemFullCode', headerName: 'ID', headerAlign: 'left', width: 80 },
@@ -1279,10 +1348,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerAlign: 'left',
                                                                         width: 120,
                                                                         editable: true,
-                                                                        cellClassName: (params) =>
-                                                                            params.row && isMarketPriceRow(params.row as AccordionItem)
-                                                                                ? 'editableCell marketPriceCell'
-                                                                                : 'editableCell',
+                                                                        cellClassName: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            if (row && isMyPriceRow(row)) return 'editableCell myPriceCell';
+                                                                            if (row && isMarketPriceRow(row)) return 'editableCell marketPriceCell';
+                                                                            return 'editableCell';
+                                                                        },
                                                                         disableColumnMenu: true,
                                                                         valueFormatter: (value) => formatCurrency(value),
                                                                     },
@@ -1417,6 +1488,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 ]}
                                                                 rows={child.children}
                                                                 getRowId={(row) => row?._id ?? crypto.randomUUID()}
+                                                                rowReordering
+                                                                onRowOrderChange={handleRowOrderChange(child._id, child.children ?? [])}
                                                                 checkboxSelection={props.selectMode === true}
                                                                 rowSelectionModel={{
                                                                     type: 'include',

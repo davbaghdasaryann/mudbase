@@ -21,6 +21,7 @@ export class EstimateLaborItemDisplayData {
     itemAveragePrice!: string; // this is no changable for estimation
     itemChangableAveragePrice!: number; // but this is changable for estimation
     presentItemOfferAveragePrice?: number;
+    priceSource?: 'market' | 'my_offer';
 
     itemLaborHours?: number; //🔴 TODO: this will need us in version 2 🔴
 
@@ -49,6 +50,7 @@ export class EstimateLaborItemDisplayData {
         }
         this.itemLaborHours = estimateLaborItem.laborHours; //🔴 TODO: this will need us in version 2 🔴
         this.presentItemOfferAveragePrice = roundToThree(estimateLaborItem.presentLaborOfferAveragePrice);
+        this.priceSource = estimateLaborItem.priceSource;
 
         if (estimateLaborItem.estimateLaborItemData) {
             if (estimateLaborItem.estimateLaborItemData.length > 0) {

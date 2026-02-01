@@ -171,7 +171,7 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
                     as: 'matched',
                 },
             },
-            {$set: {changableAveragePrice: {$first: '$matched.averagePrice'}}},
+            {$set: {changableAveragePrice: {$first: '$matched.averagePrice'}, priceSource: 'market'}},
             {$unset: 'matched'},
             {
                 $merge: {
@@ -220,6 +220,75 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
             },
         ])
         .toArray(); // force execution
+
+    await updateEstimateCostById(estimateId);
+
+    respondJson(res, estimate);
+});
+
+/** Import this account's own labor offer prices into estimate labor items (builders). */
+registerApiSession('estimate/import_my_prices', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+    const estimatedLaborIds = parseOptionalLaborIds(req.body);
+    const accountId = session.mongoAccountId;
+    if (!accountId) {
+        respondJson(res, { ok: false, message: 'Account required' });
+        return;
+    }
+
+    const estimate = (await Db.getEstimatesCollection().findOne({ _id: estimateId }))!;
+    assertObject(estimate, 'Invalid Estimate Id');
+
+    const laborMatch: any = { estimateId };
+    if (estimatedLaborIds?.length) laborMatch._id = { $in: estimatedLaborIds };
+
+    const estimateLaborItemsColl = Db.getEstimateLaborItemsCollection();
+
+    await estimateLaborItemsColl
+        .aggregate([
+            { $match: laborMatch },
+            {
+                $lookup: {
+                    from: 'labor_offers',
+                    let: { laborItemIdVar: '$laborItemId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$itemId', '$$laborItemIdVar'] },
+                                accountId: accountId,
+                                isArchived: false,
+                            },
+                        },
+                        { $sort: { updatedAt: -1 } },
+                        { $limit: 1 },
+                        { $project: { price: 1 } },
+                    ],
+                    as: 'myOffer',
+                },
+            },
+            {
+                $set: {
+                    changableAveragePrice: { $ifNull: [{ $arrayElemAt: ['$myOffer.price', 0] }, '$changableAveragePrice'] },
+                    priceSource: {
+                        $cond: {
+                            if: { $gt: [{ $size: '$myOffer' }, 0] },
+                            then: 'my_offer',
+                            else: '$priceSource',
+                        },
+                    },
+                },
+            },
+            { $unset: 'myOffer' },
+            {
+                $merge: {
+                    into: 'estimate_labor_items',
+                    on: '_id',
+                    whenMatched: 'merge',
+                    whenNotMatched: 'discard',
+                },
+            },
+        ])
+        .toArray();
 
     await updateEstimateCostById(estimateId);
 

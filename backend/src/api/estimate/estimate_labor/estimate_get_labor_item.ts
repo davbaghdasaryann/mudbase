@@ -165,6 +165,9 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                 filteredOffers: 0, // 🔹 Hide filtered offers if not needed
             },
         },
+        { $addFields: { _sortIndex: { $ifNull: ['$displayIndex', 0] } } },
+        { $sort: { _sortIndex: 1, _id: 1 } },
+        { $project: { _sortIndex: 0 } },
     ];
 
     const data = await estimateLaborItemsColl.aggregate(pipeline).toArray();
@@ -339,6 +342,9 @@ registerApiSession('estimate/fetch_works_list', async (req, res, session) => {
                 as: 'estimateMeasurementUnitData',
             },
         },
+        { $addFields: { _sortIndex: { $ifNull: ['$displayIndex', 0] } } },
+        { $sort: { _sortIndex: 1, _id: 1 } },
+        { $project: { _sortIndex: 0 } },
     ];
 
     const data = await estimateLaborItemsColl.aggregate(pipeline).toArray();

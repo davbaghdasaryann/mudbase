@@ -16,6 +16,12 @@ export interface EntityEstimateLaborItem {
 
     laborOfferItemName: string;
 
+    /** Order within subsection (for drag reorder). */
+    displayIndex?: number;
+
+    /** 'market' = from catalog average (Update), 'my_offer' = from this account's offer (Import from Library), null = manual edit */
+    priceSource?: 'market' | 'my_offer' | null;
+
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;
     estimateAccountMadeOfferData?: any;

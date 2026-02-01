@@ -11,6 +11,7 @@ import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAcco
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
+import EstimateMoveWorksDialog from '@/components/estimate/EstimateMoveWorksDialog';
 
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherExpensesAccordion';
@@ -18,6 +19,7 @@ import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherE
 import { runPrintEstimate } from '@/lib/print_estimate';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
+import { confirmDialog } from '@/components/ConfirmationDialog';
 
 interface EstimatePageDialogProps {
     estimateId: string;
@@ -36,6 +38,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
     const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
     const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
+    const [showMoveDialog, setShowMoveDialog] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -84,7 +88,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     };
 
     const handleSelectClick = () => {
-        setIsSelectMode((prev) => !prev);
+        setIsSelectMode((prev) => {
+            if (prev) setSelectedLaborIds([]); // clear selection when exiting select mode
+            return !prev;
+        });
     };
 
     const handleUpdate = () => {
@@ -96,6 +103,34 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             }
         }
         accordionRef.current?.calcMarketPrices();
+    };
+
+    const handleImportFromLibrary = () => {
+        if (isSelectMode) {
+            const selectedIds = accordionRef.current?.getSelectedLaborIds() ?? [];
+            if (selectedIds.length > 0) {
+                accordionRef.current?.importMyPrices(selectedIds);
+                return;
+            }
+        }
+        accordionRef.current?.importMyPrices();
+    };
+
+    const lastThreeDisabled = selectedLaborIds.length === 0;
+
+    const handleDeleteSelected = () => {
+        if (selectedLaborIds.length === 0) return;
+        confirmDialog(`Delete ${selectedLaborIds.length} selected work(s)?`).then((result) => {
+            if (!result.isConfirmed) return;
+            Promise.all(
+                selectedLaborIds.map((estimateLaborItemId) =>
+                    Api.requestSession({ command: 'estimate/remove_labor_item', args: { estimateLaborItemId } })
+                )
+            ).then(() => {
+                dataUpdatedRef.current = true;
+                accordionRef.current?.refreshEverything(false);
+            });
+        });
     };
 
     // Download handlers
@@ -244,12 +279,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { label: 'Works List', icon: '📋', onClick: handleWorksListClick },
                                 { label: 'Materials List', icon: '🟢', onClick: handleMaterialsListClick },
                                 { label: 'Update', icon: '🔄', onClick: handleUpdate },
-                                { label: 'Import from Library', icon: '⬇️', onClick: () => { } },
+                                { label: 'Import from Library', icon: '⬇️', onClick: handleImportFromLibrary, disabled: !permissionsSet?.has('OFF_CRT_LBR') },
                                 { label: 'Select', icon: '✓', onClick: handleSelectClick },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
-                                    onClick={tool.onClick}
+                                    onClick={tool.disabled ? undefined : tool.onClick}
                                     sx={{
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -258,10 +293,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         p: 1.25,
                                         backgroundColor: 'transparent',
                                         borderRadius: 2,
-                                        cursor: 'pointer',
+                                        cursor: tool.disabled ? 'not-allowed' : 'pointer',
                                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
                                         transition: 'all 0.2s',
-                                        '&:hover': {
+                                        opacity: tool.disabled ? 0.5 : 1,
+                                        pointerEvents: tool.disabled ? 'none' : 'auto',
+                                        '&:hover': tool.disabled ? {} : {
                                             boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                             transform: 'translateY(-2px)',
                                         },
@@ -285,14 +322,15 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 mx: 1
                             }} />
 
-                            {/* Last 3 buttons with separator */}
+                            {/* Last 3 buttons with separator — disabled until rows selected when in select mode */}
                             {[
-                                { label: 'Delete', icon: '🗑️' },
-                                { label: 'Move', icon: '➡️' },
-                                { label: 'Hide', icon: '👁️' },
+                                { label: 'Delete', icon: '🗑️', onClick: handleDeleteSelected },
+                                { label: 'Move', icon: '➡️', onClick: () => setShowMoveDialog(true) },
+                                { label: 'Hide', icon: '👁️', onClick: () => { } },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
+                                    onClick={lastThreeDisabled ? undefined : tool.onClick}
                                     sx={{
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -301,10 +339,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         p: 1.25,
                                         backgroundColor: 'transparent',
                                         borderRadius: 2,
-                                        cursor: 'pointer',
+                                        cursor: lastThreeDisabled ? 'not-allowed' : 'pointer',
                                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
                                         transition: 'all 0.2s',
-                                        '&:hover': {
+                                        opacity: lastThreeDisabled ? 0.5 : 1,
+                                        pointerEvents: lastThreeDisabled ? 'none' : 'auto',
+                                        '&:hover': lastThreeDisabled ? {} : {
                                             boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                             transform: 'translateY(-2px)',
                                         },
@@ -432,7 +472,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 )}
 
                 {/* Tables and accordions - Always visible regardless of active tab */}
-                <EstimateThreeLevelNestedAccordion ref={accordionRef} isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} selectMode={isSelectMode} />
+                <EstimateThreeLevelNestedAccordion ref={accordionRef} isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} selectMode={isSelectMode} onSelectionChange={setSelectedLaborIds} />
 
                 {session?.user && !permissionsSet?.has?.('EST_CRT_BY_BNK') && <EstimateOtherExpensesAccordion estimateId={props.estimateId} />}
             </DialogContent>
@@ -458,6 +498,16 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     onSave={handleMaterialsListSave}
                 />
             )}
+            <EstimateMoveWorksDialog
+                open={showMoveDialog}
+                estimateId={props.estimateId}
+                selectedLaborIds={selectedLaborIds}
+                onClose={() => setShowMoveDialog(false)}
+                onConfirm={() => {
+                    dataUpdatedRef.current = true;
+                    accordionRef.current?.refreshEverything(false);
+                }}
+            />
         </Dialog>
     );
 }

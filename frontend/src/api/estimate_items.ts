@@ -15,6 +15,8 @@ export interface ApiEstimateLaborItem{
 
     presentLaborOfferAveragePrice: number;
 
+    priceSource?: 'market' | 'my_offer';
+
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;
     estimateAccountMadeOfferData?: any;
