@@ -36,6 +36,7 @@ export * from "./estimates/estimates_fetch";
 export * from "./estimates_shares/estimates_shares_add";
 export * from "./estimates_shares/estimates_shares_delete";
 export * from "./estimates_shares/estimates_shares_fetch";
+export * from "./favorites/index";
 export * from "./measurement_unit/measurement_unit_fetch";
 export * from "./profile/profile_get";
 export * from "./profile/profile_get_account";

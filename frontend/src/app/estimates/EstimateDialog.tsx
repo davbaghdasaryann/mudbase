@@ -18,6 +18,8 @@ import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
 import EstimateMoveWorksDialog from '@/components/estimate/EstimateMoveWorksDialog';
+import EstimateAddToFavoritesDialog from '@/components/estimate/EstimateAddToFavoritesDialog';
+import EstimateImportFromFavoritesDialog from '@/components/estimate/EstimateImportFromFavoritesDialog';
 
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherExpensesAccordion';
@@ -47,6 +49,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
     const [showMoveDialog, setShowMoveDialog] = useState(false);
+    const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
+    const [showImportFromFavoritesDialog, setShowImportFromFavoritesDialog] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -124,6 +128,16 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     };
 
     const lastThreeDisabled = selectedLaborIds.length === 0;
+
+    const handleFavoritesClick = () => {
+        if (selectedLaborIds.length > 0) {
+            // Has selection - Add to Favorites
+            setShowFavoritesDialog(true);
+        } else {
+            // No selection - Import from Favorites
+            setShowImportFromFavoritesDialog(true);
+        }
+    };
 
     const handleDeleteSelected = () => {
         if (selectedLaborIds.length === 0) return;
@@ -323,7 +337,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {/* Tool buttons */}
                             {[
                                 { labelKey: 'Create Section', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateSection },
-                                { labelKey: 'Favorites', icon: `${TOOLBAR_ICON}/favourites.svg`, onClick: () => { } },
+                                {
+                                    labelKey: selectedLaborIds.length > 0 ? 'Add to Favorites' : 'Import from Favorites',
+                                    icon: `${TOOLBAR_ICON}/favourites.svg`,
+                                    onClick: handleFavoritesClick
+                                },
                                 { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick },
                                 { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick },
                                 { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate },
@@ -572,6 +590,28 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     accordionRef.current?.refreshEverything(false);
                 }}
             />
+            {showFavoritesDialog && (
+                <EstimateAddToFavoritesDialog
+                    selectedLaborIds={selectedLaborIds}
+                    onClose={() => setShowFavoritesDialog(false)}
+                    onConfirm={() => {
+                        setShowFavoritesDialog(false);
+                        // Optionally clear selection after adding to favorites
+                        setSelectedLaborIds([]);
+                    }}
+                />
+            )}
+            {showImportFromFavoritesDialog && (
+                <EstimateImportFromFavoritesDialog
+                    estimateId={props.estimateId}
+                    onClose={() => setShowImportFromFavoritesDialog(false)}
+                    onConfirm={() => {
+                        setShowImportFromFavoritesDialog(false);
+                        dataUpdatedRef.current = true;
+                        accordionRef.current?.refreshEverything(true);
+                    }}
+                />
+            )}
         </Dialog>
     );
 }
