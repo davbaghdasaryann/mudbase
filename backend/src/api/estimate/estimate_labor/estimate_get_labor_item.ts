@@ -68,11 +68,6 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
             },
         },
         {
-            $match: {
-                estimateLaborItemData: { $ne: [] }, // Keep only items with valid labor item data
-            },
-        },
-        {
             $lookup: {
                 from: 'measurement_unit',
                 localField: 'measurementUnitMongoId',
@@ -333,7 +328,6 @@ registerApiSession('estimate/fetch_works_list', async (req, res, session) => {
                 as: 'estimateLaborItemData',
             },
         },
-        { $match: { estimateLaborItemData: { $ne: [] } } },
         {
             $lookup: {
                 from: 'measurement_unit',

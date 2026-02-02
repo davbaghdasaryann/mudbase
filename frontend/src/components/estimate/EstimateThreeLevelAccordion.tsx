@@ -340,9 +340,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             return oldRow; // Revert to oldRow if newRow is invalid
         }
 
-        // Check if this is a temporary empty row
-        const isTempRow = newRow._id.startsWith('temp_');
-
         const isPositiveInteger: boolean = validateDoubleInteger(newRow.quantity);
         // const isPositiveIntegerPrice: boolean = validatePositiveDoubleInteger(newRow.itemChangableAveragePrice);
         const isPositiveIntegerPrice: boolean = validateDoubleInteger(newRow.itemChangableAveragePrice);
@@ -357,20 +354,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity);
         newRow.itemChangableAveragePrice = normalizeArmenianDecimalPoint(newRow.itemChangableAveragePrice);
         newRow.itemLaborHours = normalizeArmenianDecimalPoint(newRow.itemLaborHours);
-
-        // Calculate derived values for temporary rows
-        if (isTempRow) {
-            newRow.itemWithoutMaterial = newRow.quantity && newRow.itemChangableAveragePrice
-                ? roundNumber(newRow.quantity * newRow.itemChangableAveragePrice)
-                : 0;
-            newRow.priceWithMaterial = roundNumber((newRow.itemWithoutMaterial ?? 0) + (newRow.materialTotalCost ?? 0));
-            newRow.unitPrice = newRow.quantity && newRow.quantity > 0
-                ? roundNumber(newRow.priceWithMaterial / newRow.quantity)
-                : 0;
-
-            // For temporary rows, just update local state without calling the API
-            return { ...newRow };
-        }
 
         const response = await Api.requestSession<Api.ApiEstimateLaborItem>({
             command: `estimate/update_labor_item`,
@@ -410,62 +393,93 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         });
     };
 
-    const handleAddEmptyRow = (targetId: string, isSubsection: boolean = false) => {
-        const newEmptyRow: AccordionItem = {
-            _id: `temp_${crypto.randomUUID()}`,
-            label: '',
-            totalCost: 0,
-            itemFullCode: 'N/A',
-            itemName: '',
-            itemChangableName: '',
-            itemMeasurementUnit: '',
-            quantity: 0,
-            itemChangableAveragePrice: 0,
-            itemAveragePrice: 0,
-            itemWithoutMaterial: 0,
-            materialTotalCost: 0,
-            priceWithMaterial: 0,
-            unitPrice: 0,
-            itemLaborHours: 0,
-        };
+    const handleAddEmptyRow = async (targetId: string, isSubsection: boolean = false) => {
+        // Determine the subsection ID for the API call
+        let subsectionIdForApi: string;
 
-        setSections((prev) => {
-            return prev.map((section) => {
-                if (isSubsection) {
-                    // Adding to a specific subsection
-                    if (section.children) {
-                        return {
-                            ...section,
-                            children: section.children.map((subsection) => {
-                                if (subsection._id === targetId) {
-                                    return {
-                                        ...subsection,
-                                        children: [...(subsection.children || []), newEmptyRow],
-                                    };
-                                }
-                                return subsection;
-                            }),
-                        };
-                    }
-                } else {
-                    // Adding to a section's empty subsection
-                    if (section._id === targetId && section.children && section.children.length > 0) {
-                        const emptySubsection = section.children[0];
-                        return {
-                            ...section,
-                            children: [
-                                {
-                                    ...emptySubsection,
-                                    children: [...(emptySubsection.children || []), newEmptyRow],
-                                },
-                                ...section.children.slice(1),
-                            ],
-                        };
-                    }
-                }
-                return section;
+        if (isSubsection) {
+            // targetId is already a subsection ID
+            subsectionIdForApi = targetId;
+        } else {
+            // targetId is a section ID, need to find or use the empty subsection
+            const section = sectionsRef.current.find((s) => s._id === targetId);
+            if (section && section.children && section.children.length > 0) {
+                subsectionIdForApi = section.children[0]._id;
+            } else {
+                // If no subsection exists, pass the section ID and backend will create one
+                subsectionIdForApi = targetId;
+            }
+        }
+
+        try {
+            const response = await Api.requestSession({
+                command: 'estimate/add_custom_labor_item',
+                args: isSubsection
+                    ? { estimateSubsectionId: subsectionIdForApi }
+                    : { estimateSectionId: targetId },
             });
-        });
+
+            if (response && response.insertedId) {
+                // Create the new empty row with the real ID from backend
+                const newEmptyRow: AccordionItem = {
+                    _id: response.insertedId,
+                    label: '',
+                    totalCost: 0,
+                    itemFullCode: 'N/A',
+                    itemName: '',
+                    itemChangableName: '',
+                    itemMeasurementUnit: '',
+                    quantity: 0,
+                    itemChangableAveragePrice: 0,
+                    itemAveragePrice: 0,
+                    itemWithoutMaterial: 0,
+                    materialTotalCost: 0,
+                    priceWithMaterial: 0,
+                    unitPrice: 0,
+                    itemLaborHours: 0,
+                };
+
+                setSections((prev) => {
+                    return prev.map((section) => {
+                        if (isSubsection) {
+                            // Adding to a specific subsection
+                            if (section.children) {
+                                return {
+                                    ...section,
+                                    children: section.children.map((subsection) => {
+                                        if (subsection._id === targetId) {
+                                            return {
+                                                ...subsection,
+                                                children: [...(subsection.children || []), newEmptyRow],
+                                            };
+                                        }
+                                        return subsection;
+                                    }),
+                                };
+                            }
+                        } else {
+                            // Adding to a section's empty subsection
+                            if (section._id === targetId && section.children && section.children.length > 0) {
+                                const emptySubsection = section.children[0];
+                                return {
+                                    ...section,
+                                    children: [
+                                        {
+                                            ...emptySubsection,
+                                            children: [...(emptySubsection.children || []), newEmptyRow],
+                                        },
+                                        ...section.children.slice(1),
+                                    ],
+                                };
+                            }
+                        }
+                        return section;
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('Failed to create custom labor item:', error);
+        }
     };
 
     // Recursively gather descendant IDs for an accordion item.
@@ -1680,7 +1694,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             ) : (
                                 <>
                                     {(permAddFields || !props.isOnlyEstInfo) && (
-                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
                                             <Button
                                                 fullWidth
                                                 onClick={() => {
@@ -1701,8 +1715,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 {t('Add Subsection')}
                                             </Button>
                                             <Button
+                                                variant='outlined'
+                                                sx={{ mt: 2, height: 40 }}
+                                                onClick={() => handleAddEmptyRow(item._id)}
+                                            >
+                                                {t('Add Empty Row')}
+                                            </Button>
+                                            <Button
                                                 variant='contained'
-                                                sx={{ ml: 1, mt: 2, height: 40 }}
+                                                sx={{ mt: 2, height: 40 }}
                                                 onClick={() => {
                                                     setOpenAddOfferDialogTypeWithouSubsection('labor');
                                                     setCurrentSectionId(item._id);

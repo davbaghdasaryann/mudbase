@@ -59,7 +59,15 @@ export class EstimateLaborItemDisplayData {
                 let itemDetails = estimateLaborItem.estimateLaborItemData[0] as ApiLaborItems;
                 this.itemName = itemDetails.name;
                 this.itemFullCode = itemDetails.fullCode;
+            } else {
+                // Custom labor item without catalog reference
+                this.itemName = '';
+                this.itemFullCode = 'N/A';
             }
+        } else {
+            // Custom labor item without catalog reference
+            this.itemName = '';
+            this.itemFullCode = 'N/A';
         }
 
         if (estimateLaborItem.estimateAccountMadeOfferData) {
