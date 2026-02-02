@@ -1,3 +1,4 @@
+import {ObjectId} from 'mongodb';
 import {registerApiSession} from '@/server/register';
 import * as Db from '@/db';
 
@@ -22,6 +23,7 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
         itemChangableAveragePrice: 'changableAveragePrice',
         itemChangableName: 'laborOfferItemName',
         itemLaborHours: 'laborHours', //🔴 TODO: this will need us in version 2 🔴
+        itemMeasurementUnit: 'measurementUnitMongoId',
     };
 
     const prevEstLaborItem = (await estimatesLaborColl.findOne({_id: estimatedLaborId}))!;
@@ -44,9 +46,7 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
     // log_.info('updatedData', updatedData)
     if (updatedData.laborOfferItemName !== undefined) {
         updatedData.laborOfferItemName = updatedData.laborOfferItemName.trim();
-        if (updatedData.laborOfferItemName === '') {
-            verify(updatedData.laborOfferItemName, req.t('required.name'));
-        }
+        // Allow empty names for custom labor items
     }
     //🔴 TODO: this will need us in version 2 🔴
     if (updatedData.laborHours !== undefined) {
@@ -92,7 +92,19 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
         updatedData.changableAveragePrice = parseFloat(updatedData.changableAveragePrice);
     }
 
-    const allowedFields = ['laborOfferItemName', 'laborHours', 'quantity', 'changableAveragePrice']; //🔴 TODO: this will need us in version 2 🔴
+    if (updatedData.measurementUnitMongoId !== undefined) {
+        // Convert string to ObjectId if needed
+        if (typeof updatedData.measurementUnitMongoId === 'string') {
+            // Skip empty strings - don't update measurement unit if empty
+            if (updatedData.measurementUnitMongoId === '') {
+                delete updatedData.measurementUnitMongoId;
+            } else {
+                updatedData.measurementUnitMongoId = new ObjectId(updatedData.measurementUnitMongoId);
+            }
+        }
+    }
+
+    const allowedFields = ['laborOfferItemName', 'laborHours', 'quantity', 'changableAveragePrice', 'measurementUnitMongoId']; //🔴 TODO: this will need us in version 2 🔴
     // const allowedFields = ["laborOfferItemName", "quantity", "changableAveragePrice",];
 
     const filteredUpdateData: Partial<Db.EntityEstimateLaborItem> = Object.fromEntries(

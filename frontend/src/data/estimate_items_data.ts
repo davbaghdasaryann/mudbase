@@ -130,7 +130,8 @@ export class EstimateLaborItemDisplayData {
         if (estimateLaborItem.estimateMeasurementUnitData) {
             if (estimateLaborItem.estimateMeasurementUnitData.length > 0) {
                 let estimatedLaborMeasurementUnit = estimateLaborItem.estimateMeasurementUnitData[0] as ApiMeasurementUnit
-                this.itemMeasurementUnit = estimatedLaborMeasurementUnit.representationSymbol;
+                // Store the ObjectId for the dropdown, display will be handled by valueOptions
+                this.itemMeasurementUnit = estimatedLaborMeasurementUnit._id;
             }
         }
 

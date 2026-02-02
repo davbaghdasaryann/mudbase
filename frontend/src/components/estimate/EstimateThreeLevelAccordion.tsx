@@ -216,6 +216,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [currentSectionId, setCurrentSectionId] = useState<string | null>(null);
     const [currentSubsectionId, setCurrentSubsectionId] = useState<string | null>(null);
 
+    // Measurement units for dropdown
+    const [measurementUnits, setMeasurementUnits] = useState<{ value: string; label: string }[]>([]);
+
     // const onCancelDialog = React.useCallback((event, reason) => {
     //     if (reason && (reason === 'backdropClick' || reason === 'escapeKeyDown')) return;
     // }, []);
@@ -265,6 +268,21 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             mounted.current = false;
         };
     }, [dataRequested]);
+
+    // Fetch measurement units
+    useEffect(() => {
+        Api.requestSession<any[]>({
+            command: 'measurement_unit/fetch',
+        }).then((units) => {
+            const options = units.map((unit) => ({
+                value: unit._id,
+                label: unit.representationSymbol,
+            }));
+            setMeasurementUnits(options);
+        }).catch((error) => {
+            console.error('Failed to fetch measurement units:', error);
+        });
+    }, []);
 
     // React.useEffect(() => {
     //     setItems(props.data);
@@ -354,6 +372,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity);
         newRow.itemChangableAveragePrice = normalizeArmenianDecimalPoint(newRow.itemChangableAveragePrice);
         newRow.itemLaborHours = normalizeArmenianDecimalPoint(newRow.itemLaborHours);
+
+        // If measurement unit changed, we need to send the ObjectId, not the symbol
+        // The newRow.itemMeasurementUnit will be the ObjectId if changed via dropdown
+        // (MUI DataGrid singleSelect automatically uses the value field)
 
         const response = await Api.requestSession<Api.ApiEstimateLaborItem>({
             command: `estimate/update_labor_item`,
@@ -1102,6 +1124,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Unit'),
                                                     align: 'center',
                                                     width: 80,
+                                                    type: 'singleSelect',
+                                                    editable: true,
+                                                    valueOptions: measurementUnits,
                                                 },
                                                 {
                                                     field: 'quantity',
@@ -1468,6 +1493,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerName: t('Unit'),
                                                                         headerAlign: 'left',
                                                                         width: 80,
+                                                                        type: 'singleSelect',
+                                                                        editable: true,
+                                                                        valueOptions: measurementUnits,
                                                                         disableColumnMenu: true,
                                                                     },
                                                                     {
