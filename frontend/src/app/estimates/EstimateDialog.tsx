@@ -1,13 +1,19 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
+import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
+
+const TOOLBAR_ICON = '/images/icons/toolbar';
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
@@ -31,6 +37,7 @@ interface EstimatePageDialogProps {
 }
 
 export default function EstimatePageDialog(props: EstimatePageDialogProps) {
+    const { t } = useTranslation();
     const { session, permissionsSet } = usePermissions();
     const dataUpdatedRef = useRef(false);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
@@ -147,7 +154,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
     const selectedDetails = accordionRef.current?.getSelectedLaborDetails?.() ?? [];
     const anySelectedHidden = selectedDetails.some((d) => d.isHidden);
-    const hideUnhideLabel = anySelectedHidden ? 'Unhide' : 'Hide';
+    const hideUnhideLabelKey = anySelectedHidden ? 'Unhide' : 'Hide';
     const handleHideUnhide = () => (anySelectedHidden ? handleSetHidden(false) : handleSetHidden(true));
 
     // Download handlers
@@ -263,9 +270,33 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             }
                         }}
                     >
-                        <Tab label="Tools" sx={{ minHeight: 48, height: 48 }} />
-                        <Tab label="General Info" sx={{ minHeight: 48, height: 48 }} />
-                        <Tab label="Export" sx={{ minHeight: 48, height: 48 }} />
+                        <Tab
+                            label={
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <ImgElement src={`${TOOLBAR_ICON}/tools.svg`} sx={{ height: 20, mr: 1 }} />
+                                    {t('Tools')}
+                                </Box>
+                            }
+                            sx={{ minHeight: 48, height: 48 }}
+                        />
+                        <Tab
+                            label={
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <ImgElement src={`${TOOLBAR_ICON}/info.svg`} sx={{ height: 20, mr: 1 }} />
+                                    {t('General Info')}
+                                </Box>
+                            }
+                            sx={{ minHeight: 48, height: 48 }}
+                        />
+                        <Tab
+                            label={
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <ImgElement src={`${TOOLBAR_ICON}/export.svg`} sx={{ height: 20, mr: 1 }} />
+                                    {t('Export')}
+                                </Box>
+                            }
+                            sx={{ minHeight: 48, height: 48 }}
+                        />
                     </Tabs>
                 </Box>
 
@@ -291,45 +322,51 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         }}>
                             {/* Tool buttons */}
                             {[
-                                { label: 'Create Section', icon: '➕', onClick: handleCreateSection },
-                                { label: 'Favorites', icon: '⭐', onClick: () => { } },
-                                { label: 'Works List', icon: '📋', onClick: handleWorksListClick },
-                                { label: 'Materials List', icon: '🟢', onClick: handleMaterialsListClick },
-                                { label: 'Update', icon: '🔄', onClick: handleUpdate },
-                                { label: 'Import from Library', icon: '⬇️', onClick: handleImportFromLibrary, disabled: !permissionsSet?.has('OFF_CRT_LBR') },
-                                { label: 'Select', icon: '✓', onClick: handleSelectClick },
-                            ].map((tool, index) => (
-                                <Box
-                                    key={index}
-                                    onClick={tool.disabled ? undefined : tool.onClick}
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        p: 1.25,
-                                        backgroundColor: 'transparent',
-                                        borderRadius: 2,
-                                        cursor: tool.disabled ? 'not-allowed' : 'pointer',
-                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                        transition: 'all 0.2s',
-                                        opacity: tool.disabled ? 0.5 : 1,
-                                        pointerEvents: tool.disabled ? 'none' : 'auto',
-                                        '&:hover': tool.disabled ? {} : {
-                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
-                                            transform: 'translateY(-2px)',
-                                        },
-                                        minWidth: 85,
-                                        minHeight: 80,
-                                        flex: '1 1 auto',
-                                    }}
-                                >
-                                    <Box sx={{ fontSize: '1.75rem', mb: 0.5 }}>{tool.icon}</Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
-                                        {tool.label}
-                                    </Typography>
-                                </Box>
-                            ))}
+                                { labelKey: 'Create Section', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateSection },
+                                { labelKey: 'Favorites', icon: `${TOOLBAR_ICON}/favourites.svg`, onClick: () => { } },
+                                { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick },
+                                { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick },
+                                { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate },
+                                { labelKey: 'Import from Library', icon: `${TOOLBAR_ICON}/import.svg`, onClick: handleImportFromLibrary, disabled: !permissionsSet?.has('OFF_CRT_LBR') },
+                                { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick },
+                            ].map((tool, index) => {
+                                const isSelectActive = tool.labelKey === 'Select' && isSelectMode;
+                                return (
+                                    <Box
+                                        key={index}
+                                        onClick={tool.disabled ? undefined : tool.onClick}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            p: 1.25,
+                                            backgroundColor: isSelectActive ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
+                                            borderRadius: 2,
+                                            cursor: tool.disabled ? 'not-allowed' : 'pointer',
+                                            boxShadow: isSelectActive ? '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)' : '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                            transition: 'all 0.2s',
+                                            opacity: tool.disabled ? 0.5 : 1,
+                                            pointerEvents: tool.disabled ? 'none' : 'auto',
+                                            transform: isSelectActive ? 'translateY(-2px)' : undefined,
+                                            '&:hover': tool.disabled ? {} : {
+                                                boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
+                                                transform: 'translateY(-2px)',
+                                            },
+                                            minWidth: 85,
+                                            minHeight: 80,
+                                            flex: '1 1 auto',
+                                        }}
+                                    >
+                                        <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <ImgElement src={tool.icon} sx={{ height: 28 }} />
+                                        </Box>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                                            {t(tool.labelKey)}
+                                        </Typography>
+                                    </Box>
+                                );
+                            })}
 
                             {/* Vertical divider */}
                             <Box sx={{
@@ -341,9 +378,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
                             {/* Last 3 buttons with separator — disabled until rows selected when in select mode */}
                             {[
-                                { label: 'Delete', icon: '🗑️', onClick: handleDeleteSelected },
-                                { label: 'Move', icon: '➡️', onClick: () => setShowMoveDialog(true) },
-                                { label: hideUnhideLabel, icon: anySelectedHidden ? '👁️' : '👁️‍🗨️', onClick: handleHideUnhide },
+                                { labelKey: 'Delete', iconPath: `${TOOLBAR_ICON}/delete.svg`, onClick: handleDeleteSelected },
+                                { labelKey: 'Move', iconPath: `${TOOLBAR_ICON}/move.svg`, onClick: () => setShowMoveDialog(true) },
+                                { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 28 }} /> : <VisibilityIcon sx={{ fontSize: 28 }} />, onClick: handleHideUnhide },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
@@ -370,9 +407,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         flex: '1 1 auto',
                                     }}
                                 >
-                                    <Box sx={{ fontSize: '1.75rem', mb: 0.5 }}>{tool.icon}</Box>
+                                    <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {'iconPath' in tool && tool.iconPath ? <ImgElement src={tool.iconPath} sx={{ height: 28 }} /> : 'iconNode' in tool ? tool.iconNode : null}
+                                    </Box>
                                     <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
-                                        {tool.label}
+                                        {t(tool.labelKey)}
                                     </Typography>
                                 </Box>
                             ))}
@@ -410,13 +449,13 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {/* Download Estimation */}
                             <Box>
                                 <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
-                                    Download Estimation
+                                    {t('Download Estimation')}
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     {[
-                                        { label: 'HTML', icon: '📄', color: '#E34F26', format: 'html' as const },
-                                        { label: 'Word', icon: '📘', color: '#2B579A', format: 'word' as const },
-                                        { label: 'PDF', icon: '📕', color: '#FF0000', format: 'pdf' as const },
+                                        { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
+                                        { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
+                                        { label: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, format: 'pdf' as const },
                                     ].map((format, index) => (
                                         <Box
                                             key={index}
@@ -425,21 +464,25 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
-                                                p: 3,
-                                                backgroundColor: 'white',
-                                                borderRadius: 1,
+                                                justifyContent: 'center',
+                                                p: 2.5,
+                                                backgroundColor: 'transparent',
+                                                borderRadius: 2,
                                                 cursor: 'pointer',
                                                 minWidth: 120,
+                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                                transition: 'all 0.2s',
                                                 '&:hover': {
-                                                    boxShadow: 2,
+                                                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                                     transform: 'translateY(-2px)',
-                                                    transition: 'all 0.2s'
-                                                }
+                                                },
                                             }}
                                         >
-                                            <Box sx={{ fontSize: '3rem', mb: 1, color: format.color }}>{format.icon}</Box>
+                                            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <ImgElement src={format.icon} sx={{ height: 40 }} />
+                                            </Box>
                                             <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                                {format.label}
+                                                {t(format.label)}
                                             </Typography>
                                         </Box>
                                     ))}
@@ -449,13 +492,13 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {/* Download Bill of Quantities */}
                             <Box>
                                 <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
-                                    Download Bill of Quantities
+                                    {t('Download Bill of Quantities')}
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     {[
-                                        { label: 'HTML', icon: '📄', color: '#E34F26', format: 'html' as const },
-                                        { label: 'Word', icon: '📘', color: '#2B579A', format: 'word' as const },
-                                        { label: 'PDF', icon: '📕', color: '#FF0000', format: 'pdf' as const },
+                                        { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
+                                        { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
+                                        { label: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, format: 'pdf' as const },
                                     ].map((format, index) => (
                                         <Box
                                             key={index}
@@ -464,21 +507,25 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
-                                                p: 3,
-                                                backgroundColor: 'white',
-                                                borderRadius: 1,
+                                                justifyContent: 'center',
+                                                p: 2.5,
+                                                backgroundColor: 'transparent',
+                                                borderRadius: 2,
                                                 cursor: 'pointer',
                                                 minWidth: 120,
+                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                                transition: 'all 0.2s',
                                                 '&:hover': {
-                                                    boxShadow: 2,
+                                                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                                     transform: 'translateY(-2px)',
-                                                    transition: 'all 0.2s'
-                                                }
+                                                },
                                             }}
                                         >
-                                            <Box sx={{ fontSize: '3rem', mb: 1, color: format.color }}>{format.icon}</Box>
+                                            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <ImgElement src={format.icon} sx={{ height: 40 }} />
+                                            </Box>
                                             <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                                {format.label}
+                                                {t(format.label)}
                                             </Typography>
                                         </Box>
                                     ))}
