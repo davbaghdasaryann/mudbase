@@ -50,3 +50,8 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Config files with secrets (keep only templates in git)
+backend/config/config-mudbase.yaml
+backend/config/config-new-mudbase.yaml
+frontend/.env.local
+

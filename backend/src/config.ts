@@ -56,7 +56,7 @@ interface ConfigLocalData {
 
 export class Setup {
     configDir = path.join(path.dirname(__dirname), 'config');
-    configFile = 'config-mudbase.yaml';
+    configFile = process.env.CONFIG_FILE || 'config-mudbase.yaml';
 
     apiVersionMajor = 1;
     apiVer = `v${this.apiVersionMajor}`;

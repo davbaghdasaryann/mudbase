@@ -1,0 +1,19 @@
+
+apps:
+  # Production instance (mudbase.am)
+  - name: mudbase-prod
+    script: /srv/mudbase/backend/build/index.js
+    node_args: --experimental-modules
+    env:
+      NODE_ENV: production
+      NEXTAUTH_URL: https://mudbase.am
+      CONFIG_FILE: config-mudbase.yaml
+
+  # New instance (new.mudbase.am)
+  - name: mudbase-new
+    script: /srv/mudbase/backend/build/index.js
+    node_args: --experimental-modules
+    env:
+      NODE_ENV: production
+      NEXTAUTH_URL: https://new.mudbase.am
+      CONFIG_FILE: config-new-mudbase.yaml

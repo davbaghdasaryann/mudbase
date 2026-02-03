@@ -1,0 +1,42 @@
+env: dev
+
+dev:
+  dev: true
+
+server:
+  host: localhost
+  port: 7788
+  base: api
+
+auth:
+  frontUrl: https://new.mudbase.am
+  authSecret: <>
+
+  sessdb:
+    type: mysql
+
+    host: <>
+    port: <>
+    dbse: <>
+    user: <>
+    pswd: <>
+
+email:
+  from: noreply@new.mudbase.am
+
+  # mailgun
+  domain: new.mudbase.am
+  apiKey: <>
+
+local:
+  log: ./logs-new
+  static: ./static-new
+
+db:
+  type: mongo
+
+  host: <>
+  port: <>
+  dbse: <>
+  user: <>
+  pswd: <>
