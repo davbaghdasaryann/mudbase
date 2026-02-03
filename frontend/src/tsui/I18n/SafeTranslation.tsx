@@ -15,12 +15,15 @@ import {i18nEnabled} from '@/i18n';
 // }
 
 export function useSafeTranslation(namespace?: string) {
-    // console.log(i18nEnabled_);
+    // Always call the hook unconditionally, even if we don't use it
+    // This satisfies React's Rules of Hooks
+    const translation = useI18nTranslation(namespace);
+
     if (i18nEnabled) {
-        return useI18nTranslation(namespace);
+        return translation;
     }
 
-    // Dummy t function
+    // Dummy t function when i18n is disabled
     const t = (key: string, _?: any) => key;
 
     return {t, i18n: null};

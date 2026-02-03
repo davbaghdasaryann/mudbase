@@ -443,7 +443,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         }
 
         try {
-            const response = await Api.requestSession({
+            const response = await Api.requestSession<{insertedId: string}>({
                 command: 'estimate/add_custom_labor_item',
                 args: isSubsection
                     ? { estimateSubsectionId: subsectionIdForApi }
@@ -1263,7 +1263,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         if (!permAddFields && props.isOnlyEstInfo) {
                                                             return null;
                                                         }
-                                                        const subsectionId = item.children[0]._id;
+                                                        const subsectionId = item.children?.[0]?._id ?? null;
                                                         const isActiveRow =
                                                             showSubsectionImportDialog === subsectionId &&
                                                             rowIdThatOpenedImportDialog === cell.row._id;
@@ -1329,10 +1329,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     },
                                                 }, // width: 600 },
                                             ]}
-                                            rows={item.children[0].children} // ✅ Show items from the empty subsection
+                                            rows={item.children?.[0]?.children ?? []} // ✅ Show items from the empty subsection
                                             getRowId={(row) => row?._id ?? crypto.randomUUID()}
                                             rowReordering
-                                            onRowOrderChange={handleRowOrderChange(item.children[0]._id, item.children[0].children ?? [])}
+                                            onRowOrderChange={handleRowOrderChange(item.children?.[0]?._id ?? '', item.children?.[0]?.children ?? []) as any}
                                             checkboxSelection={props.selectMode === true}
                                             rowSelectionModel={{
                                                 type: 'include',
@@ -1756,7 +1756,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 rows={child.children}
                                                                 getRowId={(row) => row?._id ?? crypto.randomUUID()}
                                                                 rowReordering
-                                                                onRowOrderChange={handleRowOrderChange(child._id, child.children ?? [])}
+                                                                onRowOrderChange={handleRowOrderChange(child._id, child.children ?? []) as any}
                                                                 checkboxSelection={props.selectMode === true}
                                                                 rowSelectionModel={{
                                                                     type: 'include',
@@ -2001,13 +2001,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
             {editMaterialsEstimateLaborItemId && estimatedLaborItemName && (
                 <EstimateMaterialsListDialog
-                    onConfirm={() => {
+                    onSave={() => {
                         refreshEverything(false);
                         // setEditMaterialsEstimateLaborItemId(null);
                         // setEstimatedLaborItemName(null);
                     }}
-                    estimatedLaborName={estimatedLaborItemName}
-                    estimatedLaborId={editMaterialsEstimateLaborItemId}
+                    estimateId={props.estimateId}
                     onClose={() => {
                         setEditMaterialsEstimateLaborItemId(null);
                     }}

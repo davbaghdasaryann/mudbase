@@ -133,9 +133,9 @@ function CatalogAccordionBody({
                         label={t('Time Period')}
                         value={filter.timePeriod}
                         items={[
-                            { key: '6months', id: '6months', name: t('6 Months'), label: t('6 Months') },
-                            { key: '1year', id: '1year', name: t('1 Year'), label: t('1 Year') },
-                            { key: '3years', id: '3years', name: t('3 Years'), label: t('3 Years') },
+                            { id: '6months', name: t('6 Months'), label: t('6 Months') },
+                            { id: '1year', name: t('1 Year'), label: t('1 Year') },
+                            { id: '3years', name: t('3 Years'), label: t('3 Years') },
                         ]}
                         onSelected={handleTimePeriodSelect}
                     />
@@ -183,7 +183,6 @@ function CatalogAccordionBody({
                         catalogType={catalogType}
                         searchVal={searchVal}
                         filter={filter}
-                        dataVersion={dataVersion}
                     />
                 ))}
             </Stack>

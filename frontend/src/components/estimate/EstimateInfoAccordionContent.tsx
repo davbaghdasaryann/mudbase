@@ -160,7 +160,7 @@ export default function EstimateInfoAccordionContent(props: Props) {
                 form={form}
                 size='xl'
                 onFieldUpdate={handleChange}
-                sx={{
+                formSx={{
                     backgroundColor: 'transparent !important',
                     background: 'none !important',
                     '& *': {

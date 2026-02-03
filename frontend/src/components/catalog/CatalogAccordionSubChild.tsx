@@ -173,7 +173,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         if (!userOffer) return;
 
         try {
-            const newIsActive = !userOffer.isActive;
+            const newIsActive = !(userOffer as any).isActive;
 
             if (props.catalogType === 'labor') {
                 await Api.requestSession({
@@ -402,7 +402,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                     onClick={handleToggleOfferVisibility}
                                     sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
                                 >
-                                    {userOffer.isActive ? (
+                                    {(userOffer as any).isActive ? (
                                         <VisibilityIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                                     ) : (
                                         <VisibilityOffIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: 'text.disabled' }} />

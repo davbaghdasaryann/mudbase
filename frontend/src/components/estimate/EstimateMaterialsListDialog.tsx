@@ -298,3 +298,6 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
         </Dialog>
     );
 }
+
+// Named export for compatibility with existing imports
+export { EstimateMaterialsListDialog };
