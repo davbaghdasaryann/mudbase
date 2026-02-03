@@ -8,6 +8,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import StarIcon from '@mui/icons-material/Star';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 
 import * as Api from '@/api';
 import * as EstimateApi from '@/api/estimate';
@@ -20,6 +22,7 @@ import { EstimateLaborItemDisplayData } from '@/data/estimate_items_data';
 import EstimateSubsectionButtonDialog from './EstimateAddSubsectionDialog';
 import { EstimateLaborEditDialog } from './EstimateLaborEditDialog';
 import { EstimateMaterialsListDialog } from './EstimateMaterialsListDialog';
+import EstimateImportFromFavoritesDialog from './EstimateImportFromFavoritesDialog';
 
 import * as EstimateSectionsApi from '@/api/estimate';
 import { EstimateSectionsDisplayData } from '../../data/estimate_sections_display_data';
@@ -176,6 +179,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
     const [estimateRenameDialogLabel, setEstimateRenameDialogLabel] = useState<string | null>(null);
     const [estimateRenameDialogType, setEstimateRenameDialogType] = useState<'section' | 'subsection' | null>(null);
+
+    const [showSubsectionImportDialog, setShowSubsectionImportDialog] = useState<string | null>(null);
+    /** Row id that opened the import dialog; only this row shows the filled star so it "moves" when clicking another row. */
+    const [rowIdThatOpenedImportDialog, setRowIdThatOpenedImportDialog] = useState<string | null>(null);
+    /** Only one section/subsection shows the header star: the one that was last expanded. */
+    const [accordionIdShowingStar, setAccordionIdShowingStar] = useState<string | null>(null);
 
     const [estimatedLaborItemDetailsId, setEstimatedLaborItemDetailsId] = useState<string | null>(null);
     const [estimatedLaborItemName, setEstimatedLaborItemName] = useState<string | null>(null);
@@ -522,6 +531,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         if (isExpanded) {
             await fetchChildren(id, level);
             expandedAccordionsRef.current = [...expandedAccordionsRef.current, id];
+            setAccordionIdShowingStar(id);
         } else {
             if (level === 2) {
                 const sectionItem = sectionsRef.current.find((item) => item._id === id);
@@ -1012,6 +1022,25 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
                                 {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                     <>
+                                        {item.children &&
+                                            item.children.length > 0 &&
+                                            item.children[0]?.label === '' &&
+                                            (permAddFields || !props.isOnlyEstInfo) &&
+                                            accordionIdShowingStar === item._id &&
+                                            expandedAccordions.includes(item._id) && (
+                                                <Tooltip title={t('Import from Favorites')} arrow placement='top'>
+                                                    <IconButton
+                                                        component='div'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowSubsectionImportDialog(item.children![0]._id);
+                                                            setRowIdThatOpenedImportDialog(null);
+                                                        }}
+                                                    >
+                                                        <StarOutlineIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
                                         <IconButton
                                             component='div'
                                             onClick={(e) => {
@@ -1225,6 +1254,34 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 //     },
                                                 // }, // width: 600 },
                                                 {
+                                                    field: 'importFavorites',
+                                                    type: 'actions',
+                                                    headerName: '',
+                                                    width: 50,
+                                                    disableColumnMenu: true,
+                                                    renderCell: (cell) => {
+                                                        if (!permAddFields && props.isOnlyEstInfo) {
+                                                            return null;
+                                                        }
+                                                        const subsectionId = item.children[0]._id;
+                                                        const isActiveRow =
+                                                            showSubsectionImportDialog === subsectionId &&
+                                                            rowIdThatOpenedImportDialog === cell.row._id;
+                                                        return (
+                                                            <Tooltip title={t('Import from Favorites')} arrow placement='top'>
+                                                                <IconButton
+                                                                    onClick={() => {
+                                                                        setShowSubsectionImportDialog(subsectionId);
+                                                                        setRowIdThatOpenedImportDialog(cell.row._id as string);
+                                                                    }}
+                                                                >
+                                                                    {isActiveRow ? <StarIcon /> : <StarOutlineIcon />}
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        );
+                                                    },
+                                                },
+                                                {
                                                     field: 'addMaterial',
                                                     type: 'actions',
                                                     headerName: t('Materials'),
@@ -1371,6 +1428,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         <Typography>{child.label}</Typography>
                                                         {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                                             <>
+                                                                {(permAddFields || !props.isOnlyEstInfo) &&
+                                                                    accordionIdShowingStar === child._id &&
+                                                                    expandedAccordions.includes(child._id) && (
+                                                                        <Tooltip title={t('Import from Favorites')} arrow placement='top'>
+                                                                            <IconButton
+                                                                                component='div'
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setShowSubsectionImportDialog(child._id);
+                                                                                    setRowIdThatOpenedImportDialog(null);
+                                                                                }}
+                                                                            >
+                                                                                <StarOutlineIcon />
+                                                                            </IconButton>
+                                                                        </Tooltip>
+                                                                    )}
                                                                 <IconButton
                                                                     component='div'
                                                                     onClick={(e) => {
@@ -1604,6 +1677,34 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     //         }
                                                                     //     },
                                                                     // }, // width: 600 },
+                                                                    {
+                                                                        field: 'importFavorites',
+                                                                        type: 'actions',
+                                                                        headerName: '',
+                                                                        width: 50,
+                                                                        disableColumnMenu: true,
+                                                                        renderCell: (cell) => {
+                                                                            if (!permAddFields && props.isOnlyEstInfo) {
+                                                                                return null;
+                                                                            }
+                                                                            const subsectionId = child._id;
+                                                                            const isActiveRow =
+                                                                                showSubsectionImportDialog === subsectionId &&
+                                                                                rowIdThatOpenedImportDialog === cell.row._id;
+                                                                            return (
+                                                                                <Tooltip title={t('Import from Favorites')} arrow placement='top'>
+                                                                                    <IconButton
+                                                                                        onClick={() => {
+                                                                                            setShowSubsectionImportDialog(subsectionId);
+                                                                                            setRowIdThatOpenedImportDialog(cell.row._id as string);
+                                                                                        }}
+                                                                                    >
+                                                                                        {isActiveRow ? <StarIcon /> : <StarOutlineIcon />}
+                                                                                    </IconButton>
+                                                                                </Tooltip>
+                                                                            );
+                                                                        },
+                                                                    },
                                                                     {
                                                                         field: 'addMaterial',
                                                                         type: 'actions',
@@ -1941,6 +2042,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                     onClose={() => {
                         setEstimateRenameId(null);
                         setEstimateRenameDialogLabel(null);
+                    }}
+                />
+            )}
+
+            {showSubsectionImportDialog && (
+                <EstimateImportFromFavoritesDialog
+                    estimateId={props.estimateId}
+                    estimateSubsectionId={showSubsectionImportDialog}
+                    onClose={() => {
+                        setShowSubsectionImportDialog(null);
+                        setRowIdThatOpenedImportDialog(null);
+                    }}
+                    onConfirm={() => {
+                        refreshEverything(false);
+                        setShowSubsectionImportDialog(null);
+                        setRowIdThatOpenedImportDialog(null);
                     }}
                 />
             )}

@@ -40,6 +40,8 @@ interface FavoriteLaborItem {
 
 interface EstimateImportFromFavoritesDialogProps {
     estimateId: string;
+    estimateSectionId?: string;
+    estimateSubsectionId?: string;
     onClose: () => void;
     onConfirm: () => void;
 }
@@ -107,12 +109,21 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
         setSubmitting(true);
 
         try {
+            const requestBody: any = {
+                favoriteLaborItemIds: selectedItemIds,
+            };
+
+            if (props.estimateSubsectionId) {
+                requestBody.estimateSubsectionId = props.estimateSubsectionId;
+            } else if (props.estimateSectionId) {
+                requestBody.estimateSectionId = props.estimateSectionId;
+            } else {
+                requestBody.estimateId = props.estimateId;
+            }
+
             await Api.requestSession({
                 command: 'favorites/import_to_estimate',
-                json: {
-                    favoriteLaborItemIds: selectedItemIds,
-                    estimateId: props.estimateId,
-                },
+                json: requestBody,
             });
 
             props.onConfirm();
