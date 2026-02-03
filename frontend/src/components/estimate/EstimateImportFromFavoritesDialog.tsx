@@ -21,10 +21,14 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
+    IconButton,
+    Tooltip,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
+import { confirmDialog } from '../ConfirmationDialog';
 
 interface FavoriteGroup {
     _id: string;
@@ -59,6 +63,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
     const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
     useEffect(() => {
         Api.requestSession<FavoriteGroup[]>({
@@ -102,6 +107,30 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
         setSelectedItemIds((prev) =>
             prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
         );
+    };
+
+    const handleRemoveFromFavorites = (groupId: string, itemId: string) => {
+        confirmDialog(t('favoritesModal.removeConfirm')).then((result) => {
+            if (!result.isConfirmed) return;
+            setDeletingItemId(itemId);
+            Api.requestSession({
+                command: 'favorites/remove_labor_item',
+                args: { favoriteGroupId: groupId, favoriteLaborItemId: itemId },
+            })
+                .then(() => {
+                    setLaborItemsByGroupId((prev) => ({
+                        ...prev,
+                        [groupId]: (prev[groupId] || []).filter((item) => item._id !== itemId),
+                    }));
+                    setSelectedItemIds((prev) => prev.filter((id) => id !== itemId));
+                })
+                .catch((error) => {
+                    console.error('Failed to remove from favorites:', error);
+                })
+                .finally(() => {
+                    setDeletingItemId(null);
+                });
+        });
     };
 
     const handleImport = async () => {
@@ -192,7 +221,28 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
 
                                                 return (
                                                     <React.Fragment key={item._id}>
-                                                        <ListItem disablePadding>
+                                                        <ListItem
+                                                            disablePadding
+                                                            secondaryAction={
+                                                                <Tooltip title={t('Remove from favorites')}>
+                                                                    <IconButton
+                                                                        edge="end"
+                                                                        size="small"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleRemoveFromFavorites(group._id, item._id);
+                                                                        }}
+                                                                        disabled={deletingItemId === item._id}
+                                                                    >
+                                                                        {deletingItemId === item._id ? (
+                                                                            <CircularProgress size={20} />
+                                                                        ) : (
+                                                                            <DeleteOutlineIcon fontSize="small" />
+                                                                        )}
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            }
+                                                        >
                                                             <ListItemButton
                                                                 onClick={() => handleToggleItem(item._id)}
                                                                 dense

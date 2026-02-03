@@ -80,6 +80,8 @@
     "favoritesModal.noGroups": "No favorite groups found. Create a group by adding items to favorites first.",
     "selected": "selected",
     "favoritesModal.noWorksInGroup": "No works in this group",
+    "favoritesModal.removeConfirm": "Remove this work from favorites?",
+    "Remove from favorites": "Remove from favorites",
     "Unnamed Work": "Unnamed Work",
     "Quantity": "Quantity",
     "Price": "Price",

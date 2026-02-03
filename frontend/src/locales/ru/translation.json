@@ -43,6 +43,8 @@
     "favoritesModal.noGroups": "Группы избранного не найдены. Создайте группу, добавив в неё работы из сметы.",
     "selected": "выбрано",
     "favoritesModal.noWorksInGroup": "В этой группе нет работ",
+    "favoritesModal.removeConfirm": "Удалить эту работу из избранного?",
+    "Remove from favorites": "Удалить из избранного",
     "Unnamed Work": "Без названия",
     "Quantity": "Количество",
     "Price": "Цена",

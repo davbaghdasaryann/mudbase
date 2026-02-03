@@ -379,6 +379,8 @@
     "favoritesModal.noGroups": "Նախընտրելիների խմբեր չեն գտնվել։ Ավելացրեք աշխատանքներ նախընտրելիներին, որպեսզի ստեղծվի խումբ։",
     "selected": "ընտրված",
     "favoritesModal.noWorksInGroup": "Այս խմբում աշխատանքներ չկան",
+    "favoritesModal.removeConfirm": "Հեռացնել այս աշխատանքը նախընտրելիներից?",
+    "Remove from favorites": "Հեռացնել նախընտրելիներից",
     "Unnamed Work": "Անանուն աշխատանք",
     "Quantity": "Քանակ",
     "Price": "Արժեք",
