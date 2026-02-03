@@ -51,7 +51,7 @@ export class UiBorder extends UiElement implements UiBorderParams {
 
         if (this.useOutline) {
             return {
-                outlineWidth: this.width,
+                outlineWidth: this.width ?? 1,
                 outlineOffset: -(this.width ?? 0),
                 outlineColor: this.color ?? Def.defaultBorderColor,
                 outlineStyle: this.style ?? Def.defaultBorderStyle,

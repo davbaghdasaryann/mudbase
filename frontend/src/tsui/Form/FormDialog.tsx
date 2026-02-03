@@ -94,7 +94,7 @@ function PageFormDialogBody(props: PageFormDialogProps) {
         // }
     }, []);
 
-    const handleFormSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    const handleFormSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault(); // prevent full-page reload
         handleSubmit();
     }, []);
