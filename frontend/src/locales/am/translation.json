@@ -374,5 +374,14 @@
     "Download Bill of Quantities": "Ներբեռնել քանակությունների հաշվարկ",
     "HTML": "HTML",
     "Word": "Word",
-    "PDF": "PDF"
+    "PDF": "PDF",
+    "Import from Favorites": "Ներմուծել նախընտրելիներից",
+    "favoritesModal.noGroups": "Նախընտրելիների խմբեր չեն գտնվել։ Ավելացրեք աշխատանքներ նախընտրելիներին, որպեսզի ստեղծվի խումբ։",
+    "selected": "ընտրված",
+    "favoritesModal.noWorksInGroup": "Այս խմբում աշխատանքներ չկան",
+    "Unnamed Work": "Անանուն աշխատանք",
+    "Quantity": "Քանակ",
+    "Price": "Արժեք",
+    "material(s) attached": "կցված նյութ(եր)",
+    "Add to Estimation": "Ավելացնել նախահաշիվ"
 }

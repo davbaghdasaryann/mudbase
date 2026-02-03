@@ -75,5 +75,14 @@
     "HTML": "HTML",
     "Word": "Word",
     "PDF": "PDF",
-    "Test": "Test"
+    "Test": "Test",
+    "Import from Favorites": "Import from Favorites",
+    "favoritesModal.noGroups": "No favorite groups found. Create a group by adding items to favorites first.",
+    "selected": "selected",
+    "favoritesModal.noWorksInGroup": "No works in this group",
+    "Unnamed Work": "Unnamed Work",
+    "Quantity": "Quantity",
+    "Price": "Price",
+    "material(s) attached": "material(s) attached",
+    "Add to Estimation": "Add to Estimation"
 }

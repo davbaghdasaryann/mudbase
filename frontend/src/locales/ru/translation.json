@@ -38,5 +38,14 @@
     "Download Bill of Quantities": "Скачать ведомость объёмов",
     "HTML": "HTML",
     "Word": "Word",
-    "PDF": "PDF"
+    "PDF": "PDF",
+    "Import from Favorites": "Импорт из избранного",
+    "favoritesModal.noGroups": "Группы избранного не найдены. Создайте группу, добавив в неё работы из сметы.",
+    "selected": "выбрано",
+    "favoritesModal.noWorksInGroup": "В этой группе нет работ",
+    "Unnamed Work": "Без названия",
+    "Quantity": "Количество",
+    "Price": "Цена",
+    "material(s) attached": "прикреплено материалов",
+    "Add to Estimation": "Добавить в смету"
 }

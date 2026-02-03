@@ -147,7 +147,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                 ) : groups.length === 0 ? (
                     <Box p={3}>
                         <Typography variant="body1" color="text.secondary" align="center">
-                            {t('No favorite groups found. Create a group by adding items to favorites first.')}
+                            {t('favoritesModal.noGroups')}
                         </Typography>
                     </Box>
                 ) : (
@@ -179,9 +179,9 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                                             <CircularProgress size={24} />
                                         </Box>
                                     ) : !laborItemsByGroupId[group._id] ? null : laborItemsByGroupId[group._id]
-                                          .length === 0 ? (
+                                        .length === 0 ? (
                                         <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
-                                            {t('No works in this group')}
+                                            {t('favoritesModal.noWorksInGroup')}
                                         </Typography>
                                     ) : (
                                         <List dense disablePadding sx={{ width: '100%' }}>
