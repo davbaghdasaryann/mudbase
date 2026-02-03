@@ -7,20 +7,18 @@ import {useTranslation} from 'react-i18next';
 import {Toolbar} from '@mui/material';
 import {GridActionsCellItem} from '@mui/x-data-grid';
 
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import UnarchiveIcon from '@mui/icons-material/Unarchive';
 
 import * as Api from 'api';
 import * as EstimatesApi from '@/api/estimate';
 
 import {EstimatesDisplayData} from '../../data/estimates_display_data';
 import EstimatePageDialog from './EstimateDialog';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
 import DataTableComponent from '@/components/DataTableComponent';
 import {actionColumnWidth3, mainIconColor} from '@/theme';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 import {usePermissions} from '@/api/auth';
 
 import EstimateOnlyForViewDialog from './EstimateOnlyForViewDialog';
@@ -180,7 +178,7 @@ export default function ArchivedEstimatesTab() {
                                 actions.push(
                                     <GridActionsCellItem
                                         key='edit'
-                                        icon={<EditOutlinedIcon />}
+                                        icon={<ImgElement src='/images/icons/edit.svg' sx={{height: {xs: 20, sm: 24}}} />}
                                         label={t('Edit')}
                                         onClick={() => {
                                             setEstimateTitle(cell.row.name);
@@ -208,7 +206,7 @@ export default function ArchivedEstimatesTab() {
                                 actions.push(
                                     <GridActionsCellItem
                                         key='unarchive'
-                                        icon={<UnarchiveIcon sx={{color: mainIconColor}} />}
+                                        icon={<ImgElement src='/images/icons/toolbar/unarchive.svg' sx={{height: {xs: 20, sm: 24}}} />}
                                         label={t('Unarchive')}
                                         onClick={() => onUnarchive(cell.row._id)}
                                         showInMenu={false}
@@ -218,7 +216,12 @@ export default function ArchivedEstimatesTab() {
 
                             if (permEdit) {
                                 actions.push(
-                                    <GridActionsCellItem key='remove' icon={<DeleteForeverIcon />} label={t('Remove')} onClick={() => onRemove(cell.row._id)} />
+                                    <GridActionsCellItem
+                                        key='remove'
+                                        icon={<ImgElement src='/images/icons/delete.svg' sx={{height: {xs: 20, sm: 24}}} />}
+                                        label={t('Remove')}
+                                        onClick={() => onRemove(cell.row._id)}
+                                    />
                                 );
                             }
 

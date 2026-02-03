@@ -7,11 +7,7 @@ import {useTranslation} from 'react-i18next';
 import {Toolbar} from '@mui/material';
 import {GridActionsCellItem} from '@mui/x-data-grid';
 
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import SendIcon from '@mui/icons-material/Send';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import ArchiveIcon from '@mui/icons-material/Archive';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import * as Api from 'api';
 import * as EstimatesApi from '@/api/estimate';
@@ -20,11 +16,11 @@ import {EstimatesDisplayData} from '../../data/estimates_display_data';
 import EstimatePageDialog from './EstimateDialog';
 import CreateEstimateDialog from './CreateEstimateDialog';
 import EstimateShareToAccountSelectionDialog from '../../components/estimates_shares/EstimateShareToAccount';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
 import DataTableComponent from '@/components/DataTableComponent';
-import {actionColumnWidth4, mainIconColor} from '@/theme';
+import {actionColumnWidth5, mainIconColor} from '@/theme';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 import {PageButton} from '../../tsui/Buttons/PageButton';
 import {usePermissions} from '@/api/auth';
 
@@ -96,6 +92,32 @@ export default function AccountEstimatesTab() {
     const onSearch = useCallback((value: string) => {
         setSearchVal(value);
         setDataRequested(false);
+    }, []);
+
+    const onDuplicate = useCallback((estimateId: string) => {
+        if (!estimateId) return;
+
+        confirmDialog(t('Are you sure you want to duplicate this estimate?')).then((result) => {
+            if (result.isConfirmed) {
+                setProgIndic(true);
+                setBigProgIndic(true);
+
+                Api.requestSession<any>({
+                    command: 'estimate/duplicate',
+                    args: {
+                        estimateId: estimateId,
+                    },
+                })
+                    .then((duplicatedEst) => {
+                        // console.log(duplicatedEst);
+                    })
+                    .finally(() => {
+                        setDataRequested(false);
+                        setProgIndic(false);
+                        setBigProgIndic(false);
+                    });
+            }
+        });
     }, []);
 
     const onArchive = useCallback((estimateId: string) => {
@@ -187,17 +209,29 @@ export default function AccountEstimatesTab() {
                     {
                         field: 'actions',
                         type: 'actions',
-                        width: actionColumnWidth4,
+                        width: actionColumnWidth5,
                         getActions: (cell) => {
                             if (!session?.user) return [];
 
                             const actions: JSX.Element[] = [];
 
+                            if (permEdit) {
+                                actions.push(
+                                    <GridActionsCellItem
+                                        key='duplicate'
+                                        icon={<ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{height: {xs: 20, sm: 24}}} />}
+                                        label={t('Duplicate')}
+                                        onClick={() => onDuplicate(cell.row._id)}
+                                        showInMenu={false}
+                                    />
+                                );
+                            }
+
                             if (permissionsSet.has('EST_SHR')) {
                                 actions.push(
                                     <GridActionsCellItem
                                         key='share'
-                                        icon={<SendIcon sx={{color: mainIconColor}} />}
+                                        icon={<ImgElement src='/images/icons/toolbar/share.svg' sx={{height: {xs: 20, sm: 24}}} />}
                                         label={t('Share')}
                                         onClick={() => {
                                             setEstimateTitle(cell.row.name);
@@ -213,7 +247,7 @@ export default function AccountEstimatesTab() {
                                 actions.push(
                                     <GridActionsCellItem
                                         key='edit'
-                                        icon={<EditOutlinedIcon />}
+                                        icon={<ImgElement src='/images/icons/edit.svg' sx={{height: {xs: 20, sm: 24}}} />}
                                         label={t('Edit')}
                                         onClick={() => {
                                             setEstimateTitle(cell.row.name);
@@ -240,23 +274,8 @@ export default function AccountEstimatesTab() {
                             if (permEdit) {
                                 actions.push(
                                     <GridActionsCellItem
-                                        key='download'
-                                        icon={<FileDownloadIcon sx={{color: mainIconColor}} />}
-                                        label={t('Download')}
-                                        onClick={() => {
-                                            // TODO: Implement download functionality
-                                            console.log('Download estimate', cell.row._id);
-                                        }}
-                                        showInMenu={false}
-                                    />
-                                );
-                            }
-
-                            if (permEdit) {
-                                actions.push(
-                                    <GridActionsCellItem
                                         key='archive'
-                                        icon={<ArchiveIcon sx={{color: mainIconColor}} />}
+                                        icon={<ImgElement src='/images/icons/toolbar/archive.svg' sx={{height: {xs: 20, sm: 24}}} />}
                                         label={t('Archive')}
                                         onClick={() => onArchive(cell.row._id)}
                                         showInMenu={false}
@@ -266,7 +285,12 @@ export default function AccountEstimatesTab() {
 
                             if (permEdit) {
                                 actions.push(
-                                    <GridActionsCellItem key='remove' icon={<DeleteForeverIcon />} label={t('Remove')} onClick={() => onRemove(cell.row._id)} />
+                                    <GridActionsCellItem
+                                        key='remove'
+                                        icon={<ImgElement src='/images/icons/delete.svg' sx={{height: {xs: 20, sm: 24}}} />}
+                                        label={t('Remove')}
+                                        onClick={() => onRemove(cell.row._id)}
+                                    />
                                 );
                             }
 

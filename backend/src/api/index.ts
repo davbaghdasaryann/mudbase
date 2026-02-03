@@ -24,6 +24,7 @@ export * from "./estimate/estimate/estimate_archive";
 export * from "./estimate/estimate/estimate_calc_prices";
 export * from "./estimate/estimate/estimate_create";
 export * from "./estimate/estimate/estimate_delete";
+export * from "./estimate/estimate/estimate_duplicate";
 export * from "./estimate/estimate/estimate_get";
 export * from "./estimate/estimate/estimate_other_expenses";
 export * from "./estimate/estimate/estimate_rename";
