@@ -385,5 +385,9 @@
     "Quantity": "Քանակ",
     "Price": "Արժեք",
     "material(s) attached": "կցված նյութ(եր)",
-    "Add to Estimation": "Ավելացնել նախահաշիվ"
+    "Add to Estimation": "Ավելացնել նախահաշիվ",
+    "Edit materials": "Խմբագրել նյութերը",
+    "Save": "Պահպանել",
+    "Add Material": "Ավելացնել նյութ",
+    "Material": "Նյութ"
 }

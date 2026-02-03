@@ -86,5 +86,9 @@
     "Quantity": "Quantity",
     "Price": "Price",
     "material(s) attached": "material(s) attached",
-    "Add to Estimation": "Add to Estimation"
+    "Add to Estimation": "Add to Estimation",
+    "Edit materials": "Edit materials",
+    "Save": "Save",
+    "Add Material": "Add Material",
+    "Material": "Material"
 }

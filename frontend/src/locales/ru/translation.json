@@ -49,5 +49,9 @@
     "Quantity": "Количество",
     "Price": "Цена",
     "material(s) attached": "прикреплено материалов",
-    "Add to Estimation": "Добавить в смету"
+    "Add to Estimation": "Добавить в смету",
+    "Edit materials": "Редактировать материалы",
+    "Save": "Сохранить",
+    "Add Material": "Добавить материал",
+    "Material": "Материал"
 }

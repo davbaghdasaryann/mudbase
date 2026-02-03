@@ -370,23 +370,25 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
             };
         }
     } else {
-        // No accountId filter → original logic
-        if (searchVal && subcategoryMongoId) {
+        // No accountId filter → original logic. Treat 'empty' or '' as no search.
+        const hasSearch = searchVal && searchVal !== 'empty' && searchVal.trim() !== '';
+        if (hasSearch && subcategoryMongoId) {
             matchQuery = {
                 $and: [
                     {subcategoryId: subcategoryMongoId},
                     {
                         $or: [
-                            {fullCode: {$regex: searchVal, $options: 'i'}},
-                            {name: {$regex: searchVal, $options: 'i'}},
+                            {fullCode: {$regex: searchVal!.trim(), $options: 'i'}},
+                            {name: {$regex: searchVal!.trim(), $options: 'i'}},
                         ],
                     },
                 ],
             };
-        } else if (searchVal) {
+        } else if (hasSearch) {
+            const term = searchVal!.trim();
             matchQuery.$or = [
-                {fullCode: {$regex: searchVal, $options: 'i'}},
-                {name: {$regex: searchVal, $options: 'i'}},
+                {fullCode: {$regex: term, $options: 'i'}},
+                {name: {$regex: term, $options: 'i'}},
             ];
         } else if (subcategoryMongoId) {
             matchQuery.subcategoryId = subcategoryMongoId;

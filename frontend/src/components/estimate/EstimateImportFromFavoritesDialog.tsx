@@ -8,16 +8,10 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemText,
     Checkbox,
     Box,
-    Stack,
     Typography,
     CircularProgress,
-    Divider,
     Accordion,
     AccordionSummary,
     AccordionDetails,
@@ -29,6 +23,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '../ConfirmationDialog';
+import ImgElement from '../../tsui/DomElements/ImgElement';
+import DataTableComponent from '../DataTableComponent';
+import { formatCurrency } from '@/lib/format_currency';
+import FavoriteMaterialsDialog from './FavoriteMaterialsDialog';
 
 interface FavoriteGroup {
     _id: string;
@@ -64,6 +62,10 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+    const [materialsEditTarget, setMaterialsEditTarget] = useState<{
+        groupId: string;
+        itemId: string;
+    } | null>(null);
 
     useEffect(() => {
         Api.requestSession<FavoriteGroup[]>({
@@ -107,6 +109,53 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
         setSelectedItemIds((prev) =>
             prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
         );
+    };
+
+    const updateItemLocally = (groupId: string, itemId: string, patch: Partial<FavoriteLaborItem>) => {
+        setLaborItemsByGroupId((prev) => ({
+            ...prev,
+            [groupId]: (prev[groupId] || []).map((it) =>
+                it._id === itemId ? { ...it, ...patch } : it
+            ),
+        }));
+    };
+
+    const handleInlineFieldBlur = (
+        groupId: string,
+        itemId: string,
+        field: 'laborOfferItemName' | 'quantity' | 'changableAveragePrice',
+        value: string
+    ) => {
+        const payload: any = {};
+        if (field === 'laborOfferItemName') {
+            payload.laborOfferItemName = value;
+        } else if (field === 'quantity') {
+            const num = Number(value.replace(',', '.'));
+            if (Number.isNaN(num)) return;
+            payload.quantity = num;
+        } else if (field === 'changableAveragePrice') {
+            const num = Number(value.replace(',', '.'));
+            if (Number.isNaN(num)) return;
+            payload.changableAveragePrice = num;
+        }
+
+        if (Object.keys(payload).length === 0) return;
+
+        Api.requestSession({
+            command: 'favorites/update_labor_item',
+            args: { favoriteLaborItemId: itemId },
+            json: payload,
+        })
+            .then(() => {
+                updateItemLocally(groupId, itemId, payload);
+            })
+            .catch((error) => {
+                console.error('Failed to update favorite labor item:', error);
+            });
+    };
+
+    const openMaterialsDialog = (groupId: string, item: FavoriteLaborItem) => {
+        setMaterialsEditTarget({ groupId, itemId: item._id });
     };
 
     const handleRemoveFromFavorites = (groupId: string, itemId: string) => {
@@ -165,7 +214,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
     };
 
     return (
-        <Dialog open={true} onClose={props.onClose} maxWidth="sm" fullWidth>
+        <Dialog open={true} onClose={props.onClose} maxWidth="md" fullWidth>
             <DialogTitle>{t('Import from Favorites')}</DialogTitle>
 
             <DialogContent>
@@ -208,84 +257,159 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                                             <CircularProgress size={24} />
                                         </Box>
                                     ) : !laborItemsByGroupId[group._id] ? null : laborItemsByGroupId[group._id]
-                                        .length === 0 ? (
+                                          .length === 0 ? (
                                         <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
                                             {t('favoritesModal.noWorksInGroup')}
                                         </Typography>
                                     ) : (
-                                        <List dense disablePadding sx={{ width: '100%' }}>
-                                            {laborItemsByGroupId[group._id].map((item) => {
-                                                const unit =
-                                                    item.measurementUnitData?.[0]?.representationSymbol || '';
-                                                const materialCount = item.materials?.length || 0;
-
-                                                return (
-                                                    <React.Fragment key={item._id}>
-                                                        <ListItem
-                                                            disablePadding
-                                                            secondaryAction={
-                                                                <Tooltip title={t('Remove from favorites')}>
-                                                                    <IconButton
-                                                                        edge="end"
-                                                                        size="small"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleRemoveFromFavorites(group._id, item._id);
-                                                                        }}
-                                                                        disabled={deletingItemId === item._id}
-                                                                    >
-                                                                        {deletingItemId === item._id ? (
-                                                                            <CircularProgress size={20} />
-                                                                        ) : (
-                                                                            <DeleteOutlineIcon fontSize="small" />
-                                                                        )}
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                            }
-                                                        >
-                                                            <ListItemButton
-                                                                onClick={() => handleToggleItem(item._id)}
-                                                                dense
-                                                            >
-                                                                <Checkbox
-                                                                    checked={selectedItemIds.includes(item._id)}
-                                                                    tabIndex={-1}
-                                                                    disableRipple
+                                        <Box sx={{ mt: 1 }}>
+                                            <DataTableComponent
+                                                sx={{
+                                                    width: '100%',
+                                                    '& .editableCell': {
+                                                        border: '1px solid #00BFFF',
+                                                        borderRadius: '5px',
+                                                    },
+                                                }}
+                                                columns={[
+                                                    {
+                                                        field: 'select',
+                                                        headerName: '',
+                                                        width: 40,
+                                                        sortable: false,
+                                                        filterable: false,
+                                                        renderCell: (cell) => (
+                                                            <Checkbox
+                                                                size="small"
+                                                                checked={selectedItemIds.includes(cell.row._id)}
+                                                                onChange={() => handleToggleItem(cell.row._id)}
+                                                            />
+                                                        ),
+                                                    },
+                                                    {
+                                                        field: 'laborOfferItemName',
+                                                        headerName: t('Labor'),
+                                                        flex: 1,
+                                                        editable: true,
+                                                        cellClassName: 'editableCell',
+                                                    },
+                                                    {
+                                                        field: 'unit',
+                                                        headerName: t('Unit'),
+                                                        width: 80,
+                                                        valueGetter: (params: any) =>
+                                                            params?.row?.measurementUnitData?.[0]?.representationSymbol ??
+                                                            '',
+                                                    },
+                                                    {
+                                                        field: 'quantity',
+                                                        headerName: t('Quantity'),
+                                                        width: 110,
+                                                        editable: true,
+                                                        cellClassName: 'editableCell',
+                                                    },
+                                                    {
+                                                        field: 'changableAveragePrice',
+                                                        headerName: t('Price'),
+                                                        width: 140,
+                                                        editable: true,
+                                                        cellClassName: 'editableCell',
+                                                        valueFormatter: (value: any) => formatCurrency(value),
+                                                    },
+                                                    {
+                                                        field: 'materials',
+                                                        type: 'actions',
+                                                        headerName: t('Materials'),
+                                                        width: 90,
+                                                        renderCell: (cell) => (
+                                                            <Tooltip title={t('Edit materials')}>
+                                                                <IconButton
                                                                     size="small"
-                                                                />
-                                                                <ListItemText
-                                                                    primary={item.laborOfferItemName || t('Unnamed Work')}
-                                                                    secondary={
-                                                                        <Stack spacing={0.5}>
-                                                                            <Typography
-                                                                                variant="caption"
-                                                                                component="span"
-                                                                            >
-                                                                                {t('Quantity')}: {item.quantity}{' '}
-                                                                                {unit} | {t('Price')}:{' '}
-                                                                                {item.changableAveragePrice}
-                                                                            </Typography>
-                                                                            {materialCount > 0 && (
-                                                                                <Typography
-                                                                                    variant="caption"
-                                                                                    component="span"
-                                                                                    color="primary"
-                                                                                >
-                                                                                    {materialCount}{' '}
-                                                                                    {t('material(s) attached')}
-                                                                                </Typography>
-                                                                            )}
-                                                                        </Stack>
+                                                                    onClick={() => openMaterialsDialog(group._id, cell.row)}
+                                                                >
+                                                                    <ImgElement
+                                                                        src="/images/icons/material.svg"
+                                                                        sx={{ height: 18 }}
+                                                                    />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        ),
+                                                    },
+                                                    {
+                                                        field: 'remove',
+                                                        type: 'actions',
+                                                        headerName: '',
+                                                        width: 60,
+                                                        renderCell: (cell) => (
+                                                            <Tooltip title={t('Remove from favorites')}>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() =>
+                                                                        handleRemoveFromFavorites(group._id, cell.row._id)
                                                                     }
-                                                                    secondaryTypographyProps={{ component: 'div' }}
-                                                                />
-                                                            </ListItemButton>
-                                                        </ListItem>
-                                                        <Divider component="li" />
-                                                    </React.Fragment>
-                                                );
-                                            })}
-                                        </List>
+                                                                    disabled={deletingItemId === cell.row._id}
+                                                                >
+                                                                    {deletingItemId === cell.row._id ? (
+                                                                        <CircularProgress size={20} />
+                                                                    ) : (
+                                                                        <DeleteOutlineIcon fontSize="small" />
+                                                                    )}
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        ),
+                                                    },
+                                                ]}
+                                                rows={laborItemsByGroupId[group._id]}
+                                                getRowId={(row) => row._id}
+                                                disableRowSelectionOnClick
+                                                processRowUpdate={(newRow, oldRow) => {
+                                                    // mimic estimation: commit changes via API and return updated row
+                                                    if (
+                                                        JSON.stringify({
+                                                            name: newRow.laborOfferItemName,
+                                                            q: newRow.quantity,
+                                                            p: newRow.changableAveragePrice,
+                                                        }) ===
+                                                        JSON.stringify({
+                                                            name: oldRow.laborOfferItemName,
+                                                            q: oldRow.quantity,
+                                                            p: oldRow.changableAveragePrice,
+                                                        })
+                                                    ) {
+                                                        return oldRow;
+                                                    }
+                                                    const payload: any = {};
+                                                    if (newRow.laborOfferItemName !== oldRow.laborOfferItemName) {
+                                                        payload.laborOfferItemName = newRow.laborOfferItemName;
+                                                    }
+                                                    if (newRow.quantity !== oldRow.quantity) {
+                                                        payload.quantity = newRow.quantity;
+                                                    }
+                                                    if (newRow.changableAveragePrice !== oldRow.changableAveragePrice) {
+                                                        payload.changableAveragePrice = newRow.changableAveragePrice;
+                                                    }
+                                                    if (Object.keys(payload).length === 0) {
+                                                        return oldRow;
+                                                    }
+                                                    return Api.requestSession({
+                                                        command: 'favorites/update_labor_item',
+                                                        args: { favoriteLaborItemId: newRow._id },
+                                                        json: payload,
+                                                    })
+                                                        .then(() => {
+                                                            updateItemLocally(group._id, newRow._id, payload);
+                                                            return { ...newRow };
+                                                        })
+                                                        .catch((error) => {
+                                                            console.error('Failed to update favorite labor item:', error);
+                                                            return oldRow;
+                                                        });
+                                                }}
+                                                onProcessRowUpdateError={(error) =>
+                                                    console.error('Error updating favorite row:', error)
+                                                }
+                                            />
+                                        </Box>
                                     )}
                                 </AccordionDetails>
                             </Accordion>
@@ -306,6 +430,42 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                     {submitting ? <CircularProgress size={24} /> : t('Add to Estimation')}
                 </Button>
             </DialogActions>
+            {materialsEditTarget && (
+                <FavoriteMaterialsDialog
+                    open={true}
+                    onClose={() => setMaterialsEditTarget(null)}
+                    initialMaterials={
+                        (() => {
+                            const group = laborItemsByGroupId[materialsEditTarget.groupId];
+                            const item = group?.find((it) => it._id === materialsEditTarget.itemId);
+                            const mats = item?.materials ?? [];
+                            return mats.map((m: any) => ({
+                                materialItemId: m.materialItemId,
+                                materialOfferId: m.materialOfferId,
+                                materialOfferItemName: m.materialOfferItemName ?? '',
+                                measurementUnitMongoId: m.measurementUnitMongoId,
+                                quantity: m.quantity ?? 0,
+                                materialConsumptionNorm: m.materialConsumptionNorm ?? 0,
+                                changableAveragePrice: m.changableAveragePrice ?? 0,
+                            }));
+                        })()
+                    }
+                    onSave={(materials) => {
+                        Api.requestSession({
+                            command: 'favorites/update_labor_item',
+                            args: { favoriteLaborItemId: materialsEditTarget.itemId },
+                            json: { materials },
+                        })
+                            .then(() => {
+                                updateItemLocally(materialsEditTarget.groupId, materialsEditTarget.itemId, {
+                                    materials,
+                                } as any);
+                                setMaterialsEditTarget(null);
+                            })
+                            .catch((error) => console.error('Failed to update favorite materials:', error));
+                    }}
+                />
+            )}
         </Dialog>
     );
 }
