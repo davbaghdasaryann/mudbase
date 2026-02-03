@@ -33,6 +33,8 @@ export interface EntityEstimate {
 
     otherExpenses?: OtherExpense[];
 
+    archived?: boolean;
+    archivedAt?: Date;
 
     deleted?: boolean;
     deletedAt?: Date;

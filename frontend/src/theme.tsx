@@ -56,6 +56,7 @@ export const materialIconHeight = 23;
 export const accordionSummaryHeight = 50;
 export const filtersSelecteWidth = 250;
 export const actionColumnWidth3 = 110;
+export const actionColumnWidth4 = 145;
 
 export const facebookUrl = 'https://www.facebook.com/mudbase.armenia';
 export const instagramUrl = 'https://www.instagram.com/mudbase_armenia';

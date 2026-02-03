@@ -10,8 +10,9 @@ import {usePermissions} from '@/api/auth';
 import AccountSharedEstimatesWithMeTab from './AccountSharedEstimatesWithMeTab';
 import AccountEstimatesTab from './AccountEstimatesTab';
 import AccountSharedEstimatesByMeTab from '@/app/estimates/AccountSharedEstimatesByMeTab';
+import ArchivedEstimatesTab from './ArchivedEstimatesTab';
 
-type TabValue = 'estimates' | 'sharedEstimates' | 'estimateOffers';
+type TabValue = 'estimates' | 'sharedEstimates' | 'estimateOffers' | 'archivedEstimates';
 
 export default function EstimatesPageContents() {
     const {session, permissionsSet} = usePermissions();
@@ -53,6 +54,7 @@ export default function EstimatesPageContents() {
                         {permEstUse && <Tab label={t('My Estimates')} value='estimates' />}
                         {hasSharedEstimatesByMe && <Tab label={t('Shared Estimates')} value='sharedEstimates' />}
                         {hasSharedEstimatesWithMe && <Tab label={t('Estimate Offers')} value='estimateOffers' />}
+                        {permEstUse && <Tab label={t('Archived Estimates')} value='archivedEstimates' />}
                     </TabList>
                 </Box>
             </TabContext>
@@ -60,6 +62,7 @@ export default function EstimatesPageContents() {
             {value === 'estimates' && permEstUse && <AccountEstimatesTab />}
             {value === 'sharedEstimates' && hasSharedEstimatesByMe && <AccountSharedEstimatesByMeTab />}
             {value === 'estimateOffers' && hasSharedEstimatesWithMe && <AccountSharedEstimatesWithMeTab />}
+            {value === 'archivedEstimates' && permEstUse && <ArchivedEstimatesTab />}
         </>
     );
 }

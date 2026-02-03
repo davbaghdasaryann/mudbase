@@ -23,6 +23,9 @@ export interface ApiEstimate {
     sharedByAccountData?: any;
     multiSharedAccountData?: any;
 
+    archived?: boolean;
+    archivedAt?: Date;
+
     deleted?: boolean;
     deletedAt?: Date;
 }

@@ -8,24 +8,19 @@ import {Toolbar} from '@mui/material';
 import {GridActionsCellItem} from '@mui/x-data-grid';
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import SendIcon from '@mui/icons-material/Send';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import ArchiveIcon from '@mui/icons-material/Archive';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import UnarchiveIcon from '@mui/icons-material/Unarchive';
 
 import * as Api from 'api';
 import * as EstimatesApi from '@/api/estimate';
 
 import {EstimatesDisplayData} from '../../data/estimates_display_data';
 import EstimatePageDialog from './EstimateDialog';
-import CreateEstimateDialog from './CreateEstimateDialog';
-import EstimateShareToAccountSelectionDialog from '../../components/estimates_shares/EstimateShareToAccount';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
 import DataTableComponent from '@/components/DataTableComponent';
-import {actionColumnWidth4, mainIconColor} from '@/theme';
-import {PageButton} from '../../tsui/Buttons/PageButton';
+import {actionColumnWidth3, mainIconColor} from '@/theme';
 import {usePermissions} from '@/api/auth';
 
 import EstimateOnlyForViewDialog from './EstimateOnlyForViewDialog';
@@ -34,10 +29,9 @@ import {formatCurrency} from '@/lib/format_currency';
 import {formatDate} from '@/lib/format_date';
 import ProgressIndicator from '@/tsui/ProgressIndicator';
 
-export default function AccountEstimatesTab() {
+export default function ArchivedEstimatesTab() {
     const {session, permissionsSet} = usePermissions();
 
-    const permCreate = permissionsSet?.has?.('EST_CRT');
     const permEdit = permissionsSet?.has?.('EST_EDT');
 
     const [t] = useTranslation();
@@ -47,13 +41,10 @@ export default function AccountEstimatesTab() {
     const [progIndic, setProgIndic] = useState(false);
     const [bigProgIndic, setBigProgIndic] = useState(false);
 
-    const [openCreateEstimateDialog, setOpenCreateEstimateDialog] = useState(false);
-
     const [searchVal, setSearchVal] = useState('');
     const [estimates, setEstimates] = useState<EstimatesDisplayData[] | null>(null);
 
     const [estimateId, setEstimateId] = useState<string | null>(null);
-    const [estimateIdForShare, setEstimateIdForShare] = useState<string | null>(null);
 
     const [estimateTitle, setEstimateTitle] = useState<string | null>(null);
     const [estimateTotalCost, setEstimateTotalCost] = useState<number | null>(null);
@@ -66,22 +57,17 @@ export default function AccountEstimatesTab() {
             setProgIndic(true);
 
             Api.requestSession<EstimatesApi.ApiEstimate[]>({
-                command: `estimates/fetch`,
+                command: `estimates/fetch_archived`,
                 args: {searchVal: searchVal === '' ? 'empty' : searchVal},
             }).then((estimatesResData) => {
                 if (mounted.current) {
-                    // console.log('estimatesResData', estimatesResData);
-                    // console.log('labor categories: ', d)
                     let estimatesData: EstimatesDisplayData[] = [];
 
                     for (let estimate of estimatesResData) {
                         estimatesData.push(new EstimatesDisplayData(estimate));
                     }
-                    // console.log('laborOffersData', estimatesData);
 
                     setEstimates(estimatesData);
-
-                    // GD.pubsub_.dispatch('estimateDataChange');
                 }
 
                 setProgIndic(false);
@@ -98,22 +84,22 @@ export default function AccountEstimatesTab() {
         setDataRequested(false);
     }, []);
 
-    const onArchive = useCallback((estimateId: string) => {
+    const onUnarchive = useCallback((estimateId: string) => {
         if (!estimateId) return;
 
-        confirmDialog(t('Are you sure you want to archive this estimate?')).then((result) => {
+        confirmDialog(t('Are you sure you want to unarchive this estimate?')).then((result) => {
             if (result.isConfirmed) {
                 setProgIndic(true);
                 setBigProgIndic(true);
 
                 Api.requestSession<any>({
-                    command: 'estimate/archive',
+                    command: 'estimate/unarchive',
                     args: {
                         estimateId: estimateId,
                     },
                 })
-                    .then((archivedEst) => {
-                        // console.log(archivedEst);
+                    .then((unarchivedEst) => {
+                        // console.log(unarchivedEst);
                     })
                     .finally(() => {
                         setDataRequested(false);
@@ -139,8 +125,7 @@ export default function AccountEstimatesTab() {
                     },
                 })
                     .then((deletedEst) => {
-                        // console.log(removedMaterial);
-                        // props.onConfirm();
+                        // console.log(deletedEst);
                     })
                     .finally(() => {
                         setDataRequested(false);
@@ -156,8 +141,6 @@ export default function AccountEstimatesTab() {
             <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
-
-                {permCreate && <PageButton variant='contained' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} />}
             </Toolbar>
 
             <DataTableComponent
@@ -187,27 +170,11 @@ export default function AccountEstimatesTab() {
                     {
                         field: 'actions',
                         type: 'actions',
-                        width: actionColumnWidth4,
+                        width: actionColumnWidth3,
                         getActions: (cell) => {
                             if (!session?.user) return [];
 
                             const actions: JSX.Element[] = [];
-
-                            if (permissionsSet.has('EST_SHR')) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='share'
-                                        icon={<SendIcon sx={{color: mainIconColor}} />}
-                                        label={t('Share')}
-                                        onClick={() => {
-                                            setEstimateTitle(cell.row.name);
-                                            setEstimateIdForShare(cell.row._id);
-                                            setEstimateTotalCost(cell.row.totalCost);
-                                        }}
-                                        showInMenu={false}
-                                    />
-                                );
-                            }
 
                             if (permEdit) {
                                 actions.push(
@@ -240,25 +207,10 @@ export default function AccountEstimatesTab() {
                             if (permEdit) {
                                 actions.push(
                                     <GridActionsCellItem
-                                        key='download'
-                                        icon={<FileDownloadIcon sx={{color: mainIconColor}} />}
-                                        label={t('Download')}
-                                        onClick={() => {
-                                            // TODO: Implement download functionality
-                                            console.log('Download estimate', cell.row._id);
-                                        }}
-                                        showInMenu={false}
-                                    />
-                                );
-                            }
-
-                            if (permEdit) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='archive'
-                                        icon={<ArchiveIcon sx={{color: mainIconColor}} />}
-                                        label={t('Archive')}
-                                        onClick={() => onArchive(cell.row._id)}
+                                        key='unarchive'
+                                        icon={<UnarchiveIcon sx={{color: mainIconColor}} />}
+                                        label={t('Unarchive')}
+                                        onClick={() => onUnarchive(cell.row._id)}
                                         showInMenu={false}
                                     />
                                 );
@@ -294,7 +246,6 @@ export default function AccountEstimatesTab() {
                         estimateTitle={estimateTitle}
                         onClose={() => setEstimateId(null)}
                         onConfirm={() => setDataRequested(false)}
-                        // isOnlyEstInfo={session?.user && permissionsSet?.has?.('EST_CRT_BY_BNK') ? true : false}
                     />
                 ) : (
                     <EstimateOnlyForViewDialog
@@ -304,21 +255,6 @@ export default function AccountEstimatesTab() {
                         onConfirm={() => setDataRequested(false)}
                     />
                 ))}
-
-            {estimateIdForShare && estimateTitle && (
-                <EstimateShareToAccountSelectionDialog
-                    calledFromPage='estimates'
-                    estimateId={estimateIdForShare}
-                    title={estimateTitle}
-                    onClose={() => {
-                        setEstimateIdForShare(null);
-                        setEstimateTitle(null);
-                    }}
-                    onConfirm={() => setDataRequested(false)}
-                />
-            )}
-
-            {openCreateEstimateDialog && <CreateEstimateDialog onClose={() => setOpenCreateEstimateDialog(false)} onConfirm={() => setDataRequested(false)} />}
 
             <ProgressIndicator show={bigProgIndic} background='backdrop' />
         </>

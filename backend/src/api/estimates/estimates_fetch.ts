@@ -11,6 +11,7 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
     let estimates = Db.getEstimatesCollection();
 
     const notDeletedFilter = {deleted: {$ne: true}};
+    const notArchivedFilter = {archived: {$ne: true}};
 
     let cursor;
 
@@ -22,6 +23,7 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
                 {isOriginal: true},
                 {accountId: session.mongoAccountId},
                 notDeletedFilter,
+                notArchivedFilter,
                 {
                     $or: [
                         isInteger
@@ -33,7 +35,7 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
         });
     } else {
         cursor = estimates.find({
-            $and: [{isOriginal: true}, {accountId: session.mongoAccountId}, notDeletedFilter],
+            $and: [{isOriginal: true}, {accountId: session.mongoAccountId}, notDeletedFilter, notArchivedFilter],
         });
     }
 
