@@ -28,9 +28,9 @@ git clone <repo> .
 # OR
 sudo rsync -av --exclude 'node_modules' --exclude 'build' /srv/mudbase/ /srv/mudbase-new/
 
-# Build
-cd backend && npm install && npm run build
-cd ../frontend && npm install && npm run build
+# Build (use yarn for consistency with production)
+cd backend && yarn install && yarn build
+cd ../frontend && yarn install && yarn build
 ```
 
 ## 5. Create & Copy Configs

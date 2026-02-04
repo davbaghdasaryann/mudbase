@@ -55,28 +55,28 @@ cd /srv/mudbase-new
 git clone <your-repo-url> .
 git checkout <your-branch>
 
-# Install dependencies
+# Install dependencies (use yarn for consistency with production)
 cd backend
-npm install
-npm run build
+yarn install
+yarn build
 
 cd ../frontend
-npm install
-npm run build
+yarn install
+yarn build
 ```
 
 **Option B: Copy from existing deployment**
 
 ```bash
 # Copy from production and update
-sudo rsync -av --exclude 'node_modules' --exclude 'build' /srv/mudbase/ /srv/mudbase-new/
+sudo rsync -av --exclude 'node_modules' --exclude 'build' --exclude '.yarn/cache' --exclude '.yarn/install-state.gz' /srv/mudbase/ /srv/mudbase-new/
 cd /srv/mudbase-new/backend
-npm install
-npm run build
+yarn install
+yarn build
 
 cd /srv/mudbase-new/frontend
-npm install
-npm run build
+yarn install
+yarn build
 ```
 
 ### 4. Create Config Files on Server

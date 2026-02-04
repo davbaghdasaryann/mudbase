@@ -55,3 +55,11 @@ backend/config/config-mudbase.yaml
 backend/config/config-new-mudbase.yaml
 frontend/.env.local
 
+# Yarn cache and install state
+.yarn/cache
+.yarn/install-state.gz
+.pnp.*
+
+# npm (if accidentally used)
+package-lock.json
+
