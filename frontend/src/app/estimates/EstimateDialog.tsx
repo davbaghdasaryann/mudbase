@@ -477,13 +477,20 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         height: 200,
                         overflow: 'visible',
                     }}>
-                        <Box sx={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <Box sx={{
+                            display: 'flex',
+                            gap: 8,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            height: '100%',
+                            flexWrap: 'wrap'
+                        }}>
                             {/* Download Estimation */}
                             <Box>
                                 <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
                                     {t('Download Estimation')}
                                 </Typography>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 1.5 }}>
                                     {[
                                         { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
                                         { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
@@ -501,7 +508,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                                 backgroundColor: 'transparent',
                                                 borderRadius: 2,
                                                 cursor: 'pointer',
-                                                minWidth: 120,
+                                                width: { xs: 110, md: 130, lg: 150 },
+                                                minHeight: { xs: 90, md: 100, lg: 110 },
                                                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
                                                 transition: 'all 0.2s',
                                                 '&:hover': {
@@ -521,12 +529,19 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 </Box>
                             </Box>
 
+                            {/* Vertical Divider */}
+                            <Box sx={{
+                                height: '80%',
+                                width: '1px',
+                                backgroundColor: 'rgba(25, 118, 210, 0.3)',
+                            }} />
+
                             {/* Download Bill of Quantities */}
                             <Box>
                                 <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
                                     {t('Download Bill of Quantities')}
                                 </Typography>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 1.5 }}>
                                     {[
                                         { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
                                         { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
@@ -544,7 +559,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                                 backgroundColor: 'transparent',
                                                 borderRadius: 2,
                                                 cursor: 'pointer',
-                                                minWidth: 120,
+                                                width: { xs: 110, md: 130, lg: 150 },
+                                                minHeight: { xs: 90, md: 100, lg: 110 },
                                                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
                                                 transition: 'all 0.2s',
                                                 '&:hover': {
