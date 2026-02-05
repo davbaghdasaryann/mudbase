@@ -271,18 +271,22 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 }
             }}>
                 {/* Tabs */}
-                <Box sx={{ borderBottom: 0, mb: 0 }}>
+                <Box sx={{ borderBottom: '1px solid rgba(25, 118, 210, 0.3)', mb: 0 }}>
                     <Tabs
                         value={activeTab}
                         onChange={(e, newValue) => setActiveTab(newValue)}
                         sx={{
                             minHeight: 48,
                             height: 48,
+                            '& .MuiTabs-indicator': {
+                                display: 'none', // Hide default indicator
+                            },
                             '& .MuiTab-root': {
-                                borderTopLeftRadius: 1,
-                                borderTopRightRadius: 1,
-                                border: '1px solid transparent',
-                                marginRight: 0.5,
+                                borderTopLeftRadius: '8px',
+                                borderTopRightRadius: '8px',
+                                border: '1px solid rgba(25, 118, 210, 0.2)',
+                                borderBottom: '1px solid transparent',
+                                marginRight: '4px',
                                 minHeight: 48,
                                 height: 48,
                                 padding: '12px 16px',
@@ -328,12 +332,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 {activeTab === 0 && (
                     <Box sx={{
                         mb: 2,
-                        p: 2,
+                        p: 3,
                         backgroundColor: 'rgba(25, 118, 210, 0.08)',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        minHeight: 140,
+                        height: 200,
                         overflow: 'visible',
                     }}>
                         <Box sx={{
@@ -341,8 +345,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             gap: 1.5,
                             flexWrap: 'nowrap',
                             justifyContent: 'center',
-                            py: 1.5,
-                            px: 0.5,
+                            alignItems: 'center',
+                            height: '100%',
                         }}>
                             {/* Tool buttons */}
                             {[
@@ -381,9 +385,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                                 boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                                 transform: 'translateY(-2px)',
                                             },
-                                            minWidth: 85,
-                                            minHeight: 80,
-                                            flex: '1 1 auto',
+                                            width: { xs: 110, md: 130, lg: 150 },
+                                            minHeight: { xs: 90, md: 100, lg: 110 },
                                         }}
                                     >
                                         <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -430,9 +433,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                             boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                             transform: 'translateY(-2px)',
                                         },
-                                        minWidth: 85,
-                                        minHeight: 80,
-                                        flex: '1 1 auto',
+                                        width: { xs: 110, md: 130, lg: 150 },
+                                        minHeight: { xs: 90, md: 100, lg: 110 },
                                     }}
                                 >
                                     <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -456,7 +458,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        minHeight: 200
+                        height: 200,
+                        overflow: 'visible',
                     }}>
                         <EstimateInfoAccordionContent estimateId={props.estimateId} onDataUpdated={handleDataUpdated} />
                     </Box>
@@ -471,7 +474,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        minHeight: 200
+                        height: 200,
+                        overflow: 'visible',
                     }}>
                         <Box sx={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
                             {/* Download Estimation */}
