@@ -259,7 +259,17 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 <CloseIcon />
             </IconButton>
 
-            <DialogContent>
+            <DialogContent onClick={(e) => {
+                // Clear selection when clicking outside data grids (on blank areas)
+                if (isSelectMode && selectedLaborIds.length > 0) {
+                    const target = e.target as HTMLElement;
+                    // Check if click is on DialogContent or its direct children (not on grids or their content)
+                    if (target.classList.contains('MuiDialogContent-root') ||
+                        target.closest('.MuiBox-root') && !target.closest('.MuiDataGrid-root')) {
+                        accordionRef.current?.clearSelection();
+                    }
+                }
+            }}>
                 {/* Tabs */}
                 <Box sx={{ borderBottom: 0, mb: 0 }}>
                     <Tabs

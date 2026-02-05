@@ -165,6 +165,7 @@ export interface EstimateThreeLevelNestedAccordionRef {
     refreshEverything: (showProgIndic?: boolean) => Promise<void>;
     getSelectedLaborIds: () => string[];
     getSelectedLaborDetails: () => { id: string; isHidden: boolean }[];
+    clearSelection: () => void;
 }
 
 const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAccordionRef, EstimateThreeLevelNestedAccordionProps>(function EstimateThreeLevelNestedAccordion(props, ref) {
@@ -571,6 +572,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
         itemArr.priceSource = item.priceSource;
+        itemArr.isHidden = item.isHidden === true;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -712,6 +714,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
             itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
             itemArr.priceSource = item.priceSource;
+            itemArr.isHidden = item.isHidden === true;
 
             if (item.itemUnitPrice) {
                 console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
@@ -991,6 +994,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         });
     }, [selectionByGridKey, findLaborRowById]);
 
+    const clearSelection = useCallback(() => {
+        setSelectionByGridKey({});
+    }, []);
+
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
         openAddSectionDialog: () => setOpenAddSectionDialog(true),
@@ -999,7 +1006,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         refreshEverything,
         getSelectedLaborIds,
         getSelectedLaborDetails,
-    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds, getSelectedLaborDetails]);
+        clearSelection,
+    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds, getSelectedLaborDetails, clearSelection]);
 
     if (!sections) {
         return null;
@@ -1103,11 +1111,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     backgroundColor: '#fff9c4 !important', /* yellow - builder's own price */
                                                 },
                                                 '& .MuiDataGrid-row.hiddenRow': {
-                                                    opacity: 0.65,
+                                                    opacity: 0.6,
                                                     fontStyle: 'italic',
+                                                    backgroundColor: '#ffebee !important', /* light red background */
                                                 },
                                                 '& .MuiDataGrid-row.hiddenRow .MuiDataGrid-cell': {
                                                     color: 'text.secondary',
+                                                    textDecoration: 'line-through',
                                                 },
                                             }}
                                             getRowClassName={(params) => (params.row && isHiddenRow(params.row as AccordionItem)) ? 'hiddenRow' : ''}
@@ -1253,34 +1263,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 //         }
                                                 //     },
                                                 // }, // width: 600 },
-                                                {
-                                                    field: 'importFavorites',
-                                                    type: 'actions',
-                                                    headerName: '',
-                                                    width: 50,
-                                                    disableColumnMenu: true,
-                                                    renderCell: (cell) => {
-                                                        if (!permAddFields && props.isOnlyEstInfo) {
-                                                            return null;
-                                                        }
-                                                        const subsectionId = item.children?.[0]?._id ?? null;
-                                                        const isActiveRow =
-                                                            showSubsectionImportDialog === subsectionId &&
-                                                            rowIdThatOpenedImportDialog === cell.row._id;
-                                                        return (
-                                                            <Tooltip title={t('Import from Favorites')} arrow placement='top'>
-                                                                <IconButton
-                                                                    onClick={() => {
-                                                                        setShowSubsectionImportDialog(subsectionId);
-                                                                        setRowIdThatOpenedImportDialog(cell.row._id as string);
-                                                                    }}
-                                                                >
-                                                                    {isActiveRow ? <StarIcon /> : <StarOutlineIcon />}
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        );
-                                                    },
-                                                },
                                                 {
                                                     field: 'addMaterial',
                                                     type: 'actions',
@@ -1510,11 +1492,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         backgroundColor: '#fff9c4 !important', /* yellow - builder's own price */
                                                                     },
                                                                     '& .MuiDataGrid-row.hiddenRow': {
-                                                                        opacity: 0.65,
+                                                                        opacity: 0.6,
                                                                         fontStyle: 'italic',
+                                                                        backgroundColor: '#ffebee !important', /* light red background */
                                                                     },
                                                                     '& .MuiDataGrid-row.hiddenRow .MuiDataGrid-cell': {
                                                                         color: 'text.secondary',
+                                                                        textDecoration: 'line-through',
                                                                     },
                                                                 }}
                                                                 getRowClassName={(params) => (params.row && isHiddenRow(params.row as AccordionItem)) ? 'hiddenRow' : ''}
@@ -1677,34 +1661,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     //         }
                                                                     //     },
                                                                     // }, // width: 600 },
-                                                                    {
-                                                                        field: 'importFavorites',
-                                                                        type: 'actions',
-                                                                        headerName: '',
-                                                                        width: 50,
-                                                                        disableColumnMenu: true,
-                                                                        renderCell: (cell) => {
-                                                                            if (!permAddFields && props.isOnlyEstInfo) {
-                                                                                return null;
-                                                                            }
-                                                                            const subsectionId = child._id;
-                                                                            const isActiveRow =
-                                                                                showSubsectionImportDialog === subsectionId &&
-                                                                                rowIdThatOpenedImportDialog === cell.row._id;
-                                                                            return (
-                                                                                <Tooltip title={t('Import from Favorites')} arrow placement='top'>
-                                                                                    <IconButton
-                                                                                        onClick={() => {
-                                                                                            setShowSubsectionImportDialog(subsectionId);
-                                                                                            setRowIdThatOpenedImportDialog(cell.row._id as string);
-                                                                                        }}
-                                                                                    >
-                                                                                        {isActiveRow ? <StarIcon /> : <StarOutlineIcon />}
-                                                                                    </IconButton>
-                                                                                </Tooltip>
-                                                                            );
-                                                                        },
-                                                                    },
                                                                     {
                                                                         field: 'addMaterial',
                                                                         type: 'actions',
