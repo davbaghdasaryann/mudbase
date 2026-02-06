@@ -263,6 +263,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 // Clear selection when clicking outside data grids (on blank areas)
                 if (isSelectMode && selectedLaborIds.length > 0) {
                     const target = e.target as HTMLElement;
+                    // Don't clear if clicking on toolbar buttons
+                    if (target.closest('[data-toolbar="true"]')) {
+                        return;
+                    }
                     // Check if click is on DialogContent or its direct children (not on grids or their content)
                     if (target.classList.contains('MuiDialogContent-root') ||
                         target.closest('.MuiBox-root') && !target.closest('.MuiDataGrid-root')) {
@@ -340,7 +344,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         height: 200,
                         overflow: 'visible',
                     }}>
-                        <Box sx={{
+                        <Box data-toolbar="true" sx={{
                             display: 'flex',
                             gap: 1.5,
                             flexWrap: 'nowrap',
@@ -366,7 +370,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 return (
                                     <Box
                                         key={index}
-                                        onClick={tool.disabled ? undefined : tool.onClick}
+                                        onClick={(e) => {
+                                            if (tool.disabled) return;
+                                            e.stopPropagation(); // Prevent event from bubbling to DialogContent
+                                            tool.onClick(e);
+                                        }}
                                         sx={{
                                             display: 'flex',
                                             flexDirection: 'column',
@@ -415,7 +423,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
-                                    onClick={lastThreeDisabled ? undefined : tool.onClick}
+                                    onClick={(e) => {
+                                        if (lastThreeDisabled) return;
+                                        e.stopPropagation(); // Prevent event from bubbling to DialogContent
+                                        tool.onClick(e);
+                                    }}
                                     sx={{
                                         display: 'flex',
                                         flexDirection: 'column',
