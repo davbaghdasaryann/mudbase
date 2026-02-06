@@ -389,5 +389,11 @@
     "Edit materials": "Խմբագրել նյութերը",
     "Save": "Պահպանել",
     "Add Material": "Ավելացնել նյութ",
-    "Material": "Նյութ"
+    "Material": "Նյութ",
+    "Direct costs": "Ուղղակի ծախսեր",
+    "Other costs": "Այլ ծախսեր",
+    "Construction area": "Շինարարության մակերես",
+    "Built-up Area": "Կառուցապատված մակերես",
+    "Construction Cost per sq. m": "Շինարարության արժեք քմ",
+    "Built-up Cost per sq. m": "Կառուցապատված մակերես քմ"
 }

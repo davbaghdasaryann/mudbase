@@ -116,14 +116,14 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
         <AccordionDetails>
             <F.PageForm form={form} size='xl' onFieldUpdate={handleChange} >
                 {/* Row 1 */}
-                <F.InputText xsQuarter id='name' value={data?.name} label={t('Title')} placeholder='Title' />
-                <F.InputText xsQuarter id='constructionType' value={t(data?.constructionType)} label={t('Type of construction')} placeholder='Type of construction' />
-                <F.InputText xsQuarter id='builtUpArea' value={data?.builtUpArea} label={t('Built-up Area')} placeholder='Built-up Area' />
-                <F.InputText isThousandsSeparator={true} xsQuarter id='totalCost' value={fixedNumber(data?.totalCost) ?? '0'} label={t('Direct costs')} placeholder='Direct costs' />
+                <F.InputText xsQuarter id='name' value={data?.name} label={t('Title')} placeholder={t('Title')} />
+                <F.InputText xsQuarter id='constructionType' value={t(data?.constructionType)} label={t('Type of construction')} placeholder={t('Type of construction')} />
+                <F.InputText xsQuarter id='builtUpArea' value={data?.builtUpArea} label={t('Built-up Area')} placeholder={t('Built-up Area')} />
+                <F.InputText isThousandsSeparator={true} xsQuarter id='totalCost' value={fixedNumber(data?.totalCost) ?? '0'} label={t('Direct costs')} placeholder={t('Direct costs')} />
 
                 {/* Row 2 */}
-                <F.InputText xsQuarter id='address' value={data?.address} label={t('Address')} placeholder='Address' />
-                <F.InputText xsQuarter id='constructionSurface' value={data?.constructionSurface} label={t('Construction area')} placeholder='Construction area' />
+                <F.InputText xsQuarter id='address' value={data?.address} label={t('Address')} placeholder={t('Address')} />
+                <F.InputText xsQuarter id='constructionSurface' value={data?.constructionSurface} label={t('Construction area')} placeholder={t('Construction area')} />
                 <F.InputText
                     isThousandsSeparator={true}
                     readonly
@@ -135,9 +135,9 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
                             : '0'
                     }
                     label={t('Built-up Cost per sq. m')}
-                    placeholder='Built-up Cost per sq. m'
+                    placeholder={t('Built-up Cost per sq. m')}
                 />
-                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='otherCosts' value={fixedNumber((data?.totalCostWithOtherExpenses ?? 0) - (data?.totalCost ?? 0)) ?? '0'} label={t('Other costs')} placeholder='Other costs' />
+                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='otherCosts' value={fixedNumber((data?.totalCostWithOtherExpenses ?? 0) - (data?.totalCost ?? 0)) ?? '0'} label={t('Other costs')} placeholder={t('Other costs')} />
 
                 {/* Row 3 - Empty spaces in col1 and col3 */}
                 <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
@@ -152,10 +152,10 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
                             : '0'
                     }
                     label={t('Construction Cost per sq. m')}
-                    placeholder='Construction Cost per sq. m'
+                    placeholder={t('Construction Cost per sq. m')}
                 />
                 <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
-                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='totalCostWithOtherExpenses' value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'} label={t('Total Cost AMD')} placeholder='Total Cost AMD' />
+                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='totalCostWithOtherExpenses' value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'} label={t('Total Cost AMD')} placeholder={t('Total Cost AMD')} />
                 {/* <F.InputText xsQuarter id='buildingType' value={data?.buildingType} label={t('Type of building')} placeholder='Type of building' /> */}
 
             </F.PageForm>

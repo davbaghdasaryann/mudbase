@@ -22,41 +22,41 @@ interface Props {
 
 // const [t]= useTranslation()
 
-const constrData = [
-    //ConstructionType, BuildingType
-    {
-        id: 'currentRenovation',
-        label: 'Current Renovation',
-    },
-    {
-        id: 'renovation',
-        label: 'Renovation',
-    },
-    {
-        id: 'majorRepairs',
-        label: 'Major repairs',
-    },
-    {
-        id: 'reconstruction',
-        label: 'Reconstruction',
-    },
-    {
-        id: 'reinforcement',
-        label: 'Reinforcement',
-    },
-    {
-        id: 'restorationWork',
-        label: 'Restoration Work',
-    },
-    {
-        id: 'construction',
-        label: 'Construction',
-    },
-];
-
 export default function EstimateInfoAccordionContent(props: Props) {
     const { session, status, permissionsSet } = usePermissions();
-    const [t] = useTranslation();
+    const { t } = useTranslation();
+
+    const constrData = [
+        //ConstructionType, BuildingType
+        {
+            id: 'currentRenovation',
+            label: t('Current Renovation'),
+        },
+        {
+            id: 'renovation',
+            label: t('Renovation'),
+        },
+        {
+            id: 'majorRepairs',
+            label: t('Major repairs'),
+        },
+        {
+            id: 'reconstruction',
+            label: t('Reconstruction'),
+        },
+        {
+            id: 'reinforcement',
+            label: t('Reinforcement'),
+        },
+        {
+            id: 'restorationWork',
+            label: t('Restoration Work'),
+        },
+        {
+            id: 'construction',
+            label: t('Construction'),
+        },
+    ];
 
     let form = F.useForm({
         // type: 'input',
@@ -205,19 +205,19 @@ export default function EstimateInfoAccordionContent(props: Props) {
                 }}
             >
                 {/* Row 1 */}
-                <F.InputText xsQuarter id='name' value={data?.name} label='Title' placeholder='Title' />
+                <F.InputText xsQuarter id='name' value={data?.name} label={t('Title')} placeholder={t('Title')} />
                 <F.SelectField
                     xsQuarter
                     id='constructionType'
                     items={constrData}
                     value={data?.constructionType}
-                    label='Type of construction'
+                    label={t('Type of construction')}
                 />
                 <F.InputText
                     id='builtUpArea'
                     value={data?.builtUpArea}
-                    label='Built-up Area'
-                    placeholder='Built-up Area'
+                    label={t('Built-up Area')}
+                    placeholder={t('Built-up Area')}
                     xsQuarter
                 />
                 <F.InputText
@@ -226,17 +226,17 @@ export default function EstimateInfoAccordionContent(props: Props) {
                     xsQuarter
                     id='totalCost'
                     value={fixedNumber(data?.totalCost) ?? '0'}
-                    label='Direct costs'
-                    placeholder='Direct costs'
+                    label={t('Direct costs')}
+                    placeholder={t('Direct costs')}
                 />
 
                 {/* Row 2 */}
-                <F.InputText xsQuarter id='address' value={data?.address} label='Address' placeholder='Address' />
+                <F.InputText xsQuarter id='address' value={data?.address} label={t('Address')} placeholder={t('Address')} />
                 <F.InputText
                     id='constructionSurface'
                     value={data?.constructionSurface}
-                    label='Construction area'
-                    placeholder='Construction area'
+                    label={t('Construction area')}
+                    placeholder={t('Construction area')}
                     xsQuarter
                 />
                 <F.InputText
@@ -249,8 +249,8 @@ export default function EstimateInfoAccordionContent(props: Props) {
                             ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.builtUpArea))
                             : '0'
                     }
-                    label='Built-up Cost per sq. m'
-                    placeholder='Built-up Cost per sq. m'
+                    label={t('Built-up Cost per sq. m')}
+                    placeholder={t('Built-up Cost per sq. m')}
                 />
                 <F.InputText
                     isThousandsSeparator={true}
@@ -258,8 +258,8 @@ export default function EstimateInfoAccordionContent(props: Props) {
                     xsQuarter
                     id='otherCosts'
                     value={fixedNumber((data?.totalCostWithOtherExpenses ?? 0) - (data?.totalCost ?? 0)) ?? '0'}
-                    label='Other costs'
-                    placeholder='Other costs'
+                    label={t('Other costs')}
+                    placeholder={t('Other costs')}
                 />
 
                 {/* Row 3 - Empty space in col1 and col3 */}
@@ -274,8 +274,8 @@ export default function EstimateInfoAccordionContent(props: Props) {
                             ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.constructionSurface))
                             : '0'
                     }
-                    label='Construction Cost per sq. m'
-                    placeholder='Construction Cost per sq. m'
+                    label={t('Construction Cost per sq. m')}
+                    placeholder={t('Construction Cost per sq. m')}
                 />
                 <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
                 <F.InputText
@@ -284,8 +284,8 @@ export default function EstimateInfoAccordionContent(props: Props) {
                     xsQuarter
                     id='totalCostWithOtherExpenses'
                     value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'}
-                    label='Total Cost AMD'
-                    placeholder='Total Cost AMD'
+                    label={t('Total Cost AMD')}
+                    placeholder={t('Total Cost AMD')}
                 />
             </F.PageForm>
         </Box>
