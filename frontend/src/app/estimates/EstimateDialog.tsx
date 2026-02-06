@@ -373,7 +373,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         onClick={(e) => {
                                             if (tool.disabled) return;
                                             e.stopPropagation(); // Prevent event from bubbling to DialogContent
-                                            tool.onClick(e);
+                                            tool.onClick();
                                         }}
                                         sx={{
                                             display: 'flex',
@@ -426,7 +426,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     onClick={(e) => {
                                         if (lastThreeDisabled) return;
                                         e.stopPropagation(); // Prevent event from bubbling to DialogContent
-                                        tool.onClick(e);
+                                        tool.onClick();
                                     }}
                                     sx={{
                                         display: 'flex',
