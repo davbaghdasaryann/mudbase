@@ -11,6 +11,7 @@ import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAcco
 import EstimatePageDialog from '@/app/estimates/EstimateDialog';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
+import EstimateThreeLevelNestedAccordion from '@/components/estimate/EstimateThreeLevelAccordion';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
 import { confirmDialog } from '@/components/ConfirmationDialog';
@@ -367,6 +368,14 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 </Box>
                             ) : noDataMessage}
                         </Box>
+                    )}
+
+                    {/* Estimate content - always visible below tabs when linked */}
+                    {hasLinkedEstimate && (
+                        <EstimateThreeLevelNestedAccordion
+                            estimateId={linkedEstimateId!}
+                            isOnlyEstInfo={!isAdmin}
+                        />
                     )}
                 </DialogContent>
             </Dialog>
