@@ -34,7 +34,7 @@ export default function CatalogAccordionNew({ catalogType, onDataLoaded }: Props
         categoryId: null,
         subcategoryId: null,
         accountId: null,
-        timePeriod: '1year',
+        timePeriod: 'all',
     });
 
     // patch-style updater:
@@ -123,7 +123,7 @@ function CatalogAccordionBody({
 
     const handleTimePeriodSelect = useCallback(
         (sel: { id: string } | null) => {
-            if (sel && (sel.id === '6months' || sel.id === '1year' || sel.id === '3years')) {
+            if (sel && (sel.id === '6months' || sel.id === '1year' || sel.id === '3years' || sel.id === 'all')) {
                 onFiltersChange({ timePeriod: sel.id });
             }
         },

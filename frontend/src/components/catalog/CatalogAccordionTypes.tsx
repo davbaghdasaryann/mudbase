@@ -30,7 +30,7 @@ export interface CatalogSelectedFiltersDataProps {
     categoryId: string | null;
     subcategoryId: string | null;
     accountId: string | null;
-    timePeriod: '6months' | '1year' | '3years';
+    timePeriod: '6months' | '1year' | '3years' | 'all';
 }
 
 export type CatalogType = 'labor' | 'material';
