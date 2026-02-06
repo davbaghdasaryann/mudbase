@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { Accordion, AccordionDetails, AccordionSummary, TextField, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, TextField, Typography } from "@mui/material";
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -115,14 +115,48 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
         </AccordionSummary>
         <AccordionDetails>
             <F.PageForm form={form} size='xl' onFieldUpdate={handleChange} >
-                <F.InputText xsHalf id='name' value={data?.name} label={t('Title')} placeholder='Title' />
-                <F.InputText xsHalf id='address' value={data?.address} label={t('Address')} placeholder='Address' />
-                <F.InputText isThousandsSeparator={true} xsQuarter id='totalCost' value={fixedNumber(data?.totalCost) ?? '0'} label={t('Total Cost AMD')} placeholder='Total Cost AMD' />
-                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='totalCostWithOtherExpenses' value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'} label='Total Cost With Other Expenses AMD' placeholder='Total Cost With Other Expenses AMD' />
+                {/* Row 1 */}
+                <F.InputText xsQuarter id='name' value={data?.name} label={t('Title')} placeholder='Title' />
                 <F.InputText xsQuarter id='constructionType' value={t(data?.constructionType)} label={t('Type of construction')} placeholder='Type of construction' />
+                <F.InputText xsQuarter id='builtUpArea' value={data?.builtUpArea} label={t('Built-up Area')} placeholder='Built-up Area' />
+                <F.InputText isThousandsSeparator={true} xsQuarter id='totalCost' value={fixedNumber(data?.totalCost) ?? '0'} label={t('Direct costs')} placeholder='Direct costs' />
+
+                {/* Row 2 */}
+                <F.InputText xsQuarter id='address' value={data?.address} label={t('Address')} placeholder='Address' />
+                <F.InputText xsQuarter id='constructionSurface' value={data?.constructionSurface} label={t('Construction area')} placeholder='Construction area' />
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='builtUpCostPerSqM'
+                    value={
+                        data?.builtUpArea && parseFloat(data.builtUpArea) > 0
+                            ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.builtUpArea))
+                            : '0'
+                    }
+                    label={t('Built-up Cost per sq. m')}
+                    placeholder='Built-up Cost per sq. m'
+                />
+                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='otherCosts' value={fixedNumber((data?.totalCostWithOtherExpenses ?? 0) - (data?.totalCost ?? 0)) ?? '0'} label={t('Other costs')} placeholder='Other costs' />
+
+                {/* Row 3 - Empty spaces in col1 and col3 */}
+                <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='constructionCostPerSqM'
+                    value={
+                        data?.constructionSurface && parseFloat(data.constructionSurface) > 0
+                            ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.constructionSurface))
+                            : '0'
+                    }
+                    label={t('Construction Cost per sq. m')}
+                    placeholder='Construction Cost per sq. m'
+                />
+                <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
+                <F.InputText isThousandsSeparator={true} readonly xsQuarter id='totalCostWithOtherExpenses' value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'} label={t('Total Cost AMD')} placeholder='Total Cost AMD' />
                 {/* <F.InputText xsQuarter id='buildingType' value={data?.buildingType} label={t('Type of building')} placeholder='Type of building' /> */}
-                <F.InputText xsQuarter id='constructionSurface' value={data?.constructionSurface} label={t('Construction surface')} placeholder='Construction surface' />
-                {/* <F.InputText xsThird id='constructionSurface' value={data?.constructionSurface} label={t('Construction surface')} placeholder='Construction surface' /> */}
 
             </F.PageForm>
         </AccordionDetails>

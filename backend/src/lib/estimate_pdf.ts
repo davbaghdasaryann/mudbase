@@ -269,6 +269,11 @@ html += `
         <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
         <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
     </tr>
+
+    <tr>
+        <td class="headerTableName lightGray">Կառուցապատված մակերեսը</td>
+        <td class="headerTableValue">${ensureNotUndefined(estimate.builtUpArea)}</td>
+    </tr>
 </table>
 </div>
 
@@ -775,6 +780,10 @@ ${styles}
     <tr>
         <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
         <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Կառուցապատված մակերեսը</td>
+        <td class="headerTableValue">${ensureNotUndefined(estimate.builtUpArea)}</td>
     </tr>
 </table>
 </div>

@@ -453,7 +453,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 {activeTab === 1 && (
                     <Box sx={{
                         mb: 2,
-                        p: 3,
+                        pt: 0,
+                        px: 3,
+                        pb: 2,
                         backgroundColor: 'rgba(25, 118, 210, 0.08)',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,

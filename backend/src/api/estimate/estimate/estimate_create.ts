@@ -19,7 +19,7 @@ registerApiSession('estimate/create', async (req, res, session) => {
         }
     }
 
-    const allowedFields = ["name", "address", "constructionType", "buildingType", "constructionSurface"];
+    const allowedFields = ["name", "address", "constructionType", "buildingType", "constructionSurface", "builtUpArea"];
 
     const filteredCreateEstimateData: Partial<Db.EntityEstimate> = Object.fromEntries(
         Object.entries(createEstimateData).filter(([key]) => allowedFields.includes(key))

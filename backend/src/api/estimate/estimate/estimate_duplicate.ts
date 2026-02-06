@@ -29,6 +29,7 @@ registerApiSession('estimate/duplicate', async (req, res, session) => {
         constructionType: originalEstimate.constructionType,
         buildingType: originalEstimate.buildingType,
         constructionSurface: originalEstimate.constructionSurface,
+        builtUpArea: originalEstimate.builtUpArea,
         createdByUserId: session.mongoUserId,
         accountId: session.mongoAccountId,
         createdAt: new Date(),

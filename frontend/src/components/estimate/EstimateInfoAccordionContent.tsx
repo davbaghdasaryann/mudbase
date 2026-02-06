@@ -172,62 +172,120 @@ export default function EstimateInfoAccordionContent(props: Props) {
                         boxShadow: 'none !important',
                     },
                     '& .MuiTextField-root': {
+                        marginBottom: '8px !important',
                         '& .MuiInputBase-root': {
                             backgroundColor: 'transparent !important',
+                            height: '40px',
+                            minHeight: '40px',
                         },
                         '& .MuiOutlinedInput-root': {
                             backgroundColor: 'transparent !important',
+                        },
+                        '& .MuiInputLabel-root': {
+                            fontSize: '0.875rem',
+                        },
+                        '& .MuiInputBase-input': {
+                            padding: '8px 14px',
                         }
                     },
                     '& .MuiFormControl-root': {
+                        marginBottom: '8px !important',
                         '& .MuiInputBase-root': {
                             backgroundColor: 'transparent !important',
+                            height: '40px',
+                            minHeight: '40px',
+                        },
+                        '& .MuiInputBase-input': {
+                            padding: '8px 14px',
+                        },
+                        '& .MuiInputLabel-root': {
+                            fontSize: '0.875rem',
                         }
                     }
                 }}
             >
-                <F.InputText xsHalf id='name' value={data?.name} label='Title' placeholder='Title' />
-                <F.InputText xsHalf id='address' value={data?.address} label='Address' placeholder='Address' />
-
+                {/* Row 1 */}
+                <F.InputText xsQuarter id='name' value={data?.name} label='Title' placeholder='Title' />
+                <F.SelectField
+                    xsQuarter
+                    id='constructionType'
+                    items={constrData}
+                    value={data?.constructionType}
+                    label='Type of construction'
+                />
+                <F.InputText
+                    id='builtUpArea'
+                    value={data?.builtUpArea}
+                    label='Built-up Area'
+                    placeholder='Built-up Area'
+                    xsQuarter
+                />
                 <F.InputText
                     isThousandsSeparator={true}
                     readonly
                     xsQuarter
                     id='totalCost'
                     value={fixedNumber(data?.totalCost) ?? '0'}
-                    label='Total Cost AMD'
-                    placeholder='Total Cost AMD'
+                    label='Direct costs'
+                    placeholder='Direct costs'
                 />
 
+                {/* Row 2 */}
+                <F.InputText xsQuarter id='address' value={data?.address} label='Address' placeholder='Address' />
+                <F.InputText
+                    id='constructionSurface'
+                    value={data?.constructionSurface}
+                    label='Construction area'
+                    placeholder='Construction area'
+                    xsQuarter
+                />
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='builtUpCostPerSqM'
+                    value={
+                        data?.builtUpArea && parseFloat(data.builtUpArea) > 0
+                            ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.builtUpArea))
+                            : '0'
+                    }
+                    label='Built-up Cost per sq. m'
+                    placeholder='Built-up Cost per sq. m'
+                />
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='otherCosts'
+                    value={fixedNumber((data?.totalCostWithOtherExpenses ?? 0) - (data?.totalCost ?? 0)) ?? '0'}
+                    label='Other costs'
+                    placeholder='Other costs'
+                />
+
+                {/* Row 3 - Empty space in col1 and col3 */}
+                <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
+                <F.InputText
+                    isThousandsSeparator={true}
+                    readonly
+                    xsQuarter
+                    id='constructionCostPerSqM'
+                    value={
+                        data?.constructionSurface && parseFloat(data.constructionSurface) > 0
+                            ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.constructionSurface))
+                            : '0'
+                    }
+                    label='Construction Cost per sq. m'
+                    placeholder='Construction Cost per sq. m'
+                />
+                <F.InputText xsQuarter readonly value='' label='' placeholder='' sx={{ visibility: 'hidden' }} />
                 <F.InputText
                     isThousandsSeparator={true}
                     readonly
                     xsQuarter
                     id='totalCostWithOtherExpenses'
                     value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'}
-                    label='Total Cost With Other Expenses AMD'
-                    placeholder='Total Cost With Other Expenses AMD'
-                />
-                <F.SelectField
-                    xsQuarter
-                    id='constructionType'
-                    items={constrData}
-                    value={data?.constructionType}
-                    label={data?.constructionType ?? 'Type of construction'}
-                />
-                {/* <F.InputText
-                    xsQuarter
-                    id='buildingType'
-                    value={data?.buildingType}
-                    label={data?.buildingType ?? 'Type of building'}
-                    placeholder={data?.buildingType ?? 'Type of building'}
-                /> */}
-                <F.InputText
-                    id='constructionSurface'
-                    value={data?.constructionSurface}
-                    label={data?.constructionSurface ?? 'Construction surface'}
-                    placeholder={data?.constructionSurface ?? 'Construction surface'}
-                    xsQuarter
+                    label='Total Cost AMD'
+                    placeholder='Total Cost AMD'
                 />
             </F.PageForm>
         </Box>
