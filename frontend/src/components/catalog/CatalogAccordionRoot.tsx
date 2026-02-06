@@ -108,8 +108,9 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
 
         if (result.isConfirmed) {
             try {
+                const apiPrefix = props.catalogType === 'aggregated' ? 'eci' : props.catalogType;
                 await Api.requestSession({
-                    command: `${props.catalogType}/delete_category`,
+                    command: `${apiPrefix}/delete_category`,
                     args: { entityMongoId: item._id }
                 });
 

@@ -18,7 +18,7 @@ export default function CatalogsPage() {
     const {session, status, permissionsSet} = usePermissions();
 
     const [t] = useTranslation();
-    type TabValue = 'labor' | 'material';
+    type TabValue = 'labor' | 'material' | 'aggregated';
 
     const savedTab = typeof window !== 'undefined' ? (localStorage.getItem('selectedCatalogTab') as TabValue | null) : null;
     const defaultTab: TabValue = session?.user && permissionsSet?.has?.('CAT_LBR_VW') ? 'labor' : 'material';
@@ -50,6 +50,7 @@ export default function CatalogsPage() {
                     <TabList onChange={handleChange}>
                         {session?.user && permissionsSet?.has?.('CAT_LBR_VW') && <Tab label={t('Labor')} value='labor' />}
                         {session?.user && permissionsSet?.has?.('CAT_MTRL_VW') && <Tab label={t('Materials')} value='material' />}
+                        {session?.user && <Tab label={t('Aggregated')} value='aggregated' />}
                     </TabList>
                 </Box>
             </TabContext>

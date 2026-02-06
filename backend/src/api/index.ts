@@ -12,6 +12,7 @@ export * from "./auth/user_password_reset";
 export * from "./auth/user_psw_change";
 export * from "./catalog/labors/index";
 export * from "./catalog/materials/index";
+export * from "./catalog/eci/index";
 export * from "./catalog/offers/index";
 export * from "./dashboard/dashboard";
 export * from "./dev/dev_account";

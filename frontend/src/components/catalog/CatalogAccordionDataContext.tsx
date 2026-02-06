@@ -8,9 +8,11 @@ import * as Api from 'api';
 import * as LaborsApi from 'api/labor';
 import * as OffersApi from 'api/offer';
 import * as MaterialsApi from 'api/material';
+import * as EciApi from 'api/eci';
 import { LaborCategoryDisplayData, LaborItemDisplayData, LaborSubcategoryDisplayData } from '@/data/labor_display_data';
 import { MaterialCategoryDisplayData, MaterialItemDisplayData, MaterialSubcategoryDisplayData } from '@/data/material_display_data';
 import { LaborOfferDisplayData, MaterialOfferDisplayData } from '@/data/offer_display_data';
+import { EciCategoryDisplayData, EciSubcategoryDisplayData, EciEstimateDisplayData } from '@/data/eci_display_data';
 
 interface GlobalCatalogAccordionData {
     permCatEdit: boolean;
@@ -92,7 +94,7 @@ export function CatalogDataProvider({
                 });
 
                 setItems(mapped);
-            } else {
+            } else if (catalogType === 'material') {
                 const cats = await Api.requestSession<MaterialsApi.ApiMaterialCategory[]>({
                     command: 'material/fetch_categories',
                 });
@@ -100,6 +102,24 @@ export function CatalogDataProvider({
 
                 const mapped: AccordionItem[] = cats.map((cat) => {
                     const D = new MaterialCategoryDisplayData(cat);
+                    return {
+                        _id: D._id,
+                        code: D.code,
+                        label: D.name,
+                        name: D.name,
+                        childrenQuantity: D.childrenQuantity,
+                        children: [],
+                    };
+                });
+                setItems(mapped);
+            } else if (catalogType === 'aggregated') {
+                const cats = await Api.requestSession<EciApi.ApiEciCategory[]>({
+                    command: 'eci/fetch_categories',
+                });
+                if (!mounted) return;
+
+                const mapped: AccordionItem[] = cats.map((cat) => {
+                    const D = new EciCategoryDisplayData(cat);
                     return {
                         _id: D._id,
                         code: D.code,
@@ -165,7 +185,7 @@ export function CatalogDataProvider({
                         children: [],
                     };
                 });
-            } else {
+            } else if (catalogType === 'material') {
                 const cats = await Api.requestSession<MaterialsApi.ApiMaterialCategory[]>({
                     command: 'material/fetch_categories',
                     args: { searchVal },
@@ -173,6 +193,24 @@ export function CatalogDataProvider({
                 });
                 rootCats = cats.map(cat => {
                     const D = new MaterialCategoryDisplayData(cat);
+                    return {
+                        _id: D._id,
+                        code: D.code,
+                        name: D.name,
+                        label: D.name,
+                        childrenQuantity: D.childrenQuantity,
+                        children: [],
+                    };
+                });
+            } else {
+                // aggregated
+                const cats = await Api.requestSession<EciApi.ApiEciCategory[]>({
+                    command: 'eci/fetch_categories',
+                    args: { searchVal },
+                    json: filters,
+                });
+                rootCats = cats.map(cat => {
+                    const D = new EciCategoryDisplayData(cat);
                     return {
                         _id: D._id,
                         code: D.code,
@@ -252,6 +290,7 @@ export function CatalogDataProvider({
 
 
     const canCreateOffer =
+        catalogType !== 'aggregated' &&
         !!session?.user &&
         (catalogType === 'labor'
             ? permissionsSet.has('OFF_CRT_LBR')
@@ -287,7 +326,7 @@ export function useCatalogData(): CatalogContextValue {
 export const catalogFetchData = async (
     parentId: string,
     level: number,
-    catalogType: 'labor' | 'material',
+    catalogType: CatalogType,
     searchVal: string,
     selectedFiltersData: CatalogSelectedFiltersDataProps
 ) => {
@@ -320,6 +359,20 @@ export const catalogFetchData = async (
                     }
                     resolve(materialSubcategoriesData);
                 });
+            } else if (catalogType === 'aggregated') {
+                Api.requestSession<EciApi.ApiEciSubcategory[]>({
+                    command: `eci/fetch_subcategories`,
+                    args: { categoryMongoId: parentId, searchVal: searchVal },
+                    json: selectedFiltersData,
+                }).then((eciSubcategoriesResData) => {
+                    let eciSubcategoriesData: EciSubcategoryDisplayData[] = [];
+
+                    for (let eciSubcat of eciSubcategoriesResData) {
+                        eciSubcategoriesData.push(new EciSubcategoryDisplayData(eciSubcat));
+                    }
+
+                    resolve(eciSubcategoriesData);
+                });
             }
         } else if (level === 3) {
             if (catalogType === 'labor') {
@@ -350,6 +403,20 @@ export const catalogFetchData = async (
 
                     resolve(materialItemsData);
                 });
+            } else if (catalogType === 'aggregated') {
+                Api.requestSession<EciApi.ApiEciEstimate[]>({
+                    command: 'eci/fetch_estimates',
+                    args: { subcategoryMongoId: parentId, searchVal: searchVal },
+                    json: selectedFiltersData,
+                }).then((eciEstimatesResData) => {
+                    let eciEstimatesData: EciEstimateDisplayData[] = [];
+
+                    for (let eciEstimate of eciEstimatesResData) {
+                        eciEstimatesData.push(new EciEstimateDisplayData(eciEstimate));
+                    }
+
+                    resolve(eciEstimatesData);
+                });
             }
         } else if (level === 4) {
             if (catalogType === 'labor') {
@@ -379,6 +446,7 @@ export const catalogFetchData = async (
                     resolve(materialOffersData);
                 });
             }
+            // aggregated has no level 4 (no offers)
         }
     });
 };

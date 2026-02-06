@@ -11,7 +11,7 @@ import ProgressIndicator from '../tsui/ProgressIndicator';
 import { confirmDialog } from './ConfirmationDialog';
 
 interface EntityButtonPopupProps {
-    catalogType: 'labor' | 'material';
+    catalogType: 'labor' | 'material' | 'aggregated';
     actionType: 'add' | 'update' | 'archive';
     entityType: 'category' | 'subcategory' | 'item';
 
@@ -138,8 +138,11 @@ console.log('props.entityType', props.entityType)
 
         setProgIndic(true)
 
+        const apiPrefix = props.catalogType === 'aggregated' ? 'eci' : props.catalogType;
+        const apiEntityType = props.catalogType === 'aggregated' && props.entityType === 'item' ? 'estimate' : props.entityType;
+
         Api.requestSession<any>({
-            command: `${props.catalogType}/${props.actionType}_${props.entityType}`,
+            command: `${apiPrefix}/${props.actionType}_${apiEntityType}`,
             args: {
                 entityName: evt.data.entityName,
                 entityCode: evt.data.entityCode ?? undefined,

@@ -6,6 +6,7 @@ import { Stack, Toolbar, Button, Box, Fade, CircularProgress, Typography } from 
 import AddIcon from '@mui/icons-material/Add';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import CategoryIcon from '@mui/icons-material/Category';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import CatalogRootAccordion from '@/components/catalog/CatalogAccordionRoot';
 import { CatalogDataProvider, useCatalogData } from '@/components/catalog/CatalogAccordionDataContext';
 
@@ -83,9 +84,9 @@ function CatalogAccordionBody({
     const [isDataLoading, setIsDataLoading] = useState(true);
 
     const accountsSelectList = useApiFetchMany<Api.ApiAccount>({
-        api: {
+        api: catalogType !== 'aggregated' ? {
             command: catalogType === 'labor' ? 'accounts/has_labor_offer' : 'accounts/has_material_offer',
-        },
+        } : undefined as any,
     });
 
     useEffect(() => {
@@ -145,39 +146,40 @@ function CatalogAccordionBody({
                 </Box>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', md: 'auto' } }}>
-                    {/* Timeline filter - commented out but functionality kept */}
-                    {/* <PageSelect
-                        withAll={false}
-                        sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
-                        label={t('Time Period')}
-                        value={filter.timePeriod}
-                        items={[
-                            { id: '6months', name: t('6 Months'), label: t('6 Months') },
-                            { id: '1year', name: t('1 Year'), label: t('1 Year') },
-                            { id: '3years', name: t('3 Years'), label: t('3 Years') },
-                        ]}
-                        onSelected={handleTimePeriodSelect}
-                    /> */}
-
-                    <PageSelect
-                        withAll={true}
-                        sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
-                        label={t('Company')}
-                        value={filter.accountId ?? 'all'}
-                        items={
-                            accountsSelectList.data
-                                ? accountsSelectList.data
-                                    .filter((unit, index, self) => index === self.findIndex((u) => u.companyName === unit.companyName))
-                                    .map((unit) => ({
-                                        key: unit._id,
-                                        id: unit._id,
-                                        name: unit.companyName,
-                                        label: unit.companyName,
-                                    }))
-                                : []
-                        }
-                        onSelected={handleAccountSelect}
-                    />
+                    {catalogType === 'aggregated' ? (
+                        <PageSelect
+                            withAll={true}
+                            sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
+                            label={t('Period')}
+                            value={filter.timePeriod}
+                            items={[
+                                { id: '6months', name: t('6 Months'), label: t('6 Months') },
+                                { id: '1year', name: t('1 Year'), label: t('1 Year') },
+                                { id: '3years', name: t('3 Years'), label: t('3 Years') },
+                            ]}
+                            onSelected={handleTimePeriodSelect}
+                        />
+                    ) : (
+                        <PageSelect
+                            withAll={true}
+                            sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
+                            label={t('Company')}
+                            value={filter.accountId ?? 'all'}
+                            items={
+                                accountsSelectList.data
+                                    ? accountsSelectList.data
+                                        .filter((unit, index, self) => index === self.findIndex((u) => u.companyName === unit.companyName))
+                                        .map((unit) => ({
+                                            key: unit._id,
+                                            id: unit._id,
+                                            name: unit.companyName,
+                                            label: unit.companyName,
+                                        }))
+                                    : []
+                            }
+                            onSelected={handleAccountSelect}
+                        />
+                    )}
                 </Stack>
             </Stack>
 
@@ -244,6 +246,8 @@ function CatalogAccordionBody({
                                 >
                                     {catalogType === 'labor' ? (
                                         <EngineeringIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+                                    ) : catalogType === 'aggregated' ? (
+                                        <AssessmentIcon sx={{ fontSize: 40, color: 'primary.main' }} />
                                     ) : (
                                         <CategoryIcon sx={{ fontSize: 40, color: 'primary.main' }} />
                                     )}
@@ -256,7 +260,7 @@ function CatalogAccordionBody({
                                     fontWeight: 500,
                                 }}
                             >
-                                {t('Loading')} {catalogType === 'labor' ? t('Labor') : t('Materials')}...
+                                {t('Loading')} {catalogType === 'labor' ? t('Labor') : catalogType === 'aggregated' ? t('Aggregated') : t('Materials')}...
                             </Typography>
                         </Stack>
                     </Box>

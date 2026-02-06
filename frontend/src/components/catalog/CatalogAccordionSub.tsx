@@ -99,8 +99,9 @@ export default function CatalogSubAccordion(props: CatalogSubAccordionProps) {
 
         if (result.isConfirmed) {
             try {
+                const apiPrefix = props.catalogType === 'aggregated' ? 'eci' : props.catalogType;
                 await Api.requestSession({
-                    command: `${props.catalogType}/delete_subcategory`,
+                    command: `${apiPrefix}/delete_subcategory`,
                     args: { entityMongoId: item._id }
                 });
 

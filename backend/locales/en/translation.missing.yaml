@@ -13,6 +13,7 @@ validate:
   user_already_invited: validate.user_already_invited
 requireq:
   catregory_name_&_code: requireq.catregory_name_&_code
+  subcategory_name: requireq.subcategory_name
 error:
   category_already_exists: error.category_already_exists
   category_name_already_exists: error.category_name_already_exists
@@ -25,6 +26,8 @@ error:
   category_not_found: error.category_not_found
   category_name_and_code_required: error.category_name_and_code_required
   duplicate_item_code: error.duplicate_item_code
+  no_linked_estimate: error.no_linked_estimate
+  estimate_not_found: error.estimate_not_found
 Welcome to Mudbase!: Welcome to Mudbase!
 Inviting user id is missing:
   '': Inviting user id is missing.

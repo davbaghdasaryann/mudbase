@@ -19,6 +19,8 @@ import ImgElement from '@/tsui/DomElements/ImgElement';
 import { usePermissions } from '@/api/auth';
 import UserPageAddOfferDetailsDialog from '@/app/offers/UserPageAddOfferDetailsDIalog';
 import { UserPageOfferEditDialog } from '@/app/offers/UserPageOfferEditDIalog';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ECIEstimateDialog from '@/components/catalog/ECIEstimateDialog';
 
 interface CatalogSubAccordionProps {
     catalogType: CatalogType;
@@ -53,6 +55,9 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
     // Offer dialog state (for both add and edit)
     const [showOfferDialog, setShowOfferDialog] = useState(false);
 
+    // ECI estimate dialog state
+    const [showEciDialog, setShowEciDialog] = useState(false);
+
     // Move item dialog state
     const [showMoveDialog, setShowMoveDialog] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -67,7 +72,8 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         ctx.mounted(item.fullCode!);
 
         // Fetch offers on mount to determine if user has an offer (for button color)
-        if (ctx.permCanCrtOffr && session?.user.accountId) {
+        // Skip for aggregated type (no offers)
+        if (props.catalogType !== 'aggregated' && ctx.permCanCrtOffr && session?.user.accountId) {
             ctx.fetchData(item._id, 4, props.catalogType, props.searchVal, props.filter)
                 .then((fetchedData) => {
                     if (!mounted.current) return;
@@ -221,7 +227,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         if (result.isConfirmed) {
             try {
                 await Api.requestSession({
-                    command: `${props.catalogType}/delete_item`,
+                    command: props.catalogType === 'aggregated' ? 'eci/delete_estimate' : `${props.catalogType}/delete_item`,
                     args: { entityMongoId: item._id }
                 });
 
@@ -234,16 +240,18 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         }
     }, [ctx, item, props]);
 
+    const apiPrefix = props.catalogType === 'aggregated' ? 'eci' : props.catalogType;
+
     const handleOpenMoveDialog = React.useCallback(async (event: React.MouseEvent) => {
         event.stopPropagation();
 
         // Fetch categories
         const cats = await Api.requestSession<any[]>({
-            command: `${props.catalogType}/fetch_categories`
+            command: `${apiPrefix}/fetch_categories`
         });
         setCategories(cats);
         setShowMoveDialog(true);
-    }, [props.catalogType]);
+    }, [apiPrefix]);
 
     const handleCategoryChange = React.useCallback(async (categoryId: string) => {
         setSelectedCategoryId(categoryId);
@@ -252,14 +260,14 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         if (categoryId) {
             // Fetch subcategories for selected category
             const subcats = await Api.requestSession<any[]>({
-                command: `${props.catalogType}/fetch_subcategories`,
+                command: `${apiPrefix}/fetch_subcategories`,
                 args: { categoryMongoId: categoryId }
             });
             setSubcategories(subcats);
         } else {
             setSubcategories([]);
         }
-    }, [props.catalogType]);
+    }, [apiPrefix]);
 
     const handleMoveItem = React.useCallback(async () => {
         if (!selectedSubcategoryId) {
@@ -277,7 +285,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
         try {
             await Api.requestSession({
-                command: `${props.catalogType}/move_item`,
+                command: `${apiPrefix}/move_item`,
                 args: {
                     itemMongoId: item._id,
                     newSubcategoryMongoId: selectedSubcategoryId
@@ -383,7 +391,47 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         </>
                     )}
 
-                    {ctx.isSignedIn && (
+                    {/* Aggregated type: View button (everyone) + Copy button (non-admin users only) */}
+                    {props.catalogType === 'aggregated' && ctx.isSignedIn && (
+                        <>
+                            <Tooltip title={t('View Estimate')} arrow placement='top'>
+                                <Button
+                                    component='div'
+                                    color='info'
+                                    onClick={(e) => { e.stopPropagation(); setShowEciDialog(true); }}
+                                    sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
+                                >
+                                    <VisibilityIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                                </Button>
+                            </Tooltip>
+                            {!ctx.permCatEdit && (
+                                <Tooltip title={t('Copy to My Estimates')} arrow placement='top'>
+                                    <Button
+                                        component='div'
+                                        color='primary'
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            try {
+                                                await Api.requestSession({
+                                                    command: 'eci/copy_estimate',
+                                                    args: { eciEstimateId: item._id }
+                                                });
+                                                await confirmDialog(t('catalog.eci_copy_success'), t('Success'));
+                                            } catch (error) {
+                                                console.error('Error copying ECI estimate:', error);
+                                            }
+                                        }}
+                                        sx={{ minWidth: 'auto', px: { xs: 0.5, sm: 1 } }}
+                                    >
+                                        <ContentCopyIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                                    </Button>
+                                </Tooltip>
+                            )}
+                        </>
+                    )}
+
+                    {/* Non-aggregated type: Info + Offer buttons */}
+                    {props.catalogType !== 'aggregated' && ctx.isSignedIn && (
                         <Button
                             component='div'
                             color='info'
@@ -394,7 +442,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         </Button>
                     )}
 
-                    {showOfferButton && (
+                    {props.catalogType !== 'aggregated' && showOfferButton && (
                         <>
                             {userOffer && (
                                 <Button
@@ -545,7 +593,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
             {showOfferDialog && !userOffer && (
                 <UserPageAddOfferDetailsDialog
-                    catalogType={props.catalogType}
+                    catalogType={props.catalogType as 'labor' | 'material'}
                     offerItemMongoId={item._id}
                     onClose={() => setShowOfferDialog(false)}
                     onConfirm={async () => {
@@ -559,7 +607,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
             {showOfferDialog && userOffer && (
                 <UserPageOfferEditDialog
                     offerMongoId={userOffer._id}
-                    offerType={props.catalogType}
+                    offerType={props.catalogType as 'labor' | 'material'}
                     offerItemName={item.label}
                     onClose={() => setShowOfferDialog(false)}
                     onConfirm={async () => {
@@ -567,6 +615,15 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         await ctx.refreshOpenNodes(props.catalogType, props.searchVal, props.filter);
                         setShowOfferDialog(false);
                     }}
+                />
+            )}
+
+            {showEciDialog && (
+                <ECIEstimateDialog
+                    eciEstimateId={item._id}
+                    estimateId={item.estimateId}
+                    estimateTitle={`${item.fullCode || item.code} - ${item.label}`}
+                    onClose={() => setShowEciDialog(false)}
                 />
             )}
         </>

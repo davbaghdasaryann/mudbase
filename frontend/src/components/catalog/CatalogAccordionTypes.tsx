@@ -24,6 +24,8 @@ export interface AccordionItem {
     updatedAt?: Date;
 
     childrenQuantity?: number;
+
+    estimateId?: string;
 }
 
 export interface CatalogSelectedFiltersDataProps {
@@ -33,4 +35,10 @@ export interface CatalogSelectedFiltersDataProps {
     timePeriod: '6months' | '1year' | '3years' | 'all';
 }
 
-export type CatalogType = 'labor' | 'material';
+export type CatalogType = 'labor' | 'material' | 'aggregated';
+
+// Extended AccordionItem fields for ECI estimates
+export interface AccordionItemEci extends AccordionItem {
+    estimateId?: string;
+    constructionArea?: number;
+}
