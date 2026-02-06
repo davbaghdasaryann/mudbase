@@ -54,8 +54,9 @@ export default function CatalogsPage() {
                 </Box>
             </TabContext>
 
-            {/* {!catalogItems && <CatalogAccordion key={catalogType} catalogType={catalogType} />} */}
-            {!catalogItems && <CatalogAccordionNew key={catalogType} catalogType={catalogType} />}
+            <Box>
+                {!catalogItems && <CatalogAccordionNew key={catalogType} catalogType={catalogType} />}
+            </Box>
         </PageContents>
     );
 }
