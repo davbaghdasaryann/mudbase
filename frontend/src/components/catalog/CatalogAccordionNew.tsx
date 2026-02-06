@@ -127,7 +127,8 @@ function CatalogAccordionBody({
                 </Box>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', md: 'auto' } }}>
-                    <PageSelect
+                    {/* Timeline filter - commented out but functionality kept */}
+                    {/* <PageSelect
                         withAll={false}
                         sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
                         label={t('Time Period')}
@@ -138,7 +139,7 @@ function CatalogAccordionBody({
                             { id: '3years', name: t('3 Years'), label: t('3 Years') },
                         ]}
                         onSelected={handleTimePeriodSelect}
-                    />
+                    /> */}
 
                     <PageSelect
                         withAll={true}
