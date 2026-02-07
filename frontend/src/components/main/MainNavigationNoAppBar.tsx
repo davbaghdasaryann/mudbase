@@ -185,8 +185,20 @@ function useMainNavigation() {
     React.useEffect(() => {
         const navigation: Navigation = [];
 
-        if (session?.user && permissionsSet?.has('DASH_USE')) {
+        // Check if user is superadmin based on admin-specific permissions
+        const isSuperAdmin = session?.user && (
+            permissionsSet?.has('ALL') ||
+            permissionsSet?.has('USR_FCH_ALL') ||
+            permissionsSet?.has('ACC_FCH')
+        );
+
+        // Superadmin sees old dashboard with system stats
+        if (isSuperAdmin) {
             navigation.push({segment: 'dashboard', title: t('Dashboard'), icon: <DashboardIcon />});
+        }
+        // Regular users see widget builder
+        else if (session?.user) {
+            navigation.push({segment: 'dashboard-builder', title: t('Dashboard'), icon: <DashboardIcon />});
         }
 
         navigation.push({

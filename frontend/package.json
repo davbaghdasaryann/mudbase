@@ -46,6 +46,7 @@
     "react-i18next": "^15.7.4",
     "react-textfit": "^1.1.1",
     "react-world-flags": "^1.6.0",
+    "recharts": "^3.7.0",
     "sweetalert2": "^11.26.3",
     "sweetalert2-react-content": "^5.1.0",
     "yaml": "^2.8.1",

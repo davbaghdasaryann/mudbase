@@ -28,6 +28,8 @@ error:
   duplicate_item_code: error.duplicate_item_code
   no_linked_estimate: error.no_linked_estimate
   estimate_not_found: error.estimate_not_found
+  group_not_found: error.group_not_found
+  widget_not_found: error.widget_not_found
 Welcome to Mudbase!: Welcome to Mudbase!
 Inviting user id is missing:
   '': Inviting user id is missing.
@@ -68,3 +70,8 @@ currentRenovation: currentRenovation
 majorRepairs: majorRepairs
 profit: profit
 valueAddedTax: valueAddedTax
+required:
+  groupId: required.groupId
+  widgetType: required.widgetType
+  dataSource: required.dataSource
+  widgetId: required.widgetId

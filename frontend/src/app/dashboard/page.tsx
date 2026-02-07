@@ -2,17 +2,31 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Card, CardContent, Stack, Typography, useTheme, Grid } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '@/api/auth';
 import { Textfit } from 'react-textfit';
 
 
 export default function DashboardPage() {
     const mounted = useRef(false);
+    const router = useRouter();
+    const { permissionsSet } = usePermissions();
     const [dashboardData, setDashboardData] = useState<any | null>(null);
     const [dataRequested, setDataRequested] = useState(false);
     const { t } = useTranslation();
+
+    // Redirect regular users to widget builder
+    useEffect(() => {
+        const isSuperAdmin = permissionsSet?.has('ALL') ||
+                           permissionsSet?.has('USR_FCH_ALL') ||
+                           permissionsSet?.has('ACC_FCH');
+        if (permissionsSet && !isSuperAdmin) {
+            router.push('/dashboard-builder');
+        }
+    }, [permissionsSet, router]);
 
     useEffect(() => {
         mounted.current = true;
