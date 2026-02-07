@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { Breakpoint, ResponsiveStyleValue, useMediaQuery, useTheme } from "@mui/system";
 import { resolveBreakpointValues } from "@mui/system/breakpoints";
 
