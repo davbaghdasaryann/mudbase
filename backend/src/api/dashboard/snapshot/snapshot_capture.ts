@@ -8,16 +8,14 @@ registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, sessi
     const widgetsColl = Db.getDashboardWidgetsCollection();
     const snapshotsColl = Db.getDashboardWidgetSnapshotsCollection();
 
-    // Round timestamp to nearest 30-minute interval
+    // Use live timestamp (e.g. 14:14) so "Snapshot Now" shows exact moment; widget_data_fetch normalizes to 30-min on refresh
     const now = new Date();
-    const roundedTime = new Date(
-        Math.floor(now.getTime() / (30 * 60 * 1000)) * (30 * 60 * 1000)
-    );
 
     // Fetch all widgets
     const widgets = await widgetsColl.find({}).toArray();
 
     let capturedCount = 0;
+    const captured: Array<{ widgetId: string; timestamp: string; value: number }> = [];
 
     for (const widget of widgets) {
         let value: number | null = null;
@@ -92,14 +90,19 @@ registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, sessi
                 }
             }
 
-            if (value !== null) {
+            if (value !== null && widget._id) {
                 await snapshotsColl.insertOne({
-                    widgetId: widget._id!,
-                    timestamp: roundedTime,
+                    widgetId: widget._id,
+                    timestamp: now,
                     value,
                     metadata
                 });
                 capturedCount++;
+                captured.push({
+                    widgetId: widget._id.toString(),
+                    timestamp: now.toISOString(),
+                    value
+                });
             }
         } catch (error) {
             console.error(`Error capturing snapshot for widget ${widget._id}:`, error);
@@ -110,7 +113,8 @@ registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, sessi
     respondJsonData(res, {
         ok: true,
         capturedCount,
-        timestamp: roundedTime,
-        totalWidgets: widgets.length
+        timestamp: now.toISOString(),
+        totalWidgets: widgets.length,
+        captured
     });
 });

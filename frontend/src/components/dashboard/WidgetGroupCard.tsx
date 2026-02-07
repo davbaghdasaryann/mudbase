@@ -9,12 +9,20 @@ import Widget30Day from './widgets/Widget30Day';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 
+export interface LiveSnapshot {
+    widgetId: string;
+    timestamp: string;
+    value: number;
+}
+
 interface Props {
     group: any;
     onUpdate: () => void;
+    liveSnapshots?: LiveSnapshot[];
+    onClearLiveSnapshot?: (widgetId: string) => void;
 }
 
-export default function WidgetGroupCard({ group, onUpdate }: Props) {
+export default function WidgetGroupCard({ group, onUpdate, liveSnapshots = [], onClearLiveSnapshot }: Props) {
     const [t] = useTranslation();
 
     const handleDeleteGroup = async () => {
@@ -41,17 +49,27 @@ export default function WidgetGroupCard({ group, onUpdate }: Props) {
             </Box>
 
             {group.widgets && group.widgets.length > 0 ? (
-                <Stack spacing={3}>
-                    {group.widgets.map((widget: any) => (
+                    <Stack spacing={3}>
+                        {group.widgets.map((widget: any) => (
                         <Box key={widget._id}>
                             {widget.widgetType === '1-day' && (
-                                <Widget1Day widget={widget} onUpdate={onUpdate} />
+                                <Widget1Day
+                                    widget={widget}
+                                    onUpdate={onUpdate}
+                                    liveSnapshots={liveSnapshots}
+                                    onClearLiveSnapshot={onClearLiveSnapshot}
+                                />
                             )}
                             {widget.widgetType === '15-day' && (
                                 <Widget15Day widget={widget} onUpdate={onUpdate} />
                             )}
                             {widget.widgetType === '30-day' && (
-                                <Widget30Day widget={widget} onUpdate={onUpdate} />
+                                <Widget30Day
+                                    widget={widget}
+                                    onUpdate={onUpdate}
+                                    liveSnapshots={liveSnapshots}
+                                    onClearLiveSnapshot={onClearLiveSnapshot}
+                                />
                             )}
                         </Box>
                     ))}

@@ -10,6 +10,7 @@ import './api';
 import { dbInitConfig } from './tsback/mongodb/mongodb_init';
 
 import { drizzleMaintenance, drizzleWarmUp } from './drizzle/drizzledb';
+import { snapshotMaintenance } from './api/dashboard/snapshot/snapshot_utils';
 
 
 export default async function main() {
@@ -21,6 +22,7 @@ export default async function main() {
         dbInitConfig(config_.db);
         await drizzleWarmUp();
         await drizzleMaintenance();
+        await snapshotMaintenance();
 
 
         const server = http.createServer(expressApp_);

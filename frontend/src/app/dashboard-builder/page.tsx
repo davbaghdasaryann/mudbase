@@ -38,6 +38,7 @@ export default function DashboardBuilderPage() {
     const [snackbarMessage, setSnackbarMessage] = useState<string>('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
     const [showSnackbar, setShowSnackbar] = useState(false);
+    const [liveSnapshots, setLiveSnapshots] = useState<Array<{ widgetId: string; timestamp: string; value: number }>>([]);
     const { t } = useTranslation();
 
     // Redirect superadmin to old dashboard
@@ -83,13 +84,18 @@ export default function DashboardBuilderPage() {
     const handleCaptureSnapshot = async () => {
         setCapturingSnapshot(true);
         try {
-            await Api.requestSession({
+            const result = await Api.requestSession<{
+                ok: boolean;
+                captured?: Array<{ widgetId: string; timestamp: string; value: number }>;
+            }>({
                 command: 'dashboard/snapshot/snapshot_capture'
             });
             setSnackbarMessage('Snapshot captured successfully!');
             setSnackbarSeverity('success');
             setShowSnackbar(true);
-            // Refresh groups to show updated data
+            if (result.captured && result.captured.length > 0) {
+                setLiveSnapshots(result.captured);
+            }
             fetchGroups();
         } catch (error) {
             console.error('Failed to capture snapshot:', error);
@@ -99,6 +105,10 @@ export default function DashboardBuilderPage() {
         } finally {
             setCapturingSnapshot(false);
         }
+    };
+
+    const clearLiveSnapshotForWidget = (widgetId: string) => {
+        setLiveSnapshots((prev) => prev.filter((s) => s.widgetId !== widgetId));
     };
 
     return (
@@ -142,6 +152,8 @@ export default function DashboardBuilderPage() {
                                 key={group._id}
                                 group={group}
                                 onUpdate={fetchGroups}
+                                liveSnapshots={liveSnapshots}
+                                onClearLiveSnapshot={clearLiveSnapshotForWidget}
                             />
                         ))}
                     </Stack>

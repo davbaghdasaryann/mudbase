@@ -6,15 +6,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
+import type { LiveSnapshot } from '../WidgetGroupCard';
 
 interface Props {
     widget: any;
     onUpdate: () => void;
+    liveSnapshots?: LiveSnapshot[];
+    onClearLiveSnapshot?: (widgetId: string) => void;
 }
 
-export default function Widget30Day({ widget, onUpdate }: Props) {
+export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot }: Props) {
     const [t] = useTranslation();
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<Array<{ date: string; value: number; ts: number }>>([]);
     const [avgValue, setAvgValue] = useState<number>(0);
     const [loading, setLoading] = useState(true);
 
@@ -31,11 +34,16 @@ export default function Widget30Day({ widget, onUpdate }: Props) {
                 args: { widgetId: widget._id }
             });
 
-            const chartData = result.snapshots.map((s: any) => ({
-                date: new Date(s.timestamp).toLocaleDateString(),
-                value: s.value
-            }));
+            const chartData = result.snapshots.map((s: any) => {
+                const ts = new Date(s.timestamp).getTime();
+                return {
+                    date: new Date(s.timestamp).toLocaleDateString(),
+                    value: s.value,
+                    ts
+                };
+            });
             setData(chartData);
+            onClearLiveSnapshot?.(widget._id);
 
             if (result.analytics) {
                 setAvgValue(result.analytics.avg);
@@ -46,6 +54,19 @@ export default function Widget30Day({ widget, onUpdate }: Props) {
             setLoading(false);
         }
     };
+
+    const liveForThis = liveSnapshots.filter((s) => s.widgetId === widget._id);
+    const merged = [
+        ...data,
+        ...liveForThis.map((s) => {
+            const d = new Date(s.timestamp);
+            return {
+                date: d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+                value: s.value,
+                ts: d.getTime()
+            };
+        })
+    ].sort((a, b) => a.ts - b.ts);
 
     const handleDelete = async () => {
         if (!confirm(t('Delete this widget?'))) return;
@@ -81,7 +102,7 @@ export default function Widget30Day({ widget, onUpdate }: Props) {
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                         <CircularProgress />
                     </Box>
-                ) : data.length > 0 ? (
+                ) : merged.length > 0 ? (
                     <>
                         <Box sx={{ mb: 2 }}>
                             <Typography variant='h4' color='primary'>
@@ -93,7 +114,7 @@ export default function Widget30Day({ widget, onUpdate }: Props) {
                         </Box>
 
                         <ResponsiveContainer width='100%' height={150}>
-                            <AreaChart data={data}>
+                            <AreaChart data={merged}>
                                 <CartesianGrid strokeDasharray='3 3' />
                                 <XAxis dataKey='date' />
                                 <YAxis />

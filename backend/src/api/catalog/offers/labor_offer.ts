@@ -9,6 +9,7 @@ import { DbFindParams, requireMongoIdParam } from '../../../tsback/mongodb/mongo
 import { verify } from '../../../tslib/verify';
 import { validatePositiveInteger } from '../../../tslib/validate';
 import { updateLaborItemStats } from '@/api/catalog/labors/labor_item';
+import { captureSnapshotsForItem } from '@/api/dashboard/snapshot/snapshot_utils';
 
 const laborOfferSelectFields = [
     'price', 'laborHours', 'measurementUnitMongoId' //🔴 TODO: this will need us in version 2 🔴
@@ -326,8 +327,8 @@ registerApiSession('labor/add_offer', async (req, res, session) => {
 
     laborPricesJournal.insertOne(addingLaborOfferPricesJournal);
 
-    updateLaborItemStats(laborItemId);
-
+    await updateLaborItemStats(laborItemId);
+    await captureSnapshotsForItem(laborItemId, 'labor');
 
     respondJson(res, result);
 });
@@ -422,7 +423,8 @@ registerApiSession('labor/update_offer', async (req, res, session) => {
 
     laborPricesJournal.insertOne(addingLaborOfferPricesJournal);
 
-    updateLaborItemStats(updatedLaborOffer.itemId);
+    await updateLaborItemStats(updatedLaborOffer.itemId);
+    await captureSnapshotsForItem(updatedLaborOffer.itemId, 'labor');
 
     respondJson(res, result);
 });
@@ -463,8 +465,8 @@ registerApiSession('labor/archive_offer', async (req, res, session) => {
 
     laborPricesJournal.insertOne(archiveLaborOfferPricesJournal);
 
-    updateLaborItemStats(updatedLaborOffer.itemId);
-
+    await updateLaborItemStats(updatedLaborOffer.itemId);
+    await captureSnapshotsForItem(updatedLaborOffer.itemId, 'labor');
 
     respondJsonData(res, result);
 })
@@ -503,7 +505,8 @@ registerApiSession('labor/unarchive_offer', async (req, res, session) => {
 
     laborPricesJournal.insertOne(unarchiveLaborOfferPricesJournal);
 
-    updateLaborItemStats(updatedLaborOffer.itemId);
+    await updateLaborItemStats(updatedLaborOffer.itemId);
+    await captureSnapshotsForItem(updatedLaborOffer.itemId, 'labor');
 
     respondJson(res, result);
 })

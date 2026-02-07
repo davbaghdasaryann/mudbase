@@ -9,15 +9,18 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import DescriptionIcon from '@mui/icons-material/Description';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
+import type { LiveSnapshot } from '../WidgetGroupCard';
 
 interface Props {
     widget: any;
     onUpdate: () => void;
+    liveSnapshots?: LiveSnapshot[];
+    onClearLiveSnapshot?: (widgetId: string) => void;
 }
 
-export default function Widget1Day({ widget, onUpdate }: Props) {
+export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot }: Props) {
     const [t] = useTranslation();
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<Array<{ time: string; value: number; ts: number }>>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,17 +36,32 @@ export default function Widget1Day({ widget, onUpdate }: Props) {
                 args: { widgetId: widget._id }
             });
 
-            const chartData = result.snapshots.map((s: any) => ({
-                time: new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                value: s.value
-            }));
+            const chartData = result.snapshots.map((s: any) => {
+                const ts = new Date(s.timestamp).getTime();
+                return {
+                    time: new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    value: s.value,
+                    ts
+                };
+            });
             setData(chartData);
+            onClearLiveSnapshot?.(widget._id);
         } catch (error) {
             console.error('Failed to fetch widget data:', error);
         } finally {
             setLoading(false);
         }
     };
+
+    const liveForThis = liveSnapshots.filter((s) => s.widgetId === widget._id);
+    const merged = [
+        ...data,
+        ...liveForThis.map((s) => ({
+            time: new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            value: s.value,
+            ts: new Date(s.timestamp).getTime()
+        }))
+    ].sort((a, b) => a.ts - b.ts);
 
     const handleDelete = async () => {
         if (!confirm(t('Delete this widget?'))) return;
@@ -79,10 +97,10 @@ export default function Widget1Day({ widget, onUpdate }: Props) {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                     <CircularProgress />
                 </Box>
-            ) : data.length > 0 ? (
+            ) : merged.length > 0 ? (
                 <List sx={{ py: 0, bgcolor: 'background.paper', borderRadius: 1 }}>
-                    {data.map((item: any, index: number) => {
-                        const prevValue = index > 0 ? data[index - 1].value : item.value;
+                    {merged.map((item: any, index: number) => {
+                        const prevValue = index > 0 ? merged[index - 1].value : item.value;
                         const diff = item.value - prevValue;
                         const trendIcon = diff > 0 ? (
                             <TrendingUpIcon sx={{ color: 'error.main' }} />
@@ -98,7 +116,7 @@ export default function Widget1Day({ widget, onUpdate }: Props) {
                                 sx={{
                                     px: 2,
                                     py: 1.5,
-                                    borderBottom: index < data.length - 1 ? '1px solid' : 'none',
+                                    borderBottom: index < merged.length - 1 ? '1px solid' : 'none',
                                     borderColor: 'divider'
                                 }}
                                 secondaryAction={

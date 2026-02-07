@@ -8,6 +8,7 @@ import {DbFindParams, getMongoIdParam, requireMongoIdParam} from '@/tsback/mongo
 import {verify} from '@/tslib/verify';
 import {validatePositiveInteger} from '@/tslib/validate';
 import {updateMaterialItemStats} from '@/api/catalog/materials';
+import {captureSnapshotsForItem} from '@/api/dashboard/snapshot/snapshot_utils';
 
 const materialOfferSelectFields = ['price', 'measurementUnitMongoId'];
 
@@ -294,6 +295,7 @@ registerApiSession('material/add_offer', async (req, res, session) => {
     materialPricesJournalColl.insertOne(addingMaterialOfferPricesJournal);
 
     await updateMaterialItemStats(materialItemId);
+    await captureSnapshotsForItem(materialItemId, 'materials');
 
     respondJson(res, result);
 });
@@ -361,6 +363,7 @@ registerApiSession('material/update_offer', async (req, res, session) => {
 
     log_.info(updatedMaterialOffer);
     await updateMaterialItemStats(updatedMaterialOffer.itemId);
+    await captureSnapshotsForItem(updatedMaterialOffer.itemId, 'materials');
 
     respondJson(res, updatedMaterialOffer);
 });
@@ -401,6 +404,7 @@ registerApiSession('material/archive_offer', async (req, res, session) => {
     materialPricesJournal.insertOne(archiveMaterialOfferPricesJournal);
 
     await updateMaterialItemStats(updatedMaterialOffer.itemId);
+    await captureSnapshotsForItem(updatedMaterialOffer.itemId, 'materials');
 
     respondJson(res, result);
 });
@@ -442,6 +446,7 @@ registerApiSession('material/unarchive_offer', async (req, res, session) => {
     materialPricesJournal.insertOne(unarchiveMaterialOfferPricesJournal);
 
     await updateMaterialItemStats(updatedMaterialOffer.itemId);
+    await captureSnapshotsForItem(updatedMaterialOffer.itemId, 'materials');
 
     respondJson(res, result);
 });
