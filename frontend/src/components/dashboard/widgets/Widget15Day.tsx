@@ -75,13 +75,13 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     const chartData =
         snapshots.length > 0 && analytics
             ? snapshots.map((s: any, i: number) => ({
-                  index: i + 1,
-                  time: new Date(s.timestamp).getTime(),
-                  value: s.value,
-                  high: analytics.max,
-                  low: analytics.min,
-                  medium: s.value
-              }))
+                index: i + 1,
+                time: new Date(s.timestamp).getTime(),
+                value: s.value,
+                high: analytics.max,
+                low: analytics.min,
+                medium: s.value
+            }))
             : [];
 
     const currentValue = snapshots.length > 0 ? snapshots[snapshots.length - 1].value : analytics?.avg ?? 0;
