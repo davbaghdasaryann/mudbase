@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, Typography, Grid, Box, IconButton, Stack } from '@mui/material';
+import { Box, IconButton, Stack, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Widget1Day from './widgets/Widget1Day';
 import Widget15Day from './widgets/Widget15Day';
@@ -49,31 +49,47 @@ export default function WidgetGroupCard({ group, onUpdate, liveSnapshots = [], o
             </Box>
 
             {group.widgets && group.widgets.length > 0 ? (
-                    <Stack spacing={3}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 2,
+                            alignItems: 'stretch'
+                        }}
+                    >
                         {group.widgets.map((widget: any) => (
-                        <Box key={widget._id}>
-                            {widget.widgetType === '1-day' && (
-                                <Widget1Day
-                                    widget={widget}
-                                    onUpdate={onUpdate}
-                                    liveSnapshots={liveSnapshots}
-                                    onClearLiveSnapshot={onClearLiveSnapshot}
-                                />
-                            )}
-                            {widget.widgetType === '15-day' && (
-                                <Widget15Day widget={widget} onUpdate={onUpdate} />
-                            )}
-                            {widget.widgetType === '30-day' && (
-                                <Widget30Day
-                                    widget={widget}
-                                    onUpdate={onUpdate}
-                                    liveSnapshots={liveSnapshots}
-                                    onClearLiveSnapshot={onClearLiveSnapshot}
-                                />
-                            )}
-                        </Box>
-                    ))}
-                </Stack>
+                            <Box
+                                key={widget._id}
+                                sx={
+                                    widget.widgetType === '1-day'
+                                        ? { width: '100%' }
+                                        : widget.widgetType === '30-day'
+                                          ? { flex: '1 1 48%', minWidth: 400, maxWidth: 560 }
+                                          : { flex: '1 1 auto', minWidth: 280, maxWidth: 360 }
+                                }
+                            >
+                                {widget.widgetType === '1-day' && (
+                                    <Widget1Day
+                                        widget={widget}
+                                        onUpdate={onUpdate}
+                                        liveSnapshots={liveSnapshots}
+                                        onClearLiveSnapshot={onClearLiveSnapshot}
+                                    />
+                                )}
+                                {widget.widgetType === '15-day' && (
+                                    <Widget15Day widget={widget} onUpdate={onUpdate} />
+                                )}
+                                {widget.widgetType === '30-day' && (
+                                    <Widget30Day
+                                        widget={widget}
+                                        onUpdate={onUpdate}
+                                        liveSnapshots={liveSnapshots}
+                                        onClearLiveSnapshot={onClearLiveSnapshot}
+                                    />
+                                )}
+                            </Box>
+                        ))}
+                    </Box>
             ) : (
                 <Typography variant='body2' color='textSecondary'>
                     {t('No widgets in this group yet.')}
