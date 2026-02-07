@@ -66,24 +66,25 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
         },
     });
 
-    // Calculate average price: totalCost / constructionArea
+    // Calculate average price: totalCost / constructionArea, or just totalCost if no constructionArea
     pipeline.push({
         $addFields: {
             averagePrice: {
                 $cond: {
-                    if: {
-                        $and: [
-                            { $gt: [{ $size: '$estimateData' }, 0] },
-                            { $gt: ['$constructionArea', 0] }
-                        ]
-                    },
+                    if: { $gt: [{ $size: '$estimateData' }, 0] },
                     then: {
-                        $round: [{
-                            $divide: [
-                                { $arrayElemAt: ['$estimateData.totalCost', 0] },
-                                '$constructionArea'
-                            ]
-                        }]
+                        $cond: {
+                            if: { $gt: ['$constructionArea', 0] },
+                            then: {
+                                $round: [{
+                                    $divide: [
+                                        { $arrayElemAt: ['$estimateData.totalCost', 0] },
+                                        '$constructionArea'
+                                    ]
+                                }]
+                            },
+                            else: { $arrayElemAt: ['$estimateData.totalCost', 0] }
+                        }
                     },
                     else: null
                 }
