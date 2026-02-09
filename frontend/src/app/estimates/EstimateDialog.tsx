@@ -296,9 +296,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 padding: '12px 16px',
                             },
                             '& .Mui-selected': {
-                                backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                                backgroundColor: '#F5F9F9',
                                 border: '1px solid rgba(25, 118, 210, 0.3)',
-                                borderBottom: '1px solid rgba(25, 118, 210, 0.08)',
+                                borderBottom: '1px solid #F5F9F9',
+                                color: '#000000',
+                                fontWeight: 700,
                             }
                         }}
                     >
@@ -337,7 +339,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     <Box sx={{
                         mb: 2,
                         p: 3,
-                        backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                        backgroundColor: '#F5F9F9',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
@@ -468,7 +470,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         pt: 0,
                         px: 3,
                         pb: 2,
-                        backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                        backgroundColor: '#F5F9F9',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
@@ -484,7 +486,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     <Box sx={{
                         mb: 2,
                         p: 3,
-                        backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                        backgroundColor: '#F5F9F9',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',

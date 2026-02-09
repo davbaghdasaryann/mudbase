@@ -1332,17 +1332,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                         />
 
                                         {(permAddFields || !props.isOnlyEstInfo) && (
-                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2, pb: 2, pr: 2 }}>
                                                 <Button
                                                     variant='outlined'
-                                                    sx={{ mt: 2 }}
                                                     onClick={() => handleAddEmptyRow(item._id)}
                                                 >
                                                     {t('Add Empty Row')}
                                                 </Button>
                                                 <Button
                                                     variant='contained'
-                                                    sx={{ mt: 2 }}
                                                     onClick={() => {
                                                         setOpenAddOfferDialogTypeWithouSubsection('labor');
                                                         setCurrentSectionId(item._id);
@@ -1729,17 +1727,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
                                                             />
                                                             {(permAddFields || !props.isOnlyEstInfo) && (
-                                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2, pb: 2, pr: 2 }}>
                                                                     <Button
                                                                         variant='outlined'
-                                                                        sx={{ mt: 2 }}
                                                                         onClick={() => handleAddEmptyRow(child._id, true)}
                                                                     >
                                                                         {t('Add Empty Row')}
                                                                     </Button>
                                                                     <Button
                                                                         variant='contained'
-                                                                        sx={{ mt: 2 }}
                                                                         onClick={() => {
                                                                             setOpenAddOfferDialogType('labor');
                                                                             setSelectedChildId(child._id);
@@ -1779,7 +1775,14 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             ) : (
                                 <>
                                     {(permAddFields || !props.isOnlyEstInfo) && (
-                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1, mt: 2, pb: 2, pr: 2 }}>
+                                            <Button
+                                                variant='outlined'
+                                                sx={{ height: 40 }}
+                                                onClick={() => handleAddEmptyRow(item._id)}
+                                            >
+                                                {t('Add Empty Row')}
+                                            </Button>
                                             <Button
                                                 fullWidth
                                                 onClick={() => {
@@ -1787,7 +1790,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     setOpenAddSubsectionDialogCurrentSectionId(item._id);
                                                 }}
                                                 sx={{
-                                                    mt: 2,
                                                     width: 250,
                                                     height: 40,
                                                     border: `1px dashed ${mainIconColor}`,
@@ -1800,15 +1802,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 {t('Add Subsection')}
                                             </Button>
                                             <Button
-                                                variant='outlined'
-                                                sx={{ mt: 2, height: 40 }}
-                                                onClick={() => handleAddEmptyRow(item._id)}
-                                            >
-                                                {t('Add Empty Row')}
-                                            </Button>
-                                            <Button
                                                 variant='contained'
-                                                sx={{ mt: 2, height: 40 }}
+                                                sx={{ height: 40 }}
                                                 onClick={() => {
                                                     setOpenAddOfferDialogTypeWithouSubsection('labor');
                                                     setCurrentSectionId(item._id);
@@ -1822,7 +1817,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             )}
 
                             {(permAddFields || !props.isOnlyEstInfo) && item.children?.[0] && item.children[0].label !== '' && (
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, pb: 2, pr: 2 }}>
                                     <Button
                                         fullWidth
                                         onClick={() => {
@@ -1830,7 +1825,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             setOpenAddSubsectionDialogCurrentSectionId(item._id);
                                         }}
                                         sx={{
-                                            mt: 2,
                                             width: 250,
                                             border: `1px dashed ${mainIconColor}`,
                                             color: mainIconColor,
