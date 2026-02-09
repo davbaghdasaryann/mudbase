@@ -10,9 +10,11 @@ import {
     CircularProgress,
     Chip
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import {
     LineChart,
     Line,
@@ -20,11 +22,19 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
-    Legend
+    ResponsiveContainer
 } from 'recharts';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
+
+const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
+const TEXT_DARK = '#424242';
+const GRID_STROKE = '#e8e8e8';
+const HIGH_LINE = '#26a69a';
+const MEDIUM_LINE = '#7b1fa2';
+const LOW_LINE = '#66bb6a';
+const BADGE_GREEN_BG = '#c8e6c9';
+const BADGE_GREEN_TEXT = '#2e7d32';
 
 interface Props {
     widget: any;
@@ -37,17 +47,34 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     const [analytics, setAnalytics] = useState<{ min: number; max: number; avg: number } | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 30 * 60 * 1000);
-        return () => clearInterval(interval);
-    }, [widget._id]);
+    const isPreview = widget._id === 'preview';
+
+    const fetchPreviewData = async () => {
+        try {
+            const result = await Api.requestSession<any>({
+                command: 'dashboard/widget/widget_data_preview',
+                json: {
+                    widgetType: widget.widgetType,
+                    dataSource: widget.dataSource,
+                    dataSourceConfig: widget.dataSourceConfig,
+                    name: widget.name,
+                },
+            });
+            setSnapshots(result.snapshots || []);
+            setAnalytics(result.analytics || null);
+        } catch (error) {
+            console.error('Failed to fetch preview data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchData = async () => {
+        if (isPreview) return;
         try {
             const result = await Api.requestSession<any>({
                 command: 'dashboard/widget/widget_data_fetch',
-                args: { widgetId: widget._id }
+                args: { widgetId: widget._id },
             });
             setSnapshots(result.snapshots || []);
             setAnalytics(result.analytics || null);
@@ -58,7 +85,18 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
         }
     };
 
+    useEffect(() => {
+        if (isPreview) {
+            fetchPreviewData();
+            return;
+        }
+        fetchData();
+        const interval = setInterval(fetchData, 30 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [widget._id, isPreview, widget.widgetType, widget.dataSource, String(widget.dataSourceConfig?.itemId ?? widget.dataSourceConfig?.estimateId ?? '')]);
+
     const handleDelete = async () => {
+        if (isPreview) return;
         if (!confirm(t('Delete this widget?'))) return;
 
         try {
@@ -95,28 +133,54 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
 
     return (
         <Card
-            variant="outlined"
+            elevation={0}
             sx={{
+                position: 'relative',
+                overflow: 'visible',
                 height: '100%',
                 maxWidth: 340,
                 minWidth: 280,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                backgroundColor: '#FFFFFF',
+                borderRadius: 2,
+                boxShadow: CARD_SHADOW,
+                border: 'none'
             }}
         >
-            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, '&:lastChild': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                    <Typography variant="subtitle2" fontWeight="600" color="text.secondary" noWrap sx={{ maxWidth: '60%' }}>
+            {!isPreview && (
+            <IconButton
+                onClick={handleDelete}
+                size="small"
+                sx={{
+                    position: 'absolute',
+                    top: -8,
+                    right: -8,
+                    zIndex: 1,
+                    p: 0.5,
+                    bgcolor: 'rgba(0,0,0,0.06)',
+                    color: TEXT_DARK,
+                    '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
+                }}
+            >
+                <CloseIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+            )}
+            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                    <Typography
+                        variant="subtitle1"
+                        sx={{ fontSize: 17, fontWeight: 400, color: TEXT_DARK, maxWidth: '60%' }}
+                        noWrap
+                    >
                         {widget.name}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarTodayIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary">
+                        <CalendarTodayIcon sx={{ fontSize: 16, color: TEXT_DARK }} />
+                        <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('15 days')}
                         </Typography>
-                        <IconButton onClick={handleDelete} size="small" sx={{ ml: 0.25, p: 0.25 }}>
-                            <DeleteIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
+                        <KeyboardArrowDownIcon sx={{ fontSize: 18, color: TEXT_DARK }} />
                     </Box>
                 </Box>
 
@@ -126,70 +190,73 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                     </Box>
                 ) : chartData.length > 0 ? (
                     <>
-                        <Box sx={{ mb: 1.5 }}>
-                            <Typography variant="h5" fontWeight="bold" component="span">
-                                {currentValue.toLocaleString()}
+                        <Box sx={{ mb: 2 }}>
+                            <Typography
+                                component="span"
+                                sx={{ fontSize: 38, fontWeight: 700, color: '#212121', letterSpacing: 0 }}
+                            >
+                                {Math.round(currentValue).toLocaleString()}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" component="span" sx={{ ml: 0.5 }}>
+                            <Typography component="span" sx={{ ml: 0.75, fontSize: 18, fontWeight: 400, color: TEXT_DARK }}>
                                 AMD
                             </Typography>
                             <Chip
                                 size="small"
-                                icon={percentChange >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : undefined}
-                                label={`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}%`}
+                                icon={percentChange >= 0 ? <TrendingUpIcon sx={{ fontSize: 14, color: BADGE_GREEN_TEXT }} /> : <TrendingDownIcon sx={{ fontSize: 14, color: '#c62828' }} />}
+                                label={`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1).replace('.', ',')}%`}
                                 sx={{
-                                    ml: 1,
-                                    height: 20,
-                                    fontSize: '0.7rem',
-                                    bgcolor: percentChange >= 0 ? 'success.light' : 'error.light',
-                                    color: percentChange >= 0 ? 'success.dark' : 'error.dark'
+                                    ml: 1.5,
+                                    height: 22,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 500,
+                                    bgcolor: percentChange >= 0 ? BADGE_GREEN_BG : 'rgba(244,67,54,0.15)',
+                                    color: percentChange >= 0 ? BADGE_GREEN_TEXT : '#c62828',
+                                    borderRadius: 1.5,
+                                    '& .MuiChip-icon': { color: 'inherit' }
                                 }}
                             />
                         </Box>
 
-                        <ResponsiveContainer width="100%" height={140}>
-                            <LineChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                        <ResponsiveContainer width="100%" height={160}>
+                            <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 4 }}>
+                                <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={true} horizontal={true} />
                                 <XAxis
                                     dataKey="index"
-                                    tick={{ fontSize: 10 }}
+                                    tick={{ fontSize: 11, fill: TEXT_DARK }}
                                     axisLine={false}
                                     tickLine={false}
                                 />
                                 <YAxis
-                                    tick={{ fontSize: 10 }}
+                                    tick={{ fontSize: 11, fill: TEXT_DARK }}
                                     axisLine={false}
                                     tickLine={false}
                                     tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
                                 />
                                 <Tooltip
-                                    formatter={(value: number | undefined) => [value != null ? value.toLocaleString() : '', '']}
+                                    formatter={(value: number | undefined) => [value != null ? Math.round(value).toLocaleString() : '', '']}
                                     labelFormatter={(_, payload) =>
                                         payload?.[0]?.payload?.time
                                             ? new Date(payload[0].payload.time).toLocaleString()
                                             : ''
                                     }
-                                />
-                                <Legend
-                                    wrapperStyle={{ fontSize: 10 }}
-                                    iconType="circle"
-                                    iconSize={6}
+                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
                                 />
                                 <Line
                                     type="monotone"
                                     dataKey="high"
-                                    stroke="#26a69a"
-                                    strokeWidth={1.5}
-                                    dot={false}
+                                    stroke={HIGH_LINE}
+                                    strokeWidth={2}
+                                    dot={{ r: 3.5, fill: HIGH_LINE }}
+                                    activeDot={{ r: 4 }}
                                     name={t('High')}
                                     legendType="circle"
                                 />
                                 <Line
                                     type="monotone"
                                     dataKey="medium"
-                                    stroke="#7b1fa2"
+                                    stroke={MEDIUM_LINE}
                                     strokeWidth={2}
-                                    dot={{ r: 3 }}
+                                    dot={{ r: 3.5, fill: MEDIUM_LINE }}
                                     activeDot={{ r: 4 }}
                                     name={t('Medium')}
                                     legendType="circle"
@@ -197,24 +264,41 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="low"
-                                    stroke="#66bb6a"
-                                    strokeWidth={1.5}
-                                    dot={false}
+                                    stroke={LOW_LINE}
+                                    strokeWidth={2}
+                                    dot={{ r: 3.5, fill: LOW_LINE }}
+                                    activeDot={{ r: 4 }}
                                     name={t('Low')}
                                     legendType="circle"
                                 />
                             </LineChart>
                         </ResponsiveContainer>
 
-                        {dateRange && (
-                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                                {dateRange}
-                            </Typography>
-                        )}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: HIGH_LINE }} />
+                                    <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('High')}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: MEDIUM_LINE }} />
+                                    <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Medium')}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: LOW_LINE }} />
+                                    <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Low')}</Typography>
+                                </Box>
+                            </Box>
+                            {dateRange && (
+                                <Typography variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>
+                                    {dateRange}
+                                </Typography>
+                            )}
+                        </Box>
                     </>
                 ) : (
                     <Box sx={{ py: 4, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" sx={{ color: TEXT_DARK }}>
                             {t('No data available yet. Data will appear after first snapshot.')}
                         </Typography>
                     </Box>

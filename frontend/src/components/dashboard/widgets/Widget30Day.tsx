@@ -10,9 +10,11 @@ import {
     CircularProgress,
     Chip
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import {
     BarChart,
     Bar,
@@ -34,27 +36,36 @@ interface Props {
     onClearLiveSnapshot?: (widgetId: string) => void;
 }
 
-const BAR_COLOR = '#00ABBE';
-const BAR_COLOR_LAST = '#b39ddb'; // light purple for most recent
+const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
+const TEXT_DARK = '#424242';
+const GRID_STROKE = '#e8e8e8';
+const BAR_BLUE_TOP = '#5eb8e0';
+const BAR_BLUE_BOTTOM = '#2a8fc2';
+const BAR_BLUE_STROKE = '#1e6b8a';
+const BAR_PURPLE_TOP = '#ceb3e8';
+const BAR_PURPLE_BOTTOM = '#b39ddb';
+const BAR_PURPLE_STROKE = '#7e57c2';
+const BADGE_GREEN_BG = '#c8e6c9';
+const BADGE_GREEN_TEXT = '#2e7d32';
 
 export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot }: Props) {
     const [t] = useTranslation();
     const [data, setData] = useState<Array<{ month: string; value: number; ts: number; pctChange: number; isLast?: boolean }>>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 30 * 60 * 1000);
-        return () => clearInterval(interval);
-    }, [widget._id]);
+    const isPreview = widget._id === 'preview';
 
-    const fetchData = async () => {
+    const fetchPreviewData = async () => {
         try {
             const result = await Api.requestSession<any>({
-                command: 'dashboard/widget/widget_data_fetch',
-                args: { widgetId: widget._id }
+                command: 'dashboard/widget/widget_data_preview',
+                json: {
+                    widgetType: widget.widgetType,
+                    dataSource: widget.dataSource,
+                    dataSourceConfig: widget.dataSourceConfig,
+                    name: widget.name,
+                },
             });
-
             const raw = result.snapshots || [];
             const firstValue = raw.length > 0 ? raw[0].value : 0;
             const chartData = raw.map((s: any, i: number) => {
@@ -66,7 +77,36 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                     value: s.value,
                     ts,
                     pctChange,
-                    isLast: i === raw.length - 1
+                    isLast: i === raw.length - 1,
+                };
+            });
+            setData(chartData);
+        } catch (error) {
+            console.error('Failed to fetch preview data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchData = async () => {
+        if (isPreview) return;
+        try {
+            const result = await Api.requestSession<any>({
+                command: 'dashboard/widget/widget_data_fetch',
+                args: { widgetId: widget._id },
+            });
+            const raw = result.snapshots || [];
+            const firstVal = raw.length > 0 ? raw[0].value : 0;
+            const chartData = raw.map((s: any, i: number) => {
+                const ts = new Date(s.timestamp).getTime();
+                const value = s.value;
+                const pctChange = firstVal !== 0 ? ((value - firstVal) / firstVal) * 100 : 0;
+                return {
+                    month: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short' }),
+                    value: s.value,
+                    ts,
+                    pctChange,
+                    isLast: i === raw.length - 1,
                 };
             });
             setData(chartData);
@@ -77,6 +117,16 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (isPreview) {
+            fetchPreviewData();
+            return;
+        }
+        fetchData();
+        const interval = setInterval(fetchData, 30 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [widget._id, isPreview, widget.widgetType, widget.dataSource, String(widget.dataSourceConfig?.itemId ?? widget.dataSourceConfig?.estimateId ?? '')]);
 
     const liveForThis = liveSnapshots.filter((s) => s.widgetId === widget._id);
     const merged = [
@@ -104,6 +154,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
     const percentChange = firstValue !== 0 ? (((currentValue - firstValue) / firstValue) * 100) : 0;
 
     const handleDelete = async () => {
+        if (isPreview) return;
         if (!confirm(t('Delete this widget?'))) return;
 
         try {
@@ -119,49 +170,81 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
 
     return (
         <Card
-            variant="outlined"
+            elevation={0}
             sx={{
+                position: 'relative',
+                overflow: 'visible',
                 height: '100%',
                 width: '100%',
                 minWidth: 400,
                 maxWidth: 560,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                backgroundColor: '#FFFFFF',
+                borderRadius: 2,
+                boxShadow: CARD_SHADOW,
+                border: 'none'
             }}
         >
-            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, '&:lastChild': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                    <Typography variant="subtitle2" fontWeight="600" color="text.secondary" noWrap sx={{ maxWidth: '60%' }}>
+            {!isPreview && (
+            <IconButton
+                onClick={handleDelete}
+                size="small"
+                sx={{
+                    position: 'absolute',
+                    top: -8,
+                    right: -8,
+                    zIndex: 1,
+                    p: 0.5,
+                    bgcolor: 'rgba(0,0,0,0.06)',
+                    color: TEXT_DARK,
+                    '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
+                }}
+            >
+                <CloseIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+            )}
+            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                    <Typography
+                        variant="subtitle1"
+                        sx={{ fontSize: 17, fontWeight: 400, color: TEXT_DARK, maxWidth: '60%' }}
+                        noWrap
+                    >
                         {widget.name}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarTodayIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary">
+                        <CalendarTodayIcon sx={{ fontSize: 16, color: TEXT_DARK }} />
+                        <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('30 days')}
                         </Typography>
-                        <IconButton onClick={handleDelete} size="small" sx={{ ml: 0.25, p: 0.25 }}>
-                            <DeleteIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
+                        <KeyboardArrowDownIcon sx={{ fontSize: 18, color: TEXT_DARK }} />
                     </Box>
                 </Box>
 
                 <Box sx={{ mb: 2 }}>
-                    <Typography variant="h5" fontWeight="bold" component="span">
-                        {currentValue.toLocaleString()}
+                    <Typography
+                        component="span"
+                        sx={{ fontSize: 38, fontWeight: 700, color: '#212121', letterSpacing: 0 }}
+                    >
+                        {Math.round(currentValue).toLocaleString()}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" component="span" sx={{ ml: 0.5 }}>
+                    <Typography component="span" sx={{ ml: 0.75, fontSize: 18, fontWeight: 400, color: TEXT_DARK }}>
                         AMD
                     </Typography>
                     <Chip
                         size="small"
-                        icon={percentChange >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : undefined}
-                        label={`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}%`}
+                        icon={percentChange >= 0 ? <TrendingUpIcon sx={{ fontSize: 14, color: BADGE_GREEN_TEXT }} /> : <TrendingDownIcon sx={{ fontSize: 14, color: '#c62828' }} />}
+                        label={`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1).replace('.', ',')}%`}
                         sx={{
-                            ml: 1,
-                            height: 20,
-                            fontSize: '0.7rem',
-                            bgcolor: percentChange >= 0 ? 'success.light' : 'error.light',
-                            color: percentChange >= 0 ? 'success.dark' : 'error.dark'
+                            ml: 1.5,
+                            height: 22,
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            bgcolor: percentChange >= 0 ? BADGE_GREEN_BG : 'rgba(244,67,54,0.15)',
+                            color: percentChange >= 0 ? BADGE_GREEN_TEXT : '#c62828',
+                            borderRadius: 1.5,
+                            '& .MuiChip-icon': { color: 'inherit' }
                         }}
                     />
                 </Box>
@@ -172,36 +255,46 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                     </Box>
                 ) : merged.length > 0 ? (
                     <ResponsiveContainer width="100%" height={220}>
-                        <BarChart
-                            data={merged}
-                            margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} />
+                        <BarChart data={merged} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                            <defs>
+                                <linearGradient id="barBlueGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={BAR_BLUE_TOP} />
+                                    <stop offset="100%" stopColor={BAR_BLUE_BOTTOM} />
+                                </linearGradient>
+                                <linearGradient id="barPurpleGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={BAR_PURPLE_TOP} />
+                                    <stop offset="100%" stopColor={BAR_PURPLE_BOTTOM} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={false} />
                             <XAxis
                                 dataKey="month"
-                                tick={{ fontSize: 11 }}
+                                tick={{ fontSize: 11, fill: TEXT_DARK }}
                                 axisLine={false}
                                 tickLine={false}
                             />
                             <YAxis
-                                tick={{ fontSize: 10 }}
+                                tick={{ fontSize: 11, fill: TEXT_DARK }}
                                 axisLine={false}
                                 tickLine={false}
                                 tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
                             />
                             <Tooltip
-                                formatter={(value: number | undefined) => [value != null ? value.toLocaleString() : '', '']}
+                                formatter={(value: number | undefined) => [value != null ? Math.round(value).toLocaleString() : '', '']}
                                 labelFormatter={(_, payload) =>
                                     payload?.[0]?.payload?.ts
                                         ? new Date(payload[0].payload.ts).toLocaleString()
                                         : ''
                                 }
+                                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
                             />
-                            <Bar dataKey="value" radius={[2, 2, 0, 0]} maxBarSize={24}>
+                            <Bar dataKey="value" radius={[2, 2, 0, 0]} maxBarSize={28}>
                                 {merged.map((entry, index) => (
                                     <Cell
                                         key={`cell-${index}`}
-                                        fill={entry.isLast ? BAR_COLOR_LAST : BAR_COLOR}
+                                        fill={entry.isLast ? 'url(#barPurpleGrad)' : 'url(#barBlueGrad)'}
+                                        stroke={entry.isLast ? BAR_PURPLE_STROKE : BAR_BLUE_STROKE}
+                                        strokeWidth={0.5}
                                     />
                                 ))}
                             </Bar>
@@ -209,7 +302,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                     </ResponsiveContainer>
                 ) : (
                     <Box sx={{ py: 4, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" sx={{ color: TEXT_DARK }}>
                             {t('No data available yet. Data will appear after first snapshot.')}
                         </Typography>
                     </Box>

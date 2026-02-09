@@ -73,15 +73,22 @@ function normalizeToThirtyMinBuckets(
         const key = rounded.getTime();
         byBucket.set(key, { timestamp: rounded, value: p.value });
     }
-    return Array.from(byBucket.values()).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = Array.from(byBucket.values()).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    // Carry forward last known value when we have 0 so charts don't show spurious zeros
+    let lastGood = 0;
+    for (const p of sorted) {
+        if (p.value > 0) lastGood = p.value;
+        else if (lastGood > 0) p.value = lastGood;
+    }
+    return sorted;
 }
 
 registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, session) => {
 
     // Widget builder is only for regular users, not superadmin
     const isSuperAdmin = session.checkPermission(Permissions.All) ||
-                        session.checkPermission(Permissions.UsersFetchAll) ||
-                        session.checkPermission(Permissions.AccountsFetch);
+        session.checkPermission(Permissions.UsersFetchAll) ||
+        session.checkPermission(Permissions.AccountsFetch);
 
     if (isSuperAdmin) {
         throw new Error('Widget builder is not available for superadmin');
@@ -195,14 +202,19 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
         snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
     }
 
-    // Always show at least the current 30-min bucket (e.g. 14:14 → 14:00) with current price/cost so "no data" never shows when we have a valid source
+    // Always show at least the current 30-min bucket (e.g. 14:14 → 14:00) with current price/cost so "no data" never shows when we have a valid source.
+    // If current value is 0 or missing, carry forward the last known value so we don't show fake zeros on the chart.
     const currentBucket = roundToThirtyMinutes(now);
     const hasCurrentBucket = snapshots.some(
         p => roundToThirtyMinutes(p.timestamp).getTime() === currentBucket.getTime()
     );
     if (!hasCurrentBucket && session.mongoAccountId) {
-        const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-        if (currentValue != null) {
+        let currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+        if (currentValue == null || currentValue === 0) {
+            const lastPoint = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+            if (lastPoint && lastPoint.value > 0) currentValue = lastPoint.value;
+        }
+        if (currentValue != null && currentValue > 0) {
             snapshots.push({ timestamp: currentBucket, value: currentValue });
             snapshots.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
         }
@@ -214,6 +226,143 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
     // Calculate analytics for 15-day and 30-day widgets
     let analytics = null;
     if (widget!.widgetType !== '1-day' && snapshots.length > 0) {
+        const values = snapshots.map(s => s.value);
+        analytics = {
+            min: Math.min(...values),
+            max: Math.max(...values),
+            avg: values.reduce((a, b) => a + b, 0) / values.length
+        };
+    }
+
+    respondJsonData(res, {
+        widget,
+        snapshots,
+        analytics
+    });
+});
+
+/** Preview widget data without a saved widget (e.g. in builder step 3). Uses journal/reconstructed + current value only. */
+registerApiSession('dashboard/widget/widget_data_preview', async (req, res, session) => {
+    const isSuperAdmin = session.checkPermission(Permissions.All) ||
+        session.checkPermission(Permissions.UsersFetchAll) ||
+        session.checkPermission(Permissions.AccountsFetch);
+    if (isSuperAdmin) {
+        throw new Error('Widget builder is not available for superadmin');
+    }
+
+    const body = (req.body || {}) as { widgetType?: string; dataSource?: string; dataSourceConfig?: { itemId?: string; estimateId?: string }; name?: string };
+    const widgetType = body.widgetType || '1-day';
+    const dataSource = body.dataSource || 'labor';
+    const dataSourceConfig = body.dataSourceConfig || {};
+    const name = body.name || 'Preview';
+
+    const widget = {
+        _id: 'preview',
+        name,
+        widgetType,
+        dataSource,
+        dataSourceConfig
+    };
+
+    const now = new Date();
+    let startDate: Date;
+    switch (widgetType) {
+        case '1-day':
+            startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            break;
+        case '15-day':
+            startDate = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
+            break;
+        case '30-day':
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+        default:
+            startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    }
+
+    const snapshotDocs: Array<{ timestamp: Date; value: number }> = [];
+
+    let snapshots: Array<{ timestamp: Date; value: number }>;
+
+    if (dataSource === 'materials' || dataSource === 'labor') {
+        const rawItemId = dataSourceConfig?.itemId;
+        if (!rawItemId) {
+            snapshots = [];
+        } else {
+            const itemId = new ObjectId(rawItemId);
+            const offerIds = await getOfferIdsForItem(itemId, dataSource);
+            const journalPoints = await getJournalPointsInWindow(dataSource, offerIds, startDate);
+            snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, journalPoints);
+        }
+    } else if (dataSource === 'estimates') {
+        const rawEstimateId = dataSourceConfig?.estimateId;
+        if (!rawEstimateId) {
+            snapshots = [];
+        } else {
+            const estimateId = new ObjectId(rawEstimateId);
+            const estimate = await Db.getEstimatesCollection().findOne({
+                _id: estimateId,
+                accountId: session.mongoAccountId
+            });
+            if (!estimate) {
+                snapshots = [];
+            } else {
+                const reconstructed = await getEstimateReconstructedPoints(estimateId, startDate);
+                snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, reconstructed);
+            }
+        }
+    } else if (dataSource === 'eci') {
+        const rawEciEstimateId = dataSourceConfig?.estimateId;
+        if (!rawEciEstimateId) {
+            snapshots = [];
+        } else {
+            const eciEstimateId = new ObjectId(rawEciEstimateId);
+            const eciEstimate = await Db.getEciEstimatesCollection().findOne({ _id: eciEstimateId });
+            const linkedEstimateId = eciEstimate?.estimateId;
+            if (!eciEstimate || !linkedEstimateId) {
+                snapshots = [];
+            } else {
+                const estimate = await Db.getEstimatesCollection().findOne({
+                    _id: linkedEstimateId,
+                    accountId: session.mongoAccountId
+                });
+                if (!estimate) {
+                    snapshots = [];
+                } else {
+                    const reconstructed = await getEstimateReconstructedPoints(linkedEstimateId, startDate);
+                    const constructionArea = eciEstimate.constructionArea || 1;
+                    const eciReconstructed = reconstructed.map(p => ({
+                        timestamp: p.timestamp,
+                        value: p.value / constructionArea
+                    }));
+                    snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, eciReconstructed);
+                }
+            }
+        }
+    } else {
+        snapshots = [];
+    }
+
+    const currentBucket = roundToThirtyMinutes(now);
+    const hasCurrentBucket = snapshots.some(
+        p => roundToThirtyMinutes(p.timestamp).getTime() === currentBucket.getTime()
+    );
+    if (!hasCurrentBucket && session.mongoAccountId) {
+        let currentValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
+        if (currentValue == null || currentValue === 0) {
+            const lastPoint = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+            if (lastPoint && lastPoint.value > 0) currentValue = lastPoint.value;
+        }
+        if (currentValue != null && currentValue > 0) {
+            snapshots.push({ timestamp: currentBucket, value: currentValue });
+            snapshots.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        }
+    }
+
+    snapshots = normalizeToThirtyMinBuckets(snapshots);
+
+    let analytics: { min: number; max: number; avg: number } | null = null;
+    if (widgetType !== '1-day' && snapshots.length > 0) {
         const values = snapshots.map(s => s.value);
         analytics = {
             min: Math.min(...values),
@@ -372,11 +521,11 @@ async function getEstimateReconstructedPoints(
 
     const laborItems = await laborColl.find(
         { estimateId },
-        { projection: { laborItemId: 1, quantity: 1, isHidden: 1 } }
+        { projection: { laborItemId: 1, quantity: 1, isHidden: 1, changableAveragePrice: 1, averagePrice: 1 } }
     ).toArray();
     const materialItems = await materialColl.find(
         { estimateId },
-        { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }
+        { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1, averagePrice: 1 } }
     ).toArray();
 
     const hiddenLaborIds = new Set(
@@ -417,13 +566,13 @@ async function getEstimateReconstructedPoints(
         for (const labor of laborItems) {
             if (labor.isHidden) continue;
             const key = `${t}:${labor.laborItemId.toString()}`;
-            const price = laborPriceMap.get(key) ?? 0;
+            const price = laborPriceMap.get(key) ?? (labor as any).changableAveragePrice ?? (labor as any).averagePrice ?? 0;
             if (labor.quantity && price) totalCost += labor.quantity * price;
         }
         for (const mat of materialItems) {
             if (hiddenLaborIds.has(mat.estimatedLaborId.toString())) continue;
             const key = `${t}:${mat.materialItemId.toString()}`;
-            const price = materialPriceMap.get(key) ?? 0;
+            const price = materialPriceMap.get(key) ?? (mat as any).changableAveragePrice ?? (mat as any).averagePrice ?? 0;
             if (mat.quantity && price) totalCost += mat.quantity * price;
         }
         result.push({ timestamp: new Date(t), value: totalCost });
