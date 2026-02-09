@@ -3,12 +3,14 @@
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -44,6 +46,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const dataUpdatedRef = useRef(false);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
     const [activeTab, setActiveTab] = useState(1); // 0: Tools, 1: General Info, 2: Export
+    const [toolbarOpen, setToolbarOpen] = useState(true);
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
     const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
     const [isSelectMode, setIsSelectMode] = useState(false);
@@ -275,15 +278,19 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 }
             }}>
                 {/* Tabs */}
-                <Box sx={{ borderBottom: '1px solid rgba(25, 118, 210, 0.3)', mb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', borderBottom: '1px solid rgba(25, 118, 210, 0.3)', mb: 0 }}>
                     <Tabs
                         value={activeTab}
-                        onChange={(e, newValue) => setActiveTab(newValue)}
+                        onChange={(e, newValue) => {
+                            setActiveTab(newValue);
+                            if (!toolbarOpen) setToolbarOpen(true);
+                        }}
                         sx={{
+                            flex: 1,
                             minHeight: 48,
                             height: 48,
                             '& .MuiTabs-indicator': {
-                                display: 'none', // Hide default indicator
+                                display: 'none',
                             },
                             '& .MuiTab-root': {
                                 borderTopLeftRadius: '8px',
@@ -296,10 +303,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 padding: '12px 16px',
                             },
                             '& .Mui-selected': {
-                                backgroundColor: '#F5F9F9',
+                                backgroundColor: toolbarOpen ? '#F5F9F9' : 'transparent',
                                 border: '1px solid rgba(25, 118, 210, 0.3)',
-                                borderBottom: '1px solid #F5F9F9',
-                                color: '#000000',
+                                borderBottom: toolbarOpen ? '1px solid #F5F9F9' : '1px solid transparent',
+                                color: '#000000 !important',
                                 fontWeight: 700,
                             }
                         }}
@@ -332,8 +339,22 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             sx={{ minHeight: 48, height: 48 }}
                         />
                     </Tabs>
+                    <IconButton
+                        onClick={() => setToolbarOpen((prev) => !prev)}
+                        size="small"
+                        sx={{
+                            mb: 0.5,
+                            ml: 0.5,
+                            color: 'rgba(25, 118, 210, 0.6)',
+                            transition: 'transform 0.3s',
+                            '&:hover': { color: 'rgba(25, 118, 210, 0.9)' },
+                        }}
+                    >
+                        {toolbarOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    </IconButton>
                 </Box>
 
+                <Collapse in={toolbarOpen} timeout={300} easing="cubic-bezier(0.4, 0, 0.2, 1)">
                 {/* Tools Tab Content */}
                 {activeTab === 0 && (
                     <Box sx={{
@@ -598,6 +619,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         </Box>
                     </Box>
                 )}
+                </Collapse>
 
                 {/* Tables and accordions - Always visible regardless of active tab */}
                 <EstimateThreeLevelNestedAccordion ref={accordionRef} isOnlyEstInfo={props.isOnlyEstInfo} estimateId={props.estimateId} onDataUpdated={handleDataUpdated} selectMode={isSelectMode} onSelectionChange={setSelectedLaborIds} />
