@@ -359,12 +359,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 {activeTab === 0 && (
                     <Box sx={{
                         mb: 2,
-                        p: 3,
+                        p: 1.5,
                         backgroundColor: '#F5F9F9',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        height: 200,
+                        height: 130,
                         overflow: 'visible',
                     }}>
                         <Box data-toolbar="true" sx={{
@@ -403,7 +403,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                             flexDirection: 'column',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            p: 1.25,
+                                            p: 1,
                                             backgroundColor: isSelectActive ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
                                             borderRadius: 2,
                                             cursor: tool.disabled ? 'not-allowed' : 'pointer',
@@ -416,14 +416,14 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                                 boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                                 transform: 'translateY(-2px)',
                                             },
-                                            width: { xs: 110, md: 130, lg: 150 },
-                                            minHeight: { xs: 90, md: 100, lg: 110 },
+                                            width: { xs: 85, md: 100, lg: 115 },
+                                            minHeight: { xs: 65, md: 75, lg: 85 },
                                         }}
                                     >
-                                        <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <ImgElement src={tool.icon} sx={{ height: 28 }} />
+                                        <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <ImgElement src={tool.icon} sx={{ height: 22 }} />
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
                                             {t(tool.labelKey)}
                                         </Typography>
                                     </Box>
@@ -442,7 +442,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {[
                                 { labelKey: 'Delete', iconPath: `${TOOLBAR_ICON}/delete.svg`, onClick: handleDeleteSelected },
                                 { labelKey: 'Move', iconPath: `${TOOLBAR_ICON}/move.svg`, onClick: () => setShowMoveDialog(true) },
-                                { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 28 }} /> : <VisibilityIcon sx={{ fontSize: 28 }} />, onClick: handleHideUnhide },
+                                { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 22 }} /> : <VisibilityIcon sx={{ fontSize: 22 }} />, onClick: handleHideUnhide },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
@@ -456,7 +456,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        p: 1.25,
+                                        p: 1,
                                         backgroundColor: 'transparent',
                                         borderRadius: 2,
                                         cursor: lastThreeDisabled ? 'not-allowed' : 'pointer',
@@ -468,14 +468,14 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                             boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                             transform: 'translateY(-2px)',
                                         },
-                                        width: { xs: 110, md: 130, lg: 150 },
-                                        minHeight: { xs: 90, md: 100, lg: 110 },
+                                        width: { xs: 85, md: 100, lg: 115 },
+                                        minHeight: { xs: 65, md: 75, lg: 85 },
                                     }}
                                 >
-                                    <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        {'iconPath' in tool && tool.iconPath ? <ImgElement src={tool.iconPath} sx={{ height: 28 }} /> : 'iconNode' in tool ? tool.iconNode : null}
+                                    <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {'iconPath' in tool && tool.iconPath ? <ImgElement src={tool.iconPath} sx={{ height: 22 }} /> : 'iconNode' in tool ? tool.iconNode : null}
                                     </Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
                                         {t(tool.labelKey)}
                                     </Typography>
                                 </Box>
@@ -489,13 +489,13 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     <Box sx={{
                         mb: 2,
                         pt: 0,
-                        px: 3,
-                        pb: 2,
+                        px: 2,
+                        pb: 1,
                         backgroundColor: '#F5F9F9',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        height: 200,
+                        height: 130,
                         overflow: 'visible',
                     }}>
                         <EstimateInfoAccordionContent estimateId={props.estimateId} onDataUpdated={handleDataUpdated} />
@@ -506,116 +506,101 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 {activeTab === 2 && (
                     <Box sx={{
                         mb: 2,
-                        p: 3,
+                        p: 1.5,
                         backgroundColor: '#F5F9F9',
                         border: '1px solid rgba(25, 118, 210, 0.3)',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
-                        height: 200,
+                        height: 130,
                         overflow: 'visible',
                     }}>
                         <Box sx={{
                             display: 'flex',
-                            gap: 8,
+                            gap: 1.5,
                             justifyContent: 'center',
                             alignItems: 'center',
                             height: '100%',
-                            flexWrap: 'wrap'
+                            flexWrap: 'nowrap'
                         }}>
-                            {/* Download Estimation */}
-                            <Box>
-                                <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
-                                    {t('Download Estimation')}
-                                </Typography>
-                                <Box sx={{ display: 'flex', gap: 1.5 }}>
-                                    {[
-                                        { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
-                                        { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
-                                        { label: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, format: 'pdf' as const },
-                                    ].map((format, index) => (
-                                        <Box
-                                            key={index}
-                                            onClick={() => handleDownloadEstimation(format.format)}
-                                            sx={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                p: 2.5,
-                                                backgroundColor: 'transparent',
-                                                borderRadius: 2,
-                                                cursor: 'pointer',
-                                                width: { xs: 110, md: 130, lg: 150 },
-                                                minHeight: { xs: 90, md: 100, lg: 110 },
-                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                                transition: 'all 0.2s',
-                                                '&:hover': {
-                                                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
-                                                    transform: 'translateY(-2px)',
-                                                },
-                                            }}
-                                        >
-                                            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <ImgElement src={format.icon} sx={{ height: 40 }} />
-                                            </Box>
-                                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                                {t(format.label)}
-                                            </Typography>
-                                        </Box>
-                                    ))}
+                            {[
+                                { label: 'Estimation HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadEstimation('html') },
+                                { label: 'Estimation Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadEstimation('word') },
+                                { label: 'Estimation PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadEstimation('pdf') },
+                            ].map((item, index) => (
+                                <Box
+                                    key={index}
+                                    onClick={item.onClick}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        p: 1,
+                                        backgroundColor: 'transparent',
+                                        borderRadius: 2,
+                                        cursor: 'pointer',
+                                        width: { xs: 85, md: 100, lg: 115 },
+                                        minHeight: { xs: 65, md: 75, lg: 85 },
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                        transition: 'all 0.2s',
+                                        '&:hover': {
+                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
+                                            transform: 'translateY(-2px)',
+                                        },
+                                    }}
+                                >
+                                    <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <ImgElement src={item.icon} sx={{ height: 22 }} />
+                                    </Box>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
+                                        {t(item.label)}
+                                    </Typography>
                                 </Box>
-                            </Box>
+                            ))}
 
                             {/* Vertical Divider */}
                             <Box sx={{
-                                height: '80%',
-                                width: '1px',
-                                backgroundColor: 'rgba(25, 118, 210, 0.3)',
+                                width: '2px',
+                                backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                                alignSelf: 'stretch',
+                                mx: 1
                             }} />
 
-                            {/* Download Bill of Quantities */}
-                            <Box>
-                                <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
-                                    {t('Download Bill of Quantities')}
-                                </Typography>
-                                <Box sx={{ display: 'flex', gap: 1.5 }}>
-                                    {[
-                                        { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
-                                        { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
-                                        { label: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, format: 'pdf' as const },
-                                    ].map((format, index) => (
-                                        <Box
-                                            key={index}
-                                            onClick={() => handleDownloadBoQ(format.format)}
-                                            sx={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                p: 2.5,
-                                                backgroundColor: 'transparent',
-                                                borderRadius: 2,
-                                                cursor: 'pointer',
-                                                width: { xs: 110, md: 130, lg: 150 },
-                                                minHeight: { xs: 90, md: 100, lg: 110 },
-                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                                transition: 'all 0.2s',
-                                                '&:hover': {
-                                                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
-                                                    transform: 'translateY(-2px)',
-                                                },
-                                            }}
-                                        >
-                                            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <ImgElement src={format.icon} sx={{ height: 40 }} />
-                                            </Box>
-                                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                                {t(format.label)}
-                                            </Typography>
-                                        </Box>
-                                    ))}
+                            {[
+                                { label: 'BoQ HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadBoQ('html') },
+                                { label: 'BoQ Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadBoQ('word') },
+                                { label: 'BoQ PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadBoQ('pdf') },
+                            ].map((item, index) => (
+                                <Box
+                                    key={index}
+                                    onClick={item.onClick}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        p: 1,
+                                        backgroundColor: 'transparent',
+                                        borderRadius: 2,
+                                        cursor: 'pointer',
+                                        width: { xs: 85, md: 100, lg: 115 },
+                                        minHeight: { xs: 65, md: 75, lg: 85 },
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                        transition: 'all 0.2s',
+                                        '&:hover': {
+                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
+                                            transform: 'translateY(-2px)',
+                                        },
+                                    }}
+                                >
+                                    <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <ImgElement src={item.icon} sx={{ height: 22 }} />
+                                    </Box>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
+                                        {t(item.label)}
+                                    </Typography>
                                 </Box>
-                            </Box>
+                            ))}
                         </Box>
                     </Box>
                 )}
