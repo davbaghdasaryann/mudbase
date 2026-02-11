@@ -139,24 +139,86 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
         {$set: filteredUpdateData}
     );
 
-    // if (updatedData.changableAveragePrice >= 0) {
-    //     let estLaborItem = await estimatedLaborCollection.findOne({ _id: estimatedLaborId }) as Db.EntityEstimateLaborItems
-    //     let laborOffersColleciton = Db.getLaborOffersCollection();
-    //     let laborOffers = await laborOffersColleciton.find({ itemId: estLaborItem?.laborItemId }).toArray();
+    // Update catalog offer when price changes (for builders with offer creation permission)
+    if (priceChanged && session.permissionsSet?.has('OFF_CRT_LBR')) {
+        let estLaborItem = (await estimatesLaborColl.findOne({ _id: estimatedLaborId }))!;
+        let laborOffersCollection = Db.getLaborOffersCollection();
 
-    //     for (let laborOffer of laborOffers) {
-    //         if (laborOffer?.accountId.toString() === session.accountId.toString()) {
-    //             await laborOffersColleciton.updateOne(
-    //                 { _id: laborOffer._id },
-    //                 { $set: { price: updatedData.changableAveragePrice } }
-    //             );
-    //         }
-    //     }
+        let laborOffers = await laborOffersCollection.find({ itemId: estLaborItem?.laborItemId }).toArray();
 
-    // }
+        let existingOffer = laborOffers.find(laborOffer => laborOffer?.accountId.toString() === session.accountId.toString());
 
-    // Estimate edits must never update the catalog (labor_offers or labor_items stats).
-    // Only the estimate labor item and estimate cost are updated.
+        if (existingOffer) {
+            // Update existing offer
+            await laborOffersCollection.updateOne(
+                { _id: existingOffer._id },
+                {
+                    $set: {
+                        price: updatedData.changableAveragePrice,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+
+            let updatedLaborOffer = await laborOffersCollection.findOne({ _id: existingOffer._id }) as Db.EntityLaborOffer;
+            let laborPricesJournal = Db.getLaborPricesJournalCollection();
+
+            let addingLaborOfferPricesJournal: Db.EntityLaborPricesJournal = {} as Db.EntityLaborPricesJournal;
+            addingLaborOfferPricesJournal.itemId = updatedLaborOffer._id;
+            addingLaborOfferPricesJournal.price = updatedLaborOffer.price;
+            addingLaborOfferPricesJournal.currency = updatedLaborOffer.currency;
+            addingLaborOfferPricesJournal.measurementUnitMongoId = updatedLaborOffer.measurementUnitMongoId;
+            addingLaborOfferPricesJournal.userId = updatedLaborOffer.userId;
+            addingLaborOfferPricesJournal.date = updatedLaborOffer.updatedAt;
+            addingLaborOfferPricesJournal.isArchived = updatedLaborOffer.isArchived;
+
+            await laborPricesJournal.insertOne(addingLaborOfferPricesJournal);
+        } else {
+            // Create new offer
+            const now = new Date();
+            let newLaborOffer: Db.EntityLaborOffer = {} as Db.EntityLaborOffer;
+            newLaborOffer.isActive = true;
+            newLaborOffer.itemId = estLaborItem?.laborItemId;
+            if (session.mongoUserId) {
+                newLaborOffer.userId = session.mongoUserId;
+            }
+            if (session.mongoAccountId) {
+                newLaborOffer.accountId = session.mongoAccountId;
+            }
+            newLaborOffer.createdAt = now;
+            newLaborOffer.updatedAt = now;
+
+            newLaborOffer.anonymous = false;
+            newLaborOffer.public = true;
+            newLaborOffer.price = updatedData.changableAveragePrice ?? estLaborItem.changableAveragePrice;
+            newLaborOffer.currency = "AMD";
+
+            if (estLaborItem.measurementUnitMongoId) {
+                newLaborOffer.measurementUnitMongoId = estLaborItem.measurementUnitMongoId;
+            }
+            newLaborOffer.isArchived = false;
+
+            let newOfferInsertResult = await laborOffersCollection.insertOne(newLaborOffer);
+            let newOfferId = newOfferInsertResult.insertedId;
+            let updatedLaborOffer = await laborOffersCollection.findOne({ _id: newOfferId }) as Db.EntityLaborOffer;
+
+            let laborPricesJournal = Db.getLaborPricesJournalCollection();
+            let addingLaborOfferPricesJournal: Db.EntityLaborPricesJournal = {} as Db.EntityLaborPricesJournal;
+            addingLaborOfferPricesJournal.itemId = updatedLaborOffer._id;
+            addingLaborOfferPricesJournal.price = updatedLaborOffer.price;
+            addingLaborOfferPricesJournal.currency = updatedLaborOffer.currency;
+            addingLaborOfferPricesJournal.measurementUnitMongoId = updatedLaborOffer.measurementUnitMongoId;
+            addingLaborOfferPricesJournal.userId = updatedLaborOffer.userId;
+            addingLaborOfferPricesJournal.date = updatedLaborOffer.updatedAt;
+            addingLaborOfferPricesJournal.isArchived = false;
+
+            await laborPricesJournal.insertOne(addingLaborOfferPricesJournal);
+        }
+
+        // Update labor item stats
+        const {updateLaborItemStats} = await import('@/api/catalog/labors');
+        updateLaborItemStats(estLaborItem.laborItemId);
+    }
 
     if ((priceChanged || hoursChanged || updatedData.quantity)) {
         await updateEstimateCostById(prevEstLaborItem.estimateId);
