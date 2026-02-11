@@ -216,7 +216,7 @@ export default function AdminEstimatesPageContents() {
                             actions.push(
                                 <GridActionsCellItem
                                     key='view'
-                                    icon={<VisibilityIcon />}
+                                    icon={<VisibilityIcon sx={{color: mainIconColor}} />}
                                     label={t('View')}
                                     onClick={() => {
                                         setEstimateTitle(cell.row.name);

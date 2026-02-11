@@ -9,6 +9,8 @@ export class EstimatesDisplayData {
     totalCost!: number;
     createdAt!: Date;
     totalCostWithOtherExpenses!: number;
+    accountId?: string;
+    companyName?: string;
 
     constructor(est?: ApiEstimate) {
         if (!est)
@@ -20,5 +22,7 @@ export class EstimatesDisplayData {
         this.totalCost = roundNumber(est.totalCost ?? 0)
         this.createdAt = est.createdAt
         this.totalCostWithOtherExpenses = roundNumber(est.totalCostWithOtherExpenses ?? 0);
+        this.accountId = est.accountId;
+        this.companyName = (est as any).companyName;
     }
 }
