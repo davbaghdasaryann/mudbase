@@ -523,9 +523,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             flexWrap: 'nowrap'
                         }}>
                             {[
-                                { label: 'Estimation HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadEstimation('html') },
-                                { label: 'Estimation Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadEstimation('word') },
-                                { label: 'Estimation PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadEstimation('pdf') },
+                                { category: 'Estimation', format: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadEstimation('html') },
+                                { category: 'Estimation', format: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadEstimation('word') },
+                                { category: 'Estimation', format: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadEstimation('pdf') },
                             ].map((item, index) => (
                                 <Box
                                     key={index}
@@ -552,9 +552,14 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <ImgElement src={item.icon} sx={{ height: 22 }} />
                                     </Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
-                                        {t(item.label)}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
+                                            {t(item.category)}
+                                        </Typography>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
+                                            {t(item.format)}
+                                        </Typography>
+                                    </Box>
                                 </Box>
                             ))}
 
@@ -567,9 +572,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             }} />
 
                             {[
-                                { label: 'BoQ HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadBoQ('html') },
-                                { label: 'BoQ Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadBoQ('word') },
-                                { label: 'BoQ PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadBoQ('pdf') },
+                                { category: 'BoQ', format: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadBoQ('html') },
+                                { category: 'BoQ', format: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadBoQ('word') },
+                                { category: 'BoQ', format: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadBoQ('pdf') },
                             ].map((item, index) => (
                                 <Box
                                     key={index}
@@ -596,9 +601,14 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <ImgElement src={item.icon} sx={{ height: 22 }} />
                                     </Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
-                                        {t(item.label)}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
+                                            {t(item.category)}
+                                        </Typography>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
+                                            {t(item.format)}
+                                        </Typography>
+                                    </Box>
                                 </Box>
                             ))}
                         </Box>

@@ -375,9 +375,9 @@
     "Estimation HTML": "Նախահաշիվ HTML",
     "Estimation Word": "Նախահաշիվ Word",
     "Estimation PDF": "Նախահաշիվ PDF",
-    "BoQ HTML": "Քանակ. հաշվարկ HTML",
-    "BoQ Word": "Քանակ. հաշվարկ Word",
-    "BoQ PDF": "Քանակ. հաշվարկ PDF",
+    "BoQ HTML": "Ծավալաթերթ HTML",
+    "BoQ Word": "Ծավալաթերթ Word",
+    "BoQ PDF": "Ծավալաթերթ PDF",
     "HTML": "HTML",
     "Word": "Word",
     "PDF": "PDF",
@@ -399,7 +399,7 @@
     "Direct costs": "Ուղղակի ծախսեր",
     "Other costs": "Այլ ծախսեր",
     "Construction area": "Շինարարության մակերես",
-    "Built-up Area": "Կառուցապատված մակերես",
+    "Built-up Area": "Կառուցապատման մակերես",
     "Construction Cost per sq. m": "Շինարարության արժեք քմ",
-    "Built-up Cost per sq. m": "Կառուցապատված մակերես քմ"
+    "Built-up Cost per sq. m": "Կառուցապատման մակերես քմ"
 }
