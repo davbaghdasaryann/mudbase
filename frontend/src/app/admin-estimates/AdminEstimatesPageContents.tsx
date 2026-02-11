@@ -17,7 +17,7 @@ import EstimatePageDialog from '../estimates/EstimateDialog';
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
 import DataTableComponent from '@/components/DataTableComponent';
-import {actionColumnWidth5, mainIconColor} from '@/theme';
+import {actionColumnWidth5, mainIconColor, mainPrimaryColor} from '@/theme';
 import {usePermissions} from '@/api/auth';
 
 import {confirmDialog} from '../../components/ConfirmationDialog';
@@ -216,7 +216,7 @@ export default function AdminEstimatesPageContents() {
                             actions.push(
                                 <GridActionsCellItem
                                     key='view'
-                                    icon={<VisibilityIcon sx={{color: mainIconColor}} />}
+                                    icon={<VisibilityIcon sx={{color: mainPrimaryColor}} />}
                                     label={t('View')}
                                     onClick={() => {
                                         setEstimateTitle(cell.row.name);
