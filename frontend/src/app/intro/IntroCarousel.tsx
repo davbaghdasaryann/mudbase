@@ -115,7 +115,7 @@ export default function Carousel() {
               width: 10,
               height: 10,
               borderRadius: '50%',
-             bgcolor: active === idx ? '#00A390' : '#DAE9EA',
+              bgcolor: active === idx ? '#00A390' : '#DAE9EA',
 
               cursor: 'pointer',
             }}
