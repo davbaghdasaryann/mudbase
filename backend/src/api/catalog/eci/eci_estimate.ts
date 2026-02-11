@@ -73,17 +73,31 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
                 $cond: {
                     if: { $gt: [{ $size: '$estimateData' }, 0] },
                     then: {
-                        $cond: {
-                            if: { $gt: ['$constructionArea', 0] },
-                            then: {
-                                $round: [{
-                                    $divide: [
-                                        { $arrayElemAt: ['$estimateData.totalCost', 0] },
-                                        '$constructionArea'
-                                    ]
-                                }]
+                        $let: {
+                            vars: {
+                                area: {
+                                    $convert: {
+                                        input: '$constructionArea',
+                                        to: 'double',
+                                        onError: 0,
+                                        onNull: 0
+                                    }
+                                }
                             },
-                            else: { $arrayElemAt: ['$estimateData.totalCost', 0] }
+                            in: {
+                                $cond: {
+                                    if: { $gt: ['$$area', 0] },
+                                    then: {
+                                        $round: [{
+                                            $divide: [
+                                                { $arrayElemAt: ['$estimateData.totalCost', 0] },
+                                                '$$area'
+                                            ]
+                                        }]
+                                    },
+                                    else: { $arrayElemAt: ['$estimateData.totalCost', 0] }
+                                }
+                            }
                         }
                     },
                     else: null

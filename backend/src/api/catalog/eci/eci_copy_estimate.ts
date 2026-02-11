@@ -48,6 +48,8 @@ registerApiSession('eci/copy_estimate_to_eci', async (req, res, session) => {
     }
 
     // Create the new ECI estimate entry
+    const constructionArea = parseFloat(sourceEstimate!.constructionSurface) || 0;
+
     const newEciEstimate: any = {
         code: newCode,
         name: sourceEstimate!.name,
@@ -56,7 +58,7 @@ registerApiSession('eci/copy_estimate_to_eci', async (req, res, session) => {
         subcategoryId: targetSubcategory!._id,
         estimateId: estimateId,
         buildingType: buildingType,
-        constructionArea: sourceEstimate!.constructionSurface || 0,
+        constructionArea: constructionArea,
     };
 
     // Only add measurement unit if found
