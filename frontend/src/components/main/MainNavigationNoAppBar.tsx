@@ -211,6 +211,10 @@ function useMainNavigation() {
             navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30}} />});
         }
 
+        if (isSuperAdmin) {
+            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30}} />});
+        }
+
         if (session?.user && permissionsSet?.has('USR_FCH')) {
             navigation.push({segment: 'users', title: t('Users'), icon: <ImgElement src='/images/icons/users.svg' sx={{height: 30}} />});
         }

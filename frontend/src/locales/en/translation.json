@@ -101,5 +101,11 @@
     "Material": "Material",
     "Labor": "Labor",
     "Materials": "Materials",
-    "Aggregated": "Aggregated (Beta)"
+    "Aggregated": "Aggregated (Beta)",
+    "All Estimations": "All Estimations",
+    "Copy to Aggregated": "Copy to Aggregated",
+    "Choose section": "Choose section",
+    "Choose subsection": "Choose subsection",
+    "Choose building": "Choose building",
+    "Building Type": "Building Type"
 }

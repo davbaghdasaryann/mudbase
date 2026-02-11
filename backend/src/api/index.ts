@@ -8,6 +8,7 @@ export * from "./account/account_get";
 export * from "./account/account_update";
 export * from "./account/account_upload";
 export * from "./accounts/accounts";
+export * from "./admin/index";
 export * from "./auth/user_password_reset";
 export * from "./auth/user_psw_change";
 export * from "./catalog/eci/index";

@@ -404,5 +404,11 @@
     "Construction area": "Շինարարության մակերես",
     "Built-up Area": "Կառուցապատման մակերես",
     "Construction Cost per sq. m": "Շինարարության արժեք քմ",
-    "Built-up Cost per sq. m": "Կառուցապատման մակերես քմ"
+    "Built-up Cost per sq. m": "Կառուցապատման մակերես քմ",
+    "All Estimations": "Բոլոր նախահաշիվները",
+    "Copy to Aggregated": "Պատճենել խոշորացված",
+    "Choose section": "Ընտրել բաժինը",
+    "Choose subsection": "Ընտրել ենթաբաժինը",
+    "Choose building": "Ընտրել կառույցը",
+    "Building Type": "Կառույցի տեսակը"
 }

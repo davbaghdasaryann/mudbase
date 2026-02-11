@@ -45,7 +45,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const { session, permissionsSet } = usePermissions();
     const dataUpdatedRef = useRef(false);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
-    const [activeTab, setActiveTab] = useState(1); // 0: Tools, 1: General Info, 2: Export
+    const [activeTab, setActiveTab] = useState(props.isOnlyEstInfo ? 0 : 1); // When isOnlyEstInfo: 0 is General Info, otherwise: 0: Tools, 1: General Info, 2: Export
     const [toolbarOpen, setToolbarOpen] = useState(true);
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
     const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
@@ -311,15 +311,17 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             }
                         }}
                     >
-                        <Tab
-                            label={
-                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                    <ImgElement src={`${TOOLBAR_ICON}/tools.svg`} sx={{ height: 20, mr: 1 }} />
-                                    {t('Tools')}
-                                </Box>
-                            }
-                            sx={{ minHeight: 48, height: 48 }}
-                        />
+                        {!props.isOnlyEstInfo && (
+                            <Tab
+                                label={
+                                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                        <ImgElement src={`${TOOLBAR_ICON}/tools.svg`} sx={{ height: 20, mr: 1 }} />
+                                        {t('Tools')}
+                                    </Box>
+                                }
+                                sx={{ minHeight: 48, height: 48 }}
+                            />
+                        )}
                         <Tab
                             label={
                                 <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -329,15 +331,17 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             }
                             sx={{ minHeight: 48, height: 48 }}
                         />
-                        <Tab
-                            label={
-                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                    <ImgElement src={`${TOOLBAR_ICON}/export.svg`} sx={{ height: 20, mr: 1 }} />
-                                    {t('Export')}
-                                </Box>
-                            }
-                            sx={{ minHeight: 48, height: 48 }}
-                        />
+                        {!props.isOnlyEstInfo && (
+                            <Tab
+                                label={
+                                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                        <ImgElement src={`${TOOLBAR_ICON}/export.svg`} sx={{ height: 20, mr: 1 }} />
+                                        {t('Export')}
+                                    </Box>
+                                }
+                                sx={{ minHeight: 48, height: 48 }}
+                            />
+                        )}
                     </Tabs>
                     <IconButton
                         onClick={() => setToolbarOpen((prev) => !prev)}
@@ -356,7 +360,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
                 <Collapse in={toolbarOpen} timeout={300} easing="cubic-bezier(0.4, 0, 0.2, 1)">
                 {/* Tools Tab Content */}
-                {activeTab === 0 && (
+                {!props.isOnlyEstInfo && activeTab === 0 && (
                     <Box sx={{
                         mb: 2,
                         p: 1.5,
@@ -485,7 +489,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 )}
 
                 {/* General Info Tab Content - Only the information section */}
-                {activeTab === 1 && (
+                {(props.isOnlyEstInfo ? activeTab === 0 : activeTab === 1) && (
                     <Box sx={{
                         mb: 2,
                         pt: 0,
@@ -503,7 +507,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 )}
 
                 {/* Export Tab Content */}
-                {activeTab === 2 && (
+                {!props.isOnlyEstInfo && activeTab === 2 && (
                     <Box sx={{
                         mb: 2,
                         p: 1.5,

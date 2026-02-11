@@ -64,5 +64,11 @@
     "Material": "Материал",
     "Labor": "Работы",
     "Materials": "Материалы",
-    "Aggregated": "Агрегированные (Beta)"
+    "Aggregated": "Агрегированные (Beta)",
+    "All Estimations": "Все сметы",
+    "Copy to Aggregated": "Копировать в агрегированные",
+    "Choose section": "Выберите раздел",
+    "Choose subsection": "Выберите подраздел",
+    "Choose building": "Выберите здание",
+    "Building Type": "Тип здания"
 }
