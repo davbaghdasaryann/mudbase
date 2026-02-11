@@ -320,22 +320,9 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
     }
 
     // If an accountId filter is provided in the request body, convert it to ObjectId
-    let {accountId, timePeriod} = req.body || {};
+    let {accountId} = req.body || {};
     if (accountId) {
         accountId = new ObjectId(String(accountId));
-    }
-
-    // Calculate date threshold based on timePeriod
-    let dateThreshold: Date | null = null;
-    if (timePeriod) {
-        const now = new Date();
-        if (timePeriod === '6months') {
-            dateThreshold = new Date(now.setMonth(now.getMonth() - 6));
-        } else if (timePeriod === '1year') {
-            dateThreshold = new Date(now.setFullYear(now.getFullYear() - 1));
-        } else if (timePeriod === '3years') {
-            dateThreshold = new Date(now.setFullYear(now.getFullYear() - 3));
-        }
     }
 
     const materialItemsColl = Db.getMaterialItemsCollection();
@@ -405,10 +392,8 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
     } else {
         offerFilterCond = {
             $and: [
-                {$eq: ['$$offer.isArchived', false]},
-                {$eq: ['$$offer.isActive', true]},
+                {$or: [{$eq: ['$$offer.isArchived', false]}, {$eq: [{$type: '$$offer.isArchived'}, 'missing']}]},
                 {$ne: ['$$offer.price', 0]},
-                // { $gt: [{ $type: '$$offer.price' }, 'missing'] },
             ],
         };
     }
@@ -448,19 +433,13 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
             from: 'material_offers',
             let: {
                 itemIdVar: '$_id',
-                ...(dateThreshold ? {thresholdDate: dateThreshold} : {}),
             },
             pipeline: [
                 // Match only offers for this material item
                 {
                     $match: {
                         $expr: {
-                            $and: [
-                                {$eq: ['$itemId', '$$itemIdVar']},
-                                ...(dateThreshold
-                                    ? [{$gte: ['$updatedAt', '$$thresholdDate']}]
-                                    : []),
-                            ],
+                            $eq: ['$itemId', '$$itemIdVar'],
                         },
                     },
                 },
@@ -485,16 +464,12 @@ registerApiSession('material/fetch_items_with_average_price', async (req, res, s
                         as: 'accountInfo',
                     },
                 },
-                // In production, exclude offers whose accountInfo.isDev === true
-                ...(process.env.NODE_ENV === 'production'
-                    ? [
-                          {
-                              $match: {
-                                  'accountInfo.isDev': {$ne: true},
-                              },
-                          },
-                      ]
-                    : []),
+                // Exclude offers from dev/test accounts
+                {
+                    $match: {
+                        'accountInfo.isDev': {$ne: true},
+                    },
+                },
                 // Remove accountInfo after filtering
                 {
                     $project: {

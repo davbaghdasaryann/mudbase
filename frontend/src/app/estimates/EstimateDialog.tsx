@@ -516,7 +516,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}>
                         <Box sx={{
                             display: 'flex',
-                            gap: 1.5,
+                            gap: { xs: 1.5, md: 2, lg: 2.5 },
                             justifyContent: 'center',
                             alignItems: 'center',
                             height: '100%',

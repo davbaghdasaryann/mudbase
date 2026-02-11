@@ -34,7 +34,7 @@ registerApiSession('material/fetch_offers', async (req, res, session) => {
         });
     } else {
         matchingCodeArray.push({
-            isArchived: false,
+            $or: [{isArchived: false}, {isArchived: {$exists: false}}],
         });
 
         matchingCodeArray.push({
@@ -48,17 +48,6 @@ registerApiSession('material/fetch_offers', async (req, res, session) => {
                 $and: matchingCodeArray,
             },
         },
-        // Filter to show: (isActive:true) OR (user's own offer regardless of isActive)
-        ...(calledFromPage !== 'offers' ? [
-            {
-                $match: {
-                    $or: [
-                        {isActive: true},
-                        {accountId: session.mongoAccountId}
-                    ]
-                }
-            }
-        ] : []),
         {
             $lookup: {
                 from: 'material_items',
@@ -187,13 +176,11 @@ registerApiSession('material/fetch_offers', async (req, res, session) => {
         });
     }
 
-    if (process.env.NODE_ENV === 'production') {
-        pipeline.push({
-            $match: {
-                'accountMadeOfferData.isDev': {$ne: true},
-            },
-        });
-    }
+    pipeline.push({
+        $match: {
+            'accountMadeOfferData.isDev': {$ne: true},
+        },
+    });
 
     const data = await materialOffers.aggregate(pipeline).toArray();
 

@@ -145,21 +145,8 @@ function CatalogAccordionBody({
                     <SearchComponent onSearch={(v) => onSearchChange(v)} />
                 </Box>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', md: 'auto' } }}>
-                    {catalogType === 'aggregated' ? (
-                        <PageSelect
-                            withAll={true}
-                            sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
-                            label={t('Period')}
-                            value={filter.timePeriod}
-                            items={[
-                                { id: '6months', name: t('6 Months'), label: t('6 Months') },
-                                { id: '1year', name: t('1 Year'), label: t('1 Year') },
-                                { id: '3years', name: t('3 Years'), label: t('3 Years') },
-                            ]}
-                            onSelected={handleTimePeriodSelect}
-                        />
-                    ) : (
+                {catalogType !== 'aggregated' && (
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', md: 'auto' } }}>
                         <PageSelect
                             withAll={true}
                             sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
@@ -179,8 +166,8 @@ function CatalogAccordionBody({
                             }
                             onSelected={handleAccountSelect}
                         />
-                    )}
-                </Stack>
+                    </Stack>
+                )}
             </Stack>
 
             {ctx.permCatEdit && (
