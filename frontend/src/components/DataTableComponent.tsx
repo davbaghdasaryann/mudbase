@@ -29,9 +29,7 @@ export default function DataTableComponent(props: DataGridProProps) {
             },
 
             '& .MuiDataGrid-row': {
-                '&:nth-of-type(2n+1)': {
-                    backgroundColor: theme.tsui?.table?.oddRowColor,
-                },
+                backgroundColor: 'white',
 
                 '&:hover': {
                     backgroundColor: theme.tsui?.table?.rowHoverColor,

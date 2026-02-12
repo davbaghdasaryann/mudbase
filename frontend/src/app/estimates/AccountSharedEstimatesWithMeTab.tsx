@@ -2,7 +2,7 @@
 
 import React, {JSX, useCallback, useEffect, useRef, useState} from 'react';
 
-import {IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
+import {Box, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
 import {GridActionsCellItem, GridActionsColDef} from '@mui/x-data-grid';
 
 import {useTranslation} from 'react-i18next';
@@ -185,7 +185,7 @@ export default function AccountSharedEstimatesWithMeTab() {
             <>
                 <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
                     <SearchComponent onSearch={onSearch} />
-
+                    <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
                         withAll={true}
                         sx={{minWidth: 300, ml: 1}}
@@ -328,6 +328,7 @@ export default function AccountSharedEstimatesWithMeTab() {
             <>
                 <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
                     <SearchComponent onSearch={onSearch} />
+                    <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
                         withAll={true}
                         sx={{minWidth: 300, ml: 1}}
@@ -480,6 +481,7 @@ export default function AccountSharedEstimatesWithMeTab() {
             <>
                 <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
                     <SearchComponent onSearch={onSearch} />
+                    <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
                         withAll={true}
                         sx={{minWidth: 300, ml: 1}}

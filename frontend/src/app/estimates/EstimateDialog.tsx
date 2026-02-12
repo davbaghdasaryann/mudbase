@@ -144,7 +144,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
     const handleDeleteSelected = () => {
         if (selectedLaborIds.length === 0) return;
-        confirmDialog(`Delete ${selectedLaborIds.length} selected work(s)?`).then((result) => {
+        confirmDialog(t('Delete N selected work(s)?', { count: selectedLaborIds.length })).then((result) => {
             if (!result.isConfirmed) return;
             Promise.all(
                 selectedLaborIds.map((estimateLaborItemId) =>
