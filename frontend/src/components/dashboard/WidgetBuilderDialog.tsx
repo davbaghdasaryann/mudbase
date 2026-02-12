@@ -163,14 +163,12 @@ export default function WidgetBuilderDialog({ onClose, onSuccess }: Props) {
                 <IconButton
                     aria-label={t('Close')}
                     onClick={onClose}
-                    sx={{
+                    sx={(theme) => ({
                         position: 'absolute',
-                        top: -8,
-                        right: -8,
-                        bgcolor: 'grey.200',
-                        color: 'grey.700',
-                        '&:hover': { bgcolor: 'grey.300' },
-                    }}
+                        right: 8,
+                        top: 8,
+                        color: theme.palette.grey[500],
+                    })}
                 >
                     <CloseIcon />
                 </IconButton>

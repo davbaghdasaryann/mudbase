@@ -114,10 +114,7 @@ export default function DashboardBuilderPage() {
     return (
         <PageContents title={t('Dashboard Builder')}>
             <Stack spacing={3}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
-                        {t('My Dashboard Widgets')}
-                    </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                     <Stack direction='row' spacing={2}>
                         <Button
                             variant='outlined'
