@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CloseIcon from '@mui/icons-material/Close';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '../ConfirmationDialog';
@@ -215,7 +216,21 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
 
     return (
         <Dialog open={true} onClose={props.onClose} maxWidth="md" fullWidth>
-            <DialogTitle>{t('Import from Favorites')}</DialogTitle>
+            <DialogTitle>
+                {t('Import from Favorites')}
+                <IconButton
+                    aria-label="close"
+                    onClick={props.onClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500],
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
 
             <DialogContent>
                 {loading ? (
