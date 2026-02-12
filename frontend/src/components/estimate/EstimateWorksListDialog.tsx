@@ -310,15 +310,7 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                         />
                                                                     </TableCell>
                                                                     <TableCell>{work.itemMeasurementUnit}</TableCell>
-                                                                    <TableCell
-                                                                        sx={{
-                                                                            backgroundColor:
-                                                                                work.itemMarketPrice != null &&
-                                                                                Math.abs((edited?.price ?? work.itemChangableAveragePrice) - work.itemMarketPrice) < MARKET_PRICE_EPS
-                                                                                    ? '#e3f2fd'
-                                                                                    : undefined,
-                                                                        }}
-                                                                    >
+                                                                    <TableCell>
                                                                         <TextField
                                                                             type="number"
                                                                             size="small"
