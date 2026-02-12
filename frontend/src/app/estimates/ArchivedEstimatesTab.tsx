@@ -146,14 +146,31 @@ export default function ArchivedEstimatesTab() {
                     width: '100%',
                     flex: 1,
                 }}
+                getRowHeight={() => 'auto'}
                 columns={[
                     {field: 'estimateNumber', headerName: 'ID', align: 'center'},
-                    {field: 'name', headerName: t('Name'), flex: 0.6},
+                    {
+                        field: 'name',
+                        headerName: t('Name'),
+                        flex: 0.6,
+                        renderCell: (params) => (
+                            <div style={{
+                                whiteSpace: 'normal',
+                                wordWrap: 'break-word',
+                                lineHeight: '1.5',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '8px 0'
+                            }}>
+                                {params.value}
+                            </div>
+                        ),
+                    },
                     {
                         field: 'totalCostWithOtherExpenses',
                         headerName: t('Cost'),
                         align: 'center',
-                        flex: 0.6,
+                        flex: 0.4,
                         valueFormatter: (value) => formatCurrency(value),
                     },
                     {

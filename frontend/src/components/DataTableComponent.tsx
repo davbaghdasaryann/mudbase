@@ -35,13 +35,14 @@ export default function DataTableComponent(props: DataGridProProps) {
                     backgroundColor: theme.tsui?.table?.rowHoverColor,
                 },
             },
+            '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+            },
             '& .MuiDataGrid-columnHeaderTitle': {
                 fontWeight: 'bold',
             },
             border: 'none', // Remove the outer border
-            // '& .MuiDataGrid-cell': {
-            //     border: 'none', // Remove cell borders
-            // },
             '& .MuiDataGrid-columnHeaders': {
                 borderBottom: 'none', // Remove header bottom border
             },
