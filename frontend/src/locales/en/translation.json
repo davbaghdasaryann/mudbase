@@ -55,6 +55,7 @@
     "catalog.move_already_in_subcategory_message": "The item is already in this subcategory.",
     "catalog.move_failed_title": "Move Failed",
     "catalog.move_failed_message": "Failed to move item. Please try again.",
+    "My Company": "My Company",
     "Create Section": "Create Section",
     "Favorites": "Favorites",
     "Works List": "Works List",

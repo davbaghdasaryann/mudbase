@@ -34,7 +34,7 @@ export default function AppHeader(props: PageContentsProps) {
                 </Typography>
 
                 <AppLangSelector />
-                <AppThemeSwitcher />
+                {/* <AppThemeSwitcher /> */}
                 <AppHeaderAccount {...props} />
             </Toolbar>
         </AppBar>

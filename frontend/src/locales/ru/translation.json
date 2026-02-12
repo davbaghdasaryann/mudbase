@@ -19,6 +19,7 @@
     "catalog.move_already_in_subcategory_message": "Позиция уже находится в этой подкатегории.",
     "catalog.move_failed_title": "Ошибка перемещения",
     "catalog.move_failed_message": "Не удалось переместить позицию. Попробуйте ещё раз.",
+    "My Company": "Моя компания",
     "Create Section": "Создать раздел",
     "Favorites": "Избранное",
     "Works List": "Список работ",
