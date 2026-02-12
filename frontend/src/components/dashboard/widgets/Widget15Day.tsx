@@ -180,7 +180,6 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                         <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('15 days')}
                         </Typography>
-                        <KeyboardArrowDownIcon sx={{ fontSize: 18, color: TEXT_DARK }} />
                     </Box>
                 </Box>
 

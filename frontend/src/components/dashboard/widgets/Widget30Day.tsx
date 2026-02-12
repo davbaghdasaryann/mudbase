@@ -218,7 +218,6 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                         <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('30 days')}
                         </Typography>
-                        <KeyboardArrowDownIcon sx={{ fontSize: 18, color: TEXT_DARK }} />
                     </Box>
                 </Box>
 
