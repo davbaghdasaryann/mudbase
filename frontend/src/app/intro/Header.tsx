@@ -6,7 +6,6 @@ import EastIcon from '@mui/icons-material/East';
 
 
 export default function Header() {
-
     const scrollToId = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
@@ -18,7 +17,15 @@ export default function Header() {
     };
     const router = useRouter();
     return (
-        <AppBar position="sticky" color="transparent" elevation={0} sx={{ background: 'transparent' }}>
+        <AppBar
+            position="sticky"
+            color="transparent"
+            elevation={0}
+            sx={{
+                background: 'transparent',
+                backdropFilter: 'blur(10px)',
+            }}
+        >
             <Toolbar sx={{ justifyContent: 'space-between' }}>
 
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>

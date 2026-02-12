@@ -17,6 +17,7 @@ export default function AppHeader(props: PageContentsProps) {
                 zIndex: (theme) => theme.zIndex.drawer + 1,
                 displayPrint: 'none',
                 backgroundColor: 'transparent',
+                backdropFilter: 'blur(10px)',
                 boxShadow: 'none',
             }}
         >

@@ -73,6 +73,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                     height: { xs: 56, md: 64 },
                     px: { xs: 1.5, sm: 2, md: 3 },
                     backgroundColor: 'transparent',
+                    backdropFilter: 'blur(10px)',
                 }}
             >
                 {isMobile && (
