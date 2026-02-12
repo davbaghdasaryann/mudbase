@@ -18,7 +18,7 @@ export default function Header() {
     };
     const router = useRouter();
     return (
-        <AppBar position="sticky" color="transparent" elevation={0} sx={{ background: '#F5F9F9' }}>
+        <AppBar position="sticky" color="transparent" elevation={0} sx={{ background: 'transparent' }}>
             <Toolbar sx={{ justifyContent: 'space-between' }}>
 
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>

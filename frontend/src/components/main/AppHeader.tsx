@@ -16,9 +16,11 @@ export default function AppHeader(props: PageContentsProps) {
             sx={{
                 zIndex: (theme) => theme.zIndex.drawer + 1,
                 displayPrint: 'none',
+                backgroundColor: 'transparent',
+                boxShadow: 'none',
             }}
         >
-            <Toolbar sx={{ backgroundColor: 'inherit' }}>
+            <Toolbar sx={{ backgroundColor: 'transparent' }}>
                 {/* <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 30 }} /> */}
                 <Link href="/">
                     <Box sx={{ p: 2, cursor: 'pointer' }}>

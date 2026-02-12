@@ -72,17 +72,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 sx={{
                     height: { xs: 56, md: 64 },
                     px: { xs: 1.5, sm: 2, md: 3 },
-                    backdropFilter: 'blur(10px)',
-                    backgroundColor: (theme) =>
-                        theme.palette.mode === 'dark'
-                            ? 'rgba(18, 18, 18, 0.8)'
-                            : 'rgba(255, 255, 255, 0.8)',
-                    borderBottom: (theme) =>
-                        `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'}`,
-                    boxShadow: (theme) =>
-                        theme.palette.mode === 'dark'
-                            ? '0 2px 8px rgba(0, 0, 0, 0.4)'
-                            : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                    backgroundColor: 'transparent',
                 }}
             >
                 {isMobile && (
