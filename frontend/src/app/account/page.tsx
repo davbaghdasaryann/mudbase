@@ -56,16 +56,7 @@ export default function AccountPage() {
     // console.log(mainNavigationDrawerWidth);
 
     return (
-        <PageContents title='My Company'>
-            <Box sx={{
-                position: 'absolute',
-                backgroundColor: 'white',
-                left: mainNavigationDrawerWidth + 32,
-                right: 32,
-                top: companyLogoMarginTop + 16 + companyLogoAvatarSize / 2,
-                bottom: 4,
-                zIndex: -1,
-            }} />
+        <PageContents title='My Company' sx={{backgroundColor: 'white'}}>
             <CompanyHeaderComponent account={apiData.data} onDataChanged={() => apiData.invalidate()} />
 
             <TabContext value={value}>
