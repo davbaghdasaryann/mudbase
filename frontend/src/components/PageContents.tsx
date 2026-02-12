@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 
 import {useRouter} from 'next/navigation';
 
-import {Box, Stack, Button, Typography} from '@mui/material';
+import {Box, Stack, Button, Typography, SxProps, Theme} from '@mui/material';
 
 import {type Navigation} from '@toolpad/core';
 
@@ -35,6 +35,8 @@ export interface PageContentsProps {
     children: React.ReactNode;
 
     requiredPermission?: string;
+
+    sx?: SxProps<Theme>;
 }
 
 export default function PageContents(props: PageContentsProps) {
@@ -178,6 +180,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                     pt: { xs: 7, md: 9 },
                     pb: 1,
                     px: { xs: 2, sm: 3, md: 4 },
+                    ...props.sx,
                 }}
             >
                 {props.type === 'dev' && (
