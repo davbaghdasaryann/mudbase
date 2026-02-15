@@ -50,7 +50,7 @@ const BADGE_GREEN_TEXT = '#2e7d32';
 
 export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot }: Props) {
     const [t] = useTranslation();
-    const [data, setData] = useState<Array<{ month: string; value: number; ts: number; pctChange: number; isLast?: boolean }>>([]);
+    const [data, setData] = useState<Array<{ day: string; value: number; ts: number; pctChange: number; isLast?: boolean }>>([]);
     const [loading, setLoading] = useState(true);
 
     const isPreview = widget._id === 'preview';
@@ -67,13 +67,13 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 },
             });
             const raw = result.snapshots || [];
-            const firstValue = raw.length > 0 ? raw[0].value : 0;
             const chartData = raw.map((s: any, i: number) => {
                 const ts = new Date(s.timestamp).getTime();
                 const value = s.value;
-                const pctChange = firstValue !== 0 ? ((value - firstValue) / firstValue) * 100 : 0;
+                const prevValue = i > 0 ? raw[i - 1].value : value;
+                const pctChange = prevValue !== 0 ? ((value - prevValue) / prevValue) * 100 : 0;
                 return {
-                    month: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short' }),
+                    day: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
                     value: s.value,
                     ts,
                     pctChange,
@@ -96,13 +96,13 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 args: { widgetId: widget._id },
             });
             const raw = result.snapshots || [];
-            const firstVal = raw.length > 0 ? raw[0].value : 0;
             const chartData = raw.map((s: any, i: number) => {
                 const ts = new Date(s.timestamp).getTime();
                 const value = s.value;
-                const pctChange = firstVal !== 0 ? ((value - firstVal) / firstVal) * 100 : 0;
+                const prevValue = i > 0 ? raw[i - 1].value : value;
+                const pctChange = prevValue !== 0 ? ((value - prevValue) / prevValue) * 100 : 0;
                 return {
-                    month: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short' }),
+                    day: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
                     value: s.value,
                     ts,
                     pctChange,
@@ -133,13 +133,11 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
         ...data,
         ...liveForThis.map((s) => {
             const d = new Date(s.timestamp);
-            const firstVal = data.length > 0 ? data[0].value : s.value;
-            const pctChange = firstVal !== 0 ? ((s.value - firstVal) / firstVal) * 100 : 0;
             return {
-                month: d.toLocaleDateString(undefined, { month: 'short' }),
+                day: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
                 value: s.value,
                 ts: d.getTime(),
-                pctChange,
+                pctChange: 0,
                 isLast: true
             };
         })
@@ -150,8 +148,8 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
     }
 
     const currentValue = merged.length > 0 ? merged[merged.length - 1].value : 0;
-    const firstValue = merged.length > 0 ? merged[0].value : currentValue;
-    const percentChange = firstValue !== 0 ? (((currentValue - firstValue) / firstValue) * 100) : 0;
+    const previousDayValue = merged.length > 1 ? merged[merged.length - 2].value : currentValue;
+    const percentChange = previousDayValue !== 0 ? (((currentValue - previousDayValue) / previousDayValue) * 100) : 0;
 
     const handleDelete = async () => {
         if (isPreview) return;
@@ -267,7 +265,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                             </defs>
                             <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={false} />
                             <XAxis
-                                dataKey="month"
+                                dataKey="day"
                                 tick={{ fontSize: 11, fill: TEXT_DARK }}
                                 axisLine={false}
                                 tickLine={false}

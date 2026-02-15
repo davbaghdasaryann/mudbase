@@ -111,21 +111,22 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     };
 
     const chartData =
-        snapshots.length > 0 && analytics
+        snapshots.length > 0
             ? snapshots.map((s: any, i: number) => ({
                 index: i + 1,
                 time: new Date(s.timestamp).getTime(),
+                day: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
                 value: s.value,
-                high: analytics.max,
-                low: analytics.min,
+                high: s.max ?? s.value,
+                low: s.min ?? s.value,
                 medium: s.value
             }))
             : [];
 
-    const currentValue = snapshots.length > 0 ? snapshots[snapshots.length - 1].value : analytics?.avg ?? 0;
-    const firstValue = snapshots.length > 0 ? snapshots[0].value : currentValue;
+    const currentValue = snapshots.length > 0 ? snapshots[snapshots.length - 1].value : 0;
+    const previousDayValue = snapshots.length > 1 ? snapshots[snapshots.length - 2].value : currentValue;
     const percentChange =
-        firstValue !== 0 ? (((currentValue - firstValue) / firstValue) * 100) : 0;
+        previousDayValue !== 0 ? (((currentValue - previousDayValue) / previousDayValue) * 100) : 0;
     const dateRange =
         chartData.length >= 2
             ? `${new Date(snapshots[0].timestamp).toLocaleDateString(undefined, { month: 'long' })} - ${new Date(snapshots[snapshots.length - 1].timestamp).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`
@@ -220,7 +221,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                             <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 4 }}>
                                 <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={true} horizontal={true} />
                                 <XAxis
-                                    dataKey="index"
+                                    dataKey="day"
                                     tick={{ fontSize: 11, fill: TEXT_DARK }}
                                     axisLine={false}
                                     tickLine={false}
