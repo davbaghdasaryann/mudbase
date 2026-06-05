@@ -45,7 +45,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const { session, permissionsSet } = usePermissions();
     const dataUpdatedRef = useRef(false);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
-    const [activeTab, setActiveTab] = useState(props.isOnlyEstInfo ? 0 : 1); // When isOnlyEstInfo: 0 is General Info, otherwise: 0: Tools, 1: General Info, 2: Export
+    const [activeTab, setActiveTab] = useState(0); // 0: General Info, 1: Tools (hidden when isOnlyEstInfo), 2: Export (hidden when isOnlyEstInfo)
     const [toolbarOpen, setToolbarOpen] = useState(true);
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
     const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
@@ -311,6 +311,15 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             }
                         }}
                     >
+                        <Tab
+                            label={
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <ImgElement src={`${TOOLBAR_ICON}/info.svg`} sx={{ height: 20, mr: 1 }} />
+                                    {t('General Info')}
+                                </Box>
+                            }
+                            sx={{ minHeight: 48, height: 48 }}
+                        />
                         {!props.isOnlyEstInfo && (
                             <Tab
                                 label={
@@ -322,15 +331,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 sx={{ minHeight: 48, height: 48 }}
                             />
                         )}
-                        <Tab
-                            label={
-                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                    <ImgElement src={`${TOOLBAR_ICON}/info.svg`} sx={{ height: 20, mr: 1 }} />
-                                    {t('General Info')}
-                                </Box>
-                            }
-                            sx={{ minHeight: 48, height: 48 }}
-                        />
                         {!props.isOnlyEstInfo && (
                             <Tab
                                 label={
@@ -360,7 +360,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
                 <Collapse in={toolbarOpen} timeout={300} easing="cubic-bezier(0.4, 0, 0.2, 1)">
                 {/* Tools Tab Content */}
-                {!props.isOnlyEstInfo && activeTab === 0 && (
+                {!props.isOnlyEstInfo && activeTab === 1 && (
                     <Box sx={{
                         mb: 2,
                         p: 1.5,
@@ -489,7 +489,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 )}
 
                 {/* General Info Tab Content - Only the information section */}
-                {(props.isOnlyEstInfo ? activeTab === 0 : activeTab === 1) && (
+                {activeTab === 0 && (
                     <Box sx={{
                         mb: 2,
                         pt: 0,
