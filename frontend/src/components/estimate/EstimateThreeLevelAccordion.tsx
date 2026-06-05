@@ -1082,7 +1082,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 e.stopPropagation();
                                                 onRemove('section', item._id);
                                             }}
-                                            sx={{ '&:hover .MuiSvgIcon-root': { color: '#D32F2F' } }}
+                                            sx={{ '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}
                                         >
                                             <DeleteForeverIcon sx={{ color: '#515151' }} />
                                         </IconButton>
@@ -1463,7 +1463,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         e.stopPropagation();
                                                                         onRemove('subsection', child._id);
                                                                     }}
-                                                                    sx={{ '&:hover .MuiSvgIcon-root': { color: '#D32F2F' } }}
+                                                                    sx={{ '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}
                                                                 >
                                                                     <DeleteForeverIcon sx={{ color: '#515151' }} />
                                                                 </IconButton>
