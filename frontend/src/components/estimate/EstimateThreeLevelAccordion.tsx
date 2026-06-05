@@ -1085,6 +1085,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             sx={{
                                                 width: '100%',
                                                 mt: 2,
+                                                backgroundColor: '#FFFFFF',
+                                                '& .MuiDataGrid-root': { backgroundColor: '#FFFFFF' },
+                                                '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
                                                 '& .editableCell': {
                                                     border: '1px solid #00BFFF	', // ✅ Blue border
                                                     borderRadius: '5px',
@@ -1458,6 +1461,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                             <DataTableComponent
                                                                 sx={{
                                                                     width: '100%',
+                                                                    backgroundColor: '#FFFFFF',
+                                                                    '& .MuiDataGrid-root': { backgroundColor: '#FFFFFF' },
+                                                                    '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
                                                                     '& .editableCell': {
                                                                         border: '1px solid #00BFFF	', // ✅ Blue border
                                                                         borderRadius: '5px',

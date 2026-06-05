@@ -4,11 +4,12 @@ import {Accordion, AccordionDetails, AccordionSummary} from '@mui/material';
 import {styled} from '@mui/material/styles';
 
 export const EstimateRootAccordion = styled(Accordion)(({theme}) => ({
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.mode === 'light' ? mainBackgroundColor : theme.palette.background.paper,
     margin: 0,
     '&.Mui-expanded': { margin: 0 },
     '&::before': { display: 'none' },
     boxShadow: 'none',
+    borderBottom: '1px solid #BDC0C0',
 }));
 
 export const EstimateRootAccordionSummary = styled(AccordionSummary)(({theme}) => ({
