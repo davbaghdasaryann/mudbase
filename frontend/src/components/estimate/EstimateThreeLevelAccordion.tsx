@@ -1061,7 +1061,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                             setRowIdThatOpenedImportDialog(null);
                                                         }}
                                                     >
-                                                        <StarOutlineIcon />
+                                                        <ImgElement src='/images/icons/toolbar/favourites.svg' sx={{ height: 20 }} />
                                                     </IconButton>
                                                 </Tooltip>
                                             )}
@@ -1442,7 +1442,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                     setRowIdThatOpenedImportDialog(null);
                                                                                 }}
                                                                             >
-                                                                                <StarIcon sx={{ color: '#FF9D00' }} />
+                                                                                <ImgElement src='/images/icons/toolbar/favourites.svg' sx={{ height: 20 }} />
                                                                             </IconButton>
                                                                         </Tooltip>
                                                                     )}
