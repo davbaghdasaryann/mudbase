@@ -277,7 +277,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                                 tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
                             />
                             <Tooltip
-                                formatter={(value: number | undefined) => [value != null ? Math.round(value).toLocaleString() : '', '']}
+                                formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
                                 labelFormatter={(_, payload) =>
                                     payload?.[0]?.payload?.ts
                                         ? new Date(payload[0].payload.ts).toLocaleString()

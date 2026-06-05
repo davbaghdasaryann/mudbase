@@ -233,7 +233,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
                                 />
                                 <Tooltip
-                                    formatter={(value: number | undefined) => [value != null ? Math.round(value).toLocaleString() : '', '']}
+                                    formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
                                     labelFormatter={(_, payload) =>
                                         payload?.[0]?.payload?.time
                                             ? new Date(payload[0].payload.time).toLocaleString()
