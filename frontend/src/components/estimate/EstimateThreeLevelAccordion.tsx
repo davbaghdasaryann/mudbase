@@ -1817,23 +1817,37 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             )}
 
                             {(permAddFields || !props.isOnlyEstInfo) && item.children?.[0] && item.children[0].label !== '' && (
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, pb: 2, pr: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1, mt: 2, pb: 2, pr: 2 }}>
                                     <Button
-                                        fullWidth
+                                        variant='outlined'
+                                        sx={{ height: 40 }}
+                                        onClick={() => handleAddEmptyRow(item._id)}
+                                    >
+                                        {t('Add Empty Row')}
+                                    </Button>
+                                    <Button
                                         onClick={() => {
                                             setOpenAddSubsectionDialog(true);
                                             setOpenAddSubsectionDialogCurrentSectionId(item._id);
                                         }}
                                         sx={{
                                             width: 250,
+                                            height: 40,
                                             border: `1px dashed ${mainIconColor}`,
                                             color: mainIconColor,
-                                            // border: '1px dashed rgba(151, 71, 255)',
-                                            // color: 'rgba(151, 71, 255)',
-                                            // background: 'rgba(151, 71, 255, 0.04)',
                                         }}
                                     >
                                         {t('Add Subsection')}
+                                    </Button>
+                                    <Button
+                                        variant='contained'
+                                        sx={{ height: 40 }}
+                                        onClick={() => {
+                                            setOpenAddOfferDialogTypeWithouSubsection('labor');
+                                            setCurrentSectionId(item._id);
+                                        }}
+                                    >
+                                        {t('add labor')}
                                     </Button>
                                 </Box>
                             )}
