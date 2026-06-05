@@ -35,18 +35,6 @@ export const EstimateRootAccordionSummary = styled(AccordionSummary)(({theme}) =
 }));
 
 export const EstimateRootAccordionDetails = styled(AccordionDetails)(({theme}) => ({
-    position: 'relative',
-    '&::before': {
-        content: '""',
-        position: 'absolute',
-        left: 20,
-        top: 0,
-        width: '2px',
-        height: '100%',
-        backgroundColor: theme.palette.mode === 'light' ? accordionBorderColor : theme.palette.background.paper,
-        // backgroundColor: 'red',
-    },
-
     backgroundColor: theme.palette.mode === 'light' ? mainBackgroundColor : theme.palette.background.paper,
     // backgroundColor: 'red',
     margin: 0,
