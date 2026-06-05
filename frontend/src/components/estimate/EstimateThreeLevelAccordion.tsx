@@ -1381,31 +1381,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 <AccordionSummary
                                                     sx={{
                                                         display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        width: '100%',
-                                                        '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-                                                            transform: 'none',
-                                                        },
+                                                        flexDirection: 'row-reverse',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        paddingLeft: '10px',
+                                                        '& .MuiAccordionSummary-content': { margin: 0 },
+                                                        '& .MuiAccordionSummary-content.Mui-expanded': { margin: 0 },
                                                     }}
-                                                    expandIcon={
-                                                        <Box
-                                                            sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: 1,
-                                                                // Disable rotation on the icon itself
-                                                                '& .MuiSvgIcon-root': { transform: 'none' },
-                                                            }}
-                                                        >
-                                                            <Typography sx={{ whiteSpace: 'nowrap' }}>
-                                                                {t('Total Cost: ') + `${parseThousandsSeparator(child.totalCost) ?? 0}`}
-                                                            </Typography>
-                                                            <ExpandMoreIcon />
-                                                        </Box>
-                                                    }
+                                                    expandIcon={<ExpandMoreIcon />}
                                                 >
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    <Stack direction='row' width='100%' alignItems='center'>
+                                                        <ImgElement src='/images/icons/estimates.svg' sx={{ height: 20, mr: 1 }} />
                                                         <Typography>{child.label}</Typography>
+                                                        <Box flex={2}>&nbsp;</Box>
+                                                        <Tooltip title={t('Total Cost')} arrow placement='top'>
+                                                            <Typography sx={{ whiteSpace: 'nowrap' }}>{formatCurrencyRoundedSymbol(child.totalCost)}</Typography>
+                                                        </Tooltip>
                                                         {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                                             <>
                                                                 {(permAddFields || !props.isOnlyEstInfo) &&
@@ -1446,7 +1437,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                 </IconButton>
                                                             </>
                                                         )}
-                                                    </Box>
+                                                    </Stack>
                                                 </AccordionSummary>
 
                                                 <AccordionDetails>
