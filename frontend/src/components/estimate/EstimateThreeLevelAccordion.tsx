@@ -1095,7 +1095,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 backgroundColor: '#FFFFFF',
                                                 '& .MuiDataGrid-root': { backgroundColor: '#FFFFFF' },
                                                 '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
-                                                '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF' },
+                                                '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
                                                 '& .editableCell': {
                                                     border: '1px solid #00BFFF	', // ✅ Blue border
                                                     borderRadius: '5px',
@@ -1474,7 +1474,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     backgroundColor: '#FFFFFF',
                                                                     '& .MuiDataGrid-root': { backgroundColor: '#FFFFFF' },
                                                                     '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
-                                                                    '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF' },
+                                                                    '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
                                                                     '& .editableCell': {
                                                                         border: '1px solid #00BFFF	', // ✅ Blue border
                                                                         borderRadius: '5px',
