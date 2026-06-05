@@ -429,6 +429,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const handleAddEmptyRow = async (targetId: string, isSubsection: boolean = false) => {
         // Determine the subsection ID for the API call
         let subsectionIdForApi: string;
+        let sectionHadNoChildren = false;
 
         if (isSubsection) {
             // targetId is already a subsection ID
@@ -441,6 +442,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             } else {
                 // If no subsection exists, pass the section ID and backend will create one
                 subsectionIdForApi = targetId;
+                sectionHadNoChildren = true;
             }
         }
 
@@ -453,6 +455,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             });
 
             if (response && response.insertedId) {
+                // If the section had no children yet, the backend created a new subsection.
+                // Local state has no subsection to patch into, so re-fetch from backend.
+                if (sectionHadNoChildren) {
+                    await fetchChildren(targetId, 2);
+                    return;
+                }
+
                 // Create the new empty row with the real ID from backend
                 const newEmptyRow: AccordionItem = {
                     _id: response.insertedId,
