@@ -5,7 +5,7 @@ import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -1026,7 +1026,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 <Box flex={2}>&nbsp;</Box>
 
                                 <Tooltip title={t('Total Cost')} arrow placement='top'>
-                                    <Typography sx={{ whiteSpace: 'nowrap' }}>{formatCurrencyRoundedSymbol(item.totalCost)}</Typography>
+                                    <Typography sx={{ whiteSpace: 'nowrap', fontWeight: 'bold' }}>{formatCurrencyRoundedSymbol(item.totalCost)}</Typography>
                                 </Tooltip>
 
                                 {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
@@ -1392,7 +1392,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     expandIcon={<ExpandMoreIcon />}
                                                 >
                                                     <Stack direction='row' width='100%' alignItems='center'>
-                                                        <MenuBookOutlinedIcon sx={{ fontSize: 20, mr: 1 }} />
+                                                        <ImportContactsOutlinedIcon sx={{ fontSize: 20, mr: 1 }} />
                                                         <Typography>{child.label}</Typography>
                                                         <Box flex={2}>&nbsp;</Box>
                                                         <Tooltip title={t('Total Cost')} arrow placement='top'>
