@@ -9,7 +9,7 @@ export const EstimateRootAccordion = styled(Accordion)(({theme}) => ({
     '&.Mui-expanded': { margin: 0 },
     '&::before': { display: 'none' },
     boxShadow: 'none',
-    borderBottom: '1px solid #BDC0C0',
+    borderBottom: '1px solid #E3E6E6',
 }));
 
 export const EstimateRootAccordionSummary = styled(AccordionSummary)(({theme}) => ({

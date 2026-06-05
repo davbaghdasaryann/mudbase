@@ -1021,6 +1021,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                     <EstimateRootAccordion key={item._id} expanded={expandedAccordions.includes(item._id)} onChange={handleAccordionChange(item._id, 2)}>
                         <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Stack direction='row' width='100%' alignItems='center'>
+                                <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 18, mr: 1 }}>
+                                    <rect x="3" y="2" width="18" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                                    <line x1="7" y1="8" x2="17" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+                                    <line x1="7" y1="12" x2="13" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+                                    <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M10 20v3l2-2 2 2v-3"/>
+                                </SvgIcon>
                                 <Typography>{item.label}</Typography>
 
                                 <Box flex={2}>&nbsp;</Box>
