@@ -1735,18 +1735,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         {t('Add Empty Row')}
                                                                     </Button>
                                                                     <Button
-                                                                        onClick={() => {
-                                                                            setOpenAddSubsectionDialog(true);
-                                                                            setOpenAddSubsectionDialogCurrentSectionId(item._id);
-                                                                        }}
-                                                                        sx={{
-                                                                            border: `1px dashed ${mainIconColor}`,
-                                                                            color: mainIconColor,
-                                                                        }}
-                                                                    >
-                                                                        {t('Add Subsection')}
-                                                                    </Button>
-                                                                    <Button
                                                                         variant='contained'
                                                                         onClick={() => {
                                                                             setOpenAddOfferDialogType('labor');
