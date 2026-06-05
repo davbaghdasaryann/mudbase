@@ -388,6 +388,7 @@
     "Word": "Word",
     "PDF": "PDF",
     "Import from Favorites": "Ներմուծել նախընտրելիներից",
+    "Add to Favorites": "Ավելացնել նախընտրելիներում",
     "favoritesModal.noGroups": "Նախընտրելիների խմբեր չեն գտնվել։ Ավելացրեք աշխատանքներ նախընտրելիներին, որպեսզի ստեղծվի խումբ։",
     "selected": "ընտրված",
     "favoritesModal.noWorksInGroup": "Այս խմբում աշխատանքներ չկան",
