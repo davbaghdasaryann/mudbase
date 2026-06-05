@@ -7,6 +7,8 @@ export const EstimateRootAccordion = styled(Accordion)(({theme}) => ({
     backgroundColor: theme.palette.background.paper,
     margin: 0,
     '&.Mui-expanded': { margin: 0 },
+    '&::before': { display: 'none' },
+    boxShadow: 'none',
 }));
 
 export const EstimateRootAccordionSummary = styled(AccordionSummary)(({theme}) => ({

@@ -1059,7 +1059,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 setEstimateRenameDialogType('section');
                                             }}
                                         >
-                                            <EditOutlinedIcon />
+                                            <EditOutlinedIcon sx={{ color: '#515151' }} />
                                         </IconButton>
                                         <IconButton
                                             component='div'
@@ -1068,7 +1068,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 onRemove('section', item._id);
                                             }}
                                         >
-                                            <DeleteForeverIcon />
+                                            <DeleteForeverIcon sx={{ color: '#515151' }} />
                                         </IconButton>
                                     </>
                                 )}
@@ -1378,6 +1378,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 key={child._id}
                                                 expanded={expandedAccordionsRef.current.includes(child._id)}
                                                 onChange={handleAccordionChange(child._id, 3)}
+                                                sx={{ backgroundColor: 'transparent', boxShadow: 'none', '&::before': { display: 'none' } }}
                                             >
                                                 <AccordionSummary
                                                     sx={{
@@ -1433,7 +1434,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         setEstimateRenameDialogType('subsection');
                                                                     }}
                                                                 >
-                                                                    <EditOutlinedIcon />
+                                                                    <EditOutlinedIcon sx={{ color: '#515151' }} />
                                                                 </IconButton>
                                                                 <IconButton
                                                                     component='div'
@@ -1442,7 +1443,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         onRemove('subsection', child._id);
                                                                     }}
                                                                 >
-                                                                    <DeleteForeverIcon />
+                                                                    <DeleteForeverIcon sx={{ color: '#515151' }} />
                                                                 </IconButton>
                                                             </>
                                                         )}
