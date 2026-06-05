@@ -1393,7 +1393,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 >
                                                     <Stack direction='row' width='100%' alignItems='center'>
                                                         <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 18, mr: 1 }}>
-                                                            <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15zM6.5 17H20" />
+                                                            {/* Book outline with rounded corners */}
+                                                            <rect x="3" y="2" width="18" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                                                            {/* Horizontal lines inside */}
+                                                            <line x1="7" y1="8" x2="17" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+                                                            <line x1="7" y1="12" x2="13" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+                                                            {/* Bookmark ribbon at bottom center */}
+                                                            <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M10 20v3l2-2 2 2v-3"/>
                                                         </SvgIcon>
                                                         <Typography>{child.label}</Typography>
                                                         <Box flex={2}>&nbsp;</Box>
