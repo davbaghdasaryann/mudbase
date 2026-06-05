@@ -427,7 +427,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <ImgElement src={tool.icon} sx={{ height: 22 }} />
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px' }}>
                                             {t(tool.labelKey)}
                                         </Typography>
                                     </Box>
