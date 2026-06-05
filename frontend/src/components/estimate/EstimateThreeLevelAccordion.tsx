@@ -5,7 +5,7 @@ import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlined';
+import SvgIcon from '@mui/material/SvgIcon';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -1392,7 +1392,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     expandIcon={<ExpandMoreIcon />}
                                                 >
                                                     <Stack direction='row' width='100%' alignItems='center'>
-                                                        <ImportContactsOutlinedIcon sx={{ fontSize: 20, mr: 1 }} />
+                                                        <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 18, mr: 1 }}>
+                                                            <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15zM6.5 17H20" />
+                                                        </SvgIcon>
                                                         <Typography>{child.label}</Typography>
                                                         <Box flex={2}>&nbsp;</Box>
                                                         <Tooltip title={t('Total Cost')} arrow placement='top'>
