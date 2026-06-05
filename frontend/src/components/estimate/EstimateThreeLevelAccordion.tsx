@@ -1396,6 +1396,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         alignItems: 'center',
                                                         gap: '8px',
                                                         paddingLeft: '30px',
+                                                        '&:hover': { backgroundColor: '#E8EFEF' },
                                                         '& .MuiAccordionSummary-content': { margin: 0 },
                                                         '& .MuiAccordionSummary-content.Mui-expanded': { margin: 0 },
                                                     }}

@@ -19,6 +19,7 @@ export const EstimateRootAccordionSummary = styled(AccordionSummary)(({theme}) =
     gap: '8px',
     paddingLeft: '10px',
     margin: 0,
+    '&:hover': { backgroundColor: '#E8EFEF' },
     // p: 0,
     minHeight: accordionSummaryHeight,
     '&.Mui-expanded': {
