@@ -200,6 +200,14 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                     </Box>
                 </EstimateRootAccordionSummary>
                 <EstimateRootAccordionDetails>
+                    <Box sx={{
+                        p: 1,
+                        '& .MuiPaper-root': { boxShadow: 'none', backgroundColor: 'transparent', border: 'none' },
+                        '& .MuiInputBase-root': { backgroundColor: '#F5F9F9' },
+                        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' },
+                        '& .MuiFormLabel-root.Mui-focused': { color: '#00ABBE' },
+                        '& .MuiSelect-root.Mui-focused + .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' },
+                    }}>
                     {(Array.isArray(data?.otherExpenses) ? data.otherExpenses : []).map((expense, index) => {
                         const expenseKey = Object.keys(expense)[0];
                         const expenseValue = expense[expenseKey];
@@ -295,12 +303,13 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                     })}
 
                     {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly) &&
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, mb: 2 }}>
                             <Button onClick={handleAddExpense} variant="contained" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 {t("Add expense type")}
                             </Button>
                         </Box>
                     }
+                    </Box>
                 </EstimateRootAccordionDetails>
             </EstimateRootAccordion>
         </Box>
