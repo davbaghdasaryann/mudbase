@@ -236,9 +236,9 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         }
 
                         return (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0, gap: 2, pr: 1 }}>
-                                {/* Left: Cost Type — fills available space without overflowing */}
-                                <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0, gap: 1, pr: 1 }}>
+                                {/* Left: Cost Type — 50% of row */}
+                                <Box sx={{ width: '50%', flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
                                     <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%', minWidth: 0, py: '10px' } } }}>
                                         {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
                                             ? <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" />
@@ -248,7 +248,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 </Box>
                                 {/* Right: Percentage + Amount + edit icon — fixed width group */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '320px', maxWidth: '320px', py: '10px' } } }}>
+                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '380px', maxWidth: '380px', py: '10px' } } }}>
                                         <F.InputText form={form} xs={6} id={expenseKey} value={expenseValue === 0 ? "0" : expenseValue} label="Percentage(%)" placeholder="Percentage(%)" validate='double-number' />
                                         <F.InputText isThousandsSeparator={true} readonly form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
                                     </F.PageForm>
