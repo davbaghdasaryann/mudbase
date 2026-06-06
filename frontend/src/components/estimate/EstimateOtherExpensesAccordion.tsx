@@ -40,19 +40,32 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
     const [progIndic, setProgIndic] = React.useState(false)
     const [data, setData] = React.useState<any | null>(null); //TODO change any to interface
     const [t] = useTranslation()
-    const [priceEditDialog, setPriceEditDialog] = React.useState<{ open: boolean; expenseKey: string; inputValue: string }>({ open: false, expenseKey: '', inputValue: '' });
+    const [editDialog, setEditDialog] = React.useState<{ open: boolean; type: 'percentage' | 'price'; expenseKey: string; inputValue: string }>({ open: false, type: 'percentage', expenseKey: '', inputValue: '' });
 
-    const handlePriceEditOpen = (expenseKey: string, currentPrice: number) => {
-        setPriceEditDialog({ open: true, expenseKey, inputValue: String(currentPrice) });
+    const openEditDialog = (type: 'percentage' | 'price', expenseKey: string, currentValue: number) => {
+        setEditDialog({ open: true, type, expenseKey, inputValue: String(currentValue) });
     };
 
-    const handlePriceEditConfirm = async () => {
-        const price = parseFloat(priceEditDialog.inputValue);
-        if (!isNaN(price) && data?.totalCost) {
-            const percentage = (price / data.totalCost) * 100;
-            await handleChange({ id: priceEditDialog.expenseKey, value: String(fixedNumber(percentage)), fieldType: 'text' } as any);
+    const handleEditConfirm = async () => {
+        const val = parseFloat(editDialog.inputValue);
+        if (!isNaN(val)) {
+            let fieldValue: string;
+            if (editDialog.type === 'price') {
+                const totalCost = data?.totalCost ?? 0;
+                fieldValue = totalCost > 0 ? String((val / totalCost) * 100) : '0';
+            } else {
+                fieldValue = String(val);
+            }
+            const result = await Api.requestSession<any>({
+                command: 'estimate/update_other_expenses_value',
+                args: { estimateId: props.estimateId, fieldKey: editDialog.expenseKey, fieldValue },
+            });
+            setData(result);
+            GD.pubsub_.dispatch(GD.estimateDataChangeId);
+            GD.pubsub_.dispatch(GD.estimateCostChangedId);
+            setDataRequested(false);
         }
-        setPriceEditDialog({ open: false, expenseKey: '', inputValue: '' });
+        setEditDialog({ open: false, type: 'percentage', expenseKey: '', inputValue: '' });
     };
 
     useEffect(() => {
@@ -260,14 +273,17 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                         }
                                     </F.PageForm>
                                 </Box>
-                                {/* Right: Percentage + Amount + edit icon — fixed width group */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '380px', maxWidth: '380px', py: '10px' } } }}>
-                                        <F.InputText form={form} xs={6} id={expenseKey} value={expenseValue === 0 ? "0" : expenseValue} label="Percentage(%)" placeholder="Percentage(%)" validate='double-number' />
-                                        <F.InputText isThousandsSeparator={true} readonly form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
-                                    </F.PageForm>
+                                {/* Right: Percentage + edit + Price + edit — identical layout for both */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                                    <TextField label={t('Percentage (%)')} value={expenseValue === 0 ? '0' : expenseValue} size="small" inputProps={{ readOnly: true }} sx={{ width: 150, '& .MuiInputBase-root': { backgroundColor: '#F5F9F9', height: '45px' }, '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' } }} />
                                     {!props.viewOnly && (
-                                        <IconButton onClick={() => handlePriceEditOpen(expenseKey, percentagePriceCalc)} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
+                                        <IconButton onClick={() => openEditDialog('percentage', expenseKey, expenseValue)} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
+                                            <EditOutlinedIcon sx={{ color: '#515151' }} />
+                                        </IconButton>
+                                    )}
+                                    <TextField label={t('Amount AMD')} value={fixedNumber(percentagePriceCalc)} size="small" inputProps={{ readOnly: true }} sx={{ width: 170, '& .MuiInputBase-root': { backgroundColor: '#F5F9F9', height: '45px' }, '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' } }} />
+                                    {!props.viewOnly && (
+                                        <IconButton onClick={() => openEditDialog('price', expenseKey, percentagePriceCalc)} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
                                             <EditOutlinedIcon sx={{ color: '#515151' }} />
                                         </IconButton>
                                     )}
@@ -293,22 +309,22 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                 </EstimateRootAccordionDetails>
             </EstimateRootAccordion>
 
-            {/* Price edit dialog */}
-            <Dialog open={priceEditDialog.open} onClose={() => setPriceEditDialog({ open: false, expenseKey: '', inputValue: '' })}>
-                <DialogTitle>{t('Edit Price')}</DialogTitle>
+            {/* Unified edit dialog for Percentage and Price */}
+            <Dialog open={editDialog.open} onClose={() => setEditDialog({ open: false, type: 'percentage', expenseKey: '', inputValue: '' })} PaperProps={{ sx: { minWidth: 300 } }}>
+                <DialogTitle>{editDialog.type === 'price' ? t('Edit Price') : t('Edit Percentage')}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
-                        label={t('Amount AMD')}
+                        label={editDialog.type === 'price' ? t('Amount AMD') : t('Percentage (%)')}
                         type="number"
-                        value={priceEditDialog.inputValue}
-                        onChange={(e) => setPriceEditDialog((prev) => ({ ...prev, inputValue: e.target.value }))}
+                        value={editDialog.inputValue}
+                        onChange={(e) => setEditDialog((prev) => ({ ...prev, inputValue: e.target.value }))}
                         sx={{ mt: 1, minWidth: 250 }}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setPriceEditDialog({ open: false, expenseKey: '', inputValue: '' })}>{t('Cancel')}</Button>
-                    <Button variant="contained" onClick={handlePriceEditConfirm}>{t('Confirm')}</Button>
+                    <Button onClick={() => setEditDialog({ open: false, type: 'percentage', expenseKey: '', inputValue: '' })}>{t('Cancel')}</Button>
+                    <Button variant="contained" onClick={handleEditConfirm}>{t('Confirm')}</Button>
                 </DialogActions>
             </Dialog>
         </Box>
