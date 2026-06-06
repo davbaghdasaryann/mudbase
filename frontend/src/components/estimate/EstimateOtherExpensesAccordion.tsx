@@ -236,78 +236,74 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         }
 
                         return (
-                            <F.PageForm
-                                key={index}
-                                form={form}
-                                size="xl"
-                                onFieldUpdate={handleChange}
-                            >
-                                {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
-                                    ?
-                                    <F.SelectField
+                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', pr: 1 }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <F.PageForm
                                         form={form}
-                                        xs={7}
-                                        id={`${expenseKey}-${index}`}
-                                        items={filteredExpenseItems}
-                                        value={t(expenseKey) ?? "typeOfCost"}
-                                        label="Type of cost"
-                                    />
-                                    :
-                                    <F.InputText
-                                        form={form}
-                                        xs={7}
-                                        id={`${expenseKey}-${index}`}
-                                        value={t(expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey)))}
-                                        label={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))}
-                                        // value={t(expenseKey) ?? "typeOfCost"}
-                                        // label="Type of cost"
-                                        placeholder={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))}
-                                    />
-                                }
-                                <F.InputText
-                                    form={form}
-                                    xs={2}
-                                    // xsHalf
-                                    id={expenseKey}
-                                    value={expenseValue === 0 ? "0" : expenseValue}
-                                    label="Percentage(%)"
-                                    placeholder="Percentage(%)"
-                                    validate='double-number'
-                                // The component should automatically set fieldType to "input"
-                                />
-
-                                <F.InputText
-                                    isThousandsSeparator={true}
-                                    readonly
-                                    form={form}
-                                    xs={2}
-                                    xsHalf
-                                    id={'percentagePrice'}
-                                    value={fixedNumber(percentagePriceCalc)}
-                                    label="Price"
-                                    placeholder="Price"
-                                    validate="positive-number"
-                                // The component should automatically set fieldType to "input"
-                                />
+                                        size="xl"
+                                        onFieldUpdate={handleChange}
+                                        slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%' } } }}
+                                    >
+                                        {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
+                                            ?
+                                            <F.SelectField
+                                                form={form}
+                                                xs={7}
+                                                id={`${expenseKey}-${index}`}
+                                                items={filteredExpenseItems}
+                                                value={t(expenseKey) ?? "typeOfCost"}
+                                                label="Type of cost"
+                                            />
+                                            :
+                                            <F.InputText
+                                                form={form}
+                                                xs={7}
+                                                id={`${expenseKey}-${index}`}
+                                                value={t(expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey)))}
+                                                label={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))}
+                                                placeholder={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))}
+                                            />
+                                        }
+                                        <F.InputText
+                                            form={form}
+                                            xs={2}
+                                            id={expenseKey}
+                                            value={expenseValue === 0 ? "0" : expenseValue}
+                                            label="Percentage(%)"
+                                            placeholder="Percentage(%)"
+                                            validate='double-number'
+                                        />
+                                        <F.InputText
+                                            isThousandsSeparator={true}
+                                            readonly
+                                            form={form}
+                                            xs={2}
+                                            xsHalf
+                                            id={'percentagePrice'}
+                                            value={fixedNumber(percentagePriceCalc)}
+                                            label="Price"
+                                            placeholder="Price"
+                                            validate="positive-number"
+                                        />
+                                        {!props.viewOnly && (
+                                            <IconButton sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' }}>
+                                                <EditOutlinedIcon sx={{ color: '#515151' }} />
+                                            </IconButton>
+                                        )}
+                                    </F.PageForm>
+                                </Box>
                                 {!props.viewOnly && (
-                                    <IconButton sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' }}>
-                                        <EditOutlinedIcon sx={{ color: '#515151' }} />
-                                    </IconButton>
-                                )}
-
-                                {!props.viewOnly &&
                                     <IconButton
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onRemove(expenseKey);
                                         }}
-                                        sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, alignSelf: 'center', '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}
+                                        sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}
                                     >
                                         <DeleteForeverIcon sx={{ color: '#515151' }} />
                                     </IconButton>
-                                }
-                            </F.PageForm>
-
+                                )}
+                            </Box>
                         );
                     })}
 
