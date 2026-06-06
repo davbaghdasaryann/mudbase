@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Button, IconButton, Typography } from "@mui/material";
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import React, { useEffect } from "react";
 import * as F from 'tsui/Form';
 import { InputFormField } from "../../tsui/Form/FormElements/FormFieldContext";
@@ -284,6 +285,11 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                     validate="positive-number"
                                 // The component should automatically set fieldType to "input"
                                 />
+                                {!props.viewOnly && (
+                                    <IconButton component='div' size='small' sx={{ color: '#515151' }}>
+                                        <EditOutlinedIcon fontSize='small' />
+                                    </IconButton>
+                                )}
 
                                 {!props.viewOnly &&
                                     <IconButton
