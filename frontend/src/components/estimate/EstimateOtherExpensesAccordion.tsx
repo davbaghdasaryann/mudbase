@@ -204,7 +204,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                     <Box sx={{
                         p: 1,
                         '& .MuiPaper-root': { boxShadow: 'none', backgroundColor: 'transparent', border: 'none', paddingTop: '10px', paddingBottom: '10px' },
-                        '& .MuiInputBase-root': { backgroundColor: '#F5F9F9', height: '40px' },
+                        '& .MuiInputBase-root': { backgroundColor: '#F5F9F9', height: '45px' },
                         '& .MuiInputBase-input': { paddingTop: '8px', paddingBottom: '8px' },
                         '& .MuiOutlinedInput-input': { padding: '8px 14px' },
                         '& .MuiSelect-select': { paddingTop: '8px', paddingBottom: '8px' },
