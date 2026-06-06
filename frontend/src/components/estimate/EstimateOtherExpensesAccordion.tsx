@@ -186,17 +186,15 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                 <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 20, mr: 1 }}>
-                            {/* Back document */}
-                            <path fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" d="M3 5h9v13H3z"/>
-                            {/* Front document with dog-ear */}
-                            <path fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" d="M6 2h8l3 3v13H6z"/>
-                            <path fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" d="M14 2v3h3"/>
+                            {/* Single document with dog-ear */}
+                            <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M5 2h9l4 4v14H5z"/>
+                            <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M14 2v4h4"/>
                             {/* Content lines */}
-                            <line x1="8" y1="9" x2="14.5" y2="9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-                            <line x1="8" y1="12" x2="12.5" y2="12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                            <line x1="7.5" y1="10" x2="14" y2="10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                            <line x1="7.5" y1="13" x2="12" y2="13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
                             {/* Dollar coin badge */}
-                            <circle cx="16.5" cy="17.5" r="3.8" fill="white" stroke="currentColor" strokeWidth="1.3"/>
-                            <text x="16.5" y="20" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="currentColor" fontFamily="sans-serif">$</text>
+                            <circle cx="16" cy="17.5" r="4" fill="white" stroke="currentColor" strokeWidth="1.4"/>
+                            <text x="16" y="20.2" textAnchor="middle" fontSize="6" fontWeight="bold" fill="currentColor" fontFamily="sans-serif">$</text>
                         </SvgIcon>
                         <Typography sx={{ fontWeight: 500 }}>{t('Other Expenses')}</Typography>
                     </Box>
