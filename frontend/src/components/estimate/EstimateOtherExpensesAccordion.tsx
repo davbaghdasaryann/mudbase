@@ -185,7 +185,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
             <EstimateRootAccordion>
                 <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 20, mr: 1 }}>
+                        <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 18, mr: 1 }}>
                             {/* Single document with dog-ear */}
                             <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M5 2h9l4 4v14H5z"/>
                             <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M14 2v4h4"/>
