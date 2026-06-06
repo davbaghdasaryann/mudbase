@@ -203,7 +203,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                 <EstimateRootAccordionDetails>
                     <Box sx={{
                         p: 1,
-                        '& .MuiPaper-root': { boxShadow: 'none', backgroundColor: 'transparent', border: 'none' },
+                        '& .MuiPaper-root': { boxShadow: 'none', backgroundColor: 'transparent', border: 'none', paddingTop: '10px', paddingBottom: '10px' },
                         '& .MuiInputBase-root': { backgroundColor: '#F5F9F9' },
                         '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' },
                         '& .MuiFormLabel-root.Mui-focused': { color: '#00ABBE' },
