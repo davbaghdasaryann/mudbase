@@ -286,7 +286,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 // The component should automatically set fieldType to "input"
                                 />
                                 {!props.viewOnly && (
-                                    <IconButton>
+                                    <IconButton sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
                                         <EditOutlinedIcon sx={{ color: '#515151' }} />
                                     </IconButton>
                                 )}
