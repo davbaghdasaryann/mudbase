@@ -250,13 +250,8 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                                     <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '380px', maxWidth: '380px', py: '10px' } } }}>
                                         <F.InputText form={form} xs={6} id={expenseKey} value={expenseValue === 0 ? "0" : expenseValue} label="Percentage(%)" placeholder="Percentage(%)" validate='double-number' />
-                                        <F.InputText isThousandsSeparator={true} readonly form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
+                                        <F.InputText isThousandsSeparator={true} form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
                                     </F.PageForm>
-                                    {!props.viewOnly && (
-                                        <IconButton sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
-                                            <EditOutlinedIcon sx={{ color: '#515151' }} />
-                                        </IconButton>
-                                    )}
                                 </Box>
                                 {/* Delete — pushed to far right edge */}
                                 {!props.viewOnly && (
