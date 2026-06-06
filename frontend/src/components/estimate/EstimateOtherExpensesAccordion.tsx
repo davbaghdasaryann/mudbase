@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from "@mui/material";
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import React, { useEffect } from "react";
 import * as F from 'tsui/Form';
@@ -40,6 +40,20 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
     const [progIndic, setProgIndic] = React.useState(false)
     const [data, setData] = React.useState<any | null>(null); //TODO change any to interface
     const [t] = useTranslation()
+    const [priceEditDialog, setPriceEditDialog] = React.useState<{ open: boolean; expenseKey: string; inputValue: string }>({ open: false, expenseKey: '', inputValue: '' });
+
+    const handlePriceEditOpen = (expenseKey: string, currentPrice: number) => {
+        setPriceEditDialog({ open: true, expenseKey, inputValue: String(currentPrice) });
+    };
+
+    const handlePriceEditConfirm = async () => {
+        const price = parseFloat(priceEditDialog.inputValue);
+        if (!isNaN(price) && data?.totalCost) {
+            const percentage = (price / data.totalCost) * 100;
+            await handleChange({ id: priceEditDialog.expenseKey, value: String(fixedNumber(percentage)), fieldType: 'text' } as any);
+        }
+        setPriceEditDialog({ open: false, expenseKey: '', inputValue: '' });
+    };
 
     useEffect(() => {
         const updateData = () => {
@@ -250,8 +264,13 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                                     <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '380px', maxWidth: '380px', py: '10px' } } }}>
                                         <F.InputText form={form} xs={6} id={expenseKey} value={expenseValue === 0 ? "0" : expenseValue} label="Percentage(%)" placeholder="Percentage(%)" validate='double-number' />
-                                        <F.InputText isThousandsSeparator={true} form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
+                                        <F.InputText isThousandsSeparator={true} readonly form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
                                     </F.PageForm>
+                                    {!props.viewOnly && (
+                                        <IconButton onClick={() => handlePriceEditOpen(expenseKey, percentagePriceCalc)} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
+                                            <EditOutlinedIcon sx={{ color: '#515151' }} />
+                                        </IconButton>
+                                    )}
                                 </Box>
                                 {/* Delete — pushed to far right edge */}
                                 {!props.viewOnly && (
@@ -273,6 +292,25 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                     </Box>
                 </EstimateRootAccordionDetails>
             </EstimateRootAccordion>
+
+            {/* Price edit dialog */}
+            <Dialog open={priceEditDialog.open} onClose={() => setPriceEditDialog({ open: false, expenseKey: '', inputValue: '' })}>
+                <DialogTitle>{t('Edit Price')}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        label={t('Amount AMD')}
+                        type="number"
+                        value={priceEditDialog.inputValue}
+                        onChange={(e) => setPriceEditDialog((prev) => ({ ...prev, inputValue: e.target.value }))}
+                        sx={{ mt: 1, minWidth: 250 }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPriceEditDialog({ open: false, expenseKey: '', inputValue: '' })}>{t('Cancel')}</Button>
+                    <Button variant="contained" onClick={handlePriceEditConfirm}>{t('Confirm')}</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 
