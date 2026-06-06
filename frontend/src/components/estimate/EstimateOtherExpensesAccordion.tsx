@@ -236,10 +236,10 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         }
 
                         return (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, pr: 1 }}>
-                                {/* Left: Cost Type — fills available space */}
-                                <Box sx={{ flex: 1 }}>
-                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%', py: '10px' } } }}>
+                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0, gap: 2, pr: 1 }}>
+                                {/* Left: Cost Type — fills available space without overflowing */}
+                                <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%', minWidth: 0, py: '10px' } } }}>
                                         {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
                                             ? <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" />
                                             : <F.InputText form={form} xs={12} id={`${expenseKey}-${index}`} value={t(expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey)))} label={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))} placeholder={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))} />
