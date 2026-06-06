@@ -286,14 +286,13 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 // The component should automatically set fieldType to "input"
                                 />
                                 {!props.viewOnly && (
-                                    <IconButton component='div'>
+                                    <IconButton>
                                         <EditOutlinedIcon sx={{ color: '#515151' }} />
                                     </IconButton>
                                 )}
 
                                 {!props.viewOnly &&
                                     <IconButton
-                                        component='div'
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onRemove(expenseKey);
