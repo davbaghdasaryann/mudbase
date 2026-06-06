@@ -1,11 +1,12 @@
 "use client";
 
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 import * as F from 'tsui/Form';
 import { InputFormField } from "../../tsui/Form/FormElements/FormFieldContext";
 import * as Api from 'api';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SvgIcon from '@mui/material/SvgIcon';
 import { useTranslation } from "react-i18next";
 import * as GD from '@/data/global_dispatch';
 import { usePermissions } from "../../api/auth";
@@ -13,6 +14,7 @@ import { estimateOtherExpensesItems, getEstimateOtherExpenseName } from "../../d
 import { fixedNumber } from "../../tslib/parse";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { confirmDialog } from "@/components/ConfirmationDialog";
+import { EstimateRootAccordion, EstimateRootAccordionSummary, EstimateRootAccordionDetails } from '@/components/AccordionComponent';
 
 
 interface EstimateOtherExpensesAccordionProps {
@@ -179,12 +181,20 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
 
 
     return (
-        <Box sx={{ mt: 10, width: '100%' }}>
-            <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>{t('Other Expenses')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
+        <Box sx={{ width: '100%' }}>
+            <EstimateRootAccordion>
+                <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 18, mr: 1 }}>
+                            <rect x="3" y="2" width="18" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                            <line x1="7" y1="8" x2="17" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+                            <line x1="7" y1="12" x2="13" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+                            <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M10 20v3l2-2 2 2v-3"/>
+                        </SvgIcon>
+                        <Typography sx={{ fontWeight: 500 }}>{t('Other Expenses')}</Typography>
+                    </Box>
+                </EstimateRootAccordionSummary>
+                <EstimateRootAccordionDetails>
                     {(Array.isArray(data?.otherExpenses) ? data.otherExpenses : []).map((expense, index) => {
                         const expenseKey = Object.keys(expense)[0];
                         const expenseValue = expense[expenseKey];
@@ -286,8 +296,8 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                             </Button>
                         </Box>
                     }
-                </AccordionDetails>
-            </Accordion>
+                </EstimateRootAccordionDetails>
+            </EstimateRootAccordion>
         </Box>
     );
 
