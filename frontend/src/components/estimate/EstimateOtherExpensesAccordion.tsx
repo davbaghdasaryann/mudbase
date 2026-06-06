@@ -258,9 +258,9 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                         </IconButton>
                                     )}
                                 </Box>
-                                {/* Delete — far right, aligned with section delete */}
+                                {/* Delete — pushed to far right edge */}
                                 {!props.viewOnly && (
-                                    <IconButton onClick={(e) => { e.stopPropagation(); onRemove(expenseKey); }} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}>
+                                    <IconButton onClick={(e) => { e.stopPropagation(); onRemove(expenseKey); }} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, marginLeft: 'auto', '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}>
                                         <DeleteForeverIcon sx={{ color: '#515151' }} />
                                     </IconButton>
                                 )}
