@@ -246,9 +246,9 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                         }
                                     </F.PageForm>
                                 </Box>
-                                {/* Right: Percentage + Amount + edit icons */}
+                                {/* Right: Percentage + Amount + edit icon — fixed width group */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { maxWidth: '100%', py: '10px' } } }}>
+                                    <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '320px', maxWidth: '320px', py: '10px' } } }}>
                                         <F.InputText form={form} xs={6} id={expenseKey} value={expenseValue === 0 ? "0" : expenseValue} label="Percentage(%)" placeholder="Percentage(%)" validate='double-number' />
                                         <F.InputText isThousandsSeparator={true} readonly form={form} xs={6} id={'percentagePrice'} value={fixedNumber(percentagePriceCalc)} label="Price" placeholder="Price" validate="positive-number" />
                                     </F.PageForm>
