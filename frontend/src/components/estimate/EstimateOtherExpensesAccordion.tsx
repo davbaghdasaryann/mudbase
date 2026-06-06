@@ -286,7 +286,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 // The component should automatically set fieldType to "input"
                                 />
                                 {!props.viewOnly && (
-                                    <IconButton sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
+                                    <IconButton sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' }}>
                                         <EditOutlinedIcon sx={{ color: '#515151' }} />
                                     </IconButton>
                                 )}
@@ -297,7 +297,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                             e.stopPropagation();
                                             onRemove(expenseKey);
                                         }}
-                                        sx={{ '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}
+                                        sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, alignSelf: 'center', '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}
                                     >
                                         <DeleteForeverIcon sx={{ color: '#515151' }} />
                                     </IconButton>
