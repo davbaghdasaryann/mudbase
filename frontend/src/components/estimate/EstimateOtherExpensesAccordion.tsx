@@ -208,6 +208,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' },
                         '& .MuiFormLabel-root.Mui-focused': { color: '#00ABBE' },
                         '& .MuiSelect-root.Mui-focused + .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' },
+                        '& .MuiIconButton-colorInherit': { color: '#515151' },
                     }}>
                     {(Array.isArray(data?.otherExpenses) ? data.otherExpenses : []).map((expense, index) => {
                         const expenseKey = Object.keys(expense)[0];
