@@ -267,25 +267,25 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
                 flexShrink: 0,
             }}>
                 <Button startIcon={<ArrowBackIcon />} onClick={props.onBack} sx={{ color: 'text.primary', textTransform: 'none' }}>
-                    Back
+                    {t('Back')}
                 </Button>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TextField
                         size="small"
-                        placeholder="Search"
+                        placeholder={t('Search')}
                         value={localSearch}
                         onChange={(e) => handleSearch(e.target.value)}
                         InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-                        sx={{ width: 220 }}
+                        sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
                     />
                     <TextField
                         select
                         size="small"
-                        label="Period"
+                        label={t('Period')}
                         defaultValue="all"
-                        sx={{ width: 120 }}
+                        sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
                     >
-                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="all">{t('All')}</MenuItem>
                     </TextField>
                 </Box>
             </Box>
