@@ -52,7 +52,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
             let fieldValue: string;
             if (editDialog.type === 'price') {
                 const totalCost = data?.totalCost ?? 0;
-                fieldValue = totalCost > 0 ? String((val / totalCost) * 100) : '0';
+                fieldValue = totalCost > 0 ? String(fixedNumber((val / totalCost) * 100)) : '0';
             } else {
                 fieldValue = String(val);
             }
