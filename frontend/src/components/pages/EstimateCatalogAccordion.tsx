@@ -724,6 +724,7 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
                             alignItems: 'center',
                             gap: '8px',
                             paddingLeft: '10px',
+                            backgroundColor: '#FFFFFF',
                             '&:hover': { backgroundColor: '#E8EFEF' },
                         }}>
 
