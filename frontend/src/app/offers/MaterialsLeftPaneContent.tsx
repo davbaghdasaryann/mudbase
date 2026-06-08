@@ -1,6 +1,8 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
-import {Box, InputBase, Divider, IconButton, Button} from '@mui/material';
+import {Box, InputBase, Divider, IconButton, Button, TextField, MenuItem, Select, InputAdornment, FormControl, InputLabel} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SearchIcon from '@mui/icons-material/Search';
 
 import DirectionsIcon from '@mui/icons-material/Directions';
 import DataTableComponent from '@/components/DataTableComponent';
@@ -22,10 +24,9 @@ interface MaterialsLeftPaneContentProps {
     isEstimation: boolean;
     estimateSubsectionId?: string | null;
     estimateSectionId?: string | null;
-
     estimatedLaborId?: string | null;
-
     onConfirm: () => void;
+    onBack?: () => void;
 }
 
 export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContentProps) {
@@ -241,15 +242,66 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
         );
     }
 
+    const catalogSearchRef = useRef<((val: string) => void) | null>(null);
+    const [localSearch, setLocalSearch] = useState('');
+
+    const handleSearch = (val: string) => {
+        setLocalSearch(val);
+        catalogSearchRef.current?.(val);
+    };
+
     return (
-        <Box sx={{display: 'flex', overflow: 'auto', flexDirection: 'column', height: '100%'}}>
-            <EstimateCatalogAccordion
-                catalogType={props.offerType}
-                estimateSectionId={props.estimateSectionId}
-                estimateSubsectionId={props.estimateSubsectionId}
-                estimatedLaborId={props.estimatedLaborId}
-                onConfirm={props.onConfirm}
-            />
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            {/* Sticky header */}
+            <Box sx={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                backgroundColor: 'background.paper',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                px: 2,
+                py: 1,
+                flexShrink: 0,
+            }}>
+                <Button startIcon={<ArrowBackIcon />} onClick={props.onBack} sx={{ color: 'text.primary', textTransform: 'none' }}>
+                    Back
+                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TextField
+                        size="small"
+                        placeholder="Search"
+                        value={localSearch}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
+                        sx={{ width: 220 }}
+                    />
+                    <TextField
+                        select
+                        size="small"
+                        label="Period"
+                        defaultValue="all"
+                        sx={{ width: 120 }}
+                    >
+                        <MenuItem value="all">All</MenuItem>
+                    </TextField>
+                </Box>
+            </Box>
+            {/* Scrollable catalog */}
+            <Box sx={{ flex: 1, overflow: 'auto' }}>
+                <EstimateCatalogAccordion
+                    catalogType={props.offerType}
+                    estimateSectionId={props.estimateSectionId}
+                    estimateSubsectionId={props.estimateSubsectionId}
+                    estimatedLaborId={props.estimatedLaborId}
+                    onConfirm={props.onConfirm}
+                    hideToolbar
+                    onSearchRef={catalogSearchRef}
+                />
+            </Box>
         </Box>
     );
 }

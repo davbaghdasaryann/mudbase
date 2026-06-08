@@ -195,8 +195,9 @@ interface EstimateCatalogAccordionProps {
     onConfirm: () => void;
     estimateSectionId?: string | null;
     estimateSubsectionId?: string | null;
-
     estimatedLaborId?: string | null;
+    hideToolbar?: boolean;
+    onSearchRef?: React.MutableRefObject<((val: string) => void) | null>;
 }
 
 // ✅ Nested Accordion Component
@@ -205,6 +206,10 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
     const mounted = useRef(false);
 
     const [searchVal, setSearchVal] = useState('');
+
+    React.useEffect(() => {
+        if (props.onSearchRef) props.onSearchRef.current = onSearch;
+    });
 
     const [items, setItems] = useState<AccardionItem[]>([]);
     const [offerItemId, setOfferItemId] = useState<string | null>(null);
@@ -574,7 +579,7 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
 
     return (
         <>
-            <Toolbar disableGutters sx={{ backgroundColor: 'inherit' }}>
+            {!props.hideToolbar && <Toolbar disableGutters sx={{ backgroundColor: 'inherit' }}>
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 
@@ -705,8 +710,8 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
                     />
 
                 </Stack> */}
-            </Toolbar>
-            <Stack sx={{ mt: 2 }}>
+            </Toolbar>}
+            <Stack sx={{ mt: props.hideToolbar ? 0 : 2 }}>
                 {items.map((item) => (
                     <EstimateRootAccordion key={item._id}
                         expanded={expandedAccordions.includes(item.code)}

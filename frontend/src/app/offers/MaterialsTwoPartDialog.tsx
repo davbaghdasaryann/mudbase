@@ -113,6 +113,7 @@ export default function MaterialsTwoPartDialog(props: Props) {
                             estimateSubsectionId={props.estimateSubsectionId}
                             estimateSectionId={props.estimateSectionId}
                             estimatedLaborId={props.estimatedLaborId}
+                            onBack={props.onClose}
                             onConfirm={() => {
                                 props.onConfirm();
                                 GD.pubsub_.dispatch(GD.estimateMaterialDataChangedId);
