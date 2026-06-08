@@ -195,7 +195,8 @@ export function MaterialsRightPaneContent(props: Props) {
                         border: '1px solid #00ABBE',
                         borderRadius: '5px',
                     },
-                    '& .editableCell:focus-within': {}
+                    '& .editableCell:focus-within': {},
+                    '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
                 }}
                 columns={[
                     {
