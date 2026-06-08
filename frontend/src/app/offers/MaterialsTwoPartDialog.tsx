@@ -89,6 +89,7 @@ export default function MaterialsTwoPartDialog(props: Props) {
                 <Box
                     sx={{
                         display: 'flex',
+                        flexDirection: 'column',
                         height: '100%',
                         '& > .pane': {
                             flex: 1,
@@ -102,9 +103,8 @@ export default function MaterialsTwoPartDialog(props: Props) {
                     <Box
                         className='pane'
                         sx={{
-                            borderRight: `1px solid ${theme.palette.divider}`,
+                            borderBottom: `1px solid ${theme.palette.divider}`,
                             p: 2,
-                            // overflow: "auto",
                         }}
                     >
                         <MaterialsLeftPaneContent
