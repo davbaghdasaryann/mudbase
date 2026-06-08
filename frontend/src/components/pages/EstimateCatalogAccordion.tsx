@@ -824,9 +824,9 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
 
 
                                                                 <DataTableComponent
-                                                                    sx={{ width: '100%', }}
+                                                                    sx={{ width: '100%', backgroundColor: 'transparent', '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' }, '& .MuiDataGrid-columnHeaders': { backgroundColor: 'transparent' }, '& .MuiDataGrid-virtualScroller': { backgroundColor: 'transparent' } }}
                                                                     columns={[
-                                                                        { field: 'fullCode', headerName: t('ID'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
+                                                                        { field: 'fullCode', headerName: t('ID'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true, renderCell: (params) => <span style={{ color: '#00ABBE' }}>{params.value}</span> },
                                                                         { field: 'label', headerName: t('Name'), headerAlign: 'left', flex: 0.5, disableColumnMenu: true },
                                                                         ...(props.catalogType === 'labor'
                                                                             ? [
@@ -874,7 +874,7 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
                                                                                     }
 
                                                                                     >
-                                                                                        <AddToPhotosIcon />
+                                                                                        <AddToPhotosIcon sx={{ color: '#00ABBE' }} />
                                                                                     </IconButton>
                                                                                 </>;
 
