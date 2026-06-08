@@ -104,7 +104,7 @@ export default function MaterialsTwoPartDialog(props: Props) {
                         className='pane'
                         sx={{
                             borderBottom: `1px solid ${theme.palette.divider}`,
-                            p: 2,
+                            p: 0,
                         }}
                     >
                         <MaterialsLeftPaneContent
