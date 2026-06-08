@@ -193,10 +193,12 @@ export function MaterialsRightPaneContent(props: Props) {
                     width: '100%',
                     '& .editableCell': {
                         border: '1px solid #00ABBE',
-                        borderRadius: '5px',
+                        borderRadius: '10px',
                     },
                     '& .editableCell:focus-within': {},
                     '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
+                    '& .MuiDataGrid-row': { marginBottom: '4px' },
+                    '& .MuiDataGrid-cell': { paddingTop: '6px', paddingBottom: '6px' },
                 }}
                 columns={[
                     {
