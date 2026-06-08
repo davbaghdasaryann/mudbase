@@ -192,14 +192,10 @@ export function MaterialsRightPaneContent(props: Props) {
                 sx={{
                     width: '100%',
                     '& .editableCell': {
-                        border: '1px solid #00BFFF	', // ✅ Blue border
+                        border: '1px solid #00ABBE',
                         borderRadius: '5px',
-                        // backgroundColor: '#f8f9fa', // Light background
-                        // transition: 'border 0.3s ease',
                     },
-                    '& .editableCell:focus-within': {
-                        // border: '2px solid darkOrange',
-                    }
+                    '& .editableCell:focus-within': {}
                 }}
                 columns={[
                     {
@@ -226,47 +222,31 @@ export function MaterialsRightPaneContent(props: Props) {
 
 
                     {
+                        field: 'info', type: 'actions', headerName: t('Edit'), flex: 0.1, renderCell: (cell) => {
+                            return <>
+                                <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
+                                    setEstimatedMaterialName(cell.row.materialOfferItemName as string)
+                                    setEstimatedMaterialDetailsId(cell.row._id as string)
+                                }}>
+                                    <EditOutlinedIcon sx={{ color: '#00ABBE' }} />
+                                </IconButton>
+                            </>;
+                        }
+                    },
+                    {
                         field: 'remove', type: 'actions', headerName: t('Remove'), flex: 0.15, renderCell: (cell) => {
                             return <>
                                 <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
-
-                                    // setOfferItemDetailsId(cell.id as string)
-                                    // handleClick(event);
-                                    // console.log('material cell', cell)
                                     setEstimatedMaterialName(cell.row.materialOfferItemName as string)
                                     setEstimatedMaterialId(cell.row._id as string)
                                     estimatedMaterialIdRef.current = cell.row._id as string
                                     onRemove();
-                                }
-                                }
-                                >
-                                    <DeleteForeverIcon />
+                                }}>
+                                    <DeleteForeverIcon sx={{ color: '#00ABBE' }} />
                                 </IconButton>
                             </>;
                         }
-                    }, // width: 600 },
-                    {
-                        field: 'info', type: 'actions', headerName: t('Edit'), flex: 0.1, renderCell: (cell) => {
-                            return <>
-                                {/* <IconButton onClick={() => setCompanyDetailsId(cell.id as string)}> */}
-                                <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                    // setAccountDetailsId(cell.id as string)
-
-                                    // console.log('esitmate cell', cell)
-                                    // setEstimatedLaborItemName(cell.row.itemChangableName as string)
-                                    // setEstimatedLaborItemDetailsId(cell.id as string)
-                                    // handleClick(event);
-                                    setEstimatedMaterialName(cell.row.materialOfferItemName as string)
-                                    setEstimatedMaterialDetailsId(cell.row._id as string)
-
-                                }
-                                }
-                                >
-                                    <EditOutlinedIcon />
-                                </IconButton>
-                            </>;
-                        }
-                    }, // width: 600 },
+                    },
 
                 ]}
                 rows={estimatedMaterialsData}
