@@ -62,7 +62,7 @@ export default function MaterialsTwoPartDialog(props: Props) {
             //     },
             // }}
         >
-            <DialogTitle sx={{m: 0, p: 2}}>
+            <DialogTitle sx={{m: 0, p: 2, fontWeight: 700}}>
                 {t('Add / Edit Materials')}
                 <IconButton
                     aria-label='close'
