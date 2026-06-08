@@ -763,7 +763,7 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
                             {item.isLoading ? (
                                 <CircularProgress size={24} sx={{ ml: 4 }} />
                             ) : item.children && item.children.length > 0 ? (
-                                <Stack spacing={2} sx={{ ml: 4 }}>
+                                <Stack spacing={0.5} sx={{ ml: 4 }}>
 
                                     {item.children.map((child) => (
                                         child.children ? (
@@ -820,7 +820,7 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
                                                         <CircularProgress size={24} sx={{ ml: 4 }} />
                                                     ) : (
                                                         child.children && child.children.length > 0 ? (
-                                                            <Stack spacing={2} sx={{ ml: 4 }}>
+                                                            <Stack spacing={0.5} sx={{ ml: 4 }}>
 
 
                                                                 <DataTableComponent
