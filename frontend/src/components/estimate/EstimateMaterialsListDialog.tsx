@@ -228,14 +228,21 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                 <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
                                     {category.subcategories.map((subcategory) => (
                                         <Accordion key={subcategory.subcategoryId} defaultExpanded disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}>
-                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: 5, minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px' }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent' }}>
-                                                <Typography sx={{ pl: 1 }}>{subcategory.subcategoryName}</Typography>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: 0, minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px', ml: 0 }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent', '& .MuiAccordionSummary-expandIconWrapper': { ml: 2 } }}>
+                                                <Typography sx={{ pl: 1, fontWeight: 500 }}>{subcategory.subcategoryName}</Typography>
                                             </AccordionSummary>
                                             <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
-                                                <Table size="small" sx={{ backgroundColor: 'transparent', '& .MuiTableRow-root.Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .MuiTableRow-root.Mui-selected:hover': { backgroundColor: '#E8EFEF !important' } }}>
+                                                <Table size="small" sx={{ backgroundColor: 'transparent', tableLayout: 'fixed', width: '100%', '& .MuiTableRow-root.Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .MuiTableRow-root.Mui-selected:hover': { backgroundColor: '#E8EFEF !important' } }}>
+                                                    <colgroup>
+                                                        <col style={{ width: '9%' }} />
+                                                        <col style={{ width: '43%' }} />
+                                                        <col style={{ width: '10%' }} />
+                                                        <col style={{ width: '18%' }} />
+                                                        <col style={{ width: '20%' }} />
+                                                    </colgroup>
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell sx={{ fontWeight: 600, pl: 4 }}>{t('ID')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('ID')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Materials')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Material consumption')}</TableCell>
@@ -248,7 +255,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                             const displayPrice = editedPrice !== undefined ? editedPrice : mat.itemChangableAveragePrice;
                                                             return (
                                                                 <TableRow key={mat.materialItemId} sx={{ '&:hover': { backgroundColor: '#E8EFEF' } }}>
-                                                                    <TableCell sx={{ pl: 4 }}>
+                                                                    <TableCell>
                                                                         <Typography variant="body2" sx={{ color: '#00ABBE' }}>
                                                                             {mat.itemFullCode}
                                                                         </Typography>
