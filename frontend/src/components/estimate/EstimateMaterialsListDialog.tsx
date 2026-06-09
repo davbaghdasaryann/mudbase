@@ -231,7 +231,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: '30px', pr: '16px', minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px', ml: 0 }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent', '& .MuiAccordionSummary-expandIconWrapper': { mr: 0 } }}>
                                                 <Typography sx={{ pl: 1, fontWeight: 500 }}>{subcategory.subcategoryName}</Typography>
                                             </AccordionSummary>
-                                            <AccordionDetails sx={{ p: 0, pl: '10px', backgroundColor: 'transparent' }}>
+                                            <AccordionDetails sx={{ p: 0, pl: '13px', backgroundColor: 'transparent' }}>
                                                 <Table size="small" sx={{ backgroundColor: 'transparent', tableLayout: 'fixed', width: '100%', '& .MuiTableRow-root.Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .MuiTableRow-root.Mui-selected:hover': { backgroundColor: '#E8EFEF !important' } }}>
                                                     <colgroup>
                                                         <col style={{ width: '9%' }} />
@@ -242,7 +242,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                     </colgroup>
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell sx={{ fontWeight: 600, paddingLeft: '20px' }}>{t('ID')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600, paddingLeft: '23px' }}>{t('ID')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Materials')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Material consumption')}</TableCell>
@@ -255,7 +255,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                             const displayPrice = editedPrice !== undefined ? editedPrice : mat.itemChangableAveragePrice;
                                                             return (
                                                                 <TableRow key={mat.materialItemId} sx={{ '&:hover': { backgroundColor: '#E8EFEF' } }}>
-                                                                    <TableCell sx={{ paddingLeft: '20px' }}>
+                                                                    <TableCell sx={{ paddingLeft: '23px' }}>
                                                                         <Typography variant="body2" sx={{ color: '#00ABBE' }}>
                                                                             {mat.itemFullCode}
                                                                         </Typography>
