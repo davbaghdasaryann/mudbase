@@ -8,6 +8,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SvgIcon from '@mui/material/SvgIcon';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
@@ -1065,6 +1066,20 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     </IconButton>
                                                 </Tooltip>
                                             )}
+                                        {item.children && item.children.length > 0 && item.children[0]?.label !== '' && (permAddFields || !props.isOnlyEstInfo) && (
+                                            <Tooltip title={t('Add Subsection')} arrow placement='top'>
+                                                <IconButton
+                                                    component='div'
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setOpenAddSubsectionDialog(true);
+                                                        setOpenAddSubsectionDialogCurrentSectionId(item._id);
+                                                    }}
+                                                >
+                                                    <AddCircleOutlineIcon sx={{ color: '#515151' }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
                                         <IconButton
                                             component='div'
                                             onClick={(e) => {
