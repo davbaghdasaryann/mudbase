@@ -215,7 +215,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
-            <DialogContent sx={{ p: 0, backgroundColor: '#F5F9F9' }}>
+            <DialogContent sx={{ p: 0, backgroundColor: '#F5F9F9', '& .Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .Mui-focusVisible': { backgroundColor: '#E8EFEF !important' } }}>
                 {loading ? (
                     <ProgressIndicator />
                 ) : (
@@ -232,7 +232,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                 <Typography sx={{ pl: 1 }}>{subcategory.subcategoryName}</Typography>
                                             </AccordionSummary>
                                             <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
-                                                <Table size="small" sx={{ backgroundColor: 'transparent' }}>
+                                                <Table size="small" sx={{ backgroundColor: 'transparent', '& .MuiTableRow-root.Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .MuiTableRow-root.Mui-selected:hover': { backgroundColor: '#E8EFEF !important' } }}>
                                                     <TableHead>
                                                         <TableRow>
                                                             <TableCell sx={{ fontWeight: 600, pl: 4 }}>{t('ID')}</TableCell>
