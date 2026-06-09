@@ -237,13 +237,10 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
         <Dialog
             open={true}
             onClose={props.onClose}
-            maxWidth="md"
+            maxWidth={false}
             fullWidth
             PaperProps={{
-                sx: {
-                    minHeight: '70vh',
-                    maxHeight: '85vh',
-                },
+                sx: { minHeight: '70vh', maxHeight: '85vh', width: '80vw', maxWidth: '1100px', borderRadius: '10px' },
             }}
         >
             <DialogTitle>
@@ -251,51 +248,54 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                 <IconButton
                     aria-label="close"
                     onClick={props.onClose}
-                    sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        color: (theme) => theme.palette.grey[500],
-                    }}
+                    sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
                 >
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
 
-            <DialogContent dividers>
+            <DialogContent sx={{ p: 0, backgroundColor: '#F5F9F9', '& .Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .Mui-focusVisible': { backgroundColor: '#E8EFEF !important' } }}>
                 {loading ? (
                     <ProgressIndicator />
                 ) : (
                     <Box>
                         {categories.map((category) => (
-                            <Accordion key={category.categoryId} defaultExpanded>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6">{category.categoryName}</Typography>
+                            <Accordion key={category.categoryId} defaultExpanded disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', backgroundColor: '#FFFFFF', minHeight: '40px', '& .MuiAccordionSummary-content': { my: '8px' }, '&:hover': { backgroundColor: '#E8EFEF' } }}>
+                                    <Typography sx={{ fontWeight: 500, pl: 1 }}>{category.categoryName}</Typography>
                                 </AccordionSummary>
-                                <AccordionDetails>
+                                <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
                                     {category.subcategories.map((subcategory) => (
-                                        <Accordion key={subcategory.subcategoryId} defaultExpanded>
-                                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                                <Typography>{subcategory.subcategoryName}</Typography>
+                                        <Accordion key={subcategory.subcategoryId} defaultExpanded disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: '30px', pr: '16px', minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px', ml: 0 }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent', '& .MuiAccordionSummary-expandIconWrapper': { mr: 0 } }}>
+                                                <Typography sx={{ pl: 1, fontWeight: 500 }}>{subcategory.subcategoryName}</Typography>
                                             </AccordionSummary>
-                                            <AccordionDetails>
-                                                <Table size="small">
+                                            <AccordionDetails sx={{ p: 0, pl: '13px', backgroundColor: 'transparent' }}>
+                                                <Table size="small" sx={{ backgroundColor: 'transparent', tableLayout: 'fixed', width: '100%', '& .MuiTableRow-root.Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .MuiTableRow-root.Mui-selected:hover': { backgroundColor: '#E8EFEF !important' } }}>
+                                                    <colgroup>
+                                                        <col style={{ width: '9%' }} />
+                                                        <col style={{ width: '40%' }} />
+                                                        <col style={{ width: '13%' }} />
+                                                        <col style={{ width: '10%' }} />
+                                                        <col style={{ width: '28%' }} />
+                                                    </colgroup>
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell>{t('ID')}</TableCell>
-                                                            <TableCell>{t('Works')}</TableCell>
-                                                            <TableCell>{t('Man-Hours')}</TableCell>
-                                                            <TableCell>{t('Unit')}</TableCell>
-                                                            <TableCell>{t('Price')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600, paddingLeft: '23px' }}>{t('ID')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Works')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Man-Hours')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Price')}</TableCell>
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
                                                         {subcategory.works.map((work) => {
                                                             const edited = editedWorks.get(work.laborItemId);
+                                                            const displayPrice = edited?.price ?? work.itemChangableAveragePrice;
                                                             return (
-                                                                <TableRow key={work.laborItemId}>
-                                                                    <TableCell>
-                                                                        <Typography variant="body2" color="primary">
+                                                                <TableRow key={work.laborItemId} sx={{ '&:hover': { backgroundColor: '#E8EFEF' } }}>
+                                                                    <TableCell sx={{ paddingLeft: '23px' }}>
+                                                                        <Typography variant="body2" sx={{ color: '#00ABBE' }}>
                                                                             {work.itemFullCode}
                                                                         </Typography>
                                                                     </TableCell>
@@ -306,7 +306,7 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                             size="small"
                                                                             value={edited?.laborHours ?? work.itemLaborHours}
                                                                             onChange={(e) => handleLaborHoursChange(work.laborItemId, e.target.value)}
-                                                                            sx={{ width: 100 }}
+                                                                            sx={{ width: 100, '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
                                                                     <TableCell>{work.itemMeasurementUnit}</TableCell>
@@ -314,9 +314,9 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                         <TextField
                                                                             type="number"
                                                                             size="small"
-                                                                            value={edited?.price ?? work.itemChangableAveragePrice}
+                                                                            value={displayPrice}
                                                                             onChange={(e) => handlePriceChange(work.laborItemId, e.target.value)}
-                                                                            sx={{ width: 100 }}
+                                                                            sx={{ width: 100, '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: work.itemMarketPrice != null && Math.abs(displayPrice - work.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
                                                                 </TableRow>
