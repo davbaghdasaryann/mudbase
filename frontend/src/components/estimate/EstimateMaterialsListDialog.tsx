@@ -260,7 +260,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                                             size="small"
                                                                             value={displayPrice}
                                                                             onChange={(e) => handlePriceChange(mat.materialItemId, e.target.value)}
-                                                                            sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: mat.itemMarketPrice != null && Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS ? '#e3f2fd' : undefined, '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
+                                                                            sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: mat.itemMarketPrice != null && Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
                                                                 </TableRow>
