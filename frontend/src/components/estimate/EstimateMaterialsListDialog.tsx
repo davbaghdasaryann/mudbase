@@ -199,10 +199,10 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
         <Dialog
             open={true}
             onClose={props.onClose}
-            maxWidth="md"
+            maxWidth={false}
             fullWidth
             PaperProps={{
-                sx: { minHeight: '70vh', maxHeight: '85vh' },
+                sx: { minHeight: '70vh', maxHeight: '85vh', width: '80vw', maxWidth: '1100px' },
             }}
         >
             <DialogTitle>
@@ -228,7 +228,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                 <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
                                     {category.subcategories.map((subcategory) => (
                                         <Accordion key={subcategory.subcategoryId} defaultExpanded disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}>
-                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: 2, minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px' }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent' }}>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: 5, minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px' }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent' }}>
                                                 <Typography sx={{ pl: 1 }}>{subcategory.subcategoryName}</Typography>
                                             </AccordionSummary>
                                             <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
