@@ -215,30 +215,30 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
-            <DialogContent dividers>
+            <DialogContent sx={{ p: 0, backgroundColor: '#F5F9F9' }}>
                 {loading ? (
                     <ProgressIndicator />
                 ) : (
                     <Box>
                         {categories.map((category) => (
-                            <Accordion key={category.categoryId} defaultExpanded>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6">{category.categoryName}</Typography>
+                            <Accordion key={category.categoryId} defaultExpanded disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', backgroundColor: '#FFFFFF', minHeight: '40px', '& .MuiAccordionSummary-content': { my: '8px' }, '&:hover': { backgroundColor: '#E8EFEF' } }}>
+                                    <Typography sx={{ fontWeight: 500, pl: 1 }}>{category.categoryName}</Typography>
                                 </AccordionSummary>
-                                <AccordionDetails>
+                                <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
                                     {category.subcategories.map((subcategory) => (
-                                        <Accordion key={subcategory.subcategoryId} defaultExpanded>
-                                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                                <Typography>{subcategory.subcategoryName}</Typography>
+                                        <Accordion key={subcategory.subcategoryId} defaultExpanded disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, backgroundColor: 'transparent' }}>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse', gap: '8px', pl: 2, minHeight: '36px', '& .MuiAccordionSummary-content': { my: '6px' }, '&:hover': { backgroundColor: '#E8EFEF' }, backgroundColor: 'transparent' }}>
+                                                <Typography sx={{ pl: 1 }}>{subcategory.subcategoryName}</Typography>
                                             </AccordionSummary>
-                                            <AccordionDetails>
-                                                <Table size="small">
+                                            <AccordionDetails sx={{ p: 0, backgroundColor: 'transparent' }}>
+                                                <Table size="small" sx={{ backgroundColor: 'transparent' }}>
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell>{t('ID')}</TableCell>
-                                                            <TableCell>{t('Materials')}</TableCell>
-                                                            <TableCell>{t('Unit')}</TableCell>
-                                                            <TableCell>{t('Price')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600, pl: 4 }}>{t('ID')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Materials')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Price')}</TableCell>
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
@@ -246,31 +246,21 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                             const editedPrice = editedPrices.get(mat.materialItemId);
                                                             const displayPrice = editedPrice !== undefined ? editedPrice : mat.itemChangableAveragePrice;
                                                             return (
-                                                                <TableRow key={mat.materialItemId}>
-                                                                    <TableCell>
-                                                                        <Typography variant="body2" color="primary">
+                                                                <TableRow key={mat.materialItemId} sx={{ '&:hover': { backgroundColor: '#E8EFEF' } }}>
+                                                                    <TableCell sx={{ pl: 4 }}>
+                                                                        <Typography variant="body2" sx={{ color: '#00ABBE' }}>
                                                                             {mat.itemFullCode}
                                                                         </Typography>
                                                                     </TableCell>
                                                                     <TableCell>{mat.itemName}</TableCell>
                                                                     <TableCell>{mat.itemMeasurementUnit}</TableCell>
-                                                                    <TableCell
-                                                                        sx={{
-                                                                            backgroundColor:
-                                                                                mat.itemMarketPrice != null &&
-                                                                                Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS
-                                                                                    ? '#e3f2fd'
-                                                                                    : undefined,
-                                                                        }}
-                                                                    >
+                                                                    <TableCell sx={{ backgroundColor: mat.itemMarketPrice != null && Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS ? '#e3f2fd' : undefined }}>
                                                                         <TextField
                                                                             type="number"
                                                                             size="small"
                                                                             value={displayPrice}
-                                                                            onChange={(e) =>
-                                                                                handlePriceChange(mat.materialItemId, e.target.value)
-                                                                            }
-                                                                            sx={{ width: 120 }}
+                                                                            onChange={(e) => handlePriceChange(mat.materialItemId, e.target.value)}
+                                                                            sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
                                                                 </TableRow>
