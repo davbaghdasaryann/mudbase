@@ -202,7 +202,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
             maxWidth={false}
             fullWidth
             PaperProps={{
-                sx: { minHeight: '70vh', maxHeight: '85vh', width: '80vw', maxWidth: '1100px' },
+                sx: { minHeight: '70vh', maxHeight: '85vh', width: '80vw', maxWidth: '1100px', borderRadius: '10px' },
             }}
         >
             <DialogTitle>
