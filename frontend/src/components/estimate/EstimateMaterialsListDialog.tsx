@@ -242,7 +242,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                     </colgroup>
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell sx={{ fontWeight: 600 }}>{t('ID')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600, paddingLeft: '20px' }}>{t('ID')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Materials')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Material consumption')}</TableCell>
@@ -255,7 +255,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                             const displayPrice = editedPrice !== undefined ? editedPrice : mat.itemChangableAveragePrice;
                                                             return (
                                                                 <TableRow key={mat.materialItemId} sx={{ '&:hover': { backgroundColor: '#E8EFEF' } }}>
-                                                                    <TableCell>
+                                                                    <TableCell sx={{ paddingLeft: '20px' }}>
                                                                         <Typography variant="body2" sx={{ color: '#00ABBE' }}>
                                                                             {mat.itemFullCode}
                                                                         </Typography>
