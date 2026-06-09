@@ -238,6 +238,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                             <TableCell sx={{ fontWeight: 600, pl: 4 }}>{t('ID')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Materials')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Material consumption')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Price')}</TableCell>
                                                         </TableRow>
                                                     </TableHead>
@@ -254,6 +255,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                                     </TableCell>
                                                                     <TableCell>{mat.itemName}</TableCell>
                                                                     <TableCell>{mat.itemMeasurementUnit}</TableCell>
+                                                                    <TableCell>{mat.quantity}</TableCell>
                                                                     <TableCell>
                                                                         <TextField
                                                                             type="number"
