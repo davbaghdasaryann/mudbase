@@ -279,7 +279,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 }
             }}>
                 {/* Tabs */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', borderBottom: '1px solid #00ABBE', mb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', position: 'relative', mb: 0, '&::after': { content: '""', position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', backgroundColor: '#00ABBE', zIndex: 0 } }}>
                     <Tabs
                         value={activeTab}
                         onChange={(e, newValue) => {
@@ -309,7 +309,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 borderLeft: '1px solid #00ABBE',
                                 borderRight: '1px solid #00ABBE',
                                 borderBottom: 'none',
-                                marginBottom: '-1px',
+                                marginBottom: 0,
+                                position: 'relative',
                                 zIndex: 1,
                                 color: '#000000 !important',
                                 fontWeight: 700,
