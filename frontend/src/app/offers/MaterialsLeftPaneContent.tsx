@@ -280,7 +280,7 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
                     onFocus={() => setSearchFocused(true)}
                     onBlur={() => setSearchFocused(false)}
                     InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-                    sx={{ width: searchFocused ? '100%' : 220, transition: 'width 0.25s ease', '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
+                    sx={{ width: searchFocused ? '100%' : 220, transition: 'width 0.25s ease', '& .MuiOutlinedInput-root': { borderRadius: '25px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
                 />
             </Box>
             {/* Scrollable catalog */}
