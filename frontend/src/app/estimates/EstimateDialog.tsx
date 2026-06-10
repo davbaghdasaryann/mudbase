@@ -279,7 +279,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 }
             }}>
                 {/* Tabs */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', borderBottom: '1px solid rgba(25, 118, 210, 0.3)', mb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', borderBottom: '1px solid #00ABBE', mb: 0 }}>
                     <Tabs
                         value={activeTab}
                         onChange={(e, newValue) => {
@@ -296,7 +296,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             '& .MuiTab-root': {
                                 borderTopLeftRadius: '8px',
                                 borderTopRightRadius: '8px',
-                                border: '1px solid rgba(25, 118, 210, 0.2)',
+                                border: '1px solid rgba(0, 171, 190, 0.35)',
                                 borderBottom: '1px solid transparent',
                                 marginRight: '4px',
                                 minHeight: 48,
@@ -305,7 +305,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             },
                             '& .Mui-selected': {
                                 backgroundColor: toolbarOpen ? '#F5F9F9' : 'transparent',
-                                border: '1px solid rgba(25, 118, 210, 0.3)',
+                                border: '1px solid #00ABBE',
                                 borderBottom: toolbarOpen ? '1px solid #F5F9F9' : '1px solid transparent',
                                 color: '#000000 !important',
                                 fontWeight: 700,
@@ -350,9 +350,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         sx={{
                             mb: 0.5,
                             ml: 0.5,
-                            color: 'rgba(25, 118, 210, 0.6)',
+                            color: '#00ABBE',
                             transition: 'transform 0.3s',
-                            '&:hover': { color: 'rgba(25, 118, 210, 0.9)' },
+                            '&:hover': { color: '#00ABBE' },
                         }}
                     >
                         {toolbarOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -366,7 +366,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         mb: 2,
                         p: 1.5,
                         backgroundColor: '#F5F9F9',
-                        border: '1px solid rgba(25, 118, 210, 0.3)',
+                        border: '1px solid #00ABBE',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
                         height: 130,
@@ -497,7 +497,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         px: 2,
                         pb: 1,
                         backgroundColor: '#F5F9F9',
-                        border: '1px solid rgba(25, 118, 210, 0.3)',
+                        border: '1px solid #00ABBE',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
                         height: 130,
@@ -513,7 +513,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         mb: 2,
                         p: 1.5,
                         backgroundColor: '#F5F9F9',
-                        border: '1px solid rgba(25, 118, 210, 0.3)',
+                        border: '1px solid #00ABBE',
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
                         height: 130,
