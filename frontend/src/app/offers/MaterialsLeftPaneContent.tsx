@@ -38,6 +38,7 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
     const [offerItemId, setOfferItemId] = React.useState<string | null>(null);
     const catalogSearchRef = useRef<((val: string) => void) | null>(null);
     const [localSearch, setLocalSearch] = useState('');
+    const [searchFocused, setSearchFocused] = useState(false);
     // const [averagePrice, setAveragePrice] = React.useState<number | null>(null);
     // const [laborHours, setLaborHours] = React.useState<number | null>(null); //🔴 TODO: this will need us in version 2 🔴
     let [offerItemName, setOfferItemName] = React.useState<string | null>(null);
@@ -243,8 +244,6 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
             </Box>
         );
     }
-
-    const [searchFocused, setSearchFocused] = useState(false);
 
     const handleSearch = (val: string) => {
         setLocalSearch(val);
