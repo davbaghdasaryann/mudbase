@@ -235,17 +235,15 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                 <Table size="small" sx={{ backgroundColor: 'transparent', tableLayout: 'fixed', width: '100%', '& .MuiTableRow-root.Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .MuiTableRow-root.Mui-selected:hover': { backgroundColor: '#E8EFEF !important' } }}>
                                                     <colgroup>
                                                         <col style={{ width: '9%' }} />
-                                                        <col style={{ width: '43%' }} />
-                                                        <col style={{ width: '10%' }} />
-                                                        <col style={{ width: '18%' }} />
-                                                        <col style={{ width: '20%' }} />
+                                                        <col style={{ width: '57%' }} />
+                                                        <col style={{ width: '12%' }} />
+                                                        <col style={{ width: '22%' }} />
                                                     </colgroup>
                                                     <TableHead>
                                                         <TableRow>
                                                             <TableCell sx={{ fontWeight: 600, paddingLeft: '23px' }}>{t('ID')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Materials')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Unit')}</TableCell>
-                                                            <TableCell sx={{ fontWeight: 600 }}>{t('Material consumption')}</TableCell>
                                                             <TableCell sx={{ fontWeight: 600 }}>{t('Price')}</TableCell>
                                                         </TableRow>
                                                     </TableHead>
@@ -262,7 +260,6 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                                     </TableCell>
                                                                     <TableCell>{mat.itemName}</TableCell>
                                                                     <TableCell>{mat.itemMeasurementUnit}</TableCell>
-                                                                    <TableCell>{mat.quantity}</TableCell>
                                                                     <TableCell>
                                                                         <TextField
                                                                             type="number"
