@@ -244,6 +244,8 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
         );
     }
 
+    const [searchFocused, setSearchFocused] = useState(false);
+
     const handleSearch = (val: string) => {
         setLocalSearch(val);
         catalogSearchRef.current?.(val);
@@ -265,29 +267,21 @@ export default function MaterialsLeftPaneContent(props: MaterialsLeftPaneContent
                 px: 2,
                 py: 1,
                 flexShrink: 0,
+                gap: 1,
             }}>
-                <Button startIcon={<ArrowBackIcon />} onClick={props.onBack} sx={{ color: 'text.primary', textTransform: 'none' }}>
+                <Button startIcon={<ArrowBackIcon />} onClick={props.onBack} sx={{ color: 'text.primary', textTransform: 'none', flexShrink: 0 }}>
                     {t('Back')}
                 </Button>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TextField
-                        size="small"
-                        placeholder={t('Search')}
-                        value={localSearch}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-                        sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
-                    />
-                    <TextField
-                        select
-                        size="small"
-                        label={t('Period')}
-                        defaultValue="all"
-                        sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
-                    >
-                        <MenuItem value="all">{t('All')}</MenuItem>
-                    </TextField>
-                </Box>
+                <TextField
+                    size="small"
+                    placeholder={t('Search')}
+                    value={localSearch}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
+                    InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
+                    sx={{ width: searchFocused ? '100%' : 220, transition: 'width 0.25s ease', '& .MuiOutlinedInput-root': { borderRadius: '4px', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' } } }}
+                />
             </Box>
             {/* Scrollable catalog */}
             <Box sx={{ flex: 1, overflow: 'auto' }}>
