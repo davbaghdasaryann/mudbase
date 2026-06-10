@@ -221,6 +221,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 paper: {
                     style: {
                         padding: 5,
+                        borderRadius: '12px',
                     },
                 },
             }}
