@@ -169,6 +169,10 @@ export interface EstimateThreeLevelNestedAccordionRef {
     getSelectedLaborIds: () => string[];
     getSelectedLaborDetails: () => { id: string; isHidden: boolean }[];
     clearSelection: () => void;
+    undo: () => Promise<void>;
+    redo: () => Promise<void>;
+    canUndo: () => boolean;
+    canRedo: () => boolean;
 }
 
 const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAccordionRef, EstimateThreeLevelNestedAccordionProps>(function EstimateThreeLevelNestedAccordion(props, ref) {
@@ -189,6 +193,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [rowIdThatOpenedImportDialog, setRowIdThatOpenedImportDialog] = useState<string | null>(null);
     /** Only one section/subsection shows the header star: the one that was last expanded. */
     const [accordionIdShowingStar, setAccordionIdShowingStar] = useState<string | null>(null);
+
+    const [undoStack, setUndoStack] = useState<Array<{ id: string; oldRow: any; newRow: any }>>([]);
+    const [redoStack, setRedoStack] = useState<Array<{ id: string; oldRow: any; newRow: any }>>([]);
 
     const [estimatedLaborItemDetailsId, setEstimatedLaborItemDetailsId] = useState<string | null>(null);
     const [estimatedLaborItemName, setEstimatedLaborItemName] = useState<string | null>(null);
@@ -404,10 +411,30 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         });
 
         // console.log(' Successfully updated row:', response);
+        setUndoStack(prev => [...prev.slice(-19), { id: oldRow._id, oldRow: { ...oldRow }, newRow: { ...newRow } }]);
+        setRedoStack([]);
         refreshEverything(true);
 
         return { ...newRow }; //  Ensure a new object is returned
     };
+
+    const handleUndo = useCallback(async () => {
+        if (undoStack.length === 0) return;
+        const entry = undoStack[undoStack.length - 1];
+        await Api.requestSession({ command: 'estimate/update_labor_item', args: { estimatedLaborId: entry.id }, json: entry.oldRow });
+        setUndoStack(prev => prev.slice(0, -1));
+        setRedoStack(prev => [...prev, entry]);
+        await refreshEverything(false);
+    }, [undoStack, refreshEverything]);
+
+    const handleRedo = useCallback(async () => {
+        if (redoStack.length === 0) return;
+        const entry = redoStack[redoStack.length - 1];
+        await Api.requestSession({ command: 'estimate/update_labor_item', args: { estimatedLaborId: entry.id }, json: entry.newRow });
+        setRedoStack(prev => prev.slice(0, -1));
+        setUndoStack(prev => [...prev, entry]);
+        await refreshEverything(false);
+    }, [redoStack, refreshEverything]);
 
     const updateSubsectionChildren = (sectionsList: AccordionItem[], subsectionId: string, newChildren: AccordionItem[]): AccordionItem[] =>
         sectionsList.map((sec) => ({
@@ -1026,7 +1053,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         getSelectedLaborIds,
         getSelectedLaborDetails,
         clearSelection,
-    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds, getSelectedLaborDetails, clearSelection]);
+        undo: handleUndo,
+        redo: handleRedo,
+        canUndo: () => undoStack.length > 0,
+        canRedo: () => redoStack.length > 0,
+    }), [handleCalcMarketPrices, handleImportMyPrices, refreshEverything, getSelectedLaborIds, getSelectedLaborDetails, clearSelection, handleUndo, handleRedo, undoStack, redoStack]);
 
     if (!sections) {
         return null;

@@ -11,6 +11,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -173,6 +175,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const anySelectedHidden = selectedDetails.some((d) => d.isHidden);
     const hideUnhideLabelKey = anySelectedHidden ? 'Unhide' : 'Hide';
     const handleHideUnhide = () => (anySelectedHidden ? handleSetHidden(false) : handleSetHidden(true));
+
+    const handleUndo = () => accordionRef.current?.undo();
+    const handleRedo = () => accordionRef.current?.redo();
 
     // Download handlers
     const handleDownloadEstimation = (format: 'html' | 'word' | 'pdf') => {
@@ -398,6 +403,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate },
                                 { labelKey: 'Import from Library', icon: `${TOOLBAR_ICON}/import.svg`, onClick: handleImportFromLibrary, disabled: !permissionsSet?.has('OFF_CRT_LBR') },
                                 { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick },
+                                { labelKey: 'Undo', iconNode: <UndoIcon sx={{ fontSize: 22 }} />, onClick: handleUndo },
+                                { labelKey: 'Redo', iconNode: <RedoIcon sx={{ fontSize: 22 }} />, onClick: handleRedo },
                             ].map((tool, index) => {
                                 const isSelectActive = tool.labelKey === 'Select' && isSelectMode;
                                 return (
@@ -431,7 +438,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         }}
                                     >
                                         <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <ImgElement src={tool.icon} sx={{ height: 22 }} />
+                                            {'iconNode' in tool ? tool.iconNode : <ImgElement src={tool.icon} sx={{ height: 22 }} />}
                                         </Box>
                                         <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px' }}>
                                             {t(tool.labelKey)}
