@@ -418,24 +418,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         return { ...newRow }; //  Ensure a new object is returned
     };
 
-    const handleUndo = useCallback(async () => {
-        if (undoStack.length === 0) return;
-        const entry = undoStack[undoStack.length - 1];
-        await Api.requestSession({ command: 'estimate/update_labor_item', args: { estimatedLaborId: entry.id }, json: entry.oldRow });
-        setUndoStack(prev => prev.slice(0, -1));
-        setRedoStack(prev => [...prev, entry]);
-        await refreshEverything(false);
-    }, [undoStack, refreshEverything]);
-
-    const handleRedo = useCallback(async () => {
-        if (redoStack.length === 0) return;
-        const entry = redoStack[redoStack.length - 1];
-        await Api.requestSession({ command: 'estimate/update_labor_item', args: { estimatedLaborId: entry.id }, json: entry.newRow });
-        setRedoStack(prev => prev.slice(0, -1));
-        setUndoStack(prev => [...prev, entry]);
-        await refreshEverything(false);
-    }, [redoStack, refreshEverything]);
-
     const updateSubsectionChildren = (sectionsList: AccordionItem[], subsectionId: string, newChildren: AccordionItem[]): AccordionItem[] =>
         sectionsList.map((sec) => ({
             ...sec,
@@ -920,6 +902,24 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             setProgIndic(false);
         }
     };
+
+    const handleUndo = useCallback(async () => {
+        if (undoStack.length === 0) return;
+        const entry = undoStack[undoStack.length - 1];
+        await Api.requestSession({ command: 'estimate/update_labor_item', args: { estimatedLaborId: entry.id }, json: entry.oldRow });
+        setUndoStack(prev => prev.slice(0, -1));
+        setRedoStack(prev => [...prev, entry]);
+        await refreshEverything(false);
+    }, [undoStack, refreshEverything]);
+
+    const handleRedo = useCallback(async () => {
+        if (redoStack.length === 0) return;
+        const entry = redoStack[redoStack.length - 1];
+        await Api.requestSession({ command: 'estimate/update_labor_item', args: { estimatedLaborId: entry.id }, json: entry.newRow });
+        setRedoStack(prev => prev.slice(0, -1));
+        setUndoStack(prev => [...prev, entry]);
+        await refreshEverything(false);
+    }, [redoStack, refreshEverything]);
 
     const refreshEverythingAfterRemovingSecOrSubsec = async (showProgIndic: boolean = true) => {
         if (showProgIndic) {
