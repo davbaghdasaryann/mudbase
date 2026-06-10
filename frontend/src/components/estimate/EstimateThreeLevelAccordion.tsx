@@ -371,6 +371,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             return oldRow; // Revert to oldRow if newRow is invalid
         }
 
+        // Evaluate inline formulas BEFORE validation
+        for (const field of ['quantity', 'itemChangableAveragePrice', 'itemLaborHours']) {
+            if (typeof newRow[field] === 'string') {
+                const result = evaluateFormula(newRow[field]);
+                if (result !== null) newRow[field] = String(result);
+            }
+        }
         const isPositiveInteger: boolean = validateDoubleInteger(newRow.quantity);
         // const isPositiveIntegerPrice: boolean = validatePositiveDoubleInteger(newRow.itemChangableAveragePrice);
         const isPositiveIntegerPrice: boolean = validateDoubleInteger(newRow.itemChangableAveragePrice);
@@ -381,13 +388,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             (newRow.itemLaborHours && !isPositiveIntegerLaborHours)
         ) {
             return oldRow;
-        }
-        // Evaluate inline formulas before normalizing
-        for (const field of ['quantity', 'itemChangableAveragePrice', 'itemLaborHours']) {
-            if (typeof newRow[field] === 'string') {
-                const result = evaluateFormula(newRow[field]);
-                if (result !== null) newRow[field] = String(result);
-            }
         }
         newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity);
         newRow.itemChangableAveragePrice = normalizeArmenianDecimalPoint(newRow.itemChangableAveragePrice);
