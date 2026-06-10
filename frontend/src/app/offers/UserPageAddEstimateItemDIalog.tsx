@@ -157,6 +157,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 paper: {
                     style: {
                         padding: 5,
+                        borderRadius: '12px',
                     },
                 },
             }}
@@ -336,6 +337,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             paper: {
                 style: {
                     padding: 5,
+                    borderRadius: '12px',
                 },
             },
         }}
