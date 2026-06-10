@@ -26,6 +26,7 @@ import EstimateCatalogAccordion from "../../components/pages/EstimateCatalogAcco
 import DataTableComponent from "@/components/DataTableComponent";
 import { t } from "i18next";
 import { formatCurrency } from "@/lib/format_currency";
+import MaterialsLeftPaneContent from "@/app/offers/MaterialsLeftPaneContent";
 
 
 interface Props {
@@ -361,27 +362,14 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
         >
             <CloseIcon />
         </IconButton>
-        <DialogContent>
-            {/* <Box
-                component="form" onSubmit={onSubmit} sx={{ display: 'flex', backgroundColor: '#242c37', width: 300, justifySelf: 'right', m: 1 }}>
-
-                <InputBase
-                    sx={{ ml: 1, flex: 1, }}
-                    placeholder='Search'
-                    inputProps={{ 'aria-label': 'search google maps' }}
-                    onChange={searchTextChange}
-                    value={searchVal}
-                />
-                <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
-                <Button onClick={searchTextSubmit}>
-                    <DirectionsIcon />
-                </Button>
-            </Box> */}
-            <EstimateCatalogAccordion
-                catalogType={props.offerType}
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+            <MaterialsLeftPaneContent
+                offerType={props.offerType}
+                isEstimation={props.isEstimation}
                 estimateSectionId={props.estimateSectionId}
                 estimateSubsectionId={props.estimateSubsectionId}
                 estimatedLaborId={props.estimatedLaborId}
+                onBack={handleClose}
                 onConfirm={props.onConfirm}
             />
         </DialogContent>
