@@ -215,7 +215,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
-            <DialogContent sx={{ p: 0, backgroundColor: '#F5F9F9', '& .Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .Mui-focusVisible': { backgroundColor: '#E8EFEF !important' } }}>
+            <DialogContent sx={{ p: 0, backgroundColor: '#F5F9F9', '& .Mui-selected': { backgroundColor: '#E8EFEF !important' }, '& .Mui-focusVisible': { backgroundColor: '#E8EFEF !important' }, '& input[type=number]::-webkit-outer-spin-button': { WebkitAppearance: 'none', margin: 0 }, '& input[type=number]::-webkit-inner-spin-button': { WebkitAppearance: 'none', margin: 0 }, '& input[type=number]': { MozAppearance: 'textfield' } }}>
                 {loading ? (
                     <ProgressIndicator />
                 ) : (
