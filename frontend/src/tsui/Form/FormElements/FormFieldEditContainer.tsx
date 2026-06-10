@@ -63,7 +63,7 @@ export default function FormFieldEditContainer(props: FormFieldEditContainerProp
                         }}
                     />
                 ) : (
-                    <IconButton onClick={handleEdit} color='inherit'>
+                    <IconButton onClick={handleEdit} sx={{ color: '#00ABBE' }}>
                         {props.field.fieldType === 'time' ? <ScheduleIcon /> : <EditIcon />}
                     </IconButton>
                 )}
