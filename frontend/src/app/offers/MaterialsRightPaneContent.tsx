@@ -15,6 +15,7 @@ import * as GD from '@/data/global_dispatch';
 import { validateDoubleInteger, validatePositiveDoubleInteger, validatePositiveInteger } from '../../tslib/validate';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { normalizeArmenianDecimalPoint } from '../../tslib/parse';
+import { evaluateFormula } from '@/components/FormulaTextField';
 import { formatCurrency } from '@/lib/format_currency';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import DataTableComponent from '@/components/DataTableComponent';
@@ -74,6 +75,15 @@ export function MaterialsRightPaneContent(props: Props) {
         }
 
         newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity)
+        // Evaluate inline formulas (e.g. =100+50 → 150) before normalizing
+        if (typeof newRow.materialConsumptionNorm === 'string') {
+            const formulaResult = evaluateFormula(newRow.materialConsumptionNorm);
+            if (formulaResult !== null) newRow.materialConsumptionNorm = String(formulaResult);
+        }
+        if (typeof newRow.itemChangableAveragePrice === 'string') {
+            const formulaResult = evaluateFormula(newRow.itemChangableAveragePrice);
+            if (formulaResult !== null) newRow.itemChangableAveragePrice = String(formulaResult);
+        }
         newRow.materialConsumptionNorm = normalizeArmenianDecimalPoint(newRow.materialConsumptionNorm)
         newRow.itemChangableAveragePrice = normalizeArmenianDecimalPoint(newRow.itemChangableAveragePrice)
 

@@ -25,6 +25,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import ProgressIndicator from '@/tsui/ProgressIndicator';
+import FormulaTextField from '@/components/FormulaTextField';
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
 
@@ -301,22 +302,20 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                     </TableCell>
                                                                     <TableCell>{work.itemName}</TableCell>
                                                                     <TableCell>
-                                                                        <TextField
-                                                                            type="number"
-                                                                            size="small"
+                                                                        <FormulaTextField
                                                                             value={edited?.laborHours ?? work.itemLaborHours}
-                                                                            onChange={(e) => handleLaborHoursChange(work.laborItemId, e.target.value)}
-                                                                            sx={{ width: 100, '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
+                                                                            onChange={(val) => handleLaborHoursChange(work.laborItemId, String(val))}
+                                                                            width={100}
+                                                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
                                                                     <TableCell>{work.itemMeasurementUnit}</TableCell>
                                                                     <TableCell>
-                                                                        <TextField
-                                                                            type="number"
-                                                                            size="small"
+                                                                        <FormulaTextField
                                                                             value={displayPrice}
-                                                                            onChange={(e) => handlePriceChange(work.laborItemId, e.target.value)}
-                                                                            sx={{ width: 100, '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: work.itemMarketPrice != null && Math.abs(displayPrice - work.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
+                                                                            onChange={(val) => handlePriceChange(work.laborItemId, String(val))}
+                                                                            width={100}
+                                                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: work.itemMarketPrice != null && Math.abs(displayPrice - work.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
                                                                 </TableRow>
