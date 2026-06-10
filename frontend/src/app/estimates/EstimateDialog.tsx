@@ -304,9 +304,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 padding: '12px 16px',
                             },
                             '& .Mui-selected': {
-                                backgroundColor: toolbarOpen ? '#F5F9F9' : 'transparent',
+                                backgroundColor: toolbarOpen ? '#F5F9F9' : '#FFFFFF',
                                 border: '1px solid #00ABBE',
-                                borderBottom: toolbarOpen ? '1px solid #F5F9F9' : '1px solid transparent',
+                                borderBottom: '1px solid #FFFFFF',
+                                marginBottom: '-1px',
+                                zIndex: 1,
                                 color: '#000000 !important',
                                 fontWeight: 700,
                             }
