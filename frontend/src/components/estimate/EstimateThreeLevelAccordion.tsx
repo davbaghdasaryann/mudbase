@@ -40,6 +40,7 @@ import { mainIconColor, materialIconHeight } from '../../theme';
 import ImgElement from '../../tsui/DomElements/ImgElement';
 
 import { normalizeArmenianDecimalPoint, parseThousandsSeparator, roundNumber, roundToThree } from '@/tslib/parse';
+import { evaluateFormula } from '@/components/FormulaTextField';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { formatCurrency, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import { EstimateRootAccordion, EstimateRootAccordionDetails, EstimateRootAccordionSummary } from '@/components/AccordionComponent';
@@ -380,6 +381,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             (newRow.itemLaborHours && !isPositiveIntegerLaborHours)
         ) {
             return oldRow;
+        }
+        // Evaluate inline formulas before normalizing
+        for (const field of ['quantity', 'itemChangableAveragePrice', 'itemLaborHours']) {
+            if (typeof newRow[field] === 'string') {
+                const result = evaluateFormula(newRow[field]);
+                if (result !== null) newRow[field] = String(result);
+            }
         }
         newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity);
         newRow.itemChangableAveragePrice = normalizeArmenianDecimalPoint(newRow.itemChangableAveragePrice);
