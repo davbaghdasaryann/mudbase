@@ -137,12 +137,12 @@ function CatalogAccordionBody({
                 direction={{ xs: 'column', md: 'row' }}
                 spacing={{ xs: 2, md: 0 }}
                 sx={{
-                    mb: 2,
+                    mb: 1,
                     width: '100%',
                     position: 'sticky',
-                    top: 112,
-                    zIndex: 99,
-                    backgroundColor: 'background.paper',
+                    top: 49,
+                    zIndex: 199,
+                    backgroundColor: '#F5F9F9',
                     py: 1,
                 }}
             >
@@ -259,7 +259,7 @@ function CatalogAccordionBody({
                 </Fade>
             ) : (
                 <Fade in={!isDataLoading} timeout={400}>
-                    <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8 }}>
+                    <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8, backgroundColor: '#FFFFFF', borderRadius: 1 }}>
                         {items.map((item) => (
                             <CatalogRootAccordion
                                 key={`${item._id}-${filter.timePeriod}-${filter.accountId || 'all'}`}
