@@ -133,12 +133,17 @@ function CatalogAccordionBody({
 
     return (
         <>
-            <Stack 
-                direction={{ xs: 'column', md: 'row' }} 
+            <Stack
+                direction={{ xs: 'column', md: 'row' }}
                 spacing={{ xs: 2, md: 0 }}
-                sx={{ 
+                sx={{
                     mb: 2,
                     width: '100%',
+                    position: 'sticky',
+                    top: 112,
+                    zIndex: 99,
+                    backgroundColor: 'background.paper',
+                    py: 1,
                 }}
             >
                 <Box sx={{ width: { xs: '100%', md: 'auto' }, flexGrow: { md: 1 } }}>

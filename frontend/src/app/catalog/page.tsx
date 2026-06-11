@@ -46,7 +46,7 @@ export default function CatalogsPage() {
     return (
         <PageContents title='Catalogs'>
             <TabContext value={value}>
-                <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
+                <Box sx={{borderBottom: 1, borderColor: 'divider', position: 'sticky', top: 64, zIndex: 100, backgroundColor: 'background.paper'}}>
                     <TabList onChange={handleChange}>
                         {session?.user && permissionsSet?.has?.('CAT_LBR_VW') && <Tab label={t('Labor')} value='labor' />}
                         {session?.user && permissionsSet?.has?.('CAT_MTRL_VW') && <Tab label={t('Materials')} value='material' />}
