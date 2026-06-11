@@ -32,22 +32,22 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
 
         switch (currentPath) {
             case 'dashboard':
-                return <DashboardIcon sx={{ height: 30, width: 30 }} />;
+                return <DashboardIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'catalog':
-                return <ImgElement src='/images/icons/libraries.svg' sx={{ height: 30 }} />;
+                return <ImgElement src='/images/icons/libraries.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
             case 'estimates':
-                return <ImgElement src='/images/icons/estimates.svg' sx={{ height: 30 }} />;
+                return <ImgElement src='/images/icons/estimates.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
             case 'users':
-                return <ImgElement src='/images/icons/users.svg' sx={{ height: 30 }} />;
+                return <ImgElement src='/images/icons/users.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
             case 'account':
             case 'account_view':
-                return <ImgElement src='/images/icons/company.svg' sx={{ height: 25 }} />;
+                return <ImgElement src='/images/icons/company.svg' sx={{ height: 25, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
             case 'accounts':
-                return <BusinessIcon sx={{ height: 30, width: 30 }} />;
+                return <BusinessIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'dev':
-                return <DatasetIcon sx={{ height: 30, width: 30 }} />;
+                return <DatasetIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'analysis':
-                return <AnalyticsIcon sx={{ height: 30, width: 30 }} />;
+                return <AnalyticsIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             default:
                 return null;
         }
