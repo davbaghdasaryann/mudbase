@@ -140,7 +140,7 @@ function CatalogAccordionBody({
                     mb: 1,
                     width: '100%',
                     position: 'sticky',
-                    top: 49,
+                    top: { xs: 104, md: 112 },
                     zIndex: 199,
                     backgroundColor: '#F5F9F9',
                     py: 1,
@@ -259,7 +259,7 @@ function CatalogAccordionBody({
                 </Fade>
             ) : (
                 <Fade in={!isDataLoading} timeout={400}>
-                    <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8, backgroundColor: '#FFFFFF', borderRadius: 1 }}>
+                    <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8, backgroundColor: '#FFFFFF', borderRadius: 1, '& .MuiAccordion-root': { backgroundColor: '#FFFFFF !important' }, '& .MuiAccordionDetails-root': { backgroundColor: '#FFFFFF !important' } }}>
                         {items.map((item) => (
                             <CatalogRootAccordion
                                 key={`${item._id}-${filter.timePeriod}-${filter.accountId || 'all'}`}
