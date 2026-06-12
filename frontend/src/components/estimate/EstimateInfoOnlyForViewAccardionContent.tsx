@@ -109,12 +109,12 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
 
 
 
-    return <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography >{t('Information')}</Typography>
+    return <Accordion defaultExpanded disableGutters elevation={0} sx={{ border: '1px solid #00ABBE', borderRadius: '4px', '&:before': { display: 'none' } }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#F5F9F9', borderRadius: '4px 4px 0 0', borderBottom: '1px solid #00ABBE', minHeight: 43, '& .MuiAccordionSummary-content': { my: '10px' } }}>
+            <Typography>{t('Information')}</Typography>
         </AccordionSummary>
-        <AccordionDetails>
-            <F.PageForm form={form} size='xl' onFieldUpdate={handleChange} >
+        <AccordionDetails sx={{ backgroundColor: '#F5F9F9', p: 2 }}>
+            <F.PageForm form={form} size='xl' onFieldUpdate={handleChange} formSx={{ width: 1 }} slotProps={{ rootBox: { sx: { alignItems: 'flex-start', justifyContent: 'flex-start' } }, paper: { sx: { border: 'none', boxShadow: 'none', backgroundColor: 'transparent', p: 0, width: '100%' } } }}>
                 {/* Row 1 */}
                 <F.InputText xsQuarter id='name' value={data?.name} label={t('Title')} placeholder={t('Title')} />
                 <F.InputText xsQuarter id='constructionType' value={t(data?.constructionType)} label={t('Type of construction')} placeholder={t('Type of construction')} />
