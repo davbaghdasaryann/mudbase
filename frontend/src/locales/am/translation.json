@@ -460,5 +460,7 @@
     "Widget": "Վիջեթ",
     "Select a visualization type to preview": "Ընտրեք վիզուալիզացիայի տեսակը նախադիտելու համար",
     "Undo": "Հետարկել",
-    "Redo": "Կրկնել"
+    "Redo": "Կրկնել",
+    "Percentage (%)": "Տոկոս (%)",
+    "Amount AMD": "Գումար AMD"
 }
