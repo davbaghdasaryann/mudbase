@@ -144,6 +144,7 @@ function CatalogAccordionBody({
                     zIndex: 100,
                     backgroundColor: '#F5F9F9',
                     py: 1,
+                    mt: 2,
                 }}
             >
                 <Box sx={{ width: { xs: '100%', md: 'auto' }, flexGrow: { md: 1 } }}>
