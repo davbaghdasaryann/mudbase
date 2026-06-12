@@ -391,6 +391,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 justifyContent: 'flex-start',
                                 alignItems: 'center',
                                 height: '100%',
+                                pl: '35px',
                             }}>
                                 {[
                                     { labelKey: 'Project', icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
@@ -420,6 +421,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     justifyContent: 'flex-start',
                                     alignItems: 'center',
                                     height: '100%',
+                                    pl: '35px',
                                 }}>
                                     <Box sx={{ display: 'flex', gap: 1.5 }}>
                                             {[
