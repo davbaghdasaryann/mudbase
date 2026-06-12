@@ -186,6 +186,7 @@ export default function AccountEstimatesTab() {
                 sx={{
                     width: '100%',
                     flex: 1,
+                    '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
                 }}
                 getRowHeight={() => 'auto'}
                 columns={[
