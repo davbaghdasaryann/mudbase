@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { EstimateRootAccordion, EstimateRootAccordionSummary, EstimateRootAccordionDetails } from '@/components/AccordionComponent';
 import * as Api from 'api';
 import * as EstimateApi from '@/api/estimate';
 import * as EstimateItemsApi from 'api/estimate_items';
@@ -712,45 +713,19 @@ export default function EstimateOnlyForViewThreeLevelAccordion(props: Props) {
                 Add Section
             </Button> */}
             {items.map((item) => (
-                <Accordion
+                <EstimateRootAccordion
                     key={item._id}
-                    // onChange={() => fetchChildren(item.id, 2)}
                     expanded={expandedAccordions.includes(item._id)}
                     onChange={handleAccordionChange(item._id, 2)}
                 >
-                    <AccordionSummary
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-                                transform: 'none',
-                            },
-                        }}
-                        expandIcon={
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 1,
-                                    // Disable rotation on the icon itself
-                                    '& .MuiSvgIcon-root': { transform: 'none' },
-                                }}
-                            >
-                                <Typography sx={{ whiteSpace: 'nowrap' }}>
-                                    {t('Total Cost: ') + `${parseThousandsSeparator(item.totalCost) ?? 0}`}
-                                </Typography>
-                                <ExpandMoreIcon />
-                            </Box>
-                        }
-                    >
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
                             <Typography>{item.label}</Typography>
-                            {/* <IconButton component="div" onClick={(e) => { e.stopPropagation(); setEstimateRenameId(item.id); setEstimateRenameDialogLabel(item.label); setEstimateRenameDialogType('section') }}>
-                                <EditOutlinedIcon />
-                            </IconButton> */}
+                            <Typography sx={{ mr: 1, whiteSpace: 'nowrap', fontSize: '0.875rem', color: 'text.secondary' }}>
+                                {t('Total Cost: ') + `${parseThousandsSeparator(item.totalCost) ?? 0}`}
+                            </Typography>
                         </Box>
-                    </AccordionSummary>
+                    </EstimateRootAccordionSummary>
                     <AccordionDetails>
                         {item.isLoading ? (
                             <CircularProgress size={24} />
@@ -1276,7 +1251,7 @@ export default function EstimateOnlyForViewThreeLevelAccordion(props: Props) {
                             setOpenAddSubsectionDialog(false);
                         }} />} */}
                     </AccordionDetails>
-                </Accordion>
+                </EstimateRootAccordion>
             ))}
 
             {openAddSubsectionDialog && openAddSubsectionDialogCurrentSectionId && (
