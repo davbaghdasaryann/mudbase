@@ -109,7 +109,7 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
 
 
 
-    return <Accordion defaultExpanded disableGutters elevation={0} sx={{ border: '1px solid #00ABBE', borderRadius: '4px', '&:before': { display: 'none' } }}>
+    return <Accordion defaultExpanded disableGutters elevation={0} sx={{ border: '1px solid #00ABBE', borderRadius: '4px', '&:before': { display: 'none' }, mb: 3 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#F5F9F9', borderRadius: '4px 4px 0 0', borderBottom: '1px solid #00ABBE', minHeight: 43, '& .MuiAccordionSummary-content': { my: '10px' } }}>
             <Typography>{t('Information')}</Typography>
         </AccordionSummary>
