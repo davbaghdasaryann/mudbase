@@ -138,11 +138,12 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        p: 1.25,
+        p: 1,
         backgroundColor: 'transparent',
         borderRadius: 2,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
+        pointerEvents: disabled ? 'none' : 'auto',
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
         transition: 'all 0.2s',
         ...(disabled ? {} : {
@@ -151,8 +152,8 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                 transform: 'translateY(-2px)',
             },
         }),
-        width: { xs: 110, md: 130, lg: 150 },
-        minHeight: { xs: 90, md: 100, lg: 110 },
+        width: { xs: 85, md: 100, lg: 115 },
+        minHeight: { xs: 65, md: 75, lg: 85 },
     });
 
     const noDataMessage = (
@@ -279,10 +280,10 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         onClick={() => { if (!tool.disabled) tool.onClick(); }}
                                         sx={toolButtonSx(tool.disabled)}
                                     >
-                                        <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <ImgElement src={tool.icon} sx={{ height: 28 }} />
+                                        <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <ImgElement src={tool.icon} sx={{ height: 22 }} />
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                                             {t(tool.labelKey)}
                                         </Typography>
                                     </Box>
@@ -316,10 +317,10 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     { labelKey: 'View Specification', icon: `${TOOLBAR_ICON}/works.svg`, onClick: () => {} },
                                 ].map((tool, index) => (
                                     <Box key={index} onClick={tool.onClick} sx={toolButtonSx()}>
-                                        <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <ImgElement src={tool.icon} sx={{ height: 28 }} />
+                                        <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <ImgElement src={tool.icon} sx={{ height: 22 }} />
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                                             {t(tool.labelKey)}
                                         </Typography>
                                     </Box>
