@@ -165,9 +165,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             command: 'estimate/set_labor_items_hidden',
             args: { estimateId: props.estimateId },
             json: { estimatedLaborIds: selectedLaborIds, hidden },
-        }).then(() => {
+        }).then(async () => {
             dataUpdatedRef.current = true;
-            accordionRef.current?.refreshEverything(false);
+            await accordionRef.current?.refreshEverything(false);
+            setSelectedLaborIds(prev => [...prev]);
         });
     };
 
