@@ -403,17 +403,13 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                             {hasLinkedEstimate ? (
                                 <Box sx={{
                                     display: 'flex',
-                                    gap: 8,
+                                    gap: 1.5,
+                                    flexWrap: 'nowrap',
                                     justifyContent: 'center',
                                     alignItems: 'center',
                                     height: '100%',
-                                    flexWrap: 'wrap'
                                 }}>
-                                    <Box>
-                                        <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
-                                            {t('Download Estimation')}
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                    <Box sx={{ display: 'flex', gap: 1.5 }}>
                                             {[
                                                 { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
                                                 { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
@@ -424,16 +420,15 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     onClick={() => handleDownload(format.format)}
                                                     sx={toolButtonSx()}
                                                 >
-                                                    <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <ImgElement src={format.icon} sx={{ height: 40 }} />
+                                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                        <ImgElement src={format.icon} sx={{ height: 22 }} />
                                                     </Box>
-                                                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                                                         {t(format.label)}
                                                     </Typography>
                                                 </Box>
                                             ))}
                                         </Box>
-                                    </Box>
                                 </Box>
                             ) : noDataMessage}
                         </Box>
