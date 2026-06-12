@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography } from '@mui/material';
@@ -11,7 +11,9 @@ import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAcco
 import EstimatePageDialog from '@/app/estimates/EstimateDialog';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
-import EstimateThreeLevelNestedAccordion from '@/components/estimate/EstimateThreeLevelAccordion';
+import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
 import { confirmDialog } from '@/components/ConfirmationDialog';
@@ -34,6 +36,9 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const [showEstimateDialog, setShowEstimateDialog] = useState(false);
     const [showWorksListDialog, setShowWorksListDialog] = useState(false);
     const [showMaterialsListDialog, setShowMaterialsListDialog] = useState(false);
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
+    const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
 
     const isAdmin = permissionsSet?.has('CAT_EDT');
     const hasLinkedEstimate = !!linkedEstimateId;
@@ -172,6 +177,27 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
         </Box>
     );
 
+    const handleSelectClick = () => {
+        setIsSelectMode((prev) => {
+            if (prev) setSelectedLaborIds([]);
+            return !prev;
+        });
+    };
+
+    const handleSetHidden = (hidden: boolean) => {
+        if (selectedLaborIds.length === 0 || !linkedEstimateId) return;
+        Api.requestSession({
+            command: 'estimate/set_labor_items_hidden',
+            args: { estimateId: linkedEstimateId },
+            json: { estimatedLaborIds: selectedLaborIds, hidden },
+        }).then(() => accordionRef.current?.refreshEverything(false));
+    };
+
+    const selectedDetails = accordionRef.current?.getSelectedLaborDetails?.() ?? [];
+    const anySelectedHidden = selectedDetails.some((d) => d.isHidden);
+    const hideUnhideLabelKey = anySelectedHidden ? 'Unhide' : 'Hide';
+    const handleHideUnhide = () => (anySelectedHidden ? handleSetHidden(false) : handleSetHidden(true));
+
     // Build tool buttons based on admin vs user
     const toolButtons = isAdmin
         ? [
@@ -183,11 +209,13 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
             { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => {}, disabled: !hasLinkedEstimate },
             { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick, disabled: !hasLinkedEstimate },
+            { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick, isSelect: true },
         ]
         : [
             { labelKey: 'Copy to My Estimates', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateEstimation, disabled: !hasLinkedEstimate },
             { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick, disabled: !hasLinkedEstimate },
+            { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick, isSelect: true },
         ];
 
     return (
@@ -282,20 +310,48 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 alignItems: 'center',
                                 height: '100%',
                             }}>
-                                {toolButtons.map((tool, index) => (
-                                    <Box
-                                        key={index}
-                                        onClick={() => { if (!tool.disabled) tool.onClick(); }}
-                                        sx={toolButtonSx(tool.disabled)}
-                                    >
-                                        <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <ImgElement src={tool.icon} sx={{ height: 22 }} />
+                                {toolButtons.map((tool, index) => {
+                                    const isSelectActive = tool.isSelect && isSelectMode;
+                                    return (
+                                        <Box
+                                            key={index}
+                                            onClick={() => { if (!tool.disabled) tool.onClick(); }}
+                                            sx={[
+                                                toolButtonSx(tool.disabled),
+                                                isSelectActive && {
+                                                    backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                                                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
+                                                    transform: 'translateY(-2px)',
+                                                },
+                                            ]}
+                                        >
+                                            <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <ImgElement src={tool.icon} sx={{ height: 22 }} />
+                                            </Box>
+                                            <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                                                {t(tool.labelKey)}
+                                            </Typography>
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-                                            {t(tool.labelKey)}
-                                        </Typography>
+                                    );
+                                })}
+
+                                {/* Divider */}
+                                <Box sx={{ width: '2px', backgroundColor: 'rgba(0, 0, 0, 0.12)', alignSelf: 'stretch', mx: 1 }} />
+
+                                {/* Hide/Unhide button */}
+                                <Box
+                                    onClick={() => { if (selectedLaborIds.length > 0) handleHideUnhide(); }}
+                                    sx={{ ...toolButtonSx(selectedLaborIds.length === 0) }}
+                                >
+                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        {anySelectedHidden
+                                            ? <VisibilityOffIcon sx={{ fontSize: 22 }} />
+                                            : <VisibilityIcon sx={{ fontSize: 22 }} />}
                                     </Box>
-                                ))}
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                                        {t(hideUnhideLabelKey)}
+                                    </Typography>
+                                </Box>
                             </Box>
                         </Box>
                     )}
@@ -382,8 +438,11 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     {/* Estimate content - always visible below tabs when linked */}
                     {hasLinkedEstimate && (
                         <EstimateThreeLevelNestedAccordion
+                            ref={accordionRef}
                             estimateId={linkedEstimateId!}
                             isOnlyEstInfo={!isAdmin}
+                            selectMode={isSelectMode}
+                            onSelectionChange={setSelectedLaborIds}
                         />
                     )}
                 </DialogContent>
