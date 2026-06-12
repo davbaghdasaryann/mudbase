@@ -140,8 +140,8 @@ function CatalogAccordionBody({
                     mb: 1,
                     width: '100%',
                     position: 'sticky',
-                    top: { xs: 104, md: 112 },
-                    zIndex: 199,
+                    top: 0,
+                    zIndex: 100,
                     backgroundColor: '#F5F9F9',
                     py: 1,
                 }}

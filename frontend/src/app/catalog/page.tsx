@@ -2,7 +2,6 @@
 
 import React, {useEffect, useState} from 'react';
 
-
 import {Box, Tab} from '@mui/material';
 import {TabContext, TabList} from '@mui/lab';
 
@@ -45,18 +44,23 @@ export default function CatalogsPage() {
 
     return (
         <PageContents title='Catalogs'>
-            <TabContext value={value}>
-                <Box sx={{borderBottom: 1, borderColor: 'divider', position: 'sticky', top: { xs: 56, md: 64 }, zIndex: 200, backgroundColor: '#F5F9F9'}}>
-                    <TabList onChange={handleChange}>
-                        {session?.user && permissionsSet?.has?.('CAT_LBR_VW') && <Tab label={t('Labor')} value='labor' />}
-                        {session?.user && permissionsSet?.has?.('CAT_MTRL_VW') && <Tab label={t('Materials')} value='material' />}
-                        {session?.user && <Tab label={t('Aggregated')} value='aggregated' />}
-                    </TabList>
-                </Box>
-            </TabContext>
+            {/* Single child: own layout with inner scroll so sticky works cleanly */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                {/* Tabs row — sits at top, no sticky needed */}
+                <TabContext value={value}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
+                        <TabList onChange={handleChange}>
+                            {session?.user && permissionsSet?.has?.('CAT_LBR_VW') && <Tab label={t('Labor')} value='labor' />}
+                            {session?.user && permissionsSet?.has?.('CAT_MTRL_VW') && <Tab label={t('Materials')} value='material' />}
+                            {session?.user && <Tab label={t('Aggregated')} value='aggregated' />}
+                        </TabList>
+                    </Box>
+                </TabContext>
 
-            <Box>
-                {!catalogItems && <CatalogAccordionNew key={catalogType} catalogType={catalogType} />}
+                {/* Inner scroll container — filter row sticks within here */}
+                <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                    {!catalogItems && <CatalogAccordionNew key={catalogType} catalogType={catalogType} />}
+                </Box>
             </Box>
         </PageContents>
     );
