@@ -293,8 +293,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         }}
                         sx={{
                             flex: 1,
-                            minHeight: 48,
-                            height: 48,
+                            minHeight: 43,
+                            height: 43,
                             '& .MuiTabs-indicator': {
                                 display: 'none',
                             },
@@ -304,8 +304,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 border: '1px solid rgba(0, 171, 190, 0.35)',
                                 borderBottom: '1px solid transparent',
                                 marginRight: '4px',
-                                minHeight: 48,
-                                height: 48,
+                                minHeight: 43,
+                                height: 43,
                                 padding: '12px 16px',
                             },
                             '& .Mui-selected': {
@@ -330,7 +330,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         {t('Tools')}
                                     </Box>
                                 }
-                                sx={{ minHeight: 48, height: 48 }}
+                                sx={{ minHeight: 43, height: 43 }}
                             />
                         )}
                         <Tab
@@ -340,7 +340,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     {t('General Info')}
                                 </Box>
                             }
-                            sx={{ minHeight: 48, height: 48 }}
+                            sx={{ minHeight: 43, height: 43 }}
                         />
                         {!props.isOnlyEstInfo && (
                             <Tab
@@ -350,7 +350,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         {t('Export')}
                                     </Box>
                                 }
-                                sx={{ minHeight: 48, height: 48 }}
+                                sx={{ minHeight: 43, height: 43 }}
                             />
                         )}
                     </Tabs>
