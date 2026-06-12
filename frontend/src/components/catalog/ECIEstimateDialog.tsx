@@ -417,15 +417,15 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     display: 'flex',
                                     gap: 1.5,
                                     flexWrap: 'nowrap',
-                                    justifyContent: 'center',
+                                    justifyContent: 'flex-start',
                                     alignItems: 'center',
                                     height: '100%',
                                 }}>
                                     <Box sx={{ display: 'flex', gap: 1.5 }}>
                                             {[
-                                                { label: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
-                                                { label: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
-                                                { label: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, format: 'pdf' as const },
+                                                { label: 'Estimation HTML', icon: `${TOOLBAR_ICON}/html.svg`, format: 'html' as const },
+                                                { label: 'Estimation Word', icon: `${TOOLBAR_ICON}/word.svg`, format: 'word' as const },
+                                                { label: 'Estimation PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, format: 'pdf' as const },
                                             ].map((format, index) => (
                                                 <Box
                                                     key={index}
