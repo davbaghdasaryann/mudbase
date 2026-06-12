@@ -316,14 +316,14 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         <Box
                                             key={index}
                                             onClick={() => { if (!tool.disabled) tool.onClick(); }}
-                                            sx={[
-                                                toolButtonSx(tool.disabled),
-                                                isSelectActive && {
+                                            sx={{
+                                                ...toolButtonSx(tool.disabled),
+                                                ...(isSelectActive ? {
                                                     backgroundColor: 'rgba(25, 118, 210, 0.12)',
                                                     boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
                                                     transform: 'translateY(-2px)',
-                                                },
-                                            ]}
+                                                } : {}),
+                                            }}
                                         >
                                             <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                 <ImgElement src={tool.icon} sx={{ height: 22 }} />
