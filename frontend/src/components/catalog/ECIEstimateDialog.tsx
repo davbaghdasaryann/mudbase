@@ -190,7 +190,11 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
             command: 'estimate/set_labor_items_hidden',
             args: { estimateId: linkedEstimateId },
             json: { estimatedLaborIds: selectedLaborIds, hidden },
-        }).then(() => accordionRef.current?.refreshEverything(false));
+        }).then(async () => {
+            await accordionRef.current?.refreshEverything(false);
+            // Re-trigger render so anySelectedHidden re-reads updated accordion state
+            setSelectedLaborIds(prev => [...prev]);
+        });
     };
 
     const selectedDetails = accordionRef.current?.getSelectedLaborDetails?.() ?? [];
