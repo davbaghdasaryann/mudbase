@@ -37,6 +37,8 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
                 rootBox: {
                     sx: {
                         overflowY: 'auto',
+                        alignItems: 'flex-start',
+                        justifyContent: 'flex-start',
                     },
                 },
                 paper: {
@@ -44,10 +46,12 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
                         border: 'none',
                         boxShadow: 'none',
                         p: 0,
+                        width: '100%',
                     },
                 },
                 grid: {
                     columnSpacing: 0,
+                    rowSpacing: 0,
                     sx: {
                         // borderBottom: `2px solid red`,
                     },
