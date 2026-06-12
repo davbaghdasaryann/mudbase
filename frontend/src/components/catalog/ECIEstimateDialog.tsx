@@ -102,34 +102,42 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     };
 
     const tabSx = {
-        minHeight: 48,
-        height: 48,
+        flex: 1,
+        minHeight: 43,
+        height: 43,
         '& .MuiTabs-indicator': { display: 'none' },
         '& .MuiTab-root': {
             borderTopLeftRadius: '8px',
             borderTopRightRadius: '8px',
-            border: '1px solid rgba(25, 118, 210, 0.2)',
+            border: '1px solid rgba(0, 171, 190, 0.35)',
             borderBottom: '1px solid transparent',
             marginRight: '4px',
-            minHeight: 48,
-            height: 48,
+            minHeight: 43,
+            height: 43,
             padding: '12px 16px',
         },
         '& .Mui-selected': {
-            backgroundColor: 'rgba(25, 118, 210, 0.08)',
-            border: '1px solid rgba(25, 118, 210, 0.3)',
-            borderBottom: '1px solid rgba(25, 118, 210, 0.08)',
+            backgroundColor: '#F5F9F9',
+            borderTop: '1px solid #00ABBE',
+            borderLeft: '1px solid #00ABBE',
+            borderRight: '1px solid #00ABBE',
+            borderBottom: 'none',
+            marginBottom: 0,
+            position: 'relative',
+            zIndex: 1,
+            color: '#000000 !important',
+            fontWeight: 700,
         }
     };
 
     const panelSx = {
         mb: 2,
-        p: 3,
-        backgroundColor: 'rgba(25, 118, 210, 0.08)',
-        border: '1px solid rgba(25, 118, 210, 0.3)',
+        p: 1.5,
+        backgroundColor: '#F5F9F9',
+        border: '1px solid #00ABBE',
         borderTop: 0,
         borderRadius: '0 4px 4px 4px',
-        minHeight: 200,
+        height: 130,
         overflow: 'visible',
     };
 
@@ -222,7 +230,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
 
                 <DialogContent>
                     {/* Tabs */}
-                    <Box sx={{ borderBottom: '1px solid rgba(25, 118, 210, 0.3)', mb: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', position: 'relative', mb: 0, '&::after': { content: '""', position: 'absolute', bottom: 0, left: 0, right: 0, height: '1px', backgroundColor: '#00ABBE', zIndex: 0 } }}>
                         <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} sx={tabSx}>
                             <Tab
                                 label={
@@ -231,7 +239,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         {t('Tools')}
                                     </Box>
                                 }
-                                sx={{ minHeight: 48, height: 48 }}
+                                sx={{ minHeight: 43, height: 43 }}
                             />
                             <Tab
                                 label={
@@ -240,7 +248,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         {t('General Info')}
                                     </Box>
                                 }
-                                sx={{ minHeight: 48, height: 48 }}
+                                sx={{ minHeight: 43, height: 43 }}
                             />
                             <Tab
                                 label={
@@ -249,7 +257,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         {t('General Parameters')}
                                     </Box>
                                 }
-                                sx={{ minHeight: 48, height: 48 }}
+                                sx={{ minHeight: 43, height: 43 }}
                             />
                             <Tab
                                 label={
@@ -258,7 +266,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         {t('Export')}
                                     </Box>
                                 }
-                                sx={{ minHeight: 48, height: 48 }}
+                                sx={{ minHeight: 43, height: 43 }}
                             />
                         </Tabs>
                     </Box>
