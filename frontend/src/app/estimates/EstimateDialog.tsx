@@ -440,7 +440,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             {'iconNode' in tool ? tool.iconNode : <ImgElement src={tool.icon} sx={{ height: 22 }} />}
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px' }}>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             {t(tool.labelKey)}
                                         </Typography>
                                     </Box>
@@ -492,7 +492,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {'iconPath' in tool && tool.iconPath ? <ImgElement src={tool.iconPath} sx={{ height: 22 }} /> : 'iconNode' in tool ? tool.iconNode : null}
                                     </Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {t(tool.labelKey)}
                                     </Typography>
                                 </Box>
