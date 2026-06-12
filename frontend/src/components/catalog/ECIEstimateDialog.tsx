@@ -388,13 +388,13 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 display: 'flex',
                                 gap: 1.5,
                                 flexWrap: 'nowrap',
-                                justifyContent: 'center',
+                                justifyContent: 'flex-start',
                                 alignItems: 'center',
                                 height: '100%',
                             }}>
                                 {[
-                                    { labelKey: 'Upload Project', icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
-                                    { labelKey: 'View Specification', icon: `${TOOLBAR_ICON}/works.svg`, onClick: () => {} },
+                                    { labelKey: 'Project', icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
+                                    { labelKey: 'Specification', icon: `${TOOLBAR_ICON}/works.svg`, onClick: () => {} },
                                 ].map((tool, index) => (
                                     <Box key={index} onClick={tool.onClick} sx={toolButtonSx()}>
                                         <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
