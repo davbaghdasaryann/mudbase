@@ -458,5 +458,7 @@
     "Select Visualization Type": "Ընտրել վիզուալիզացիայի տեսակը",
     "Preliminary View": "Նախնական դիտում",
     "Widget": "Վիջեթ",
-    "Select a visualization type to preview": "Ընտրեք վիզուալիզացիայի տեսակը նախադիտելու համար"
+    "Select a visualization type to preview": "Ընտրեք վիզուալիզացիայի տեսակը նախադիտելու համար",
+    "Undo": "Հետարկել",
+    "Redo": "Կրկնել"
 }
