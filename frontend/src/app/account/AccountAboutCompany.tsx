@@ -43,6 +43,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
                     sx: {
                         border: 'none',
                         boxShadow: 'none',
+                        p: 0,
                     },
                 },
                 grid: {
