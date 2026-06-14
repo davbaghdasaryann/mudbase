@@ -121,6 +121,7 @@ export default function DashboardBuilderPage() {
                             startIcon={<CameraAltIcon />}
                             onClick={handleCaptureSnapshot}
                             disabled={capturingSnapshot}
+                            sx={{ borderRadius: '25px', height: '40px' }}
                         >
                             {capturingSnapshot ? t('Capturing...') : t('Snapshot Now')}
                         </Button>
@@ -128,6 +129,7 @@ export default function DashboardBuilderPage() {
                             variant='contained'
                             startIcon={<AddIcon />}
                             onClick={() => setShowBuilderDialog(true)}
+                            sx={{ borderRadius: '25px', height: '40px' }}
                         >
                             {t('Create Widget')}
                         </Button>

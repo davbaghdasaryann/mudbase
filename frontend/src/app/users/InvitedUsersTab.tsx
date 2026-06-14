@@ -90,7 +90,7 @@ export default function PendingUsersPageTab() {
             <Toolbar disableGutters sx={{ backgroundColor: 'inherit' }}>
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
-                <PageButton variant='contained' label={t('Invite')} size='large' startIcon={<PersonAddAlt1Icon />} onClickTrue={setInviteActive} />
+                <PageButton variant='contained' label={t('Invite')} size='large' startIcon={<PersonAddAlt1Icon />} onClickTrue={setInviteActive} sx={{ borderRadius: '25px', height: '40px' }} />
             </Toolbar>
 
             <DataTableComponent
