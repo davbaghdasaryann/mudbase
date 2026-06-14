@@ -269,7 +269,11 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 <Box sx={{ width: '50%', flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
                                     <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%', minWidth: 0, py: '10px' } } }}>
                                         {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
-                                            ? <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" sx={props.disableEditIcons ? { pointerEvents: 'none', '& .MuiSelect-icon': { display: 'none' } } : undefined} />
+                                            ? props.disableEditIcons
+                                                ? <Box sx={{ pointerEvents: 'none', width: '100%', '& .MuiAutocomplete-popupIndicator': { display: 'none' } }}>
+                                                    <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" />
+                                                  </Box>
+                                                : <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" />
                                             : <F.InputText form={form} xs={12} id={`${expenseKey}-${index}`} value={t(expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey)))} label={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))} placeholder={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))} />
                                         }
                                     </F.PageForm>
