@@ -350,19 +350,17 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                         </Typography>
                     )}
 
-                    {props.catalogType === 'aggregated' && item.averagePrice != null && (
-                        <Typography sx={{ whiteSpace: 'nowrap', fontSize: { xs: '0.75rem', sm: '0.875rem' }, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-                            {item.averagePrice}
-                        </Typography>
-                    )}
-
                     <Tooltip title={t('Average market price')} arrow placement='top'>
                         <Typography sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             {formatCurrencyRoundedSymbol((item as any).totalCost ?? item.averagePrice)}
                         </Typography>
                     </Tooltip>
 
-                    <Typography sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>({item.measurementUnitRepresentationSymbol})</Typography>
+                    <Typography sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
+                        {props.catalogType === 'aggregated'
+                            ? `(AMD / ${item.measurementUnitRepresentationSymbol})`
+                            : `(${item.measurementUnitRepresentationSymbol})`}
+                    </Typography>
 
                     <Box sx={{ display: { xs: 'none', sm: 'block' } }}>&nbsp;</Box>
 
