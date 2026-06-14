@@ -1239,7 +1239,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 80,
                                                     type: 'singleSelect',
-                                                    editable: true,
+                                                    editable: false,
                                                     valueOptions: measurementUnits,
                                                 },
                                                 {
@@ -1630,7 +1630,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerAlign: 'left',
                                                                         width: 80,
                                                                         type: 'singleSelect',
-                                                                        editable: true,
+                                                                        editable: false,
                                                                         valueOptions: measurementUnits,
                                                                         disableColumnMenu: true,
                                                                     },
