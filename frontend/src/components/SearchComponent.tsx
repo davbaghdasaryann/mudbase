@@ -68,6 +68,8 @@ export default function SearchComponent(props: SeachComponentProps) {
 
             sx={{
                 minWidth: 160,
+                '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
             }}
 
             // InputProps={{

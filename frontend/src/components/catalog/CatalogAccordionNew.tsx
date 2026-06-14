@@ -155,7 +155,7 @@ function CatalogAccordionBody({
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', md: 'auto' } }}>
                         <PageSelect
                             withAll={true}
-                            sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth } }}
+                            sx={{ minWidth: { xs: '100%', sm: 180, md: filtersSelecteWidth }, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
                             label={t('Company')}
                             value={filter.accountId ?? 'all'}
                             items={
