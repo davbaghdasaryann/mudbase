@@ -12,6 +12,16 @@ import {MaterialItemDisplayData} from '../../data/material_display_data';
 import {LaborItemDisplayData} from '../../data/labor_display_data';
 import {usePermissions} from '../../api/auth';
 import CatalogAccordionNew from '@/components/catalog/CatalogAccordionNew';
+import ImgElement from '@/tsui/DomElements/ImgElement';
+
+const TOOLBAR_ICON = '/images/icons/toolbar';
+
+const TabLabel = ({ icon, label }: { icon: string; label: string }) => (
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+        <ImgElement src={`${TOOLBAR_ICON}/${icon}`} sx={{ height: 18 }} />
+        {label}
+    </Box>
+);
 
 export default function CatalogsPage() {
     const {session, status, permissionsSet} = usePermissions();
@@ -50,9 +60,9 @@ export default function CatalogsPage() {
                 <TabContext value={value}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
                         <TabList onChange={handleChange}>
-                            {session?.user && permissionsSet?.has?.('CAT_LBR_VW') && <Tab label={t('Labor')} value='labor' />}
-                            {session?.user && permissionsSet?.has?.('CAT_MTRL_VW') && <Tab label={t('Materials')} value='material' />}
-                            {session?.user && <Tab label={t('Aggregated')} value='aggregated' />}
+                            {session?.user && permissionsSet?.has?.('CAT_LBR_VW') && <Tab label={<TabLabel icon="works.svg" label={t('Labor')} />} value='labor' />}
+                            {session?.user && permissionsSet?.has?.('CAT_MTRL_VW') && <Tab label={<TabLabel icon="materials.svg" label={t('Materials')} />} value='material' />}
+                            {session?.user && <Tab label={<TabLabel icon="tools.svg" label={t('Aggregated')} />} value='aggregated' />}
                         </TabList>
                     </Box>
                 </TabContext>
