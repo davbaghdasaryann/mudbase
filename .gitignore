@@ -63,3 +63,5 @@ frontend/.env.local
 # npm (if accidentally used)
 package-lock.json
 
+backend/config/
+config/
