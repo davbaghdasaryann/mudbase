@@ -160,15 +160,16 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     };
 
     const handleDuplicateSelected = () => {
-        const selectedIds = accordionRef.current?.getSelectedLaborIds() ?? [];
-        if (selectedIds.length === 0) return;
+        if (selectedLaborIds.length === 0) return;
         Promise.all(
-            selectedIds.map((estimatedLaborId) =>
+            selectedLaborIds.map((estimatedLaborId) =>
                 Api.requestSession({ command: 'estimate/duplicate_labor_item', args: { estimatedLaborId } })
             )
         ).then(() => {
             dataUpdatedRef.current = true;
             accordionRef.current?.refreshEverything(false);
+        }).catch((err) => {
+            console.error('duplicate_labor_item error:', err);
         });
     };
 
