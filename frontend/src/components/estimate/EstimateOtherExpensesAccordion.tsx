@@ -21,6 +21,7 @@ import { EstimateRootAccordion, EstimateRootAccordionSummary, EstimateRootAccord
 interface EstimateOtherExpensesAccordionProps {
     estimateId: string;
     viewOnly?: boolean;
+    disableEditIcons?: boolean;
 }
 
 
@@ -276,20 +277,20 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 {/* Right: Percentage + edit + Price + edit — identical layout for both */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
                                     <TextField label={t('Percentage (%)')} value={expenseValue === 0 ? '0' : expenseValue} size="small" inputProps={{ readOnly: true }} sx={{ width: 150, '& .MuiInputBase-root': { backgroundColor: '#F5F9F9', height: '45px' }, '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' } }} />
-                                    {!props.viewOnly && (
+                                    {!(props.viewOnly || props.disableEditIcons) && (
                                         <IconButton onClick={() => openEditDialog('percentage', expenseKey, expenseValue)} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
                                             <EditOutlinedIcon sx={{ color: '#515151' }} />
                                         </IconButton>
                                     )}
                                     <TextField label={t('Amount AMD')} value={fixedNumber(percentagePriceCalc)} size="small" inputProps={{ readOnly: true }} sx={{ width: 170, '& .MuiInputBase-root': { backgroundColor: '#F5F9F9', height: '45px' }, '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#00ABBE' } }} />
-                                    {!props.viewOnly && (
+                                    {!(props.viewOnly || props.disableEditIcons) && (
                                         <IconButton onClick={() => openEditDialog('price', expenseKey, percentagePriceCalc)} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
                                             <EditOutlinedIcon sx={{ color: '#515151' }} />
                                         </IconButton>
                                     )}
                                 </Box>
                                 {/* Delete — pushed to far right edge */}
-                                {!props.viewOnly && (
+                                {!(props.viewOnly || props.disableEditIcons) && (
                                     <IconButton onClick={(e) => { e.stopPropagation(); onRemove(expenseKey); }} sx={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, marginLeft: 'auto', '&:hover .MuiSvgIcon-root': { color: '#DD0505' } }}>
                                         <DeleteForeverIcon sx={{ color: '#515151' }} />
                                     </IconButton>
