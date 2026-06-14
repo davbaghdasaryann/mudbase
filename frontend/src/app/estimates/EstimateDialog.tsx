@@ -611,7 +611,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             ].map((item, index) => (
                                 <Box
                                     key={index}
-                                    onClick={item.onClick}
                                     sx={{
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -620,15 +619,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         p: 1,
                                         backgroundColor: 'transparent',
                                         borderRadius: 2,
-                                        cursor: 'pointer',
+                                        cursor: 'not-allowed',
                                         width: { xs: 85, md: 100, lg: 115 },
                                         minHeight: { xs: 65, md: 75, lg: 85 },
                                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                        transition: 'all 0.2s',
-                                        '&:hover': {
-                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
-                                            transform: 'translateY(-2px)',
-                                        },
+                                        opacity: 0.4,
+                                        pointerEvents: 'none',
                                     }}
                                 >
                                     <Box sx={{ mb: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
