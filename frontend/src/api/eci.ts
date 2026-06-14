@@ -23,6 +23,9 @@ export interface ApiEciEstimate {
     fullCode: string;
 
     averagePrice?: number;
+    totalCost?: number;
+    costPerSqM?: number;
+    buildingType?: string;
     measurementUnitData?: any;
 
     estimateId?: string;

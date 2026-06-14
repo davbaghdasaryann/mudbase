@@ -11,7 +11,7 @@ import { formatQuantityParens } from '@/components/pages/CatalogAccordion';
 import { catalogConvertToFixedString, useCatalogData } from '@/components/catalog/CatalogAccordionDataContext';
 import { useTranslation } from 'react-i18next';
 import CatalogAccordionItems from '@/components/catalog/CatalogAccordionItems';
-import { formatCurrencyRoundedSymbol } from '@/lib/format_currency';
+import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import * as Api from 'api';
@@ -343,6 +343,18 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                     <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: { xs: '0.875rem', sm: '1rem' }, whiteSpace: 'nowrap' }}>{formatQuantityParens(item.childrenQuantity)}</Typography>
 
                     <Box sx={{ flexGrow: 1 }} />
+
+                    {props.catalogType === 'aggregated' && (item as any).buildingType && (
+                        <Typography sx={{ whiteSpace: 'nowrap', fontSize: { xs: '0.75rem', sm: '0.875rem' }, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
+                            {(item as any).buildingType}
+                        </Typography>
+                    )}
+
+                    {props.catalogType === 'aggregated' && (item as any).costPerSqM != null && (
+                        <Typography sx={{ whiteSpace: 'nowrap', fontSize: { xs: '0.75rem', sm: '0.875rem' }, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
+                            {formatCurrencyRounded((item as any).costPerSqM)}
+                        </Typography>
+                    )}
 
                     <Tooltip title={t('Average market price')} arrow placement='top'>
                         <Typography sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: { xs: '0.875rem', sm: '1rem' } }}>

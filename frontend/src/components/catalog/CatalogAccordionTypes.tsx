@@ -41,4 +41,7 @@ export type CatalogType = 'labor' | 'material' | 'aggregated';
 export interface AccordionItemEci extends AccordionItem {
     estimateId?: string;
     constructionArea?: number;
+    buildingType?: string;
+    totalCost?: number;
+    costPerSqM?: number;
 }

@@ -67,8 +67,16 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
     });
 
     // Calculate average price: totalCost / constructionArea, or just totalCost if no constructionArea
+    // Also expose totalCost and costPerSqM as separate fields
     pipeline.push({
         $addFields: {
+            totalCost: {
+                $cond: {
+                    if: { $gt: [{ $size: '$estimateData' }, 0] },
+                    then: { $arrayElemAt: ['$estimateData.totalCost', 0] },
+                    else: null,
+                },
+            },
             averagePrice: {
                 $cond: {
                     if: { $gt: [{ $size: '$estimateData' }, 0] },
@@ -102,7 +110,26 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
                     },
                     else: null
                 }
-            }
+            },
+            costPerSqM: {
+                $cond: {
+                    if: {
+                        $and: [
+                            { $gt: [{ $size: '$estimateData' }, 0] },
+                            { $gt: [{ $convert: { input: '$constructionArea', to: 'double', onError: 0, onNull: 0 } }, 0] },
+                        ],
+                    },
+                    then: {
+                        $round: [{
+                            $divide: [
+                                { $arrayElemAt: ['$estimateData.totalCost', 0] },
+                                { $convert: { input: '$constructionArea', to: 'double', onError: 0, onNull: 0 } },
+                            ],
+                        }],
+                    },
+                    else: null,
+                },
+            },
         }
     });
 

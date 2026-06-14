@@ -48,6 +48,9 @@ export class EciEstimateDisplayData {
     fullCode!: string;
 
     averagePrice?: number;
+    totalCost?: number;
+    costPerSqM?: number;
+    buildingType?: string;
 
     measurementUnitName?: string;
     measurementUnitMongoId?: string;
@@ -69,11 +72,16 @@ export class EciEstimateDisplayData {
 
         this.estimateId = est.estimateId;
         this.constructionArea = est.constructionArea;
+        this.buildingType = est.buildingType;
 
         this.childrenQuantity = est.childrenQuantity;
 
         if (est.averagePrice)
             this.averagePrice = roundToThree(est.averagePrice);
+        if (est.totalCost)
+            this.totalCost = roundToThree(est.totalCost);
+        if (est.costPerSqM)
+            this.costPerSqM = roundToThree(est.costPerSqM);
 
         if (est.measurementUnitData) {
             if (est.measurementUnitData.length > 0) {
