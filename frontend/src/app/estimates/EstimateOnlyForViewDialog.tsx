@@ -296,7 +296,7 @@ export default function EstimateOnlyForViewDialog(props: Props) {
                 <EstimateOnlyForViewThreeLevelAccordion estimateId={props.estimateId} onDataUpdated={handleDataUpdated} viewOnly={props.viewOnly} />
 
                 {session?.user && permissionsSet?.has?.('EST_VW_OTHR_XPNS') && (
-                    <EstimateOtherExpensesAccordion estimateId={props.estimateId} viewOnly={props.viewOnly} />
+                    <EstimateOtherExpensesAccordion estimateId={props.estimateId} viewOnly={true} />
                 )}
             </DialogContent>
         </Dialog>
