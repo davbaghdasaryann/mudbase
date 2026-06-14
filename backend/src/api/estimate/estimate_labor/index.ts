@@ -1,4 +1,5 @@
 export * from './estimate_add_labor_item';
+export * from './estimate_duplicate_labor_item';
 export * from './estimate_add_custom_labor_item';
 export * from './estimate_get_labor_item';
 export * from './estimate_move_labor_items';

@@ -159,6 +159,18 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         });
     };
 
+    const handleDuplicateSelected = () => {
+        if (selectedLaborIds.length === 0) return;
+        Promise.all(
+            selectedLaborIds.map((estimatedLaborId) =>
+                Api.requestSession({ command: 'estimate/duplicate_labor_item', args: { estimatedLaborId } })
+            )
+        ).then(() => {
+            dataUpdatedRef.current = true;
+            accordionRef.current?.refreshEverything(false);
+        });
+    };
+
     const handleSetHidden = (hidden: boolean) => {
         if (selectedLaborIds.length === 0) return;
         Api.requestSession({
@@ -456,11 +468,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 mx: 1
                             }} />
 
-                            {/* Last 3 buttons with separator — disabled until rows selected when in select mode */}
+                            {/* Last buttons with separator — disabled until rows selected when in select mode */}
                             {[
                                 { labelKey: 'Delete', iconPath: `${TOOLBAR_ICON}/delete.svg`, onClick: handleDeleteSelected },
                                 { labelKey: 'Move', iconPath: `${TOOLBAR_ICON}/move.svg`, onClick: () => setShowMoveDialog(true) },
                                 { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 22 }} /> : <VisibilityIcon sx={{ fontSize: 22 }} />, onClick: handleHideUnhide },
+                                { labelKey: 'Copy', iconPath: `${TOOLBAR_ICON}/duplicate.svg`, onClick: handleDuplicateSelected },
                             ].map((tool, index) => (
                                 <Box
                                     key={index}
