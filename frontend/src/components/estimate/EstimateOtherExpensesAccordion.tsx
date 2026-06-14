@@ -264,7 +264,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         }
 
                         return (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0, gap: 1, pr: 1 }}>
+                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0, gap: 1, pr: 1, borderRadius: 1, '&:hover': { backgroundColor: '#E8EFEF' } }}>
                                 {/* Left: Cost Type — 50% of row */}
                                 <Box sx={{ width: '50%', flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
                                     <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%', minWidth: 0, py: '10px' } } }}>
