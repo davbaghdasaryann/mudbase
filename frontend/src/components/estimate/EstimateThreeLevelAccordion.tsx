@@ -350,7 +350,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     };
 
     const onRemove = (type: 'section' | 'subsection', id: string) => {
-        confirmDialog(t('Are you sure?')).then((result) => {
+        confirmDialog(
+            t('confirm_delete'),
+            undefined,
+            { noTitle: true, confirmText: t('Delete'), cancelText: t('Cancel'), confirmColor: '#DC3741' }
+        ).then((result) => {
             if (result.isConfirmed) {
                 if (type === 'section') {
                     Api.requestSession<any>({

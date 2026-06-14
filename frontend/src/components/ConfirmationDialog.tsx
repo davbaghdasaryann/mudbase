@@ -52,7 +52,7 @@ export function confirmDialog(message: string, title?: string, options?: Confirm
         denyButtonColor: '#6e7881',
         denyButtonText: options?.cancelText ?? getI18n().t('No'),
         confirmButtonText: options?.confirmText ?? getI18n().t('Yes'),
-        reverseButtons: true,
+        reverseButtons: false,
         backdrop: true,
 
         // focusConfirm: false,               // Don’t auto-focus the confirm button if you want the user to read first
