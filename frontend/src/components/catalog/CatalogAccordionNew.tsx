@@ -260,7 +260,7 @@ function CatalogAccordionBody({
                 </Fade>
             ) : (
                 <Fade in={!isDataLoading} timeout={400}>
-                    <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8, backgroundColor: '#FFFFFF', borderRadius: 1, '& .MuiAccordion-root': { backgroundColor: '#FFFFFF !important' }, '& .MuiAccordionDetails-root': { backgroundColor: '#FFFFFF !important' } }}>
+                    <Stack spacing={0} direction='column' sx={{ overflowY: 'auto', pb: 8, backgroundColor: '#FFFFFF', borderRadius: 1 }}>
                         {items.map((item) => (
                             <CatalogRootAccordion
                                 key={`${item._id}-${filter.timePeriod}-${filter.accountId || 'all'}`}

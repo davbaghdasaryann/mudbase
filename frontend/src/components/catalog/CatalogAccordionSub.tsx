@@ -115,7 +115,7 @@ export default function CatalogSubAccordion(props: CatalogSubAccordionProps) {
     }, [ctx, item, props]);
 
     return (
-        <EstimateChildAccordion expanded={ctx.isExpanded(item.categoryFullCode!)} onChange={(event, isExpanded) => handleAccordionChange(isExpanded)}>
+        <EstimateChildAccordion expanded={ctx.isExpanded(item.categoryFullCode!)} onChange={(event, isExpanded) => handleAccordionChange(isExpanded)} sx={{ backgroundColor: '#F5F9F4' }}>
             <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Stack direction='row' spacing={{ xs: 0.5, sm: 1 }} justifyContent='space-between' alignItems='center' width='100%'>
                     <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>{item.code}</Typography>
@@ -170,7 +170,7 @@ export default function CatalogSubAccordion(props: CatalogSubAccordionProps) {
                 </Stack>
             </EstimateRootAccordionSummary>
 
-            <EstimateRootAccordionDetails>
+            <EstimateRootAccordionDetails sx={{ backgroundColor: '#F5F9F4' }}>
                 <Stack spacing={0} sx={{ ml: { xs: 1, sm: 2, md: 4 } }}>
                     {/* {items.map((child) => (
                         <CatalogAccordionSubChild

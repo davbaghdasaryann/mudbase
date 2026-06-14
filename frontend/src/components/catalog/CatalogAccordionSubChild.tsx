@@ -316,6 +316,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         <>
             <Box
                 sx={{
+                    backgroundColor: '#ffffff',
                     borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
                     '&:hover': {
                         backgroundColor: (theme) => theme.palette.action.hover,
