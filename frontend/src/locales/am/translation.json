@@ -475,5 +475,6 @@
     "Redo": "Կրկնել",
     "Percentage (%)": "Տոկոս (%)",
     "Amount AMD": "Արժեք",
-    "View Estimate": "Դիտել նախահաշիվը"
+    "View Estimate": "Դիտել նախահաշիվը",
+    "confirm_remove_item": "Հաստատու՞մ եք ջնջել՝ {{name}}"
 }

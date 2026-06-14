@@ -154,5 +154,6 @@
     "Select Visualization Type": "Select Visualization Type",
     "Preliminary View": "Preliminary View",
     "Widget": "Widget",
-    "Select a visualization type to preview": "Select a visualization type to preview"
+    "Select a visualization type to preview": "Select a visualization type to preview",
+    "confirm_remove_item": "Are you sure you want to remove {{name}}?"
 }
