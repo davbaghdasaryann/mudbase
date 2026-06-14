@@ -326,7 +326,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const handleRemoveLabor = (currentOfferItemEditId: string) => {
         setAnchorEl(null);
 
-        confirmDialog(t('confirm_remove_item', { name: estimatedLaborItemName }), t('Are you sure?')).then((result) => {
+        confirmDialog(
+            t('confirm_remove_item', { name: estimatedLaborItemName }),
+            undefined,
+            { noTitle: true, confirmText: t('Delete'), cancelText: t('Cancel'), confirmColor: '#DC3741' }
+        ).then((result) => {
             if (result.isConfirmed) {
                 Api.requestSession<any>({
                     command: 'estimate/remove_labor_item',

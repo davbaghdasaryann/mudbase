@@ -30,19 +30,27 @@ import { mainPrimaryColor, theme } from '@/theme';
 
 const ReactSwal = withReactContent(Swal);
 
-export function confirmDialog(message: string, title?: string) {
+interface ConfirmDialogOptions {
+    confirmText?: string;
+    cancelText?: string;
+    confirmColor?: string;
+    noTitle?: boolean;
+}
+
+export function confirmDialog(message: string, title?: string, options?: ConfirmDialogOptions) {
+    const noTitle = options?.noTitle ?? false;
     let promise = ReactSwal.fire({
         theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
-        title: title ? getI18n().t(title) : getI18n().t(message),
-        text: title ? getI18n().t(message) : undefined,
+        title: noTitle ? undefined : (title ? getI18n().t(title) : getI18n().t(message)),
+        text: noTitle ? getI18n().t(message) : (title ? getI18n().t(message) : undefined),
         icon: 'warning',
-        iconColor: '#DC3741', 
-        confirmButtonColor: mainPrimaryColor,
+        iconColor: '#DC3741',
+        confirmButtonColor: options?.confirmColor ?? mainPrimaryColor,
         target: document.body,
         allowOutsideClick: false,
         showDenyButton: true,
-        denyButtonText: getI18n().t('No'),
-        confirmButtonText: getI18n().t('Yes'),
+        denyButtonText: options?.cancelText ?? getI18n().t('No'),
+        confirmButtonText: options?.confirmText ?? getI18n().t('Yes'),
         reverseButtons: true,
         backdrop: true,
 
