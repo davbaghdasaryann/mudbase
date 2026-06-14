@@ -6,11 +6,21 @@ import {Tab, Box} from '@mui/material';
 import {useTranslation} from 'react-i18next';
 
 import {usePermissions} from '@/api/auth';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 
 import AccountSharedEstimatesWithMeTab from './AccountSharedEstimatesWithMeTab';
 import AccountEstimatesTab from './AccountEstimatesTab';
 import AccountSharedEstimatesByMeTab from '@/app/estimates/AccountSharedEstimatesByMeTab';
 import ArchivedEstimatesTab from './ArchivedEstimatesTab';
+
+const TOOLBAR_ICON = '/images/icons/toolbar';
+
+const TabLabel = ({ icon, label }: { icon: string; label: string }) => (
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+        <ImgElement src={`${TOOLBAR_ICON}/${icon}`} sx={{ height: 18 }} />
+        {label}
+    </Box>
+);
 
 type TabValue = 'estimates' | 'sharedEstimates' | 'estimateOffers' | 'archivedEstimates';
 
@@ -51,10 +61,10 @@ export default function EstimatesPageContents() {
             <TabContext value={value}>
                 <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                     <TabList onChange={handleChange}>
-                        {permEstUse && <Tab label={t('My Estimates')} value='estimates' />}
-                        {hasSharedEstimatesByMe && <Tab label={t('Shared Estimates')} value='sharedEstimates' />}
-                        {hasSharedEstimatesWithMe && <Tab label={t('Estimate Offers')} value='estimateOffers' />}
-                        {permEstUse && <Tab label={t('Archived Estimates')} value='archivedEstimates' />}
+                        {permEstUse && <Tab label={<TabLabel icon="works.svg" label={t('My Estimates')} />} value='estimates' />}
+                        {hasSharedEstimatesByMe && <Tab label={<TabLabel icon="share.svg" label={t('Shared Estimates')} />} value='sharedEstimates' />}
+                        {hasSharedEstimatesWithMe && <Tab label={<TabLabel icon="favourites.svg" label={t('Estimate Offers')} />} value='estimateOffers' />}
+                        {permEstUse && <Tab label={<TabLabel icon="archive.svg" label={t('Archived Estimates')} />} value='archivedEstimates' />}
                     </TabList>
                 </Box>
             </TabContext>
