@@ -303,7 +303,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         );
                     })}
 
-                    {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly) &&
+                    {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly && !props.disableEditIcons) &&
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, mb: 2 }}>
                             <Button onClick={handleAddExpense} variant="contained" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 {t("Add expense type")}
