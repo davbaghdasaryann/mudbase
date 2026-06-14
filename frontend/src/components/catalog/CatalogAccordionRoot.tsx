@@ -181,7 +181,19 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                 </Stack>
             </EstimateRootAccordionSummary>
 
-            <EstimateRootAccordionDetails sx={{ backgroundColor: '#F5F9F4' }}>
+            <EstimateRootAccordionDetails sx={{
+                    backgroundColor: '#F5F9F4',
+                    position: 'relative',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        left: '22px',
+                        top: 0,
+                        bottom: 0,
+                        width: '1px',
+                        backgroundColor: '#D9D9D9',
+                    },
+                }}>
                 <Stack spacing={0} sx={{ ml: { xs: 1, sm: 2, md: 4 } }}>
                     {/* {items.map(child => (
                         <CatalogSubAccordion
