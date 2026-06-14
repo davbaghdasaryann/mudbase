@@ -175,7 +175,7 @@ export default function AccountEstimatesTab() {
 
     return (
         <>
-            <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
+            <Toolbar disableGutters sx={{ backgroundColor: 'inherit', minHeight: 'auto !important', py: 1, mt: 2, mb: 1 }}>
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 

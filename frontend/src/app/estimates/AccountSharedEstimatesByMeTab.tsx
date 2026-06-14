@@ -344,7 +344,7 @@ export default function AccountSharedEstimatesByMeTab() {
 
     return (
         <>
-            <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
+            <Toolbar disableGutters sx={{ backgroundColor: 'inherit', minHeight: 'auto !important', py: 1, mt: 2, mb: 1 }}>
                 <SearchComponent onSearch={onSearch} />
                 <Box sx={{ flexGrow: 1 }} />
                 <PageSelect

@@ -183,7 +183,7 @@ export default function AccountSharedEstimatesWithMeTab() {
 
         return (
             <>
-                <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
+                <Toolbar disableGutters sx={{ backgroundColor: 'inherit', minHeight: 'auto !important', py: 1, mt: 2, mb: 1 }}>
                     <SearchComponent onSearch={onSearch} />
                     <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
@@ -326,7 +326,7 @@ export default function AccountSharedEstimatesWithMeTab() {
 
         return (
             <>
-                <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
+                <Toolbar disableGutters sx={{ backgroundColor: 'inherit', minHeight: 'auto !important', py: 1, mt: 2, mb: 1 }}>
                     <SearchComponent onSearch={onSearch} />
                     <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
@@ -479,7 +479,7 @@ export default function AccountSharedEstimatesWithMeTab() {
         //THIS I ADD FOR BANK 'EST_MULT_SHRD_ONLY_VW_ALL'
         return (
             <>
-                <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
+                <Toolbar disableGutters sx={{ backgroundColor: 'inherit', minHeight: 'auto !important', py: 1, mt: 2, mb: 1 }}>
                     <SearchComponent onSearch={onSearch} />
                     <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
