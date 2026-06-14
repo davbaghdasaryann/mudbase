@@ -179,7 +179,7 @@ export default function AccountEstimatesTab() {
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 
-                {permCreate && <PageButton variant='contained' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} />}
+                {permCreate && <PageButton variant='contained' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} sx={{ borderRadius: '25px', height: '40px' }} />}
             </Toolbar>
 
             <DataTableComponent
