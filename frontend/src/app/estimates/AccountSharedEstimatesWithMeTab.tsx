@@ -188,7 +188,7 @@ export default function AccountSharedEstimatesWithMeTab() {
                     <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
                         withAll={true}
-                        sx={{ minWidth: 300, ml: 1, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
+                        sx={{ minWidth: { xs: '100%', sm: 180, md: 250 }, ml: 1, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
                         onSelected={(selected) => {
                             if (selected?.label) {
                                 setSelectedAccountFilter(selected.label);
@@ -331,7 +331,7 @@ export default function AccountSharedEstimatesWithMeTab() {
                     <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
                         withAll={true}
-                        sx={{ minWidth: 300, ml: 1, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
+                        sx={{ minWidth: { xs: '100%', sm: 180, md: 250 }, ml: 1, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
                         onSelected={(selected) => {
                             if (selected?.label) {
                                 setSelectedAccountFilter(selected.label);
@@ -484,7 +484,7 @@ export default function AccountSharedEstimatesWithMeTab() {
                     <Box sx={{ flexGrow: 1 }} />
                     <PageSelect
                         withAll={true}
-                        sx={{ minWidth: 300, ml: 1, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
+                        sx={{ minWidth: { xs: '100%', sm: 180, md: 250 }, ml: 1, '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' } }}
                         onSelected={(selected) => {
                             if (selected?.label) {
                                 setSelectedAccountFilter(selected.label);
