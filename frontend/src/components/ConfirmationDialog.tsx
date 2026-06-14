@@ -49,6 +49,7 @@ export function confirmDialog(message: string, title?: string, options?: Confirm
         target: document.body,
         allowOutsideClick: false,
         showDenyButton: true,
+        denyButtonColor: '#6e7881',
         denyButtonText: options?.cancelText ?? getI18n().t('No'),
         confirmButtonText: options?.confirmText ?? getI18n().t('Yes'),
         reverseButtons: true,
