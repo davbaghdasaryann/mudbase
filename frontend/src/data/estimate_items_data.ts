@@ -14,6 +14,7 @@ export class EstimateLaborItemDisplayData {
     itemChangableName?: string;
     itemFullCode!: string;
     itemMeasurementUnit!: string;
+    itemMeasurementUnitLabel?: string;
     accountName!: string;
 
     itemUnitPrice!: number;
@@ -130,8 +131,10 @@ export class EstimateLaborItemDisplayData {
         if (estimateLaborItem.estimateMeasurementUnitData) {
             if (estimateLaborItem.estimateMeasurementUnitData.length > 0) {
                 let estimatedLaborMeasurementUnit = estimateLaborItem.estimateMeasurementUnitData[0] as ApiMeasurementUnit
-                // Store the ObjectId for the dropdown, display will be handled by valueOptions
+                // Store the ObjectId for the edit dropdown (matched against valueOptions)
                 this.itemMeasurementUnit = estimatedLaborMeasurementUnit._id;
+                // Store the display label for read-only views
+                this.itemMeasurementUnitLabel = estimatedLaborMeasurementUnit.representationSymbol;
             }
         }
 

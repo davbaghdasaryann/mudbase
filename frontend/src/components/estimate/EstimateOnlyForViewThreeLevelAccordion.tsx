@@ -52,6 +52,7 @@ interface AccardionItem {
     itemName?: string;
     itemChangableName?: string;
     itemMeasurementUnit?: string;
+    itemMeasurementUnitLabel?: string;
     itemFullCode?: string;
     companyNameMadeOffer?: string;
 
@@ -421,6 +422,7 @@ export default function EstimateOnlyForViewThreeLevelAccordion(props: Props) {
         itemArr.itemChangableAveragePrice = roundToThree(item.itemChangableAveragePrice);
         itemArr.itemAveragePrice = roundToThree(item.itemAveragePrice);
         itemArr.itemMeasurementUnit = item.itemMeasurementUnit;
+        itemArr.itemMeasurementUnitLabel = item.itemMeasurementUnitLabel;
         itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
         if (item.itemUnitPrice) {
@@ -484,6 +486,7 @@ export default function EstimateOnlyForViewThreeLevelAccordion(props: Props) {
                             itemName: item.itemName,
                             itemChangableName: item.itemChangableName,
                             itemMeasurementUnit: item.itemMeasurementUnit,
+                            itemMeasurementUnitLabel: item.itemMeasurementUnitLabel,
                             itemFullCode: item.itemFullCode,
                             companyNameMadeOffer: item.accountName,
                             presentItemOfferAveragePrice: roundToThree(item.presentItemOfferAveragePrice),
@@ -553,6 +556,7 @@ export default function EstimateOnlyForViewThreeLevelAccordion(props: Props) {
             itemArr.itemChangableAveragePrice = roundToThree(item.itemChangableAveragePrice);
             itemArr.itemAveragePrice = roundToThree(item.itemAveragePrice);
             itemArr.itemMeasurementUnit = item.itemMeasurementUnit;
+            itemArr.itemMeasurementUnitLabel = item.itemMeasurementUnitLabel;
             itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
 
             itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
@@ -781,7 +785,7 @@ export default function EstimateOnlyForViewThreeLevelAccordion(props: Props) {
                                                 disableColumnMenu: true
                                             },
                                             { field: 'itemChangableName', headerName: t('Labor'), headerAlign: 'left', flex: 0.5, disableColumnMenu: true, cellClassName: 'multilineCell', },
-                                            { field: 'itemMeasurementUnit', headerName: t('Unit'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
+                                            { field: 'itemMeasurementUnitLabel', headerName: t('Unit'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
                                             // { field: 'quantity', headerName: 'Quantity', headerAlign: 'left', width: 120, editable: true, cellClassName: 'editableCell' },
                                             { field: 'quantity', headerName: t('Quantity'), headerAlign: 'left', flex: 0.2, editable: (session?.user && permissionsSet?.has?.('EST_EDT_LBR_QTY') && !props.viewOnly), cellClassName: (session?.user && permissionsSet?.has?.('EST_EDT_LBR_QTY') && !props.viewOnly) ? 'editableCell' : '', disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
                                             // { field: 'itemChangableAveragePrice', headerName: 'Price', headerAlign: 'left', width: 120, editable: true, cellClassName: 'editableCell'},
