@@ -34,7 +34,7 @@ export default function BreakdownTable({ estimate }: Props) {
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [expanded, setExpanded] = useState<Set<string>>(new Set());
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
     const estimateId = String(estimate._id);
 
@@ -42,12 +42,15 @@ export default function BreakdownTable({ estimate }: Props) {
         setLoading(true);
         setSections([]);
         setSubsections([]);
+        setExpanded({});
 
         Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } })
             .then((sects) => {
                 const sorted = (sects ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
                 setSections(sorted);
-                setExpanded(new Set(sorted.map(s => String(s._id))));
+                const openAll: Record<string, boolean> = {};
+                sorted.forEach(s => { openAll[String(s._id)] = true; });
+                setExpanded(openAll);
             })
             .catch((e) => setError(String(e)));
 
@@ -59,11 +62,7 @@ export default function BreakdownTable({ estimate }: Props) {
     }, [estimateId]);
 
     const toggle = (id: string) => {
-        setExpanded(prev => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
-            return next;
-        });
+        setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     const totalCost = estimate.totalCostWithOtherExpenses ?? estimate.totalCost ?? 1;
@@ -95,18 +94,20 @@ export default function BreakdownTable({ estimate }: Props) {
                     const sectionSubs = subsections
                         .filter(s => String(s.estimateSectionId) === String(section._id))
                         .sort((a, b) => a.displayIndex - b.displayIndex);
-                    const isOpen = expanded.has(String(section._id));
+                    const isOpen = !!expanded[String(section._id)];
 
                     return (
-                        <React.Fragment key={section._id}>
+                        <React.Fragment key={String(section._id)}>
                             <TableRow
-                                key={section._id}
-                                onClick={() => toggle(String(section._id))}
                                 sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
                             >
                                 <TableCell sx={{ pl: 1, fontWeight: 600 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <IconButton size='small' sx={{ p: 0.25, color: 'text.secondary' }}>
+                                        <IconButton
+                                            size='small'
+                                            sx={{ p: 0.25, color: 'text.secondary' }}
+                                            onClick={() => toggle(String(section._id))}
+                                        >
                                             {isOpen ? <ExpandLessIcon fontSize='small' /> : <ExpandMoreIcon fontSize='small' />}
                                         </IconButton>
                                         <Typography variant='body2' sx={{ fontWeight: 600 }}>
@@ -124,7 +125,7 @@ export default function BreakdownTable({ estimate }: Props) {
 
                             {isOpen && sectionSubs.map((sub, subI) => (
                                 <TableRow
-                                    key={sub._id}
+                                    key={String(sub._id)}
                                     sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}
                                 >
                                     <TableCell sx={{ pl: 5 }}>
