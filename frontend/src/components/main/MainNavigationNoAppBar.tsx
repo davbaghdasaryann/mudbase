@@ -76,15 +76,15 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 return (
                     <>
                         <ListItem sx={{px: 1, py: 0, overflowX: 'hidden'}}>
-                            <ListItemButton onClick={() => handleToggle(segment)} selected={isPathnameEqual(pathname, href)}>
-                                {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2}}>{item.icon}</ListItemIcon>}
+                            <ListItemButton onClick={() => handleToggle(segment)} selected={isPathnameEqual(pathname, href)} sx={{color: iconColor}}>
+                                {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: iconColor}}>{item.icon}</ListItemIcon>}
                                 <ListItemText primary={item.title} />
                                 {openItems[segment] ? <ExpandLess /> : <ExpandMore />}
                             </ListItemButton>
                         </ListItem>
 
                         <Collapse in={!!openItems[segment]} timeout='auto' unmountOnExit>
-                            <List component='div' disablePadding sx={{mb: depth === 0 ? 4 : 1, pl: 2 * (depth + 1)}}>
+                            <List component='div' disablePadding sx={{mb: 1, pl: 2 * (depth + 1)}}>
                                 {renderNavItems(item.children!, href, depth + 1)}
                             </List>
                         </Collapse>
