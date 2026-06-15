@@ -49,7 +49,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                 for (const row of (rows ?? [])) {
                     const key = String(row.laborItemId);
                     if (!map.has(key)) {
-                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: row.laborOfferItemName || row.catalogName, totalCost: 0, items: [] });
+                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: row.catalogName, totalCost: 0, items: [] });
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
@@ -92,25 +92,19 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
             <TableBody>
                 {groups.map((group) => {
                     const isOpen = !!expanded[group.laborItemId];
-                    const hasMultiple = group.items.length > 1;
 
                     return (
                         <React.Fragment key={group.laborItemId}>
                             <TableRow
-                                onClick={() => hasMultiple && toggle(group.laborItemId)}
-                                sx={{
-                                    cursor: hasMultiple ? 'pointer' : 'default',
-                                    backgroundColor: '#fafafa',
-                                    '&:hover': { backgroundColor: hasMultiple ? '#f0f9fb' : '#fafafa' },
-                                }}
+                                onClick={() => toggle(group.laborItemId)}
+                                sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
                             >
                                 <TableCell sx={{ pl: 1, py: 1.5 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        {hasMultiple && (isOpen
+                                        {isOpen
                                             ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
                                             : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
-                                        )}
-                                        {!hasMultiple && <Box sx={{ width: 18 }} />}
+                                        }
                                         <Typography variant='body2' sx={{ fontWeight: 600 }}>
                                             {group.fullCode && <Box component='span' sx={{ color: 'text.secondary', mr: 1 }}>{group.fullCode}</Box>}
                                             {group.name}
