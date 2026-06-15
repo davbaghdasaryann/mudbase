@@ -475,5 +475,7 @@
   "No analytics created yet": "Վերլուծություններ դեռ չկան",
   "Choose an Estimation": "Ընտրել Նախահաշիվ",
   "Date of Creation": "Ստեղծման ամսաթիվ",
-  "General": "Ընդհանուր"
+  "General": "Ընդհանուր",
+  "Labor Cost": "Աշխատանքների արժեք",
+  "Materials Cost": "Նյութերի արժեք"
 }

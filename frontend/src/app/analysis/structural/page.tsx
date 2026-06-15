@@ -1,17 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography, Tab } from '@mui/material';
-import { TabContext, TabList } from '@mui/lab';
+import { Box, Typography, Tab, Paper } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from './ChooseEstimationDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
+import { formatCurrencyRounded } from '@/lib/format_currency';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
+
+const MetricCard = ({ label, value }: { label: string; value: number }) => (
+    <Paper elevation={0} sx={{ border: '1px solid #E0E0E0', borderRadius: 2, p: 2.5 }}>
+        <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, mb: 1 }} />
+        <Typography variant='body2' sx={{ color: 'text.secondary', mb: 0.5 }}>{label}</Typography>
+        <Typography variant='h6' sx={{ fontWeight: 700 }}>AMD {formatCurrencyRounded(value)}</Typography>
+    </Paper>
+);
 
 export default function StructuralAnalysisPage() {
     const { t } = useTranslation();
@@ -50,13 +60,29 @@ export default function StructuralAnalysisPage() {
 
             {hasData && (
                 <TabContext value={activeTab}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
                             <Tab label={t('General')} value='general' />
                             <Tab label={t('Labor')} value='labor' />
                             <Tab label={t('Materials')} value='materials' />
                         </TabList>
                     </Box>
+
+                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                            <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCost ?? 0} />
+                            <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
+                            <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
+                        </Box>
+                    </TabPanel>
+
+                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                        <></>
+                    </TabPanel>
+
+                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                        <></>
+                    </TabPanel>
                 </TabContext>
             )}
 

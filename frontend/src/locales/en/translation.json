@@ -163,5 +163,7 @@
   "No analytics created yet": "No analytics created yet",
   "Choose an Estimation": "Choose an Estimation",
   "Date of Creation": "Date of Creation",
-  "General": "General"
+  "General": "General",
+  "Labor Cost": "Labor Cost",
+  "Materials Cost": "Materials Cost"
 }

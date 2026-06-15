@@ -130,7 +130,7 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     // Update the document in the database.
     const result = await estimatesColl.updateOne(
         {_id: estimate._id},
-        {$set: {totalCost: totalCost, totalCostWithOtherExpenses: totalCostWithOtherExpenses}}
+        {$set: {totalCost: totalCost, totalCostWithOtherExpenses: totalCostWithOtherExpenses, laborTotalCost: laborTotalWithoutMaterial, materialTotalCost: materialTotalCost}}
     );
 }
 
