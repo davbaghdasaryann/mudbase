@@ -480,5 +480,6 @@
     "confirm_delete": "Վստա՞հ եք, որ ցանկանում եք ջնջել:",
     "Analytics": "Վերլուծություն",
     "Structural": "Կառուցվածքային",
-    "Structural Analytics": "Կառուցվածքային վերլուծություն"
+    "Structural Analytics": "Կառուցվածքային վերլուծություն",
+    "No analytics created yet": "Վերլուծություններ դեռ չկան"
 }
