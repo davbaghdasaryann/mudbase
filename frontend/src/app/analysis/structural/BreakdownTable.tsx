@@ -45,18 +45,25 @@ export default function BreakdownTable({ estimate }: Props) {
         setExpanded({});
 
         Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } })
-            .then((sects) => {
+            .then(async (sects) => {
                 const sorted = (sects ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
                 setSections(sorted);
                 const openAll: Record<string, boolean> = {};
                 sorted.forEach(s => { openAll[String(s._id)] = true; });
                 setExpanded(openAll);
-            })
-            .catch((e) => setError(String(e)));
 
-        Api.requestSession<Subsection[]>({ command: 'estimate/fetch_all_subsections', args: { estimateId } })
-            .then((subs) => { setSubsections(subs ?? []); })
-            .catch(() => {})
+                // Fetch subsections per section using the proven endpoint
+                const arrays = await Promise.all(
+                    sorted.map(s =>
+                        Api.requestSession<Subsection[]>({
+                            command: 'estimate/fetch_subsections',
+                            args: { estimateSectionId: String(s._id) },
+                        }).catch(() => [] as Subsection[])
+                    )
+                );
+                setSubsections(arrays.flat());
+            })
+            .catch((e) => setError(String(e)))
             .finally(() => setLoading(false));
 
     }, [estimateId]);
