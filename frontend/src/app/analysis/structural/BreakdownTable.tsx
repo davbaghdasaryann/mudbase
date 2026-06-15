@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, IconButton } from '@mui/material';
+import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import * as Api from '@/api';
@@ -99,17 +99,15 @@ export default function BreakdownTable({ estimate }: Props) {
                     return (
                         <React.Fragment key={String(section._id)}>
                             <TableRow
+                                onClick={() => toggle(String(section._id))}
                                 sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
                             >
                                 <TableCell sx={{ pl: 1, fontWeight: 600 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <IconButton
-                                            size='small'
-                                            sx={{ p: 0.25, color: 'text.secondary' }}
-                                            onClick={() => toggle(String(section._id))}
-                                        >
-                                            {isOpen ? <ExpandLessIcon fontSize='small' /> : <ExpandMoreIcon fontSize='small' />}
-                                        </IconButton>
+                                        {isOpen
+                                            ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
+                                            : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
+                                        }
                                         <Typography variant='body2' sx={{ fontWeight: 600 }}>
                                             {si + 1}. {section.name}
                                         </Typography>
