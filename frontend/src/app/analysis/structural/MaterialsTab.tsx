@@ -9,12 +9,12 @@ import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
 
-interface LaborRow {
+interface MaterialRow {
     _id: string;
-    laborItemId: string;
+    materialItemId: string;
     fullCode: string;
     catalogName: string;
-    laborOfferItemName: string;
+    materialOfferItemName: string;
     quantity: number;
     changableAveragePrice: number;
     cost: number;
@@ -22,35 +22,35 @@ interface LaborRow {
     sectionName: string;
 }
 
-interface GroupedLabor {
-    laborItemId: string;
+interface GroupedMaterial {
+    materialItemId: string;
     fullCode: string;
     name: string;
     totalCost: number;
-    items: LaborRow[];
+    items: MaterialRow[];
 }
 
-export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
-    const [groups, setGroups] = useState<GroupedLabor[]>([]);
+export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
+    const [groups, setGroups] = useState<GroupedMaterial[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
     const estimateId = String(estimate._id);
-    const totalLaborCost = estimate.laborTotalCost ?? 1;
+    const totalMaterialCost = estimate.materialTotalCost ?? 1;
 
     useEffect(() => {
         setLoading(true);
         setGroups([]);
         setExpanded({});
 
-        Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } })
+        Api.requestSession<MaterialRow[]>({ command: 'estimate/fetch_materials_for_analysis', args: { estimateId } })
             .then((rows) => {
-                const map = new Map<string, GroupedLabor>();
+                const map = new Map<string, GroupedMaterial>();
                 for (const row of (rows ?? [])) {
-                    const key = String(row.laborItemId);
+                    const key = String(row.materialItemId);
                     if (!map.has(key)) {
-                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: row.catalogName, totalCost: 0, items: [] });
+                        map.set(key, { materialItemId: key, fullCode: row.fullCode, name: row.catalogName, totalCost: 0, items: [] });
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
@@ -59,7 +59,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                 const grouped = Array.from(map.values());
                 setGroups(grouped);
                 const openAll: Record<string, boolean> = {};
-                grouped.forEach(g => { openAll[g.laborItemId] = false; });
+                grouped.forEach(g => { openAll[g.materialItemId] = false; });
                 setExpanded(openAll);
             })
             .catch((e) => setError(String(e)))
@@ -67,7 +67,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
     }, [estimateId]);
 
     const toggle = (key: string) => setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
-    const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(1) + '%' : '0%';
+    const pct = (cost: number) => totalMaterialCost > 0 ? ((cost / totalMaterialCost) * 100).toFixed(1) + '%' : '0%';
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -92,12 +92,12 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
             </TableHead>
             <TableBody>
                 {groups.map((group) => {
-                    const isOpen = !!expanded[group.laborItemId];
+                    const isOpen = !!expanded[group.materialItemId];
 
                     return (
-                        <React.Fragment key={group.laborItemId}>
+                        <React.Fragment key={group.materialItemId}>
                             <TableRow
-                                onClick={() => toggle(group.laborItemId)}
+                                onClick={() => toggle(group.materialItemId)}
                                 sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
                             >
                                 <TableCell sx={{ pl: 1, py: 1.5 }}>
@@ -124,7 +124,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                                 <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                     <TableCell sx={{ pl: 5, py: 1.5 }}>
                                         <Typography variant='body2' color='text.secondary'>
-                                            {i + 1}. {item.laborOfferItemName || item.catalogName}
+                                            {i + 1}. {item.materialOfferItemName || item.catalogName}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>

@@ -198,3 +198,86 @@ registerApiSession('estimate/get_material_item_for_view', async (req, res, sessi
     // respondJson(res, result);
     respondJson(res, materialItem);
 });
+
+registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+
+    const sections = await Db.getEstimateSectionsCollection()
+        .find({ estimateId })
+        .project({ _id: 1, name: 1 })
+        .toArray();
+    const sectionIds = sections.map(s => s._id);
+    if (sectionIds.length === 0) { respondJsonData(res, []); return; }
+
+    const sectionMap = new Map(sections.map(s => [s._id.toString(), s.name as string]));
+
+    const subsections = await Db.getEstimateSubsectionsCollection()
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .project({ _id: 1, name: 1, estimateSectionId: 1 })
+        .toArray();
+    const subsectionIds = subsections.map(s => s._id);
+    if (subsectionIds.length === 0) { respondJsonData(res, []); return; }
+
+    const subsectionMap = new Map(subsections.map(s => [
+        s._id.toString(),
+        { name: s.name as string, sectionName: sectionMap.get(s.estimateSectionId.toString()) ?? '' },
+    ]));
+
+    // Get hidden labor IDs to exclude their materials
+    const hiddenLaborIds = await Db.getEstimateLaborItemsCollection()
+        .find({ estimateId, isHidden: true })
+        .project({ _id: 1 })
+        .toArray()
+        .then(rows => rows.map(r => r._id));
+
+    const materialItems = await Db.getEstimateMaterialItemsCollection()
+        .aggregate([
+            {
+                $match: {
+                    estimateSubsectionId: { $in: subsectionIds },
+                    ...(hiddenLaborIds.length > 0 ? { estimatedLaborId: { $nin: hiddenLaborIds } } : {}),
+                },
+            },
+            {
+                $lookup: {
+                    from: 'material_items',
+                    let: { itemIdVar: '$materialItemId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
+                        { $project: { fullCode: 1, name: 1, _id: 0 } },
+                    ],
+                    as: 'catalogItem',
+                },
+            },
+            { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    materialItemId: 1,
+                    estimateSubsectionId: 1,
+                    quantity: 1,
+                    changableAveragePrice: 1,
+                    fullCode: '$catalogItem.fullCode',
+                    catalogName: '$catalogItem.name',
+                    materialOfferItemName: 1,
+                    displayIndex: 1,
+                },
+            },
+            { $sort: { displayIndex: 1, _id: 1 } },
+        ])
+        .toArray();
+
+    const result = materialItems.map((item: any) => ({
+        _id: item._id,
+        materialItemId: item.materialItemId,
+        fullCode: item.fullCode ?? '',
+        catalogName: item.catalogName ?? '',
+        materialOfferItemName: item.materialOfferItemName ?? item.catalogName ?? '',
+        quantity: item.quantity ?? 0,
+        changableAveragePrice: item.changableAveragePrice ?? 0,
+        cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+        subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+        sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+    }));
+
+    respondJsonData(res, result);
+});
