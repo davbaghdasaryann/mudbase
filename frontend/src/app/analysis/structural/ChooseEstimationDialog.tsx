@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Table, TableHead, TableBody, TableRow, TableCell,
-    Button, Typography, Box, Stack, CircularProgress,
+    Button, Typography, Box, Stack, CircularProgress, Radio,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -63,6 +63,7 @@ export default function ChooseEstimationDialog({ open, onClose, onSelect }: Prop
                                 <TableCell sx={{ fontWeight: 600, width: 60 }}>{t('No.')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('Name')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Date of Creation')}</TableCell>
+                                <TableCell sx={{ width: 48 }} />
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -70,13 +71,12 @@ export default function ChooseEstimationDialog({ open, onClose, onSelect }: Prop
                                 <TableRow
                                     key={estimate._id}
                                     onClick={() => setSelectedId(estimate._id)}
-                                    selected={selectedId === estimate._id}
                                     hover
                                     sx={{
                                         cursor: 'pointer',
                                         backgroundColor: selectedId === estimate._id
                                             ? `${mainPrimaryColor}22`
-                                            : index % 2 === 1 ? '#E8F5F5' : '#ffffff',
+                                            : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
                                         '&.MuiTableRow-hover:hover': {
                                             backgroundColor: `${mainPrimaryColor}15 !important`,
                                         },
@@ -86,6 +86,15 @@ export default function ChooseEstimationDialog({ open, onClose, onSelect }: Prop
                                     <TableCell>{estimate.name}</TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                         {formatDate(estimate.createdAt)}
+                                    </TableCell>
+                                    <TableCell align='right' sx={{ pr: 1 }}>
+                                        <Radio
+                                            checked={selectedId === estimate._id}
+                                            onChange={() => setSelectedId(estimate._id)}
+                                            size='small'
+                                            sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
                                     </TableCell>
                                 </TableRow>
                             ))}
