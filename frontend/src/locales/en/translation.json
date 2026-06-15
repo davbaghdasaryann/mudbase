@@ -158,5 +158,6 @@
     "confirm_remove_item": "Are you sure you want to delete \"{{name}}\"?",
     "confirm_delete": "Are you sure you want to delete?",
     "Analytics": "Analytics",
-    "Structural": "Structural"
+    "Structural": "Structural",
+    "Structural Analytics": "Structural Analytics"
 }

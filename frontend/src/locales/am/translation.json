@@ -479,5 +479,6 @@
     "confirm_remove_item": "Վստա՞հ եք, որ ցանկանում եք ջնջել «{{name}}»-ը",
     "confirm_delete": "Վստա՞հ եք, որ ցանկանում եք ջնջել:",
     "Analytics": "Վերլուծություն",
-    "Structural": "Կառուցվածքային"
+    "Structural": "Կառուցվածքային",
+    "Structural Analytics": "Կառուցվածքային վերլուծություն"
 }
