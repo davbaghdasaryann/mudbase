@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from './ChooseEstimationDialog';
+import BreakdownTable from './BreakdownTable';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -126,6 +127,7 @@ export default function StructuralAnalysisPage() {
                                 <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={0} />
                             </Box>
                         </Box>
+                        <BreakdownTable estimate={selectedEstimate!} />
                     </TabPanel>
 
                     <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>

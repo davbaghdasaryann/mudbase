@@ -18,3 +18,10 @@ registerApiSession('estimate/fetch_subsections', async (req, res, session) => {
 
     respondJsonData(res, data);
 });
+
+registerApiSession('estimate/fetch_all_subsections', async (req, res, session) => {
+    let estimateId = requireMongoIdParam(req, 'estimateId');
+    let estimateSubsectionsCol = Db.getEstimateSubsectionsCollection();
+    let data = await estimateSubsectionsCol.find({estimateId: estimateId}).sort({displayIndex: 1}).toArray();
+    respondJsonData(res, data);
+});
