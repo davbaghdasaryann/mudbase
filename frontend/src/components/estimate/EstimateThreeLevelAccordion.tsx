@@ -1160,6 +1160,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 item.children[0]?.label === '' ? ( // ✅ If the first child is an empty subsection, show table inside it
                                     <>
                                         <DataTableComponent
+                                            isCellEditable={(params) => {
+                                                if (params.field === 'itemMeasurementUnit') {
+                                                    return (params.row as AccordionItem).itemFullCode === 'N/A';
+                                                }
+                                                return true;
+                                            }}
                                             sx={{
                                                 width: '100%',
                                                 mt: 2,
@@ -1247,8 +1253,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 80,
                                                     type: 'singleSelect',
-                                                    editable: false,
+                                                    editable: true,
                                                     valueOptions: measurementUnits,
+                                                    cellClassName: (params) => (params.row as AccordionItem).itemFullCode === 'N/A' ? 'editableCell' : '',
                                                 },
                                                 {
                                                     field: 'quantity',
@@ -1540,6 +1547,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     ) : (
                                                         <>
                                                             <DataTableComponent
+                                                                isCellEditable={(params) => {
+                                                                    if (params.field === 'itemMeasurementUnit') {
+                                                                        return (params.row as AccordionItem).itemFullCode === 'N/A';
+                                                                    }
+                                                                    return true;
+                                                                }}
                                                                 sx={{
                                                                     width: '100%',
                                                                     backgroundColor: '#FFFFFF',
@@ -1638,9 +1651,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerAlign: 'left',
                                                                         width: 80,
                                                                         type: 'singleSelect',
-                                                                        editable: false,
+                                                                        editable: true,
                                                                         valueOptions: measurementUnits,
                                                                         disableColumnMenu: true,
+                                                                        cellClassName: (params) => (params.row as AccordionItem).itemFullCode === 'N/A' ? 'editableCell' : '',
                                                                     },
                                                                     {
                                                                         field: 'quantity',
