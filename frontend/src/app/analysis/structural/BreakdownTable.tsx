@@ -103,27 +103,30 @@ export default function BreakdownTable({ estimate }: Props) {
                         .sort((a, b) => a.displayIndex - b.displayIndex);
                     const isOpen = !!expanded[String(section._id)];
 
+                    const hasSubsections = sectionSubs.length > 0;
+
                     return (
                         <React.Fragment key={String(section._id)}>
                             <TableRow
-                                onClick={() => toggle(String(section._id))}
-                                sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
+                                onClick={() => hasSubsections && toggle(String(section._id))}
+                                sx={{ cursor: hasSubsections ? 'pointer' : 'default', backgroundColor: '#fafafa', '&:hover': { backgroundColor: hasSubsections ? '#f0f9fb' : '#fafafa' } }}
                             >
-                                <TableCell sx={{ pl: 1, fontWeight: 600 }}>
+                                <TableCell sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        {isOpen
+                                        {hasSubsections && (isOpen
                                             ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
                                             : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
-                                        }
+                                        )}
+                                        {!hasSubsections && <Box sx={{ width: 18 }} />}
                                         <Typography variant='body2' sx={{ fontWeight: 600 }}>
                                             {si + 1}. {section.name}
                                         </Typography>
                                     </Box>
                                 </TableCell>
-                                <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
                                     AMD {formatCurrencyRounded(section.totalCost)}
                                 </TableCell>
-                                <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                                <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
                                     {pct(section.totalCost)}
                                 </TableCell>
                             </TableRow>
@@ -133,15 +136,15 @@ export default function BreakdownTable({ estimate }: Props) {
                                     key={String(sub._id)}
                                     sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}
                                 >
-                                    <TableCell sx={{ pl: 5 }}>
+                                    <TableCell sx={{ pl: 5, py: 1.5 }}>
                                         <Typography variant='body2' color='text.secondary'>
                                             {subI + 1}. {sub.name}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary' }}>
+                                    <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         AMD {formatCurrencyRounded(sub.totalCost)}
                                     </TableCell>
-                                    <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                                    <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
                                         {pct(sub.totalCost)}
                                     </TableCell>
                                 </TableRow>
