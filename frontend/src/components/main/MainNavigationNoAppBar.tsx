@@ -125,16 +125,16 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 <Divider />
                 <Stack direction='row' justifyContent='center' alignItems='center' spacing={4} sx={{width: '100%'}}>
                     <Link href={facebookUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/facebook_nav_bar.svg' sx={{height: 25}} />
+                        <ImgElement src='/images/icons/facebook_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', '&:hover': {filter: 'brightness(0.55)'}}} />
                     </Link>
                     <Link href={telegramUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/telegram_nav_bar.svg' sx={{height: 25}} />
+                        <ImgElement src='/images/icons/telegram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', '&:hover': {filter: 'brightness(0.55)'}}} />
                     </Link>
                     <Link href={instagramUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25}} />
+                        <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', '&:hover': {filter: 'brightness(0.55)'}}} />
                     </Link>
                     <Link href={youtubeChannelUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25}} />
+                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', '&:hover': {filter: 'brightness(0.55)'}}} />
                     </Link>
                 </Stack>
             </Stack>
