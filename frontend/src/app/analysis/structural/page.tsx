@@ -13,6 +13,7 @@ import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from './ChooseEstimationDialog';
 import BreakdownTable from './BreakdownTable';
+import LaborTab from './LaborTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -131,7 +132,7 @@ export default function StructuralAnalysisPage() {
                     </TabPanel>
 
                     <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                        <></>
+                        <LaborTab estimate={selectedEstimate!} />
                     </TabPanel>
 
                     <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>

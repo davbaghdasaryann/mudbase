@@ -345,6 +345,75 @@ registerApiSession('estimate/fetch_works_list', async (req, res, session) => {
     respondJsonData(res, data);
 });
 
+registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+
+    const sections = await Db.getEstimateSectionsCollection()
+        .find({ estimateId })
+        .project({ _id: 1, name: 1 })
+        .toArray();
+    const sectionIds = sections.map(s => s._id);
+    if (sectionIds.length === 0) { respondJsonData(res, []); return; }
+
+    const sectionMap = new Map(sections.map(s => [s._id.toString(), s.name as string]));
+
+    const subsections = await Db.getEstimateSubsectionsCollection()
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .project({ _id: 1, name: 1, estimateSectionId: 1 })
+        .toArray();
+    const subsectionIds = subsections.map(s => s._id);
+    if (subsectionIds.length === 0) { respondJsonData(res, []); return; }
+
+    const subsectionMap = new Map(subsections.map(s => [
+        s._id.toString(),
+        { name: s.name as string, sectionName: sectionMap.get(s.estimateSectionId.toString()) ?? '' },
+    ]));
+
+    const laborItems = await Db.getEstimateLaborItemsCollection()
+        .aggregate([
+            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
+            {
+                $lookup: {
+                    from: 'labor_items',
+                    let: { itemIdVar: '$laborItemId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
+                        { $project: { fullCode: 1, name: 1, _id: 0 } },
+                    ],
+                    as: 'catalogItem',
+                },
+            },
+            { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    laborItemId: 1,
+                    estimateSubsectionId: 1,
+                    quantity: 1,
+                    changableAveragePrice: 1,
+                    fullCode: '$catalogItem.fullCode',
+                    name: '$catalogItem.name',
+                    displayIndex: 1,
+                },
+            },
+            { $sort: { displayIndex: 1, _id: 1 } },
+        ])
+        .toArray();
+
+    const result = laborItems.map(item => ({
+        _id: item._id,
+        laborItemId: item.laborItemId,
+        fullCode: item.fullCode ?? '',
+        name: item.name ?? '',
+        quantity: item.quantity ?? 0,
+        changableAveragePrice: item.changableAveragePrice ?? 0,
+        cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+        subsectionName: subsectionMap.get(item.estimateSubsectionId.toString())?.name ?? '',
+        sectionName: subsectionMap.get(item.estimateSubsectionId.toString())?.sectionName ?? '',
+    }));
+
+    respondJsonData(res, result);
+});
+
 registerApiSession('estimate/get_labor_item', async (req, res, session) => {
     let estimatedLaborId = requireMongoIdParam(req, 'estimatedLaborId');
 
