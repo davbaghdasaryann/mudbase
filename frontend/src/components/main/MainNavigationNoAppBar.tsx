@@ -25,7 +25,7 @@ import Env from '../../env';
 import {usePermissions} from '../../api/auth';
 import {isPathnameEqual} from '../../lib/urllib';
 import ImgElement from '../../tsui/DomElements/ImgElement';
-import {facebookUrl, instagramUrl, telegramUrl} from '@/theme';
+import {facebookUrl, instagramUrl, telegramUrl, youtubeChannelUrl} from '@/theme';
 import {useMobileDrawer} from './MobileDrawerContext';
 
 export const drawerWidth = 300;
@@ -132,6 +132,9 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     </Link>
                     <Link href={instagramUrl} target='_blank' rel='noopener noreferrer'>
                         <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25}} />
+                    </Link>
+                    <Link href={youtubeChannelUrl} target='_blank' rel='noopener noreferrer'>
+                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25}} />
                     </Link>
                 </Stack>
             </Stack>

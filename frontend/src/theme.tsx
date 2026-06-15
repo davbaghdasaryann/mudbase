@@ -64,6 +64,7 @@ export const instagramUrl = 'https://www.instagram.com/mudbase_armenia';
 // export const instagramUrl = 'https://www.instagram.com/mudbase_armenia?igsh=MTAyMnRyamdtb2pwZA%3D%3D&utm_source=qr'
 export const telegramUrl = 'https://t.me/mudbase';
 export const youtubeUrl = 'https://www.youtube.com/watch?v=5gPErNk6-eM';
+export const youtubeChannelUrl = 'https://www.youtube.com/@Mudbase';
 
 const globalFonts = ['Noto Sans Armenian Variable', 'Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Oxygen', 'Helvetica', 'Arial', 'sans-serif'];
 
