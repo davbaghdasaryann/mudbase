@@ -21,7 +21,11 @@ registerApiSession('estimate/fetch_subsections', async (req, res, session) => {
 
 registerApiSession('estimate/fetch_all_subsections', async (req, res, session) => {
     let estimateId = requireMongoIdParam(req, 'estimateId');
+    const sectionsColl = Db.getEstimateSectionsCollection();
+    const sections = await sectionsColl.find({estimateId}).project({_id: 1}).toArray();
+    const sectionIds = sections.map(s => s._id);
+    if (sectionIds.length === 0) { respondJsonData(res, []); return; }
     let estimateSubsectionsCol = Db.getEstimateSubsectionsCollection();
-    let data = await estimateSubsectionsCol.find({estimateId: estimateId}).sort({displayIndex: 1}).toArray();
+    let data = await estimateSubsectionsCol.find({estimateSectionId: {$in: sectionIds}}).sort({displayIndex: 1}).toArray();
     respondJsonData(res, data);
 });
