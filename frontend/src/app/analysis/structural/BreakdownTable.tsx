@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, Collapse, IconButton } from '@mui/material';
+import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import * as Api from '@/api';
@@ -33,22 +33,30 @@ export default function BreakdownTable({ estimate }: Props) {
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+    const estimateId = String(estimate._id);
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([
-            Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId: estimate._id } }),
-            Api.requestSession<Subsection[]>({ command: 'estimate/fetch_all_subsections', args: { estimateId: estimate._id } }),
-        ]).then(([sects, subs]) => {
-            const sorted = (sects ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
-            setSections(sorted);
-            setSubsections(subs ?? []);
-            // expand all sections by default
-            setExpanded(new Set(sorted.map(s => s._id)));
-            setLoading(false);
-        }).catch(() => setLoading(false));
-    }, [estimate._id]);
+        setSections([]);
+        setSubsections([]);
+
+        Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } })
+            .then((sects) => {
+                const sorted = (sects ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
+                setSections(sorted);
+                setExpanded(new Set(sorted.map(s => String(s._id))));
+            })
+            .catch((e) => setError(String(e)));
+
+        Api.requestSession<Subsection[]>({ command: 'estimate/fetch_all_subsections', args: { estimateId } })
+            .then((subs) => { setSubsections(subs ?? []); })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+
+    }, [estimateId]);
 
     const toggle = (id: string) => {
         setExpanded(prev => {
@@ -59,7 +67,6 @@ export default function BreakdownTable({ estimate }: Props) {
     };
 
     const totalCost = estimate.totalCostWithOtherExpenses ?? estimate.totalCost ?? 1;
-
     const pct = (cost: number) => totalCost > 0 ? ((cost / totalCost) * 100).toFixed(1) + '%' : '0%';
 
     if (loading) return (
@@ -68,11 +75,11 @@ export default function BreakdownTable({ estimate }: Props) {
         </Box>
     );
 
-    if (sections.length === 0) return (
-        <Typography variant='body2' color='text.secondary' sx={{ py: 3, textAlign: 'center' }}>
-            {t('No sections found')}
-        </Typography>
+    if (error) return (
+        <Typography variant='body2' color='error' sx={{ py: 2 }}>Error: {error}</Typography>
     );
+
+    if (sections.length === 0) return null;
 
     return (
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
@@ -86,21 +93,16 @@ export default function BreakdownTable({ estimate }: Props) {
             <TableBody>
                 {sections.map((section, si) => {
                     const sectionSubs = subsections
-                        .filter(s => s.estimateSectionId === section._id)
+                        .filter(s => String(s.estimateSectionId) === String(section._id))
                         .sort((a, b) => a.displayIndex - b.displayIndex);
-                    const isOpen = expanded.has(section._id);
+                    const isOpen = expanded.has(String(section._id));
 
                     return (
                         <>
-                            {/* Section row */}
                             <TableRow
                                 key={section._id}
-                                onClick={() => toggle(section._id)}
-                                sx={{
-                                    cursor: 'pointer',
-                                    backgroundColor: '#fafafa',
-                                    '&:hover': { backgroundColor: '#f0f9fb' },
-                                }}
+                                onClick={() => toggle(String(section._id))}
+                                sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
                             >
                                 <TableCell sx={{ pl: 1, fontWeight: 600 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -120,7 +122,6 @@ export default function BreakdownTable({ estimate }: Props) {
                                 </TableCell>
                             </TableRow>
 
-                            {/* Subsection rows */}
                             {isOpen && sectionSubs.map((sub, subI) => (
                                 <TableRow
                                     key={sub._id}
