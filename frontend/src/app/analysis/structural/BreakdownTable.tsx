@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -98,7 +98,7 @@ export default function BreakdownTable({ estimate }: Props) {
                     const isOpen = expanded.has(String(section._id));
 
                     return (
-                        <>
+                        <React.Fragment key={section._id}>
                             <TableRow
                                 key={section._id}
                                 onClick={() => toggle(String(section._id))}
@@ -140,7 +140,7 @@ export default function BreakdownTable({ estimate }: Props) {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                        </>
+                        </React.Fragment>
                     );
                 })}
             </TableBody>
