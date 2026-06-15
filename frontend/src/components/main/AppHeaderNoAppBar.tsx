@@ -16,7 +16,7 @@ import { useMobileDrawer } from './MobileDrawerContext';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import BusinessIcon from '@mui/icons-material/Business';
 import DatasetIcon from '@mui/icons-material/Dataset';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
@@ -50,7 +50,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
             case 'dev':
                 return <DatasetIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'analysis':
-                return <AnalyticsIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+                return <BarChartIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             default:
                 return null;
         }

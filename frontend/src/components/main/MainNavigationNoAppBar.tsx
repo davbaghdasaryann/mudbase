@@ -10,7 +10,7 @@ import Link from 'next/link';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 
-import AnalyticsIcon from '@mui/icons-material/Analytics';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -212,7 +212,7 @@ function useMainNavigation() {
             navigation.push({
                 segment: 'analysis',
                 title: t('Analytics'),
-                icon: <AnalyticsIcon />,
+                icon: <BarChartIcon />,
                 children: [
                     {segment: 'structural', title: t('Structural'), icon: <AccountTreeIcon />},
                 ],
