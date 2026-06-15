@@ -99,7 +99,7 @@ export default function BreakdownTable({ estimate }: Props) {
             <TableBody>
                 {sections.map((section, si) => {
                     const sectionSubs = subsections
-                        .filter(s => String(s.estimateSectionId) === String(section._id))
+                        .filter(s => String(s.estimateSectionId) === String(section._id) && s.name?.trim())
                         .sort((a, b) => a.displayIndex - b.displayIndex);
                     const isOpen = !!expanded[String(section._id)];
 
