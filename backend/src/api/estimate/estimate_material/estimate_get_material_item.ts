@@ -223,13 +223,40 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
         { name: s.name as string, sectionName: sectionMap.get(s.estimateSectionId.toString()) ?? '' },
     ]));
 
-    // Build a map of laborId → laborOfferItemName for child row display
+    // Fetch labor items with their catalog info (for parent row grouping)
     const laborItems = await Db.getEstimateLaborItemsCollection()
-        .find({ estimateId })
-        .project({ _id: 1, laborOfferItemName: 1, isHidden: 1 })
+        .aggregate([
+            { $match: { estimateId } },
+            {
+                $lookup: {
+                    from: 'labor_items',
+                    let: { laborItemIdVar: '$laborItemId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$laborItemIdVar'] } } },
+                        { $project: { fullCode: 1, name: 1, _id: 0 } },
+                    ],
+                    as: 'catalogLabor',
+                },
+            },
+            { $unwind: { path: '$catalogLabor', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    isHidden: 1,
+                    laborOfferItemName: 1,
+                    laborCatalogName: '$catalogLabor.name',
+                    laborFullCode: '$catalogLabor.fullCode',
+                },
+            },
+        ])
         .toArray();
-    const hiddenLaborIds = laborItems.filter(l => l.isHidden).map(l => l._id);
-    const laborNameMap = new Map(laborItems.map(l => [l._id.toString(), (l as any).laborOfferItemName as string ?? '']));
+
+    const hiddenLaborIds = laborItems.filter((l: any) => l.isHidden).map((l: any) => l._id);
+    const laborMap = new Map(laborItems.map((l: any) => [l._id.toString(), {
+        laborOfferItemName: l.laborOfferItemName as string ?? '',
+        laborCatalogName: l.laborCatalogName as string ?? '',
+        laborFullCode: l.laborFullCode as string ?? '',
+    }]));
 
     const materialItems = await Db.getEstimateMaterialItemsCollection()
         .aggregate([
@@ -258,8 +285,8 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
                     estimatedLaborId: 1,
                     quantity: 1,
                     changableAveragePrice: 1,
-                    fullCode: '$catalogItem.fullCode',
-                    catalogName: '$catalogItem.name',
+                    materialCatalogFullCode: '$catalogItem.fullCode',
+                    materialCatalogName: '$catalogItem.name',
                     materialOfferItemName: 1,
                     displayIndex: 1,
                 },
@@ -268,19 +295,25 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
         ])
         .toArray();
 
-    const result = materialItems.map((item: any) => ({
-        _id: item._id,
-        materialItemId: item.materialItemId,
-        fullCode: item.fullCode ?? '',
-        catalogName: item.catalogName ?? '',
-        materialOfferItemName: item.materialOfferItemName ?? item.catalogName ?? '',
-        laborOfferItemName: laborNameMap.get(item.estimatedLaborId?.toString()) ?? '',
-        quantity: item.quantity ?? 0,
-        changableAveragePrice: item.changableAveragePrice ?? 0,
-        cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
-        subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
-        sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
-    }));
+    const result = materialItems.map((item: any) => {
+        const labor = laborMap.get(item.estimatedLaborId?.toString()) ?? { laborOfferItemName: '', laborCatalogName: '', laborFullCode: '' };
+        return {
+            _id: item._id,
+            estimatedLaborId: item.estimatedLaborId,
+            materialItemId: item.materialItemId,
+            // Labor info (for parent grouping)
+            laborCatalogName: labor.laborCatalogName,
+            laborFullCode: labor.laborFullCode,
+            laborOfferItemName: labor.laborOfferItemName,
+            // Material info (for child rows)
+            materialCatalogName: item.materialCatalogName ?? '',
+            materialCatalogFullCode: item.materialCatalogFullCode ?? '',
+            materialOfferItemName: item.materialOfferItemName ?? item.materialCatalogName ?? '',
+            quantity: item.quantity ?? 0,
+            changableAveragePrice: item.changableAveragePrice ?? 0,
+            cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+        };
+    });
 
     respondJsonData(res, result);
 });

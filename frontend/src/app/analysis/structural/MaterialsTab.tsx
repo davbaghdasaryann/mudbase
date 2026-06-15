@@ -11,28 +11,29 @@ import { mainPrimaryColor } from '@/theme';
 
 interface MaterialRow {
     _id: string;
+    estimatedLaborId: string;
     materialItemId: string;
-    fullCode: string;
-    catalogName: string;
-    materialOfferItemName: string;
+    laborCatalogName: string;
+    laborFullCode: string;
     laborOfferItemName: string;
+    materialCatalogName: string;
+    materialCatalogFullCode: string;
+    materialOfferItemName: string;
     quantity: number;
     changableAveragePrice: number;
     cost: number;
-    subsectionName: string;
-    sectionName: string;
 }
 
-interface GroupedMaterial {
-    materialItemId: string;
-    fullCode: string;
-    name: string;
+interface GroupedByLabor {
+    estimatedLaborId: string;
+    laborFullCode: string;
+    laborName: string;
     totalCost: number;
     items: MaterialRow[];
 }
 
 export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
-    const [groups, setGroups] = useState<GroupedMaterial[]>([]);
+    const [groups, setGroups] = useState<GroupedByLabor[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -47,11 +48,17 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
 
         Api.requestSession<MaterialRow[]>({ command: 'estimate/fetch_materials_for_analysis', args: { estimateId } })
             .then((rows) => {
-                const map = new Map<string, GroupedMaterial>();
+                const map = new Map<string, GroupedByLabor>();
                 for (const row of (rows ?? [])) {
-                    const key = String(row.materialItemId);
+                    const key = String(row.estimatedLaborId);
                     if (!map.has(key)) {
-                        map.set(key, { materialItemId: key, fullCode: row.fullCode, name: row.catalogName || row.materialOfferItemName, totalCost: 0, items: [] });
+                        map.set(key, {
+                            estimatedLaborId: key,
+                            laborFullCode: row.laborFullCode,
+                            laborName: row.laborCatalogName || row.laborOfferItemName,
+                            totalCost: 0,
+                            items: [],
+                        });
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
@@ -60,7 +67,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                 const grouped = Array.from(map.values());
                 setGroups(grouped);
                 const openAll: Record<string, boolean> = {};
-                grouped.forEach(g => { openAll[g.materialItemId] = false; });
+                grouped.forEach(g => { openAll[g.estimatedLaborId] = false; });
                 setExpanded(openAll);
             })
             .catch((e) => setError(String(e)))
@@ -93,12 +100,12 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
             </TableHead>
             <TableBody>
                 {groups.map((group) => {
-                    const isOpen = !!expanded[group.materialItemId];
+                    const isOpen = !!expanded[group.estimatedLaborId];
 
                     return (
-                        <React.Fragment key={group.materialItemId}>
+                        <React.Fragment key={group.estimatedLaborId}>
                             <TableRow
-                                onClick={() => toggle(group.materialItemId)}
+                                onClick={() => toggle(group.estimatedLaborId)}
                                 sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
                             >
                                 <TableCell sx={{ pl: 1, py: 1.5 }}>
@@ -108,8 +115,8 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                             : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
                                         }
                                         <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                                            {group.fullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.fullCode}</Box>}
-                                            {group.name}
+                                            {group.laborFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.laborFullCode}</Box>}
+                                            {group.laborName}
                                         </Typography>
                                     </Box>
                                 </TableCell>
@@ -125,7 +132,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                 <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                     <TableCell sx={{ pl: 5, py: 1.5 }}>
                                         <Typography variant='body2' color='text.secondary'>
-                                            {i + 1}. {item.laborOfferItemName || item.materialOfferItemName || item.catalogName}
+                                            {i + 1}. {item.materialOfferItemName || item.materialCatalogName}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
