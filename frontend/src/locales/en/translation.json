@@ -165,5 +165,8 @@
   "Date of Creation": "Date of Creation",
   "General": "General",
   "Labor Cost": "Labor Cost",
-  "Materials Cost": "Materials Cost"
+  "Materials Cost": "Materials Cost",
+  "Quantity of Labor": "Quantity of Labor",
+  "Quantity of Materials": "Quantity of Materials",
+  "Unit Time": "Unit Time"
 }

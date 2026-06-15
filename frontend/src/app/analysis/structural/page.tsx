@@ -5,6 +5,9 @@ import { Box, Typography, Tab, Paper } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import BuildIcon from '@mui/icons-material/Build';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -34,6 +37,32 @@ const MetricCard = ({ label, value }: { label: string; value: number }) => (
         <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, mb: 1 }} />
         <Typography variant='body2' sx={{ color: 'text.secondary', mb: 0.5 }}>{label}</Typography>
         <Typography variant='h6' sx={{ fontWeight: 700 }}>AMD {formatCurrencyRounded(value)}</Typography>
+    </Paper>
+);
+
+const ParamCard = ({ label, icon, value }: { label: string; icon: React.ReactNode; value: number | string }) => (
+    <Paper
+        elevation={0}
+        sx={{
+            border: '1px solid #E8E8E8',
+            borderRadius: 3,
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+            transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+            '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 18px rgba(0,171,190,0.14)',
+                borderColor: mainPrimaryColor,
+            },
+        }}
+    >
+        <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.2 }}>{label}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+            <Box sx={{ color: mainPrimaryColor }}>{icon}</Box>
+            <Typography variant='h6' sx={{ fontWeight: 700 }}>{typeof value === 'number' ? formatCurrencyRounded(value) : value}</Typography>
+        </Box>
     </Paper>
 );
 
@@ -83,10 +112,19 @@ export default function StructuralAnalysisPage() {
                     </Box>
 
                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-                            <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCostWithOtherExpenses ?? selectedEstimate!.totalCost ?? 0} />
-                            <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
-                            <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                            {/* Left: 3 cost metric cards */}
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, flex: 3 }}>
+                                <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCostWithOtherExpenses ?? selectedEstimate!.totalCost ?? 0} />
+                                <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
+                                <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
+                            </Box>
+                            {/* Right: 3 parameter cards stacked */}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flex: 1.1, minWidth: 180 }}>
+                                <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.laborItemCount ?? 0} />
+                                <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.materialItemCount ?? 0} />
+                                <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={0} />
+                            </Box>
                         </Box>
                     </TabPanel>
 

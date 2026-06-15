@@ -477,5 +477,8 @@
   "Date of Creation": "Ստեղծման ամսաթիվ",
   "General": "Ընդհանուր",
   "Labor Cost": "Աշխատանքների արժեք",
-  "Materials Cost": "Նյութերի արժեք"
+  "Materials Cost": "Նյութերի արժեք",
+  "Quantity of Labor": "Աշխատանքների քանակը",
+  "Quantity of Materials": "Նյութերի քանակը",
+  "Unit Time": "Միավոր ժամանակը"
 }

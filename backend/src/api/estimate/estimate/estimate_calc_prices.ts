@@ -128,9 +128,12 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     // log_.info('est', estimate)
 
     // Update the document in the database.
+    const laborItemCount = laborItems.filter(l => !l.isHidden).length;
+    const materialItemCount = materialItems.filter(m => !hiddenLaborIds.has(m.estimatedLaborId.toString())).length;
+
     const result = await estimatesColl.updateOne(
         {_id: estimate._id},
-        {$set: {totalCost: totalCost, totalCostWithOtherExpenses: totalCostWithOtherExpenses, laborTotalCost: laborTotalWithoutMaterial, materialTotalCost: materialTotalCost}}
+        {$set: {totalCost: totalCost, totalCostWithOtherExpenses: totalCostWithOtherExpenses, laborTotalCost: laborTotalWithoutMaterial, materialTotalCost: materialTotalCost, laborItemCount, materialItemCount}}
     );
 }
 
