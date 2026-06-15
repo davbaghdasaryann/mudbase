@@ -15,6 +15,7 @@ interface MaterialRow {
     fullCode: string;
     catalogName: string;
     materialOfferItemName: string;
+    laborOfferItemName: string;
     quantity: number;
     changableAveragePrice: number;
     cost: number;
@@ -124,7 +125,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                 <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                     <TableCell sx={{ pl: 5, py: 1.5 }}>
                                         <Typography variant='body2' color='text.secondary'>
-                                            {i + 1}. {item.materialOfferItemName || item.catalogName}
+                                            {i + 1}. {item.laborOfferItemName || item.materialOfferItemName || item.catalogName}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>

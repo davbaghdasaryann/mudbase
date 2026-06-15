@@ -223,12 +223,13 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
         { name: s.name as string, sectionName: sectionMap.get(s.estimateSectionId.toString()) ?? '' },
     ]));
 
-    // Get hidden labor IDs to exclude their materials
-    const hiddenLaborIds = await Db.getEstimateLaborItemsCollection()
-        .find({ estimateId, isHidden: true })
-        .project({ _id: 1 })
-        .toArray()
-        .then(rows => rows.map(r => r._id));
+    // Build a map of laborId → laborOfferItemName for child row display
+    const laborItems = await Db.getEstimateLaborItemsCollection()
+        .find({ estimateId })
+        .project({ _id: 1, laborOfferItemName: 1, isHidden: 1 })
+        .toArray();
+    const hiddenLaborIds = laborItems.filter(l => l.isHidden).map(l => l._id);
+    const laborNameMap = new Map(laborItems.map(l => [l._id.toString(), (l as any).laborOfferItemName as string ?? '']));
 
     const materialItems = await Db.getEstimateMaterialItemsCollection()
         .aggregate([
@@ -254,6 +255,7 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
                 $project: {
                     materialItemId: 1,
                     estimateSubsectionId: 1,
+                    estimatedLaborId: 1,
                     quantity: 1,
                     changableAveragePrice: 1,
                     fullCode: '$catalogItem.fullCode',
@@ -272,6 +274,7 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
         fullCode: item.fullCode ?? '',
         catalogName: item.catalogName ?? '',
         materialOfferItemName: item.materialOfferItemName ?? item.catalogName ?? '',
+        laborOfferItemName: laborNameMap.get(item.estimatedLaborId?.toString()) ?? '',
         quantity: item.quantity ?? 0,
         changableAveragePrice: item.changableAveragePrice ?? 0,
         cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
