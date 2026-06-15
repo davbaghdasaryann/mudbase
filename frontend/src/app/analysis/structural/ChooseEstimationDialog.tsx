@@ -51,7 +51,7 @@ export default function ChooseEstimationDialog({ open, onClose, onSelect }: Prop
                 </Stack>
             </DialogTitle>
 
-            <DialogContent dividers sx={{ p: 0, pt: 1 }}>
+            <DialogContent dividers sx={{ p: 0, pt: 1, pl: 3 }}>
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                         <CircularProgress size={32} />
