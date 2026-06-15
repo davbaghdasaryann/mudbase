@@ -10,8 +10,8 @@ import Link from 'next/link';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 
-import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
@@ -209,6 +209,14 @@ function useMainNavigation() {
 
         if (session?.user && permissionsSet?.has('EST_USE')) {
             navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30}} />});
+            navigation.push({
+                segment: 'analysis',
+                title: t('Analytics'),
+                icon: <AnalyticsIcon />,
+                children: [
+                    {segment: 'structural', title: t('Structural'), icon: <AccountTreeIcon />},
+                ],
+            });
         }
 
         if (isSuperAdmin) {
@@ -230,15 +238,6 @@ function useMainNavigation() {
             // navigation.push({segment: 'invites', title: t('Invites'), icon: <ContactMailIcon />});
             // navigation.push({segment: 'offers', title: t('Offers'), icon: <LocalOfferIcon />});
             navigation.push({segment: 'dev', title: 'Dev', icon: <DatasetIcon />});
-            navigation.push({
-                segment: 'analysis',
-                title: t('Analysis'),
-                icon: <AnalyticsIcon />,
-                children: [
-                    {segment: 'structural', title: t('Structural'), icon: <CleaningServicesIcon />},
-                    {segment: 'comparative', title: t('Comparative'), icon: <CleaningServicesIcon />},
-                ],
-            });
         }
 
         setNav(navigation);

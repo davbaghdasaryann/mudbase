@@ -156,5 +156,7 @@
     "Widget": "Widget",
     "Select a visualization type to preview": "Select a visualization type to preview",
     "confirm_remove_item": "Are you sure you want to delete \"{{name}}\"?",
-    "confirm_delete": "Are you sure you want to delete?"
+    "confirm_delete": "Are you sure you want to delete?",
+    "Analytics": "Analytics",
+    "Structural": "Structural"
 }
