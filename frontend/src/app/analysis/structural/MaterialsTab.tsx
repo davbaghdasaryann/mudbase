@@ -50,7 +50,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                 for (const row of (rows ?? [])) {
                     const key = String(row.materialItemId);
                     if (!map.has(key)) {
-                        map.set(key, { materialItemId: key, fullCode: row.fullCode, name: row.catalogName, totalCost: 0, items: [] });
+                        map.set(key, { materialItemId: key, fullCode: row.fullCode, name: row.catalogName || row.materialOfferItemName, totalCost: 0, items: [] });
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
