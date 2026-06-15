@@ -17,6 +17,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import BusinessIcon from '@mui/icons-material/Business';
 import DatasetIcon from '@mui/icons-material/Dataset';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -28,6 +29,8 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
 
     // Map pathnames to icons (matching navigation)
     const getPageIcon = () => {
+        if (pathname === '/analysis/structural') return <AccountTreeIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+
         const currentPath = pathname?.split('/')[1]; // Get first segment after /
 
         switch (currentPath) {
