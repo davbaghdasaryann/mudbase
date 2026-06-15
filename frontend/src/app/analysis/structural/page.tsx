@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Tab } from '@mui/material';
+import { TabContext, TabList } from '@mui/lab';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
@@ -10,14 +11,19 @@ import ChooseEstimationDialog from './ChooseEstimationDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 
+type AnalyticsTab = 'general' | 'labor' | 'materials';
+
 export default function StructuralAnalysisPage() {
     const { t } = useTranslation();
-    const hasData = false;
+    const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
+
+    const hasData = !!selectedEstimate;
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
-        // TODO: use selected estimate
+        setSelectedEstimate(estimate);
     };
 
     const outlinedCreateSx = {
@@ -34,9 +40,24 @@ export default function StructuralAnalysisPage() {
     return (
         <PageContents title='Structural Analytics'>
             {hasData && (
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 0.5 }}>
+                    <Typography variant='h5' sx={{ fontWeight: 700 }}>
+                        {selectedEstimate!.name}
+                    </Typography>
                     <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
                 </Box>
+            )}
+
+            {hasData && (
+                <TabContext value={activeTab}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                        <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
+                            <Tab label={t('General')} value='general' />
+                            <Tab label={t('Labor')} value='labor' />
+                            <Tab label={t('Materials')} value='materials' />
+                        </TabList>
+                    </Box>
+                </TabContext>
             )}
 
             {!hasData && (
