@@ -16,7 +16,21 @@ import { formatCurrencyRounded } from '@/lib/format_currency';
 type AnalyticsTab = 'general' | 'labor' | 'materials';
 
 const MetricCard = ({ label, value }: { label: string; value: number }) => (
-    <Paper elevation={0} sx={{ border: '1px solid #E0E0E0', borderRadius: 2, p: 2.5 }}>
+    <Paper
+        elevation={0}
+        sx={{
+            border: '1px solid #d0f0f4',
+            borderRadius: 3,
+            p: 2.5,
+            background: 'linear-gradient(135deg, #ffffff 0%, #edfbfc 100%)',
+            transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+            '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 8px 24px rgba(0,171,190,0.18)',
+                borderColor: mainPrimaryColor,
+            },
+        }}
+    >
         <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, mb: 1 }} />
         <Typography variant='body2' sx={{ color: 'text.secondary', mb: 0.5 }}>{label}</Typography>
         <Typography variant='h6' sx={{ fontWeight: 700 }}>AMD {formatCurrencyRounded(value)}</Typography>
@@ -70,7 +84,7 @@ export default function StructuralAnalysisPage() {
 
                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-                            <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCost ?? 0} />
+                            <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCostWithOtherExpenses ?? selectedEstimate!.totalCost ?? 0} />
                             <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
                             <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
                         </Box>
