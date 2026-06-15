@@ -42,16 +42,16 @@ export default function ChooseEstimationDialog({ open, onClose, onSelect }: Prop
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
-            <DialogTitle sx={{ pb: 1 }}>
-                <Stack direction='row' alignItems='center' spacing={2}>
+            <DialogTitle sx={{ pb: 2 }}>
+                <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
                     <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
-                    <Typography variant='h6' sx={{ fontWeight: 600, flex: 1, textAlign: 'center', pr: 4 }}>
+                    <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
                         {t('Choose an Estimation')}
                     </Typography>
                 </Stack>
             </DialogTitle>
 
-            <DialogContent dividers sx={{ p: 0 }}>
+            <DialogContent dividers sx={{ p: 0, pt: 1 }}>
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                         <CircularProgress size={32} />
