@@ -12,7 +12,8 @@ interface LaborRow {
     _id: string;
     laborItemId: string;
     fullCode: string;
-    name: string;
+    catalogName: string;
+    laborOfferItemName: string;
     quantity: number;
     changableAveragePrice: number;
     cost: number;
@@ -48,7 +49,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                 for (const row of (rows ?? [])) {
                     const key = String(row.laborItemId);
                     if (!map.has(key)) {
-                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: row.name, totalCost: 0, items: [] });
+                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: row.laborOfferItemName || row.catalogName, totalCost: 0, items: [] });
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
@@ -128,7 +129,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                                 <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                     <TableCell sx={{ pl: 5, py: 1.5 }}>
                                         <Typography variant='body2' color='text.secondary'>
-                                            {i + 1}. {item.subsectionName || item.sectionName}
+                                            {i + 1}. {item.laborOfferItemName || item.catalogName}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>

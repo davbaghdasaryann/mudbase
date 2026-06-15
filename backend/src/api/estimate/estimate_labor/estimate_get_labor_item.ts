@@ -391,7 +391,8 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                     quantity: 1,
                     changableAveragePrice: 1,
                     fullCode: '$catalogItem.fullCode',
-                    name: '$catalogItem.name',
+                    catalogName: '$catalogItem.name',
+                    laborOfferItemName: 1,
                     displayIndex: 1,
                 },
             },
@@ -399,16 +400,17 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
         ])
         .toArray();
 
-    const result = laborItems.map(item => ({
+    const result = laborItems.map((item: any) => ({
         _id: item._id,
         laborItemId: item.laborItemId,
         fullCode: item.fullCode ?? '',
-        name: item.name ?? '',
+        catalogName: item.catalogName ?? '',
+        laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
         quantity: item.quantity ?? 0,
         changableAveragePrice: item.changableAveragePrice ?? 0,
         cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
-        subsectionName: subsectionMap.get(item.estimateSubsectionId.toString())?.name ?? '',
-        sectionName: subsectionMap.get(item.estimateSubsectionId.toString())?.sectionName ?? '',
+        subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+        sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
     }));
 
     respondJsonData(res, result);
