@@ -139,8 +139,8 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
         {$set: filteredUpdateData}
     );
 
-    // Update catalog offer when price changes (for builders with offer creation permission)
-    if (priceChanged && session.permissionsSet?.has('OFF_CRT_LBR')) {
+    // Update catalog offer when price or labor hours changes (for builders with offer creation permission)
+    if ((priceChanged || hoursChanged) && session.permissionsSet?.has('OFF_CRT_LBR')) {
         let estLaborItem = (await estimatesLaborColl.findOne({ _id: estimatedLaborId }))!;
         let laborOffersCollection = Db.getLaborOffersCollection();
 
@@ -154,7 +154,8 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
                 { _id: existingOffer._id },
                 {
                     $set: {
-                        price: updatedData.changableAveragePrice,
+                        price: estLaborItem.changableAveragePrice,
+                        laborHours: estLaborItem.laborHours, //🔴 TODO: this will need us in version 2 🔴
                         updatedAt: new Date()
                     }
                 }
@@ -166,6 +167,7 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
             let addingLaborOfferPricesJournal: Db.EntityLaborPricesJournal = {} as Db.EntityLaborPricesJournal;
             addingLaborOfferPricesJournal.itemId = updatedLaborOffer._id;
             addingLaborOfferPricesJournal.price = updatedLaborOffer.price;
+            addingLaborOfferPricesJournal.laborHours = updatedLaborOffer.laborHours; //🔴 TODO: this will need us in version 2 🔴
             addingLaborOfferPricesJournal.currency = updatedLaborOffer.currency;
             addingLaborOfferPricesJournal.measurementUnitMongoId = updatedLaborOffer.measurementUnitMongoId;
             addingLaborOfferPricesJournal.userId = updatedLaborOffer.userId;
@@ -190,7 +192,8 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
 
             newLaborOffer.anonymous = false;
             newLaborOffer.public = true;
-            newLaborOffer.price = updatedData.changableAveragePrice ?? estLaborItem.changableAveragePrice;
+            newLaborOffer.price = estLaborItem.changableAveragePrice;
+            newLaborOffer.laborHours = estLaborItem.laborHours; //🔴 TODO: this will need us in version 2 🔴
             newLaborOffer.currency = "AMD";
 
             if (estLaborItem.measurementUnitMongoId) {
@@ -206,6 +209,7 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
             let addingLaborOfferPricesJournal: Db.EntityLaborPricesJournal = {} as Db.EntityLaborPricesJournal;
             addingLaborOfferPricesJournal.itemId = updatedLaborOffer._id;
             addingLaborOfferPricesJournal.price = updatedLaborOffer.price;
+            addingLaborOfferPricesJournal.laborHours = updatedLaborOffer.laborHours; //🔴 TODO: this will need us in version 2 🔴
             addingLaborOfferPricesJournal.currency = updatedLaborOffer.currency;
             addingLaborOfferPricesJournal.measurementUnitMongoId = updatedLaborOffer.measurementUnitMongoId;
             addingLaborOfferPricesJournal.userId = updatedLaborOffer.userId;
