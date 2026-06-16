@@ -97,12 +97,12 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Labor Description')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Average Market Value')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Minimum Value')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Maximum Value')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600 }}>{t('Labor Description')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Average Market Value')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Minimum Value')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Maximum Value')}</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
@@ -116,27 +116,27 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
 
                         {group.items.map((item, i) => (
                             <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                <TableCell sx={{ pl: 5, py: 1.5 }}>
+                                <TableCell align='center' sx={{ py: 1.5 }}>
                                     <Typography variant='body2' color='text.secondary'>
                                         {si + 1}.{i + 1} {item.laborOfferItemName || item.catalogName}
                                     </Typography>
                                 </TableCell>
-                                <TableCell align='right' sx={{ color: 'text.secondary', py: 1.5 }}>
+                                <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
                                     {item.unitSymbol}
                                 </TableCell>
-                                <TableCell align='right' sx={{ py: 1.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                                <TableCell align='center' sx={{ py: 1.5 }}>
+                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
                                         <TrendIndicator unitCost={item.unitCost} marketAverage={item.marketAveragePrice} />
                                         {formatValue(item.unitCost)}
                                     </Box>
                                 </TableCell>
-                                <TableCell align='right' sx={{ color: 'text.secondary', py: 1.5 }}>
+                                <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
                                     {formatValue(item.marketAveragePrice)}
                                 </TableCell>
-                                <TableCell align='right' sx={{ color: 'text.secondary', py: 1.5 }}>
+                                <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
                                     {formatValue(item.marketMinPrice)}
                                 </TableCell>
-                                <TableCell align='right' sx={{ color: 'text.secondary', py: 1.5 }}>
+                                <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
                                     {formatValue(item.marketMaxPrice)}
                                 </TableCell>
                             </TableRow>
@@ -145,12 +145,12 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
                 ))}
 
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell sx={{ pl: 1.5, fontWeight: 700 }}>{t('Total')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 700 }}>{t('Total')}</TableCell>
                     <TableCell />
-                    <TableCell align='right' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.unitCost)}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketAveragePrice)}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMinPrice)}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMaxPrice)}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.unitCost)}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketAveragePrice)}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMinPrice)}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMaxPrice)}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>
