@@ -97,7 +97,7 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell align='center' sx={{ fontWeight: 600 }}>{t('Labor Description')}</TableCell>
+                    <TableCell align='left' sx={{ fontWeight: 600 }}>{t('Labor Description')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Average Market Value')}</TableCell>
@@ -116,7 +116,7 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
 
                         {group.items.map((item, i) => (
                             <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                <TableCell align='center' sx={{ py: 1.5 }}>
+                                <TableCell align='left' sx={{ py: 1.5 }}>
                                     <Typography variant='body2' color='text.secondary'>
                                         {si + 1}.{i + 1} {item.laborOfferItemName || item.catalogName}
                                     </Typography>
