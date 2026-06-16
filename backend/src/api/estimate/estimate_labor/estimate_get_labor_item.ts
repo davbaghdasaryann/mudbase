@@ -416,6 +416,130 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
     respondJsonData(res, result);
 });
 
+registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+
+    const sections = await Db.getEstimateSectionsCollection()
+        .find({ estimateId })
+        .project({ _id: 1, name: 1, displayIndex: 1 })
+        .sort({ displayIndex: 1 })
+        .toArray();
+    const sectionIds = sections.map(s => s._id);
+    if (sectionIds.length === 0) { respondJsonData(res, []); return; }
+
+    const sectionMap = new Map(sections.map((s, i) => [s._id.toString(), { name: s.name as string, displayIndex: i }]));
+
+    const subsections = await Db.getEstimateSubsectionsCollection()
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .project({ _id: 1, estimateSectionId: 1 })
+        .toArray();
+    const subsectionIds = subsections.map(s => s._id);
+    if (subsectionIds.length === 0) { respondJsonData(res, []); return; }
+
+    const subsectionMap = new Map(subsections.map(s => [
+        s._id.toString(),
+        sectionMap.get(s.estimateSectionId.toString()) ?? { name: '', displayIndex: 0 },
+    ]));
+
+    const laborItems = await Db.getEstimateLaborItemsCollection()
+        .aggregate([
+            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
+            {
+                $lookup: {
+                    from: 'labor_items',
+                    let: { itemIdVar: '$laborItemId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
+                        {
+                            $lookup: {
+                                from: 'measurement_unit',
+                                localField: 'measurementUnitMongoId',
+                                foreignField: '_id',
+                                as: 'measurementUnitData',
+                            },
+                        },
+                        { $unwind: { path: '$measurementUnitData', preserveNullAndEmptyArrays: true } },
+                        {
+                            $lookup: {
+                                from: 'labor_offers',
+                                let: { catalogIdVar: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: { $eq: ['$itemId', '$$catalogIdVar'] },
+                                            price: { $ne: 0, $exists: true },
+                                            $or: [{ isArchived: false }, { isArchived: { $exists: false } }],
+                                        },
+                                    },
+                                    {
+                                        $group: {
+                                            _id: null,
+                                            avgPrice: { $avg: '$price' },
+                                            minPrice: { $min: '$price' },
+                                            maxPrice: { $max: '$price' },
+                                        },
+                                    },
+                                ],
+                                as: 'marketStats',
+                            },
+                        },
+                        { $unwind: { path: '$marketStats', preserveNullAndEmptyArrays: true } },
+                        {
+                            $project: {
+                                _id: 0,
+                                fullCode: 1,
+                                name: 1,
+                                unitSymbol: '$measurementUnitData.representationSymbol',
+                                marketAveragePrice: '$marketStats.avgPrice',
+                                marketMinPrice: '$marketStats.minPrice',
+                                marketMaxPrice: '$marketStats.maxPrice',
+                            },
+                        },
+                    ],
+                    as: 'catalogItem',
+                },
+            },
+            { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    laborItemId: 1,
+                    estimateSubsectionId: 1,
+                    changableAveragePrice: 1,
+                    fullCode: '$catalogItem.fullCode',
+                    catalogName: '$catalogItem.name',
+                    laborOfferItemName: 1,
+                    unitSymbol: '$catalogItem.unitSymbol',
+                    marketAveragePrice: '$catalogItem.marketAveragePrice',
+                    marketMinPrice: '$catalogItem.marketMinPrice',
+                    marketMaxPrice: '$catalogItem.marketMaxPrice',
+                    displayIndex: 1,
+                },
+            },
+            { $sort: { displayIndex: 1, _id: 1 } },
+        ])
+        .toArray();
+
+    const result = laborItems.map((item: any) => {
+        const sectionInfo = subsectionMap.get(item.estimateSubsectionId?.toString());
+        return {
+            _id: item._id,
+            laborItemId: item.laborItemId,
+            fullCode: item.fullCode ?? '',
+            catalogName: item.catalogName ?? '',
+            laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+            unitSymbol: item.unitSymbol ?? '',
+            unitCost: item.changableAveragePrice ?? 0,
+            marketAveragePrice: item.marketAveragePrice ?? null,
+            marketMinPrice: item.marketMinPrice ?? null,
+            marketMaxPrice: item.marketMaxPrice ?? null,
+            sectionName: sectionInfo?.name ?? '',
+            sectionDisplayIndex: sectionInfo?.displayIndex ?? 0,
+        };
+    });
+
+    respondJsonData(res, result);
+});
+
 registerApiSession('estimate/get_labor_item', async (req, res, session) => {
     let estimatedLaborId = requireMongoIdParam(req, 'estimatedLaborId');
 
