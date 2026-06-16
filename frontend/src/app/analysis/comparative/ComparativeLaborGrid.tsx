@@ -10,12 +10,39 @@ import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 
-interface MarketComparisonRow {
+interface LaborMarketComparisonRow {
     _id: string;
     laborItemId: string;
     fullCode: string;
     catalogName: string;
     laborOfferItemName: string;
+    unitSymbol: string;
+    unitCost: number;
+    marketAveragePrice: number | null;
+    marketMinPrice: number | null;
+    marketMaxPrice: number | null;
+    sectionName: string;
+    sectionDisplayIndex: number;
+}
+
+interface MaterialMarketComparisonRow {
+    _id: string;
+    materialItemId: string;
+    fullCode: string;
+    catalogName: string;
+    materialOfferItemName: string;
+    unitSymbol: string;
+    unitCost: number;
+    marketAveragePrice: number | null;
+    marketMinPrice: number | null;
+    marketMaxPrice: number | null;
+    sectionName: string;
+    sectionDisplayIndex: number;
+}
+
+interface MarketComparisonRow {
+    _id: string;
+    itemName: string;
     unitSymbol: string;
     unitCost: number;
     marketAveragePrice: number | null;
@@ -42,7 +69,7 @@ const TrendIndicator = ({ unitCost, marketAverage }: { unitCost: number; marketA
 
 const formatValue = (value: number | null) => value === null ? '-' : formatCurrencyRounded(value);
 
-export default function ComparativeLaborGrid({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
+export default function ComparativeLaborGrid({ estimate, includeMaterials }: { estimate: EstimatesApi.ApiEstimate; includeMaterials?: boolean }) {
     const { t } = useTranslation();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,10 +81,22 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
         setLoading(true);
         setGroups([]);
 
-        Api.requestSession<MarketComparisonRow[]>({ command: 'estimate/fetch_labor_market_comparison', args: { estimateId } })
-            .then((rows) => {
+        const requests: Promise<MarketComparisonRow[]>[] = [
+            Api.requestSession<LaborMarketComparisonRow[]>({ command: 'estimate/fetch_labor_market_comparison', args: { estimateId } })
+                .then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.laborOfferItemName || row.catalogName }))),
+        ];
+
+        if (includeMaterials) {
+            requests.push(
+                Api.requestSession<MaterialMarketComparisonRow[]>({ command: 'estimate/fetch_material_market_comparison', args: { estimateId } })
+                    .then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.materialOfferItemName || row.catalogName })))
+            );
+        }
+
+        Promise.all(requests)
+            .then(([laborRows, materialRows]) => {
                 const map = new Map<string, SectionGroup>();
-                for (const row of (rows ?? [])) {
+                for (const row of [...laborRows, ...(materialRows ?? [])]) {
                     const key = row.sectionName;
                     if (!map.has(key)) {
                         map.set(key, { sectionName: row.sectionName, sectionDisplayIndex: row.sectionDisplayIndex, items: [] });
@@ -69,7 +108,7 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
             })
             .catch((e) => setError(String(e)))
             .finally(() => setLoading(false));
-    }, [estimateId]);
+    }, [estimateId, includeMaterials]);
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -118,7 +157,7 @@ export default function ComparativeLaborGrid({ estimate }: { estimate: Estimates
                             <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                 <TableCell align='left' sx={{ py: 1.5 }}>
                                     <Typography variant='body2' color='text.secondary'>
-                                        {si + 1}.{i + 1} {item.laborOfferItemName || item.catalogName}
+                                        {si + 1}.{i + 1} {item.itemName}
                                     </Typography>
                                 </TableCell>
                                 <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>

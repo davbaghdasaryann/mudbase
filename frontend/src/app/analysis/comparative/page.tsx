@@ -77,7 +77,7 @@ export default function ComparativeAnalysisPage() {
                         </Box>
 
                         <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                            <ComparativeLaborGrid estimate={selectedEstimate!} />
+                            <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
                         </TabPanel>
 
                         <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
