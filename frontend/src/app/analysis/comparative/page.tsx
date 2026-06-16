@@ -33,7 +33,7 @@ export default function ComparativeAnalysisPage() {
                 </defs>
             </Box>
 
-            <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap>
+            <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ width: '100%' }}>
                 {cards.map((card) => (
                     <Box
                         key={card.key}
