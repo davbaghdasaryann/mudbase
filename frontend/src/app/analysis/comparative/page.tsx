@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { Box, Stack, Typography } from '@mui/material';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
+import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
+import * as EstimatesApi from '@/api/estimate';
 
 const cards = [
     { key: 'By Market Value', gradientId: 'comparativeGradientGreen' },
@@ -14,6 +17,13 @@ const cards = [
 
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
+    const [marketValueDialogOpen, setMarketValueDialogOpen] = useState(false);
+    const [marketValueEstimate, setMarketValueEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+
+    const handleCardClick = (key: string) => {
+        if (key === 'By Market Value') setMarketValueDialogOpen(true);
+    };
+
     return (
         <PageContents title='Comparative Analytics'>
             <Box component='svg' width={0} height={0} sx={{ position: 'absolute' }}>
@@ -39,6 +49,7 @@ export default function ComparativeAnalysisPage() {
                         key={card.key}
                         role='button'
                         tabIndex={0}
+                        onClick={() => handleCardClick(card.key)}
                         sx={{
                             position: 'relative',
                             width: 180,
@@ -85,6 +96,21 @@ export default function ComparativeAnalysisPage() {
                     </Box>
                 ))}
             </Stack>
+
+            {marketValueEstimate && (
+                <Typography variant='body1' sx={{ fontWeight: 600, mt: 1 }}>
+                    {t('Choose an Estimation')}: {marketValueEstimate.name}
+                </Typography>
+            )}
+
+            <ChooseEstimationDialog
+                open={marketValueDialogOpen}
+                onClose={() => setMarketValueDialogOpen(false)}
+                onSelect={(estimate) => {
+                    setMarketValueDialogOpen(false);
+                    setMarketValueEstimate(estimate);
+                }}
+            />
         </PageContents>
     );
 }
