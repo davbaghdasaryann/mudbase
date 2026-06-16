@@ -6,5 +6,5 @@ apps:
     env:
       NODE_ENV: production
       NEXTAUTH_URL: https://new.mudbase.am
-      CONFIG_FILE: config-mudbase-new.yaml
+      CONFIG_FILE: config-dev.yaml
 

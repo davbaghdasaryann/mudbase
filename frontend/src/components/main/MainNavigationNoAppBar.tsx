@@ -12,6 +12,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
@@ -218,6 +219,7 @@ function useMainNavigation() {
                 icon: <BarChartIcon />,
                 children: [
                     {segment: 'structural', title: t('Structural'), icon: <AccountTreeIcon />},
+                    {segment: 'comparative', title: t('Comparative'), icon: <CompareArrowsIcon />},
                 ],
             });
         }
