@@ -25,21 +25,6 @@ interface LaborMarketComparisonRow {
     sectionDisplayIndex: number;
 }
 
-interface MaterialMarketComparisonRow {
-    _id: string;
-    materialItemId: string;
-    fullCode: string;
-    catalogName: string;
-    materialOfferItemName: string;
-    unitSymbol: string;
-    unitCost: number;
-    marketAveragePrice: number | null;
-    marketMinPrice: number | null;
-    marketMaxPrice: number | null;
-    sectionName: string;
-    sectionDisplayIndex: number;
-}
-
 interface MarketComparisonRow {
     _id: string;
     itemName: string;
@@ -81,22 +66,17 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials }: { e
         setLoading(true);
         setGroups([]);
 
-        const requests: Promise<MarketComparisonRow[]>[] = [
-            Api.requestSession<LaborMarketComparisonRow[]>({ command: 'estimate/fetch_labor_market_comparison', args: { estimateId } })
-                .then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.laborOfferItemName || row.catalogName }))),
-        ];
-
-        if (includeMaterials) {
-            requests.push(
-                Api.requestSession<MaterialMarketComparisonRow[]>({ command: 'estimate/fetch_material_market_comparison', args: { estimateId } })
-                    .then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.materialOfferItemName || row.catalogName })))
-            );
-        }
-
-        Promise.all(requests)
-            .then(([laborRows, materialRows]) => {
+        // includeMaterials folds each labor item's linked material cost into its unit price
+        // (same combined "unit price" methodology as the main Estimate page), rather than
+        // listing materials as separate rows alongside labor.
+        Api.requestSession<LaborMarketComparisonRow[]>({
+            command: 'estimate/fetch_labor_market_comparison',
+            args: includeMaterials ? { estimateId, includeMaterials: 'true' } : { estimateId },
+        })
+            .then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.laborOfferItemName || row.catalogName })))
+            .then((laborRows) => {
                 const map = new Map<string, SectionGroup>();
-                for (const row of [...laborRows, ...(materialRows ?? [])]) {
+                for (const row of laborRows) {
                     const key = row.sectionName;
                     if (!map.has(key)) {
                         map.set(key, { sectionName: row.sectionName, sectionDisplayIndex: row.sectionDisplayIndex, items: [] });

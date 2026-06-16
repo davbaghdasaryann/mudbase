@@ -5,6 +5,7 @@ import * as Db from '@/db';
 import { respondJson, respondJsonData } from '@/tsback/req/req_response';
 import { verify } from '@/tslib/verify';
 import { requireMongoIdParam } from '@/tsback/mongodb/mongodb_params';
+import { getQueryParam } from '@/tsback/req/req_params';
 
 registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
     let estimateSubsectionId = requireMongoIdParam(req, 'estimateSubsectionId');
@@ -418,6 +419,9 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
 
 registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, session) => {
     const estimateId = requireMongoIdParam(req, 'estimateId');
+    // When true, unitCost folds in each labor item's linked material cost per unit (quantity),
+    // matching the combined "unit price" methodology used on the main Estimate page.
+    const includeMaterials = getQueryParam(req, 'includeMaterials') === 'true';
 
     const sections = await Db.getEstimateSectionsCollection()
         .find({ estimateId })
@@ -444,6 +448,23 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
     const laborItems = await Db.getEstimateLaborItemsCollection()
         .aggregate([
             { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
+            {
+                $lookup: {
+                    from: 'estimate_material_items',
+                    let: { laborIdVar: '$_id' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$estimatedLaborId', '$$laborIdVar'] } } },
+                        {
+                            $group: {
+                                _id: null,
+                                materialTotalCost: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } },
+                            },
+                        },
+                    ],
+                    as: 'materialAgg',
+                },
+            },
+            { $unwind: { path: '$materialAgg', preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: 'labor_items',
@@ -504,7 +525,9 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
                 $project: {
                     laborItemId: 1,
                     estimateSubsectionId: 1,
+                    quantity: 1,
                     changableAveragePrice: 1,
+                    materialTotalCost: '$materialAgg.materialTotalCost',
                     fullCode: '$catalogItem.fullCode',
                     catalogName: '$catalogItem.name',
                     laborOfferItemName: 1,
@@ -521,6 +544,11 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
 
     const result = laborItems.map((item: any) => {
         const sectionInfo = subsectionMap.get(item.estimateSubsectionId?.toString());
+        const laborUnitCost = item.changableAveragePrice ?? 0;
+        // Combined "unit price" (labor + linked materials per unit), same methodology as the main Estimate page.
+        const unitCost = includeMaterials && item.quantity
+            ? laborUnitCost + (item.materialTotalCost ?? 0) / item.quantity
+            : laborUnitCost;
         return {
             _id: item._id,
             laborItemId: item.laborItemId,
@@ -528,7 +556,7 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
             catalogName: item.catalogName ?? '',
             laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
             unitSymbol: item.unitSymbol ?? '',
-            unitCost: item.changableAveragePrice ?? 0,
+            unitCost,
             marketAveragePrice: item.marketAveragePrice ?? null,
             marketMinPrice: item.marketMinPrice ?? null,
             marketMaxPrice: item.marketMaxPrice ?? null,
