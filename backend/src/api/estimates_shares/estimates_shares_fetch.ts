@@ -470,12 +470,18 @@ registerApiSession('estimates_shared_by_me/fetch_grouped', async (req, res, sess
                     },
                 },
                 companies: {
-                    $push: {
-                        $cond: {
-                            if: { $ifNull: ['$accountArr._id', false] },
-                            then: { _id: '$accountArr._id', companyName: '$accountArr.companyName' },
-                            else: '$$REMOVE',
-                        },
+                    $push: { _id: '$accountArr._id', companyName: '$accountArr.companyName' },
+                },
+            },
+        },
+        {
+            $project: {
+                estimate: 1,
+                companies: {
+                    $filter: {
+                        input: '$companies',
+                        as: 'c',
+                        cond: { $ne: ['$$c._id', null] },
                     },
                 },
             },
