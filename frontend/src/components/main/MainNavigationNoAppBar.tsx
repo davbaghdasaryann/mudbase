@@ -14,6 +14,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
 import DatasetIcon from '@mui/icons-material/Dataset';
@@ -204,6 +205,8 @@ function useMainNavigation() {
         else if (session?.user) {
             navigation.push({segment: 'dashboard-builder', title: t('Dashboard'), icon: <DashboardIcon />});
         }
+
+        navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
 
         navigation.push({
             segment: 'catalog',

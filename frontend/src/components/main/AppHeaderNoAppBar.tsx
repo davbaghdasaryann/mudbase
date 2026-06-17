@@ -19,6 +19,7 @@ import DatasetIcon from '@mui/icons-material/Dataset';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -49,6 +50,8 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <ImgElement src='/images/icons/company.svg' sx={{ height: 25, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
             case 'accounts':
                 return <BusinessIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'schedule':
+                return <CalendarMonthIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'dev':
                 return <DatasetIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'analysis':
