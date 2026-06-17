@@ -58,15 +58,26 @@ export default function ComparativeAnalysisPage() {
             </Box>
 
             {hasData ? (
-                <>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 0.5 }}>
-                        <Typography variant='h5' sx={{ fontWeight: 700 }}>
-                            {selectedEstimate!.name}
-                        </Typography>
-                        <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
-                    </Box>
-
-                    <TabContext value={activeTab}>
+                <TabContext value={activeTab}>
+                    <Box
+                        sx={{
+                            position: 'sticky',
+                            top: { xs: 56, md: 64 },
+                            zIndex: 10,
+                            backgroundColor: 'background.paper',
+                            pt: 1,
+                            pb: 0,
+                            mx: { xs: -2, sm: -3, md: -4 },
+                            px: { xs: 2, sm: 3, md: 4 },
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                            <Typography variant='h5' sx={{ fontWeight: 700 }}>
+                                {selectedEstimate!.name}
+                            </Typography>
+                            <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
+                        </Box>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
                                 <Tab label={t('General')} value='general' />
@@ -74,20 +85,20 @@ export default function ComparativeAnalysisPage() {
                                 <Tab label={t('Materials')} value='materials' />
                             </TabList>
                         </Box>
+                    </Box>
 
-                        <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                            <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
-                        </TabPanel>
+                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                        <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
+                    </TabPanel>
 
-                        <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                            <ComparativeLaborGrid estimate={selectedEstimate!} />
-                        </TabPanel>
+                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                        <ComparativeLaborGrid estimate={selectedEstimate!} />
+                    </TabPanel>
 
-                        <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                            <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
-                        </TabPanel>
-                    </TabContext>
-                </>
+                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                        <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
+                    </TabPanel>
+                </TabContext>
             ) : (
                 <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ width: '100%' }}>
                     {cards.map((card) => (

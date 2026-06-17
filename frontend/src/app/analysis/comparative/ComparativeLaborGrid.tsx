@@ -182,7 +182,7 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
                 ))}
 
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell align='center' sx={{ fontWeight: 700 }}>{t('Total')}</TableCell>
+                    <TableCell align='left' sx={{ fontWeight: 700, pl: 1 }}>{t('Total')}</TableCell>
                     <TableCell />
                     <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.unitCost)}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketAveragePrice)}</TableCell>
