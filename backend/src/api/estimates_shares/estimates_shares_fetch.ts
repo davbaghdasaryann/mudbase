@@ -430,6 +430,62 @@ registerApiSession('estimates_shared_by_me/fetch', async (req, res, session) => 
 });
 
 
+registerApiSession('estimates_shared_by_me/fetch_grouped', async (req, res, session) => {
+    const estimatesSharesCollection = Db.getEstimatesSharesCollection();
+
+    const pipeline: any[] = [
+        {
+            $match: {
+                sharedByAccountId: session.mongoAccountId,
+                deleted: { $ne: true },
+                isDuplicatedChild: { $ne: true },
+            },
+        },
+        {
+            $lookup: {
+                from: 'estimates',
+                localField: 'sharedEstimateId',
+                foreignField: '_id',
+                as: 'estimatesData',
+            },
+        },
+        { $unwind: '$estimatesData' },
+        {
+            $lookup: {
+                from: 'accounts',
+                localField: 'sharedWithAccountId',
+                foreignField: '_id',
+                as: 'accountArr',
+            },
+        },
+        { $unwind: { path: '$accountArr', preserveNullAndEmptyArrays: true } },
+        {
+            $group: {
+                _id: '$sharedEstimateId',
+                estimate: {
+                    $first: {
+                        _id: '$estimatesData._id',
+                        name: '$estimatesData.name',
+                        createdAt: '$estimatesData.createdAt',
+                    },
+                },
+                companies: {
+                    $push: {
+                        $cond: {
+                            if: { $ifNull: ['$accountArr._id', false] },
+                            then: { _id: '$accountArr._id', companyName: '$accountArr.companyName' },
+                            else: '$$REMOVE',
+                        },
+                    },
+                },
+            },
+        },
+        { $sort: { 'estimate.createdAt': -1 } },
+    ];
+
+    const grouped = await estimatesSharesCollection.aggregate(pipeline).toArray();
+    respondJsonData(res, grouped);
+});
 
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Table, TableHead, TableBody, TableRow, TableCell,
@@ -29,15 +29,8 @@ export interface SharedEstimationSelection {
     companies: SharedEstimateCompany[];
 }
 
-interface ShareRecord {
-    sharedEstimateId: string;
-    estimatesData: SharedEstimate;
-    sharedWithAccountId: string;
-    sharedWithAccountData: SharedEstimateCompany;
-}
-
 interface EstimateEntry {
-    estimateId: string;
+    _id: string;
     estimate: SharedEstimate;
     companies: SharedEstimateCompany[];
 }
@@ -50,7 +43,7 @@ interface Props {
 
 export default function SelectSharedEstimationDialog({ open, onClose, onConfirm }: Props) {
     const { t } = useTranslation();
-    const [records, setRecords] = useState<ShareRecord[]>([]);
+    const [entries, setEntries] = useState<EstimateEntry[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedEstimateId, setSelectedEstimateId] = useState<string | null>(null);
     const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -60,32 +53,16 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
         setSelectedEstimateId(null);
         setCheckedIds(new Set());
         setLoading(true);
-        Api.requestSession<ShareRecord[]>({
-            command: 'estimates_shared_by_me/fetch',
-            args: { searchVal: 'empty' },
+        Api.requestSession<EstimateEntry[]>({
+            command: 'estimates_shared_by_me/fetch_grouped',
+            args: {},
         })
-            .then((data) => setRecords(data ?? []))
+            .then((data) => setEntries(data ?? []))
             .catch(() => {})
             .finally(() => setLoading(false));
     }, [open]);
 
-    // Group share records into unique estimates with their company lists
-    const entries = useMemo<EstimateEntry[]>(() => {
-        const map = new Map<string, EstimateEntry>();
-        for (const r of records) {
-            if (!r.estimatesData) continue;
-            const id = String(r.sharedEstimateId);
-            if (!map.has(id)) {
-                map.set(id, { estimateId: id, estimate: r.estimatesData, companies: [] });
-            }
-            if (r.sharedWithAccountData) {
-                map.get(id)!.companies.push({ ...r.sharedWithAccountData, _id: String(r.sharedWithAccountId) });
-            }
-        }
-        return Array.from(map.values());
-    }, [records]);
-
-    const selectedEntry = entries.find((e) => e.estimateId === selectedEstimateId) ?? null;
+    const selectedEntry = entries.find((e) => String(e._id) === selectedEstimateId) ?? null;
 
     const handleSelectEstimate = (id: string) => {
         setSelectedEstimateId(id);
@@ -104,7 +81,7 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
         if (!selectedEntry) return;
         onConfirm({
             estimate: selectedEntry.estimate,
-            companies: selectedEntry.companies.filter((c) => checkedIds.has(c._id)),
+            companies: selectedEntry.companies.filter((c) => checkedIds.has(String(c._id))).map(c => ({ ...c, _id: String(c._id) })),
         });
     };
 
@@ -139,12 +116,12 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
                                 <TableBody>
                                     {entries.map((entry, i) => (
                                         <TableRow
-                                            key={entry.estimateId}
+                                            key={String(entry._id)}
                                             hover
-                                            onClick={() => handleSelectEstimate(entry.estimateId)}
+                                            onClick={() => handleSelectEstimate(String(entry._id))}
                                             sx={{
                                                 cursor: 'pointer',
-                                                backgroundColor: selectedEstimateId === entry.estimateId
+                                                backgroundColor: selectedEstimateId === String(entry._id)
                                                     ? `${mainPrimaryColor}22`
                                                     : i % 2 === 1 ? '#F5F5F5' : '#ffffff',
                                                 '&.MuiTableRow-hover:hover': {
@@ -173,11 +150,11 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
                                 <List disablePadding>
                                     {selectedEntry.companies.map((company) => (
                                         <ListItem
-                                            key={company._id}
+                                            key={String(company._id)}
                                             secondaryAction={
                                                 <Checkbox
-                                                    checked={checkedIds.has(company._id)}
-                                                    onChange={() => toggleCompany(company._id)}
+                                                    checked={checkedIds.has(String(company._id))}
+                                                    onChange={() => toggleCompany(String(company._id))}
                                                     size='small'
                                                     sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
                                                 />
