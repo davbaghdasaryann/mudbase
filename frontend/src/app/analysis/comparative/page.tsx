@@ -63,13 +63,10 @@ export default function ComparativeAnalysisPage() {
                         sx={{
                             position: 'sticky',
                             top: { xs: 56, md: 64 },
-                            zIndex: 10,
-                            backgroundColor: 'background.paper',
+                            zIndex: 100,
+                            background: '#fff',
                             pt: 1,
                             pb: 0,
-                            mx: { xs: -2, sm: -3, md: -4 },
-                            px: { xs: 2, sm: 3, md: 4 },
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
                         }}
                     >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
