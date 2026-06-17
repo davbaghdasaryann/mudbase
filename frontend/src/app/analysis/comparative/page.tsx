@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Stack, Typography, Tab } from '@mui/material';
+import { Box, Button, Stack, Typography, Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import AddIcon from '@mui/icons-material/Add';
@@ -10,6 +10,7 @@ import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
+import BaseProposalsGrid from './BaseProposalsGrid';
 import * as EstimatesApi from '@/api/estimate';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
@@ -25,11 +26,13 @@ export default function ComparativeAnalysisPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
+    const [analysisType, setAnalysisType] = useState<'market' | 'base_proposals'>('market');
 
     const hasData = !!selectedEstimate;
 
     const handleCardClick = (key: string) => {
-        if (key === 'By Market Value' || key === 'By Base Proposals') setDialogOpen(true);
+        if (key === 'By Market Value') { setAnalysisType('market'); setDialogOpen(true); }
+        if (key === 'By Base Proposals') { setAnalysisType('base_proposals'); setDialogOpen(true); }
     };
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
@@ -68,26 +71,45 @@ export default function ComparativeAnalysisPage() {
                                 </Typography>
                                 <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
                             </Box>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
+                            <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: 1, borderColor: 'divider' }}>
+                                <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)} sx={{ flex: 1 }}>
                                     <Tab label={t('General')} value='general' />
                                     <Tab label={t('Labor')} value='labor' />
                                     <Tab label={t('Materials')} value='materials' />
                                 </TabList>
+                                {analysisType === 'base_proposals' && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', px: 1, pb: '4px' }}>
+                                        <Button variant='text' size='small' sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
+                                            {t('Add')} +
+                                        </Button>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
 
                         {/* Inner scroll container — table content scrolls here */}
                         <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                            <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
-                            </TabPanel>
-                            <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                                <ComparativeLaborGrid estimate={selectedEstimate!} />
-                            </TabPanel>
-                            <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                                <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
-                            </TabPanel>
+                            {analysisType === 'market' ? (
+                                <>
+                                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                        <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
+                                    </TabPanel>
+                                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                                        <ComparativeLaborGrid estimate={selectedEstimate!} />
+                                    </TabPanel>
+                                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                                        <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
+                                    </TabPanel>
+                                </>
+                            ) : (
+                                <>
+                                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                        <BaseProposalsGrid estimate={selectedEstimate!} />
+                                    </TabPanel>
+                                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }} />
+                                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }} />
+                                </>
+                            )}
                         </Box>
                     </TabContext>
                 </Box>
