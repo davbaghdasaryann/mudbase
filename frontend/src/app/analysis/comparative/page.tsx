@@ -12,6 +12,7 @@ import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
+import SelectSharedEstimationDialog, { SharedEstimationSelection } from './SelectSharedEstimationDialog';
 import * as EstimatesApi from '@/api/estimate';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
@@ -30,12 +31,14 @@ export default function ComparativeAnalysisPage() {
     const [analysisType, setAnalysisType] = useState<'market' | 'base_proposals'>('market');
     const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
     const [selectedCompanies, setSelectedCompanies] = useState<CompanyOption[]>([]);
+    const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
 
     const hasData = !!selectedEstimate;
 
     const handleCardClick = (key: string) => {
         if (key === 'By Market Value') { setAnalysisType('market'); setDialogOpen(true); }
         if (key === 'By Base Proposals') { setAnalysisType('base_proposals'); setDialogOpen(true); }
+        if (key === 'By Submitted Estimations') { setSharedEstimationDialogOpen(true); }
     };
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
@@ -185,6 +188,12 @@ export default function ComparativeAnalysisPage() {
                 onClose={() => setCompanyDialogOpen(false)}
                 initialSelected={selectedCompanies}
                 onConfirm={(companies) => { setSelectedCompanies(companies); setCompanyDialogOpen(false); }}
+            />
+
+            <SelectSharedEstimationDialog
+                open={sharedEstimationDialogOpen}
+                onClose={() => setSharedEstimationDialogOpen(false)}
+                onConfirm={(_selection: SharedEstimationSelection) => { setSharedEstimationDialogOpen(false); }}
             />
         </PageContents>
     );
