@@ -29,7 +29,7 @@ export default function ComparativeAnalysisPage() {
     const hasData = !!selectedEstimate;
 
     const handleCardClick = (key: string) => {
-        if (key === 'By Market Value') setDialogOpen(true);
+        if (key === 'By Market Value' || key === 'By Base Proposals') setDialogOpen(true);
     };
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
