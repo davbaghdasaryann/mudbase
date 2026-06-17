@@ -751,3 +751,151 @@ registerApiSession('estimate/get_labor_item_for_view', async (req, res, session)
 
     // respondJson(res, result);
 });
+
+
+registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req, res, session) => {
+    const originalEstimateId = requireMongoIdParam(req, 'originalEstimateId');
+    const accountIdsParam = getQueryParam(req, 'accountIds') ?? '';
+    const accountIds = accountIdsParam.split(',').filter(Boolean).map(id => new ObjectId(id));
+
+    const estimatesCol = Db.getEstimatesCollection();
+    const sectionsCol = Db.getEstimateSectionsCollection();
+    const subsectionsCol = Db.getEstimateSubsectionsCollection();
+    const laborItemsCol = Db.getEstimateLaborItemsCollection();
+
+    // Original estimate (for otherExpenses totals)
+    const originalEstimate = await estimatesCol.findOne({ _id: originalEstimateId });
+    if (!originalEstimate) { respondJsonData(res, null); return; }
+
+    // Sections of original
+    const sections = await sectionsCol
+        .find({ estimateId: originalEstimateId })
+        .sort({ displayIndex: 1 })
+        .toArray();
+
+    // Subsections of original
+    const sectionIds = sections.map(s => s._id);
+    const subsections = await subsectionsCol
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .sort({ displayIndex: 1 })
+        .toArray();
+
+    const subsectionToSection = new Map(subsections.map(s => [
+        s._id.toString(),
+        s.estimateSectionId?.toString(),
+    ]));
+    const sectionById = new Map(sections.map((s, i) => [
+        s._id.toString(),
+        { name: s.name as string, displayIndex: (s as any).displayIndex ?? i },
+    ]));
+
+    // Labor items of original with unit info
+    const subsectionIds = subsections.map(s => s._id);
+    const rawItems = await laborItemsCol.aggregate([
+        { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
+        {
+            $lookup: {
+                from: 'labor_items',
+                localField: 'laborItemId',
+                foreignField: '_id',
+                as: 'catalogItem',
+            },
+        },
+        { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: 'measurement_unit',
+                localField: 'measurementUnitMongoId',
+                foreignField: '_id',
+                as: 'unitData',
+            },
+        },
+        { $unwind: { path: '$unitData', preserveNullAndEmptyArrays: true } },
+        { $sort: { displayIndex: 1, _id: 1 } },
+        {
+            $project: {
+                laborItemId: 1,
+                estimateSubsectionId: 1,
+                quantity: 1,
+                changableAveragePrice: 1,
+                name: { $ifNull: ['$laborOfferItemName', '$catalogItem.name'] },
+                unitSymbol: '$unitData.representationSymbol',
+            },
+        },
+    ]).toArray();
+
+    // Company copies keyed by accountId → laborItemId → price
+    const companyPriceMap: Record<string, Record<string, number>> = {};
+    const companyTotals: Record<string, { directCost: number; totalCost: number; totalWithOther: number }> = {};
+
+    if (accountIds.length > 0) {
+        const copies = await estimatesCol
+            .find({ originalEstimateId, sharedWithAccountId: { $in: accountIds } })
+            .toArray();
+
+        for (const copy of copies) {
+            const acctId = copy.sharedWithAccountId?.toString();
+            if (!acctId) continue;
+
+            const copySections = await sectionsCol.find({ estimateId: copy._id }).toArray();
+            const copySubs = await subsectionsCol.find({ estimateSectionId: { $in: copySections.map(s => s._id) } }).toArray();
+            const copyItems = await laborItemsCol.find({ estimateSubsectionId: { $in: copySubs.map(s => s._id) }, isHidden: { $ne: true } }).toArray();
+
+            companyPriceMap[acctId] = {};
+            for (const item of copyItems) {
+                companyPriceMap[acctId][item.laborItemId?.toString()] = item.changableAveragePrice ?? 0;
+            }
+            companyTotals[acctId] = {
+                directCost: copy.totalCost ?? 0,
+                totalCost: copy.totalCost ?? 0,
+                totalWithOther: copy.totalCostWithOtherExpenses ?? 0,
+            };
+        }
+    }
+
+    // Build section → items structure
+    const sectionMap = new Map<string, { sectionName: string; displayIndex: number; items: any[] }>();
+
+    for (const item of rawItems) {
+        const subsId = item.estimateSubsectionId?.toString();
+        const sectId = subsectionToSection.get(subsId ?? '') ?? '';
+        const sectInfo = sectionById.get(sectId) ?? { name: '', displayIndex: 0 };
+
+        if (!sectionMap.has(sectId)) {
+            sectionMap.set(sectId, { sectionName: sectInfo.name, displayIndex: sectInfo.displayIndex, items: [] });
+        }
+
+        const laborKey = item.laborItemId?.toString() ?? '';
+        const companyPrices: Record<string, number | null> = {};
+        for (const acctId of accountIds.map(a => a.toString())) {
+            companyPrices[acctId] = companyPriceMap[acctId]?.[laborKey] ?? null;
+        }
+
+        sectionMap.get(sectId)!.items.push({
+            laborItemId: laborKey,
+            name: item.name,
+            unitSymbol: item.unitSymbol,
+            quantity: item.quantity ?? 0,
+            baseUnitPrice: item.changableAveragePrice ?? 0,
+            companyPrices,
+        });
+    }
+
+    const sectionsList = Array.from(sectionMap.values())
+        .sort((a, b) => a.displayIndex - b.displayIndex);
+
+    // Baseline totals
+    const baseDirectCost = originalEstimate.totalCost ?? 0;
+    const baseTotalWithOther = originalEstimate.totalCostWithOtherExpenses ?? 0;
+
+    respondJsonData(res, {
+        sections: sectionsList,
+        baseSummary: {
+            directCost: baseDirectCost,
+            otherCost: baseTotalWithOther - baseDirectCost,
+            total: baseTotalWithOther,
+        },
+        companySummaries: companyTotals,
+        otherExpenses: originalEstimate.otherExpenses ?? [],
+    });
+});

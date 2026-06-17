@@ -25,6 +25,7 @@ export interface SharedEstimateCompany {
 }
 
 export interface SharedEstimationSelection {
+    originalEstimateId: string;
     estimate: SharedEstimate;
     companies: SharedEstimateCompany[];
 }
@@ -104,6 +105,7 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
     const handleConfirm = () => {
         if (!selectedEntry) return;
         onConfirm({
+            originalEstimateId: String(selectedEntry._id),
             estimate: selectedEntry.estimate,
             companies: selectedEntry.companies.filter((c) => checkedIds.has(String(c._id))).map(c => ({ ...c, _id: String(c._id) })),
         });

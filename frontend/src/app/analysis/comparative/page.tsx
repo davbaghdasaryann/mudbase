@@ -13,6 +13,7 @@ import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
 import SelectSharedEstimationDialog, { SharedEstimationSelection } from './SelectSharedEstimationDialog';
+import SubmittedEstimationsGrid from './SubmittedEstimationsGrid';
 import * as EstimatesApi from '@/api/estimate';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
@@ -32,12 +33,13 @@ export default function ComparativeAnalysisPage() {
     const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
     const [selectedCompanies, setSelectedCompanies] = useState<CompanyOption[]>([]);
     const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
+    const [submittedSelection, setSubmittedSelection] = useState<SharedEstimationSelection | null>(null);
 
-    const hasData = !!selectedEstimate;
+    const hasData = !!selectedEstimate || !!submittedSelection;
 
     const handleCardClick = (key: string) => {
-        if (key === 'By Market Value') { setAnalysisType('market'); setDialogOpen(true); }
-        if (key === 'By Base Proposals') { setAnalysisType('base_proposals'); setDialogOpen(true); }
+        if (key === 'By Market Value') { setSubmittedSelection(null); setAnalysisType('market'); setDialogOpen(true); }
+        if (key === 'By Base Proposals') { setSubmittedSelection(null); setAnalysisType('base_proposals'); setDialogOpen(true); }
         if (key === 'By Submitted Estimations') { setSharedEstimationDialogOpen(true); }
     };
 
@@ -72,28 +74,35 @@ export default function ComparativeAnalysisPage() {
                         {/* Fixed header — stays pinned, no sticky needed */}
                         <Box sx={{ flexShrink: 0, pt: 1 }}>
                             <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
-                                {selectedEstimate!.name}
+                                {submittedSelection ? submittedSelection.estimate.name : selectedEstimate!.name}
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)} sx={{ flex: 1 }}>
-                                    <Tab label={t('General')} value='general' disabled={analysisType === 'base_proposals'} />
-                                    <Tab label={t('Labor')} value='labor' />
-                                    <Tab label={t('Materials')} value='materials' />
+                                    <Tab label={t('General')} value='general' disabled={analysisType === 'base_proposals' && !submittedSelection} />
+                                    <Tab label={t('Labor')} value='labor' disabled={!!submittedSelection} />
+                                    <Tab label={t('Materials')} value='materials' disabled={!!submittedSelection} />
                                 </TabList>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, pb: '4px' }}>
-                                    {analysisType === 'base_proposals' && (
+                                    {analysisType === 'base_proposals' && !submittedSelection && (
                                         <Button variant='text' size='small' onClick={() => setCompanyDialogOpen(true)} sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
                                             {t('Add')} +
                                         </Button>
                                     )}
-                                    <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
+                                    <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => { setSubmittedSelection(null); setDialogOpen(true); }} />
                                 </Box>
                             </Box>
                         </Box>
 
                         {/* Inner scroll container — table content scrolls here */}
                         <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                            {analysisType === 'market' ? (
+                            {submittedSelection ? (
+                                <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                    <SubmittedEstimationsGrid
+                                        originalEstimateId={submittedSelection.originalEstimateId}
+                                        companies={submittedSelection.companies}
+                                    />
+                                </TabPanel>
+                            ) : analysisType === 'market' ? (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
                                         <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
@@ -193,7 +202,13 @@ export default function ComparativeAnalysisPage() {
             <SelectSharedEstimationDialog
                 open={sharedEstimationDialogOpen}
                 onClose={() => setSharedEstimationDialogOpen(false)}
-                onConfirm={(_selection: SharedEstimationSelection) => { setSharedEstimationDialogOpen(false); }}
+                onConfirm={(selection: SharedEstimationSelection) => {
+                    setSubmittedSelection(selection);
+                    setSharedEstimationDialogOpen(false);
+                    setActiveTab('general');
+                    setSelectedEstimate(null);
+                    setAnalysisType('market');
+                }}
             />
         </PageContents>
     );
