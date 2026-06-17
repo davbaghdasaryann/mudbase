@@ -36,6 +36,7 @@ interface Summary {
 }
 
 interface ComparisonData {
+    generalSections: ComparisonSection[];
     laborSections: ComparisonSection[];
     materialSections: ComparisonSection[];
     baseSummary: Summary;
@@ -95,6 +96,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
 
     const accountIds = companies.map(c => String(c._id));
     const isMaterials = mode === 'materials';
+    const isLabor = mode === 'labor';
     const descriptionHeader = isMaterials ? t('Material Description') : t('Labor Description');
 
     useEffect(() => {
@@ -140,7 +142,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
         return Array.from(map.values());
     })();
 
-    const sections = isMaterials ? [] : data.laborSections;
+    const sections = isMaterials ? [] : isLabor ? data.laborSections : data.generalSections;
 
     if (!isMaterials && sections.length === 0) return (
         <Typography variant='body2' color='text.disabled' sx={{ py: 4, textAlign: 'center' }}>

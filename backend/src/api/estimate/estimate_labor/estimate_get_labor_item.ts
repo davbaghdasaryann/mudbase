@@ -776,12 +776,10 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
     const subsectionToSection = new Map(subsections.map(s => [s._id.toString(), s.estimateSectionId?.toString()]));
     const sectionById = new Map(sections.map((s, i) => [s._id.toString(), { name: s.name as string, displayIndex: (s as any).displayIndex ?? i }]));
 
-    // Helper: build section→items map from a flat item list
-    const buildSectionMap = (items: any[], idKey: string) => {
+    const buildSectionMap = (items: any[]) => {
         const map = new Map<string, { sectionName: string; displayIndex: number; items: any[] }>();
         for (const item of items) {
-            const subsId = item.estimateSubsectionId?.toString();
-            const sectId = subsectionToSection.get(subsId ?? '') ?? '';
+            const sectId = subsectionToSection.get(item.estimateSubsectionId?.toString() ?? '') ?? '';
             const sectInfo = sectionById.get(sectId) ?? { name: '', displayIndex: 0 };
             if (!map.has(sectId)) map.set(sectId, { sectionName: sectInfo.name, displayIndex: sectInfo.displayIndex, items: [] });
             map.get(sectId)!.items.push(item);
@@ -789,18 +787,38 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
         return Array.from(map.values()).sort((a, b) => a.displayIndex - b.displayIndex);
     };
 
-    // --- LABOR items (original) ---
+    // Labor items of original — with linked material cost aggregated per item
     const rawLaborItems = await laborItemsCol.aggregate([
         { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
+        {
+            $lookup: {
+                from: 'estimate_material_items',
+                let: { lid: '$_id' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$estimatedLaborId', '$$lid'] } } },
+                    { $group: { _id: null, matTotal: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } } } },
+                ],
+                as: 'matAgg',
+            },
+        },
+        { $unwind: { path: '$matAgg', preserveNullAndEmptyArrays: true } },
         { $lookup: { from: 'labor_items', localField: 'laborItemId', foreignField: '_id', as: 'cat' } },
         { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
         { $lookup: { from: 'measurement_unit', localField: 'measurementUnitMongoId', foreignField: '_id', as: 'unit' } },
         { $unwind: { path: '$unit', preserveNullAndEmptyArrays: true } },
         { $sort: { displayIndex: 1, _id: 1 } },
-        { $project: { laborItemId: 1, estimateSubsectionId: 1, quantity: 1, changableAveragePrice: 1, name: { $ifNull: ['$laborOfferItemName', '$cat.name'] }, unitSymbol: '$unit.representationSymbol' } },
+        {
+            $project: {
+                laborItemId: 1, estimateSubsectionId: 1, quantity: 1,
+                laborUnitPrice: '$changableAveragePrice',
+                matTotal: { $ifNull: ['$matAgg.matTotal', 0] },
+                name: { $ifNull: ['$laborOfferItemName', '$cat.name'] },
+                unitSymbol: '$unit.representationSymbol',
+            },
+        },
     ]).toArray();
 
-    // --- MATERIAL items (original) ---
+    // Material items of original
     const rawMaterialItems = await materialItemsCol.aggregate([
         { $match: { estimateSubsectionId: { $in: subsectionIds } } },
         { $lookup: { from: 'material_items', localField: 'materialItemId', foreignField: '_id', as: 'cat' } },
@@ -811,10 +829,12 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
         { $project: { materialItemId: 1, estimateSubsectionId: 1, quantity: 1, changableAveragePrice: 1, name: { $ifNull: ['$materialOfferItemName', '$cat.name'] }, unitSymbol: '$unit.representationSymbol' } },
     ]).toArray();
 
-    // --- Company copies ---
-    const companyLaborPrices: Record<string, Record<string, number>> = {};
+    // Company copies
+    const companyLaborPrices: Record<string, Record<string, number>> = {};     // pure labor
+    const companyGeneralPrices: Record<string, Record<string, number>> = {};   // labor + material/unit
     const companyMaterialPrices: Record<string, Record<string, number>> = {};
     const companyTotals: Record<string, { directCost: number; totalCost: number; totalWithOther: number }> = {};
+    const acctIdStrs = accountIds.map(a => a.toString());
 
     if (accountIds.length > 0) {
         const copies = await estimatesCol.find({ originalEstimateId, sharedWithAccountId: { $in: accountIds } }).toArray();
@@ -827,10 +847,33 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
             const copySubs = await subsectionsCol.find({ estimateSectionId: { $in: copySections.map(s => s._id) } }).toArray();
             const copySubIds = copySubs.map(s => s._id);
 
-            const copyLabor = await laborItemsCol.find({ estimateSubsectionId: { $in: copySubIds }, isHidden: { $ne: true } }).toArray();
+            // Labor items with linked material totals
+            const copyLabor = await laborItemsCol.aggregate([
+                { $match: { estimateSubsectionId: { $in: copySubIds }, isHidden: { $ne: true } } },
+                {
+                    $lookup: {
+                        from: 'estimate_material_items',
+                        let: { lid: '$_id' },
+                        pipeline: [
+                            { $match: { $expr: { $eq: ['$estimatedLaborId', '$$lid'] } } },
+                            { $group: { _id: null, matTotal: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } } } },
+                        ],
+                        as: 'matAgg',
+                    },
+                },
+                { $unwind: { path: '$matAgg', preserveNullAndEmptyArrays: true } },
+                { $project: { laborItemId: 1, quantity: 1, changableAveragePrice: 1, matTotal: { $ifNull: ['$matAgg.matTotal', 0] } } },
+            ]).toArray();
+
             companyLaborPrices[acctId] = {};
+            companyGeneralPrices[acctId] = {};
             for (const item of copyLabor) {
-                companyLaborPrices[acctId][item.laborItemId?.toString()] = item.changableAveragePrice ?? 0;
+                const key = item.laborItemId?.toString();
+                const laborPrice = item.changableAveragePrice ?? 0;
+                const qty = item.quantity ?? 1;
+                const matPerUnit = qty > 0 ? (item.matTotal ?? 0) / qty : 0;
+                companyLaborPrices[acctId][key] = laborPrice;
+                companyGeneralPrices[acctId][key] = laborPrice + matPerUnit;
             }
 
             const copyMat = await materialItemsCol.find({ estimateSubsectionId: { $in: copySubIds } }).toArray();
@@ -847,17 +890,25 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
         }
     }
 
-    // Attach company prices to items
-    const acctIdStrs = accountIds.map(a => a.toString());
+    // Build items with company prices attached
+    const generalItems = rawLaborItems.map((item: any) => {
+        const key = item.laborItemId?.toString() ?? '';
+        const qty = item.quantity ?? 0;
+        const matPerUnit = qty > 0 ? (item.matTotal ?? 0) / qty : 0;
+        const baseUnitPrice = (item.laborUnitPrice ?? 0) + matPerUnit;
+        const companyPrices: Record<string, number | null> = {};
+        for (const a of acctIdStrs) companyPrices[a] = companyGeneralPrices[a]?.[key] ?? null;
+        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: qty, baseUnitPrice, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
+    });
 
-    const laborItemsWithPrices = rawLaborItems.map((item: any) => {
+    const laborItems = rawLaborItems.map((item: any) => {
         const key = item.laborItemId?.toString() ?? '';
         const companyPrices: Record<string, number | null> = {};
         for (const a of acctIdStrs) companyPrices[a] = companyLaborPrices[a]?.[key] ?? null;
-        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: item.quantity ?? 0, baseUnitPrice: item.changableAveragePrice ?? 0, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
+        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: item.quantity ?? 0, baseUnitPrice: item.laborUnitPrice ?? 0, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
     });
 
-    const materialItemsWithPrices = rawMaterialItems.map((item: any) => {
+    const materialItems = rawMaterialItems.map((item: any) => {
         const key = item.materialItemId?.toString() ?? '';
         const companyPrices: Record<string, number | null> = {};
         for (const a of acctIdStrs) companyPrices[a] = companyMaterialPrices[a]?.[key] ?? null;
@@ -868,8 +919,9 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
     const baseTotalWithOther = originalEstimate.totalCostWithOtherExpenses ?? 0;
 
     respondJsonData(res, {
-        laborSections: buildSectionMap(laborItemsWithPrices, 'laborItemId'),
-        materialSections: buildSectionMap(materialItemsWithPrices, 'materialItemId'),
+        generalSections: buildSectionMap(generalItems),
+        laborSections: buildSectionMap(laborItems),
+        materialSections: buildSectionMap(materialItems),
         baseSummary: { directCost: baseDirectCost, otherCost: baseTotalWithOther - baseDirectCost, total: baseTotalWithOther },
         companySummaries: companyTotals,
     });
