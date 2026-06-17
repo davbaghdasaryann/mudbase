@@ -27,26 +27,31 @@ interface SectionGroup {
     items: LaborRow[];
 }
 
-const TrendIndicator = ({ unitCost, marketAverage }: { unitCost: number; marketAverage: number | null }) => {
-    if (marketAverage === null) return null;
-    const roundedCost = Math.round(unitCost);
-    const roundedAvg = Math.round(marketAverage);
-    if (roundedCost === roundedAvg) return <CheckIcon sx={{ fontSize: 16, color: 'warning.main' }} />;
-    if (roundedCost > roundedAvg) return <NorthEastIcon sx={{ fontSize: 16, color: 'error.main' }} />;
+const TrendIndicator = ({ unitCost, price }: { unitCost: number; price: number | null }) => {
+    if (price === null) return null;
+    const a = Math.round(unitCost);
+    const b = Math.round(price);
+    if (a === b) return <CheckIcon sx={{ fontSize: 16, color: 'warning.main' }} />;
+    if (price > unitCost) return <NorthEastIcon sx={{ fontSize: 16, color: 'error.main' }} />;
     return <SouthWestIcon sx={{ fontSize: 16, color: 'success.main' }} />;
 };
 
 export default function BaseProposalsGrid({ estimate, companies = [] }: { estimate: EstimatesApi.ApiEstimate; companies?: CompanyOption[] }) {
     const { t } = useTranslation();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
+    // companyPrices: { [estimatedLaborId]: { [accountId]: price | null } }
+    const [companyPrices, setCompanyPrices] = useState<Record<string, Record<string, number | null>>>({});
     const [loading, setLoading] = useState(true);
+    const [pricesLoading, setPricesLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const estimateId = String(estimate._id);
 
+    // Fetch the base labor rows (once per estimate)
     useEffect(() => {
         setLoading(true);
         setGroups([]);
+        setCompanyPrices({});
         Api.requestSession<any[]>({
             command: 'estimate/fetch_labor_market_comparison',
             args: { estimateId, includeMaterials: 'true' },
@@ -66,6 +71,26 @@ export default function BaseProposalsGrid({ estimate, companies = [] }: { estima
             .finally(() => setLoading(false));
     }, [estimateId]);
 
+    // Fetch company prices whenever selected companies change
+    useEffect(() => {
+        if (companies.length === 0) { setCompanyPrices({}); return; }
+        setPricesLoading(true);
+        const accountIds = companies.map(c => String(c._id)).join(',');
+        Api.requestSession<{ _id: string; companyPrices: Record<string, number | null> }[]>({
+            command: 'estimate/fetch_base_proposals_prices',
+            args: { estimateId, accountIds },
+        })
+            .then((rows) => {
+                const map: Record<string, Record<string, number | null>> = {};
+                for (const row of rows ?? []) {
+                    map[String(row._id)] = row.companyPrices;
+                }
+                setCompanyPrices(map);
+            })
+            .catch(() => {})
+            .finally(() => setPricesLoading(false));
+    }, [estimateId, companies.map(c => String(c._id)).join(',')]);
+
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={28} />
@@ -78,6 +103,8 @@ export default function BaseProposalsGrid({ estimate, companies = [] }: { estima
 
     if (groups.length === 0) return null;
 
+    const colSpan = 3 + Math.max(companies.length, 1);
+
     return (
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
@@ -89,9 +116,9 @@ export default function BaseProposalsGrid({ estimate, companies = [] }: { estima
                         <TableCell align='center' sx={{ fontWeight: 600, color: 'text.disabled', whiteSpace: 'nowrap' }}>
                             {t('Company')}
                         </TableCell>
-                    ) : companies.map((c, idx) => (
-                        <TableCell key={String(c._id)} align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
-                            {t('Org.')} {idx + 1}
+                    ) : companies.map((c) => (
+                        <TableCell key={String(c._id)} align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {c.companyName}
                         </TableCell>
                     ))}
                 </TableRow>
@@ -100,33 +127,45 @@ export default function BaseProposalsGrid({ estimate, companies = [] }: { estima
                 {groups.map((group, si) => (
                     <React.Fragment key={group.sectionName || si}>
                         <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                            <TableCell colSpan={3 + Math.max(companies.length, 1)} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
+                            <TableCell colSpan={colSpan} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
                                 {String(si + 1).padStart(2, '0')}. {group.sectionName}
                             </TableCell>
                         </TableRow>
-                        {group.items.map((item, i) => (
-                            <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                <TableCell align='left' sx={{ py: 1.5 }}>
-                                    <Typography variant='body2' color='text.secondary'>
-                                        {si + 1}.{i + 1} {item.itemName}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
-                                    {item.unitSymbol}
-                                </TableCell>
-                                <TableCell align='center' sx={{ py: 1.5 }}>
-                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                        <TrendIndicator unitCost={item.unitCost} marketAverage={item.marketAveragePrice} />
+                        {group.items.map((item, i) => {
+                            const rowPrices = companyPrices[String(item._id)] ?? {};
+                            return (
+                                <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                    <TableCell align='left' sx={{ py: 1.5 }}>
+                                        <Typography variant='body2' color='text.secondary'>
+                                            {si + 1}.{i + 1} {item.itemName}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
+                                        {item.unitSymbol}
+                                    </TableCell>
+                                    <TableCell align='center' sx={{ py: 1.5 }}>
                                         {formatCurrencyRounded(item.unitCost)}
-                                    </Box>
-                                </TableCell>
-                                {companies.length === 0 ? (
-                                    <TableCell align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
-                                ) : companies.map((c) => (
-                                    <TableCell key={String(c._id)} align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
+                                    </TableCell>
+                                    {companies.length === 0 ? (
+                                        <TableCell align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
+                                    ) : companies.map((c) => {
+                                        const price = rowPrices[String(c._id)] ?? null;
+                                        return (
+                                            <TableCell key={String(c._id)} align='center' sx={{ py: 1.5, color: price === null ? 'text.disabled' : undefined }}>
+                                                {pricesLoading ? (
+                                                    <CircularProgress size={12} />
+                                                ) : price === null ? '—' : (
+                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <TrendIndicator unitCost={item.unitCost} price={price} />
+                                                        {formatCurrencyRounded(price)}
+                                                    </Box>
+                                                )}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            );
+                        })}
                     </React.Fragment>
                 ))}
             </TableBody>
