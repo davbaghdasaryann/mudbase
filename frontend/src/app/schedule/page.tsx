@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
+import GanttChart from './GanttChart';
 import * as EstimatesApi from '@/api/estimate';
 import { mainPrimaryColor } from '@/theme';
 
@@ -22,7 +23,13 @@ export default function SchedulePage() {
 
     return (
         <PageContents title='Schedule'>
-            {!selectedEstimate && (
+            {selectedEstimate && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+                    <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
+                </Box>
+            )}
+
+            {!selectedEstimate ? (
                 <Box
                     sx={{
                         display: 'flex',
@@ -55,6 +62,8 @@ export default function SchedulePage() {
                         onClick={() => setDialogOpen(true)}
                     />
                 </Box>
+            ) : (
+                <GanttChart estimate={selectedEstimate} />
             )}
 
             <ChooseEstimationDialog
