@@ -9,6 +9,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ApiEstimate } from '@/api/estimate';
 
+const EXPENSE_LABELS: Record<string, string> = {
+    overheadCosts: 'Վերադիր ծախսեր',
+    profit: 'Շահույթ',
+    valueAddedTax: 'ԱԱՀ',
+};
+
 const BAR_COLORS = [
     '#00ABBE',
     '#2ECC71',
@@ -50,10 +56,10 @@ export default function OtherExpensesChart({ estimate, height = 260 }: Props) {
         const expenses = estimate.otherExpenses ?? [];
         const base = estimate.totalCost ?? 0;
         return expenses.map((exp, i) => {
-            const name = Object.keys(exp)[0] ?? '';
-            const pct = exp[name] ?? 0;
+            const key = Object.keys(exp)[0] ?? '';
+            const pct = exp[key] ?? 0;
             return {
-                name,
+                name: EXPENSE_LABELS[key] ?? key,
                 value: Math.round(base * pct / 100),
                 color: BAR_COLORS[i % BAR_COLORS.length],
             };
