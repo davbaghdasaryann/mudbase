@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Table, TableHead, TableBody, TableRow, TableCell,
     List, ListItem, ListItemText, Checkbox,
-    Button, Typography, Box, Stack, CircularProgress, Divider,
+    Button, Typography, Box, CircularProgress, Stack,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -47,6 +47,9 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
     const [loading, setLoading] = useState(false);
     const [selectedEstimateId, setSelectedEstimateId] = useState<string | null>(null);
     const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+    const [leftPct, setLeftPct] = useState(65);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const dragging = useRef(false);
 
     useEffect(() => {
         if (!open) return;
@@ -61,6 +64,27 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
             .catch(() => {})
             .finally(() => setLoading(false));
     }, [open]);
+
+    const onMouseDown = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        dragging.current = true;
+
+        const onMove = (mv: MouseEvent) => {
+            if (!dragging.current || !containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+            const pct = ((mv.clientX - rect.left) / rect.width) * 100;
+            setLeftPct(Math.min(85, Math.max(15, pct)));
+        };
+
+        const onUp = () => {
+            dragging.current = false;
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    }, []);
 
     const selectedEntry = entries.find((e) => String(e._id) === selectedEstimateId) ?? null;
 
@@ -86,7 +110,7 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+        <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth PaperProps={{ sx: { borderRadius: 2, maxWidth: 1100 } }}>
             <DialogTitle sx={{ pb: 1 }}>
                 <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
                     <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
@@ -102,9 +126,12 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
                         <CircularProgress size={32} />
                     </Box>
                 ) : (
-                    <Stack direction='row' divider={<Divider orientation='vertical' flexItem />} sx={{ minHeight: 380, maxHeight: 500 }}>
-                        {/* Left: shared estimations */}
-                        <Box sx={{ flex: 1, overflow: 'auto' }}>
+                    <Box
+                        ref={containerRef}
+                        sx={{ display: 'flex', minHeight: 380, maxHeight: 520, userSelect: dragging.current ? 'none' : undefined }}
+                    >
+                        {/* Left panel */}
+                        <Box sx={{ width: `${leftPct}%`, overflow: 'auto', flexShrink: 0 }}>
                             <Table size='small' stickyHeader>
                                 <TableHead>
                                     <TableRow>
@@ -138,8 +165,21 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
                             </Table>
                         </Box>
 
-                        {/* Right: companies for selected estimation */}
-                        <Box sx={{ flex: 1, overflow: 'auto' }}>
+                        {/* Drag handle */}
+                        <Box
+                            onMouseDown={onMouseDown}
+                            sx={{
+                                width: 5,
+                                flexShrink: 0,
+                                cursor: 'col-resize',
+                                backgroundColor: '#e0e0e0',
+                                transition: 'background-color 0.15s',
+                                '&:hover': { backgroundColor: mainPrimaryColor },
+                            }}
+                        />
+
+                        {/* Right panel */}
+                        <Box sx={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
                             <Typography
                                 variant='body2'
                                 sx={{ fontWeight: 600, px: 2, py: 1.5, color: 'text.secondary', borderBottom: '1px solid', borderColor: 'divider', position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}
@@ -174,7 +214,7 @@ export default function SelectSharedEstimationDialog({ open, onClose, onConfirm 
                                 </Typography>
                             )}
                         </Box>
-                    </Stack>
+                    </Box>
                 )}
             </DialogContent>
 
