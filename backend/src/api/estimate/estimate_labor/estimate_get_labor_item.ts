@@ -869,11 +869,11 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
             companyGeneralPrices[acctId] = {};
             for (const item of copyLabor) {
                 const key = item.laborItemId?.toString();
-                const laborPrice = item.changableAveragePrice ?? 0;
+                const combinedPrice = item.changableAveragePrice ?? 0;
                 const qty = item.quantity ?? 1;
                 const matPerUnit = qty > 0 ? (item.matTotal ?? 0) / qty : 0;
-                companyLaborPrices[acctId][key] = laborPrice;
-                companyGeneralPrices[acctId][key] = laborPrice + matPerUnit;
+                companyGeneralPrices[acctId][key] = combinedPrice;
+                companyLaborPrices[acctId][key] = Math.max(0, combinedPrice - matPerUnit);
             }
 
             const copyMat = await materialItemsCol.find({ estimateSubsectionId: { $in: copySubIds } }).toArray();
@@ -891,21 +891,22 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
     }
 
     // Build items with company prices attached
+    // changableAveragePrice already includes material cost — general = as-is, labor = subtract material portion
     const generalItems = rawLaborItems.map((item: any) => {
         const key = item.laborItemId?.toString() ?? '';
-        const qty = item.quantity ?? 0;
-        const matPerUnit = qty > 0 ? (item.matTotal ?? 0) / qty : 0;
-        const baseUnitPrice = (item.laborUnitPrice ?? 0) + matPerUnit;
         const companyPrices: Record<string, number | null> = {};
         for (const a of acctIdStrs) companyPrices[a] = companyGeneralPrices[a]?.[key] ?? null;
-        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: qty, baseUnitPrice, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
+        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: item.quantity ?? 0, baseUnitPrice: item.laborUnitPrice ?? 0, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
     });
 
     const laborItems = rawLaborItems.map((item: any) => {
         const key = item.laborItemId?.toString() ?? '';
+        const qty = item.quantity ?? 0;
+        const matPerUnit = qty > 0 ? (item.matTotal ?? 0) / qty : 0;
+        const baseUnitPrice = Math.max(0, (item.laborUnitPrice ?? 0) - matPerUnit);
         const companyPrices: Record<string, number | null> = {};
         for (const a of acctIdStrs) companyPrices[a] = companyLaborPrices[a]?.[key] ?? null;
-        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: item.quantity ?? 0, baseUnitPrice: item.laborUnitPrice ?? 0, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
+        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: qty, baseUnitPrice, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
     });
 
     const materialItems = rawMaterialItems.map((item: any) => {
