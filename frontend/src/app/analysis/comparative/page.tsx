@@ -11,6 +11,7 @@ import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
+import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
 import * as EstimatesApi from '@/api/estimate';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
@@ -27,6 +28,8 @@ export default function ComparativeAnalysisPage() {
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
     const [analysisType, setAnalysisType] = useState<'market' | 'base_proposals'>('market');
+    const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
+    const [selectedCompanies, setSelectedCompanies] = useState<CompanyOption[]>([]);
 
     const hasData = !!selectedEstimate;
 
@@ -79,7 +82,7 @@ export default function ComparativeAnalysisPage() {
                                 </TabList>
                                 {analysisType === 'base_proposals' && (
                                     <Box sx={{ display: 'flex', alignItems: 'center', px: 1, pb: '4px' }}>
-                                        <Button variant='text' size='small' sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
+                                        <Button variant='text' size='small' onClick={() => setCompanyDialogOpen(true)} sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
                                             {t('Add')} +
                                         </Button>
                                     </Box>
@@ -104,7 +107,7 @@ export default function ComparativeAnalysisPage() {
                             ) : (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                        <BaseProposalsGrid estimate={selectedEstimate!} />
+                                        <BaseProposalsGrid estimate={selectedEstimate!} companies={selectedCompanies} />
                                     </TabPanel>
                                     <TabPanel value='labor' sx={{ px: 0, pt: 2 }} />
                                     <TabPanel value='materials' sx={{ px: 0, pt: 2 }} />
@@ -173,6 +176,13 @@ export default function ComparativeAnalysisPage() {
                 open={dialogOpen}
                 onClose={() => setDialogOpen(false)}
                 onSelect={handleSelect}
+            />
+
+            <SelectCompanyDialog
+                open={companyDialogOpen}
+                onClose={() => setCompanyDialogOpen(false)}
+                initialSelected={selectedCompanies}
+                onConfirm={(companies) => { setSelectedCompanies(companies); setCompanyDialogOpen(false); }}
             />
         </PageContents>
     );

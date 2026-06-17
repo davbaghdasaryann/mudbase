@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
+import { CompanyOption } from './SelectCompanyDialog';
 
 interface LaborRow {
     _id: string;
@@ -35,7 +36,7 @@ const TrendIndicator = ({ unitCost, marketAverage }: { unitCost: number; marketA
     return <SouthWestIcon sx={{ fontSize: 16, color: 'success.main' }} />;
 };
 
-export default function BaseProposalsGrid({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
+export default function BaseProposalsGrid({ estimate, companies = [] }: { estimate: EstimatesApi.ApiEstimate; companies?: CompanyOption[] }) {
     const { t } = useTranslation();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
@@ -84,16 +85,22 @@ export default function BaseProposalsGrid({ estimate }: { estimate: EstimatesApi
                     <TableCell align='left' sx={{ fontWeight: 600 }}>{t('Labor Description')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
-                    <TableCell align='center' sx={{ fontWeight: 600, color: 'text.disabled', whiteSpace: 'nowrap' }}>
-                        {t('Company')}
-                    </TableCell>
+                    {companies.length === 0 ? (
+                        <TableCell align='center' sx={{ fontWeight: 600, color: 'text.disabled', whiteSpace: 'nowrap' }}>
+                            {t('Company')}
+                        </TableCell>
+                    ) : companies.map((c, idx) => (
+                        <TableCell key={String(c._id)} align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                            {t('Org.')} {idx + 1}
+                        </TableCell>
+                    ))}
                 </TableRow>
             </TableHead>
             <TableBody>
                 {groups.map((group, si) => (
                     <React.Fragment key={group.sectionName || si}>
                         <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                            <TableCell colSpan={4} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
+                            <TableCell colSpan={3 + Math.max(companies.length, 1)} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
                                 {String(si + 1).padStart(2, '0')}. {group.sectionName}
                             </TableCell>
                         </TableRow>
@@ -113,7 +120,11 @@ export default function BaseProposalsGrid({ estimate }: { estimate: EstimatesApi
                                         {formatCurrencyRounded(item.unitCost)}
                                     </Box>
                                 </TableCell>
-                                <TableCell align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
+                                {companies.length === 0 ? (
+                                    <TableCell align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
+                                ) : companies.map((c) => (
+                                    <TableCell key={String(c._id)} align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
+                                ))}
                             </TableRow>
                         ))}
                     </React.Fragment>
