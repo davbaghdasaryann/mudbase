@@ -455,9 +455,56 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
                     pipeline: [
                         { $match: { $expr: { $eq: ['$estimatedLaborId', '$$laborIdVar'] } } },
                         {
+                            $lookup: {
+                                from: 'material_items',
+                                let: { matItemId: '$materialItemId' },
+                                pipeline: [
+                                    { $match: { $expr: { $eq: ['$_id', '$$matItemId'] } } },
+                                    {
+                                        $lookup: {
+                                            from: 'material_offers',
+                                            let: { catId: '$_id' },
+                                            pipeline: [
+                                                {
+                                                    $match: {
+                                                        $expr: { $eq: ['$itemId', '$$catId'] },
+                                                        price: { $ne: 0, $exists: true },
+                                                        $or: [{ isArchived: false }, { isArchived: { $exists: false } }],
+                                                    },
+                                                },
+                                                {
+                                                    $group: {
+                                                        _id: null,
+                                                        avgPrice: { $avg: '$price' },
+                                                        minPrice: { $min: '$price' },
+                                                        maxPrice: { $max: '$price' },
+                                                    },
+                                                },
+                                            ],
+                                            as: 'marketStats',
+                                        },
+                                    },
+                                    { $unwind: { path: '$marketStats', preserveNullAndEmptyArrays: true } },
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            marketAvg: '$marketStats.avgPrice',
+                                            marketMin: '$marketStats.minPrice',
+                                            marketMax: '$marketStats.maxPrice',
+                                        },
+                                    },
+                                ],
+                                as: 'catalogStats',
+                            },
+                        },
+                        { $unwind: { path: '$catalogStats', preserveNullAndEmptyArrays: true } },
+                        {
                             $group: {
                                 _id: null,
                                 materialTotalCost: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } },
+                                materialMarketAvgContrib: { $sum: { $multiply: ['$quantity', { $ifNull: ['$catalogStats.marketAvg', 0] }] } },
+                                materialMarketMinContrib: { $sum: { $multiply: ['$quantity', { $ifNull: ['$catalogStats.marketMin', 0] }] } },
+                                materialMarketMaxContrib: { $sum: { $multiply: ['$quantity', { $ifNull: ['$catalogStats.marketMax', 0] }] } },
                             },
                         },
                     ],
@@ -528,6 +575,9 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
                     quantity: 1,
                     changableAveragePrice: 1,
                     materialTotalCost: '$materialAgg.materialTotalCost',
+                    materialMarketAvgContrib: '$materialAgg.materialMarketAvgContrib',
+                    materialMarketMinContrib: '$materialAgg.materialMarketMinContrib',
+                    materialMarketMaxContrib: '$materialAgg.materialMarketMaxContrib',
                     fullCode: '$catalogItem.fullCode',
                     catalogName: '$catalogItem.name',
                     laborOfferItemName: 1,
@@ -544,11 +594,27 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
 
     const result = laborItems.map((item: any) => {
         const sectionInfo = subsectionMap.get(item.estimateSubsectionId?.toString());
+        const qty = item.quantity ?? 0;
         const laborUnitCost = item.changableAveragePrice ?? 0;
         // Combined "unit price" (labor + linked materials per unit), same methodology as the main Estimate page.
-        const unitCost = includeMaterials && item.quantity
-            ? laborUnitCost + (item.materialTotalCost ?? 0) / item.quantity
+        const unitCost = includeMaterials && qty
+            ? laborUnitCost + (item.materialTotalCost ?? 0) / qty
             : laborUnitCost;
+
+        // Combined market columns: add per-unit material market contribution to labor market price.
+        // If labor has no market data, combined is also null (can't represent a partial combined rate).
+        let marketAveragePrice = item.marketAveragePrice ?? null;
+        let marketMinPrice = item.marketMinPrice ?? null;
+        let marketMaxPrice = item.marketMaxPrice ?? null;
+        if (includeMaterials && qty) {
+            const avgContrib = (item.materialMarketAvgContrib ?? 0) / qty;
+            const minContrib = (item.materialMarketMinContrib ?? 0) / qty;
+            const maxContrib = (item.materialMarketMaxContrib ?? 0) / qty;
+            if (marketAveragePrice !== null) marketAveragePrice = marketAveragePrice + avgContrib;
+            if (marketMinPrice !== null) marketMinPrice = marketMinPrice + minContrib;
+            if (marketMaxPrice !== null) marketMaxPrice = marketMaxPrice + maxContrib;
+        }
+
         return {
             _id: item._id,
             laborItemId: item.laborItemId,
@@ -557,9 +623,9 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
             laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
             unitSymbol: item.unitSymbol ?? '',
             unitCost,
-            marketAveragePrice: item.marketAveragePrice ?? null,
-            marketMinPrice: item.marketMinPrice ?? null,
-            marketMaxPrice: item.marketMaxPrice ?? null,
+            marketAveragePrice,
+            marketMinPrice,
+            marketMaxPrice,
             sectionName: sectionInfo?.name ?? '',
             sectionDisplayIndex: sectionInfo?.displayIndex ?? 0,
         };
