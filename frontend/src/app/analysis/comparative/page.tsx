@@ -68,25 +68,23 @@ export default function ComparativeAnalysisPage() {
                     <TabContext value={activeTab}>
                         {/* Fixed header — stays pinned, no sticky needed */}
                         <Box sx={{ flexShrink: 0, pt: 1 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography variant='h5' sx={{ fontWeight: 700 }}>
-                                    {selectedEstimate!.name}
-                                </Typography>
-                                <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
-                            </Box>
+                            <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+                                {selectedEstimate!.name}
+                            </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)} sx={{ flex: 1 }}>
                                     <Tab label={t('General')} value='general' />
                                     <Tab label={t('Labor')} value='labor' />
                                     <Tab label={t('Materials')} value='materials' />
                                 </TabList>
-                                {analysisType === 'base_proposals' && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', px: 1, pb: '4px' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, pb: '4px' }}>
+                                    {analysisType === 'base_proposals' && (
                                         <Button variant='text' size='small' onClick={() => setCompanyDialogOpen(true)} sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
                                             {t('Add')} +
                                         </Button>
-                                    </Box>
-                                )}
+                                    )}
+                                    <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
+                                </Box>
                             </Box>
                         </Box>
 
