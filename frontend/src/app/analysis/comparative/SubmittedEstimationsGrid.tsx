@@ -117,9 +117,37 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
 
     if (!data) return null;
 
-    const sections = isMaterials ? data.materialSections : data.laborSections;
+    // For materials: aggregate identical items across all sections by itemId
+    const aggregatedMaterials: ComparisonItem[] = (() => {
+        if (!isMaterials) return [];
+        const map = new Map<string, ComparisonItem>();
+        for (const section of data.materialSections) {
+            for (const item of section.items) {
+                if (!map.has(item.itemId)) {
+                    map.set(item.itemId, { ...item, companyPrices: { ...item.companyPrices } });
+                } else {
+                    const existing = map.get(item.itemId)!;
+                    existing.quantity += item.quantity;
+                    // fill in any null company prices from this occurrence
+                    for (const acctId of Object.keys(item.companyPrices)) {
+                        if (existing.companyPrices[acctId] == null && item.companyPrices[acctId] != null) {
+                            existing.companyPrices[acctId] = item.companyPrices[acctId];
+                        }
+                    }
+                }
+            }
+        }
+        return Array.from(map.values());
+    })();
 
-    if (sections.length === 0) return (
+    const sections = isMaterials ? [] : data.laborSections;
+
+    if (!isMaterials && sections.length === 0) return (
+        <Typography variant='body2' color='text.disabled' sx={{ py: 4, textAlign: 'center' }}>
+            {t('No data')}
+        </Typography>
+    );
+    if (isMaterials && aggregatedMaterials.length === 0) return (
         <Typography variant='body2' color='text.disabled' sx={{ py: 4, textAlign: 'center' }}>
             {t('No data')}
         </Typography>
@@ -127,8 +155,6 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
 
     const headerSx = { fontWeight: 600, background: '#f9f9f9', whiteSpace: 'nowrap' };
     const cellSx = { py: 1, px: 1.5 };
-
-    let flatIndex = 0;
 
     return (
         <Box sx={{ overflowX: 'auto', mt: 1 }}>
@@ -157,26 +183,48 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                 </TableHead>
 
                 <TableBody>
-                    {sections.map((section, si) => (
-                        <React.Fragment key={section.sectionName + si}>
-                            {/* Section header (hidden for materials — flat list) */}
-                            {!isMaterials && (
-                                <TableRow sx={{ background: '#fafafa' }}>
-                                    <TableCell colSpan={5 + companies.length * 2} sx={{ fontWeight: 700, py: 1.5, pl: 1 }}>
-                                        {String(si + 1).padStart(2, '0')}. {section.sectionName}
+                    {isMaterials ? (
+                        // Aggregated flat list — one row per unique material
+                        aggregatedMaterials.map((item, i) => {
+                            const baseTotal = item.quantity * item.baseUnitPrice;
+                            return (
+                                <TableRow key={item.itemId} sx={{ background: '#fff', '&:hover': { background: '#f5fdfe' } }}>
+                                    <TableCell sx={{ ...cellSx, pl: 1 }}>
+                                        <Typography variant='body2' color='text.secondary'>{i + 1}. {item.name}</Typography>
                                     </TableCell>
+                                    <TableCell align='center' sx={{ ...cellSx, color: 'text.secondary' }}>{item.unitSymbol}</TableCell>
+                                    <TableCell align='center' sx={cellSx}>{item.quantity}</TableCell>
+                                    <TableCell align='center' sx={cellSx}>{formatCurrencyRounded(item.baseUnitPrice)}</TableCell>
+                                    <TableCell align='center' sx={{ ...cellSx, fontWeight: 500 }}>{formatCurrencyRounded(baseTotal)}</TableCell>
+                                    {companies.map(c => {
+                                        const acctId = String(c._id);
+                                        const price = item.companyPrices[acctId] ?? null;
+                                        const total = price !== null ? item.quantity * price : null;
+                                        return (
+                                            <React.Fragment key={acctId}>
+                                                <TrendCell base={item.baseUnitPrice} value={price} />
+                                                <TrendCell base={baseTotal} value={total} />
+                                            </React.Fragment>
+                                        );
+                                    })}
                                 </TableRow>
-                            )}
-
+                            );
+                        })
+                    ) : (
+                        // Sectioned labor list
+                        sections.map((section, si) => (
+                        <React.Fragment key={section.sectionName + si}>
+                            <TableRow sx={{ background: '#fafafa' }}>
+                                <TableCell colSpan={5 + companies.length * 2} sx={{ fontWeight: 700, py: 1.5, pl: 1 }}>
+                                    {String(si + 1).padStart(2, '0')}. {section.sectionName}
+                                </TableCell>
+                            </TableRow>
                             {section.items.map((item, ii) => {
-                                const label = isMaterials
-                                    ? `${++flatIndex}. ${item.name}`
-                                    : `${si + 1}.${ii + 1} ${item.name}`;
                                 const baseTotal = item.quantity * item.baseUnitPrice;
                                 return (
                                     <TableRow key={item.itemId} sx={{ background: '#fff', '&:hover': { background: '#f5fdfe' } }}>
-                                        <TableCell sx={{ ...cellSx, pl: isMaterials ? 1 : 2 }}>
-                                            <Typography variant='body2' color='text.secondary'>{label}</Typography>
+                                        <TableCell sx={{ ...cellSx, pl: 2 }}>
+                                            <Typography variant='body2' color='text.secondary'>{si + 1}.{ii + 1} {item.name}</Typography>
                                         </TableCell>
                                         <TableCell align='center' sx={{ ...cellSx, color: 'text.secondary' }}>{item.unitSymbol}</TableCell>
                                         <TableCell align='center' sx={cellSx}>{item.quantity}</TableCell>
@@ -197,7 +245,8 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                                 );
                             })}
                         </React.Fragment>
-                    ))}
+                    ))
+                    )}
 
                     {/* Summary rows */}
                     <TableRow sx={{ background: '#f5f5f5', borderTop: '2px solid #e0e0e0' }}>
