@@ -144,20 +144,25 @@ export default function BaseProposalsGrid({ estimate, companies = [], mode = 'ge
                 </TableRow>
             </TableHead>
             <TableBody>
-                {groups.map((group, si) => (
+                {(() => {
+                    let flatIndex = 0;
+                    return groups.map((group, si) => (
                     <React.Fragment key={group.sectionName || si}>
-                        <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                            <TableCell colSpan={colSpan} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
-                                {String(si + 1).padStart(2, '0')}. {group.sectionName}
-                            </TableCell>
-                        </TableRow>
+                        {!isMaterials && (
+                            <TableRow sx={{ backgroundColor: '#fafafa' }}>
+                                <TableCell colSpan={colSpan} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
+                                    {String(si + 1).padStart(2, '0')}. {group.sectionName}
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {group.items.map((item, i) => {
                             const rowPrices = companyPrices[String(item._id)] ?? {};
+                            const label = isMaterials ? `${++flatIndex}. ${item.itemName}` : `${si + 1}.${i + 1} ${item.itemName}`;
                             return (
                                 <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                     <TableCell align='left' sx={{ py: 1.5 }}>
                                         <Typography variant='body2' color='text.secondary'>
-                                            {si + 1}.{i + 1} {item.itemName}
+                                            {label}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
@@ -187,7 +192,8 @@ export default function BaseProposalsGrid({ estimate, companies = [], mode = 'ge
                             );
                         })}
                     </React.Fragment>
-                ))}
+                ));
+                })()}
             </TableBody>
         </Table>
     );
