@@ -438,7 +438,6 @@ registerApiSession('estimates_shared_by_me/fetch_grouped', async (req, res, sess
             $match: {
                 sharedByAccountId: session.mongoAccountId,
                 deleted: { $ne: true },
-                isDuplicatedChild: { $ne: true },
             },
         },
         {
@@ -459,12 +458,14 @@ registerApiSession('estimates_shared_by_me/fetch_grouped', async (req, res, sess
             },
         },
         { $unwind: { path: '$accountArr', preserveNullAndEmptyArrays: true } },
+        // Group by the original estimate's ID — copies share the same originalEstimateId
         {
             $group: {
-                _id: '$sharedEstimateId',
+                _id: {
+                    $ifNull: ['$estimatesData.originalEstimateId', '$estimatesData._id'],
+                },
                 estimate: {
                     $first: {
-                        _id: '$estimatesData._id',
                         name: '$estimatesData.name',
                         createdAt: '$estimatesData.createdAt',
                     },
