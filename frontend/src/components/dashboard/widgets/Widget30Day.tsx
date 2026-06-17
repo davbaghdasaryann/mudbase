@@ -151,6 +151,16 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
     const previousDayValue = merged.length > 1 ? merged[merged.length - 2].value : currentValue;
     const percentChange = previousDayValue !== 0 ? (((currentValue - previousDayValue) / previousDayValue) * 100) : 0;
 
+    // Dynamic Y-axis: narrow the range to the actual data spread so daily fluctuations are visible
+    const activeValues = merged.map(d => d.value).filter(v => v > 0);
+    const yMin = activeValues.length > 0 ? Math.min(...activeValues) : 0;
+    const yMax = activeValues.length > 0 ? Math.max(...activeValues) : 0;
+    const spread = yMax - yMin;
+    const pad = spread > 0 ? spread * 0.15 : yMax * 0.02;
+    const yDomain: [number, number] = activeValues.length > 1
+        ? [Math.max(0, Math.floor(yMin - pad)), Math.ceil(yMax + pad)]
+        : [0, yMax > 0 ? yMax * 1.1 : 1];
+
     const handleDelete = async () => {
         if (isPreview) return;
         if (!confirm(t('Delete this widget?'))) return;
@@ -274,7 +284,12 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                                 tick={{ fontSize: 11, fill: TEXT_DARK }}
                                 axisLine={false}
                                 tickLine={false}
-                                tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
+                                domain={yDomain}
+                                tickFormatter={(v) => {
+                                    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+                                    if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
+                                    return String(Math.round(v));
+                                }}
                             />
                             <Tooltip
                                 formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
