@@ -58,44 +58,39 @@ export default function ComparativeAnalysisPage() {
             </Box>
 
             {hasData ? (
-                <TabContext value={activeTab}>
-                    <Box
-                        sx={{
-                            position: 'sticky',
-                            top: { xs: 56, md: 64 },
-                            zIndex: 100,
-                            background: '#fff',
-                            pt: 1,
-                            pb: 0,
-                        }}
-                    >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                            <Typography variant='h5' sx={{ fontWeight: 700 }}>
-                                {selectedEstimate!.name}
-                            </Typography>
-                            <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden', minHeight: 0 }}>
+                    <TabContext value={activeTab}>
+                        {/* Fixed header — stays pinned, no sticky needed */}
+                        <Box sx={{ flexShrink: 0, pt: 1 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                                <Typography variant='h5' sx={{ fontWeight: 700 }}>
+                                    {selectedEstimate!.name}
+                                </Typography>
+                                <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
+                            </Box>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
+                                    <Tab label={t('General')} value='general' />
+                                    <Tab label={t('Labor')} value='labor' />
+                                    <Tab label={t('Materials')} value='materials' />
+                                </TabList>
+                            </Box>
                         </Box>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
-                                <Tab label={t('General')} value='general' />
-                                <Tab label={t('Labor')} value='labor' />
-                                <Tab label={t('Materials')} value='materials' />
-                            </TabList>
+
+                        {/* Inner scroll container — table content scrolls here */}
+                        <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                            <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
+                            </TabPanel>
+                            <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                                <ComparativeLaborGrid estimate={selectedEstimate!} />
+                            </TabPanel>
+                            <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                                <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
+                            </TabPanel>
                         </Box>
-                    </Box>
-
-                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                        <ComparativeLaborGrid estimate={selectedEstimate!} includeMaterials />
-                    </TabPanel>
-
-                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                        <ComparativeLaborGrid estimate={selectedEstimate!} />
-                    </TabPanel>
-
-                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                        <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
-                    </TabPanel>
-                </TabContext>
+                    </TabContext>
+                </Box>
             ) : (
                 <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ width: '100%' }}>
                     {cards.map((card) => (
