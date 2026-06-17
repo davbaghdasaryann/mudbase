@@ -127,6 +127,16 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     const previousDayValue = snapshots.length > 1 ? snapshots[snapshots.length - 2].value : currentValue;
     const percentChange =
         previousDayValue !== 0 ? (((currentValue - previousDayValue) / previousDayValue) * 100) : 0;
+
+    // Dynamic Y-axis: narrow to actual data spread so trend fluctuations are visible
+    const activeValues = snapshots.map(s => s.value).filter(v => v > 0);
+    const yMin = activeValues.length > 0 ? Math.min(...activeValues) : 0;
+    const yMax = activeValues.length > 0 ? Math.max(...activeValues) : 0;
+    const spread = yMax - yMin;
+    const pad = spread > 0 ? spread * 0.15 : yMax * 0.02;
+    const yDomain: [number, number] = activeValues.length > 1
+        ? [Math.max(0, Math.floor(yMin - pad)), Math.ceil(yMax + pad)]
+        : [0, yMax > 0 ? yMax * 1.1 : 1];
     const dateRange =
         chartData.length >= 2
             ? `${new Date(snapshots[0].timestamp).toLocaleDateString(undefined, { month: 'long' })} - ${new Date(snapshots[snapshots.length - 1].timestamp).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`
@@ -230,7 +240,12 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     tick={{ fontSize: 11, fill: TEXT_DARK }}
                                     axisLine={false}
                                     tickLine={false}
-                                    tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
+                                    domain={yDomain}
+                                    tickFormatter={(v) => {
+                                        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+                                        if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
+                                        return String(Math.round(v));
+                                    }}
                                 />
                                 <Tooltip
                                     formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
