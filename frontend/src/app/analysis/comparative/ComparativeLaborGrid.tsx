@@ -25,6 +25,21 @@ interface LaborMarketComparisonRow {
     sectionDisplayIndex: number;
 }
 
+interface MaterialMarketComparisonRow {
+    _id: string;
+    materialItemId: string;
+    fullCode: string;
+    catalogName: string;
+    materialOfferItemName: string;
+    unitSymbol: string;
+    unitCost: number;
+    marketAveragePrice: number | null;
+    marketMinPrice: number | null;
+    marketMaxPrice: number | null;
+    sectionName: string;
+    sectionDisplayIndex: number;
+}
+
 interface MarketComparisonRow {
     _id: string;
     itemName: string;
@@ -54,7 +69,7 @@ const TrendIndicator = ({ unitCost, marketAverage }: { unitCost: number; marketA
 
 const formatValue = (value: number | null) => value === null ? '-' : formatCurrencyRounded(value);
 
-export default function ComparativeLaborGrid({ estimate, includeMaterials }: { estimate: EstimatesApi.ApiEstimate; includeMaterials?: boolean }) {
+export default function ComparativeLaborGrid({ estimate, includeMaterials, materialsOnly }: { estimate: EstimatesApi.ApiEstimate; includeMaterials?: boolean; materialsOnly?: boolean }) {
     const { t } = useTranslation();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
@@ -66,17 +81,20 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials }: { e
         setLoading(true);
         setGroups([]);
 
-        // includeMaterials folds each labor item's linked material cost into its unit price
-        // (same combined "unit price" methodology as the main Estimate page), rather than
-        // listing materials as separate rows alongside labor.
-        Api.requestSession<LaborMarketComparisonRow[]>({
-            command: 'estimate/fetch_labor_market_comparison',
-            args: includeMaterials ? { estimateId, includeMaterials: 'true' } : { estimateId },
-        })
-            .then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.laborOfferItemName || row.catalogName })))
-            .then((laborRows) => {
+        const request: Promise<MarketComparisonRow[]> = materialsOnly
+            ? Api.requestSession<MaterialMarketComparisonRow[]>({
+                  command: 'estimate/fetch_material_market_comparison',
+                  args: { estimateId },
+              }).then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.materialOfferItemName || row.catalogName })))
+            : Api.requestSession<LaborMarketComparisonRow[]>({
+                  command: 'estimate/fetch_labor_market_comparison',
+                  args: includeMaterials ? { estimateId, includeMaterials: 'true' } : { estimateId },
+              }).then((rows) => (rows ?? []).map((row) => ({ ...row, itemName: row.laborOfferItemName || row.catalogName })));
+
+        request
+            .then((rows) => {
                 const map = new Map<string, SectionGroup>();
-                for (const row of laborRows) {
+                for (const row of rows) {
                     const key = row.sectionName;
                     if (!map.has(key)) {
                         map.set(key, { sectionName: row.sectionName, sectionDisplayIndex: row.sectionDisplayIndex, items: [] });
@@ -88,7 +106,7 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials }: { e
             })
             .catch((e) => setError(String(e)))
             .finally(() => setLoading(false));
-    }, [estimateId, includeMaterials]);
+    }, [estimateId, includeMaterials, materialsOnly]);
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -116,7 +134,7 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials }: { e
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell align='left' sx={{ fontWeight: 600 }}>{t('Labor Description')}</TableCell>
+                    <TableCell align='left' sx={{ fontWeight: 600 }}>{materialsOnly ? t('Material Description') : t('Labor Description')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Average Market Value')}</TableCell>

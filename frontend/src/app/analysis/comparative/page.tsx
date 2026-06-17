@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
-import MaterialsTab from '../structural/MaterialsTab';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import * as EstimatesApi from '@/api/estimate';
 
@@ -85,7 +84,7 @@ export default function ComparativeAnalysisPage() {
                         </TabPanel>
 
                         <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                            <MaterialsTab estimate={selectedEstimate!} />
+                            <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
                         </TabPanel>
                     </TabContext>
                 </>
