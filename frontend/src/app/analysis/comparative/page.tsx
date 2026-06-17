@@ -41,7 +41,7 @@ export default function ComparativeAnalysisPage() {
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         setSelectedEstimate(estimate);
-        setActiveTab('general');
+        setActiveTab(analysisType === 'base_proposals' ? 'labor' : 'general');
     };
 
     return (
@@ -73,7 +73,7 @@ export default function ComparativeAnalysisPage() {
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)} sx={{ flex: 1 }}>
-                                    <Tab label={t('General')} value='general' />
+                                    <Tab label={t('General')} value='general' disabled={analysisType === 'base_proposals'} />
                                     <Tab label={t('Labor')} value='labor' />
                                     <Tab label={t('Materials')} value='materials' />
                                 </TabList>
