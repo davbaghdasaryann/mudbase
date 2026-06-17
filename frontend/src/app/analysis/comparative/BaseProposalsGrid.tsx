@@ -11,12 +11,13 @@ import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { CompanyOption } from './SelectCompanyDialog';
 
-interface LaborRow {
+type GridMode = 'general' | 'labor' | 'materials';
+
+interface Row {
     _id: string;
     itemName: string;
     unitSymbol: string;
     unitCost: number;
-    marketAveragePrice: number | null;
     sectionName: string;
     sectionDisplayIndex: number;
 }
@@ -24,7 +25,7 @@ interface LaborRow {
 interface SectionGroup {
     sectionName: string;
     sectionDisplayIndex: number;
-    items: LaborRow[];
+    items: Row[];
 }
 
 const TrendIndicator = ({ unitCost, price }: { unitCost: number; price: number | null }) => {
@@ -36,48 +37,67 @@ const TrendIndicator = ({ unitCost, price }: { unitCost: number; price: number |
     return <SouthWestIcon sx={{ fontSize: 16, color: 'success.main' }} />;
 };
 
-export default function BaseProposalsGrid({ estimate, companies = [] }: { estimate: EstimatesApi.ApiEstimate; companies?: CompanyOption[] }) {
+interface Props {
+    estimate: EstimatesApi.ApiEstimate;
+    companies?: CompanyOption[];
+    mode?: GridMode;
+}
+
+export default function BaseProposalsGrid({ estimate, companies = [], mode = 'general' }: Props) {
     const { t } = useTranslation();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
-    // companyPrices: { [estimatedLaborId]: { [accountId]: price | null } }
     const [companyPrices, setCompanyPrices] = useState<Record<string, Record<string, number | null>>>({});
     const [loading, setLoading] = useState(true);
     const [pricesLoading, setPricesLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const estimateId = String(estimate._id);
+    const isMaterials = mode === 'materials';
+    const descriptionHeader = isMaterials ? t('Material Description') : t('Labor Description');
 
-    // Fetch the base labor rows (once per estimate)
+    // Fetch base rows whenever estimate or mode changes
     useEffect(() => {
         setLoading(true);
         setGroups([]);
         setCompanyPrices({});
-        Api.requestSession<any[]>({
-            command: 'estimate/fetch_labor_market_comparison',
-            args: { estimateId, includeMaterials: 'true' },
-        })
+
+        const baseRequest: Promise<any[]> = isMaterials
+            ? Api.requestSession<any[]>({
+                  command: 'estimate/fetch_material_market_comparison',
+                  args: { estimateId },
+              }).then((rows) => (rows ?? []).map((r) => ({ ...r, itemName: r.materialOfferItemName || r.catalogName })))
+            : Api.requestSession<any[]>({
+                  command: 'estimate/fetch_labor_market_comparison',
+                  args: mode === 'general' ? { estimateId, includeMaterials: 'true' } : { estimateId },
+              }).then((rows) => (rows ?? []).map((r) => ({ ...r, itemName: r.laborOfferItemName || r.catalogName })));
+
+        baseRequest
             .then((rows) => {
                 const map = new Map<string, SectionGroup>();
-                for (const row of rows ?? []) {
+                for (const row of rows) {
                     const key = row.sectionName;
                     if (!map.has(key)) {
                         map.set(key, { sectionName: row.sectionName, sectionDisplayIndex: row.sectionDisplayIndex, items: [] });
                     }
-                    map.get(key)!.items.push({ ...row, itemName: row.laborOfferItemName || row.catalogName });
+                    map.get(key)!.items.push(row);
                 }
                 setGroups(Array.from(map.values()).sort((a, b) => a.sectionDisplayIndex - b.sectionDisplayIndex));
             })
             .catch((e) => setError(String(e)))
             .finally(() => setLoading(false));
-    }, [estimateId]);
+    }, [estimateId, mode]);
 
-    // Fetch company prices whenever selected companies change
+    // Fetch company prices whenever selected companies or mode changes
     useEffect(() => {
         if (companies.length === 0) { setCompanyPrices({}); return; }
         setPricesLoading(true);
         const accountIds = companies.map(c => String(c._id)).join(',');
+        const command = isMaterials
+            ? 'estimate/fetch_base_proposals_material_prices'
+            : 'estimate/fetch_base_proposals_prices';
+
         Api.requestSession<{ _id: string; companyPrices: Record<string, number | null> }[]>({
-            command: 'estimate/fetch_base_proposals_prices',
+            command,
             args: { estimateId, accountIds },
         })
             .then((rows) => {
@@ -89,7 +109,7 @@ export default function BaseProposalsGrid({ estimate, companies = [] }: { estima
             })
             .catch(() => {})
             .finally(() => setPricesLoading(false));
-    }, [estimateId, companies.map(c => String(c._id)).join(',')]);
+    }, [estimateId, mode, companies.map(c => String(c._id)).join(',')]);
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -109,7 +129,7 @@ export default function BaseProposalsGrid({ estimate, companies = [] }: { estima
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell align='left' sx={{ fontWeight: 600 }}>{t('Labor Description')}</TableCell>
+                    <TableCell align='left' sx={{ fontWeight: 600 }}>{descriptionHeader}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
                     {companies.length === 0 ? (

@@ -107,10 +107,14 @@ export default function ComparativeAnalysisPage() {
                             ) : (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                        <BaseProposalsGrid estimate={selectedEstimate!} companies={selectedCompanies} />
+                                        <BaseProposalsGrid estimate={selectedEstimate!} companies={selectedCompanies} mode='general' />
                                     </TabPanel>
-                                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }} />
-                                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }} />
+                                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                                        <BaseProposalsGrid estimate={selectedEstimate!} companies={selectedCompanies} mode='labor' />
+                                    </TabPanel>
+                                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                                        <BaseProposalsGrid estimate={selectedEstimate!} companies={selectedCompanies} mode='materials' />
+                                    </TabPanel>
                                 </>
                             )}
                         </Box>

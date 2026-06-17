@@ -1,10 +1,12 @@
 import { registerApiSession } from '@/server/register';
+import { ObjectId } from 'mongodb';
 
 import * as Db from '@/db';
 
 import { respondJson, respondJsonData } from '@/tsback/req/req_response';
 import { verify } from '@/tslib/verify';
 import { requireMongoIdParam } from '@/tsback/mongodb/mongodb_params';
+import { getQueryParam } from '@/tsback/req/req_params';
 
 registerApiSession('estimate/fetch_material_items', async (req, res, session) => {
 
@@ -328,6 +330,68 @@ registerApiSession('estimate/fetch_material_market_comparison', async (req, res,
             sectionName: sectionInfo?.name ?? '',
             sectionDisplayIndex: sectionInfo?.displayIndex ?? 0,
         };
+    });
+
+    respondJsonData(res, result);
+});
+
+registerApiSession('estimate/fetch_base_proposals_material_prices', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+    const accountIdsParam = getQueryParam(req, 'accountIds') ?? '';
+    const accountIds = accountIdsParam.split(',').filter(Boolean).map(id => new ObjectId(id));
+    if (accountIds.length === 0) { respondJsonData(res, []); return; }
+
+    const sections = await Db.getEstimateSectionsCollection()
+        .find({ estimateId }).project({ _id: 1 }).toArray();
+    const sectionIds = sections.map(s => s._id);
+    if (!sectionIds.length) { respondJsonData(res, []); return; }
+
+    const subsections = await Db.getEstimateSubsectionsCollection()
+        .find({ estimateSectionId: { $in: sectionIds } }).project({ _id: 1 }).toArray();
+    const subsectionIds = subsections.map(s => s._id);
+    if (!subsectionIds.length) { respondJsonData(res, []); return; }
+
+    const hiddenLaborIds = (await Db.getEstimateLaborItemsCollection()
+        .find({ estimateId, isHidden: true }).project({ _id: 1 }).toArray()).map(l => l._id);
+
+    const materialItems = await Db.getEstimateMaterialItemsCollection()
+        .aggregate([
+            {
+                $match: {
+                    estimateSubsectionId: { $in: subsectionIds },
+                    ...(hiddenLaborIds.length > 0 ? { estimatedLaborId: { $nin: hiddenLaborIds } } : {}),
+                },
+            },
+            {
+                $lookup: {
+                    from: 'material_offers',
+                    let: { matItemId: '$materialItemId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$itemId', '$$matItemId'] },
+                                accountId: { $in: accountIds },
+                                price: { $ne: 0, $exists: true },
+                                $or: [{ isArchived: false }, { isArchived: { $exists: false } }],
+                            },
+                        },
+                        { $project: { _id: 0, accountId: 1, price: 1 } },
+                    ],
+                    as: 'companyOffers',
+                },
+            },
+            { $project: { _id: 1, materialItemId: 1, companyOffers: 1 } },
+        ])
+        .toArray();
+
+    const result = materialItems.map((item: any) => {
+        const companyPrices: Record<string, number | null> = {};
+        for (const accountId of accountIds) {
+            const key = accountId.toString();
+            const offer = (item.companyOffers ?? []).find((o: any) => o.accountId.toString() === key);
+            companyPrices[key] = offer?.price ?? null;
+        }
+        return { _id: item._id, companyPrices };
     });
 
     respondJsonData(res, result);
