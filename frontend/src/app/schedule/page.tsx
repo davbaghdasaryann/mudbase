@@ -22,10 +22,9 @@ export default function SchedulePage() {
     };
 
     return (
-        <PageContents title='Schedule'>
+        <PageContents title='Schedule' sx={{ pt: 1, pb: 1 }}>
             {selectedEstimate && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                    <Typography variant='h5' sx={{ fontWeight: 700 }}>{t('Schedule')}</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
                     <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
                 </Box>
             )}
