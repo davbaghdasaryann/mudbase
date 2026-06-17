@@ -79,8 +79,8 @@ export default function ComparativeAnalysisPage() {
                             <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)} sx={{ flex: 1 }}>
                                     <Tab label={t('General')} value='general' disabled={analysisType === 'base_proposals' && !submittedSelection} />
-                                    <Tab label={t('Labor')} value='labor' disabled={!!submittedSelection} />
-                                    <Tab label={t('Materials')} value='materials' disabled={!!submittedSelection} />
+                                    <Tab label={t('Labor')} value='labor' />
+                                    <Tab label={t('Materials')} value='materials' />
                                 </TabList>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, pb: '4px' }}>
                                     {analysisType === 'base_proposals' && !submittedSelection && (
@@ -96,12 +96,17 @@ export default function ComparativeAnalysisPage() {
                         {/* Inner scroll container — table content scrolls here */}
                         <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                             {submittedSelection ? (
-                                <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                    <SubmittedEstimationsGrid
-                                        originalEstimateId={submittedSelection.originalEstimateId}
-                                        companies={submittedSelection.companies}
-                                    />
-                                </TabPanel>
+                                <>
+                                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                        <SubmittedEstimationsGrid originalEstimateId={submittedSelection.originalEstimateId} companies={submittedSelection.companies} mode='general' />
+                                    </TabPanel>
+                                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                                        <SubmittedEstimationsGrid originalEstimateId={submittedSelection.originalEstimateId} companies={submittedSelection.companies} mode='labor' />
+                                    </TabPanel>
+                                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                                        <SubmittedEstimationsGrid originalEstimateId={submittedSelection.originalEstimateId} companies={submittedSelection.companies} mode='materials' />
+                                    </TabPanel>
+                                </>
                             ) : analysisType === 'market' ? (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>

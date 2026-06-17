@@ -762,76 +762,62 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
     const sectionsCol = Db.getEstimateSectionsCollection();
     const subsectionsCol = Db.getEstimateSubsectionsCollection();
     const laborItemsCol = Db.getEstimateLaborItemsCollection();
+    const materialItemsCol = Db.getEstimateMaterialItemsCollection();
 
-    // Original estimate (for otherExpenses totals)
     const originalEstimate = await estimatesCol.findOne({ _id: originalEstimateId });
     if (!originalEstimate) { respondJsonData(res, null); return; }
 
-    // Sections of original
-    const sections = await sectionsCol
-        .find({ estimateId: originalEstimateId })
-        .sort({ displayIndex: 1 })
-        .toArray();
-
-    // Subsections of original
+    // Sections → subsections of original
+    const sections = await sectionsCol.find({ estimateId: originalEstimateId }).sort({ displayIndex: 1 }).toArray();
     const sectionIds = sections.map(s => s._id);
-    const subsections = await subsectionsCol
-        .find({ estimateSectionId: { $in: sectionIds } })
-        .sort({ displayIndex: 1 })
-        .toArray();
-
-    const subsectionToSection = new Map(subsections.map(s => [
-        s._id.toString(),
-        s.estimateSectionId?.toString(),
-    ]));
-    const sectionById = new Map(sections.map((s, i) => [
-        s._id.toString(),
-        { name: s.name as string, displayIndex: (s as any).displayIndex ?? i },
-    ]));
-
-    // Labor items of original with unit info
+    const subsections = await subsectionsCol.find({ estimateSectionId: { $in: sectionIds } }).sort({ displayIndex: 1 }).toArray();
     const subsectionIds = subsections.map(s => s._id);
-    const rawItems = await laborItemsCol.aggregate([
+
+    const subsectionToSection = new Map(subsections.map(s => [s._id.toString(), s.estimateSectionId?.toString()]));
+    const sectionById = new Map(sections.map((s, i) => [s._id.toString(), { name: s.name as string, displayIndex: (s as any).displayIndex ?? i }]));
+
+    // Helper: build section→items map from a flat item list
+    const buildSectionMap = (items: any[], idKey: string) => {
+        const map = new Map<string, { sectionName: string; displayIndex: number; items: any[] }>();
+        for (const item of items) {
+            const subsId = item.estimateSubsectionId?.toString();
+            const sectId = subsectionToSection.get(subsId ?? '') ?? '';
+            const sectInfo = sectionById.get(sectId) ?? { name: '', displayIndex: 0 };
+            if (!map.has(sectId)) map.set(sectId, { sectionName: sectInfo.name, displayIndex: sectInfo.displayIndex, items: [] });
+            map.get(sectId)!.items.push(item);
+        }
+        return Array.from(map.values()).sort((a, b) => a.displayIndex - b.displayIndex);
+    };
+
+    // --- LABOR items (original) ---
+    const rawLaborItems = await laborItemsCol.aggregate([
         { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
-        {
-            $lookup: {
-                from: 'labor_items',
-                localField: 'laborItemId',
-                foreignField: '_id',
-                as: 'catalogItem',
-            },
-        },
-        { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
-        {
-            $lookup: {
-                from: 'measurement_unit',
-                localField: 'measurementUnitMongoId',
-                foreignField: '_id',
-                as: 'unitData',
-            },
-        },
-        { $unwind: { path: '$unitData', preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: 'labor_items', localField: 'laborItemId', foreignField: '_id', as: 'cat' } },
+        { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: 'measurement_unit', localField: 'measurementUnitMongoId', foreignField: '_id', as: 'unit' } },
+        { $unwind: { path: '$unit', preserveNullAndEmptyArrays: true } },
         { $sort: { displayIndex: 1, _id: 1 } },
-        {
-            $project: {
-                laborItemId: 1,
-                estimateSubsectionId: 1,
-                quantity: 1,
-                changableAveragePrice: 1,
-                name: { $ifNull: ['$laborOfferItemName', '$catalogItem.name'] },
-                unitSymbol: '$unitData.representationSymbol',
-            },
-        },
+        { $project: { laborItemId: 1, estimateSubsectionId: 1, quantity: 1, changableAveragePrice: 1, name: { $ifNull: ['$laborOfferItemName', '$cat.name'] }, unitSymbol: '$unit.representationSymbol' } },
     ]).toArray();
 
-    // Company copies keyed by accountId → laborItemId → price
-    const companyPriceMap: Record<string, Record<string, number>> = {};
+    // --- MATERIAL items (original) ---
+    const rawMaterialItems = await materialItemsCol.aggregate([
+        { $match: { estimateSubsectionId: { $in: subsectionIds } } },
+        { $lookup: { from: 'material_items', localField: 'materialItemId', foreignField: '_id', as: 'cat' } },
+        { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: 'measurement_unit', localField: 'measurementUnitMongoId', foreignField: '_id', as: 'unit' } },
+        { $unwind: { path: '$unit', preserveNullAndEmptyArrays: true } },
+        { $sort: { displayIndex: 1, _id: 1 } },
+        { $project: { materialItemId: 1, estimateSubsectionId: 1, quantity: 1, changableAveragePrice: 1, name: { $ifNull: ['$materialOfferItemName', '$cat.name'] }, unitSymbol: '$unit.representationSymbol' } },
+    ]).toArray();
+
+    // --- Company copies ---
+    const companyLaborPrices: Record<string, Record<string, number>> = {};
+    const companyMaterialPrices: Record<string, Record<string, number>> = {};
     const companyTotals: Record<string, { directCost: number; totalCost: number; totalWithOther: number }> = {};
 
     if (accountIds.length > 0) {
-        const copies = await estimatesCol
-            .find({ originalEstimateId, sharedWithAccountId: { $in: accountIds } })
-            .toArray();
+        const copies = await estimatesCol.find({ originalEstimateId, sharedWithAccountId: { $in: accountIds } }).toArray();
 
         for (const copy of copies) {
             const acctId = copy.sharedWithAccountId?.toString();
@@ -839,12 +825,20 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
 
             const copySections = await sectionsCol.find({ estimateId: copy._id }).toArray();
             const copySubs = await subsectionsCol.find({ estimateSectionId: { $in: copySections.map(s => s._id) } }).toArray();
-            const copyItems = await laborItemsCol.find({ estimateSubsectionId: { $in: copySubs.map(s => s._id) }, isHidden: { $ne: true } }).toArray();
+            const copySubIds = copySubs.map(s => s._id);
 
-            companyPriceMap[acctId] = {};
-            for (const item of copyItems) {
-                companyPriceMap[acctId][item.laborItemId?.toString()] = item.changableAveragePrice ?? 0;
+            const copyLabor = await laborItemsCol.find({ estimateSubsectionId: { $in: copySubIds }, isHidden: { $ne: true } }).toArray();
+            companyLaborPrices[acctId] = {};
+            for (const item of copyLabor) {
+                companyLaborPrices[acctId][item.laborItemId?.toString()] = item.changableAveragePrice ?? 0;
             }
+
+            const copyMat = await materialItemsCol.find({ estimateSubsectionId: { $in: copySubIds } }).toArray();
+            companyMaterialPrices[acctId] = {};
+            for (const item of copyMat) {
+                companyMaterialPrices[acctId][item.materialItemId?.toString()] = item.changableAveragePrice ?? 0;
+            }
+
             companyTotals[acctId] = {
                 directCost: copy.totalCost ?? 0,
                 totalCost: copy.totalCost ?? 0,
@@ -853,49 +847,30 @@ registerApiSession('estimate/fetch_submitted_estimations_comparison', async (req
         }
     }
 
-    // Build section → items structure
-    const sectionMap = new Map<string, { sectionName: string; displayIndex: number; items: any[] }>();
+    // Attach company prices to items
+    const acctIdStrs = accountIds.map(a => a.toString());
 
-    for (const item of rawItems) {
-        const subsId = item.estimateSubsectionId?.toString();
-        const sectId = subsectionToSection.get(subsId ?? '') ?? '';
-        const sectInfo = sectionById.get(sectId) ?? { name: '', displayIndex: 0 };
-
-        if (!sectionMap.has(sectId)) {
-            sectionMap.set(sectId, { sectionName: sectInfo.name, displayIndex: sectInfo.displayIndex, items: [] });
-        }
-
-        const laborKey = item.laborItemId?.toString() ?? '';
+    const laborItemsWithPrices = rawLaborItems.map((item: any) => {
+        const key = item.laborItemId?.toString() ?? '';
         const companyPrices: Record<string, number | null> = {};
-        for (const acctId of accountIds.map(a => a.toString())) {
-            companyPrices[acctId] = companyPriceMap[acctId]?.[laborKey] ?? null;
-        }
+        for (const a of acctIdStrs) companyPrices[a] = companyLaborPrices[a]?.[key] ?? null;
+        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: item.quantity ?? 0, baseUnitPrice: item.changableAveragePrice ?? 0, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
+    });
 
-        sectionMap.get(sectId)!.items.push({
-            laborItemId: laborKey,
-            name: item.name,
-            unitSymbol: item.unitSymbol,
-            quantity: item.quantity ?? 0,
-            baseUnitPrice: item.changableAveragePrice ?? 0,
-            companyPrices,
-        });
-    }
+    const materialItemsWithPrices = rawMaterialItems.map((item: any) => {
+        const key = item.materialItemId?.toString() ?? '';
+        const companyPrices: Record<string, number | null> = {};
+        for (const a of acctIdStrs) companyPrices[a] = companyMaterialPrices[a]?.[key] ?? null;
+        return { itemId: key, name: item.name, unitSymbol: item.unitSymbol, quantity: item.quantity ?? 0, baseUnitPrice: item.changableAveragePrice ?? 0, companyPrices, estimateSubsectionId: item.estimateSubsectionId };
+    });
 
-    const sectionsList = Array.from(sectionMap.values())
-        .sort((a, b) => a.displayIndex - b.displayIndex);
-
-    // Baseline totals
     const baseDirectCost = originalEstimate.totalCost ?? 0;
     const baseTotalWithOther = originalEstimate.totalCostWithOtherExpenses ?? 0;
 
     respondJsonData(res, {
-        sections: sectionsList,
-        baseSummary: {
-            directCost: baseDirectCost,
-            otherCost: baseTotalWithOther - baseDirectCost,
-            total: baseTotalWithOther,
-        },
+        laborSections: buildSectionMap(laborItemsWithPrices, 'laborItemId'),
+        materialSections: buildSectionMap(materialItemsWithPrices, 'materialItemId'),
+        baseSummary: { directCost: baseDirectCost, otherCost: baseTotalWithOther - baseDirectCost, total: baseTotalWithOther },
         companySummaries: companyTotals,
-        otherExpenses: originalEstimate.otherExpenses ?? [],
     });
 });
