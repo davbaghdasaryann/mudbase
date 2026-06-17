@@ -19,6 +19,46 @@ function roundToDay(date: Date): Date {
     return d;
 }
 
+/**
+ * Compute estimate total cost using catalog market prices × estimate quantities.
+ * Quantities come from the estimate; prices come from catalog averagePrice only.
+ */
+async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<number> {
+    const laborColl = Db.getEstimateLaborItemsCollection();
+    const materialColl = Db.getEstimateMaterialItemsCollection();
+
+    const [laborItems, materialItems] = await Promise.all([
+        laborColl.find({ estimateId }, { projection: { laborItemId: 1, estimatedLaborId: 1, quantity: 1, isHidden: 1 } }).toArray(),
+        materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray()
+    ]);
+
+    const hiddenLaborIds = new Set(laborItems.filter(l => (l as any).isHidden).map(l => l._id!.toString()));
+
+    const laborIds = [...new Set(laborItems.map(l => (l as any).laborItemId))];
+    const materialIds = [...new Set(materialItems.map(m => (m as any).materialItemId))];
+
+    const [catalogLabor, catalogMaterial] = await Promise.all([
+        Db.getLaborItemsCollection().find({ _id: { $in: laborIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray(),
+        Db.getMaterialItemsCollection().find({ _id: { $in: materialIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray()
+    ]);
+
+    const laborPriceMap = new Map(catalogLabor.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
+    const materialPriceMap = new Map(catalogMaterial.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
+
+    let total = 0;
+    for (const l of laborItems) {
+        if ((l as any).isHidden) continue;
+        const price = laborPriceMap.get((l as any).laborItemId.toString()) ?? 0;
+        total += ((l as any).quantity ?? 0) * price;
+    }
+    for (const m of materialItems) {
+        if (hiddenLaborIds.has((m as any).estimatedLaborId.toString())) continue;
+        const price = materialPriceMap.get((m as any).materialItemId.toString()) ?? 0;
+        total += ((m as any).quantity ?? 0) * price;
+    }
+    return total;
+}
+
 /** Get current value for the widget so we can show at least the current 30-min bucket (e.g. 14:00) when there's no snapshot/journal yet. */
 async function getCurrentValueForWidget(
     widget: { dataSource: string; dataSourceConfig?: { itemId?: unknown; estimateId?: unknown } },
@@ -42,27 +82,19 @@ async function getCurrentValueForWidget(
         if (widget.dataSource === 'estimates' && widget.dataSourceConfig?.estimateId) {
             const estimateId = typeof widget.dataSourceConfig.estimateId === 'string'
                 ? new ObjectId(widget.dataSourceConfig.estimateId)
-                : widget.dataSourceConfig.estimateId;
-            const estimate = await Db.getEstimatesCollection().findOne({
-                _id: estimateId,
-                accountId
-            });
-            return estimate?.totalCost ?? null;
+                : widget.dataSourceConfig.estimateId as ObjectId;
+            const cost = await computeEstimateCostFromCatalog(estimateId);
+            return cost > 0 ? cost : null;
         }
         if (widget.dataSource === 'eci' && widget.dataSourceConfig?.estimateId) {
             const eciId = typeof widget.dataSourceConfig.estimateId === 'string'
                 ? new ObjectId(widget.dataSourceConfig.estimateId)
-                : widget.dataSourceConfig.estimateId;
+                : widget.dataSourceConfig.estimateId as ObjectId;
             const eci = await Db.getEciEstimatesCollection().findOne({ _id: eciId });
-            const linkedId = eci?.estimateId;
-            if (!eci || !linkedId) return null;
-            const estimate = await Db.getEstimatesCollection().findOne({
-                _id: linkedId,
-                accountId
-            });
-            if (!estimate) return null;
+            if (!eci?.estimateId) return null;
+            const cost = await computeEstimateCostFromCatalog(eci.estimateId);
             const area = eci.constructionArea || 1;
-            return (estimate.totalCost ?? 0) / area;
+            return cost > 0 ? cost / area : null;
         }
     } catch {
         // ignore
@@ -613,11 +645,11 @@ async function getEstimateReconstructedPoints(
 
     const laborItems = await laborColl.find(
         { estimateId },
-        { projection: { laborItemId: 1, quantity: 1, isHidden: 1, changableAveragePrice: 1, averagePrice: 1 } }
+        { projection: { laborItemId: 1, quantity: 1, isHidden: 1 } }
     ).toArray();
     const materialItems = await materialColl.find(
         { estimateId },
-        { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1, averagePrice: 1 } }
+        { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }
     ).toArray();
 
     const hiddenLaborIds = new Set(
@@ -629,6 +661,14 @@ async function getEstimateReconstructedPoints(
 
     const laborOfferIds = await getOfferIdsForItems(laborItemIds, 'labor');
     const materialOfferIds = await getOfferIdsForItems(materialItemIds, 'materials');
+
+    // Fetch catalog current average prices — used as fallback for time buckets with no journal entry
+    const [catalogLaborItems, catalogMaterialItems] = await Promise.all([
+        Db.getLaborItemsCollection().find({ _id: { $in: laborItemIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray(),
+        Db.getMaterialItemsCollection().find({ _id: { $in: materialItemIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray()
+    ]);
+    const catalogLaborPrices = new Map<string, number>(catalogLaborItems.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
+    const catalogMaterialPrices = new Map<string, number>(catalogMaterialItems.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
 
     const [laborPoints, materialPoints] = await Promise.all([
         getJournalPointsByItemInWindow('labor', laborOfferIds, startDate),
@@ -658,13 +698,14 @@ async function getEstimateReconstructedPoints(
         for (const labor of laborItems) {
             if (labor.isHidden) continue;
             const key = `${t}:${labor.laborItemId.toString()}`;
-            const price = laborPriceMap.get(key) ?? (labor as any).changableAveragePrice ?? (labor as any).averagePrice ?? 0;
+            // Use journal market price; fall back to catalog averagePrice (never use estimate's own price)
+            const price = laborPriceMap.get(key) ?? catalogLaborPrices.get(labor.laborItemId.toString()) ?? 0;
             if (labor.quantity && price) totalCost += labor.quantity * price;
         }
         for (const mat of materialItems) {
             if (hiddenLaborIds.has(mat.estimatedLaborId.toString())) continue;
             const key = `${t}:${mat.materialItemId.toString()}`;
-            const price = materialPriceMap.get(key) ?? (mat as any).changableAveragePrice ?? (mat as any).averagePrice ?? 0;
+            const price = materialPriceMap.get(key) ?? catalogMaterialPrices.get(mat.materialItemId.toString()) ?? 0;
             if (mat.quantity && price) totalCost += mat.quantity * price;
         }
         result.push({ timestamp: new Date(t), value: totalCost });
