@@ -953,31 +953,12 @@ registerApiSession('estimate/fetch_gantt_data', async (req, res, session) => {
 
     const subsectionIds = subsections.map(s => s._id);
 
-    const laborItems = subsectionIds.length === 0 ? [] : await laborItemsCol.aggregate([
-        { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } } },
-        {
-            $lookup: {
-                from: 'labor_items',
-                let: { lid: '$laborItemId' },
-                pipeline: [
-                    { $match: { $expr: { $eq: ['$_id', '$$lid'] } } },
-                    { $project: { name: 1, _id: 0 } },
-                ],
-                as: 'cat',
-            },
-        },
-        { $unwind: { path: '$cat', preserveNullAndEmptyArrays: true } },
-        {
-            $project: {
-                estimateSubsectionId: 1,
-                displayIndex: 1,
-                quantity: 1,
-                laborHours: 1,
-                name: { $ifNull: ['$laborOfferItemName', '$cat.name'] },
-            },
-        },
-        { $sort: { displayIndex: 1, _id: 1 } },
-    ]).toArray();
+    // Use simple find (no catalog $lookup) — name is stored as laborOfferItemName on the item
+    const laborItems = subsectionIds.length === 0 ? [] : await laborItemsCol
+        .find({ estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true } })
+        .project({ estimateSubsectionId: 1, displayIndex: 1, quantity: 1, laborHours: 1, laborOfferItemName: 1 })
+        .sort({ displayIndex: 1, _id: 1 })
+        .toArray();
 
     // Build section → items map (flatten subsections into section)
     const subsectionToSection = new Map(subsections.map(ss => [ss._id.toString(), ss.estimateSectionId.toString()]));
@@ -991,7 +972,7 @@ registerApiSession('estimate/fetch_gantt_data', async (req, res, session) => {
     const result = sections.map(s => ({
         name: s.name,
         items: (itemsBySection.get(s._id.toString()) ?? []).map((item: any) => ({
-            name: item.name ?? '',
+            name: item.laborOfferItemName ?? '',
             quantity: item.quantity ?? 0,
             laborHours: item.laborHours ?? 0,
         })),
