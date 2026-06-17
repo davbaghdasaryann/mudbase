@@ -6,27 +6,23 @@ import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { ApiEstimate } from '@/api/estimate';
 
-const DAY_W = 36;
-const ITEM_ROW_H = 36;
-const SEC_ROW_H = 40;
-const NAME_COL_W = 220;
+const DAY_W = 38;
+const ITEM_ROW_H = 38;
+const SEC_ROW_H = 44;
+const NAME_COL_W = 300;
+const TEAL = '#00ABBE';
+const TEAL_DARK = '#007f8c';
+const TEAL_LIGHT = 'rgba(0,171,190,0.12)';
+const TEAL_MID = 'rgba(0,171,190,0.22)';
 
-const SECTION_COLORS = [
-    '#0d3b2e',
-    '#1a4a6b',
-    '#1c3a1c',
-    '#2c2c5e',
-    '#3b1f1f',
-    '#1f3b3b',
-];
-
+// Subtle bar color variants — teal palette
 const BAR_COLORS = [
-    '#1DB954',
     '#00ABBE',
-    '#2ECC71',
-    '#0288D1',
-    '#1CA461',
-    '#26A69A',
+    '#0096a8',
+    '#00c4d4',
+    '#007f8c',
+    '#00d4e8',
+    '#006a78',
 ];
 
 interface GanttItem {
@@ -74,15 +70,22 @@ export default function GanttChart({ estimate }: Props) {
     }, [estimate._id]);
 
     if (loading) return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress size={32} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+            <CircularProgress size={36} sx={{ color: TEAL }} />
         </Box>
     );
 
     if (!data || data.sections.length === 0) return (
-        <Typography variant='body2' color='text.disabled' sx={{ textAlign: 'center', py: 6 }}>
-            {t('No labor items found')}
-        </Typography>
+        <Box sx={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            minHeight: 300,
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(0,171,190,0.15)',
+            borderRadius: 3,
+        }}>
+            <Typography variant='body2' color='text.disabled'>{t('No labor items found')}</Typography>
+        </Box>
     );
 
     // Build flat row list with sequential day tracking
@@ -104,50 +107,59 @@ export default function GanttChart({ estimate }: Props) {
     const days = Array.from({ length: totalDays }, (_, i) => i + 1);
 
     return (
-        <Paper
-            elevation={0}
-            sx={{ border: '1px solid #e0f0f4', borderRadius: 3, overflow: 'hidden', mt: 3 }}
-        >
-            {/* Chart title */}
-            <Box sx={{ px: 3, py: 2, borderBottom: '1px solid #e8e8e8', background: '#fafafa' }}>
-                <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
+        <Box sx={{
+            background: 'rgba(255,255,255,0.72)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: '1px solid rgba(0,171,190,0.18)',
+            borderRadius: 4,
+            boxShadow: '0 8px 40px rgba(0,171,190,0.08), 0 2px 12px rgba(0,0,0,0.04)',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+        }}>
+            {/* Header bar */}
+            <Box sx={{
+                px: 3, py: 2,
+                borderBottom: '1px solid rgba(0,171,190,0.12)',
+                background: 'rgba(255,255,255,0.5)',
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 2,
+            }}>
+                <Typography variant='h6' sx={{ fontWeight: 700, color: '#1a1a1a' }}>
                     {estimate.name}
                 </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                    {t('Total duration')}: {totalDays} {t('days')} ({t('8-hour workdays')})
+                <Typography variant='caption' sx={{ color: TEAL, fontWeight: 600 }}>
+                    {totalDays} {t('days')} &nbsp;·&nbsp; 8h {t('workday')}
                 </Typography>
             </Box>
 
-            {/* Scrollable Gantt area */}
-            <Box sx={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 520 }}>
+            {/* Scrollable chart */}
+            <Box sx={{ overflowX: 'auto', overflowY: 'auto', flex: 1 }}>
                 <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
 
-                    {/* Header row: days */}
-                    <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: '#1a2e2a' }}>
+                    {/* Day header */}
+                    <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', borderBottom: `2px solid ${TEAL}22` }}>
                         <Box sx={{
-                            width: NAME_COL_W,
-                            flexShrink: 0,
-                            px: 2,
-                            py: 1,
-                            position: 'sticky',
-                            left: 0,
-                            zIndex: 4,
-                            background: '#1a2e2a',
-                            borderRight: '2px solid #2d4a44',
+                            width: NAME_COL_W, flexShrink: 0,
+                            px: 2.5, py: 1.2,
+                            position: 'sticky', left: 0, zIndex: 4,
+                            background: 'rgba(255,255,255,0.95)',
+                            borderRight: `1px solid ${TEAL}22`,
                         }}>
-                            <Typography variant='caption' sx={{ color: '#aaa', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                            <Typography variant='caption' sx={{ color: TEAL, fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                 {t('Task')}
                             </Typography>
                         </Box>
                         {days.map(d => (
                             <Box key={d} sx={{
-                                width: DAY_W,
-                                flexShrink: 0,
-                                textAlign: 'center',
-                                py: 1,
-                                borderRight: '1px solid #2d4a44',
-                                color: '#aad4c8',
-                                fontSize: '0.65rem',
+                                width: DAY_W, flexShrink: 0,
+                                textAlign: 'center', py: 1.2,
+                                borderRight: d % 5 === 0 ? `1px solid ${TEAL}33` : `1px solid rgba(0,0,0,0.04)`,
+                                color: d % 5 === 0 ? TEAL : '#bbb',
+                                fontSize: '0.63rem',
                                 fontWeight: d % 5 === 0 ? 700 : 400,
                             }}>
                                 {d % 5 === 0 || d === 1 ? d : ''}
@@ -155,30 +167,34 @@ export default function GanttChart({ estimate }: Props) {
                         ))}
                     </Box>
 
-                    {/* Data rows */}
+                    {/* Rows */}
                     {rows.map((row, ri) => {
                         if (row.type === 'section') {
-                            const bg = SECTION_COLORS[row.colorIndex % SECTION_COLORS.length];
                             return (
-                                <Box key={ri} sx={{ display: 'flex', height: SEC_ROW_H, background: bg, alignItems: 'center' }}>
+                                <Box key={ri} sx={{ display: 'flex', height: SEC_ROW_H, alignItems: 'center', background: TEAL_LIGHT, borderBottom: `1px solid ${TEAL}20` }}>
                                     <Box sx={{
-                                        width: NAME_COL_W,
-                                        flexShrink: 0,
-                                        px: 2,
-                                        position: 'sticky',
-                                        left: 0,
-                                        zIndex: 2,
-                                        background: bg,
+                                        width: NAME_COL_W, flexShrink: 0,
+                                        px: 2.5,
+                                        position: 'sticky', left: 0, zIndex: 2,
+                                        background: TEAL_LIGHT,
                                         height: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        borderRight: '2px solid rgba(255,255,255,0.1)',
+                                        display: 'flex', alignItems: 'center',
+                                        borderRight: `1px solid ${TEAL}25`,
                                     }}>
-                                        <Typography variant='caption' sx={{ color: '#fff', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.04em' }} noWrap>
+                                        <Box sx={{ width: 3, height: 18, borderRadius: 2, background: TEAL, mr: 1.2, flexShrink: 0 }} />
+                                        <Typography variant='caption' sx={{ color: TEAL_DARK, fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.03em' }}>
                                             {row.name}
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ flex: 1, height: '100%', borderBottom: '1px solid rgba(255,255,255,0.06)' }} />
+                                    {/* Full-width grid lines for section row */}
+                                    <Box sx={{ flex: 1, height: '100%', display: 'flex' }}>
+                                        {days.map(d => (
+                                            <Box key={d} sx={{
+                                                width: DAY_W, flexShrink: 0, height: '100%',
+                                                borderRight: d % 5 === 0 ? `1px solid ${TEAL}20` : `1px solid rgba(0,0,0,0.03)`,
+                                            }} />
+                                        ))}
+                                    </Box>
                                 </Box>
                             );
                         }
@@ -186,58 +202,57 @@ export default function GanttChart({ estimate }: Props) {
                         // Item row
                         const barColor = BAR_COLORS[row.colorIndex % BAR_COLORS.length];
                         const startOffset = ((row.start ?? 1) - 1) * DAY_W;
-                        const barWidth = (row.duration ?? 1) * DAY_W - 2;
+                        const barWidth = (row.duration ?? 1) * DAY_W - 3;
                         const isEven = ri % 2 === 0;
+                        const rowBg = isEven ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
 
                         return (
-                            <Box key={ri} sx={{ display: 'flex', height: ITEM_ROW_H, background: isEven ? '#fff' : '#f8fffe', alignItems: 'center', '&:hover': { background: '#f0fbfa' } }}>
-                                {/* Sticky name cell */}
+                            <Box key={ri} sx={{
+                                display: 'flex', height: ITEM_ROW_H, alignItems: 'center',
+                                background: rowBg,
+                                borderBottom: '1px solid rgba(0,171,190,0.06)',
+                                '&:hover': { background: 'rgba(0,171,190,0.05)' },
+                                transition: 'background 0.15s',
+                            }}>
+                                {/* Sticky name */}
                                 <Box sx={{
-                                    width: NAME_COL_W,
-                                    flexShrink: 0,
-                                    px: 2,
-                                    position: 'sticky',
-                                    left: 0,
-                                    zIndex: 2,
-                                    background: isEven ? '#fff' : '#f8fffe',
+                                    width: NAME_COL_W, flexShrink: 0,
+                                    px: 2.5, pl: 4,
+                                    position: 'sticky', left: 0, zIndex: 2,
+                                    background: rowBg,
                                     height: '100%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    borderRight: '2px solid #e8f4f0',
+                                    display: 'flex', alignItems: 'center',
+                                    borderRight: `1px solid ${TEAL}18`,
                                 }}>
-                                    <Typography variant='caption' sx={{ color: '#333', fontSize: '0.73rem', lineHeight: 1.2 }} noWrap title={row.name}>
-                                        {row.name}
+                                    <Typography variant='caption' sx={{ color: '#444', fontSize: '0.75rem', lineHeight: 1.3 }}>
+                                        {row.name || '—'}
                                     </Typography>
                                 </Box>
 
-                                {/* Bar area */}
-                                <Box sx={{ position: 'relative', flex: 1, height: '100%', borderBottom: '1px solid #f0f0f0' }}>
-                                    {/* Grid lines */}
-                                    {days.filter(d => d % 5 === 0).map(d => (
+                                {/* Bar area with full-width grid lines */}
+                                <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
+                                    {days.map(d => (
                                         <Box key={d} sx={{
                                             position: 'absolute',
                                             left: (d - 1) * DAY_W,
-                                            top: 0, bottom: 0,
-                                            width: 1,
-                                            background: '#e8e8e8',
+                                            top: 0, bottom: 0, width: 1,
+                                            background: d % 5 === 0 ? `${TEAL}25` : 'rgba(0,0,0,0.035)',
                                         }} />
                                     ))}
                                     {/* Task bar */}
                                     <Box sx={{
                                         position: 'absolute',
-                                        left: startOffset + 1,
-                                        top: 5,
-                                        height: ITEM_ROW_H - 10,
+                                        left: startOffset + 2,
+                                        top: 7, height: ITEM_ROW_H - 14,
                                         width: barWidth,
-                                        background: barColor,
-                                        borderRadius: '4px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        px: 0.8,
+                                        background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                        borderRadius: '5px',
+                                        display: 'flex', alignItems: 'center',
+                                        px: 1,
                                         overflow: 'hidden',
-                                        boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+                                        boxShadow: `0 2px 8px ${barColor}55`,
                                     }}>
-                                        <Typography sx={{ color: '#fff', fontSize: '0.65rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>
                                             {row.duration}d
                                         </Typography>
                                     </Box>
@@ -247,6 +262,6 @@ export default function GanttChart({ estimate }: Props) {
                     })}
                 </Box>
             </Box>
-        </Paper>
+        </Box>
     );
 }
