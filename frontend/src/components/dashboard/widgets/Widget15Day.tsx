@@ -48,7 +48,6 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     const [loading, setLoading] = useState(true);
 
     const isPreview = widget._id === 'preview';
-    const hasSpread = widget.dataSource === 'materials' || widget.dataSource === 'labor';
 
     const fetchPreviewData = async () => {
         try {
@@ -129,8 +128,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     const percentChange =
         previousDayValue !== 0 ? (((currentValue - previousDayValue) / previousDayValue) * 100) : 0;
 
-    // Dynamic Y-axis: narrow to actual data spread so trend fluctuations are visible
-    const activeValues = snapshots.map(s => s.value).filter(v => v > 0);
+    // Dynamic Y-axis: narrow to actual data spread including high/low lines
+    const activeValues = snapshots.map((s: any) => [s.value, s.min, s.max]).flat().filter((v): v is number => typeof v === 'number' && v > 0);
     const yMin = activeValues.length > 0 ? Math.min(...activeValues) : 0;
     const yMax = activeValues.length > 0 ? Math.max(...activeValues) : 0;
     const spread = yMax - yMin;
@@ -257,66 +256,53 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     }
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
                                 />
-                                {hasSpread && (
-                                    <Line
-                                        type="monotone"
-                                        dataKey="high"
-                                        stroke={HIGH_LINE}
-                                        strokeWidth={2}
-                                        dot={{ r: 3.5, fill: HIGH_LINE }}
-                                        activeDot={{ r: 4 }}
-                                        name={t('High')}
-                                        legendType="circle"
-                                    />
-                                )}
+                                <Line
+                                    type="monotone"
+                                    dataKey="high"
+                                    stroke={HIGH_LINE}
+                                    strokeWidth={2}
+                                    dot={{ r: 3.5, fill: HIGH_LINE }}
+                                    activeDot={{ r: 4 }}
+                                    name={t('High')}
+                                    legendType="circle"
+                                />
                                 <Line
                                     type="monotone"
                                     dataKey="medium"
-                                    stroke={hasSpread ? MEDIUM_LINE : HIGH_LINE}
+                                    stroke={MEDIUM_LINE}
                                     strokeWidth={2}
-                                    dot={{ r: 3.5, fill: hasSpread ? MEDIUM_LINE : HIGH_LINE }}
+                                    dot={{ r: 3.5, fill: MEDIUM_LINE }}
                                     activeDot={{ r: 4 }}
                                     name={t('Medium')}
                                     legendType="circle"
                                 />
-                                {hasSpread && (
-                                    <Line
-                                        type="monotone"
-                                        dataKey="low"
-                                        stroke={LOW_LINE}
-                                        strokeWidth={2}
-                                        dot={{ r: 3.5, fill: LOW_LINE }}
-                                        activeDot={{ r: 4 }}
-                                        name={t('Low')}
-                                        legendType="circle"
-                                    />
-                                )}
+                                <Line
+                                    type="monotone"
+                                    dataKey="low"
+                                    stroke={LOW_LINE}
+                                    strokeWidth={2}
+                                    dot={{ r: 3.5, fill: LOW_LINE }}
+                                    activeDot={{ r: 4 }}
+                                    name={t('Low')}
+                                    legendType="circle"
+                                />
                             </LineChart>
                         </ResponsiveContainer>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                                {hasSpread ? (
-                                    <>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: HIGH_LINE }} />
-                                            <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('High')}</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: MEDIUM_LINE }} />
-                                            <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Medium')}</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: LOW_LINE }} />
-                                            <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Low')}</Typography>
-                                        </Box>
-                                    </>
-                                ) : (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: HIGH_LINE }} />
-                                        <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Cost')}</Typography>
-                                    </Box>
-                                )}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: HIGH_LINE }} />
+                                    <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('High')}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: MEDIUM_LINE }} />
+                                    <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Medium')}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: LOW_LINE }} />
+                                    <Typography component="span" variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>{t('Low')}</Typography>
+                                </Box>
                             </Box>
                             {dateRange && (
                                 <Typography variant="caption" sx={{ fontSize: 12, color: TEXT_DARK }}>

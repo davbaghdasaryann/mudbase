@@ -218,15 +218,19 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
         } else {
             const estimateId = typeof rawEstimateId === 'string' ? new ObjectId(rawEstimateId) : rawEstimateId;
-            const estimate = await Db.getEstimatesCollection().findOne({
-                _id: estimateId,
-                accountId: session.mongoAccountId
-            });
-            if (!estimate) {
-                snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
+            if (useDaily) {
+                const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
+                const pts = await getEstimateDailyPoints(estimateId as ObjectId, now, dayCount);
+                dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
+                snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
-                const reconstructed = await getEstimateReconstructedPoints(estimateId, startDate);
-                snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, reconstructed);
+                const estimate = await Db.getEstimatesCollection().findOne({ _id: estimateId, accountId: session.mongoAccountId });
+                if (!estimate) {
+                    snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
+                } else {
+                    const reconstructed = await getEstimateReconstructedPoints(estimateId as ObjectId, startDate);
+                    snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, reconstructed);
+                }
             }
         }
     } else if (widget!.dataSource === 'eci') {
@@ -240,20 +244,23 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             if (!eciEstimate || !linkedEstimateId) {
                 snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
             } else {
-                const estimate = await Db.getEstimatesCollection().findOne({
-                    _id: linkedEstimateId,
-                    accountId: session.mongoAccountId
-                });
-                if (!estimate) {
-                    snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
+                if (useDaily) {
+                    const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
+                    const area = eciEstimate.constructionArea || 1;
+                    const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
+                    const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
+                    dailySnapshots = normalizeToDailyBuckets(scaledPts, startDate, now, dayCount);
+                    snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
                 } else {
-                    const reconstructed = await getEstimateReconstructedPoints(linkedEstimateId, startDate);
-                    const constructionArea = eciEstimate.constructionArea || 1;
-                    const eciReconstructed = reconstructed.map(p => ({
-                        timestamp: p.timestamp,
-                        value: p.value / constructionArea
-                    }));
-                    snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, eciReconstructed);
+                    const estimate = await Db.getEstimatesCollection().findOne({ _id: linkedEstimateId, accountId: session.mongoAccountId });
+                    if (!estimate) {
+                        snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
+                    } else {
+                        const reconstructed = await getEstimateReconstructedPoints(linkedEstimateId, startDate);
+                        const constructionArea = eciEstimate.constructionArea || 1;
+                        const eciReconstructed = reconstructed.map(p => ({ timestamp: p.timestamp, value: p.value / constructionArea }));
+                        snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, eciReconstructed);
+                    }
                 }
             }
         }
@@ -405,15 +412,19 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
             snapshots = [];
         } else {
             const estimateId = new ObjectId(rawEstimateId);
-            const estimate = await Db.getEstimatesCollection().findOne({
-                _id: estimateId,
-                accountId: session.mongoAccountId
-            });
-            if (!estimate) {
-                snapshots = [];
+            if (useDaily) {
+                const dayCount = widgetType === '30-day' ? 30 : 15;
+                const pts = await getEstimateDailyPoints(estimateId, now, dayCount);
+                dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
+                snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
-                const reconstructed = await getEstimateReconstructedPoints(estimateId, startDate);
-                snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, reconstructed);
+                const estimate = await Db.getEstimatesCollection().findOne({ _id: estimateId, accountId: session.mongoAccountId });
+                if (!estimate) {
+                    snapshots = [];
+                } else {
+                    const reconstructed = await getEstimateReconstructedPoints(estimateId, startDate);
+                    snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, reconstructed);
+                }
             }
         }
     } else if (dataSource === 'eci') {
@@ -427,20 +438,23 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
             if (!eciEstimate || !linkedEstimateId) {
                 snapshots = [];
             } else {
-                const estimate = await Db.getEstimatesCollection().findOne({
-                    _id: linkedEstimateId,
-                    accountId: session.mongoAccountId
-                });
-                if (!estimate) {
-                    snapshots = [];
+                if (useDaily) {
+                    const dayCount = widgetType === '30-day' ? 30 : 15;
+                    const area = eciEstimate.constructionArea || 1;
+                    const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
+                    const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
+                    dailySnapshots = normalizeToDailyBuckets(scaledPts, startDate, now, dayCount);
+                    snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
                 } else {
-                    const reconstructed = await getEstimateReconstructedPoints(linkedEstimateId, startDate);
-                    const constructionArea = eciEstimate.constructionArea || 1;
-                    const eciReconstructed = reconstructed.map(p => ({
-                        timestamp: p.timestamp,
-                        value: p.value / constructionArea
-                    }));
-                    snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, eciReconstructed);
+                    const estimate = await Db.getEstimatesCollection().findOne({ _id: linkedEstimateId, accountId: session.mongoAccountId });
+                    if (!estimate) {
+                        snapshots = [];
+                    } else {
+                        const reconstructed = await getEstimateReconstructedPoints(linkedEstimateId, startDate);
+                        const constructionArea = eciEstimate.constructionArea || 1;
+                        const eciReconstructed = reconstructed.map(p => ({ timestamp: p.timestamp, value: p.value / constructionArea }));
+                        snapshots = mergeSnapshotAndJournalPoints(snapshotDocs, eciReconstructed);
+                    }
                 }
             }
         }
@@ -869,4 +883,146 @@ function normalizeToDailyBuckets(
     }
 
     return result;
+}
+
+/**
+ * Per-day estimate cost spread using market prices from the catalog.
+ * For each day: value = sum(qty × avg_market_price), min = sum(qty × min_market_price), max = sum(qty × max_market_price).
+ * Quantities come from the estimate; prices come from offer timelines (carry-forward per offer).
+ */
+async function getEstimateDailyPoints(
+    estimateId: ObjectId,
+    endDate: Date,
+    dayCount: number
+): Promise<Array<{ timestamp: Date; value: number; min: number; max: number }>> {
+    const laborColl = Db.getEstimateLaborItemsCollection();
+    const materialColl = Db.getEstimateMaterialItemsCollection();
+
+    const [laborItems, materialItems] = await Promise.all([
+        laborColl.find({ estimateId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1, estimatedLaborId: 1 } }).toArray(),
+        materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray()
+    ]);
+
+    const hiddenLaborIds = new Set(laborItems.filter((l: any) => l.isHidden).map((l: any) => l._id!.toString()));
+    const visibleLaborItems = laborItems.filter((l: any) => !l.isHidden);
+    const visibleMaterialItems = materialItems.filter((m: any) => !hiddenLaborIds.has(m.estimatedLaborId?.toString()));
+
+    // Build qty maps: catalogItemId → total quantity
+    const laborQtyMap = new Map<string, number>();
+    for (const l of visibleLaborItems as any[]) {
+        const id = l.laborItemId.toString();
+        laborQtyMap.set(id, (laborQtyMap.get(id) ?? 0) + (l.quantity ?? 0));
+    }
+    const materialQtyMap = new Map<string, number>();
+    for (const m of visibleMaterialItems as any[]) {
+        const id = m.materialItemId.toString();
+        materialQtyMap.set(id, (materialQtyMap.get(id) ?? 0) + (m.quantity ?? 0));
+    }
+
+    const laborCatalogIds = [...laborQtyMap.keys()].map(id => new ObjectId(id));
+    const materialCatalogIds = [...materialQtyMap.keys()].map(id => new ObjectId(id));
+
+    // Fetch all offers for these catalog items (including archived for historical carry-forward)
+    const [laborOffers, materialOffers] = await Promise.all([
+        laborCatalogIds.length > 0 ? Db.getLaborOffersCollection().find({ itemId: { $in: laborCatalogIds } }, { projection: { _id: 1, itemId: 1, isArchived: 1 } }).toArray() : [],
+        materialCatalogIds.length > 0 ? Db.getMaterialOffersCollection().find({ itemId: { $in: materialCatalogIds } }, { projection: { _id: 1, itemId: 1, isArchived: 1 } }).toArray() : []
+    ]);
+
+    // offerId → { catalogItemId, isArchived }
+    const laborOfferMeta = new Map<string, { catalogItemId: string; isArchived: boolean }>();
+    for (const o of laborOffers as any[]) laborOfferMeta.set(o._id.toString(), { catalogItemId: o.itemId.toString(), isArchived: !!o.isArchived });
+    const materialOfferMeta = new Map<string, { catalogItemId: string; isArchived: boolean }>();
+    for (const o of materialOffers as any[]) materialOfferMeta.set(o._id.toString(), { catalogItemId: o.itemId.toString(), isArchived: !!o.isArchived });
+
+    const allLaborOfferIds = laborOffers.map((o: any) => o._id);
+    const allMaterialOfferIds = materialOffers.map((o: any) => o._id);
+
+    // Fetch all journal entries up to endDate
+    const [laborJournal, materialJournal] = await Promise.all([
+        allLaborOfferIds.length > 0 ? Db.getLaborPricesJournalCollection().find({ itemId: { $in: allLaborOfferIds }, date: { $lte: endDate } }).sort({ date: 1 }).toArray() : [],
+        allMaterialOfferIds.length > 0 ? Db.getMaterialPricesJournalCollection().find({ itemId: { $in: allMaterialOfferIds }, date: { $lte: endDate } }).sort({ date: 1 }).toArray() : []
+    ]);
+
+    // Build per-offer timelines (already sorted ascending by query)
+    const laborTimelines = new Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>();
+    for (const e of laborJournal as any[]) {
+        const key = e.itemId.toString();
+        if (!laborTimelines.has(key)) laborTimelines.set(key, []);
+        laborTimelines.get(key)!.push({ date: e.date, price: e.price ?? 0, isArchived: !!e.isArchived });
+    }
+    const materialTimelines = new Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>();
+    for (const e of materialJournal as any[]) {
+        const key = e.itemId.toString();
+        if (!materialTimelines.has(key)) materialTimelines.set(key, []);
+        materialTimelines.get(key)!.push({ date: e.date, price: e.price ?? 0, isArchived: !!e.isArchived });
+    }
+
+    // Fetch catalog fallback prices (current averagePrice when no journal history exists)
+    const [catalogLabor, catalogMaterial] = await Promise.all([
+        laborCatalogIds.length > 0 ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray() : [],
+        materialCatalogIds.length > 0 ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray() : []
+    ]);
+    const catalogLaborPrices = new Map<string, number>(catalogLabor.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
+    const catalogMaterialPrices = new Map<string, number>(catalogMaterial.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
+
+    // Helper: get latest carry-forward price for one offer on/before dayEnd
+    function latestForOffer(timeline: Array<{ date: Date; price: number; isArchived: boolean }>, dayEnd: Date): { price: number; isArchived: boolean } | null {
+        let latest: { price: number; isArchived: boolean } | null = null;
+        for (const entry of timeline) {
+            if (entry.date < dayEnd) { latest = entry; } else { break; }
+        }
+        return latest;
+    }
+
+    // Helper: compute avg/min/max market price for a catalog item on a given day
+    function pricesForItem(
+        catalogItemId: string,
+        offerMeta: Map<string, { catalogItemId: string; isArchived: boolean }>,
+        timelines: Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>,
+        dayEnd: Date,
+        fallback: number
+    ): { avg: number; min: number; max: number } {
+        const prices: number[] = [];
+        for (const [offerId, meta] of offerMeta) {
+            if (meta.catalogItemId !== catalogItemId) continue;
+            const tl = timelines.get(offerId);
+            if (!tl) continue;
+            const latest = latestForOffer(tl, dayEnd);
+            if (latest && !latest.isArchived && latest.price > 0) prices.push(latest.price);
+        }
+        if (prices.length === 0) return { avg: fallback, min: fallback, max: fallback };
+        const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+        return { avg, min: Math.min(...prices), max: Math.max(...prices) };
+    }
+
+    // Generate one point per day
+    const end = roundToDay(endDate);
+    const start = new Date(end.getTime() - (dayCount - 1) * ONE_DAY_MS);
+    const pts: Array<{ timestamp: Date; value: number; min: number; max: number }> = [];
+
+    for (let d = new Date(start); d <= end; d = new Date(d.getTime() + ONE_DAY_MS)) {
+        const dayEnd = new Date(d.getTime() + ONE_DAY_MS);
+        let totalAvg = 0, totalMin = 0, totalMax = 0;
+
+        for (const [catalogItemId, qty] of laborQtyMap) {
+            const fallback = catalogLaborPrices.get(catalogItemId) ?? 0;
+            const { avg, min, max } = pricesForItem(catalogItemId, laborOfferMeta, laborTimelines, dayEnd, fallback);
+            totalAvg += qty * avg;
+            totalMin += qty * min;
+            totalMax += qty * max;
+        }
+        for (const [catalogItemId, qty] of materialQtyMap) {
+            const fallback = catalogMaterialPrices.get(catalogItemId) ?? 0;
+            const { avg, min, max } = pricesForItem(catalogItemId, materialOfferMeta, materialTimelines, dayEnd, fallback);
+            totalAvg += qty * avg;
+            totalMin += qty * min;
+            totalMax += qty * max;
+        }
+
+        if (totalAvg > 0) {
+            pts.push({ timestamp: new Date(d), value: totalAvg, min: totalMin, max: totalMax });
+        }
+    }
+
+    return pts;
 }
