@@ -120,10 +120,10 @@ export default function DashboardBuilderPage() {
                             variant='outlined'
                             startIcon={<CameraAltIcon />}
                             onClick={handleCaptureSnapshot}
-                            disabled={capturingSnapshot}
+                            disabled
                             sx={{ borderRadius: '25px', height: '40px' }}
                         >
-                            {capturingSnapshot ? t('Capturing...') : t('Snapshot Now')}
+                            {t('Snapshot Now')}
                         </Button>
                         <Button
                             variant='contained'
