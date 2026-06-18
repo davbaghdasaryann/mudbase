@@ -8,7 +8,8 @@ import {
     Box,
     IconButton,
     CircularProgress,
-    Chip
+    Chip,
+    Tooltip as MuiTooltip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -219,13 +220,23 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
             )}
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, '&:last-child': { pb: 2.5 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-                    <Typography
-                        variant="subtitle1"
-                        sx={{ fontSize: 17, fontWeight: 400, color: TEXT_DARK, maxWidth: '60%' }}
-                        noWrap
-                    >
-                        {widget.name}
-                    </Typography>
+                    <MuiTooltip title={widget.name} placement="top" enterDelay={400}>
+                        <Typography
+                            variant="subtitle1"
+                            sx={{
+                                fontSize: 17,
+                                fontWeight: 400,
+                                color: TEXT_DARK,
+                                maxWidth: '60%',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            {widget.name}
+                        </Typography>
+                    </MuiTooltip>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <CalendarTodayIcon sx={{ fontSize: 16, color: TEXT_DARK }} />
                         <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
