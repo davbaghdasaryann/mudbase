@@ -129,7 +129,7 @@ export default function DashboardBuilderPage() {
                             variant='contained'
                             startIcon={<AddIcon />}
                             onClick={() => setShowBuilderDialog(true)}
-                            sx={{ borderRadius: '25px', height: '40px' }}
+                            sx={{ borderRadius: '25px', height: '40px', backgroundColor: '#00A390', '&:hover': { backgroundColor: '#007a6e' } }}
                         >
                             {t('Create Widget')}
                         </Button>
