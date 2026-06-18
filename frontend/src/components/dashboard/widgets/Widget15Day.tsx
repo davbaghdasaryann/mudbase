@@ -155,8 +155,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
-                maxWidth: 340,
-                minWidth: 280,
+                maxWidth: 460,
+                minWidth: 340,
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'rgba(255,255,255,0.72)',
@@ -186,7 +186,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
             </IconButton>
             )}
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                     <Typography
                         variant="subtitle1"
                         sx={{ fontSize: 17, fontWeight: 400, color: TEXT_DARK, maxWidth: '60%' }}
@@ -195,7 +195,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                         {widget.name}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarTodayIcon sx={{ fontSize: 16, color: TEXT_DARK }} />
+                        <CalendarTodayIcon sx={{ fontSize: 16, color: '#43a047' }} />
                         <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('15 days')}
                         </Typography>
@@ -211,7 +211,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                         <Box sx={{ mb: 2 }}>
                             <Typography
                                 component="span"
-                                sx={{ fontSize: 38, fontWeight: 700, color: '#212121', letterSpacing: 0 }}
+                                sx={{ fontSize: 38, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
                             >
                                 {Math.round(currentValue).toLocaleString()}
                             </Typography>
@@ -269,7 +269,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     dataKey="high"
                                     stroke={HIGH_LINE}
                                     strokeWidth={2}
-                                    dot={false}
+                                    dot={{ r: 3, fill: HIGH_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: HIGH_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('High')}
                                     legendType="circle"
@@ -279,7 +279,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     dataKey="medium"
                                     stroke={MEDIUM_LINE}
                                     strokeWidth={2}
-                                    dot={false}
+                                    dot={{ r: 3, fill: MEDIUM_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: MEDIUM_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('Medium')}
                                     legendType="circle"
@@ -289,7 +289,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     dataKey="low"
                                     stroke={LOW_LINE}
                                     strokeWidth={2}
-                                    dot={false}
+                                    dot={{ r: 3, fill: LOW_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: LOW_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('Low')}
                                     legendType="circle"
