@@ -188,7 +188,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 overflow: 'visible',
                 height: '100%',
                 minWidth: 400,
-                maxWidth: 720,
+                maxWidth: 800,
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'rgba(255,255,255,0.72)',
