@@ -159,10 +159,12 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 minWidth: 280,
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: '#FFFFFF',
-                borderRadius: 2,
-                boxShadow: CARD_SHADOW,
-                border: 'none'
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                borderRadius: 3,
+                boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                border: '1px solid rgba(0,171,190,0.14)',
             }}
         >
             {!isPreview && (
@@ -267,8 +269,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     dataKey="high"
                                     stroke={HIGH_LINE}
                                     strokeWidth={2}
-                                    dot={{ r: 3.5, fill: HIGH_LINE }}
-                                    activeDot={{ r: 4 }}
+                                    dot={false}
+                                    activeDot={{ r: 5, fill: HIGH_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('High')}
                                     legendType="circle"
                                 />
@@ -277,8 +279,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     dataKey="medium"
                                     stroke={MEDIUM_LINE}
                                     strokeWidth={2}
-                                    dot={{ r: 3.5, fill: MEDIUM_LINE }}
-                                    activeDot={{ r: 4 }}
+                                    dot={false}
+                                    activeDot={{ r: 5, fill: MEDIUM_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('Medium')}
                                     legendType="circle"
                                 />
@@ -287,8 +289,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     dataKey="low"
                                     stroke={LOW_LINE}
                                     strokeWidth={2}
-                                    dot={{ r: 3.5, fill: LOW_LINE }}
-                                    activeDot={{ r: 4 }}
+                                    dot={false}
+                                    activeDot={{ r: 5, fill: LOW_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('Low')}
                                     legendType="circle"
                                 />
