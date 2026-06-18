@@ -282,7 +282,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
                                 />
                                 <Line
-                                    type="monotone"
+                                    type="natural"
                                     dataKey="high"
                                     stroke="url(#w15dHighGrad)"
                                     strokeWidth={2}
@@ -292,7 +292,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     legendType="circle"
                                 />
                                 <Line
-                                    type="monotone"
+                                    type="natural"
                                     dataKey="medium"
                                     stroke="url(#w15dMedGrad)"
                                     strokeWidth={2}
@@ -302,7 +302,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     legendType="circle"
                                 />
                                 <Line
-                                    type="monotone"
+                                    type="natural"
                                     dataKey="low"
                                     stroke="url(#w15dLowGrad)"
                                     strokeWidth={2}
