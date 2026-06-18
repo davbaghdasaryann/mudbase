@@ -35,7 +35,7 @@ const fmtMonth = (d: Date) => AM_MONTHS_LONG[d.getMonth()];
 
 const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
 const TEXT_DARK = '#424242';
-const GRID_STROKE = '#e8e8e8';
+const GRID_STROKE = 'rgba(0,0,0,0.05)';
 const HIGH_LINE = '#26a69a';
 const MEDIUM_LINE = '#7b1fa2';
 const LOW_LINE = '#66bb6a';

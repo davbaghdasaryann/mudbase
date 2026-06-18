@@ -41,7 +41,7 @@ const fmtDay = (d: Date) => `${d.getDate()} ${AM_MONTHS_SHORT[d.getMonth()]}`;
 
 const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
 const TEXT_DARK = '#424242';
-const GRID_STROKE = '#e8e8e8';
+const GRID_STROKE = 'rgba(0,0,0,0.05)';
 const BAR_BLUE_TOP = '#5eb8e0';
 const BAR_BLUE_BOTTOM = '#2a8fc2';
 const BAR_BLUE_STROKE = '#1e6b8a';
@@ -191,10 +191,12 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 maxWidth: 560,
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: '#FFFFFF',
-                borderRadius: 2,
-                boxShadow: CARD_SHADOW,
-                border: 'none'
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                borderRadius: 3,
+                boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                border: '1px solid rgba(0,171,190,0.14)',
             }}
         >
             {!isPreview && (
