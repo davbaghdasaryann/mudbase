@@ -203,6 +203,11 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 borderRadius: 3,
                 boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
                 border: '1px solid rgba(0,171,190,0.14)',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                    borderColor: 'rgba(0,171,190,0.45)',
+                    boxShadow: '0 4px 24px rgba(0,171,190,0.14), 0 1px 6px rgba(0,0,0,0.06)',
+                },
             }}
         >
             {!isPreview && (
