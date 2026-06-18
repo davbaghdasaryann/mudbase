@@ -38,6 +38,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
 
         switch (currentPath) {
             case 'dashboard':
+            case 'dashboard-builder':
                 return <DashboardIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'catalog':
                 return <ImgElement src='/images/icons/libraries.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
