@@ -19,15 +19,27 @@ function roundToDay(date: Date): Date {
     return d;
 }
 
+/** Sum all other-expense percentages from estimate.otherExpenses and return the multiplier (e.g. 1.43 for 43% total). */
+function otherExpensesMultiplier(otherExpenses: any[]): number {
+    if (!Array.isArray(otherExpenses)) return 1;
+    let sum = 0;
+    for (const expense of otherExpenses) {
+        const keys = Object.keys(expense);
+        if (keys.length > 0) sum += Number(expense[keys[0]]) || 0;
+    }
+    return 1 + sum / 100;
+}
+
 /**
- * Compute estimate total cost using catalog market prices × estimate quantities.
+ * Compute estimate total cost using catalog market prices × estimate quantities, including other expenses.
  * Quantities come from the estimate; prices come from catalog averagePrice only.
  */
 async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<number> {
     const laborColl = Db.getEstimateLaborItemsCollection();
     const materialColl = Db.getEstimateMaterialItemsCollection();
 
-    const [laborItems, materialItems] = await Promise.all([
+    const [estimate, laborItems, materialItems] = await Promise.all([
+        Db.getEstimatesCollection().findOne({ _id: estimateId }, { projection: { otherExpenses: 1 } }),
         laborColl.find({ estimateId }, { projection: { laborItemId: 1, estimatedLaborId: 1, quantity: 1, isHidden: 1 } }).toArray(),
         materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray()
     ]);
@@ -45,18 +57,16 @@ async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<num
     const laborPriceMap = new Map(catalogLabor.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
     const materialPriceMap = new Map(catalogMaterial.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
 
-    let total = 0;
+    let directCost = 0;
     for (const l of laborItems) {
         if ((l as any).isHidden) continue;
-        const price = laborPriceMap.get((l as any).laborItemId.toString()) ?? 0;
-        total += ((l as any).quantity ?? 0) * price;
+        directCost += ((l as any).quantity ?? 0) * (laborPriceMap.get((l as any).laborItemId.toString()) ?? 0);
     }
     for (const m of materialItems) {
         if (hiddenLaborIds.has((m as any).estimatedLaborId.toString())) continue;
-        const price = materialPriceMap.get((m as any).materialItemId.toString()) ?? 0;
-        total += ((m as any).quantity ?? 0) * price;
+        directCost += ((m as any).quantity ?? 0) * (materialPriceMap.get((m as any).materialItemId.toString()) ?? 0);
     }
-    return total;
+    return directCost * otherExpensesMultiplier(estimate?.otherExpenses ?? []);
 }
 
 /** Get current value for the widget so we can show at least the current 30-min bucket (e.g. 14:00) when there's no snapshot/journal yet. */
@@ -898,10 +908,13 @@ async function getEstimateDailyPoints(
     const laborColl = Db.getEstimateLaborItemsCollection();
     const materialColl = Db.getEstimateMaterialItemsCollection();
 
-    const [laborItems, materialItems] = await Promise.all([
+    const [estimate, laborItems, materialItems] = await Promise.all([
+        Db.getEstimatesCollection().findOne({ _id: estimateId }, { projection: { otherExpenses: 1 } }),
         laborColl.find({ estimateId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1, estimatedLaborId: 1 } }).toArray(),
         materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray()
     ]);
+
+    const expMultiplier = otherExpensesMultiplier(estimate?.otherExpenses ?? []);
 
     const hiddenLaborIds = new Set(laborItems.filter((l: any) => l.isHidden).map((l: any) => l._id!.toString()));
     const visibleLaborItems = laborItems.filter((l: any) => !l.isHidden);
@@ -1020,7 +1033,12 @@ async function getEstimateDailyPoints(
         }
 
         if (totalAvg > 0) {
-            pts.push({ timestamp: new Date(d), value: totalAvg, min: totalMin, max: totalMax });
+            pts.push({
+                timestamp: new Date(d),
+                value: totalAvg * expMultiplier,
+                min: totalMin * expMultiplier,
+                max: totalMax * expMultiplier
+            });
         }
     }
 
