@@ -97,19 +97,17 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                 </Box>
                 <Tooltip title={t('Add widget to this group')} placement="top">
                     <IconButton
-                        size='small'
                         onClick={() => onAddWidget?.(group._id)}
                         sx={{
-                            bgcolor: 'rgba(0,163,144,0.12)',
-                            border: '1.5px solid rgba(0,163,144,0.3)',
+                            bgcolor: '#8dbfaa',
                             borderRadius: '50%',
-                            color: '#00A390',
-                            p: 0.75,
-                            transition: 'background-color 0.18s, color 0.18s',
-                            '&:hover': { bgcolor: 'rgba(0,163,144,0.22)', color: '#007a6e' },
+                            color: '#fff',
+                            p: 1.25,
+                            transition: 'background-color 0.18s',
+                            '&:hover': { bgcolor: '#7ab09a' },
                         }}
                     >
-                        <AddIcon sx={{ fontSize: 20, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+                        <AddIcon sx={{ fontSize: 28, fontWeight: 700 }} />
                     </IconButton>
                 </Tooltip>
             </Box>
