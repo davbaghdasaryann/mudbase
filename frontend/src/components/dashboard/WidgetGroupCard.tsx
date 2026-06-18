@@ -131,7 +131,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                                 ...(widget.widgetType === '1-day'
                                     ? { width: '100%' }
                                     : widget.widgetType === '30-day'
-                                        ? { flex: '1 1 48%', minWidth: 400, maxWidth: 560 }
+                                        ? { flex: '1 1 100%', minWidth: 400 }
                                         : { flex: '1 1 48%', minWidth: 400, maxWidth: 560 })
                             }}
                         >

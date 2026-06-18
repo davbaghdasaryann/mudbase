@@ -189,7 +189,6 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 height: '100%',
                 width: '100%',
                 minWidth: 400,
-                maxWidth: 560,
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'rgba(255,255,255,0.72)',
@@ -277,7 +276,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                         <CircularProgress size={32} />
                     </Box>
                 ) : merged.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={220}>
+                    <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={merged} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
                             <defs>
                                 <linearGradient id="barBlueGrad" x1="0" y1="0" x2="0" y2="1">
@@ -316,7 +315,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                                 }
                                 contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
                             />
-                            <Bar dataKey="value" radius={[2, 2, 0, 0]} maxBarSize={28}>
+                            <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={14}>
                                 {merged.map((entry, index) => (
                                     <Cell
                                         key={`cell-${index}`}
