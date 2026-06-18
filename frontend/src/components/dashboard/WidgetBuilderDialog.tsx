@@ -51,12 +51,13 @@ const DATA_SOURCES = [
 interface Props {
     onClose: () => void;
     onSuccess: () => void;
+    defaultGroupId?: string;
 }
 
-export default function WidgetBuilderDialog({ onClose, onSuccess }: Props) {
+export default function WidgetBuilderDialog({ onClose, onSuccess, defaultGroupId }: Props) {
     const { t } = useTranslation();
     const [step, setStep] = useState(0);
-    const [selectedGroup, setSelectedGroup] = useState<string>('');
+    const [selectedGroup, setSelectedGroup] = useState<string>(defaultGroupId ?? '');
     const [newGroupName, setNewGroupName] = useState('');
     const [widgetType, setWidgetType] = useState<string>('');
     const [dataSource, setDataSource] = useState<string>('');

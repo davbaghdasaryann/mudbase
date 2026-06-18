@@ -34,6 +34,7 @@ export default function DashboardBuilderPage() {
     const [groups, setGroups] = useState<WidgetGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [showBuilderDialog, setShowBuilderDialog] = useState(false);
+    const [activeGroupId, setActiveGroupId] = useState<string | undefined>(undefined);
     const [capturingSnapshot, setCapturingSnapshot] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState<string>('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
@@ -78,7 +79,13 @@ export default function DashboardBuilderPage() {
 
     const handleWidgetCreated = () => {
         setShowBuilderDialog(false);
+        setActiveGroupId(undefined);
         fetchGroups();
+    };
+
+    const handleAddWidgetToGroup = (groupId: string) => {
+        setActiveGroupId(groupId);
+        setShowBuilderDialog(true);
     };
 
     const handleCaptureSnapshot = async () => {
@@ -128,7 +135,7 @@ export default function DashboardBuilderPage() {
                         <Button
                             variant='contained'
                             startIcon={<AddIcon />}
-                            onClick={() => setShowBuilderDialog(true)}
+                            onClick={() => { setActiveGroupId(undefined); setShowBuilderDialog(true); }}
                             sx={{ borderRadius: '25px', height: '40px', backgroundColor: '#00A390', '&:hover': { backgroundColor: '#007a6e' } }}
                         >
                             {t('Create Widget')}
@@ -151,6 +158,7 @@ export default function DashboardBuilderPage() {
                                 key={group._id}
                                 group={group}
                                 onUpdate={fetchGroups}
+                                onAddWidget={handleAddWidgetToGroup}
                                 liveSnapshots={liveSnapshots}
                                 onClearLiveSnapshot={clearLiveSnapshotForWidget}
                             />
@@ -161,8 +169,9 @@ export default function DashboardBuilderPage() {
 
             {showBuilderDialog && (
                 <WidgetBuilderDialog
-                    onClose={() => setShowBuilderDialog(false)}
+                    onClose={() => { setShowBuilderDialog(false); setActiveGroupId(undefined); }}
                     onSuccess={handleWidgetCreated}
+                    defaultGroupId={activeGroupId}
                 />
             )}
 
