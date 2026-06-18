@@ -9,7 +9,9 @@ import {
     IconButton,
     CircularProgress,
     Chip,
-    Tooltip as MuiTooltip
+    Tooltip as MuiTooltip,
+    Dialog,
+    DialogContent
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -54,6 +56,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
     const [snapshots, setSnapshots] = useState<Array<{ timestamp: string; value: number }>>([]);
     const [analytics, setAnalytics] = useState<{ min: number; max: number; avg: number } | null>(null);
     const [loading, setLoading] = useState(true);
+    const [modalOpen, setModalOpen] = useState(false);
 
     const isPreview = widget._id === 'preview';
 
@@ -151,14 +154,17 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
             : '';
 
     return (
+    <>
         <Card
             elevation={0}
+            onClick={() => !loading && chartData.length > 0 && setModalOpen(true)}
             sx={{
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
                 maxWidth: 750,
                 minWidth: 400,
+                cursor: !loading && chartData.length > 0 ? 'pointer' : 'default',
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'rgba(255,255,255,0.72)',
@@ -171,7 +177,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
         >
             {!isPreview && (
             <IconButton
-                onClick={handleDelete}
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
                 size="small"
                 sx={{
                     position: 'absolute',
@@ -356,5 +362,100 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 )}
             </CardContent>
         </Card>
+
+        <Dialog
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            maxWidth="lg"
+            fullWidth
+            sx={{
+                '& .MuiBackdrop-root': {
+                    backdropFilter: 'blur(10px)',
+                    backgroundColor: 'rgba(0,0,0,0.35)',
+                },
+            }}
+            PaperProps={{
+                sx: {
+                    background: 'rgba(255,255,255,0.90)',
+                    backdropFilter: 'blur(28px)',
+                    WebkitBackdropFilter: 'blur(28px)',
+                    borderRadius: 4,
+                    border: '1px solid rgba(0,171,190,0.18)',
+                    boxShadow: '0 12px 60px rgba(0,0,0,0.14)',
+                }
+            }}
+        >
+            <DialogContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: TEXT_DARK, mb: 0.5 }}>{widget.name}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                            <Typography sx={{ fontSize: 36, fontWeight: 600, color: '#212121' }}>
+                                {Math.round(currentValue).toLocaleString()}
+                            </Typography>
+                            <Typography sx={{ fontSize: 18, color: TEXT_DARK }}>AMD</Typography>
+                            <Chip
+                                size="small"
+                                icon={percentChange >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                                label={`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1).replace('.', ',')}%`}
+                                sx={{
+                                    ml: 1, height: 22, fontSize: '0.75rem', fontWeight: 500,
+                                    bgcolor: percentChange >= 0 ? BADGE_GREEN_BG : 'rgba(244,67,54,0.15)',
+                                    color: percentChange >= 0 ? BADGE_GREEN_TEXT : '#c62828',
+                                    borderRadius: 1.5, '& .MuiChip-icon': { color: 'inherit' }
+                                }}
+                            />
+                        </Box>
+                    </Box>
+                    <IconButton onClick={() => setModalOpen(false)} size="small" sx={{ color: TEXT_DARK }}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                <ResponsiveContainer width="100%" height={420}>
+                    <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 4 }}>
+                        <Customized component={({ width }: any) => (
+                            <defs>
+                                <linearGradient id="w15dHighGradM" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#b2dfdb" stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor={HIGH_LINE} stopOpacity={1} />
+                                </linearGradient>
+                                <linearGradient id="w15dMedGradM" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#e1bee7" stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor={MEDIUM_LINE} stopOpacity={1} />
+                                </linearGradient>
+                                <linearGradient id="w15dLowGradM" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#c8e6c9" stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor={LOW_LINE} stopOpacity={1} />
+                                </linearGradient>
+                            </defs>
+                        )} />
+                        <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} />
+                        <XAxis dataKey="day" tick={{ fontSize: 12, fill: TEXT_DARK }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 12, fill: TEXT_DARK }} axisLine={false} tickLine={false} domain={yDomain}
+                            tickFormatter={(v) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}k` : String(Math.round(v))} />
+                        <Tooltip
+                            formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
+                            labelFormatter={(_, payload) => payload?.[0]?.payload?.time ? (() => { const d = new Date(payload[0].payload.time); return `${fmtDay(d)} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; })() : ''}
+                            contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}
+                        />
+                        <Line type="natural" dataKey="high" stroke="url(#w15dHighGradM)" strokeWidth={2.5} dot={{ r: 3, fill: HIGH_LINE, strokeWidth: 0 }} activeDot={{ r: 6, fill: HIGH_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }} name={t('High')} legendType="circle" />
+                        <Line type="natural" dataKey="medium" stroke="url(#w15dMedGradM)" strokeWidth={2.5} dot={{ r: 3, fill: MEDIUM_LINE, strokeWidth: 0 }} activeDot={{ r: 6, fill: MEDIUM_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }} name={t('Medium')} legendType="circle" />
+                        <Line type="natural" dataKey="low" stroke="url(#w15dLowGradM)" strokeWidth={2.5} dot={{ r: 3, fill: LOW_LINE, strokeWidth: 0 }} activeDot={{ r: 6, fill: LOW_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }} name={t('Low')} legendType="circle" />
+                    </LineChart>
+                </ResponsiveContainer>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        {[{ color: HIGH_LINE, label: t('High') }, { color: MEDIUM_LINE, label: t('Medium') }, { color: LOW_LINE, label: t('Low') }].map(({ color, label }) => (
+                            <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color }} />
+                                <Typography variant="caption" sx={{ fontSize: 13, color: TEXT_DARK }}>{label}</Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                    {dateRange && <Typography variant="caption" sx={{ fontSize: 13, color: TEXT_DARK }}>{dateRange}</Typography>}
+                </Box>
+            </DialogContent>
+        </Dialog>
+    </>
     );
 }

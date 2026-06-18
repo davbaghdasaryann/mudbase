@@ -9,7 +9,9 @@ import {
     IconButton,
     CircularProgress,
     Chip,
-    Tooltip as MuiTooltip
+    Tooltip as MuiTooltip,
+    Dialog,
+    DialogContent
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -56,6 +58,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
     const [t] = useTranslation();
     const [data, setData] = useState<Array<{ day: string; value: number; ts: number; pctChange: number; isLast?: boolean }>>([]);
     const [loading, setLoading] = useState(true);
+    const [modalOpen, setModalOpen] = useState(false);
 
     const isPreview = widget._id === 'preview';
 
@@ -181,14 +184,17 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
     };
 
     return (
+    <>
         <Card
             elevation={0}
+            onClick={() => !loading && merged.length > 0 && setModalOpen(true)}
             sx={{
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
                 minWidth: 400,
                 maxWidth: 750,
+                cursor: !loading && merged.length > 0 ? 'pointer' : 'default',
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'rgba(255,255,255,0.72)',
@@ -201,7 +207,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
         >
             {!isPreview && (
             <IconButton
-                onClick={handleDelete}
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
                 size="small"
                 sx={{
                     position: 'absolute',
@@ -336,5 +342,89 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 )}
             </CardContent>
         </Card>
+
+        <Dialog
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            maxWidth="lg"
+            fullWidth
+            sx={{
+                '& .MuiBackdrop-root': {
+                    backdropFilter: 'blur(10px)',
+                    backgroundColor: 'rgba(0,0,0,0.35)',
+                },
+            }}
+            PaperProps={{
+                sx: {
+                    background: 'rgba(255,255,255,0.90)',
+                    backdropFilter: 'blur(28px)',
+                    WebkitBackdropFilter: 'blur(28px)',
+                    borderRadius: 4,
+                    border: '1px solid rgba(0,171,190,0.18)',
+                    boxShadow: '0 12px 60px rgba(0,0,0,0.14)',
+                }
+            }}
+        >
+            <DialogContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: TEXT_DARK, mb: 0.5 }}>{widget.name}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                            <Typography sx={{ fontSize: 36, fontWeight: 600, color: '#212121' }}>
+                                {Math.round(currentValue).toLocaleString()}
+                            </Typography>
+                            <Typography sx={{ fontSize: 18, color: TEXT_DARK }}>AMD</Typography>
+                            <Chip
+                                size="small"
+                                icon={percentChange >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                                label={`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1).replace('.', ',')}%`}
+                                sx={{
+                                    ml: 1, height: 22, fontSize: '0.75rem', fontWeight: 500,
+                                    bgcolor: percentChange >= 0 ? BADGE_GREEN_BG : 'rgba(244,67,54,0.15)',
+                                    color: percentChange >= 0 ? BADGE_GREEN_TEXT : '#c62828',
+                                    borderRadius: 1.5, '& .MuiChip-icon': { color: 'inherit' }
+                                }}
+                            />
+                        </Box>
+                    </Box>
+                    <IconButton onClick={() => setModalOpen(false)} size="small" sx={{ color: TEXT_DARK }}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                <ResponsiveContainer width="100%" height={420}>
+                    <BarChart data={merged} margin={{ top: 8, right: 16, left: 0, bottom: 4 }}>
+                        <defs>
+                            <linearGradient id="barBlueGradM" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={BAR_BLUE_TOP} />
+                                <stop offset="100%" stopColor={BAR_BLUE_BOTTOM} />
+                            </linearGradient>
+                            <linearGradient id="barPurpleGradM" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={BAR_PURPLE_TOP} />
+                                <stop offset="100%" stopColor={BAR_PURPLE_BOTTOM} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={false} />
+                        <XAxis dataKey="day" tick={{ fontSize: 12, fill: TEXT_DARK }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 12, fill: TEXT_DARK }} axisLine={false} tickLine={false} domain={yDomain}
+                            tickFormatter={(v) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}k` : String(Math.round(v))} />
+                        <Tooltip
+                            formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
+                            labelFormatter={(_, payload) => payload?.[0]?.payload?.ts ? (() => { const d = new Date(payload[0].payload.ts); return `${fmtDay(d)} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; })() : ''}
+                            contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
+                        />
+                        <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={18}>
+                            {merged.map((entry, index) => (
+                                <Cell key={`cell-m-${index}`}
+                                    fill={entry.isLast ? 'url(#barPurpleGradM)' : 'url(#barBlueGradM)'}
+                                    stroke={entry.isLast ? BAR_PURPLE_STROKE : BAR_BLUE_STROKE}
+                                    strokeWidth={0.5}
+                                />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </DialogContent>
+        </Dialog>
+    </>
     );
 }
