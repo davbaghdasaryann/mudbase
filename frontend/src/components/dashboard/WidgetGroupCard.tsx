@@ -68,7 +68,7 @@ export default function WidgetGroupCard({ group, onUpdate, liveSnapshots = [], o
                                     ? { width: '100%' }
                                     : widget.widgetType === '30-day'
                                         ? { flex: '1 1 48%', minWidth: 400, maxWidth: 560 }
-                                        : { flex: '1 1 auto', minWidth: 280, maxWidth: 360 })
+                                        : { flex: '1 1 48%', minWidth: 400, maxWidth: 560 })
                             }}
                         >
                             {widget.widgetType === '1-day' && (

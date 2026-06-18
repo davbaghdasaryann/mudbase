@@ -22,7 +22,8 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer
+    ResponsiveContainer,
+    Customized
 } from 'recharts';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
@@ -237,20 +238,22 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
 
                         <ResponsiveContainer width="100%" height={160}>
                             <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 4 }}>
-                                <defs>
-                                    <linearGradient id="highLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="0%" stopColor="#b2dfdb" stopOpacity={0.5} />
-                                        <stop offset="100%" stopColor={HIGH_LINE} stopOpacity={1} />
-                                    </linearGradient>
-                                    <linearGradient id="mediumLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="0%" stopColor="#e1bee7" stopOpacity={0.5} />
-                                        <stop offset="100%" stopColor={MEDIUM_LINE} stopOpacity={1} />
-                                    </linearGradient>
-                                    <linearGradient id="lowLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="0%" stopColor="#c8e6c9" stopOpacity={0.5} />
-                                        <stop offset="100%" stopColor={LOW_LINE} stopOpacity={1} />
-                                    </linearGradient>
-                                </defs>
+                                <Customized component={({ width }: any) => (
+                                    <defs>
+                                        <linearGradient id="w15dHighGrad" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#b2dfdb" stopOpacity={0.3} />
+                                            <stop offset="100%" stopColor={HIGH_LINE} stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="w15dMedGrad" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#e1bee7" stopOpacity={0.3} />
+                                            <stop offset="100%" stopColor={MEDIUM_LINE} stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="w15dLowGrad" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#c8e6c9" stopOpacity={0.3} />
+                                            <stop offset="100%" stopColor={LOW_LINE} stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
+                                )} />
                                 <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={true} horizontal={true} />
                                 <XAxis
                                     dataKey="day"
@@ -281,7 +284,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="high"
-                                    stroke="url(#highLineGrad)"
+                                    stroke="url(#w15dHighGrad)"
                                     strokeWidth={2}
                                     dot={{ r: 2, fill: HIGH_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: HIGH_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
@@ -291,7 +294,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="medium"
-                                    stroke="url(#mediumLineGrad)"
+                                    stroke="url(#w15dMedGrad)"
                                     strokeWidth={2}
                                     dot={{ r: 2, fill: MEDIUM_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: MEDIUM_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
@@ -301,7 +304,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="low"
-                                    stroke="url(#lowLineGrad)"
+                                    stroke="url(#w15dLowGrad)"
                                     strokeWidth={2}
                                     dot={{ r: 2, fill: LOW_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: LOW_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
