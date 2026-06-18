@@ -157,7 +157,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
-                maxWidth: 560,
+                maxWidth: 750,
                 minWidth: 400,
                 display: 'flex',
                 flexDirection: 'column',
