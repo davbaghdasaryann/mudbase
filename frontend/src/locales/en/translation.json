@@ -186,5 +186,8 @@
   "Quantity of Materials": "Quantity of Materials",
   "Unit Time": "Unit Time",
   "No sections found": "No sections found",
-  "Cost": "Cost"
+  "Cost": "Cost",
+  "High": "High",
+  "Medium": "Medium",
+  "Low": "Low"
 }
