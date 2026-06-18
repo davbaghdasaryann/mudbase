@@ -223,7 +223,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                         <Box sx={{ mb: 2 }}>
                             <Typography
                                 component="span"
-                                sx={{ fontSize: 38, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
+                                sx={{ fontSize: 32, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
                             >
                                 {Math.round(currentValue).toLocaleString()}
                             </Typography>

@@ -248,7 +248,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 <Box sx={{ mb: 2 }}>
                     <Typography
                         component="span"
-                        sx={{ fontSize: 38, fontWeight: 700, color: '#212121', letterSpacing: 0 }}
+                        sx={{ fontSize: 32, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
                     >
                         {Math.round(currentValue).toLocaleString()}
                     </Typography>
