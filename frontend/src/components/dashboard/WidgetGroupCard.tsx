@@ -99,15 +99,15 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                     <IconButton
                         onClick={() => onAddWidget?.(group._id)}
                         sx={{
-                            bgcolor: '#8dbfaa',
+                            bgcolor: 'rgba(65,162,64,0.40)',
                             borderRadius: '50%',
                             color: '#fff',
-                            p: 1.25,
+                            p: 0.8,
                             transition: 'background-color 0.18s',
-                            '&:hover': { bgcolor: '#7ab09a' },
+                            '&:hover': { bgcolor: 'rgba(65,162,64,0.56)' },
                         }}
                     >
-                        <AddIcon sx={{ fontSize: 28, fontWeight: 700 }} />
+                        <AddIcon sx={{ fontSize: 34 }} />
                     </IconButton>
                 </Tooltip>
             </Box>
