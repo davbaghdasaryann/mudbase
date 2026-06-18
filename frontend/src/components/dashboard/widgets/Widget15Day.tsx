@@ -115,7 +115,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
             ? snapshots.map((s: any, i: number) => ({
                 index: i + 1,
                 time: new Date(s.timestamp).getTime(),
-                day: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                day: new Date(s.timestamp).toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
                 value: s.value,
                 high: s.max ?? s.value,
                 low: s.min ?? s.value,
@@ -139,7 +139,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
         : [0, yMax > 0 ? yMax * 1.1 : 1];
     const dateRange =
         chartData.length >= 2
-            ? `${new Date(snapshots[0].timestamp).toLocaleDateString(undefined, { month: 'long' })} - ${new Date(snapshots[snapshots.length - 1].timestamp).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`
+            ? `${new Date(snapshots[0].timestamp).toLocaleDateString('hy-AM', { month: 'long' })} - ${new Date(snapshots[snapshots.length - 1].timestamp).toLocaleDateString('hy-AM', { month: 'long', year: 'numeric' })}`
             : '';
 
     return (
@@ -251,7 +251,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
                                     labelFormatter={(_, payload) =>
                                         payload?.[0]?.payload?.time
-                                            ? new Date(payload[0].payload.time).toLocaleString()
+                                            ? new Date(payload[0].payload.time).toLocaleString('hy-AM')
                                             : ''
                                     }
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}

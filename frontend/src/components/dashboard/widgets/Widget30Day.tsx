@@ -73,7 +73,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 const prevValue = i > 0 ? raw[i - 1].value : value;
                 const pctChange = prevValue !== 0 ? ((value - prevValue) / prevValue) * 100 : 0;
                 return {
-                    day: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                    day: new Date(s.timestamp).toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
                     value: s.value,
                     ts,
                     pctChange,
@@ -102,7 +102,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 const prevValue = i > 0 ? raw[i - 1].value : value;
                 const pctChange = prevValue !== 0 ? ((value - prevValue) / prevValue) * 100 : 0;
                 return {
-                    day: new Date(s.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                    day: new Date(s.timestamp).toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
                     value: s.value,
                     ts,
                     pctChange,
@@ -134,7 +134,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
         ...liveForThis.map((s) => {
             const d = new Date(s.timestamp);
             return {
-                day: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                day: d.toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
                 value: s.value,
                 ts: d.getTime(),
                 pctChange: 0,
@@ -295,7 +295,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                                 formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
                                 labelFormatter={(_, payload) =>
                                     payload?.[0]?.payload?.ts
-                                        ? new Date(payload[0].payload.ts).toLocaleString()
+                                        ? new Date(payload[0].payload.ts).toLocaleString('hy-AM')
                                         : ''
                                 }
                                 contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
