@@ -43,12 +43,12 @@ const fmtDay = (d: Date) => `${d.getDate()} ${AM_MONTHS_SHORT[d.getMonth()]}`;
 const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
 const TEXT_DARK = '#424242';
 const GRID_STROKE = 'rgba(0,0,0,0.05)';
-const BAR_BLUE_TOP = '#5eb8e0';
-const BAR_BLUE_BOTTOM = '#2a8fc2';
-const BAR_BLUE_STROKE = '#1e6b8a';
-const BAR_PURPLE_TOP = '#ceb3e8';
-const BAR_PURPLE_BOTTOM = '#b39ddb';
-const BAR_PURPLE_STROKE = '#7e57c2';
+const BAR_BLUE_TOP = '#b3e5fc';
+const BAR_BLUE_BOTTOM = '#1565c0';
+const BAR_BLUE_STROKE = '#0d47a1';
+const BAR_PURPLE_TOP = '#e1bee7';
+const BAR_PURPLE_BOTTOM = '#6a1b9a';
+const BAR_PURPLE_STROKE = '#4a148c';
 const BADGE_GREEN_BG = '#c8e6c9';
 const BADGE_GREEN_TEXT = '#2e7d32';
 
