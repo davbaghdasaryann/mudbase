@@ -12,7 +12,7 @@ import {
     Tooltip as MuiTooltip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -238,7 +238,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                         </Typography>
                     </MuiTooltip>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarTodayIcon sx={{ fontSize: 16, color: TEXT_DARK }} />
+                        <CalendarMonthIcon sx={{ fontSize: 18, color: '#00A390' }} />
                         <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('30 days')}
                         </Typography>

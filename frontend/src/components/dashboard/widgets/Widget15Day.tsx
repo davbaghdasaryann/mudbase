@@ -12,7 +12,7 @@ import {
     Tooltip as MuiTooltip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -188,7 +188,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
             </IconButton>
             )}
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                     <MuiTooltip title={widget.name} placement="top" enterDelay={400}>
                         <Typography
                             variant="subtitle1"
@@ -207,7 +207,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                         </Typography>
                     </MuiTooltip>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarTodayIcon sx={{ fontSize: 16, color: '#43a047' }} />
+                        <CalendarMonthIcon sx={{ fontSize: 18, color: '#00A390' }} />
                         <Typography variant="body2" sx={{ fontSize: 14, color: TEXT_DARK }}>
                             {t('15 days')}
                         </Typography>
