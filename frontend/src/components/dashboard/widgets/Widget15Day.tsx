@@ -155,8 +155,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
-                maxWidth: 460,
-                minWidth: 340,
+                maxWidth: 560,
+                minWidth: 400,
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'rgba(255,255,255,0.72)',
@@ -237,6 +237,20 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
 
                         <ResponsiveContainer width="100%" height={160}>
                             <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 4 }}>
+                                <defs>
+                                    <linearGradient id="highLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#b2dfdb" stopOpacity={0.5} />
+                                        <stop offset="100%" stopColor={HIGH_LINE} stopOpacity={1} />
+                                    </linearGradient>
+                                    <linearGradient id="mediumLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#e1bee7" stopOpacity={0.5} />
+                                        <stop offset="100%" stopColor={MEDIUM_LINE} stopOpacity={1} />
+                                    </linearGradient>
+                                    <linearGradient id="lowLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#c8e6c9" stopOpacity={0.5} />
+                                        <stop offset="100%" stopColor={LOW_LINE} stopOpacity={1} />
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={true} horizontal={true} />
                                 <XAxis
                                     dataKey="day"
@@ -267,9 +281,9 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="high"
-                                    stroke={HIGH_LINE}
+                                    stroke="url(#highLineGrad)"
                                     strokeWidth={2}
-                                    dot={{ r: 3, fill: HIGH_LINE, strokeWidth: 0 }}
+                                    dot={{ r: 2, fill: HIGH_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: HIGH_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('High')}
                                     legendType="circle"
@@ -277,9 +291,9 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="medium"
-                                    stroke={MEDIUM_LINE}
+                                    stroke="url(#mediumLineGrad)"
                                     strokeWidth={2}
-                                    dot={{ r: 3, fill: MEDIUM_LINE, strokeWidth: 0 }}
+                                    dot={{ r: 2, fill: MEDIUM_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: MEDIUM_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('Medium')}
                                     legendType="circle"
@@ -287,9 +301,9 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                 <Line
                                     type="monotone"
                                     dataKey="low"
-                                    stroke={LOW_LINE}
+                                    stroke="url(#lowLineGrad)"
                                     strokeWidth={2}
-                                    dot={{ r: 3, fill: LOW_LINE, strokeWidth: 0 }}
+                                    dot={{ r: 2, fill: LOW_LINE, strokeWidth: 0 }}
                                     activeDot={{ r: 5, fill: LOW_LINE, stroke: 'rgba(255,255,255,0.85)', strokeWidth: 2 }}
                                     name={t('Low')}
                                     legendType="circle"
