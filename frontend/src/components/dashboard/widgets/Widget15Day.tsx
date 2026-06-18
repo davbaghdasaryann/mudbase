@@ -27,6 +27,12 @@ import {
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 
+const AM_MONTHS_SHORT = ['Հնվ', 'Փտվ', 'Մրտ', 'Ապր', 'Մայ', 'Հնս', 'Հլս', 'Օգս', 'Սեպ', 'Հոկ', 'Նոյ', 'Դեկ'];
+const AM_MONTHS_LONG = ['Հունվար', 'Փետրվար', 'Մարտ', 'Ապրիլ', 'Մայիս', 'Հունիս', 'Հուլիս', 'Օգոստոս', 'Սեպտեմբեր', 'Հոկտեմբեր', 'Նոյեմբեր', 'Դեկտեմբեր'];
+const fmtDay = (d: Date) => `${d.getDate()} ${AM_MONTHS_SHORT[d.getMonth()]}`;
+const fmtMonthYear = (d: Date) => `${AM_MONTHS_LONG[d.getMonth()]} ${d.getFullYear()}`;
+const fmtMonth = (d: Date) => AM_MONTHS_LONG[d.getMonth()];
+
 const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
 const TEXT_DARK = '#424242';
 const GRID_STROKE = '#e8e8e8';
@@ -115,7 +121,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
             ? snapshots.map((s: any, i: number) => ({
                 index: i + 1,
                 time: new Date(s.timestamp).getTime(),
-                day: new Date(s.timestamp).toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
+                day: fmtDay(new Date(s.timestamp)),
                 value: s.value,
                 high: s.max ?? s.value,
                 low: s.min ?? s.value,
@@ -139,7 +145,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
         : [0, yMax > 0 ? yMax * 1.1 : 1];
     const dateRange =
         chartData.length >= 2
-            ? `${new Date(snapshots[0].timestamp).toLocaleDateString('hy-AM', { month: 'long' })} - ${new Date(snapshots[snapshots.length - 1].timestamp).toLocaleDateString('hy-AM', { month: 'long', year: 'numeric' })}`
+            ? `${fmtMonth(new Date(snapshots[0].timestamp))} - ${fmtMonthYear(new Date(snapshots[snapshots.length - 1].timestamp))}`
             : '';
 
     return (
@@ -251,7 +257,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
                                     labelFormatter={(_, payload) =>
                                         payload?.[0]?.payload?.time
-                                            ? new Date(payload[0].payload.time).toLocaleString('hy-AM')
+                                            ? (() => { const d = new Date(payload[0].payload.time); return `${fmtDay(d)} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; })()
                                             : ''
                                     }
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}

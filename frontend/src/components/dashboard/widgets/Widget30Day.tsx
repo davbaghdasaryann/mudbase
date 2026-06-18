@@ -36,6 +36,9 @@ interface Props {
     onClearLiveSnapshot?: (widgetId: string) => void;
 }
 
+const AM_MONTHS_SHORT = ['Հնվ', 'Փտվ', 'Մրտ', 'Ապր', 'Մայ', 'Հնս', 'Հլս', 'Օգս', 'Սեպ', 'Հոկ', 'Նոյ', 'Դեկ'];
+const fmtDay = (d: Date) => `${d.getDate()} ${AM_MONTHS_SHORT[d.getMonth()]}`;
+
 const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
 const TEXT_DARK = '#424242';
 const GRID_STROKE = '#e8e8e8';
@@ -73,7 +76,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 const prevValue = i > 0 ? raw[i - 1].value : value;
                 const pctChange = prevValue !== 0 ? ((value - prevValue) / prevValue) * 100 : 0;
                 return {
-                    day: new Date(s.timestamp).toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
+                    day: fmtDay(new Date(s.timestamp)),
                     value: s.value,
                     ts,
                     pctChange,
@@ -102,7 +105,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 const prevValue = i > 0 ? raw[i - 1].value : value;
                 const pctChange = prevValue !== 0 ? ((value - prevValue) / prevValue) * 100 : 0;
                 return {
-                    day: new Date(s.timestamp).toLocaleDateString('hy-AM', { month: 'short', day: 'numeric' }),
+                    day: fmtDay(new Date(s.timestamp)),
                     value: s.value,
                     ts,
                     pctChange,
@@ -295,7 +298,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                                 formatter={(value) => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
                                 labelFormatter={(_, payload) =>
                                     payload?.[0]?.payload?.ts
-                                        ? new Date(payload[0].payload.ts).toLocaleString('hy-AM')
+                                        ? (() => { const d = new Date(payload[0].payload.ts); return `${fmtDay(d)} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; })()
                                         : ''
                                 }
                                 contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW }}
