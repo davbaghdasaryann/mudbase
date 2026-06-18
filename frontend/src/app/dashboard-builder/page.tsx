@@ -112,7 +112,7 @@ export default function DashboardBuilderPage() {
     };
 
     return (
-        <PageContents title={t('Dashboard Builder')} sx={{ background: 'linear-gradient(135deg, #e8f4f8 0%, #f0faf5 100%)', minHeight: '100%' }}>
+        <PageContents title={t('Dashboard Builder')} sx={{ background: '#F5F9F9', minHeight: '100%' }}>
             <Stack spacing={3}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                     <Stack direction='row' spacing={2}>
