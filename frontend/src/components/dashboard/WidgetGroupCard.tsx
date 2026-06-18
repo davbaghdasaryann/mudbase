@@ -102,7 +102,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                             bgcolor: 'rgba(65,162,64,0.40)',
                             borderRadius: '50%',
                             color: '#fff',
-                            p: 0.8,
+                            p: 0.4,
                             transition: 'background-color 0.18s',
                             '&:hover': { bgcolor: 'rgba(65,162,64,0.56)' },
                         }}
