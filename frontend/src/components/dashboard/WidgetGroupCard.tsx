@@ -117,7 +117,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                     sx={{
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: 2,
+                        gap: 3.5,
                         alignItems: 'stretch'
                     }}
                 >
