@@ -5,7 +5,7 @@ import * as Db from '@/db';
 // Journal itemId = offer _id (NOT catalog item id).
 // Must resolve catalog item → offer ids → journal entries.
 registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res, session) => {
-    const { sourceType, itemId, fromDate, toDate } = req.body.json ?? req.body.args ?? {};
+    const { sourceType, itemId, fromDate, toDate } = req.body ?? {};
 
     if (!sourceType || !itemId) {
         return res.json({ error: 'Missing sourceType or itemId' });
