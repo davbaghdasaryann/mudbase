@@ -251,28 +251,42 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             const estimateId = typeof rawEstimateId === 'string' ? new ObjectId(rawEstimateId) : rawEstimateId;
             if (useDaily) {
                 const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
-                const pts = await getEstimateDailyPoints(estimateId as ObjectId, now, dayCount);
-                // Scale all bars so today's value exactly matches the stored estimate total
-                // (same value as Estimates page). This keeps dynamics consistent across all bars.
+                const todayKey = roundToDay(now).toISOString().slice(0, 10);
+
+                // Market price approximation for days without snapshots
+                const marketPts = await getEstimateDailyPoints(estimateId as ObjectId, now, dayCount);
+
+                // Build day→value map from stored auto-snapshots (exact estimate totals)
+                const snapshotByDay = new Map<string, number>();
+                for (const s of snapshotDocs) {
+                    const key = roundToDay(s.timestamp).toISOString().slice(0, 10);
+                    if (key !== todayKey) snapshotByDay.set(key, s.value);
+                }
+
+                // Override market pts with snapshot values where available
+                for (const p of marketPts) {
+                    const key = roundToDay(p.timestamp).toISOString().slice(0, 10);
+                    if (key === todayKey) continue; // handled below
+                    const snapped = snapshotByDay.get(key);
+                    if (snapped != null) {
+                        p.value = snapped; p.min = snapped; p.max = snapped;
+                    }
+                }
+
+                // Always use live stored total for today
                 if (session.mongoAccountId) {
-                    const todayKey = roundToDay(now).toISOString().slice(0, 10);
-                    const storedTotal = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                    if (storedTotal != null && storedTotal > 0) {
-                        const todayPt = pts.find(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                        const todayMarket = todayPt?.value ?? 0;
-                        if (todayMarket > 0) {
-                            const ratio = storedTotal / todayMarket;
-                            for (const p of pts) {
-                                p.value = p.value * ratio;
-                                p.min = p.min * ratio;
-                                p.max = p.max * ratio;
-                            }
-                        } else if (pts.length === 0) {
-                            pts.push({ timestamp: roundToDay(now), value: storedTotal, min: storedTotal, max: storedTotal });
+                    const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                    if (currentValue != null && currentValue > 0) {
+                        const todayIdx = marketPts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                        if (todayIdx >= 0) {
+                            marketPts[todayIdx] = { ...marketPts[todayIdx], value: currentValue, min: currentValue, max: currentValue };
+                        } else {
+                            marketPts.push({ timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue });
                         }
                     }
                 }
-                dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
+
+                dailySnapshots = normalizeToDailyBuckets(marketPts, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
                 snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
@@ -292,27 +306,35 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
                 if (useDaily) {
                     const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
                     const area = eciEstimate.constructionArea || 1;
+                    const todayKey = roundToDay(now).toISOString().slice(0, 10);
+
                     const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
                     const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
-                    // Scale all bars so today matches the stored estimate total / area
+
+                    const snapshotByDay = new Map<string, number>();
+                    for (const s of snapshotDocs) {
+                        const key = roundToDay(s.timestamp).toISOString().slice(0, 10);
+                        if (key !== todayKey) snapshotByDay.set(key, s.value);
+                    }
+                    for (const p of scaledPts) {
+                        const key = roundToDay(p.timestamp).toISOString().slice(0, 10);
+                        if (key === todayKey) continue;
+                        const snapped = snapshotByDay.get(key);
+                        if (snapped != null) { p.value = snapped; p.min = snapped; p.max = snapped; }
+                    }
+
                     if (session.mongoAccountId) {
-                        const todayKey = roundToDay(now).toISOString().slice(0, 10);
-                        const storedTotal = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                        if (storedTotal != null && storedTotal > 0) {
-                            const todayPt = scaledPts.find(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                            const todayMarket = todayPt?.value ?? 0;
-                            if (todayMarket > 0) {
-                                const ratio = storedTotal / todayMarket;
-                                for (const p of scaledPts) {
-                                    p.value = p.value * ratio;
-                                    p.min = p.min * ratio;
-                                    p.max = p.max * ratio;
-                                }
-                            } else if (scaledPts.length === 0) {
-                                scaledPts.push({ timestamp: roundToDay(now), value: storedTotal, min: storedTotal, max: storedTotal });
+                        const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                        if (currentValue != null && currentValue > 0) {
+                            const todayIdx = scaledPts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                            if (todayIdx >= 0) {
+                                scaledPts[todayIdx] = { ...scaledPts[todayIdx], value: currentValue, min: currentValue, max: currentValue };
+                            } else {
+                                scaledPts.push({ timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue });
                             }
                         }
                     }
+
                     dailySnapshots = normalizeToDailyBuckets(scaledPts, startDate, now, dayCount);
                     snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
                 } else {

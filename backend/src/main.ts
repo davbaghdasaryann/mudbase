@@ -10,7 +10,7 @@ import './api';
 import { dbInitConfig } from './tsback/mongodb/mongodb_init';
 
 import { drizzleMaintenance, drizzleWarmUp } from './drizzle/drizzledb';
-import { snapshotMaintenance } from './api/dashboard/snapshot/snapshot_utils';
+import { snapshotMaintenance, captureEstimateSnapshotsForToday, startDailyEstimateSnapshotScheduler } from './api/dashboard/snapshot/snapshot_utils';
 
 
 export default async function main() {
@@ -23,6 +23,8 @@ export default async function main() {
         await drizzleWarmUp();
         await drizzleMaintenance();
         await snapshotMaintenance();
+        await captureEstimateSnapshotsForToday();
+        startDailyEstimateSnapshotScheduler();
 
 
         const server = http.createServer(expressApp_);
