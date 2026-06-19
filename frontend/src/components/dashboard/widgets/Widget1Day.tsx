@@ -138,7 +138,15 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                     <CircularProgress />
                 </Box>
             ) : merged.length > 0 ? (
-                <Box sx={{ borderRadius: 1, overflow: 'hidden' }}>
+                <Box sx={{
+                    background: 'rgba(255,255,255,0.72)',
+                    backdropFilter: 'blur(18px)',
+                    WebkitBackdropFilter: 'blur(18px)',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,171,190,0.14)',
+                    overflow: 'hidden',
+                }}>
                     {showAllRows ? (
                         <List sx={{ py: 0 }}>
                             {merged.map((item: any, index: number) => {
