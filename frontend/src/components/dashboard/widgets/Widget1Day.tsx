@@ -164,7 +164,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                         key={index}
                                         sx={{
                                             px: 1.5,
-                                            py: 0.75,
+                                            py: 0.25,
                                             borderBottom: index < merged.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
                                         }}
                                         secondaryAction={
@@ -192,7 +192,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                             <ListItem
                                 sx={{
                                     px: 1.5,
-                                    py: 0.75,
+                                    py: 0.25,
                                 }}
                                 secondaryAction={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
