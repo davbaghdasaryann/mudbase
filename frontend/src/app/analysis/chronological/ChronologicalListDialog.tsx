@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Typography, Box, Stack, CircularProgress,
-    Table, TableHead, TableBody, TableRow, TableCell, TextField, Radio,
+    Table, TableHead, TableBody, TableRow, TableCell, TextField, Radio, IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { mainPrimaryColor } from '@/theme';
@@ -91,7 +92,12 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                     <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
                         {type ? t(TYPE_TITLES[type]) : ''}
                     </Typography>
-                    <Box sx={{ ml: 'auto' }}>{dateFilter}</Box>
+                    <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {dateFilter}
+                        <IconButton size='small' onClick={onClose} sx={{ color: 'text.secondary' }}>
+                            <CloseIcon fontSize='small' />
+                        </IconButton>
+                    </Box>
                 </Stack>
             </DialogTitle>
 
@@ -167,13 +173,16 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                 )}
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+            <DialogActions sx={{ px: 3, py: 2, justifyContent: 'flex-end', gap: 1 }}>
                 <Button onClick={onPrevious} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>
                     {t('Previous')}
                 </Button>
-                <Box sx={{ flex: 1 }} />
-                <Button onClick={onClose} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>
-                    {t('Cancel')}
+                <Button
+                    variant='contained'
+                    onClick={onClose}
+                    sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#007a6e' } }}
+                >
+                    {t('Create')}
                 </Button>
             </DialogActions>
         </Dialog>
