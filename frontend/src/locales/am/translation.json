@@ -503,5 +503,14 @@
   "Quantity of Labor": "Աշխատանքների քանակը",
   "Quantity of Materials": "Նյութերի քանակը",
   "Unit Time": "Միավոր ժամանակը",
-  "No sections found": "Բաժիններ չեն գտնվել"
+  "No sections found": "Բաժիններ չեն գտնվել",
+  "Rename group": "Վերանվանել խումբը",
+  "Delete group": "Ջնջել խումբը",
+  "Add widget to this group": "Ավելացնել վիջեթ այս խմբին",
+  "No widgets in this group yet.": "Այս խմբում դեռ վիջեթներ չկան։",
+  "Delete this widget group and all its widgets?": "Ջնջե՞լ վիջեթների այս խումբը և դրա բոլոր վիջեթները։",
+  "Delete this widget?": "Ջնջե՞լ այս վիջեթը։",
+  "15 days": "15 օր",
+  "30 days": "30 օր",
+  "No data available yet. Data will appear after first snapshot.": "Տվյալներ դեռ չկան։ Տվյալները կհայտնվեն առաջին արձանագրությունից հետո։"
 }

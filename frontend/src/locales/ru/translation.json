@@ -127,5 +127,10 @@
     "Show less": "Показать меньше",
     "No data available yet. Data will appear after first snapshot.": "Данные пока недоступны. Данные появятся после первого снимка.",
     "Delete this widget group and all its widgets?": "Удалить эту группу виджетов и все её виджеты?",
-    "No widgets in this group yet.": "В этой группе пока нет виджетов."
+    "No widgets in this group yet.": "В этой группе пока нет виджетов.",
+    "Rename group": "Переименовать группу",
+    "Delete group": "Удалить группу",
+    "Add widget to this group": "Добавить виджет в эту группу",
+    "15 days": "15 дней",
+    "30 days": "30 дней"
 }
