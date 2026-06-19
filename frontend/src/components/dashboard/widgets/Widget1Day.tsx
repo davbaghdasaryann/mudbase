@@ -138,79 +138,69 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                     <CircularProgress />
                 </Box>
             ) : merged.length > 0 ? (
-                <Box sx={{
-                    background: 'rgba(255,255,255,0.72)',
-                    backdropFilter: 'blur(18px)',
-                    WebkitBackdropFilter: 'blur(18px)',
-                    borderRadius: 3,
-                    boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-                    border: '1px solid rgba(0,171,190,0.14)',
-                }}>
+                <Box sx={{ borderRadius: 1, overflow: 'hidden' }}>
                     {showAllRows ? (
                         <List sx={{ py: 0 }}>
                             {merged.map((item: any, index: number) => {
                                 const prevValue = index > 0 ? merged[index - 1].value : item.value;
                                 const diff = item.value - prevValue;
                                 const trendIcon = diff > 0 ? (
-                                    <TrendingUpIcon sx={{ color: 'error.main' }} />
+                                    <TrendingUpIcon sx={{ fontSize: 16, color: 'error.main' }} />
                                 ) : diff < 0 ? (
-                                    <TrendingDownIcon sx={{ color: 'success.main' }} />
+                                    <TrendingDownIcon sx={{ fontSize: 16, color: 'success.main' }} />
                                 ) : (
-                                    <RemoveIcon sx={{ color: 'text.secondary' }} />
+                                    <RemoveIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                 );
                                 return (
                                     <ListItem
                                         key={index}
                                         sx={{
-                                            px: 2,
-                                            py: 1.5,
-                                            borderBottom: index < merged.length - 1 ? '1px solid' : 'none',
-                                            borderColor: 'divider',
+                                            px: 1.5,
+                                            py: 0.75,
+                                            borderBottom: index < merged.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
                                         }}
                                         secondaryAction={
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                                 {index > 0 && trendIcon}
-                                                <Typography variant='body1' fontWeight='bold'>
+                                                <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
                                                     {Math.round(item.value).toLocaleString()} AMD
                                                 </Typography>
                                             </Box>
                                         }
                                     >
-                                        <ListItemIcon sx={{ minWidth: 36 }}>
-                                            <DescriptionIcon color='primary' />
+                                        <ListItemIcon sx={{ minWidth: 30 }}>
+                                            <DescriptionIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                                         </ListItemIcon>
                                         <ListItemText
                                             primary={item.time}
-                                            primaryTypographyProps={{ variant: 'body2' }}
+                                            primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13 } }}
                                         />
                                     </ListItem>
                                 );
                             })}
                         </List>
                     ) : (
-                        <>
+                        <List sx={{ py: 0 }}>
                             <ListItem
                                 sx={{
-                                    px: 2,
-                                    py: 1.5,
-                                    borderBottom: '1px solid',
-                                    borderColor: 'divider',
+                                    px: 1.5,
+                                    py: 0.75,
                                 }}
                                 secondaryAction={
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                         {merged.length > 1 && (() => {
                                             const last = merged[merged.length - 1];
                                             const prev = merged[merged.length - 2];
                                             const diff = last.value - prev.value;
                                             return diff > 0 ? (
-                                                <TrendingUpIcon sx={{ color: 'error.main' }} />
+                                                <TrendingUpIcon sx={{ fontSize: 16, color: 'error.main' }} />
                                             ) : diff < 0 ? (
-                                                <TrendingDownIcon sx={{ color: 'success.main' }} />
+                                                <TrendingDownIcon sx={{ fontSize: 16, color: 'success.main' }} />
                                             ) : (
-                                                <RemoveIcon sx={{ color: 'text.secondary' }} />
+                                                <RemoveIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                             );
                                         })()}
-                                        <Typography variant='body1' fontWeight='bold'>
+                                        <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
                                             {Math.round(merged[merged.length - 1].value).toLocaleString()} AMD
                                         </Typography>
                                         <IconButton
@@ -219,26 +209,26 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                             sx={{ color: 'text.secondary', p: 0.25 }}
                                             aria-label={t('Show all changes')}
                                         >
-                                            <InfoOutlinedIcon fontSize="small" />
+                                            <InfoOutlinedIcon sx={{ fontSize: 16 }} />
                                         </IconButton>
                                     </Box>
                                 }
                             >
-                                <ListItemIcon sx={{ minWidth: 36 }}>
-                                    <DescriptionIcon color='primary' />
+                                <ListItemIcon sx={{ minWidth: 30 }}>
+                                    <DescriptionIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={widget.name}
                                     secondary={merged[merged.length - 1].time}
-                                    primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                                    primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13, fontWeight: 600 } }}
                                     secondaryTypographyProps={{ variant: 'caption' }}
                                 />
                             </ListItem>
-                        </>
+                        </List>
                     )}
                     {showAllRows && (
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
-                            <Button size="small" onClick={() => setShowAllRows(false)} sx={{ textTransform: 'none', color: 'text.secondary' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, py: 0.25, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                            <Button size="small" onClick={() => setShowAllRows(false)} sx={{ textTransform: 'none', color: 'text.secondary', fontSize: 12 }}>
                                 {t('Show less')}
                             </Button>
                         </Box>
