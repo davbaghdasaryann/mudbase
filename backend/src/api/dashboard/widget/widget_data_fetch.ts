@@ -252,6 +252,19 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             if (useDaily) {
                 const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
                 const pts = await getEstimateDailyPoints(estimateId as ObjectId, now, dayCount);
+                // Pin today's bar to the stored estimate total (matches Estimates page "Update" value)
+                if (session.mongoAccountId) {
+                    const todayKey = roundToDay(now).toISOString().slice(0, 10);
+                    const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                    if (currentValue != null && currentValue > 0) {
+                        const todayIdx = pts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                        if (todayIdx >= 0) {
+                            pts[todayIdx] = { ...pts[todayIdx], value: currentValue, min: currentValue, max: currentValue };
+                        } else {
+                            pts.push({ timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue });
+                        }
+                    }
+                }
                 dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
@@ -274,6 +287,19 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
                     const area = eciEstimate.constructionArea || 1;
                     const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
                     const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
+                    // Pin today's bar to the stored estimate total
+                    if (session.mongoAccountId) {
+                        const todayKey = roundToDay(now).toISOString().slice(0, 10);
+                        const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                        if (currentValue != null && currentValue > 0) {
+                            const todayIdx = scaledPts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                            if (todayIdx >= 0) {
+                                scaledPts[todayIdx] = { ...scaledPts[todayIdx], value: currentValue, min: currentValue, max: currentValue };
+                            } else {
+                                scaledPts.push({ timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue });
+                            }
+                        }
+                    }
                     dailySnapshots = normalizeToDailyBuckets(scaledPts, startDate, now, dayCount);
                     snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
                 } else {
