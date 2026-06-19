@@ -20,6 +20,7 @@ interface Props {
     type: ChronologicalSourceType | null;
     onClose: () => void;
     onPrevious: () => void;
+    onCreate: (itemId: string, itemName: string, fromDate: string, toDate: string) => void;
 }
 
 const TYPE_TITLES: Record<ChronologicalSourceType, string> = {
@@ -32,11 +33,12 @@ const TYPE_TITLES: Record<ChronologicalSourceType, string> = {
 const TODAY = new Date().toISOString().slice(0, 10);
 const FROM_DEFAULT = '2023-01-01';
 
-export default function ChronologicalListDialog({ open, type, onClose, onPrevious }: Props) {
+export default function ChronologicalListDialog({ open, type, onClose, onPrevious, onCreate }: Props) {
     const { t } = useTranslation();
     const [estimates, setEstimates] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [selectedItemName, setSelectedItemName] = useState<string>('');
     const [fromDate, setFromDate] = useState(FROM_DEFAULT);
     const [toDate, setToDate] = useState(TODAY);
 
@@ -46,6 +48,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
     useEffect(() => {
         if (!open) return;
         setSelectedItemId(null);
+        setSelectedItemName('');
     }, [open, type]);
 
     useEffect(() => {
@@ -116,7 +119,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                     <WidgetItemHierarchyPicker
                         catalogType={type === 'work_repository' ? 'labor' : 'material'}
                         selectedId={selectedItemId}
-                        onSelect={(item) => setSelectedItemId(item._id)}
+                        onSelect={(item) => { setSelectedItemId(item._id); setSelectedItemName(item.name ?? item.title ?? item._id); }}
                     />
                 )}
 
@@ -146,7 +149,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                                     <TableRow
                                         key={row._id}
                                         hover
-                                        onClick={() => setSelectedItemId(row._id)}
+                                        onClick={() => { setSelectedItemId(row._id); setSelectedItemName(row.name ?? ''); }}
                                         sx={{
                                             cursor: 'pointer',
                                             backgroundColor: selectedItemId === row._id
@@ -168,7 +171,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                                         <TableCell align='right' sx={{ pr: 1 }}>
                                             <Radio
                                                 checked={selectedItemId === row._id}
-                                                onChange={() => setSelectedItemId(row._id)}
+                                                onChange={() => { setSelectedItemId(row._id); setSelectedItemName(row.name ?? ''); }}
                                                 size='small'
                                                 sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
                                                 onClick={(e) => e.stopPropagation()}
@@ -189,7 +192,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                 <Button
                     variant='contained'
                     disabled={!selectedItemId}
-                    onClick={onClose}
+                    onClick={() => selectedItemId && onCreate(selectedItemId, selectedItemName, fromDate, toDate)}
                     sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#007a6e' } }}
                 >
                     {t('Create')}

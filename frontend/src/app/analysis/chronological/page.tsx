@@ -9,14 +9,32 @@ import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
 import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
 import ChronologicalListDialog from './ChronologicalListDialog';
+import ChronologicalChartDialog from './ChronologicalChartDialog';
 
-type DialogState = 'none' | 'create' | ChronologicalSourceType;
+type DialogState = 'none' | 'create' | ChronologicalSourceType | 'chart';
+
+interface ChartParams {
+    sourceType: ChronologicalSourceType;
+    itemId: string;
+    itemName: string;
+    fromDate: string;
+    toDate: string;
+}
 
 export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
     const [dialog, setDialog] = useState<DialogState>('none');
+    const [chartParams, setChartParams] = useState<ChartParams | null>(null);
 
-    const listType = (dialog !== 'none' && dialog !== 'create') ? dialog as ChronologicalSourceType : null;
+    const listType = (dialog !== 'none' && dialog !== 'create' && dialog !== 'chart')
+        ? dialog as ChronologicalSourceType
+        : null;
+
+    const handleCreate = (itemId: string, itemName: string, fromDate: string, toDate: string) => {
+        if (!listType) return;
+        setChartParams({ sourceType: listType, itemId, itemName, fromDate, toDate });
+        setDialog('chart');
+    };
 
     return (
         <PageContents title='Chronological Analytics'>
@@ -64,6 +82,18 @@ export default function ChronologicalAnalysisPage() {
                 type={listType}
                 onClose={() => setDialog('none')}
                 onPrevious={() => setDialog('create')}
+                onCreate={handleCreate}
+            />
+
+            <ChronologicalChartDialog
+                open={dialog === 'chart'}
+                sourceType={chartParams?.sourceType ?? ''}
+                itemId={chartParams?.itemId ?? null}
+                itemName={chartParams?.itemName ?? ''}
+                fromDate={chartParams?.fromDate ?? ''}
+                toDate={chartParams?.toDate ?? ''}
+                onClose={() => setDialog('none')}
+                onPrevious={() => setDialog(chartParams?.sourceType ?? 'create')}
             />
         </PageContents>
     );
