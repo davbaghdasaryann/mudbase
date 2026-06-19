@@ -69,7 +69,7 @@ async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<num
     return directCost * otherExpensesMultiplier(estimate?.otherExpenses ?? []);
 }
 
-/** Get current value for the widget so we can show at least the current 30-min bucket (e.g. 14:00) when there's no snapshot/journal yet. */
+/** Get current value for the widget — reads live stored values that match what users see in the UI. */
 async function getCurrentValueForWidget(
     widget: { dataSource: string; dataSourceConfig?: { itemId?: unknown; estimateId?: unknown } },
     accountId: ObjectId
@@ -93,8 +93,13 @@ async function getCurrentValueForWidget(
             const estimateId = typeof widget.dataSourceConfig.estimateId === 'string'
                 ? new ObjectId(widget.dataSourceConfig.estimateId)
                 : widget.dataSourceConfig.estimateId as ObjectId;
-            const cost = await computeEstimateCostFromCatalog(estimateId);
-            return cost > 0 ? cost : null;
+            // Use the stored total that the Estimates page displays (uses changableAveragePrice, not catalog averagePrice)
+            const estimate = await Db.getEstimatesCollection().findOne(
+                { _id: estimateId },
+                { projection: { totalCostWithOtherExpenses: 1, totalCost: 1 } }
+            );
+            const val = estimate?.totalCostWithOtherExpenses ?? estimate?.totalCost ?? null;
+            return val != null && val > 0 ? val : null;
         }
         if (widget.dataSource === 'eci' && widget.dataSourceConfig?.estimateId) {
             const eciId = typeof widget.dataSourceConfig.estimateId === 'string'
@@ -102,9 +107,14 @@ async function getCurrentValueForWidget(
                 : widget.dataSourceConfig.estimateId as ObjectId;
             const eci = await Db.getEciEstimatesCollection().findOne({ _id: eciId });
             if (!eci?.estimateId) return null;
-            const cost = await computeEstimateCostFromCatalog(eci.estimateId);
+            const estimate = await Db.getEstimatesCollection().findOne(
+                { _id: eci.estimateId },
+                { projection: { totalCostWithOtherExpenses: 1, totalCost: 1 } }
+            );
+            const cost = estimate?.totalCostWithOtherExpenses ?? estimate?.totalCost ?? null;
+            if (!cost || cost <= 0) return null;
             const area = eci.constructionArea || 1;
-            return cost > 0 ? cost / area : null;
+            return cost / area;
         }
     } catch {
         // ignore
