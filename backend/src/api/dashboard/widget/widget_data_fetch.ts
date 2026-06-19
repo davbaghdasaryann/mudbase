@@ -186,6 +186,17 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
         .sort({ timestamp: 1 })
         .toArray();
 
+    // For 1-day widgets: always return the live catalog value directly — no journal reconstruction.
+    // This guarantees the displayed value matches what is shown in the Catalogs page.
+    if (widget!.widgetType === '1-day') {
+        const liveValue = await getCurrentValueForWidget(widget!, session.mongoAccountId!);
+        const snapshots1Day = liveValue != null && liveValue > 0
+            ? [{ timestamp: now, value: liveValue }]
+            : snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
+        respondJsonData(res, { widget, snapshots: snapshots1Day, analytics: null });
+        return;
+    }
+
     const useDaily = widget!.widgetType === '15-day' || widget!.widgetType === '30-day';
     let snapshots: Array<{ timestamp: Date; value: number }>;
     let dailySnapshots: Array<{ timestamp: Date; value: number; min: number; max: number }> | null = null;
@@ -379,6 +390,15 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
     }
 
     const snapshotDocs: Array<{ timestamp: Date; value: number }> = [];
+
+    // For 1-day preview: return live catalog value directly
+    if (widgetType === '1-day') {
+        const liveValue = await getCurrentValueForWidget(widget, session.mongoAccountId!);
+        const snapshots1Day = liveValue != null && liveValue > 0 ? [{ timestamp: now, value: liveValue }] : [];
+        respondJsonData(res, { widget, snapshots: snapshots1Day, analytics: null });
+        return;
+    }
+
     const useDaily = widgetType === '15-day' || widgetType === '30-day';
 
     let snapshots: Array<{ timestamp: Date; value: number }>;
