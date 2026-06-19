@@ -252,16 +252,23 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             if (useDaily) {
                 const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
                 const pts = await getEstimateDailyPoints(estimateId as ObjectId, now, dayCount);
-                // Pin today's bar to the stored estimate total (matches Estimates page "Update" value)
+                // Scale all bars so today's value exactly matches the stored estimate total
+                // (same value as Estimates page). This keeps dynamics consistent across all bars.
                 if (session.mongoAccountId) {
                     const todayKey = roundToDay(now).toISOString().slice(0, 10);
-                    const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                    if (currentValue != null && currentValue > 0) {
-                        const todayIdx = pts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                        if (todayIdx >= 0) {
-                            pts[todayIdx] = { ...pts[todayIdx], value: currentValue, min: currentValue, max: currentValue };
-                        } else {
-                            pts.push({ timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue });
+                    const storedTotal = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                    if (storedTotal != null && storedTotal > 0) {
+                        const todayPt = pts.find(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                        const todayMarket = todayPt?.value ?? 0;
+                        if (todayMarket > 0) {
+                            const ratio = storedTotal / todayMarket;
+                            for (const p of pts) {
+                                p.value = p.value * ratio;
+                                p.min = p.min * ratio;
+                                p.max = p.max * ratio;
+                            }
+                        } else if (pts.length === 0) {
+                            pts.push({ timestamp: roundToDay(now), value: storedTotal, min: storedTotal, max: storedTotal });
                         }
                     }
                 }
@@ -287,16 +294,22 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
                     const area = eciEstimate.constructionArea || 1;
                     const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
                     const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
-                    // Pin today's bar to the stored estimate total
+                    // Scale all bars so today matches the stored estimate total / area
                     if (session.mongoAccountId) {
                         const todayKey = roundToDay(now).toISOString().slice(0, 10);
-                        const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                        if (currentValue != null && currentValue > 0) {
-                            const todayIdx = scaledPts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                            if (todayIdx >= 0) {
-                                scaledPts[todayIdx] = { ...scaledPts[todayIdx], value: currentValue, min: currentValue, max: currentValue };
-                            } else {
-                                scaledPts.push({ timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue });
+                        const storedTotal = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                        if (storedTotal != null && storedTotal > 0) {
+                            const todayPt = scaledPts.find(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                            const todayMarket = todayPt?.value ?? 0;
+                            if (todayMarket > 0) {
+                                const ratio = storedTotal / todayMarket;
+                                for (const p of scaledPts) {
+                                    p.value = p.value * ratio;
+                                    p.min = p.min * ratio;
+                                    p.max = p.max * ratio;
+                                }
+                            } else if (scaledPts.length === 0) {
+                                scaledPts.push({ timestamp: roundToDay(now), value: storedTotal, min: storedTotal, max: storedTotal });
                             }
                         }
                     }
