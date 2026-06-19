@@ -109,8 +109,8 @@ function PageSelectBody({
                 paper: {
                     sx: {
                         mt: '3px',
-                        borderRadius: '8px',
-                        border: '1.5px solid',
+                        borderRadius: '12px',
+                        border: '2px solid',
                         borderColor: 'primary.main',
                         boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
                     },
