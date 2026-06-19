@@ -1,9 +1,6 @@
 "use client";
 
-// import DashboardPage from './dashboard/page';
+import DashboardBuilderPage from './dashboard-builder/page';
 
-// export default DashboardPage;
-import AccountPage from './account/page';
-
- export default AccountPage;
+export default DashboardBuilderPage;
 
