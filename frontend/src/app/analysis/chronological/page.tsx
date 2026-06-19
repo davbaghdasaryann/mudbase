@@ -15,6 +15,7 @@ import { mainPrimaryColor } from '@/theme';
 import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
 import ChronologicalListDialog from './ChronologicalListDialog';
 import ChronologicalDateRangeDialog from './ChronologicalDateRangeDialog';
+import ChronologicalBreakdownTable, { BreakdownItem } from './ChronologicalBreakdownTable';
 import * as Api from '@/api';
 
 type DialogState = 'none' | 'create' | ChronologicalSourceType | 'daterange';
@@ -26,6 +27,7 @@ interface AnalyticsResult {
     fromDate: string;
     toDate: string;
     data: { month: string; value: number }[];
+    breakdown: { months: string[]; items: BreakdownItem[] } | null;
 }
 
 interface SelectionParams {
@@ -68,15 +70,28 @@ export default function ChronologicalAnalysisPage() {
         setDialog('none');
         setChartLoading(true);
         setAnalytics(null);
-        Api.requestSession<{ data: { month: string; value: number }[] }>({
+
+        const isEstimate = selection.sourceType === 'list_of_estimates' || selection.sourceType === 'consolidated_estimates';
+
+        const chartReq = Api.requestSession<{ data: { month: string; value: number }[] }>({
             command: 'analysis/chronological/fetch_monthly_chart',
             json: { sourceType: selection.sourceType, itemId: selection.itemId, fromDate, toDate },
-        }).then((res) => {
+        });
+
+        const breakdownReq = isEstimate
+            ? Api.requestSession<{ months: string[]; items: BreakdownItem[] }>({
+                command: 'analysis/chronological/fetch_estimate_breakdown',
+                json: { estimateId: selection.itemId, fromDate, toDate },
+            })
+            : Promise.resolve(null);
+
+        Promise.all([chartReq, breakdownReq]).then(([chart, bd]) => {
             setAnalytics({
                 ...selection,
                 fromDate,
                 toDate,
-                data: res?.data ?? [],
+                data: chart?.data ?? [],
+                breakdown: bd ?? null,
             });
             setChartLoading(false);
         }).catch(() => setChartLoading(false));
@@ -249,6 +264,13 @@ export default function ChronologicalAnalysisPage() {
                                 </BarChart>
                             </ResponsiveContainer>
                         )}
+                    {/* Breakdown table for estimates */}
+                    {analytics.breakdown && analytics.breakdown.items.length > 0 && (
+                        <ChronologicalBreakdownTable
+                            months={analytics.breakdown.months}
+                            items={analytics.breakdown.items}
+                        />
+                    )}
                     </Box>
                 )}
             </Box>
