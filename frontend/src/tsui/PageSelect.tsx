@@ -110,7 +110,7 @@ function PageSelectBody({
                     sx: {
                         mt: '3px',
                         borderRadius: '12px',
-                        border: '2px solid',
+                        border: '1.5px solid',
                         borderColor: 'primary.main',
                         boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
                     },
@@ -125,6 +125,7 @@ function PageSelectBody({
                     sx={{
                         '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
                         '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
+                        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: '1.5px' },
                     }}
                     slotProps={{
                         inputLabel: { shrink: true },
