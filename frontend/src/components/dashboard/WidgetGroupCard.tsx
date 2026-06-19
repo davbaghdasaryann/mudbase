@@ -98,45 +98,58 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                 </Box>
 
                 {group.widgets && group.widgets.length > 0 ? (
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: 2,
-                        }}
-                    >
-                        {group.widgets.map((widget: any) => (
-                            <Box
-                                key={widget._id}
-                                sx={{
-                                    overflow: 'visible',
-                                    pt: '8px',
-                                    pr: '8px',
-                                    ...(widget.widgetType === '1-day' ? { gridColumn: '1 / -1' } : {}),
-                                }}
-                            >
-                                {widget.widgetType === '1-day' && (
-                                    <Widget1Day
-                                        widget={widget}
-                                        onUpdate={onUpdate}
-                                        liveSnapshots={liveSnapshots}
-                                        onClearLiveSnapshot={onClearLiveSnapshot}
-                                    />
-                                )}
-                                {widget.widgetType === '15-day' && (
-                                    <Widget15Day widget={widget} onUpdate={onUpdate} />
-                                )}
-                                {widget.widgetType === '30-day' && (
-                                    <Widget30Day
-                                        widget={widget}
-                                        onUpdate={onUpdate}
-                                        liveSnapshots={liveSnapshots}
-                                        onClearLiveSnapshot={onClearLiveSnapshot}
-                                    />
-                                )}
+                    <>
+                        {/* 1-day widgets: all inside one shared glassmorphism card */}
+                        {group.widgets.filter((w: any) => w.widgetType === '1-day').length > 0 && (
+                            <Box sx={{
+                                background: 'rgba(255,255,255,0.72)',
+                                backdropFilter: 'blur(18px)',
+                                WebkitBackdropFilter: 'blur(18px)',
+                                borderRadius: 3,
+                                boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                                border: '1px solid rgba(0,171,190,0.14)',
+                                overflow: 'hidden',
+                                mb: 2,
+                            }}>
+                                {group.widgets.filter((w: any) => w.widgetType === '1-day').map((widget: any, idx: number, arr: any[]) => (
+                                    <Box
+                                        key={widget._id}
+                                        sx={{ borderBottom: idx < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}
+                                    >
+                                        <Widget1Day
+                                            widget={widget}
+                                            onUpdate={onUpdate}
+                                            liveSnapshots={liveSnapshots}
+                                            onClearLiveSnapshot={onClearLiveSnapshot}
+                                            grouped
+                                        />
+                                    </Box>
+                                ))}
                             </Box>
-                        ))}
-                    </Box>
+                        )}
+
+                        {/* Chart widgets in 3-column grid */}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+                            {group.widgets.filter((w: any) => w.widgetType !== '1-day').map((widget: any) => (
+                                <Box
+                                    key={widget._id}
+                                    sx={{ overflow: 'visible', pt: '8px', pr: '8px' }}
+                                >
+                                    {widget.widgetType === '15-day' && (
+                                        <Widget15Day widget={widget} onUpdate={onUpdate} />
+                                    )}
+                                    {widget.widgetType === '30-day' && (
+                                        <Widget30Day
+                                            widget={widget}
+                                            onUpdate={onUpdate}
+                                            liveSnapshots={liveSnapshots}
+                                            onClearLiveSnapshot={onClearLiveSnapshot}
+                                        />
+                                    )}
+                                </Box>
+                            ))}
+                        </Box>
+                    </>
                 ) : (
                     <Typography variant='body2' color='textSecondary'>
                         {t('No widgets in this group yet.')}

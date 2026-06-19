@@ -17,9 +17,10 @@ interface Props {
     onUpdate: () => void;
     liveSnapshots?: LiveSnapshot[];
     onClearLiveSnapshot?: (widgetId: string) => void;
+    grouped?: boolean;
 }
 
-export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot }: Props) {
+export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot, grouped = false }: Props) {
     const [t] = useTranslation();
     const [data, setData] = useState<Array<{ time: string; value: number; ts: number }>>([]);
     const [loading, setLoading] = useState(true);
@@ -113,112 +114,41 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
         }
     };
 
-    return (
-        <Box sx={{ position: 'relative', overflow: 'visible' }}>
-            {!isPreview && (
-            <IconButton
-                onClick={handleDelete}
-                size="small"
-                sx={{
-                    position: 'absolute',
-                    top: -8,
-                    right: -8,
-                    zIndex: 1,
-                    p: 0.5,
-                    bgcolor: 'rgba(0,0,0,0.06)',
-                    color: 'text.secondary',
-                    '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
-                }}
-            >
-                <CloseIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-            )}
-            {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                </Box>
-            ) : merged.length > 0 ? (
-                <Box sx={{
-                    background: 'rgba(255,255,255,0.72)',
-                    backdropFilter: 'blur(18px)',
-                    WebkitBackdropFilter: 'blur(18px)',
-                    borderRadius: 3,
-                    boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-                    border: '1px solid rgba(0,171,190,0.14)',
-                    overflow: 'hidden',
-                }}>
-                    {showAllRows ? (
-                        <List sx={{ py: 0 }}>
-                            {merged.map((item: any, index: number) => {
-                                const prevValue = index > 0 ? merged[index - 1].value : item.value;
-                                const diff = item.value - prevValue;
-                                const trendIcon = diff > 0 ? (
-                                    <TrendingUpIcon sx={{ fontSize: 16, color: 'error.main' }} />
-                                ) : diff < 0 ? (
-                                    <TrendingDownIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                                ) : (
-                                    <RemoveIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                );
-                                return (
-                                    <ListItem
-                                        key={index}
-                                        sx={{
-                                            px: 1.5,
-                                            py: 0.25,
-                                            borderBottom: index < merged.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                                        }}
-                                        secondaryAction={
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                {index > 0 && trendIcon}
-                                                <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
-                                                    {Math.round(item.value).toLocaleString()} AMD
-                                                </Typography>
-                                            </Box>
-                                        }
-                                    >
-                                        <ListItemIcon sx={{ minWidth: 30 }}>
-                                            <DescriptionIcon sx={{ fontSize: 18, color: 'primary.main' }} />
-                                        </ListItemIcon>
-                                        <ListItemText
-                                            primary={item.time}
-                                            primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13 } }}
-                                        />
-                                    </ListItem>
-                                );
-                            })}
-                        </List>
-                    ) : (
-                        <List sx={{ py: 0 }}>
+    const latestValue = merged.length > 0 ? merged[merged.length - 1] : null;
+    const prevValue = merged.length > 1 ? merged[merged.length - 2].value : latestValue?.value ?? 0;
+    const diff = latestValue ? latestValue.value - prevValue : 0;
+    const trendIcon = diff > 0
+        ? <TrendingUpIcon sx={{ fontSize: 14, color: 'error.main' }} />
+        : diff < 0
+            ? <TrendingDownIcon sx={{ fontSize: 14, color: 'success.main' }} />
+            : <RemoveIcon sx={{ fontSize: 14, color: 'text.secondary' }} />;
+
+    const rowContent = loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+            <CircularProgress size={24} />
+        </Box>
+    ) : latestValue ? (
+        <>
+            {showAllRows ? (
+                <List sx={{ py: 0 }}>
+                    {merged.map((item: any, index: number) => {
+                        const pv = index > 0 ? merged[index - 1].value : item.value;
+                        const d = item.value - pv;
+                        const icon = d > 0
+                            ? <TrendingUpIcon sx={{ fontSize: 14, color: 'error.main' }} />
+                            : d < 0
+                                ? <TrendingDownIcon sx={{ fontSize: 14, color: 'success.main' }} />
+                                : <RemoveIcon sx={{ fontSize: 14, color: 'text.secondary' }} />;
+                        return (
                             <ListItem
-                                sx={{
-                                    px: 1.5,
-                                    py: 0.25,
-                                }}
+                                key={index}
+                                sx={{ px: 1.5, py: 0.25, borderBottom: '1px solid rgba(0,0,0,0.06)' }}
                                 secondaryAction={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                        {merged.length > 1 && (() => {
-                                            const last = merged[merged.length - 1];
-                                            const prev = merged[merged.length - 2];
-                                            const diff = last.value - prev.value;
-                                            return diff > 0 ? (
-                                                <TrendingUpIcon sx={{ fontSize: 16, color: 'error.main' }} />
-                                            ) : diff < 0 ? (
-                                                <TrendingDownIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                                            ) : (
-                                                <RemoveIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                            );
-                                        })()}
+                                        {index > 0 && icon}
                                         <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
-                                            {Math.round(merged[merged.length - 1].value).toLocaleString()} AMD
+                                            {Math.round(item.value).toLocaleString()} AMD
                                         </Typography>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => setShowAllRows(true)}
-                                            sx={{ color: 'text.secondary', p: 0.25 }}
-                                            aria-label={t('Show all changes')}
-                                        >
-                                            <InfoOutlinedIcon sx={{ fontSize: 16 }} />
-                                        </IconButton>
                                     </Box>
                                 }
                             >
@@ -226,29 +156,112 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                     <DescriptionIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                                 </ListItemIcon>
                                 <ListItemText
-                                    primary={widget.name}
-                                    secondary={merged[merged.length - 1].time}
-                                    primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13, fontWeight: 600 } }}
-                                    secondaryTypographyProps={{ variant: 'caption' }}
+                                    primary={item.time}
+                                    primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13 } }}
                                 />
                             </ListItem>
-                        </List>
-                    )}
-                    {showAllRows && (
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, py: 0.25, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                            <Button size="small" onClick={() => setShowAllRows(false)} sx={{ textTransform: 'none', color: 'text.secondary', fontSize: 12 }}>
-                                {t('Show less')}
-                            </Button>
-                        </Box>
-                    )}
-                </Box>
+                        );
+                    })}
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, py: 0.25, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                        <Button size="small" onClick={() => setShowAllRows(false)} sx={{ textTransform: 'none', color: 'text.secondary', fontSize: 12 }}>
+                            {t('Show less')}
+                        </Button>
+                    </Box>
+                </List>
             ) : (
-                <Box sx={{ py: 4, textAlign: 'center' }}>
-                    <Typography variant='body2' color='textSecondary'>
-                        {t('No data available yet. Data will appear after first snapshot.')}
-                    </Typography>
-                </Box>
+                <List sx={{ py: 0 }}>
+                    <ListItem
+                        sx={{ px: 1.5, py: 0.25 }}
+                        secondaryAction={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                {merged.length > 1 && trendIcon}
+                                <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
+                                    {Math.round(latestValue.value).toLocaleString()} AMD
+                                </Typography>
+                                <IconButton size="small" onClick={() => setShowAllRows(true)} sx={{ color: 'text.secondary', p: 0.25 }}>
+                                    <InfoOutlinedIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </Box>
+                        }
+                    >
+                        <ListItemIcon sx={{ minWidth: 30 }}>
+                            <DescriptionIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary={widget.name}
+                            secondary={latestValue.time}
+                            primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13, fontWeight: 600 } }}
+                            secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                    </ListItem>
+                </List>
             )}
+        </>
+    ) : (
+        <Box sx={{ py: 2, textAlign: 'center' }}>
+            <Typography variant='body2' color='textSecondary' sx={{ fontSize: 12 }}>
+                {t('No data available yet. Data will appear after first snapshot.')}
+            </Typography>
+        </Box>
+    );
+
+    if (grouped) {
+        return (
+            <Box sx={{ position: 'relative' }}>
+                {!isPreview && (
+                    <IconButton
+                        onClick={handleDelete}
+                        size="small"
+                        sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            zIndex: 1,
+                            p: 0.5,
+                            bgcolor: 'rgba(0,0,0,0.06)',
+                            color: 'text.secondary',
+                            '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
+                        }}
+                    >
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                    </IconButton>
+                )}
+                {rowContent}
+            </Box>
+        );
+    }
+
+    return (
+        <Box sx={{ position: 'relative', overflow: 'visible' }}>
+            {!isPreview && (
+                <IconButton
+                    onClick={handleDelete}
+                    size="small"
+                    sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        zIndex: 1,
+                        p: 0.5,
+                        bgcolor: 'rgba(0,0,0,0.06)',
+                        color: 'text.secondary',
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
+                    }}
+                >
+                    <CloseIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+            )}
+            <Box sx={{
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                borderRadius: 3,
+                boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                border: '1px solid rgba(0,171,190,0.14)',
+                overflow: 'hidden',
+            }}>
+                {rowContent}
+            </Box>
         </Box>
     );
 }
