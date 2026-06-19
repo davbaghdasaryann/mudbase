@@ -105,6 +105,17 @@ function PageSelectBody({
             disabled={props.readonly}
             readOnly={props.readonly}
             onChange={(event: any, newValue: PageSelectItem | null) => onValueSelected(newValue)}
+            slotProps={{
+                paper: {
+                    sx: {
+                        mt: '3px',
+                        borderRadius: '8px',
+                        border: '1.5px solid',
+                        borderColor: 'primary.main',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+                    },
+                },
+            }}
             renderInput={(params) => (
                 <TextField
                     {...params}
