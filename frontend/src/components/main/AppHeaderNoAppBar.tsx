@@ -19,6 +19,7 @@ import DatasetIcon from '@mui/icons-material/Dataset';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
@@ -33,6 +34,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const getPageIcon = () => {
         if (pathname === '/analysis/structural') return <AccountTreeIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
         if (pathname === '/analysis/comparative') return <CompareArrowsIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+        if (pathname === '/analysis/chronological') return <TimelineIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
 
         const currentPath = pathname?.split('/')[1]; // Get first segment after /
 
