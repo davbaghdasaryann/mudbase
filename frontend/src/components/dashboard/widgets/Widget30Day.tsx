@@ -287,7 +287,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                         <CircularProgress size={32} />
                     </Box>
                 ) : merged.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={180}>
+                    <ResponsiveContainer width="100%" height={162}>
                         <BarChart data={merged} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
                             <defs>
                                 <linearGradient id="barBlueGrad" x1="0" y1="0" x2="0" y2="1">

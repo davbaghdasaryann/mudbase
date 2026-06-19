@@ -258,7 +258,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                             />
                         </Box>
 
-                        <ResponsiveContainer width="100%" height={160}>
+                        <ResponsiveContainer width="100%" height={144}>
                             <LineChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 4 }}>
                                 <Customized component={({ width }: any) => (
                                     <defs>
