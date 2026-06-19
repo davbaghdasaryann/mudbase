@@ -111,6 +111,10 @@ function PageSelectBody({
                     label={label}
                     placeholder={placeholder}
                     variant='outlined'
+                    sx={{
+                        '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
+                    }}
                     slotProps={{
                         inputLabel: { shrink: true },
                     }}
