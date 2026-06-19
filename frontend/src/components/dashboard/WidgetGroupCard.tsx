@@ -115,10 +115,9 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
             {group.widgets && group.widgets.length > 0 ? (
                 <Box
                     sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 3.5,
-                        alignItems: 'stretch'
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: 3,
                     }}
                 >
                     {group.widgets.map((widget: any) => (
@@ -128,11 +127,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                                 overflow: 'visible',
                                 pt: '8px',
                                 pr: '8px',
-                                ...(widget.widgetType === '1-day'
-                                    ? { width: '100%' }
-                                    : widget.widgetType === '30-day'
-                                        ? { flex: '1 1 60%', minWidth: 400, maxWidth: 750 }
-                                        : { flex: '1 1 48%', minWidth: 400, maxWidth: 750 })
+                                ...(widget.widgetType === '1-day' ? { gridColumn: '1 / -1' } : {}),
                             }}
                         >
                             {widget.widgetType === '1-day' && (

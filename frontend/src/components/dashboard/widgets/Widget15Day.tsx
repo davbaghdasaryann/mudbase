@@ -162,8 +162,8 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
-                maxWidth: 750,
-                minWidth: 400,
+                width: '100%',
+                minWidth: 0,
                 cursor: !loading && chartData.length > 0 ? 'pointer' : 'default',
                 display: 'flex',
                 flexDirection: 'column',
@@ -234,7 +234,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                         <Box sx={{ mb: 2 }}>
                             <Typography
                                 component="span"
-                                sx={{ fontSize: 32, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
+                                sx={{ fontSize: 24, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
                             >
                                 {Math.round(currentValue).toLocaleString()}
                             </Typography>

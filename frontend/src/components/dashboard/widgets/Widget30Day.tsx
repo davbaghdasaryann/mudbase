@@ -192,8 +192,8 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 position: 'relative',
                 overflow: 'visible',
                 height: '100%',
-                minWidth: 400,
-                maxWidth: 750,
+                width: '100%',
+                minWidth: 0,
                 cursor: !loading && merged.length > 0 ? 'pointer' : 'default',
                 display: 'flex',
                 flexDirection: 'column',
@@ -258,7 +258,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                 <Box sx={{ mb: 2 }}>
                     <Typography
                         component="span"
-                        sx={{ fontSize: 32, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
+                        sx={{ fontSize: 24, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
                     >
                         {Math.round(currentValue).toLocaleString()}
                     </Typography>
@@ -287,7 +287,7 @@ export default function Widget30Day({ widget, onUpdate, liveSnapshots = [], onCl
                         <CircularProgress size={32} />
                     </Box>
                 ) : merged.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={260}>
+                    <ResponsiveContainer width="100%" height={180}>
                         <BarChart data={merged} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
                             <defs>
                                 <linearGradient id="barBlueGrad" x1="0" y1="0" x2="0" y2="1">
