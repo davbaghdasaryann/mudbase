@@ -6,18 +6,16 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
-import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import { mainPrimaryColor } from '@/theme';
-import * as EstimatesApi from '@/api/estimate';
+import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
 
 export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+    const [createOpen, setCreateOpen] = useState(false);
 
-    const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
-        setDialogOpen(false);
-        setSelectedEstimate(estimate);
+    const handleContinue = (type: ChronologicalSourceType) => {
+        setCreateOpen(false);
+        // sub-modal per type — next step
     };
 
     return (
@@ -51,14 +49,14 @@ export default function ChronologicalAnalysisPage() {
                             borderColor: mainPrimaryColor,
                         },
                     }}
-                    onClick={() => setDialogOpen(true)}
+                    onClick={() => setCreateOpen(true)}
                 />
             </Box>
 
-            <ChooseEstimationDialog
-                open={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                onSelect={handleSelect}
+            <ChronologicalCreateDialog
+                open={createOpen}
+                onClose={() => setCreateOpen(false)}
+                onContinue={handleContinue}
             />
         </PageContents>
     );
