@@ -54,6 +54,7 @@ export default function ChronologicalCreateDialog({ open, onClose, onContinue }:
 
     const handleCardClick = (type: ChronologicalSourceType) => {
         setSelected(type);
+        onContinue(type);
     };
 
     const handleContinue = () => {

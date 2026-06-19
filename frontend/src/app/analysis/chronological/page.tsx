@@ -8,14 +8,16 @@ import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
 import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
+import ChronologicalListDialog from './ChronologicalListDialog';
 
 export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
     const [createOpen, setCreateOpen] = useState(false);
+    const [listType, setListType] = useState<ChronologicalSourceType | null>(null);
 
     const handleContinue = (type: ChronologicalSourceType) => {
         setCreateOpen(false);
-        // sub-modal per type — next step
+        setListType(type);
     };
 
     return (
@@ -57,6 +59,12 @@ export default function ChronologicalAnalysisPage() {
                 open={createOpen}
                 onClose={() => setCreateOpen(false)}
                 onContinue={handleContinue}
+            />
+
+            <ChronologicalListDialog
+                open={listType !== null}
+                type={listType}
+                onClose={() => setListType(null)}
             />
         </PageContents>
     );
