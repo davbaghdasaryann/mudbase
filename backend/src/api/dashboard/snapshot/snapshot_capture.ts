@@ -4,37 +4,12 @@ import { ObjectId } from 'mongodb';
 import { respondJsonData } from '@tsback/req/req_response';
 import { Permissions } from '@src/tsmudbase/permissions_setup';
 
-async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<number> {
-    const laborColl = Db.getEstimateLaborItemsCollection();
-    const materialColl = Db.getEstimateMaterialItemsCollection();
-
-    const [laborItems, materialItems] = await Promise.all([
-        laborColl.find({ estimateId }, { projection: { laborItemId: 1, estimatedLaborId: 1, quantity: 1, isHidden: 1 } }).toArray(),
-        materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray()
-    ]);
-
-    const hiddenLaborIds = new Set(laborItems.filter((l: any) => l.isHidden).map((l: any) => l._id!.toString()));
-    const laborIds = [...new Set(laborItems.map((l: any) => l.laborItemId))];
-    const materialIds = [...new Set(materialItems.map((m: any) => m.materialItemId))];
-
-    const [catalogLabor, catalogMaterial] = await Promise.all([
-        Db.getLaborItemsCollection().find({ _id: { $in: laborIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray(),
-        Db.getMaterialItemsCollection().find({ _id: { $in: materialIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray()
-    ]);
-
-    const laborPriceMap = new Map(catalogLabor.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
-    const materialPriceMap = new Map(catalogMaterial.map((i: any) => [i._id.toString(), i.averagePrice ?? 0]));
-
-    let total = 0;
-    for (const l of laborItems as any[]) {
-        if (l.isHidden) continue;
-        total += (l.quantity ?? 0) * (laborPriceMap.get(l.laborItemId.toString()) ?? 0);
-    }
-    for (const m of materialItems as any[]) {
-        if (hiddenLaborIds.has(m.estimatedLaborId.toString())) continue;
-        total += (m.quantity ?? 0) * (materialPriceMap.get(m.materialItemId.toString()) ?? 0);
-    }
-    return total;
+async function getEstimateStoredTotal(estimateId: ObjectId): Promise<number> {
+    const estimate = await Db.getEstimatesCollection().findOne(
+        { _id: estimateId },
+        { projection: { totalCostWithOtherExpenses: 1, totalCost: 1 } }
+    );
+    return estimate?.totalCostWithOtherExpenses ?? estimate?.totalCost ?? 0;
 }
 
 registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, session) => {
@@ -62,7 +37,7 @@ registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, sessi
                         ? new ObjectId(widget.dataSourceConfig.estimateId)
                         : widget.dataSourceConfig.estimateId;
 
-                    const cost = await computeEstimateCostFromCatalog(estimateId);
+                    const cost = await getEstimateStoredTotal(estimateId);
                     if (cost > 0) {
                         value = cost;
                     }
@@ -101,7 +76,7 @@ registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, sessi
 
                     const eciEstimate = await Db.getEciEstimatesCollection().findOne({ _id: eciEstimateId });
                     if (eciEstimate?.estimateId) {
-                        const cost = await computeEstimateCostFromCatalog(eciEstimate.estimateId);
+                        const cost = await getEstimateStoredTotal(eciEstimate.estimateId);
                         if (cost > 0) {
                             const area = eciEstimate.constructionArea || 1;
                             value = cost / area;
