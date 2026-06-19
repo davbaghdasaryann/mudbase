@@ -174,7 +174,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                         secondaryAction={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                 {merged.length > 1 && trendIcon}
-                                <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
+                                <Typography variant='body2' fontWeight={600} sx={{ fontSize: 14 }}>
                                     {Math.round(latestValue.value).toLocaleString()} AMD
                                 </Typography>
                                 {!isPreview && (
