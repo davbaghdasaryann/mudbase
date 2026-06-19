@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Typography, Box, Stack, CircularProgress,
-    Table, TableHead, TableBody, TableRow, TableCell, TextField, Radio, IconButton,
+    Table, TableHead, TableBody, TableRow, TableCell, Radio, IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,7 @@ interface Props {
     type: ChronologicalSourceType | null;
     onClose: () => void;
     onPrevious: () => void;
-    onCreate: (itemId: string, itemName: string, fromDate: string, toDate: string) => void;
+    onCreate: (itemId: string, itemName: string) => void;
 }
 
 const TYPE_TITLES: Record<ChronologicalSourceType, string> = {
@@ -30,17 +30,12 @@ const TYPE_TITLES: Record<ChronologicalSourceType, string> = {
     consolidated_estimates: 'Consolidated estimates',
 };
 
-const TODAY = new Date().toISOString().slice(0, 10);
-const FROM_DEFAULT = '2023-01-01';
-
 export default function ChronologicalListDialog({ open, type, onClose, onPrevious, onCreate }: Props) {
     const { t } = useTranslation();
     const [estimates, setEstimates] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [selectedItemName, setSelectedItemName] = useState<string>('');
-    const [fromDate, setFromDate] = useState(FROM_DEFAULT);
-    const [toDate, setToDate] = useState(TODAY);
 
     const isRepository = type === 'work_repository' || type === 'materials_repository';
     const isEstimates = type === 'list_of_estimates' || type === 'consolidated_estimates';
@@ -61,37 +56,6 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
             .catch(() => setLoading(false));
     }, [open, type]);
 
-    const filteredEstimates = estimates.filter((row) => {
-        const d = row.createdAt ? new Date(row.createdAt) : null;
-        if (!d) return true;
-        return d >= new Date(fromDate) && d <= new Date(toDate + 'T23:59:59');
-    });
-
-    const dateFilter = (
-        <Stack direction='row' alignItems='center' spacing={1}>
-            <TextField
-                type='date'
-                size='small'
-                label={t('From')}
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                inputProps={{ min: '2023-01-01', max: TODAY }}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ width: 148 }}
-            />
-            <TextField
-                type='date'
-                size='small'
-                label={t('To')}
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                inputProps={{ min: '2023-01-01', max: TODAY }}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ width: 148 }}
-            />
-        </Stack>
-    );
-
     return (
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
             <DialogTitle sx={{ pb: 1.5 }}>
@@ -107,11 +71,6 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                     </Box>
                 </Stack>
             </DialogTitle>
-
-            {/* Date range filter row */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', px: 3, py: 1.25, borderBottom: '1px solid rgba(0,0,0,0.12)', gap: 1.5 }}>
-                {dateFilter}
-            </Box>
 
             <DialogContent sx={{ p: isRepository ? 2 : 0, minHeight: 380 }}>
                 {/* Work / Materials repository — full hierarchy picker */}
@@ -129,7 +88,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                             <CircularProgress size={32} />
                         </Box>
-                    ) : filteredEstimates.length === 0 ? (
+                    ) : estimates.length === 0 ? (
                         <Box sx={{ py: 6, textAlign: 'center' }}>
                             <Typography color='text.secondary'>{t('No data for selected period')}</Typography>
                         </Box>
@@ -145,7 +104,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {filteredEstimates.map((row, i) => (
+                                {estimates.map((row, i) => (
                                     <TableRow
                                         key={row._id}
                                         hover
@@ -192,10 +151,10 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                 <Button
                     variant='contained'
                     disabled={!selectedItemId}
-                    onClick={() => selectedItemId && onCreate(selectedItemId, selectedItemName, fromDate, toDate)}
+                    onClick={() => selectedItemId && onCreate(selectedItemId, selectedItemName)}
                     sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#007a6e' } }}
                 >
-                    {t('Create')}
+                    {t('Next')}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -9,31 +9,29 @@ import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
 import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
 import ChronologicalListDialog from './ChronologicalListDialog';
-import ChronologicalChartDialog from './ChronologicalChartDialog';
+import ChronologicalDateRangeDialog from './ChronologicalDateRangeDialog';
 
-type DialogState = 'none' | 'create' | ChronologicalSourceType | 'chart';
+type DialogState = 'none' | 'create' | ChronologicalSourceType | 'daterange';
 
-interface ChartParams {
+interface SelectionParams {
     sourceType: ChronologicalSourceType;
     itemId: string;
     itemName: string;
-    fromDate: string;
-    toDate: string;
 }
 
 export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
     const [dialog, setDialog] = useState<DialogState>('none');
-    const [chartParams, setChartParams] = useState<ChartParams | null>(null);
+    const [selection, setSelection] = useState<SelectionParams | null>(null);
 
-    const listType = (dialog !== 'none' && dialog !== 'create' && dialog !== 'chart')
+    const listType = (dialog !== 'none' && dialog !== 'create' && dialog !== 'daterange')
         ? dialog as ChronologicalSourceType
         : null;
 
-    const handleCreate = (itemId: string, itemName: string, fromDate: string, toDate: string) => {
+    const handleCreate = (itemId: string, itemName: string) => {
         if (!listType) return;
-        setChartParams({ sourceType: listType, itemId, itemName, fromDate, toDate });
-        setDialog('chart');
+        setSelection({ sourceType: listType, itemId, itemName });
+        setDialog('daterange');
     };
 
     return (
@@ -85,15 +83,13 @@ export default function ChronologicalAnalysisPage() {
                 onCreate={handleCreate}
             />
 
-            <ChronologicalChartDialog
-                open={dialog === 'chart'}
-                sourceType={chartParams?.sourceType ?? ''}
-                itemId={chartParams?.itemId ?? null}
-                itemName={chartParams?.itemName ?? ''}
-                fromDate={chartParams?.fromDate ?? ''}
-                toDate={chartParams?.toDate ?? ''}
+            <ChronologicalDateRangeDialog
+                open={dialog === 'daterange'}
+                sourceType={selection?.sourceType ?? ''}
+                itemId={selection?.itemId ?? null}
+                itemName={selection?.itemName ?? ''}
                 onClose={() => setDialog('none')}
-                onPrevious={() => setDialog(chartParams?.sourceType ?? 'create')}
+                onPrevious={() => setDialog(selection?.sourceType ?? 'create')}
             />
         </PageContents>
     );
