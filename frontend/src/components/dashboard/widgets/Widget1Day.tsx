@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Box, IconButton, Button, CircularProgress, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -156,7 +155,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                     <DescriptionIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                                 </ListItemIcon>
                                 <ListItemText
-                                    primary={item.time}
+                                    primary={widget.name}
                                     primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13 } }}
                                 />
                             </ListItem>
@@ -178,9 +177,15 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                 <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
                                     {Math.round(latestValue.value).toLocaleString()} AMD
                                 </Typography>
-                                <IconButton size="small" onClick={() => setShowAllRows(true)} sx={{ color: 'text.secondary', p: 0.25 }}>
-                                    <InfoOutlinedIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
+                                {!isPreview && (
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleDelete}
+                                        sx={{ color: 'text.disabled', p: 0.25, '&:hover': { color: 'error.main' } }}
+                                    >
+                                        <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                )}
                             </Box>
                         }
                     >
@@ -189,9 +194,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                         </ListItemIcon>
                         <ListItemText
                             primary={widget.name}
-                            secondary={latestValue.time}
                             primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13, fontWeight: 600 } }}
-                            secondaryTypographyProps={{ variant: 'caption' }}
                         />
                     </ListItem>
                 </List>
@@ -207,61 +210,23 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
 
     if (grouped) {
         return (
-            <Box sx={{ position: 'relative' }}>
-                {!isPreview && (
-                    <IconButton
-                        onClick={handleDelete}
-                        size="small"
-                        sx={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            zIndex: 1,
-                            p: 0.5,
-                            bgcolor: 'rgba(0,0,0,0.06)',
-                            color: 'text.secondary',
-                            '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
-                        }}
-                    >
-                        <CloseIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
-                )}
+            <Box>
                 {rowContent}
             </Box>
         );
     }
 
     return (
-        <Box sx={{ position: 'relative', overflow: 'visible' }}>
-            {!isPreview && (
-                <IconButton
-                    onClick={handleDelete}
-                    size="small"
-                    sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: -8,
-                        zIndex: 1,
-                        p: 0.5,
-                        bgcolor: 'rgba(0,0,0,0.06)',
-                        color: 'text.secondary',
-                        '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
-                    }}
-                >
-                    <CloseIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-            )}
-            <Box sx={{
-                background: 'rgba(255,255,255,0.72)',
-                backdropFilter: 'blur(18px)',
-                WebkitBackdropFilter: 'blur(18px)',
-                borderRadius: 3,
-                boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-                border: '1px solid rgba(0,171,190,0.14)',
-                overflow: 'hidden',
-            }}>
-                {rowContent}
-            </Box>
+        <Box sx={{
+            background: 'rgba(255,255,255,0.72)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            borderRadius: 3,
+            boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+            border: '1px solid rgba(0,171,190,0.14)',
+            overflow: 'hidden',
+        }}>
+            {rowContent}
         </Box>
     );
 }
