@@ -97,8 +97,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                     <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
                         {type ? t(TYPE_TITLES[type]) : ''}
                     </Typography>
-                    <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {dateFilter}
+                    <Box sx={{ ml: 'auto' }}>
                         <IconButton size='small' onClick={onClose} sx={{ color: 'text.secondary' }}>
                             <CloseIcon fontSize='small' />
                         </IconButton>
@@ -106,7 +105,12 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                 </Stack>
             </DialogTitle>
 
-            <DialogContent dividers sx={{ p: isRepository ? 2 : 0, minHeight: 380 }}>
+            {/* Date range filter row */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', px: 3, py: 1.25, borderBottom: '1px solid rgba(0,0,0,0.12)', gap: 1.5 }}>
+                {dateFilter}
+            </Box>
+
+            <DialogContent sx={{ p: isRepository ? 2 : 0, minHeight: 380 }}>
                 {/* Work / Materials repository — full hierarchy picker */}
                 {isRepository && type && (
                     <WidgetItemHierarchyPicker
