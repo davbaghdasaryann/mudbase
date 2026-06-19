@@ -66,9 +66,10 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
     };
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            {/* Left column: header row + card grid — naturally ends at plus button's left edge */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 3, minWidth: 0 }}>
                     {editing ? (
                         <TextField
                             inputRef={inputRef}
@@ -95,68 +96,71 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                         </IconButton>
                     </Tooltip>
                 </Box>
-                <Tooltip title={t('Add widget to this group')} placement="top">
-                    <IconButton
-                        onClick={() => onAddWidget?.(group._id)}
+
+                {group.widgets && group.widgets.length > 0 ? (
+                    <Box
                         sx={{
-                            bgcolor: 'rgba(65,162,64,0.40)',
-                            borderRadius: '50%',
-                            color: '#fff',
-                            p: 0.4,
-                            transition: 'background-color 0.18s',
-                            '&:hover': { bgcolor: 'rgba(65,162,64,0.56)' },
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: 2,
                         }}
                     >
-                        <AddIcon sx={{ fontSize: 34 }} />
-                    </IconButton>
-                </Tooltip>
+                        {group.widgets.map((widget: any) => (
+                            <Box
+                                key={widget._id}
+                                sx={{
+                                    overflow: 'visible',
+                                    pt: '8px',
+                                    pr: '8px',
+                                    ...(widget.widgetType === '1-day' ? { gridColumn: '1 / -1' } : {}),
+                                }}
+                            >
+                                {widget.widgetType === '1-day' && (
+                                    <Widget1Day
+                                        widget={widget}
+                                        onUpdate={onUpdate}
+                                        liveSnapshots={liveSnapshots}
+                                        onClearLiveSnapshot={onClearLiveSnapshot}
+                                    />
+                                )}
+                                {widget.widgetType === '15-day' && (
+                                    <Widget15Day widget={widget} onUpdate={onUpdate} />
+                                )}
+                                {widget.widgetType === '30-day' && (
+                                    <Widget30Day
+                                        widget={widget}
+                                        onUpdate={onUpdate}
+                                        liveSnapshots={liveSnapshots}
+                                        onClearLiveSnapshot={onClearLiveSnapshot}
+                                    />
+                                )}
+                            </Box>
+                        ))}
+                    </Box>
+                ) : (
+                    <Typography variant='body2' color='textSecondary'>
+                        {t('No widgets in this group yet.')}
+                    </Typography>
+                )}
             </Box>
 
-            {group.widgets && group.widgets.length > 0 ? (
-                <Box
+            {/* Right column: plus button, top-aligned */}
+            <Tooltip title={t('Add widget to this group')} placement="top">
+                <IconButton
+                    onClick={() => onAddWidget?.(group._id)}
                     sx={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: 3,
+                        flexShrink: 0,
+                        bgcolor: 'rgba(65,162,64,0.40)',
+                        borderRadius: '50%',
+                        color: '#fff',
+                        p: 0.4,
+                        transition: 'background-color 0.18s',
+                        '&:hover': { bgcolor: 'rgba(65,162,64,0.56)' },
                     }}
                 >
-                    {group.widgets.map((widget: any) => (
-                        <Box
-                            key={widget._id}
-                            sx={{
-                                overflow: 'visible',
-                                pt: '8px',
-                                pr: '8px',
-                                ...(widget.widgetType === '1-day' ? { gridColumn: '1 / -1' } : {}),
-                            }}
-                        >
-                            {widget.widgetType === '1-day' && (
-                                <Widget1Day
-                                    widget={widget}
-                                    onUpdate={onUpdate}
-                                    liveSnapshots={liveSnapshots}
-                                    onClearLiveSnapshot={onClearLiveSnapshot}
-                                />
-                            )}
-                            {widget.widgetType === '15-day' && (
-                                <Widget15Day widget={widget} onUpdate={onUpdate} />
-                            )}
-                            {widget.widgetType === '30-day' && (
-                                <Widget30Day
-                                    widget={widget}
-                                    onUpdate={onUpdate}
-                                    liveSnapshots={liveSnapshots}
-                                    onClearLiveSnapshot={onClearLiveSnapshot}
-                                />
-                            )}
-                        </Box>
-                    ))}
-                </Box>
-            ) : (
-                <Typography variant='body2' color='textSecondary'>
-                    {t('No widgets in this group yet.')}
-                </Typography>
-            )}
+                    <AddIcon sx={{ fontSize: 34 }} />
+                </IconButton>
+            </Tooltip>
         </Box>
     );
 }
