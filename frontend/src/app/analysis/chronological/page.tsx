@@ -10,15 +10,13 @@ import { mainPrimaryColor } from '@/theme';
 import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
 import ChronologicalListDialog from './ChronologicalListDialog';
 
+type DialogState = 'none' | 'create' | ChronologicalSourceType;
+
 export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
-    const [createOpen, setCreateOpen] = useState(false);
-    const [listType, setListType] = useState<ChronologicalSourceType | null>(null);
+    const [dialog, setDialog] = useState<DialogState>('none');
 
-    const handleContinue = (type: ChronologicalSourceType) => {
-        setCreateOpen(false);
-        setListType(type);
-    };
+    const listType = (dialog !== 'none' && dialog !== 'create') ? dialog as ChronologicalSourceType : null;
 
     return (
         <PageContents title='Chronological Analytics'>
@@ -51,20 +49,21 @@ export default function ChronologicalAnalysisPage() {
                             borderColor: mainPrimaryColor,
                         },
                     }}
-                    onClick={() => setCreateOpen(true)}
+                    onClick={() => setDialog('create')}
                 />
             </Box>
 
             <ChronologicalCreateDialog
-                open={createOpen}
-                onClose={() => setCreateOpen(false)}
-                onContinue={handleContinue}
+                open={dialog === 'create'}
+                onClose={() => setDialog('none')}
+                onContinue={(type) => setDialog(type)}
             />
 
             <ChronologicalListDialog
                 open={listType !== null}
                 type={listType}
-                onClose={() => setListType(null)}
+                onClose={() => setDialog('none')}
+                onPrevious={() => setDialog('create')}
             />
         </PageContents>
     );
