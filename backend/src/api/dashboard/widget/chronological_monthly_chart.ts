@@ -31,7 +31,7 @@ registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res
     if (sourceType === 'work_repository' || sourceType === 'materials_repository') {
         monthlyData = await computeItemMonthly(catalogId, sourceType === 'work_repository', months);
     } else {
-        monthlyData = await computeEstimateMonthly(catalogId, months, to);
+        monthlyData = await computeEstimateMonthly(catalogId, months);
     }
 
     return res.json({ data: monthlyData });
@@ -75,94 +75,21 @@ async function computeItemMonthly(
 }
 
 // ─── Estimates ────────────────────────────────────────────────────────────────
+// Use the stored totalCostWithOtherExpenses (matches what users see in the Estimates page)
+// as a flat value across all months. Historical variation for estimates would require
+// storing snapshots over time, which is out of scope here.
 
 async function computeEstimateMonthly(
     estimateId: ObjectId,
-    months: string[],
-    to: Date
+    months: string[]
 ): Promise<{ month: string; value: number }[]> {
-    const laborColl = Db.getEstimateLaborItemsCollection();
-    const materialColl = Db.getEstimateMaterialItemsCollection();
-
-    const [estimate, laborItems, materialItems] = await Promise.all([
-        Db.getEstimatesCollection().findOne({ _id: estimateId }, { projection: { otherExpenses: 1, totalCostWithOtherExpenses: 1, totalCost: 1 } }),
-        laborColl.find({ estimateId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1, estimatedLaborId: 1 } }).toArray(),
-        materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray(),
-    ]);
-
-    const expMultiplier = otherExpensesMultiplier((estimate as any)?.otherExpenses ?? []);
-    const storedTotal = Math.round((estimate as any)?.totalCostWithOtherExpenses ?? (estimate as any)?.totalCost ?? 0);
-
-    const hiddenLaborIds = new Set((laborItems as any[]).filter((l) => l.isHidden).map((l) => l._id!.toString()));
-    const visibleLabor = (laborItems as any[]).filter((l) => !l.isHidden);
-    const visibleMaterial = (materialItems as any[]).filter((m) => !hiddenLaborIds.has(m.estimatedLaborId?.toString()));
-
-    const laborQtyMap = new Map<string, number>();
-    for (const l of visibleLabor) laborQtyMap.set(l.laborItemId.toString(), (laborQtyMap.get(l.laborItemId.toString()) ?? 0) + (l.quantity ?? 0));
-    const materialQtyMap = new Map<string, number>();
-    for (const m of visibleMaterial) materialQtyMap.set(m.materialItemId.toString(), (materialQtyMap.get(m.materialItemId.toString()) ?? 0) + (m.quantity ?? 0));
-
-    const laborCatalogIds = [...laborQtyMap.keys()].map((id) => new ObjectId(id));
-    const materialCatalogIds = [...materialQtyMap.keys()].map((id) => new ObjectId(id));
-
-    const [laborOffers, materialOffers] = await Promise.all([
-        laborCatalogIds.length > 0 ? Db.getLaborOffersCollection().find({ itemId: { $in: laborCatalogIds } }, { projection: { _id: 1, itemId: 1 } }).toArray() : [],
-        materialCatalogIds.length > 0 ? Db.getMaterialOffersCollection().find({ itemId: { $in: materialCatalogIds } }, { projection: { _id: 1, itemId: 1 } }).toArray() : [],
-    ]);
-
-    const laborOfferMeta = new Map<string, string>((laborOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
-    const materialOfferMeta = new Map<string, string>((materialOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
-
-    const allLaborOfferIds = (laborOffers as any[]).map((o) => o._id);
-    const allMaterialOfferIds = (materialOffers as any[]).map((o) => o._id);
-
-    const [laborJournal, materialJournal] = await Promise.all([
-        allLaborOfferIds.length > 0 ? Db.getLaborPricesJournalCollection().find({ itemId: { $in: allLaborOfferIds }, date: { $lte: to } }, { sort: { date: 1 } }).toArray() : [],
-        allMaterialOfferIds.length > 0 ? Db.getMaterialPricesJournalCollection().find({ itemId: { $in: allMaterialOfferIds }, date: { $lte: to } }, { sort: { date: 1 } }).toArray() : [],
-    ]);
-
-    const laborTimelines = buildTimelines(laborJournal as any[]);
-    const materialTimelines = buildTimelines(materialJournal as any[]);
-
-    // Catalog fallback prices
-    const [catalogLabor, catalogMaterial] = await Promise.all([
-        laborCatalogIds.length > 0 ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray() : [],
-        materialCatalogIds.length > 0 ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray() : [],
-    ]);
-    const laborFallback = new Map<string, number>((catalogLabor as any[]).map((i) => [i._id.toString(), i.averagePrice ?? 0]));
-    const materialFallback = new Map<string, number>((catalogMaterial as any[]).map((i) => [i._id.toString(), i.averagePrice ?? 0]));
-
-    const hasAnyJournal = laborJournal.length > 0 || materialJournal.length > 0;
-
-    // If no journal data at all, return flat line with stored total
-    if (!hasAnyJournal && storedTotal > 0) {
-        return months.map((m) => ({ month: m, value: storedTotal }));
-    }
-
-    return months.map((monthStr) => {
-        const monthEnd = monthEndDate(monthStr);
-
-        let total = 0;
-        // Labor items
-        for (const [offerId, catalogItemId] of laborOfferMeta) {
-            const tl = laborTimelines.get(offerId);
-            const qty = laborQtyMap.get(catalogItemId) ?? 0;
-            if (qty <= 0) continue;
-            const price = tl ? latestPriceAt(tl, monthEnd) : (laborFallback.get(catalogItemId) ?? 0);
-            total += qty * (price ?? laborFallback.get(catalogItemId) ?? 0);
-        }
-        // Material items
-        for (const [offerId, catalogItemId] of materialOfferMeta) {
-            const tl = materialTimelines.get(offerId);
-            const qty = materialQtyMap.get(catalogItemId) ?? 0;
-            if (qty <= 0) continue;
-            const price = tl ? latestPriceAt(tl, monthEnd) : (materialFallback.get(catalogItemId) ?? 0);
-            total += qty * (price ?? materialFallback.get(catalogItemId) ?? 0);
-        }
-
-        const val = Math.round(total * expMultiplier);
-        return { month: monthStr, value: val };
-    }).filter((d) => d.value > 0);
+    const estimate = await Db.getEstimatesCollection().findOne(
+        { _id: estimateId },
+        { projection: { totalCostWithOtherExpenses: 1, totalCost: 1 } }
+    );
+    const val = Math.round((estimate as any)?.totalCostWithOtherExpenses ?? (estimate as any)?.totalCost ?? 0);
+    if (val <= 0) return [];
+    return months.map((m) => ({ month: m, value: val }));
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -219,12 +146,3 @@ function activePricesAt(timelines: Map<string, Array<{ date: Date; price: number
     return prices;
 }
 
-function otherExpensesMultiplier(otherExpenses: any[]): number {
-    if (!Array.isArray(otherExpenses)) return 1;
-    let sum = 0;
-    for (const expense of otherExpenses) {
-        const keys = Object.keys(expense);
-        if (keys.length > 0) sum += Number(expense[keys[0]]) || 0;
-    }
-    return 1 + sum / 100;
-}
