@@ -2,8 +2,16 @@ import { ObjectId } from 'mongodb';
 import { registerApiSession } from '@src/server/register';
 import * as Db from '@/db';
 
-// Journal itemId = offer _id (NOT catalog item id).
-// Must resolve catalog item → offer ids → journal entries.
+/**
+ * Monthly chart for Chronological Analytics.
+ *
+ * For work/materials: mirrors Widget30Day logic but grouped by month.
+ * Per month — find the latest journal price per offer (carry-forward), then
+ * average across all active offers. Falls back to catalog averagePrice when
+ * there are no journal entries at all for a month (or no offers exist).
+ *
+ * For estimates: last widget snapshot per month, or current totalCost for all months.
+ */
 registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res, session) => {
     const { sourceType, itemId, fromDate, toDate } = req.body ?? {};
 
@@ -19,55 +27,80 @@ registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res
     let monthlyData: { month: string; value: number }[] = [];
 
     if (sourceType === 'work_repository' || sourceType === 'materials_repository') {
-        // Step 1: resolve catalog item → offer ids
-        const offersColl = sourceType === 'work_repository'
-            ? Db.getLaborOffersCollection()
-            : Db.getMaterialOffersCollection();
-        const journalColl = sourceType === 'work_repository'
-            ? Db.getLaborPricesJournalCollection()
-            : Db.getMaterialPricesJournalCollection();
+        const isLabor = sourceType === 'work_repository';
+        const offersColl = isLabor ? Db.getLaborOffersCollection() : Db.getMaterialOffersCollection();
+        const journalColl = isLabor ? Db.getLaborPricesJournalCollection() : Db.getMaterialPricesJournalCollection();
+        const catalogColl = isLabor ? Db.getLaborItemsCollection() : Db.getMaterialItemsCollection();
 
+        // Get catalog averagePrice as fallback
+        const catalogItem = await catalogColl.findOne(
+            { _id: catalogId },
+            { projection: { averagePrice: 1 } }
+        );
+        const fallback = Math.round((catalogItem as any)?.averagePrice ?? 0);
+
+        // Get all offer IDs for this catalog item
         const offers = await offersColl
             .find({ itemId: catalogId }, { projection: { _id: 1 } })
             .toArray();
         const offerIds = offers.map((o: any) => o._id);
 
         if (offerIds.length === 0) {
-            return res.json({ data: [] });
+            // No offers — fill all months with catalog averagePrice
+            if (fallback > 0) {
+                monthlyData = enumerateMonths(from, to).map((m) => ({ month: m, value: fallback }));
+            }
+        } else {
+            // Fetch all journal entries up to `to` (not just in range, for carry-forward)
+            const entries = await journalColl
+                .find(
+                    { itemId: { $in: offerIds }, date: { $lte: to } },
+                    { sort: { date: 1 } }
+                )
+                .toArray();
+
+            // Build per-offer price timelines (sorted ascending by date)
+            const timelines = new Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>();
+            for (const e of entries as any[]) {
+                const key = e.itemId.toString();
+                if (!timelines.has(key)) timelines.set(key, []);
+                timelines.get(key)!.push({ date: e.date, price: e.price ?? 0, isArchived: !!e.isArchived });
+            }
+
+            // For each month in range: carry-forward latest price per offer, avg across offers
+            const months = enumerateMonths(from, to);
+            monthlyData = months.map((monthStr) => {
+                const [y, m] = monthStr.split('-').map(Number);
+                // End of this month = start of next
+                const monthEnd = new Date(Date.UTC(y, m, 1));
+
+                const prices: number[] = [];
+                for (const [, timeline] of timelines) {
+                    let latest: { price: number; isArchived: boolean } | null = null;
+                    for (const entry of timeline) {
+                        if (entry.date < monthEnd) {
+                            latest = { price: entry.price, isArchived: entry.isArchived };
+                        } else {
+                            break;
+                        }
+                    }
+                    if (latest && !latest.isArchived && latest.price > 0) {
+                        prices.push(latest.price);
+                    }
+                }
+
+                if (prices.length === 0) {
+                    return { month: monthStr, value: fallback };
+                }
+                const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+                return { month: monthStr, value: Math.round(avg) };
+            }).filter((d) => d.value > 0);
         }
-
-        // Step 2: aggregate journal by month (avg across all offers)
-        const pipeline = [
-            {
-                $match: {
-                    itemId: { $in: offerIds },
-                    date: { $gte: from, $lte: to },
-                    isArchived: { $ne: true },
-                },
-            },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: '$date' },
-                        month: { $month: '$date' },
-                    },
-                    avgPrice: { $avg: '$price' },
-                },
-            },
-            { $sort: { '_id.year': 1, '_id.month': 1 } },
-        ];
-
-        const result = await journalColl.aggregate(pipeline).toArray();
-        monthlyData = result.map((r: any) => ({
-            month: `${r._id.year}-${String(r._id.month).padStart(2, '0')}`,
-            value: Math.round(r.avgPrice),
-        }));
     } else {
-        // Estimates path: aggregate widget snapshots grouped by month
+        // Estimates path: aggregate widget snapshots by month
         const widgetsColl = Db.getDashboardWidgetsCollection();
         const snapshotsColl = Db.getDashboardWidgetSnapshotsCollection();
 
-        // dataSourceConfig.estimateId may be stored as string or ObjectId — match both
         const widgets = await widgetsColl
             .find({
                 $or: [
@@ -79,15 +112,13 @@ registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res
             .toArray();
 
         if (widgets.length === 0) {
-            // Fallback: use current stored estimate total for every month in range
             const estimate = await Db.getEstimatesCollection().findOne(
                 { _id: catalogId },
                 { projection: { totalCostWithOtherExpenses: 1, totalCost: 1 } }
             );
-            const val = Math.round(estimate?.totalCostWithOtherExpenses ?? estimate?.totalCost ?? 0);
+            const val = Math.round((estimate as any)?.totalCostWithOtherExpenses ?? (estimate as any)?.totalCost ?? 0);
             if (val > 0) {
-                const months = enumerateMonths(from, to);
-                monthlyData = months.map((m) => ({ month: m, value: val }));
+                monthlyData = enumerateMonths(from, to).map((m) => ({ month: m, value: val }));
             }
         } else {
             const widgetIds = widgets.map((w: any) => w._id);
@@ -96,12 +127,11 @@ registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res
                 .sort({ timestamp: 1 })
                 .toArray();
 
-            // Use last snapshot value per month
             const byMonth = new Map<string, number>();
-            for (const snap of snapshots) {
-                const d = new Date((snap as any).timestamp);
+            for (const snap of snapshots as any[]) {
+                const d = new Date(snap.timestamp);
                 const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-                byMonth.set(key, Math.round((snap as any).value));
+                byMonth.set(key, Math.round(snap.value));
             }
             monthlyData = Array.from(byMonth.entries())
                 .sort(([a], [b]) => a.localeCompare(b))
