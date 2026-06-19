@@ -87,6 +87,11 @@ export default function ChronologicalAnalysisPage() {
         return new Date(Number(y), Number(mo) - 1).toLocaleString('default', { month: 'short', year: '2-digit' });
     };
 
+    const formatMonthTooltip = (m: string) => {
+        const [y, mo] = m.split('-');
+        return new Date(Number(y), Number(mo) - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+    };
+
     const formatY = (v: number) => {
         if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
         if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
@@ -225,7 +230,7 @@ export default function ChronologicalAnalysisPage() {
                                     <YAxis tick={{ fontSize: 11, fill: TEXT_DARK }} axisLine={false} tickLine={false} domain={yDomain} tickFormatter={formatY} width={56} />
                                     <Tooltip
                                         formatter={(v: any) => [Math.round(Number(v)).toLocaleString(), '']}
-                                        labelFormatter={(label: any) => formatMonth(String(label))}
+                                        labelFormatter={(label: any) => formatMonthTooltip(String(label))}
                                         contentStyle={{ borderRadius: 8, border: 'none', boxShadow: CARD_SHADOW, fontSize: 13 }}
                                     />
                                     <Bar dataKey='value' radius={[3, 3, 0, 0]} maxBarSize={40}>
