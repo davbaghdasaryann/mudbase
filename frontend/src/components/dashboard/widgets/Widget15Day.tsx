@@ -198,13 +198,13 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                 <CloseIcon sx={{ fontSize: 18 }} />
             </IconButton>
             )}
-            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, '&:last-child': { pb: 2 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.75 }}>
                     <MuiTooltip title={widget.name} placement="top" enterDelay={400}>
                         <Typography
                             variant="subtitle1"
                             sx={{
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: 400,
                                 color: TEXT_DARK,
                                 maxWidth: '60%',
@@ -231,7 +231,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                     </Box>
                 ) : chartData.length > 0 ? (
                     <>
-                        <Box sx={{ mb: 2 }}>
+                        <Box sx={{ mb: 1 }}>
                             <Typography
                                 component="span"
                                 sx={{ fontSize: 24, fontWeight: 600, color: '#212121', letterSpacing: 0 }}
