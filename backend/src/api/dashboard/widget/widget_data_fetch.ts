@@ -251,17 +251,8 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             const estimateId = typeof rawEstimateId === 'string' ? new ObjectId(rawEstimateId) : rawEstimateId;
             if (useDaily) {
                 const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
-                const today = roundToDay(now);
-                const todayKey = today.toISOString().slice(0, 10);
-                const snapshotPts = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value, min: s.value, max: s.value }));
-                const hasTodayBucket = snapshotPts.some(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                if (!hasTodayBucket && session.mongoAccountId) {
-                    const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                    if (currentValue != null && currentValue > 0) {
-                        snapshotPts.push({ timestamp: today, value: currentValue, min: currentValue, max: currentValue });
-                    }
-                }
-                dailySnapshots = normalizeToDailyBuckets(snapshotPts, startDate, now, dayCount);
+                const pts = await getEstimateDailyPoints(estimateId as ObjectId, now, dayCount);
+                dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
                 snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
@@ -280,17 +271,10 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
             } else {
                 if (useDaily) {
                     const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
-                    const today = roundToDay(now);
-                    const todayKey = today.toISOString().slice(0, 10);
-                    const snapshotPts = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value, min: s.value, max: s.value }));
-                    const hasTodayBucket = snapshotPts.some(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                    if (!hasTodayBucket && session.mongoAccountId) {
-                        const currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                        if (currentValue != null && currentValue > 0) {
-                            snapshotPts.push({ timestamp: today, value: currentValue, min: currentValue, max: currentValue });
-                        }
-                    }
-                    dailySnapshots = normalizeToDailyBuckets(snapshotPts, startDate, now, dayCount);
+                    const area = eciEstimate.constructionArea || 1;
+                    const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
+                    const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
+                    dailySnapshots = normalizeToDailyBuckets(scaledPts, startDate, now, dayCount);
                     snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
                 } else {
                     snapshots = snapshotDocs.map(s => ({ timestamp: s.timestamp, value: s.value }));
@@ -456,15 +440,8 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
             const estimateId = new ObjectId(rawEstimateId);
             if (useDaily) {
                 const dayCount = widgetType === '30-day' ? 30 : 15;
-                const today = roundToDay(now);
-                const snapshotPts: Array<{ timestamp: Date; value: number; min: number; max: number }> = [];
-                if (session.mongoAccountId) {
-                    const currentValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
-                    if (currentValue != null && currentValue > 0) {
-                        snapshotPts.push({ timestamp: today, value: currentValue, min: currentValue, max: currentValue });
-                    }
-                }
-                dailySnapshots = normalizeToDailyBuckets(snapshotPts, startDate, now, dayCount);
+                const pts = await getEstimateDailyPoints(estimateId, now, dayCount);
+                dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
                 snapshots = [];
@@ -483,15 +460,10 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
             } else {
                 if (useDaily) {
                     const dayCount = widgetType === '30-day' ? 30 : 15;
-                    const today = roundToDay(now);
-                    const snapshotPts: Array<{ timestamp: Date; value: number; min: number; max: number }> = [];
-                    if (session.mongoAccountId) {
-                        const currentValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
-                        if (currentValue != null && currentValue > 0) {
-                            snapshotPts.push({ timestamp: today, value: currentValue, min: currentValue, max: currentValue });
-                        }
-                    }
-                    dailySnapshots = normalizeToDailyBuckets(snapshotPts, startDate, now, dayCount);
+                    const area = eciEstimate.constructionArea || 1;
+                    const pts = await getEstimateDailyPoints(linkedEstimateId, now, dayCount);
+                    const scaledPts = pts.map(p => ({ timestamp: p.timestamp, value: p.value / area, min: p.min / area, max: p.max / area }));
+                    dailySnapshots = normalizeToDailyBuckets(scaledPts, startDate, now, dayCount);
                     snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
                 } else {
                     snapshots = [];
