@@ -44,6 +44,11 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
     const isEstimates = type === 'list_of_estimates' || type === 'consolidated_estimates';
 
     useEffect(() => {
+        if (!open) return;
+        setSelectedItemId(null);
+    }, [open, type]);
+
+    useEffect(() => {
         if (!open || !isEstimates) return;
         setLoading(true);
         setEstimates([]);
@@ -179,6 +184,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                 </Button>
                 <Button
                     variant='contained'
+                    disabled={!selectedItemId}
                     onClick={onClose}
                     sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#007a6e' } }}
                 >
