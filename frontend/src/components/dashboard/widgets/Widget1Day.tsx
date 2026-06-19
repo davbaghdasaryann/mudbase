@@ -145,7 +145,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                 secondaryAction={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                         {index > 0 && icon}
-                                        <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
+                                        <Typography variant='body2' fontWeight={600} sx={{ fontSize: 14 }}>
                                             {Math.round(item.value).toLocaleString()} AMD
                                         </Typography>
                                     </Box>
@@ -156,7 +156,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={widget.name}
-                                    primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13 } }}
+                                    primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 14, fontWeight: 500 } }}
                                 />
                             </ListItem>
                         );
@@ -194,7 +194,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                         </ListItemIcon>
                         <ListItemText
                             primary={widget.name}
-                            primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 13, fontWeight: 600 } }}
+                            primaryTypographyProps={{ variant: 'body2', sx: { fontSize: 14, fontWeight: 500 } }}
                         />
                     </ListItem>
                 </List>
