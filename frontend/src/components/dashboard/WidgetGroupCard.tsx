@@ -128,8 +128,8 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                             </Box>
                         )}
 
-                        {/* Chart widgets in 3-column grid */}
-                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+                        {/* Chart widgets in responsive grid */}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
                             {group.widgets.filter((w: any) => w.widgetType !== '1-day').map((widget: any) => (
                                 <Box
                                     key={widget._id}
