@@ -5,12 +5,13 @@ import * as Db from '@/db';
 /**
  * Monthly chart for Chronological Analytics.
  *
- * For work/materials: mirrors Widget30Day logic but grouped by month.
- * Per month — find the latest journal price per offer (carry-forward), then
- * average across all active offers. Falls back to catalog averagePrice when
- * there are no journal entries at all for a month (or no offers exist).
+ * Work/Materials: per month, carry-forward latest journal price per offer,
+ *   avg across all active offers. Falls back to catalog averagePrice when
+ *   no journal history exists.
  *
- * For estimates: last widget snapshot per month, or current totalCost for all months.
+ * Estimates: reconstructs estimate total per month using catalog market prices
+ *   (carry-forward per offer × quantities), matching Widget30Day logic.
+ *   Falls back to stored totalCostWithOtherExpenses when no journal data.
  */
 registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res, session) => {
     const { sourceType, itemId, fromDate, toDate } = req.body ?? {};
@@ -24,123 +25,147 @@ registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res
     to.setHours(23, 59, 59, 999);
 
     const catalogId = new ObjectId(itemId);
+    const months = enumerateMonths(from, to);
     let monthlyData: { month: string; value: number }[] = [];
 
     if (sourceType === 'work_repository' || sourceType === 'materials_repository') {
-        const isLabor = sourceType === 'work_repository';
-        const offersColl = isLabor ? Db.getLaborOffersCollection() : Db.getMaterialOffersCollection();
-        const journalColl = isLabor ? Db.getLaborPricesJournalCollection() : Db.getMaterialPricesJournalCollection();
-        const catalogColl = isLabor ? Db.getLaborItemsCollection() : Db.getMaterialItemsCollection();
-
-        // Get catalog averagePrice as fallback
-        const catalogItem = await catalogColl.findOne(
-            { _id: catalogId },
-            { projection: { averagePrice: 1 } }
-        );
-        const fallback = Math.round((catalogItem as any)?.averagePrice ?? 0);
-
-        // Get all offer IDs for this catalog item
-        const offers = await offersColl
-            .find({ itemId: catalogId }, { projection: { _id: 1 } })
-            .toArray();
-        const offerIds = offers.map((o: any) => o._id);
-
-        if (offerIds.length === 0) {
-            // No offers — fill all months with catalog averagePrice
-            if (fallback > 0) {
-                monthlyData = enumerateMonths(from, to).map((m) => ({ month: m, value: fallback }));
-            }
-        } else {
-            // Fetch all journal entries up to `to` (not just in range, for carry-forward)
-            const entries = await journalColl
-                .find(
-                    { itemId: { $in: offerIds }, date: { $lte: to } },
-                    { sort: { date: 1 } }
-                )
-                .toArray();
-
-            // Build per-offer price timelines (sorted ascending by date)
-            const timelines = new Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>();
-            for (const e of entries as any[]) {
-                const key = e.itemId.toString();
-                if (!timelines.has(key)) timelines.set(key, []);
-                timelines.get(key)!.push({ date: e.date, price: e.price ?? 0, isArchived: !!e.isArchived });
-            }
-
-            // For each month in range: carry-forward latest price per offer, avg across offers
-            const months = enumerateMonths(from, to);
-            monthlyData = months.map((monthStr) => {
-                const [y, m] = monthStr.split('-').map(Number);
-                // End of this month = start of next
-                const monthEnd = new Date(Date.UTC(y, m, 1));
-
-                const prices: number[] = [];
-                for (const [, timeline] of timelines) {
-                    let latest: { price: number; isArchived: boolean } | null = null;
-                    for (const entry of timeline) {
-                        if (entry.date < monthEnd) {
-                            latest = { price: entry.price, isArchived: entry.isArchived };
-                        } else {
-                            break;
-                        }
-                    }
-                    if (latest && !latest.isArchived && latest.price > 0) {
-                        prices.push(latest.price);
-                    }
-                }
-
-                if (prices.length === 0) {
-                    return { month: monthStr, value: fallback };
-                }
-                const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
-                return { month: monthStr, value: Math.round(avg) };
-            }).filter((d) => d.value > 0);
-        }
+        monthlyData = await computeItemMonthly(catalogId, sourceType === 'work_repository', months);
     } else {
-        // Estimates path: aggregate widget snapshots by month
-        const widgetsColl = Db.getDashboardWidgetsCollection();
-        const snapshotsColl = Db.getDashboardWidgetSnapshotsCollection();
-
-        const widgets = await widgetsColl
-            .find({
-                $or: [
-                    { 'dataSourceConfig.estimateId': itemId },
-                    { 'dataSourceConfig.estimateId': catalogId },
-                ],
-                dataSource: 'estimates',
-            })
-            .toArray();
-
-        if (widgets.length === 0) {
-            const estimate = await Db.getEstimatesCollection().findOne(
-                { _id: catalogId },
-                { projection: { totalCostWithOtherExpenses: 1, totalCost: 1 } }
-            );
-            const val = Math.round((estimate as any)?.totalCostWithOtherExpenses ?? (estimate as any)?.totalCost ?? 0);
-            if (val > 0) {
-                monthlyData = enumerateMonths(from, to).map((m) => ({ month: m, value: val }));
-            }
-        } else {
-            const widgetIds = widgets.map((w: any) => w._id);
-            const snapshots = await snapshotsColl
-                .find({ widgetId: { $in: widgetIds }, timestamp: { $gte: from, $lte: to } })
-                .sort({ timestamp: 1 })
-                .toArray();
-
-            const byMonth = new Map<string, number>();
-            for (const snap of snapshots as any[]) {
-                const d = new Date(snap.timestamp);
-                const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-                byMonth.set(key, Math.round(snap.value));
-            }
-            monthlyData = Array.from(byMonth.entries())
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([month, value]) => ({ month, value }));
-        }
+        monthlyData = await computeEstimateMonthly(catalogId, months, to);
     }
 
     return res.json({ data: monthlyData });
 });
+
+// ─── Work / Materials ────────────────────────────────────────────────────────
+
+async function computeItemMonthly(
+    catalogId: ObjectId,
+    isLabor: boolean,
+    months: string[]
+): Promise<{ month: string; value: number }[]> {
+    const offersColl = isLabor ? Db.getLaborOffersCollection() : Db.getMaterialOffersCollection();
+    const journalColl = isLabor ? Db.getLaborPricesJournalCollection() : Db.getMaterialPricesJournalCollection();
+    const catalogColl = isLabor ? Db.getLaborItemsCollection() : Db.getMaterialItemsCollection();
+
+    const catalogItem = await catalogColl.findOne({ _id: catalogId }, { projection: { averagePrice: 1 } });
+    const fallback = Math.round((catalogItem as any)?.averagePrice ?? 0);
+
+    const offers = await offersColl.find({ itemId: catalogId }, { projection: { _id: 1 } }).toArray();
+    const offerIds = offers.map((o: any) => o._id);
+
+    if (offerIds.length === 0) {
+        if (fallback <= 0) return [];
+        return months.map((m) => ({ month: m, value: fallback }));
+    }
+
+    const entries = await journalColl
+        .find({ itemId: { $in: offerIds }, date: { $lte: lastDayOf(months) } }, { sort: { date: 1 } })
+        .toArray();
+
+    const timelines = buildTimelines(entries as any[]);
+
+    return months.map((monthStr) => {
+        const monthEnd = monthEndDate(monthStr);
+        const prices = activePricesAt(timelines, monthEnd);
+        if (prices.length === 0) return { month: monthStr, value: fallback };
+        const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+        return { month: monthStr, value: Math.round(avg) };
+    }).filter((d) => d.value > 0);
+}
+
+// ─── Estimates ────────────────────────────────────────────────────────────────
+
+async function computeEstimateMonthly(
+    estimateId: ObjectId,
+    months: string[],
+    to: Date
+): Promise<{ month: string; value: number }[]> {
+    const laborColl = Db.getEstimateLaborItemsCollection();
+    const materialColl = Db.getEstimateMaterialItemsCollection();
+
+    const [estimate, laborItems, materialItems] = await Promise.all([
+        Db.getEstimatesCollection().findOne({ _id: estimateId }, { projection: { otherExpenses: 1, totalCostWithOtherExpenses: 1, totalCost: 1 } }),
+        laborColl.find({ estimateId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1, estimatedLaborId: 1 } }).toArray(),
+        materialColl.find({ estimateId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } }).toArray(),
+    ]);
+
+    const expMultiplier = otherExpensesMultiplier((estimate as any)?.otherExpenses ?? []);
+    const storedTotal = Math.round((estimate as any)?.totalCostWithOtherExpenses ?? (estimate as any)?.totalCost ?? 0);
+
+    const hiddenLaborIds = new Set((laborItems as any[]).filter((l) => l.isHidden).map((l) => l._id!.toString()));
+    const visibleLabor = (laborItems as any[]).filter((l) => !l.isHidden);
+    const visibleMaterial = (materialItems as any[]).filter((m) => !hiddenLaborIds.has(m.estimatedLaborId?.toString()));
+
+    const laborQtyMap = new Map<string, number>();
+    for (const l of visibleLabor) laborQtyMap.set(l.laborItemId.toString(), (laborQtyMap.get(l.laborItemId.toString()) ?? 0) + (l.quantity ?? 0));
+    const materialQtyMap = new Map<string, number>();
+    for (const m of visibleMaterial) materialQtyMap.set(m.materialItemId.toString(), (materialQtyMap.get(m.materialItemId.toString()) ?? 0) + (m.quantity ?? 0));
+
+    const laborCatalogIds = [...laborQtyMap.keys()].map((id) => new ObjectId(id));
+    const materialCatalogIds = [...materialQtyMap.keys()].map((id) => new ObjectId(id));
+
+    const [laborOffers, materialOffers] = await Promise.all([
+        laborCatalogIds.length > 0 ? Db.getLaborOffersCollection().find({ itemId: { $in: laborCatalogIds } }, { projection: { _id: 1, itemId: 1 } }).toArray() : [],
+        materialCatalogIds.length > 0 ? Db.getMaterialOffersCollection().find({ itemId: { $in: materialCatalogIds } }, { projection: { _id: 1, itemId: 1 } }).toArray() : [],
+    ]);
+
+    const laborOfferMeta = new Map<string, string>((laborOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
+    const materialOfferMeta = new Map<string, string>((materialOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
+
+    const allLaborOfferIds = (laborOffers as any[]).map((o) => o._id);
+    const allMaterialOfferIds = (materialOffers as any[]).map((o) => o._id);
+
+    const [laborJournal, materialJournal] = await Promise.all([
+        allLaborOfferIds.length > 0 ? Db.getLaborPricesJournalCollection().find({ itemId: { $in: allLaborOfferIds }, date: { $lte: to } }, { sort: { date: 1 } }).toArray() : [],
+        allMaterialOfferIds.length > 0 ? Db.getMaterialPricesJournalCollection().find({ itemId: { $in: allMaterialOfferIds }, date: { $lte: to } }, { sort: { date: 1 } }).toArray() : [],
+    ]);
+
+    const laborTimelines = buildTimelines(laborJournal as any[]);
+    const materialTimelines = buildTimelines(materialJournal as any[]);
+
+    // Catalog fallback prices
+    const [catalogLabor, catalogMaterial] = await Promise.all([
+        laborCatalogIds.length > 0 ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray() : [],
+        materialCatalogIds.length > 0 ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, averagePrice: 1 } }).toArray() : [],
+    ]);
+    const laborFallback = new Map<string, number>((catalogLabor as any[]).map((i) => [i._id.toString(), i.averagePrice ?? 0]));
+    const materialFallback = new Map<string, number>((catalogMaterial as any[]).map((i) => [i._id.toString(), i.averagePrice ?? 0]));
+
+    const hasAnyJournal = laborJournal.length > 0 || materialJournal.length > 0;
+
+    // If no journal data at all, return flat line with stored total
+    if (!hasAnyJournal && storedTotal > 0) {
+        return months.map((m) => ({ month: m, value: storedTotal }));
+    }
+
+    return months.map((monthStr) => {
+        const monthEnd = monthEndDate(monthStr);
+
+        let total = 0;
+        // Labor items
+        for (const [offerId, catalogItemId] of laborOfferMeta) {
+            const tl = laborTimelines.get(offerId);
+            const qty = laborQtyMap.get(catalogItemId) ?? 0;
+            if (qty <= 0) continue;
+            const price = tl ? latestPriceAt(tl, monthEnd) : (laborFallback.get(catalogItemId) ?? 0);
+            total += qty * (price ?? laborFallback.get(catalogItemId) ?? 0);
+        }
+        // Material items
+        for (const [offerId, catalogItemId] of materialOfferMeta) {
+            const tl = materialTimelines.get(offerId);
+            const qty = materialQtyMap.get(catalogItemId) ?? 0;
+            if (qty <= 0) continue;
+            const price = tl ? latestPriceAt(tl, monthEnd) : (materialFallback.get(catalogItemId) ?? 0);
+            total += qty * (price ?? materialFallback.get(catalogItemId) ?? 0);
+        }
+
+        const val = Math.round(total * expMultiplier);
+        return { month: monthStr, value: val };
+    }).filter((d) => d.value > 0);
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function enumerateMonths(from: Date, to: Date): string[] {
     const months: string[] = [];
@@ -151,4 +176,55 @@ function enumerateMonths(from: Date, to: Date): string[] {
         cur.setUTCMonth(cur.getUTCMonth() + 1);
     }
     return months;
+}
+
+/** Start of the month AFTER monthStr — used as exclusive upper bound. */
+function monthEndDate(monthStr: string): Date {
+    const [y, m] = monthStr.split('-').map(Number);
+    return new Date(Date.UTC(y, m, 1)); // month is 0-indexed, so m = next month
+}
+
+/** Date of the last day in the last month (for journal query upper bound). */
+function lastDayOf(months: string[]): Date {
+    if (months.length === 0) return new Date();
+    return monthEndDate(months[months.length - 1]);
+}
+
+function buildTimelines(entries: Array<{ itemId: ObjectId; date: Date; price: number; isArchived?: boolean }>): Map<string, Array<{ date: Date; price: number; isArchived: boolean }>> {
+    const timelines = new Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>();
+    for (const e of entries) {
+        const key = e.itemId.toString();
+        if (!timelines.has(key)) timelines.set(key, []);
+        timelines.get(key)!.push({ date: e.date, price: e.price ?? 0, isArchived: !!(e as any).isArchived });
+    }
+    return timelines;
+}
+
+/** Latest non-archived price for a single offer on or before `before`. */
+function latestPriceAt(timeline: Array<{ date: Date; price: number; isArchived: boolean }>, before: Date): number | null {
+    let latest: { price: number; isArchived: boolean } | null = null;
+    for (const entry of timeline) {
+        if (entry.date < before) { latest = entry; } else { break; }
+    }
+    return latest && !latest.isArchived && latest.price > 0 ? latest.price : null;
+}
+
+/** All active prices at `before` across all offers in the timelines map. */
+function activePricesAt(timelines: Map<string, Array<{ date: Date; price: number; isArchived: boolean }>>, before: Date): number[] {
+    const prices: number[] = [];
+    for (const [, tl] of timelines) {
+        const p = latestPriceAt(tl, before);
+        if (p !== null) prices.push(p);
+    }
+    return prices;
+}
+
+function otherExpensesMultiplier(otherExpenses: any[]): number {
+    if (!Array.isArray(otherExpenses)) return 1;
+    let sum = 0;
+    for (const expense of otherExpenses) {
+        const keys = Object.keys(expense);
+        if (keys.length > 0) sum += Number(expense[keys[0]]) || 0;
+    }
+    return 1 + sum / 100;
 }
