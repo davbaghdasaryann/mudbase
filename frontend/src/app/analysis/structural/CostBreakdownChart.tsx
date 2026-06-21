@@ -49,8 +49,9 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
 };
 
-export default function CostBreakdownChart({ estimate }: { estimate: ApiEstimate }) {
+export default function CostBreakdownChart({ estimate, height = 260 }: { estimate: ApiEstimate; height?: number }) {
     const { t } = useTranslation();
+    const chartHeight = Math.max(100, height - 72);
 
     const data = useMemo(() => {
         const labor = estimate.laborTotalCost ?? 0;
@@ -93,7 +94,7 @@ export default function CostBreakdownChart({ estimate }: { estimate: ApiEstimate
                 </Box>
             ) : (
                 <>
-                    <ResponsiveContainer width='100%' height={150}>
+                    <ResponsiveContainer width='100%' height={chartHeight}>
                         <PieChart>
                             <defs>
                                 {SEGMENTS.map(s => (
