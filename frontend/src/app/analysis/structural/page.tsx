@@ -97,7 +97,7 @@ export default function StructuralAnalysisPage() {
     return (
         <PageContents title='Structural Analytics'>
             {hasData && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 0.5 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 1, mt: 1, mb: 0.5 }}>
                     <Typography variant='h5' sx={{ fontWeight: 700 }}>
                         {selectedEstimate!.name}
                     </Typography>
@@ -117,7 +117,7 @@ export default function StructuralAnalysisPage() {
 
                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
                         {/* Top row: pie placeholder | bar chart | param cards */}
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'stretch', mb: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             {/* Pie chart placeholder (empty for now) */}
                             <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', minHeight: 220 }} />
                             {/* Other Expenses bar chart */}
@@ -125,14 +125,14 @@ export default function StructuralAnalysisPage() {
                                 <OtherExpensesChart estimate={selectedEstimate!} height={220} />
                             </Box>
                             {/* Param cards stacked */}
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 180, flex: 0.7 }}>
+                            <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
                                 <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.laborItemCount ?? 0} />
                                 <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.materialItemCount ?? 0} />
                                 <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={0} />
                             </Box>
                         </Box>
                         {/* Bottom row: 3 metric cards */}
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 2 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
                             <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCostWithOtherExpenses ?? selectedEstimate!.totalCost ?? 0} />
                             <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
                             <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
