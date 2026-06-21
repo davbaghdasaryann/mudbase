@@ -1,24 +1,25 @@
 'use client';
 
-import React, {useCallback} from 'react';
-
-import {IconButton, Stack} from '@mui/material';
-
-import {useTranslation} from 'react-i18next';
-
-import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
-
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel,
+    Checkbox, InputAdornment, Button, Divider, CircularProgress,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { useTranslation } from 'react-i18next';
 
 import * as EstimatesApi from '@/api/estimates_shares';
-
 import * as Api from '@/api';
-import * as F from '@/tsui/Form';
-import {useApiFetchOne} from '@/components/ApiDataFetch';
-
+import { useApiFetchOne } from '@/components/ApiDataFetch';
 import ProgressIndicator from '../../tsui/ProgressIndicator';
-import {EstimateShareToAccountConfirmationDialog} from '../EstimateShareToAccountConfirmationDialog';
-import {usePermissions} from '@/api/auth';
-import DataTableComponent from '../DataTableComponent';
+import { EstimateShareToAccountConfirmationDialog } from '../EstimateShareToAccountConfirmationDialog';
+
+// Activity labels matching backend company_activities.ts
+const ACTIVITY_LABELS: Record<string, string> = {
+    F: 'Bank', C: 'Credit', I: 'Insurance', A: 'Architect',
+    V: 'Vendor', B: 'Builder', D: 'Developer',
+};
 
 interface Props {
     show?: boolean;
@@ -26,147 +27,230 @@ interface Props {
     estimateId: string;
     onClose: () => void;
     onConfirm: () => void;
-
     calledFromPage: 'estimates' | 'sharedEstimates';
 }
 
 export default function EstimateShareToAccountSelectionDialog(props: Props) {
     if (props.show === false) return null;
-
-    return <AccountSelectionDialogBody {...props} />;
+    return <ShareDialogBody {...props} />;
 }
 
-function AccountSelectionDialogBody(props: Props) {
-    const {session, status, permissionsSet} = usePermissions();
-
-    const form = F.useForm({type: 'update'});
-
-    const [progIndic, setProgIndic] = React.useState(false);
-    const [currentCompanyName, setCurrentCompanyName] = React.useState<string | null>(null);
-    const accountIdRef = React.useRef<string | null>(null);
+function ShareDialogBody(props: Props) {
     const [t] = useTranslation();
+    const [search, setSearch] = useState('');
+    const [industry, setIndustry] = useState('All');
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [progIndic, setProgIndic] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const apiData = useApiFetchOne<Api.ApiAccount>({
-        api: {
-            command: 'accounts/fetch_shareable_accounts_for_estimate',
-            // args: { accountActivity: session?.user && permissionsSet?.has?.('EST_SHR_WITH_BLDR') ? 'B' : 'F' }
-        },
+        api: { command: 'accounts/fetch_shareable_accounts_for_estimate' },
     });
 
-    // const onSearch = useCallback((value: string) => {
-    //     apiData.setApi({
-    //         command: 'accounts/fetch_shareable_accounts_for_estimate',
-    //         args: {
-    //             search: value,
-    //         },
-    //     });
-    // }, []);
+    const accounts: any[] = Array.isArray(apiData.data) ? apiData.data : [];
 
-    const onSubmit = useCallback(async (value: 'totalEstimate' | 'onlyEstimateInfo') => {
-        // console.log('permissionsSet?.has?', permissionsSet?.has?.('EST_CRT_BY_BNK'));
-        // console.log('accountIdRef', accountIdRef.current);
+    // Unique industry options from fetched accounts
+    const industryOptions = useMemo(() => {
+        const set = new Set<string>();
+        for (const acc of accounts) {
+            for (const act of acc.accountActivity ?? []) {
+                if (ACTIVITY_LABELS[act]) set.add(act);
+            }
+        }
+        return Array.from(set);
+    }, [accounts]);
 
-        if (form.error) return;
-
-        setCurrentCompanyName(null);
-        setProgIndic(true);
-
-        // if (session?.user && (permissionsSet?.has?.('EST_CRT_BY_BNK') || permissionsSet?.has?.('EST_CRT_BY_DEV'))) {
-        //     // console.log('props.estimateId', props.estimateId);
-
-        //     if (props.calledFromPage === 'estimates') {
-        //         let estimateShareRes = await Api.requestSession<EstimatesApi.ApiEstimatesShares>({
-        //             command: 'estimates_shares/add_for_view',
-        //             args: {estimateId: props.estimateId, calledFromPage: 'estimates'},
-        //         });
-
-        //         await Api.requestSession<EstimatesApi.ApiEstimatesShares>({
-        //             command: 'estimates_shares/add_for_update',
-        //             args: {estimateShareId: estimateShareRes._id, sharedWithAccountId: accountIdRef.current, estimateMultiShareType: value},
-        //         });
-        //     } else {
-        //         await Api.requestSession<EstimatesApi.ApiEstimatesShares>({
-        //             command: 'estimates_shares/add_for_update',
-        //             args: {estimateShareId: props.estimateId, sharedWithAccountId: accountIdRef.current, estimateMultiShareType: value},
-        //         });
-        //     }
-        // } else {
-        //     console.log('props.estimateId, accountIdRef.current', props.estimateId, accountIdRef.current);
-
-            await Api.requestSession<EstimatesApi.ApiEstimatesShares>({
-                command: 'estimates_shares/add_full_for_share',
-                args: {estimateId: props.estimateId, sharedWithAccountId: accountIdRef.current, estimateMultiShareType: value},
-            });
-        // }
-
-        apiData.setApi({
-            command: 'accounts/fetch_shareable_accounts_for_estimate',
+    // Client-side filter
+    const filtered = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return accounts.filter(acc => {
+            const matchSearch = !q || (acc.companyName ?? '').toLowerCase().includes(q);
+            const matchIndustry = industry === 'All' || (acc.accountActivity ?? []).includes(industry);
+            return matchSearch && matchIndustry;
         });
+    }, [accounts, search, industry]);
 
-        setProgIndic(false);
+    const toggleAll = () => {
+        if (selected.size === filtered.length) {
+            setSelected(new Set());
+        } else {
+            setSelected(new Set(filtered.map((a: any) => a._id)));
+        }
+    };
+
+    const toggleOne = (id: string) => {
+        setSelected(prev => {
+            const n = new Set(prev);
+            n.has(id) ? n.delete(id) : n.add(id);
+            return n;
+        });
+    };
+
+    const handleSave = () => {
+        if (selected.size === 0) return;
+        setShowConfirm(true);
+    };
+
+    const onSubmit = useCallback(async (shareType: 'totalEstimate' | 'onlyEstimateInfo') => {
+        setShowConfirm(false);
+        setProgIndic(true);
+        try {
+            await Promise.all(
+                Array.from(selected).map(accountId =>
+                    Api.requestSession<EstimatesApi.ApiEstimatesShares>({
+                        command: 'estimates_shares/add_full_for_share',
+                        args: {
+                            estimateId: props.estimateId,
+                            sharedWithAccountId: accountId,
+                            estimateMultiShareType: shareType,
+                        },
+                    })
+                )
+            );
+        } finally {
+            setProgIndic(false);
+        }
+        apiData.setApi({ command: 'accounts/fetch_shareable_accounts_for_estimate' });
         props.onConfirm();
-    }, []);
+    }, [selected, props.estimateId]);
+
+    const allChecked = filtered.length > 0 && selected.size === filtered.length;
+    const someChecked = selected.size > 0 && selected.size < filtered.length;
 
     return (
-        <F.PageFormDialog type='panel' title={props.title ?? 'Share'} form={form} formContainer='none' size='md' onClose={props.onClose}>
-            <Stack direction='column' sx={{width: 1}}>
-                {progIndic && <ProgressIndicator show={progIndic} background='backdrop' />}
-                {/* <Toolbar disableGutters sx={{backgroundColor: 'inherit'}}>
-                    <SearchComponent onSearch={onSearch} />
-                    <SpacerComponent />
-                </Toolbar> */}
+        <>
+            <Dialog
+                open
+                onClose={props.onClose}
+                fullWidth
+                maxWidth="sm"
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden' } }}
+            >
+                {/* Header */}
+                <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
+                    {t('Share')}
+                </DialogTitle>
 
-                <DataTableComponent
-                    rows={Array.isArray(apiData.data) ? apiData.data : []}
-                    loading={apiData.loading}
-                    // autoPageSize={true}
-                    disableRowSelectionOnClick
-                    getRowId={(row) => row?._id ?? crypto.randomUUID()}
-                    sx={
-                        {
-                            // width: '100%',
-                            // color: "red"
-                        }
-                    }
-                    columns={[
-                        {field: 'companyName', headerName: t('Company'), headerAlign: 'left', flex: 0.7, disableColumnMenu: true},
-                        {
-                            field: 'actions',
-                            type: 'actions',
-                            headerName: t('Select'),
-                            flex: 0.3,
-                            renderCell: (cell) => {
+                <DialogContent sx={{ px: 3, pb: 0, pt: 1 }}>
+                    {progIndic && <ProgressIndicator show background="backdrop" />}
+
+                    {/* Filters */}
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+                        <TextField
+                            size="small"
+                            placeholder={t('Search...')}
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            sx={{ flex: 1 }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <FormControl size="small" sx={{ minWidth: 140 }}>
+                            <InputLabel>{t('Industry')}</InputLabel>
+                            <Select
+                                value={industry}
+                                label={t('Industry')}
+                                onChange={e => setIndustry(e.target.value)}
+                            >
+                                <MenuItem value="All">{t('All')}</MenuItem>
+                                {industryOptions.map(act => (
+                                    <MenuItem key={act} value={act}>
+                                        {t(ACTIVITY_LABELS[act] ?? act)}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+                    {/* Companies header */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, backgroundColor: '#f5f5f5', borderRadius: 1, mb: 0.5 }}>
+                        <Typography sx={{ flex: 1, fontWeight: 700, fontSize: 13, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            {t('Companies')}
+                        </Typography>
+                        <Checkbox
+                            size="small"
+                            checked={allChecked}
+                            indeterminate={someChecked}
+                            onChange={toggleAll}
+                            disabled={filtered.length === 0}
+                            sx={{ color: '#00897b', '&.Mui-checked': { color: '#00897b' }, '&.MuiCheckbox-indeterminate': { color: '#00897b' } }}
+                        />
+                    </Box>
+
+                    {/* Company list */}
+                    <Box sx={{ maxHeight: 360, overflowY: 'auto' }}>
+                        {apiData.loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                <CircularProgress size={28} sx={{ color: '#00897b' }} />
+                            </Box>
+                        ) : filtered.length === 0 ? (
+                            <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontSize: 14 }}>
+                                {t('No companies found')}
+                            </Typography>
+                        ) : (
+                            filtered.map((acc: any, idx: number) => {
+                                const id = acc._id as string;
+                                const isChecked = selected.has(id);
                                 return (
-                                    <>
-                                        <IconButton
-                                            onClick={() => {
-                                                setCurrentCompanyName(cell.row.companyName);
-                                                accountIdRef.current = cell.row._id as string;
-
-                                                // props.onConfirm(cell.row);
-                                            }}
-                                        >
-                                            <AddToPhotosIcon />
-                                        </IconButton>
-                                    </>
+                                    <Box
+                                        key={id}
+                                        onClick={() => toggleOne(id)}
+                                        sx={{
+                                            display: 'flex', alignItems: 'center',
+                                            px: 1.5, py: 1,
+                                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f9f9f9',
+                                            cursor: 'pointer',
+                                            '&:hover': { backgroundColor: '#f0faf9' },
+                                            borderBottom: '1px solid #f0f0f0',
+                                        }}
+                                    >
+                                        <Typography sx={{ flex: 1, fontSize: 14 }}>
+                                            {acc.companyName}
+                                        </Typography>
+                                        <Checkbox
+                                            size="small"
+                                            checked={isChecked}
+                                            onChange={() => toggleOne(id)}
+                                            onClick={e => e.stopPropagation()}
+                                            sx={{ color: '#b2dfdb', '&.Mui-checked': { color: '#00897b' } }}
+                                        />
+                                    </Box>
                                 );
-                            },
-                        },
-                    ]}
-                />
-            </Stack>
+                            })
+                        )}
+                    </Box>
+                </DialogContent>
 
-            {/* <CreateAccountDialog show={addAccountActive} onClose={() => setAddAccountActive(false)} /> */}
-            {currentCompanyName && (
+                {/* Footer */}
+                <Divider />
+                <DialogActions sx={{ px: 3, py: 1.5, justifyContent: 'flex-end', gap: 1 }}>
+                    <Button onClick={props.onClose} sx={{ color: '#00897b', fontWeight: 600 }}>
+                        {t('CANCEL')}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        disabled={selected.size === 0}
+                        onClick={handleSave}
+                        sx={{ backgroundColor: '#00897b', '&:hover': { backgroundColor: '#00695c' }, fontWeight: 600, px: 3 }}
+                    >
+                        {t('SAVE')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {showConfirm && (
                 <EstimateShareToAccountConfirmationDialog
-                    title={props.title ?? 'Share'}
-                    message={`${t('Are you sure you want to share it')} ${t('share_word_with')} ${currentCompanyName}${t('share_word_with_in_armenian')} ${t('share_question_mark')}`}
-                    onClose={() => {
-                        setCurrentCompanyName(null);
-                    }}
+                    title={props.title ?? t('Share')}
+                    message={`${t('Are you sure you want to share it')} ${t('share_word_with')} ${selected.size} ${t('companies')}${t('share_word_with_in_armenian')} ${t('share_question_mark')}`}
+                    onClose={() => setShowConfirm(false)}
                     onConfirm={onSubmit}
                 />
             )}
-        </F.PageFormDialog>
+        </>
     );
 }
