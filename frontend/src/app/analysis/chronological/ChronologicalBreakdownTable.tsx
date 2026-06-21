@@ -148,57 +148,47 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         e.preventDefault();
     }, [leftWidth]);
 
-    // ── Grab-to-scroll for right panel ──────────────────────────────────────
-    const rightRef      = useRef<HTMLDivElement>(null);
-    const grabbing      = useRef(false);
-    const grabStartX    = useRef(0);
-    const grabScrollX   = useRef(0);
+    // ── Grab-to-scroll (Pointer Events — works for mouse, touch, and pen) ────
+    const rightRef    = useRef<HTMLDivElement>(null);
+    const grabbing    = useRef(false);
+    const grabStartX  = useRef(0);
+    const grabScrollX = useRef(0);
     const [isGrabbing, setIsGrabbing] = useState(false);
 
-    const onRightMouseDown = useCallback((e: React.MouseEvent) => {
+    const onRightPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return; // left-click only
         grabbing.current    = true;
         grabStartX.current  = e.clientX;
         grabScrollX.current = rightRef.current?.scrollLeft ?? 0;
         setIsGrabbing(true);
-        e.preventDefault();
+        // capture keeps events routed here even when pointer leaves the element
+        e.currentTarget.setPointerCapture(e.pointerId);
     }, []);
 
-    const onRightTouchStart = useCallback((e: React.TouchEvent) => {
-        if (e.touches.length !== 1) return;
-        grabbing.current    = true;
-        grabStartX.current  = e.touches[0].clientX;
-        grabScrollX.current = rightRef.current?.scrollLeft ?? 0;
-        setIsGrabbing(true);
+    const onRightPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+        if (!grabbing.current || !rightRef.current) return;
+        rightRef.current.scrollLeft = grabScrollX.current - (e.clientX - grabStartX.current);
+    }, []);
+
+    const onRightPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+        if (!grabbing.current) return;
+        grabbing.current = false;
+        setIsGrabbing(false);
+        e.currentTarget.releasePointerCapture(e.pointerId);
     }, []);
 
     useEffect(() => {
-        const onMouseMove = (e: MouseEvent) => {
-            if (dragging.current) {
-                setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
-            }
-            if (grabbing.current && rightRef.current) {
-                const dx = e.clientX - grabStartX.current;
-                rightRef.current.scrollLeft = grabScrollX.current - dx;
-            }
+        // Only the resize divider still needs document-level listeners
+        const onMove = (e: MouseEvent) => {
+            if (!dragging.current) return;
+            setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
         };
-        const onTouchMove = (e: TouchEvent) => {
-            if (!grabbing.current || !rightRef.current || e.touches.length !== 1) return;
-            const dx = e.touches[0].clientX - grabStartX.current;
-            rightRef.current.scrollLeft = grabScrollX.current - dx;
-        };
-        const onEnd = () => {
-            dragging.current = false;
-            if (grabbing.current) { grabbing.current = false; setIsGrabbing(false); }
-        };
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onEnd);
-        document.addEventListener('touchmove', onTouchMove, { passive: true });
-        document.addEventListener('touchend', onEnd);
+        const onUp = () => { dragging.current = false; };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
         return () => {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onEnd);
-            document.removeEventListener('touchmove', onTouchMove);
-            document.removeEventListener('touchend', onEnd);
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
         };
     }, []);
 
@@ -363,7 +353,14 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
             />
 
             {/* ── RIGHT SCROLLABLE PANEL ── */}
-            <Box ref={rightRef} onMouseDown={onRightMouseDown} onTouchStart={onRightTouchStart} sx={{ flex: 1, overflowX: 'auto', minWidth: 0, cursor: isGrabbing ? 'grabbing' : 'grab', touchAction: 'pan-y' }}>
+            <Box
+                ref={rightRef}
+                onPointerDown={onRightPointerDown}
+                onPointerMove={onRightPointerMove}
+                onPointerUp={onRightPointerUp}
+                onPointerCancel={onRightPointerUp}
+                sx={{ flex: 1, overflowX: 'auto', minWidth: 0, cursor: isGrabbing ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
+            >
                 <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                     <colgroup>
                         {months.map(m => <col key={m} style={{ width: W_MONTH }} />)}
