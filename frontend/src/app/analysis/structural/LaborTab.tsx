@@ -113,7 +113,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                                     </Box>
                                 </TableCell>
                                 <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
-                                    AMD {formatCurrencyRounded(group.totalCost)}
+                                    {formatCurrencyRounded(group.totalCost)} AMD
                                 </TableCell>
                                 <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
                                     {pct(group.totalCost)}
@@ -128,7 +128,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        AMD {formatCurrencyRounded(item.cost)}
+                                        {formatCurrencyRounded(item.cost)} AMD
                                     </TableCell>
                                     <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
                                         {pct(item.cost)}

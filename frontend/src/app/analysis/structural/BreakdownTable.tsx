@@ -124,7 +124,7 @@ export default function BreakdownTable({ estimate }: Props) {
                                     </Box>
                                 </TableCell>
                                 <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
-                                    AMD {formatCurrencyRounded(section.totalCost)}
+                                    {formatCurrencyRounded(section.totalCost)} AMD
                                 </TableCell>
                                 <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
                                     {pct(section.totalCost)}
@@ -142,7 +142,7 @@ export default function BreakdownTable({ estimate }: Props) {
                                         </Typography>
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        AMD {formatCurrencyRounded(sub.totalCost)}
+                                        {formatCurrencyRounded(sub.totalCost)} AMD
                                     </TableCell>
                                     <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
                                         {pct(sub.totalCost)}
