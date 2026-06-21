@@ -101,80 +101,88 @@ export default function StructuralAnalysisPage() {
     };
 
     return (
-        <PageContents title='Structural Analytics'>
-            {hasData && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1, mt: 1, mb: 0.5 }}>
-                    <Typography variant='h5' sx={{ fontWeight: 700, flex: 1 }}>
-                        {selectedEstimate!.name}
-                    </Typography>
-                    <PageButton variant='outlined' label='Create' size='large' sx={{ ...outlinedCreateSx, flexShrink: 0 }} onClick={() => setDialogOpen(true)} />
-                </Box>
-            )}
+        <PageContents title='Structural Analytics' sx={{ overflow: 'hidden', pb: 0 }}>
+            {/* Single flex-column wrapper that fills the Stack height */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                {hasData && (
+                    <>
+                        {/* Project name + Create button — fixed, doesn't scroll */}
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1, mt: 1, mb: 0.5, flexShrink: 0 }}>
+                            <Typography variant='h5' sx={{ fontWeight: 700, flex: 1 }}>
+                                {selectedEstimate!.name}
+                            </Typography>
+                            <PageButton variant='outlined' label='Create' size='large' sx={{ ...outlinedCreateSx, flexShrink: 0 }} onClick={() => setDialogOpen(true)} />
+                        </Box>
 
-            {hasData && (
-                <TabContext value={activeTab}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider', position: 'sticky', top: { xs: 56, md: 64 }, zIndex: 10, backgroundColor: '#fff' }}>
-                        <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
-                            <Tab label={t('General')} value='general' />
-                            <Tab label={t('Labor')} value='labor' />
-                            <Tab label={t('Materials')} value='materials' />
-                        </TabList>
+                        <TabContext value={activeTab}>
+                            {/* Tab bar — fixed, doesn't scroll */}
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
+                                <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
+                                    <Tab label={t('General')} value='general' />
+                                    <Tab label={t('Labor')} value='labor' />
+                                    <Tab label={t('Materials')} value='materials' />
+                                </TabList>
+                            </Box>
+
+                            {/* Scrollable tab content only */}
+                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                                <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                    {/* Top row: pie placeholder | bar chart | param cards */}
+                                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                                        {/* Pie chart placeholder (empty for now) */}
+                                        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', minHeight: 220 }} />
+                                        {/* Other Expenses bar chart */}
+                                        <Box sx={{ flex: 1 }}>
+                                            <OtherExpensesChart estimate={selectedEstimate!} height={220} />
+                                        </Box>
+                                        {/* Param cards stacked */}
+                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
+                                            <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.laborItemCount ?? 0} />
+                                            <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.materialItemCount ?? 0} />
+                                            <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.unitTime ?? 0} />
+                                        </Box>
+                                    </Box>
+                                    {/* Bottom row: 3 metric cards */}
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
+                                        <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCostWithOtherExpenses ?? selectedEstimate!.totalCost ?? 0} />
+                                        <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
+                                        <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
+                                    </Box>
+                                    <BreakdownTable estimate={selectedEstimate!} />
+                                </TabPanel>
+
+                                <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                                    <LaborTab estimate={selectedEstimate!} />
+                                </TabPanel>
+
+                                <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                                    <MaterialsTab estimate={selectedEstimate!} />
+                                </TabPanel>
+                            </Box>
+                        </TabContext>
+                    </>
+                )}
+
+                {!hasData && (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flex: 1,
+                            gap: 2,
+                            pb: 8,
+                        }}
+                    >
+                        <AccountTreeIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
+                        <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
+                            {t('No analytics created yet')}
+                        </Typography>
+                        <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
                     </Box>
-
-                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                        {/* Top row: pie placeholder | bar chart | param cards */}
-                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                            {/* Pie chart placeholder (empty for now) */}
-                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', minHeight: 220 }} />
-                            {/* Other Expenses bar chart */}
-                            <Box sx={{ flex: 1 }}>
-                                <OtherExpensesChart estimate={selectedEstimate!} height={220} />
-                            </Box>
-                            {/* Param cards stacked */}
-                            <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
-                                <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.laborItemCount ?? 0} />
-                                <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.materialItemCount ?? 0} />
-                                <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.unitTime ?? 0} />
-                            </Box>
-                        </Box>
-                        {/* Bottom row: 3 metric cards */}
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
-                            <MetricCard label={t('Total Cost')} value={selectedEstimate!.totalCostWithOtherExpenses ?? selectedEstimate!.totalCost ?? 0} />
-                            <MetricCard label={t('Materials Cost')} value={selectedEstimate!.materialTotalCost ?? 0} />
-                            <MetricCard label={t('Labor Cost')} value={selectedEstimate!.laborTotalCost ?? 0} />
-                        </Box>
-                        <BreakdownTable estimate={selectedEstimate!} />
-                    </TabPanel>
-
-                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                        <LaborTab estimate={selectedEstimate!} />
-                    </TabPanel>
-
-                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                        <MaterialsTab estimate={selectedEstimate!} />
-                    </TabPanel>
-                </TabContext>
-            )}
-
-            {!hasData && (
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flex: 1,
-                        gap: 2,
-                        pb: 8,
-                    }}
-                >
-                    <AccountTreeIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
-                    <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
-                        {t('No analytics created yet')}
-                    </Typography>
-                    <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
-                </Box>
-            )}
+                )}
+            </Box>
 
             <ChooseEstimationDialog
                 open={dialogOpen}
