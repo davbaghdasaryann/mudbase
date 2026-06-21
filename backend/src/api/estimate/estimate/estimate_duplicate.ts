@@ -37,6 +37,10 @@ registerApiSession('estimate/duplicate', async (req, res, session) => {
         isOriginal: true,
         totalCost: originalEstimate.totalCost,
         totalCostWithOtherExpenses: originalEstimate.totalCostWithOtherExpenses,
+        laborTotalCost: originalEstimate.laborTotalCost,
+        materialTotalCost: originalEstimate.materialTotalCost,
+        laborItemCount: originalEstimate.laborItemCount,
+        materialItemCount: originalEstimate.materialItemCount,
         otherExpenses: originalEstimate.otherExpenses ? [...originalEstimate.otherExpenses] : [{typeOfCost: 0}],
     };
 
