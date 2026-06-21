@@ -200,5 +200,9 @@
   "Cost": "Cost",
   "High": "High",
   "Medium": "Medium",
-  "Low": "Low"
+  "Low": "Low",
+  "Industry": "Industry",
+  "All": "All",
+  "CANCEL": "CANCEL",
+  "SHARE": "SHARE"
 }

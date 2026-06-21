@@ -523,5 +523,9 @@
   "Delete this widget?": "Ջնջե՞լ այս վիջեթը։",
   "15 days": "15 օր",
   "30 days": "30 օր",
-  "No data available yet. Data will appear after first snapshot.": "Տվյալներ դեռ չկան։ Տվյալները կհայտնվեն առաջին արձանագրությունից հետո։"
+  "No data available yet. Data will appear after first snapshot.": "Տվյալներ դեռ չկան։ Տվյալները կհայտնվեն առաջին արձանագրությունից հետո։",
+  "Industry": "Ոլորտ",
+  "All": "Բոլորը",
+  "CANCEL": "ՉԵՂԱՐԿԵԼ",
+  "SHARE": "ԿԻՍՎԵԼ"
 }
