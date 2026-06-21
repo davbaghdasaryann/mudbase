@@ -145,5 +145,6 @@
     "temporaryStructures": "Временные сооружения",
     "transportationCosts": "Транспортные расходы",
     "smallScaleConstructionWork": "Мелкомасштабные строительные работы",
-    "smallScaleConstructionMaterials": "Мелкомасштабные строительные материалы"
+    "smallScaleConstructionMaterials": "Мелкомасштабные строительные материалы",
+  "typeOfCost": "Тип расходов"
 }

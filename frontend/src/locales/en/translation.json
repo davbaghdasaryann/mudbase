@@ -213,5 +213,6 @@
   "temporaryStructures": "Temporary Structures",
   "transportationCosts": "Transportation Costs",
   "smallScaleConstructionWork": "Small Scale Construction Work",
-  "smallScaleConstructionMaterials": "Small Scale Construction Materials"
+  "smallScaleConstructionMaterials": "Small Scale Construction Materials",
+  "typeOfCost": "Type of Cost"
 }
