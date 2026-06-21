@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel,
+    Box, Typography, TextField, Select, MenuItem,
     Checkbox, InputAdornment, Button, Divider, CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -126,8 +126,8 @@ function ShareDialogBody(props: Props) {
                 open
                 onClose={props.onClose}
                 fullWidth
-                maxWidth="md"
-                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 560 } }}
+                maxWidth="sm"
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 620, maxWidth: 520 } }}
             >
                 {/* Header */}
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
@@ -153,14 +153,16 @@ function ShareDialogBody(props: Props) {
                                 ),
                             }}
                         />
-                        <FormControl size="small" sx={{ minWidth: 150 }}>
-                            <InputLabel shrink>{t('Industry')}</InputLabel>
+                        <Box sx={{ minWidth: 150 }}>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, pl: 0.25 }}>
+                                {t('Industry')}
+                            </Typography>
                             <Select
+                                size="small"
                                 value={industry}
-                                label={t('Industry')}
-                                notched
                                 displayEmpty
                                 onChange={e => setIndustry(e.target.value)}
+                                sx={{ width: '100%' }}
                             >
                                 <MenuItem value="All">{t('All')}</MenuItem>
                                 {industryOptions.map(act => (
@@ -169,7 +171,7 @@ function ShareDialogBody(props: Props) {
                                     </MenuItem>
                                 ))}
                             </Select>
-                        </FormControl>
+                        </Box>
                     </Box>
 
                     {/* Companies header */}
@@ -188,7 +190,7 @@ function ShareDialogBody(props: Props) {
                     </Box>
 
                     {/* Company list */}
-                    <Box sx={{ maxHeight: 360, overflowY: 'auto' }}>
+                    <Box sx={{ maxHeight: 360, overflowY: 'scroll' }}>
                         {apiData.loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                                 <CircularProgress size={28} sx={{ color: BRAND }} />
