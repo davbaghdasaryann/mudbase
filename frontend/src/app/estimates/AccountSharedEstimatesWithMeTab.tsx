@@ -231,7 +231,7 @@ export default function AccountSharedEstimatesWithMeTab() {
                     columns={[
                         {field: 'estimateNumber', headerName: 'ID', flex: 0.2},
                         {field: 'sharedByAccountName', headerName: t('Shared by'), flex: 0.4},
-                        {field: 'name', headerName: t('Name'), flex: 0.6},
+                        {field: 'name', headerName: t('Name'), flex: 2},
                         {
                             field: 'totalCostWithOtherExpenses',
                             type: 'number',
@@ -374,7 +374,7 @@ export default function AccountSharedEstimatesWithMeTab() {
                     columns={[
                         {field: 'estimateNumber', headerName: 'ID', flex: 0.2},
                         {field: 'sharedByAccountName', headerName: t('Shared by'), flex: 0.4},
-                        {field: 'name', headerName: t('Name'), flex: 0.6},
+                        {field: 'name', headerName: t('Name'), flex: 2},
                         {
                             field: 'totalCostWithOtherExpenses',
                             headerName: t('Total Cost'),
@@ -527,7 +527,7 @@ export default function AccountSharedEstimatesWithMeTab() {
                     columns={[
                         {field: 'estimateNumber', headerName: 'ID', flex: 0.2},
                         {field: 'sharedByAccountName', headerName: t('Shared by'), flex: 0.4},
-                        {field: 'name', headerName: t('Name'), flex: 0.6},
+                        {field: 'name', headerName: t('Name'), flex: 2},
                         {
                             field: 'totalCostWithOtherExpenses',
                             type: 'number',

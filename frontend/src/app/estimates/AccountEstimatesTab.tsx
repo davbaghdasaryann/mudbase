@@ -194,7 +194,7 @@ export default function AccountEstimatesTab() {
                     {
                         field: 'name',
                         headerName: t('Name'),
-                        flex: 0.6,
+                        flex: 2,
                         renderCell: (params) => (
                             <div style={{
                                 whiteSpace: 'normal',
