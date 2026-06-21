@@ -32,10 +32,10 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
             .find({ estimateId: estId }, { projection: { _id: 1, name: 1, estimateSectionId: 1, displayIndex: 1 } })
             .toArray(),
         Db.getEstimateLaborItemsCollection()
-            .find({ estimateId: estId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, estimateSubsectionId: 1, displayIndex: 1, _id: 1 } })
+            .find({ estimateId: estId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, estimateSubsectionId: 1, displayIndex: 1, laborOfferItemName: 1, _id: 1 } })
             .toArray(),
         Db.getEstimateMaterialItemsCollection()
-            .find({ estimateId: estId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, _id: 1 } })
+            .find({ estimateId: estId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, materialOfferItemName: 1, _id: 1 } })
             .toArray(),
     ]);
 
@@ -186,7 +186,7 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
 
         items.push({
             id: laborItemId,
-            name: info.name,
+            name: laborItem.laborOfferItemName || info.name,
             code: info.fullCode ?? '',
             type: 'labor',
             qty: Math.round((laborItem.quantity ?? 0) * 100) / 100,
@@ -205,7 +205,7 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
             const matMonthlyPrices = getCatalogMonthlyPrices(matCatalogId, materialOfferCatalog, materialAvgByOffer, matInfo.averagePrice ?? 0, materialPriceCache);
             items.push({
                 id: matItem._id.toString(),
-                name: matInfo.name,
+                name: matItem.materialOfferItemName || matInfo.name,
                 code: matInfo.fullCode ?? '',
                 type: 'material',
                 qty: Math.round((matItem.quantity ?? 0) * 100) / 100,
