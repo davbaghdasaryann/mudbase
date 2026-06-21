@@ -80,7 +80,6 @@ export default function CostBreakdownChart({ estimate, height = 260 }: { estimat
                 background: '#fff',
                 height: '100%',
                 boxSizing: 'border-box',
-                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
             }}
@@ -95,7 +94,8 @@ export default function CostBreakdownChart({ estimate, height = 260 }: { estimat
                 </Box>
             ) : (
                 <>
-                    <ResponsiveContainer width='100%' height={chartHeight}>
+                    <Box sx={{ flex: 1, minHeight: chartHeight }}>
+                    <ResponsiveContainer width='100%' height='100%'>
                         <PieChart>
                             <defs>
                                 {SEGMENTS.map(s => (
@@ -130,6 +130,7 @@ export default function CostBreakdownChart({ estimate, height = 260 }: { estimat
                             <Tooltip content={<CustomTooltip />} />
                         </PieChart>
                     </ResponsiveContainer>
+                    </Box>
 
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mt: 1 }}>
                         {data.map(d => {

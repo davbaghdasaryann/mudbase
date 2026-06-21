@@ -131,11 +131,11 @@ export default function StructuralAnalysisPage() {
                                     {/* Top row: pie placeholder | bar chart | param cards */}
                                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                                         {/* Cost breakdown donut chart */}
-                                        <Box sx={{ flex: 1, height: 220, minHeight: 220, maxHeight: 220 }}>
+                                        <Box sx={{ flex: 1, minHeight: 180 }}>
                                             <CostBreakdownChart estimate={selectedEstimate!} height={220} />
                                         </Box>
                                         {/* Other Expenses bar chart */}
-                                        <Box sx={{ flex: 1, height: 220, minHeight: 220, maxHeight: 220 }}>
+                                        <Box sx={{ flex: 1, minHeight: 180 }}>
                                             <OtherExpensesChart estimate={selectedEstimate!} height={220} />
                                         </Box>
                                         {/* Param cards stacked */}

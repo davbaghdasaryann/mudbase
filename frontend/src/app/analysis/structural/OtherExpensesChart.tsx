@@ -77,12 +77,15 @@ export default function OtherExpensesChart({ estimate, height = 260 }: Props) {
                 background: '#fff',
                 height: '100%',
                 boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
             }}
         >
             <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>
                 {t('Other Expenses')}
             </Typography>
-            <ResponsiveContainer width='100%' height={chartHeight}>
+            <Box sx={{ flex: 1, minHeight: chartHeight }}>
+            <ResponsiveContainer width='100%' height='100%'>
                 <BarChart data={data} margin={{ top: 4, right: 12, left: 4, bottom: 0 }} barCategoryGap='30%'>
                     <defs>
                         {BAR_GRADIENTS.map((g, i) => (
@@ -103,6 +106,7 @@ export default function OtherExpensesChart({ estimate, height = 260 }: Props) {
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>
+            </Box>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mt: 1 }}>
                 {data.map(d => (
                     <Box key={d.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
