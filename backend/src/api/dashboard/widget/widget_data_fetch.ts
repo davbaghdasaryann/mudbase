@@ -589,19 +589,23 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
     });
 });
 
+/** Fetch offer IDs excluding offers from dev/test accounts — matches catalog filter logic. */
+async function getNonDevOfferIds(coll: any, matchQuery: object, extraProjection?: object): Promise<any[]> {
+    return coll.aggregate([
+        { $match: matchQuery },
+        { $lookup: { from: 'accounts', localField: 'accountId', foreignField: '_id', as: 'accountInfo' } },
+        { $match: { 'accountInfo.isDev': { $ne: true } } },
+        { $project: { _id: 1, itemId: 1, isArchived: 1, ...(extraProjection ?? {}) } },
+    ]).toArray();
+}
+
 async function getOfferIdsForItem(
     itemId: ObjectId,
     dataSource: 'materials' | 'labor'
 ): Promise<ObjectId[]> {
-    if (dataSource === 'materials') {
-        const coll = Db.getMaterialOffersCollection();
-        const offers = await coll.find({ itemId }, { projection: { _id: 1 } }).toArray();
-        return offers.map(o => o._id!);
-    } else {
-        const coll = Db.getLaborOffersCollection();
-        const offers = await coll.find({ itemId }, { projection: { _id: 1 } }).toArray();
-        return offers.map(o => o._id!);
-    }
+    const coll = dataSource === 'materials' ? Db.getMaterialOffersCollection() : Db.getLaborOffersCollection();
+    const offers = await getNonDevOfferIds(coll, { itemId });
+    return offers.map((o: any) => o._id);
 }
 
 /** Get all offer IDs for multiple catalog items (for estimate reconstruction). */
@@ -610,15 +614,9 @@ async function getOfferIdsForItems(
     dataSource: 'materials' | 'labor'
 ): Promise<ObjectId[]> {
     if (itemIds.length === 0) return [];
-    if (dataSource === 'materials') {
-        const coll = Db.getMaterialOffersCollection();
-        const offers = await coll.find({ itemId: { $in: itemIds } }, { projection: { _id: 1 } }).toArray();
-        return offers.map(o => o._id!);
-    } else {
-        const coll = Db.getLaborOffersCollection();
-        const offers = await coll.find({ itemId: { $in: itemIds } }, { projection: { _id: 1 } }).toArray();
-        return offers.map(o => o._id!);
-    }
+    const coll = dataSource === 'materials' ? Db.getMaterialOffersCollection() : Db.getLaborOffersCollection();
+    const offers = await getNonDevOfferIds(coll, { itemId: { $in: itemIds } });
+    return offers.map((o: any) => o._id);
 }
 
 async function getJournalPointsInWindow(
@@ -998,10 +996,10 @@ async function getEstimateDailyPoints(
     const laborCatalogIds = [...laborQtyMap.keys()].map(id => new ObjectId(id));
     const materialCatalogIds = [...materialQtyMap.keys()].map(id => new ObjectId(id));
 
-    // Fetch all offers for these catalog items (including archived for historical carry-forward)
+    // Fetch all offers for these catalog items, excluding dev/test accounts (matching catalog filter)
     const [laborOffers, materialOffers] = await Promise.all([
-        laborCatalogIds.length > 0 ? Db.getLaborOffersCollection().find({ itemId: { $in: laborCatalogIds } }, { projection: { _id: 1, itemId: 1, isArchived: 1 } }).toArray() : [],
-        materialCatalogIds.length > 0 ? Db.getMaterialOffersCollection().find({ itemId: { $in: materialCatalogIds } }, { projection: { _id: 1, itemId: 1, isArchived: 1 } }).toArray() : []
+        laborCatalogIds.length > 0 ? getNonDevOfferIds(Db.getLaborOffersCollection(), { itemId: { $in: laborCatalogIds } }) : [],
+        materialCatalogIds.length > 0 ? getNonDevOfferIds(Db.getMaterialOffersCollection(), { itemId: { $in: materialCatalogIds } }) : []
     ]);
 
     // offerId → { catalogItemId, isArchived }
