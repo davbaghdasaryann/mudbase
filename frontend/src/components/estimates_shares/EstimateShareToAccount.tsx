@@ -124,7 +124,7 @@ function ShareDialogBody(props: Props) {
         <>
             <Dialog
                 open
-                onClose={props.onClose}
+                onClose={(_, reason) => { if (reason === 'backdropClick') return; props.onClose(); }}
                 fullWidth
                 maxWidth={false}
                 PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 713, width: 660, display: 'flex', flexDirection: 'column' } }}
