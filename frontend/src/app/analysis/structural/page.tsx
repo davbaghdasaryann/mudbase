@@ -101,7 +101,7 @@ export default function StructuralAnalysisPage() {
                     <Typography variant='h5' sx={{ fontWeight: 700 }}>
                         {selectedEstimate!.name}
                     </Typography>
-                    <PageButton variant='contained' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px' }} onClick={() => setDialogOpen(true)} />
+                    <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
                 </Box>
             )}
 
