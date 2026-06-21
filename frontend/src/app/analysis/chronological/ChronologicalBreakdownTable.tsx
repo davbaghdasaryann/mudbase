@@ -29,7 +29,7 @@ const W_CODE  = 94;
 const W_UNIT  = 52;
 const W_QTY   = 58;
 const W_FIXED = W_CODE + W_UNIT + W_QTY; // 204
-const DEF_LEFT = 1054;
+const DEF_LEFT = 470;
 const MIN_LEFT = 280;
 const W_MONTH  = 80;
 
@@ -137,15 +137,6 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
 
     // ── Resizable left panel ────────────────────────────────────────────────
     const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
-    const outerRef  = useRef<HTMLDivElement>(null);
-
-    // Cap left panel to available container width (leave ≥180px for right panel)
-    useEffect(() => {
-        if (!outerRef.current) return;
-        const max = outerRef.current.clientWidth - 180 - 5;
-        if (max > MIN_LEFT && DEF_LEFT > max) setLeftWidth(max);
-    }, []);
-
     const dragging  = useRef(false);
     const startX    = useRef(0);
     const startW    = useRef(0);
@@ -190,8 +181,7 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         // Only the resize divider still needs document-level listeners
         const onMove = (e: MouseEvent) => {
             if (!dragging.current) return;
-            const maxLeft = outerRef.current ? outerRef.current.clientWidth - 180 - 5 : DEF_LEFT;
-            setLeftWidth(Math.max(MIN_LEFT, Math.min(maxLeft, startW.current + (e.clientX - startX.current))));
+            setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
         };
         const onUp = () => { dragging.current = false; };
         document.addEventListener('mousemove', onMove);
@@ -328,7 +318,7 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
     );
 
     return (
-        <Box ref={outerRef} sx={{ mt: 3, border: `1px solid ${BORDER}`, borderRadius: 2, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', display: 'flex', userSelect: 'none' }}>
+        <Box sx={{ mt: 3, border: `1px solid ${BORDER}`, borderRadius: 2, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', display: 'flex', userSelect: 'none' }}>
 
             {/* ── LEFT FIXED PANEL ── */}
             <Box sx={{ flexShrink: 0, width: leftWidth, zIndex: 2, boxShadow: '3px 0 8px rgba(0,0,0,0.06)', position: 'relative' }}>
