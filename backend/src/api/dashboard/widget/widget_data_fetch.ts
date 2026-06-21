@@ -236,15 +236,14 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
                 const merged = mergeSnapshotAndJournalPointsDaily(snapshotDocs, dailyJournal);
                 const today = roundToDay(now);
                 const todayKey = today.toISOString().slice(0, 10);
-                const hasTodayBucket = merged.some(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                if (!hasTodayBucket && session.mongoAccountId) {
-                    let currentValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                    if (currentValue == null || currentValue === 0) {
-                        const lastPoint = merged.length > 0 ? merged[merged.length - 1] : null;
-                        if (lastPoint && lastPoint.value > 0) currentValue = lastPoint.value;
-                    }
-                    if (currentValue != null && currentValue > 0) {
-                        merged.push({ timestamp: today, value: currentValue, min: currentValue, max: currentValue });
+                // Always override today with live catalog average (excludes dev accounts, matches Catalog page)
+                if (session.mongoAccountId) {
+                    const liveValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
+                    if (liveValue != null && liveValue > 0) {
+                        const idx = merged.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                        const todayPoint = { timestamp: today, value: liveValue, min: liveValue, max: liveValue };
+                        if (idx >= 0) merged[idx] = todayPoint;
+                        else merged.push(todayPoint);
                     }
                 }
                 dailySnapshots = normalizeToDailyBuckets(merged, startDate, now, dayCount);
@@ -486,15 +485,14 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
                 const merged = mergeSnapshotAndJournalPointsDaily(snapshotDocs, dailyJournal);
                 const today = roundToDay(now);
                 const todayKey = today.toISOString().slice(0, 10);
-                const hasTodayBucket = merged.some(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                if (!hasTodayBucket && session.mongoAccountId) {
-                    let currentValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
-                    if (currentValue == null || currentValue === 0) {
-                        const lastPoint = merged.length > 0 ? merged[merged.length - 1] : null;
-                        if (lastPoint && lastPoint.value > 0) currentValue = lastPoint.value;
-                    }
-                    if (currentValue != null && currentValue > 0) {
-                        merged.push({ timestamp: today, value: currentValue, min: currentValue, max: currentValue });
+                // Always override today with live catalog average (excludes dev accounts, matches Catalog page)
+                if (session.mongoAccountId) {
+                    const liveValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
+                    if (liveValue != null && liveValue > 0) {
+                        const idx = merged.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                        const todayPoint = { timestamp: today, value: liveValue, min: liveValue, max: liveValue };
+                        if (idx >= 0) merged[idx] = todayPoint;
+                        else merged.push(todayPoint);
                     }
                 }
                 dailySnapshots = normalizeToDailyBuckets(merged, startDate, now, dayCount);
