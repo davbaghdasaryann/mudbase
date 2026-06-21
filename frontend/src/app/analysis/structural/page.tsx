@@ -98,7 +98,7 @@ export default function StructuralAnalysisPage() {
         <PageContents title='Structural Analytics'>
             {hasData && (
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1, mb: 0.5 }}>
-                    <Typography variant='h5' sx={{ fontWeight: 700, flex: 1 }}>
+                    <Typography variant='h5' sx={{ fontWeight: 700, flex: 1, maxWidth: '65%' }}>
                         {selectedEstimate!.name}
                     </Typography>
                     <PageButton variant='outlined' label='Create' size='large' sx={{ ...outlinedCreateSx, flexShrink: 0 }} onClick={() => setDialogOpen(true)} />
