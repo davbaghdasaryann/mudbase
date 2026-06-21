@@ -11,9 +11,9 @@ const SEGMENTS = [
         key: 'labor',
         labelKey: 'Labor',
         gradId: 'pie-grad-labor',
-        inner: '#CE93D8',
-        outer: '#7B1FA2',
-        dot: '#9C27B0',
+        inner: '#00CCDD',
+        outer: '#00899B',
+        dot: '#00899B',
     },
     {
         key: 'materials',
@@ -27,9 +27,9 @@ const SEGMENTS = [
         key: 'other',
         labelKey: 'Other Expenses',
         gradId: 'pie-grad-other',
-        inner: '#F0F0F0',
-        outer: '#BDBDBD',
-        dot: '#BDBDBD',
+        inner: '#A8DED9',
+        outer: '#5CB8B0',
+        dot: '#5CB8B0',
     },
 ];
 
@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     return (
         <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 140 }}>
             <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{entry.name}</Typography>
-            <Typography variant='body2' sx={{ color: '#7B1FA2' }}>
+            <Typography variant='body2' sx={{ color: '#00ABBE' }}>
                 {Number(entry.value).toLocaleString()} AMD
             </Typography>
             <Typography variant='caption' sx={{ color: 'text.secondary' }}>
