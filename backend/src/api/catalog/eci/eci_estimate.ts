@@ -321,6 +321,10 @@ registerApiSession('eci/copy_estimate', async (req, res, session) => {
             isOriginal: true,
             totalCost: originalEstimate!.totalCost,
             totalCostWithOtherExpenses: originalEstimate!.totalCostWithOtherExpenses,
+            laborTotalCost: originalEstimate!.laborTotalCost,
+            materialTotalCost: originalEstimate!.materialTotalCost,
+            laborItemCount: originalEstimate!.laborItemCount,
+            materialItemCount: originalEstimate!.materialItemCount,
             otherExpenses: originalEstimate!.otherExpenses ? [...originalEstimate!.otherExpenses] : [{ typeOfCost: 0 }],
         };
 
@@ -357,8 +361,13 @@ registerApiSession('eci/copy_estimate', async (req, res, session) => {
                         estimateSubsectionId: newSubsectionId,
                         estimateId: newEstimateId,
                         laborItemId: laborItem.laborItemId,
+                        laborOfferId: laborItem.laborOfferId,
+                        measurementUnitMongoId: laborItem.measurementUnitMongoId,
                         quantity: laborItem.quantity,
+                        averagePrice: laborItem.averagePrice,
                         changableAveragePrice: laborItem.changableAveragePrice,
+                        laborOfferItemName: laborItem.laborOfferItemName,
+                        laborHours: laborItem.laborHours,
                         isHidden: laborItem.isHidden,
                         displayIndex: laborItem.displayIndex,
                         priceSource: laborItem.priceSource,
@@ -373,8 +382,13 @@ registerApiSession('eci/copy_estimate', async (req, res, session) => {
                             estimateId: newEstimateId,
                             estimatedLaborId: newLaborItemId,
                             materialItemId: materialItem.materialItemId,
+                            materialOfferId: materialItem.materialOfferId,
+                            measurementUnitMongoId: materialItem.measurementUnitMongoId,
                             quantity: materialItem.quantity,
+                            averagePrice: materialItem.averagePrice,
                             changableAveragePrice: materialItem.changableAveragePrice,
+                            materialOfferItemName: materialItem.materialOfferItemName,
+                            materialConsumptionNorm: materialItem.materialConsumptionNorm,
                         });
                     }
                 }
