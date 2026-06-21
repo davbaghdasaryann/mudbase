@@ -80,6 +80,7 @@ export default function CostBreakdownChart({ estimate, height = 260 }: { estimat
                 background: '#fff',
                 height: '100%',
                 boxSizing: 'border-box',
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
             }}
