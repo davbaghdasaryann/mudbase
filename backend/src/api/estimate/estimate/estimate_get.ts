@@ -13,7 +13,6 @@ registerApiSession('estimate/get', async (req, res, session) => {
     const estimate = await estimatesColl.findOne({_id: estimateId});
 
     if (estimate) {
-        // Count through valid sections → subsections, matching Labor/Materials analysis tabs
         const sections = await Db.getEstimateSectionsCollection()
             .find({estimateId})
             .project({_id: 1})
@@ -22,14 +21,14 @@ registerApiSession('estimate/get', async (req, res, session) => {
 
         if (sectionIds.length > 0) {
             const subsections = await Db.getEstimateSubsectionsCollection()
-                .find({estimateSectionId: {$in: sectionIds}})
+                .find({estimateSectionId: {$in: sectionIds}, estimateId})
                 .project({_id: 1})
                 .toArray();
             const subsectionIds = subsections.map(s => s._id);
 
             if (subsectionIds.length > 0) {
                 const allLaborItems = await Db.getEstimateLaborItemsCollection()
-                    .find({estimateSubsectionId: {$in: subsectionIds}})
+                    .find({estimateId, estimateSubsectionId: {$in: subsectionIds}})
                     .project({_id: 1, laborItemId: 1, isHidden: 1})
                     .toArray();
 
@@ -43,7 +42,7 @@ registerApiSession('estimate/get', async (req, res, session) => {
                         .map(l => l.laborItemId.toString())
                 ).size;
 
-                const materialQuery: any = {estimateSubsectionId: {$in: subsectionIds}};
+                const materialQuery: any = {estimateId, estimateSubsectionId: {$in: subsectionIds}};
                 if (hiddenLaborObjectIds.length > 0) {
                     materialQuery.estimatedLaborId = {$nin: hiddenLaborObjectIds};
                 }
