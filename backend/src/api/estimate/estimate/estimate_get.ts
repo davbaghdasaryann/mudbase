@@ -1,3 +1,4 @@
+import {ObjectId} from 'mongodb';
 import {registerApiSession} from '@/server/register';
 
 import * as Db from '@/db';
@@ -12,18 +13,59 @@ registerApiSession('estimate/get', async (req, res, session) => {
     const estimate = await estimatesColl.findOne({_id: estimateId});
 
     if (estimate) {
-        const laborCol = Db.getEstimateLaborItemsCollection();
-        const materialCol = Db.getEstimateMaterialItemsCollection();
+        // Count through valid sections → subsections, matching Labor/Materials analysis tabs
+        const sections = await Db.getEstimateSectionsCollection()
+            .find({estimateId})
+            .project({_id: 1})
+            .toArray();
+        const sectionIds = sections.map(s => s._id);
 
-        const laborItems = await laborCol.find({estimateId}).toArray();
-        const hiddenLaborIds = new Set(laborItems.filter(l => l.isHidden).map(l => l._id.toString()));
+        if (sectionIds.length > 0) {
+            const subsections = await Db.getEstimateSubsectionsCollection()
+                .find({estimateSectionId: {$in: sectionIds}})
+                .project({_id: 1})
+                .toArray();
+            const subsectionIds = subsections.map(s => s._id);
 
-        const visibleLabor = laborItems.filter(l => !l.isHidden && l.laborItemId);
-        estimate.laborItemCount = new Set(visibleLabor.map(l => l.laborItemId.toString())).size;
+            if (subsectionIds.length > 0) {
+                const allLaborItems = await Db.getEstimateLaborItemsCollection()
+                    .find({estimateSubsectionId: {$in: subsectionIds}})
+                    .project({_id: 1, laborItemId: 1, isHidden: 1})
+                    .toArray();
 
-        const materialItems = await materialCol.find({estimateId}).toArray();
-        const visibleMaterials = materialItems.filter(m => !hiddenLaborIds.has(m.estimatedLaborId.toString()) && m.materialItemId);
-        estimate.materialItemCount = new Set(visibleMaterials.map(m => m.materialItemId.toString())).size;
+                const hiddenLaborObjectIds = allLaborItems
+                    .filter(l => l.isHidden)
+                    .map(l => l._id as ObjectId);
+
+                estimate.laborItemCount = new Set(
+                    allLaborItems
+                        .filter(l => !l.isHidden && l.laborItemId)
+                        .map(l => l.laborItemId.toString())
+                ).size;
+
+                const materialQuery: any = {estimateSubsectionId: {$in: subsectionIds}};
+                if (hiddenLaborObjectIds.length > 0) {
+                    materialQuery.estimatedLaborId = {$nin: hiddenLaborObjectIds};
+                }
+
+                const materialItems = await Db.getEstimateMaterialItemsCollection()
+                    .find(materialQuery)
+                    .project({materialItemId: 1})
+                    .toArray();
+
+                estimate.materialItemCount = new Set(
+                    materialItems
+                        .filter(m => m.materialItemId)
+                        .map(m => m.materialItemId.toString())
+                ).size;
+            } else {
+                estimate.laborItemCount = 0;
+                estimate.materialItemCount = 0;
+            }
+        } else {
+            estimate.laborItemCount = 0;
+            estimate.materialItemCount = 0;
+        }
     }
 
     respondJson(res, estimate);
