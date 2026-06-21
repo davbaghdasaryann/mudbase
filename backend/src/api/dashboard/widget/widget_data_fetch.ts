@@ -69,17 +69,24 @@ async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<num
     return directCost * otherExpensesMultiplier(estimate?.otherExpenses ?? []);
 }
 
-/** Compute live market average price for a catalog item, excluding dev/test accounts — matches catalog display. */
-async function getLiveAveragePrice(itemId: ObjectId, isLabor: boolean): Promise<number | null> {
+/** Compute live market avg/min/max for a catalog item, excluding dev/test accounts — matches catalog display. */
+async function getLiveOfferStats(itemId: ObjectId, isLabor: boolean): Promise<{ avg: number; min: number; max: number } | null> {
     const coll = isLabor ? Db.getLaborOffersCollection() : Db.getMaterialOffersCollection();
     const rows = await coll.aggregate([
         { $match: { itemId, price: { $ne: 0, $exists: true }, $or: [{ isArchived: false }, { isArchived: { $exists: false } }] } },
         { $lookup: { from: 'accounts', localField: 'accountId', foreignField: '_id', as: 'accountInfo' } },
         { $match: { 'accountInfo.isDev': { $ne: true } } },
-        { $group: { _id: null, avg: { $avg: '$price' } } },
+        { $group: { _id: null, avg: { $avg: '$price' }, min: { $min: '$price' }, max: { $max: '$price' } } },
     ]).toArray();
     if (rows.length === 0 || !(rows[0] as any).avg) return null;
-    return Math.round((rows[0] as any).avg);
+    const r = rows[0] as any;
+    return { avg: Math.round(r.avg), min: Math.round(r.min), max: Math.round(r.max) };
+}
+
+/** Compute live market average price for a catalog item, excluding dev/test accounts — matches catalog display. */
+async function getLiveAveragePrice(itemId: ObjectId, isLabor: boolean): Promise<number | null> {
+    const stats = await getLiveOfferStats(itemId, isLabor);
+    return stats?.avg ?? null;
 }
 
 /** Get current value for the widget — reads live stored values that match what users see in the UI. */
@@ -236,12 +243,13 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
                 const merged = mergeSnapshotAndJournalPointsDaily(snapshotDocs, dailyJournal);
                 const today = roundToDay(now);
                 const todayKey = today.toISOString().slice(0, 10);
-                // Always override today with live catalog average (excludes dev accounts, matches Catalog page)
-                if (session.mongoAccountId) {
-                    const liveValue = await getCurrentValueForWidget(widget!, session.mongoAccountId);
-                    if (liveValue != null && liveValue > 0) {
+                // Always override today with live catalog stats (excludes dev accounts, matches Catalog page)
+                {
+                    const isLabor = widget!.dataSource === 'labor';
+                    const liveStats = await getLiveOfferStats(itemId as ObjectId, isLabor);
+                    if (liveStats != null && liveStats.avg > 0) {
                         const idx = merged.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                        const todayPoint = { timestamp: today, value: liveValue, min: liveValue, max: liveValue };
+                        const todayPoint = { timestamp: today, value: liveStats.avg, min: liveStats.min, max: liveStats.max };
                         if (idx >= 0) merged[idx] = todayPoint;
                         else merged.push(todayPoint);
                     }
@@ -485,12 +493,13 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
                 const merged = mergeSnapshotAndJournalPointsDaily(snapshotDocs, dailyJournal);
                 const today = roundToDay(now);
                 const todayKey = today.toISOString().slice(0, 10);
-                // Always override today with live catalog average (excludes dev accounts, matches Catalog page)
-                if (session.mongoAccountId) {
-                    const liveValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
-                    if (liveValue != null && liveValue > 0) {
+                // Always override today with live catalog stats (excludes dev accounts, matches Catalog page)
+                {
+                    const isLabor = dataSource === 'labor';
+                    const liveStats = await getLiveOfferStats(new ObjectId(rawItemId), isLabor);
+                    if (liveStats != null && liveStats.avg > 0) {
                         const idx = merged.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                        const todayPoint = { timestamp: today, value: liveValue, min: liveValue, max: liveValue };
+                        const todayPoint = { timestamp: today, value: liveStats.avg, min: liveStats.min, max: liveStats.max };
                         if (idx >= 0) merged[idx] = todayPoint;
                         else merged.push(todayPoint);
                     }
