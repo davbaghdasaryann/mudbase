@@ -196,10 +196,7 @@ registerApiSession('accounts/fetch_shareable_accounts_for_estimate', async (req,
 
     let accounts = Db.getAccountsCollection();
 
-    const devFilter: any = {};
-    if (process.env.NODE_ENV === 'production') {
-        devFilter.isDev = {$ne: true};
-    }
+    const devFilter: any = { isDev: {$ne: true} };
 
     let query: any;
     if (!search) {
