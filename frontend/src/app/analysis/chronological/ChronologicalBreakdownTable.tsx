@@ -1,20 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography, Collapse, IconButton } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { useTranslation } from 'react-i18next';
-import { mainPrimaryColor } from '@/theme';
 
 export interface BreakdownItem {
     id: string;
+    catalogId?: string;
     name: string;
     code: string;
     type: 'labor' | 'material';
     qty: number;
     unit: string;
     subcategoryName: string;
+    parentId: string | null;
     monthlyPrices: Record<string, number>;
 }
 
@@ -23,26 +24,30 @@ interface Props {
     items: BreakdownItem[];
 }
 
-const BORDER = 'rgba(0,0,0,0.08)';
-const HEADER_BG = '#f5f5f5';
-const TEAL_BG = 'rgba(0,171,190,0.10)';
-const TEAL_SECTION = 'rgba(0,171,190,0.12)';
-const PURPLE_SECTION = 'rgba(106,27,154,0.08)';
-const PURPLE_COLOR = '#6a1b9a';
+// ── Layout constants ──────────────────────────────────────────────────────────
+const COL_W_NAME   = 220;
+const COL_W_CODE   = 90;
+const COL_W_QTY    = 60;
+const COL_W_UNIT   = 54;
+const LEFT_W       = COL_W_NAME + COL_W_CODE + COL_W_QTY + COL_W_UNIT;
+const COL_W_MONTH  = 82;
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const COL_W_CODE = 80;
-const COL_W_QTY = 54;
-const COL_W_UNIT = 48;
-const COL_W_NAME = 200;
-const COL_W_MONTH = 72;
-const LEFT_FIXED_W = COL_W_NAME + COL_W_CODE + COL_W_QTY + COL_W_UNIT;
+// ── Colors ────────────────────────────────────────────────────────────────────
+const BORDER        = 'rgba(0,0,0,0.08)';
+const HEADER_BG     = '#f5f5f5';
+const PURPLE        = '#6a1b9a';
+const PURPLE_LIGHT  = 'rgba(106,27,154,0.08)';
+const PURPLE_MID    = 'rgba(106,27,154,0.13)';
+const PURPLE_YEAR   = 'rgba(106,27,154,0.10)';
+const ROW_EVEN      = 'rgba(106,27,154,0.03)';
+const MAT_EVEN      = 'rgba(106,27,154,0.05)';
+const WHITE         = '#ffffff';
+
+const MONTH_LABELS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function formatVal(v: number | undefined): string {
     if (!v) return '—';
-    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
-    if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
-    return v.toLocaleString();
+    return Math.round(v).toLocaleString();
 }
 
 function groupByYear(months: string[]): { year: number; months: string[] }[] {
@@ -52,193 +57,213 @@ function groupByYear(months: string[]): { year: number; months: string[] }[] {
         if (!map.has(y)) map.set(y, []);
         map.get(y)!.push(m);
     }
-    return Array.from(map.entries()).sort(([a], [b]) => a - b).map(([year, months]) => ({ year, months }));
+    return Array.from(map.entries()).sort(([a],[b])=>a-b).map(([year,months])=>({year,months}));
 }
 
-function groupBySubcategory(items: BreakdownItem[]): { subcat: string; items: BreakdownItem[] }[] {
-    const map = new Map<string, BreakdownItem[]>();
-    for (const item of items) {
-        const key = item.subcategoryName || '—';
-        if (!map.has(key)) map.set(key, []);
-        map.get(key)!.push(item);
-    }
-    return Array.from(map.entries()).map(([subcat, items]) => ({ subcat, items }));
-}
+// ── Shared cell style helpers ─────────────────────────────────────────────────
+const fixedCell = (width: number, extra?: React.CSSProperties): React.CSSProperties => ({
+    width, minWidth: width, flexShrink: 0,
+    padding: '5px 8px', fontSize: 14, borderRight: `1px solid ${BORDER}`,
+    boxSizing: 'border-box', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    ...extra,
+});
 
-interface AccordionGroupProps {
+const monthCell: React.CSSProperties = {
+    width: COL_W_MONTH, minWidth: COL_W_MONTH, flexShrink: 0,
+    padding: '5px 8px', fontSize: 14, textAlign: 'right',
+    borderRight: `1px solid ${BORDER}`, boxSizing: 'border-box', whiteSpace: 'nowrap',
+};
+
+// ── Subcategory accordion ─────────────────────────────────────────────────────
+interface SubcatGroup {
     subcat: string;
-    items: BreakdownItem[];
-    months: string[];
-    rowBg: string;
-    isLabor: boolean;
-    defaultOpen?: boolean;
+    laborItems: BreakdownItem[];
+    materialsByParent: Map<string, BreakdownItem[]>;
 }
 
-function AccordionGroup({ subcat, items, months, rowBg, isLabor, defaultOpen = true }: AccordionGroupProps) {
-    const [open, setOpen] = useState(defaultOpen);
-    const accentColor = isLabor ? mainPrimaryColor : PURPLE_COLOR;
-    const sectionBg = isLabor ? TEAL_SECTION : PURPLE_SECTION;
+function AccordionGroup({ group, months, rowIndex }: { group: SubcatGroup; months: string[]; rowIndex: { v: number } }) {
+    const [open, setOpen] = useState(true);
 
     return (
         <>
-            {/* Subcategory accordion header — left fixed side */}
-            <div style={{ display: 'flex' }}>
-                {/* Fixed left: accordion header */}
-                <div
-                    style={{
-                        width: LEFT_FIXED_W,
-                        minWidth: LEFT_FIXED_W,
-                        flexShrink: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        padding: '5px 8px',
-                        background: sectionBg,
-                        borderBottom: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
-                        position: 'sticky',
-                        left: 0,
-                        zIndex: 2,
-                    }}
-                    onClick={() => setOpen((v) => !v)}
-                >
+            {/* Subcategory row */}
+            <div style={{ display: 'flex', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
+                <div style={{
+                    width: LEFT_W, minWidth: LEFT_W, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    padding: '5px 10px', fontSize: 13, fontWeight: 700,
+                    color: PURPLE, background: PURPLE_MID,
+                    borderBottom: `1px solid ${BORDER}`,
+                    position: 'sticky', left: 0, zIndex: 2, boxSizing: 'border-box',
+                }}>
                     {open
-                        ? <KeyboardArrowDownIcon sx={{ fontSize: 16, color: accentColor, flexShrink: 0 }} />
-                        : <KeyboardArrowRightIcon sx={{ fontSize: 16, color: accentColor, flexShrink: 0 }} />}
-                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: accentColor, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {subcat}
-                    </Typography>
-                    <Typography sx={{ fontSize: 10, color: accentColor, opacity: 0.65, ml: 0.5, flexShrink: 0 }}>
-                        ({items.length})
-                    </Typography>
+                        ? <KeyboardArrowDownIcon sx={{ fontSize: 16, color: PURPLE, flexShrink: 0 }} />
+                        : <KeyboardArrowRightIcon sx={{ fontSize: 16, color: PURPLE, flexShrink: 0 }} />}
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                        {group.subcat}
+                    </span>
+                    <span style={{ opacity: 0.6, fontSize: 12, flexShrink: 0, marginLeft: 4 }}>
+                        ({group.laborItems.length})
+                    </span>
                 </div>
-                {/* Right: empty filler for scrollable side */}
-                <div style={{ flex: 1, background: sectionBg, borderBottom: `1px solid ${BORDER}` }} />
+                <div style={{ flex: 1, background: PURPLE_MID, borderBottom: `1px solid ${BORDER}` }} />
             </div>
 
-            {open && items.map((item, i) => (
-                <div key={item.id} style={{ display: 'flex' }}>
-                    {/* Fixed left columns */}
-                    <div
-                        style={{
-                            width: LEFT_FIXED_W,
-                            minWidth: LEFT_FIXED_W,
-                            flexShrink: 0,
-                            display: 'flex',
-                            background: i % 2 === 0 ? rowBg : '#fff',
-                            borderBottom: `1px solid ${BORDER}`,
-                            position: 'sticky',
-                            left: 0,
-                            zIndex: 2,
-                        }}
-                    >
-                        <div style={{ width: COL_W_NAME, minWidth: COL_W_NAME, padding: '5px 10px', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderRight: `1px solid ${BORDER}` }} title={item.name}>
-                            {item.name}
-                        </div>
-                        <div style={{ width: COL_W_CODE, minWidth: COL_W_CODE, padding: '5px 6px', fontSize: 11, color: '#666', borderRight: `1px solid ${BORDER}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {item.code}
-                        </div>
-                        <div style={{ width: COL_W_QTY, minWidth: COL_W_QTY, padding: '5px 6px', fontSize: 12, textAlign: 'right', borderRight: `1px solid ${BORDER}` }}>
-                            {item.qty}
-                        </div>
-                        <div style={{ width: COL_W_UNIT, minWidth: COL_W_UNIT, padding: '5px 6px', fontSize: 11, color: '#666', borderRight: `1px solid ${BORDER}` }}>
-                            {item.unit}
-                        </div>
-                    </div>
-                    {/* Scrollable month cells */}
-                    <div style={{ display: 'flex', background: i % 2 === 0 ? rowBg : '#fff', borderBottom: `1px solid ${BORDER}` }}>
-                        {months.map((m) => (
-                            <div key={m} style={{ width: COL_W_MONTH, minWidth: COL_W_MONTH, padding: '5px 6px', fontSize: 12, textAlign: 'right', borderRight: `1px solid ${BORDER}` }}>
-                                {formatVal(item.monthlyPrices[m])}
+            {open && group.laborItems.map((laborItem) => {
+                const materials = group.materialsByParent.get(laborItem.id) ?? [];
+                const ri = rowIndex.v++;
+                const laborBg = ri % 2 === 0 ? ROW_EVEN : WHITE;
+
+                return (
+                    <div key={laborItem.id}>
+                        {/* Labor (work) row */}
+                        <div style={{ display: 'flex' }}>
+                            <div style={{
+                                width: LEFT_W, minWidth: LEFT_W, flexShrink: 0, display: 'flex',
+                                background: laborBg, borderBottom: `1px solid ${BORDER}`,
+                                position: 'sticky', left: 0, zIndex: 2,
+                            }}>
+                                <div style={{ ...fixedCell(COL_W_NAME, { fontWeight: 500, background: laborBg }) }} title={laborItem.name}>
+                                    {laborItem.name}
+                                </div>
+                                <div style={{ ...fixedCell(COL_W_CODE, { color: '#555', background: laborBg }) }}>{laborItem.code}</div>
+                                <div style={{ ...fixedCell(COL_W_QTY, { textAlign: 'right', background: laborBg }) }}>{laborItem.qty}</div>
+                                <div style={{ ...fixedCell(COL_W_UNIT, { color: '#555', background: laborBg }) }}>{laborItem.unit}</div>
                             </div>
-                        ))}
+                            <div style={{ display: 'flex', background: laborBg, borderBottom: `1px solid ${BORDER}` }}>
+                                {months.map(m => (
+                                    <div key={m} style={{ ...monthCell, background: laborBg }}>
+                                        {formatVal(laborItem.monthlyPrices[m])}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Material child rows — indented */}
+                        {materials.map((mat) => {
+                            const mri = rowIndex.v++;
+                            const matBg = mri % 2 === 0 ? MAT_EVEN : 'rgba(106,27,154,0.02)';
+                            return (
+                                <div key={mat.id} style={{ display: 'flex' }}>
+                                    <div style={{
+                                        width: LEFT_W, minWidth: LEFT_W, flexShrink: 0, display: 'flex',
+                                        background: matBg, borderBottom: `1px solid ${BORDER}`,
+                                        position: 'sticky', left: 0, zIndex: 2,
+                                    }}>
+                                        <div style={{ ...fixedCell(COL_W_NAME, { paddingLeft: 24, color: '#555', fontSize: 13, background: matBg }) }} title={mat.name}>
+                                            └ {mat.name}
+                                        </div>
+                                        <div style={{ ...fixedCell(COL_W_CODE, { color: '#777', fontSize: 13, background: matBg }) }}>{mat.code}</div>
+                                        <div style={{ ...fixedCell(COL_W_QTY, { textAlign: 'right', fontSize: 13, background: matBg }) }}>{mat.qty}</div>
+                                        <div style={{ ...fixedCell(COL_W_UNIT, { color: '#777', fontSize: 13, background: matBg }) }}>{mat.unit}</div>
+                                    </div>
+                                    <div style={{ display: 'flex', background: matBg, borderBottom: `1px solid ${BORDER}` }}>
+                                        {months.map(m => (
+                                            <div key={m} style={{ ...monthCell, fontSize: 13, background: matBg }}>
+                                                {formatVal(mat.monthlyPrices[m])}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </>
     );
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
 export default function ChronologicalBreakdownTable({ months, items }: Props) {
     const { t } = useTranslation();
     const yearGroups = groupByYear(months);
-    const laborItems = items.filter((i) => i.type === 'labor');
-    const materialItems = items.filter((i) => i.type === 'material');
-    const laborGroups = groupBySubcategory(laborItems);
-    const materialGroups = groupBySubcategory(materialItems);
 
-    const scrollW = months.length * COL_W_MONTH;
+    // Build subcategory groups preserving labor→material hierarchy
+    const subcatMap = new Map<string, SubcatGroup>();
+    const laborItems = items.filter(i => i.parentId === null);
+    const materialItems = items.filter(i => i.parentId !== null);
+
+    // Index materials by their parentId
+    const matByParent = new Map<string, BreakdownItem[]>();
+    for (const mat of materialItems) {
+        const key = mat.parentId!;
+        if (!matByParent.has(key)) matByParent.set(key, []);
+        matByParent.get(key)!.push(mat);
+    }
+
+    // Group labor items by subcategory (order preserved)
+    for (const labor of laborItems) {
+        const key = labor.subcategoryName || '—';
+        if (!subcatMap.has(key)) {
+            subcatMap.set(key, { subcat: key, laborItems: [], materialsByParent: new Map() });
+        }
+        const group = subcatMap.get(key)!;
+        group.laborItems.push(labor);
+        const children = matByParent.get(labor.id) ?? [];
+        if (children.length > 0) group.materialsByParent.set(labor.id, children);
+    }
+
+    const groups = Array.from(subcatMap.values());
+    const rowIndex = { v: 0 };
 
     return (
         <Box sx={{ mt: 3, borderRadius: 2, border: `1px solid ${BORDER}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            {/* Outer scroll container */}
             <Box sx={{ overflowX: 'auto', width: '100%' }}>
-                <Box sx={{ minWidth: LEFT_FIXED_W + scrollW, display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ minWidth: LEFT_W + months.length * COL_W_MONTH, display: 'flex', flexDirection: 'column' }}>
 
-                    {/* ── Header row 1: fixed cols + year groups ── */}
+                    {/* ── Header row 1: year groups ── */}
                     <div style={{ display: 'flex', background: HEADER_BG, borderBottom: `1px solid ${BORDER}` }}>
-                        {/* Fixed left header */}
-                        <div style={{ width: LEFT_FIXED_W, minWidth: LEFT_FIXED_W, flexShrink: 0, display: 'flex', position: 'sticky', left: 0, zIndex: 3, background: HEADER_BG }}>
-                            <div style={{ width: COL_W_NAME, minWidth: COL_W_NAME, padding: '8px 10px', fontSize: 12, fontWeight: 700, borderRight: `1px solid ${BORDER}` }}>
-                                {t('Name')}
-                            </div>
-                            <div style={{ width: COL_W_CODE, minWidth: COL_W_CODE, padding: '8px 6px', fontSize: 12, fontWeight: 700, borderRight: `1px solid ${BORDER}` }}>
-                                {t('Code')}
-                            </div>
-                            <div style={{ width: COL_W_QTY, minWidth: COL_W_QTY, padding: '8px 6px', fontSize: 12, fontWeight: 700, textAlign: 'right', borderRight: `1px solid ${BORDER}` }}>
-                                {t('Qty')}
-                            </div>
-                            <div style={{ width: COL_W_UNIT, minWidth: COL_W_UNIT, padding: '8px 6px', fontSize: 12, fontWeight: 700, borderRight: `1px solid ${BORDER}` }}>
-                                {t('Unit')}
-                            </div>
+                        <div style={{
+                            width: LEFT_W, minWidth: LEFT_W, flexShrink: 0,
+                            padding: '8px 10px', fontSize: 15, fontWeight: 700,
+                            borderRight: `1px solid ${BORDER}`, position: 'sticky', left: 0, zIndex: 3,
+                            background: HEADER_BG, boxSizing: 'border-box',
+                        }}>
+                            {t('Name')}
                         </div>
-                        {/* Year groups */}
                         <div style={{ display: 'flex' }}>
                             {yearGroups.map(({ year, months: ym }) => (
-                                <div
-                                    key={year}
-                                    style={{
-                                        width: ym.length * COL_W_MONTH,
-                                        minWidth: ym.length * COL_W_MONTH,
-                                        padding: '6px 0',
-                                        textAlign: 'center',
-                                        fontSize: 13,
-                                        fontWeight: 700,
-                                        color: mainPrimaryColor,
-                                        background: TEAL_BG,
-                                        borderLeft: `2px solid ${mainPrimaryColor}`,
-                                        borderRight: `2px solid ${mainPrimaryColor}`,
-                                    }}
-                                >
+                                <div key={year} style={{
+                                    width: ym.length * COL_W_MONTH,
+                                    minWidth: ym.length * COL_W_MONTH,
+                                    padding: '7px 0', textAlign: 'center',
+                                    fontSize: 14, fontWeight: 700, color: PURPLE,
+                                    background: PURPLE_YEAR,
+                                    borderLeft: `2px solid ${PURPLE}`,
+                                    borderRight: `2px solid ${PURPLE}`,
+                                }}>
                                     {year}
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* ── Header row 2: month labels ── */}
+                    {/* ── Header row 2: fixed col labels + month labels ── */}
                     <div style={{ display: 'flex', background: HEADER_BG, borderBottom: `2px solid ${BORDER}` }}>
-                        {/* Empty fixed left */}
-                        <div style={{ width: LEFT_FIXED_W, minWidth: LEFT_FIXED_W, flexShrink: 0, position: 'sticky', left: 0, zIndex: 3, background: HEADER_BG, borderRight: `1px solid ${BORDER}` }} />
+                        {/* Fixed column headers */}
+                        <div style={{
+                            width: LEFT_W, minWidth: LEFT_W, flexShrink: 0, display: 'flex',
+                            position: 'sticky', left: 0, zIndex: 3, background: HEADER_BG,
+                        }}>
+                            <div style={{ ...fixedCell(COL_W_NAME, { fontSize: 13, fontWeight: 700, background: HEADER_BG }) }}>{t('Name')}</div>
+                            <div style={{ ...fixedCell(COL_W_CODE, { fontSize: 13, fontWeight: 700, background: HEADER_BG }) }}>{t('Code')}</div>
+                            <div style={{ ...fixedCell(COL_W_QTY, { fontSize: 13, fontWeight: 700, textAlign: 'right', background: HEADER_BG }) }}>{t('Qty')}</div>
+                            <div style={{ ...fixedCell(COL_W_UNIT, { fontSize: 13, fontWeight: 700, background: HEADER_BG }) }}>{t('Unit')}</div>
+                        </div>
                         {/* Month labels */}
                         <div style={{ display: 'flex' }}>
                             {months.map((m, idx) => {
                                 const mo = Number(m.split('-')[1]) - 1;
-                                const isFirst = idx === 0 || m.split('-')[0] !== months[idx - 1]?.split('-')[0];
+                                const isFirst = idx === 0 || m.split('-')[0] !== months[idx-1]?.split('-')[0];
                                 return (
-                                    <div
-                                        key={m}
-                                        style={{
-                                            width: COL_W_MONTH,
-                                            minWidth: COL_W_MONTH,
-                                            padding: '4px 0',
-                                            textAlign: 'center',
-                                            fontSize: 11,
-                                            color: '#555',
-                                            borderRight: `1px solid ${BORDER}`,
-                                            borderLeft: isFirst ? `2px solid ${mainPrimaryColor}` : undefined,
-                                        }}
-                                    >
+                                    <div key={m} style={{
+                                        width: COL_W_MONTH, minWidth: COL_W_MONTH,
+                                        padding: '5px 0', textAlign: 'center', fontSize: 13, color: '#444',
+                                        borderRight: `1px solid ${BORDER}`,
+                                        borderLeft: isFirst ? `2px solid ${PURPLE}` : undefined,
+                                        boxSizing: 'border-box',
+                                    }}>
                                         {MONTH_LABELS[mo]}
                                     </div>
                                 );
@@ -246,50 +271,10 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
                         </div>
                     </div>
 
-                    {/* ── Works section ── */}
-                    {laborGroups.length > 0 && (
-                        <>
-                            {/* Works section header */}
-                            <div style={{ display: 'flex' }}>
-                                <div style={{
-                                    width: LEFT_FIXED_W, minWidth: LEFT_FIXED_W, flexShrink: 0,
-                                    padding: '6px 12px', fontSize: 12, fontWeight: 700,
-                                    color: mainPrimaryColor, background: TEAL_SECTION,
-                                    borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
-                                    position: 'sticky', left: 0, zIndex: 2,
-                                    letterSpacing: 0.5,
-                                }}>
-                                    {t('Works').toUpperCase()}
-                                </div>
-                                <div style={{ flex: 1, background: TEAL_SECTION, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }} />
-                            </div>
-                            {laborGroups.map((g) => (
-                                <AccordionGroup key={g.subcat} subcat={g.subcat} items={g.items} months={months} rowBg='rgba(0,171,190,0.04)' isLabor defaultOpen />
-                            ))}
-                        </>
-                    )}
-
-                    {/* ── Materials section ── */}
-                    {materialGroups.length > 0 && (
-                        <>
-                            <div style={{ display: 'flex' }}>
-                                <div style={{
-                                    width: LEFT_FIXED_W, minWidth: LEFT_FIXED_W, flexShrink: 0,
-                                    padding: '6px 12px', fontSize: 12, fontWeight: 700,
-                                    color: PURPLE_COLOR, background: PURPLE_SECTION,
-                                    borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
-                                    position: 'sticky', left: 0, zIndex: 2,
-                                    letterSpacing: 0.5,
-                                }}>
-                                    {t('Materials').toUpperCase()}
-                                </div>
-                                <div style={{ flex: 1, background: PURPLE_SECTION, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }} />
-                            </div>
-                            {materialGroups.map((g) => (
-                                <AccordionGroup key={g.subcat} subcat={g.subcat} items={g.items} months={months} rowBg='rgba(106,27,154,0.03)' isLabor={false} defaultOpen />
-                            ))}
-                        </>
-                    )}
+                    {/* ── Data rows ── */}
+                    {groups.map((group) => (
+                        <AccordionGroup key={group.subcat} group={group} months={months} rowIndex={rowIndex} />
+                    ))}
 
                 </Box>
             </Box>

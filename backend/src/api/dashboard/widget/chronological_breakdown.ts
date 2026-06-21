@@ -4,8 +4,8 @@ import * as Db from '@/db';
 
 /**
  * Per-item monthly price breakdown for an estimate.
- * Returns every labor/material item with its monthly average catalog price
- * (journal avg for that month, falling back to catalog averagePrice).
+ * Returns items in estimate hierarchy: each labor item followed by its material children.
+ * parentId on material rows = the estimate labor item's _id (string).
  */
 registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req, res, session) => {
     const { estimateId, fromDate, toDate } = req.body ?? {};
@@ -22,10 +22,10 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
 
     const [laborItems, materialItems] = await Promise.all([
         Db.getEstimateLaborItemsCollection()
-            .find({ estimateId: estId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1, estimatedLaborId: 1 } })
+            .find({ estimateId: estId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1 } })
             .toArray(),
         Db.getEstimateMaterialItemsCollection()
-            .find({ estimateId: estId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1 } })
+            .find({ estimateId: estId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, _id: 1 } })
             .toArray(),
     ]);
 
@@ -37,11 +37,18 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
         (m) => !hiddenLaborIds.has(m.estimatedLaborId?.toString())
     );
 
-    // Unique catalog IDs
-    const laborCatalogIds = [...new Set(visibleLabor.map((l) => l.laborItemId.toString()))].map((id) => new ObjectId(id));
-    const materialCatalogIds = [...new Set(visibleMaterial.map((m) => m.materialItemId.toString()))].map((id) => new ObjectId(id));
+    // Group materials by their parent labor estimate item ID
+    const materialsByParent = new Map<string, any[]>();
+    for (const m of visibleMaterial) {
+        const key = m.estimatedLaborId?.toString() ?? '__none__';
+        if (!materialsByParent.has(key)) materialsByParent.set(key, []);
+        materialsByParent.get(key)!.push(m);
+    }
 
-    // Fetch catalog item info (name, unit, subcategoryId)
+    // Unique catalog IDs
+    const laborCatalogIds = [...new Set(visibleLabor.map((l: any) => l.laborItemId.toString()))].map((id) => new ObjectId(id));
+    const materialCatalogIds = [...new Set(visibleMaterial.map((m: any) => m.materialItemId.toString()))].map((id) => new ObjectId(id));
+
     const [catalogLabor, catalogMaterial, measurementUnits, laborSubcats, materialSubcats] = await Promise.all([
         laborCatalogIds.length > 0
             ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1, subcategoryId: 1 } }).toArray()
@@ -55,23 +62,33 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
     ]);
 
     const laborSubcatMap = new Map<string, string>((laborSubcats as any[]).map((s) => [s._id.toString(), s.name || '']));
-    const materialSubcatMap = new Map<string, string>((materialSubcats as any[]).map((s) => [s._id.toString(), s.name || '']));
-
     const unitMap = new Map<string, string>((measurementUnits as any[]).map((u) => [u._id.toString(), u.representationSymbol || u.name || '']));
     const laborInfo = new Map<string, any>((catalogLabor as any[]).map((i) => [i._id.toString(), i]));
     const materialInfo = new Map<string, any>((catalogMaterial as any[]).map((i) => [i._id.toString(), i]));
 
-
-    // Get offer IDs for all catalog items
+    // Offer IDs (non-dev accounts only)
     const [laborOffers, materialOffers] = await Promise.all([
-        laborCatalogIds.length > 0 ? Db.getLaborOffersCollection().find({ itemId: { $in: laborCatalogIds } }, { projection: { _id: 1, itemId: 1 } }).toArray() : [],
-        materialCatalogIds.length > 0 ? Db.getMaterialOffersCollection().find({ itemId: { $in: materialCatalogIds } }, { projection: { _id: 1, itemId: 1 } }).toArray() : [],
+        laborCatalogIds.length > 0
+            ? Db.getLaborOffersCollection().aggregate([
+                { $match: { itemId: { $in: laborCatalogIds } } },
+                { $lookup: { from: 'accounts', localField: 'accountId', foreignField: '_id', as: 'acc' } },
+                { $match: { 'acc.isDev': { $ne: true } } },
+                { $project: { _id: 1, itemId: 1 } },
+            ]).toArray()
+            : [],
+        materialCatalogIds.length > 0
+            ? Db.getMaterialOffersCollection().aggregate([
+                { $match: { itemId: { $in: materialCatalogIds } } },
+                { $lookup: { from: 'accounts', localField: 'accountId', foreignField: '_id', as: 'acc' } },
+                { $match: { 'acc.isDev': { $ne: true } } },
+                { $project: { _id: 1, itemId: 1 } },
+            ]).toArray()
+            : [],
     ]);
 
     const allLaborOfferIds = (laborOffers as any[]).map((o) => o._id);
     const allMaterialOfferIds = (materialOffers as any[]).map((o) => o._id);
 
-    // Aggregate journal: avg price per (offerId, year, month)
     async function monthlyAvgByOffer(journalColl: any, offerIds: ObjectId[]): Promise<Map<string, Map<string, number>>> {
         if (offerIds.length === 0) return new Map();
         const rows = await journalColl.aggregate([
@@ -96,64 +113,80 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
     const laborOfferCatalog = new Map<string, string>((laborOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
     const materialOfferCatalog = new Map<string, string>((materialOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
 
-    function itemMonthPrice(
-        catalogItemId: string,
-        month: string,
+    // Cache monthly prices per catalog item to avoid recomputing for duplicate catalog IDs
+    const laborPriceCache = new Map<string, Record<string, number>>();
+    const materialPriceCache = new Map<string, Record<string, number>>();
+
+    function getCatalogMonthlyPrices(
+        catalogId: string,
         offerCatalogMap: Map<string, string>,
         avgByOffer: Map<string, Map<string, number>>,
-        fallback: number
-    ): number {
-        const prices: number[] = [];
-        for (const [offerId, catId] of offerCatalogMap) {
-            if (catId !== catalogItemId) continue;
-            const p = avgByOffer.get(offerId)?.get(month);
-            if (p != null && p > 0) prices.push(p);
+        fallback: number,
+        cache: Map<string, Record<string, number>>
+    ): Record<string, number> {
+        if (cache.has(catalogId)) return cache.get(catalogId)!;
+        const result: Record<string, number> = {};
+        for (const m of months) {
+            const prices: number[] = [];
+            for (const [offerId, catId] of offerCatalogMap) {
+                if (catId !== catalogId) continue;
+                const p = avgByOffer.get(offerId)?.get(m);
+                if (p != null && p > 0) prices.push(p);
+            }
+            const price = prices.length === 0 ? fallback : prices.reduce((a, b) => a + b, 0) / prices.length;
+            if (price > 0) result[m] = Math.round(price);
         }
-        if (prices.length === 0) return fallback;
-        return prices.reduce((a, b) => a + b, 0) / prices.length;
+        cache.set(catalogId, result);
+        return result;
     }
 
-    // Build per-item rows
+    // Build output: labor items in order, each followed by their material children
     const items: any[] = [];
 
-    // Accumulate labor by catalogItemId (sum quantities for same item)
-    const laborByItem = new Map<string, { qty: number }>();
-    for (const l of visibleLabor) {
-        const id = l.laborItemId.toString();
-        laborByItem.set(id, { qty: (laborByItem.get(id)?.qty ?? 0) + (l.quantity ?? 0) });
-    }
-    for (const [id, { qty }] of laborByItem) {
-        const info = laborInfo.get(id);
+    for (const laborItem of visibleLabor) {
+        const laborItemId = laborItem._id.toString();
+        const catalogId = laborItem.laborItemId.toString();
+        const info = laborInfo.get(catalogId);
         if (!info) continue;
-        const fallback = info.averagePrice ?? 0;
-        const unit = unitMap.get(info.measurementUnitMongoId?.toString() ?? '') ?? '';
-        const monthlyPrices: Record<string, number> = {};
-        for (const m of months) {
-            const p = itemMonthPrice(id, m, laborOfferCatalog, laborAvgByOffer, fallback);
-            if (p > 0) monthlyPrices[m] = Math.round(p);
-        }
-        const subcategoryName = laborSubcatMap.get(info.subcategoryId?.toString() ?? '') ?? '';
-        items.push({ id, name: info.name, code: info.fullCode ?? '', type: 'labor', qty: Math.round(qty * 100) / 100, unit, monthlyPrices, subcategoryName });
-    }
 
-    // Materials
-    const materialByItem = new Map<string, { qty: number }>();
-    for (const m of visibleMaterial) {
-        const id = m.materialItemId.toString();
-        materialByItem.set(id, { qty: (materialByItem.get(id)?.qty ?? 0) + (m.quantity ?? 0) });
-    }
-    for (const [id, { qty }] of materialByItem) {
-        const info = materialInfo.get(id);
-        if (!info) continue;
-        const fallback = info.averagePrice ?? 0;
         const unit = unitMap.get(info.measurementUnitMongoId?.toString() ?? '') ?? '';
-        const monthlyPrices: Record<string, number> = {};
-        for (const m of months) {
-            const p = itemMonthPrice(id, m, materialOfferCatalog, materialAvgByOffer, fallback);
-            if (p > 0) monthlyPrices[m] = Math.round(p);
+        const subcategoryName = laborSubcatMap.get(info.subcategoryId?.toString() ?? '') ?? '';
+        const monthlyPrices = getCatalogMonthlyPrices(catalogId, laborOfferCatalog, laborAvgByOffer, info.averagePrice ?? 0, laborPriceCache);
+
+        items.push({
+            id: laborItemId,
+            catalogId,
+            name: info.name,
+            code: info.fullCode ?? '',
+            type: 'labor',
+            qty: Math.round((laborItem.quantity ?? 0) * 100) / 100,
+            unit,
+            subcategoryName,
+            parentId: null,
+            monthlyPrices,
+        });
+
+        // Material children for this labor item
+        const children = materialsByParent.get(laborItemId) ?? [];
+        for (const matItem of children) {
+            const matCatalogId = matItem.materialItemId.toString();
+            const matInfo = materialInfo.get(matCatalogId);
+            if (!matInfo) continue;
+            const matUnit = unitMap.get(matInfo.measurementUnitMongoId?.toString() ?? '') ?? '';
+            const matMonthlyPrices = getCatalogMonthlyPrices(matCatalogId, materialOfferCatalog, materialAvgByOffer, matInfo.averagePrice ?? 0, materialPriceCache);
+            items.push({
+                id: matItem._id.toString(),
+                catalogId: matCatalogId,
+                name: matInfo.name,
+                code: matInfo.fullCode ?? '',
+                type: 'material',
+                qty: Math.round((matItem.quantity ?? 0) * 100) / 100,
+                unit: matUnit,
+                subcategoryName,
+                parentId: laborItemId,
+                monthlyPrices: matMonthlyPrices,
+            });
         }
-        const subcategoryName = materialSubcatMap.get(info.subcategoryId?.toString() ?? '') ?? '';
-        items.push({ id, name: info.name, code: info.fullCode ?? '', type: 'material', qty: Math.round(qty * 100) / 100, unit, monthlyPrices, subcategoryName });
     }
 
     return res.json({ months, items });
