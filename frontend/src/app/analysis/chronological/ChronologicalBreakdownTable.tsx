@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -24,33 +24,34 @@ interface Props {
     items: BreakdownItem[];
 }
 
-// ── Column widths ────────────────────────────────────────────────────────────
-const W_NAME  = 230;
-const W_CODE  = 88;
-const W_QTY   = 60;
-const W_UNIT  = 54;
-const LEFT_W  = W_NAME + W_CODE + W_QTY + W_UNIT; // 432
-const W_MONTH = 82;
+// ── Fixed column widths (Name is dynamic based on panel width) ───────────────
+const W_CODE  = 94;
+const W_UNIT  = 52;
+const W_QTY   = 58;
+const W_FIXED = W_CODE + W_UNIT + W_QTY; // 204
+const DEF_LEFT = 470;
+const MIN_LEFT = 280;
+const W_MONTH  = 80;
 
-// ── Row heights (fixed — guarantees left/right panel row alignment) ──────────
-const H_HEADER   = 34;
-const H_SECTION  = 32; // top-level section banner
-const H_SUBSECT  = 34; // subsection accordion row
-const H_ROW      = 36; // data rows
+// ── Row heights ──────────────────────────────────────────────────────────────
+const H_HEADER  = 34;
+const H_SECTION = 30;
+const H_SUBSECT = 32;
+const H_ROW     = 36;
 
-// ── Colors — teal/green matching the chart bars ──────────────────────────────
-const TEAL       = '#007a6e';
-const BORDER     = '#b2dfdb';
-const YEAR_BG    = '#b2dfdb';
-const HDR_BG     = '#e0f7fa';
-const SEC_BG     = '#004d40';   // dark teal — section banner
-const SEC_FG     = '#ffffff';
-const SUB_BG     = '#e0f2f1';   // light teal — subsection accordion
-const SUB_FG     = '#004d40';
-const LBR_EVEN   = '#f0faf9';
-const LBR_ODD    = '#ffffff';
-const MAT_EVEN   = '#e6f7f5';
-const MAT_ODD    = '#f5fbfa';
+// ── Light colour palette ─────────────────────────────────────────────────────
+const TEAL      = '#00897b';
+const BORDER    = '#e0e0e0';
+const YEAR_BG   = '#d7f0ed';
+const HDR_BG    = '#f5f5f5';
+const SEC_BG    = '#eaf5f3';
+const SEC_FG    = '#005f56';
+const SUB_BG    = '#f8f8f8';
+const SUB_FG    = '#444';
+const LBR_EVEN  = '#f9fffe';
+const LBR_ODD   = '#ffffff';
+const MAT_EVEN  = '#f2faf8';
+const MAT_ODD   = '#f8fdfc';
 
 const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -69,18 +70,17 @@ function groupByYear(months: string[]): { year: number; months: string[] }[] {
     return Array.from(map.entries()).sort(([a],[b]) => a - b).map(([year, months]) => ({ year, months }));
 }
 
-// Shared cell style
 const cell = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    padding: '0 8px', border: `1px solid ${BORDER}`, whiteSpace: 'nowrap',
+    padding: '0 7px', border: `1px solid ${BORDER}`, whiteSpace: 'nowrap',
     verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis', ...extra,
 });
 
-// Pre-computed row descriptor list — drives BOTH left and right panels identically
+// ── Row descriptor — single source of truth for both panels ─────────────────
 type RowDesc =
-    | { kind: 'section';   key: string; name: string }
-    | { kind: 'subsect';   key: string; name: string; isOpen: boolean; laborCount: number }
-    | { kind: 'labor';     key: string; item: BreakdownItem; bg: string }
-    | { kind: 'mat';       key: string; item: BreakdownItem; bg: string };
+    | { kind: 'section'; key: string; name: string; isOpen: boolean }
+    | { kind: 'subsect'; key: string; name: string; isOpen: boolean; count: number }
+    | { kind: 'labor';   key: string; item: BreakdownItem; bg: string; hasMats: boolean; matsOpen: boolean }
+    | { kind: 'mat';     key: string; item: BreakdownItem; bg: string };
 
 export default function ChronologicalBreakdownTable({ months, items }: Props) {
     const { t } = useTranslation();
@@ -96,49 +96,93 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         return m;
     }, [items]);
 
-    // Build ordered section → subsection structure preserving backend order
+    // Build Section → (optional Subsection) → [labor items] structure,
+    // preserving the backend's already-sorted order.
+    // A subsection whose name equals the section name is treated as "no subsection".
     const structure = useMemo(() => {
-        // sections ordered as received (backend already sorted by displayIndex)
         const secOrder: string[] = [];
-        const secSubs = new Map<string, string[]>();        // sectionName → subsectionName[]
-        const subItems = new Map<string, BreakdownItem[]>(); // subsectionName → labor items
+        // section → Map<subKey, labor[]>  (subKey = '' means "directly under section")
+        const secData = new Map<string, Map<string, BreakdownItem[]>>();
 
         for (const l of laborItems) {
             const sec = l.sectionName || '—';
-            const sub = l.subsectionName || sec; // fallback: use section name
-            if (!secSubs.has(sec)) { secSubs.set(sec, []); secOrder.push(sec); }
-            const subs = secSubs.get(sec)!;
-            if (!subs.includes(sub)) subs.push(sub);
-            if (!subItems.has(sub)) subItems.set(sub, []);
-            subItems.get(sub)!.push(l);
+            const sub = (l.subsectionName && l.subsectionName !== l.sectionName) ? l.subsectionName : '';
+            if (!secData.has(sec)) { secData.set(sec, new Map()); secOrder.push(sec); }
+            const subMap = secData.get(sec)!;
+            if (!subMap.has(sub)) subMap.set(sub, []);
+            subMap.get(sub)!.push(l);
         }
-        return { secOrder, secSubs, subItems };
+        return { secOrder, secData };
     }, [laborItems]);
 
-    // Open/close state per subsection key
-    const [openSubs, setOpenSubs] = useState<Record<string, boolean>>(() => {
-        const init: Record<string, boolean> = {};
-        for (const subs of structure.secSubs.values())
-            for (const sub of subs) init[sub] = true;
-        return init;
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+        const r: Record<string, boolean> = {};
+        for (const s of structure.secOrder) r[s] = true;
+        return r;
     });
-    const toggleSub = (k: string) => setOpenSubs(s => ({ ...s, [k]: !s[k] }));
+    const [openSubsects, setOpenSubsects] = useState<Record<string, boolean>>(() => {
+        const r: Record<string, boolean> = {};
+        for (const [, sm] of structure.secData)
+            for (const k of sm.keys()) if (k) r[k] = true;
+        return r;
+    });
+    // Materials collapsed by default — user expands per labor item
+    const [expandedMats, setExpandedMats] = useState<Set<string>>(new Set());
 
-    // Pre-compute flat row list so both panels render identical row counts
+    const toggleSec  = useCallback((k: string) => setOpenSections(s => ({ ...s, [k]: !s[k] })), []);
+    const toggleSub  = useCallback((k: string) => setOpenSubsects(s => ({ ...s, [k]: !s[k] })), []);
+    const toggleMats = useCallback((id: string) => setExpandedMats(s => {
+        const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n;
+    }), []);
+
+    // ── Resizable left panel ────────────────────────────────────────────────
+    const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
+    const dragging  = useRef(false);
+    const startX    = useRef(0);
+    const startW    = useRef(0);
+
+    const onDividerDown = useCallback((e: React.MouseEvent) => {
+        dragging.current = true;
+        startX.current   = e.clientX;
+        startW.current   = leftWidth;
+        e.preventDefault();
+    }, [leftWidth]);
+
+    useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            if (!dragging.current) return;
+            setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
+        };
+        const onUp = () => { dragging.current = false; };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+    }, []);
+
+    const wName = Math.max(60, leftWidth - W_FIXED);
+
+    // ── Pre-compute flat row list (same for both panels) ────────────────────
     const rows = useMemo<RowDesc[]>(() => {
         const list: RowDesc[] = [];
         let ri = 0;
         for (const sec of structure.secOrder) {
-            list.push({ kind: 'section', key: `sec-${sec}`, name: sec });
-            for (const sub of structure.secSubs.get(sec) ?? []) {
-                const laborList = structure.subItems.get(sub) ?? [];
-                const isOpen = openSubs[sub] ?? true;
-                list.push({ kind: 'subsect', key: `sub-${sub}`, name: sub, isOpen, laborCount: laborList.length });
-                if (isOpen) {
-                    for (const labor of laborList) {
-                        const bg = (ri++ % 2 === 0) ? LBR_EVEN : LBR_ODD;
-                        list.push({ kind: 'labor', key: `lb-${labor.id}`, item: labor, bg });
-                        for (const mat of matByParent.get(labor.id) ?? []) {
+            const secOpen = openSections[sec] ?? true;
+            list.push({ kind: 'section', key: `sec-${sec}`, name: sec, isOpen: secOpen });
+            if (!secOpen) continue;
+
+            for (const [sub, laborList] of structure.secData.get(sec)!) {
+                if (sub) {
+                    const subOpen = openSubsects[sub] ?? true;
+                    list.push({ kind: 'subsect', key: `sub-${sub}`, name: sub, isOpen: subOpen, count: laborList.length });
+                    if (!subOpen) continue;
+                }
+                for (const labor of laborList) {
+                    const bg = (ri++ % 2 === 0) ? LBR_EVEN : LBR_ODD;
+                    const children = matByParent.get(labor.id) ?? [];
+                    const matsOpen = expandedMats.has(labor.id);
+                    list.push({ kind: 'labor', key: `lb-${labor.id}`, item: labor, bg, hasMats: children.length > 0, matsOpen });
+                    if (matsOpen) {
+                        for (const mat of children) {
                             const mbg = (ri++ % 2 === 0) ? MAT_EVEN : MAT_ODD;
                             list.push({ kind: 'mat', key: `mt-${mat.id}`, item: mat, bg: mbg });
                         }
@@ -147,78 +191,133 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
             }
         }
         return list;
-    }, [structure, openSubs, matByParent]);
+    }, [structure, openSections, openSubsects, expandedMats, matByParent]);
 
-    const rowHeight = (r: RowDesc) =>
+    const rowH = (r: RowDesc) =>
         r.kind === 'section' ? H_SECTION : r.kind === 'subsect' ? H_SUBSECT : H_ROW;
 
+    // ── Render ───────────────────────────────────────────────────────────────
+    const leftRows = (
+        <tbody>
+            {rows.map(row => {
+                if (row.kind === 'section') return (
+                    <tr key={row.key} style={{ height: H_SECTION, cursor: 'pointer' }} onClick={() => toggleSec(row.name)}>
+                        <td colSpan={4} style={cell({ backgroundColor: SEC_BG, color: SEC_FG, fontWeight: 700, fontSize: 12, letterSpacing: 0.4, padding: '0 10px', borderBottom: `2px solid #a8dbd6` })}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                {row.isOpen ? <KeyboardArrowDownIcon sx={{ fontSize: 14 }} /> : <KeyboardArrowRightIcon sx={{ fontSize: 14 }} />}
+                                {row.name}
+                            </span>
+                        </td>
+                    </tr>
+                );
+                if (row.kind === 'subsect') return (
+                    <tr key={row.key} style={{ height: H_SUBSECT, cursor: 'pointer' }} onClick={() => toggleSub(row.name)}>
+                        <td colSpan={4} style={cell({ backgroundColor: SUB_BG, color: SUB_FG, fontWeight: 600, fontSize: 12, padding: '0 18px', borderLeft: `3px solid #a8dbd6` })}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                {row.isOpen ? <KeyboardArrowDownIcon sx={{ fontSize: 13 }} /> : <KeyboardArrowRightIcon sx={{ fontSize: 13 }} />}
+                                <span style={{ letterSpacing: 0.3 }}>{row.name}</span>
+                                <span style={{ opacity: 0.4, fontSize: 11 }}>({row.count})</span>
+                            </span>
+                        </td>
+                    </tr>
+                );
+                if (row.kind === 'labor') return (
+                    <tr key={row.key} style={{ height: H_ROW }}>
+                        <td style={cell({ backgroundColor: row.bg, fontSize: 12, textAlign: 'center', color: '#555' })}>{row.item.code}</td>
+                        <td style={cell({ backgroundColor: row.bg, fontWeight: 500, fontSize: 13, padding: '0 4px 0 6px' })} title={row.item.name}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                {row.hasMats && (
+                                    <span onClick={e => { e.stopPropagation(); toggleMats(row.item.id); }}
+                                        style={{ cursor: 'pointer', display: 'flex', flexShrink: 0, color: TEAL, marginLeft: -2 }}>
+                                        {row.matsOpen ? <KeyboardArrowDownIcon sx={{ fontSize: 14 }} /> : <KeyboardArrowRightIcon sx={{ fontSize: 14 }} />}
+                                    </span>
+                                )}
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.item.name}</span>
+                            </span>
+                        </td>
+                        <td style={cell({ backgroundColor: row.bg, textAlign: 'center', fontSize: 12, color: '#555' })}>{row.item.unit}</td>
+                        <td style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: 13 })}>{row.item.qty}</td>
+                    </tr>
+                );
+                // mat
+                return (
+                    <tr key={row.key} style={{ height: H_ROW }}>
+                        <td style={cell({ backgroundColor: row.bg, fontSize: 11, textAlign: 'center', color: '#888' })}>{row.item.code}</td>
+                        <td style={cell({ backgroundColor: row.bg, color: '#555', fontSize: 12, paddingLeft: 22 })} title={row.item.name}>└ {row.item.name}</td>
+                        <td style={cell({ backgroundColor: row.bg, textAlign: 'center', fontSize: 11, color: '#888' })}>{row.item.unit}</td>
+                        <td style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: 12 })}>{row.item.qty}</td>
+                    </tr>
+                );
+            })}
+        </tbody>
+    );
+
+    const rightRows = (
+        <tbody>
+            {rows.map(row => {
+                const h = rowH(row);
+                if (row.kind === 'section') return (
+                    <tr key={row.key} style={{ height: h }}>
+                        <td colSpan={months.length} style={cell({ backgroundColor: SEC_BG, borderBottom: `2px solid #a8dbd6` })} />
+                    </tr>
+                );
+                if (row.kind === 'subsect') return (
+                    <tr key={row.key} style={{ height: h }}>
+                        <td colSpan={months.length} style={cell({ backgroundColor: SUB_BG })} />
+                    </tr>
+                );
+                const prices = row.item.monthlyPrices;
+                const fs = row.kind === 'labor' ? 13 : 12;
+                return (
+                    <tr key={row.key} style={{ height: h }}>
+                        {months.map((m, idx) => {
+                            const isFirst = idx === 0 || m.split('-')[0] !== months[idx - 1]?.split('-')[0];
+                            return (
+                                <td key={m} style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: fs, borderLeft: isFirst ? `2px solid ${TEAL}` : undefined })}>
+                                    {formatVal(prices[m])}
+                                </td>
+                            );
+                        })}
+                    </tr>
+                );
+            })}
+        </tbody>
+    );
+
     return (
-        <Box sx={{ mt: 3, border: `1px solid ${BORDER}`, borderRadius: 2, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex' }}>
+        <Box sx={{ mt: 3, border: `1px solid ${BORDER}`, borderRadius: 2, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', display: 'flex', userSelect: 'none' }}>
 
             {/* ── LEFT FIXED PANEL ── */}
-            <Box sx={{ flexShrink: 0, width: LEFT_W, zIndex: 2, boxShadow: '4px 0 10px rgba(0,0,0,0.10)', position: 'relative' }}>
-                <table style={{ tableLayout: 'fixed', width: LEFT_W, borderCollapse: 'collapse' }}>
+            <Box sx={{ flexShrink: 0, width: leftWidth, zIndex: 2, boxShadow: '3px 0 8px rgba(0,0,0,0.06)', position: 'relative' }}>
+                <table style={{ tableLayout: 'fixed', width: leftWidth, borderCollapse: 'collapse' }}>
                     <colgroup>
-                        <col style={{ width: W_NAME }} />
                         <col style={{ width: W_CODE }} />
-                        <col style={{ width: W_QTY }} />
+                        <col style={{ width: wName }} />
                         <col style={{ width: W_UNIT }} />
+                        <col style={{ width: W_QTY }} />
                     </colgroup>
                     <thead>
                         <tr style={{ height: H_HEADER }}>
-                            <th colSpan={4} style={cell({ backgroundColor: YEAR_BG, fontSize: 12, fontWeight: 700, color: TEAL, textAlign: 'left' })}>
+                            <th colSpan={4} style={cell({ backgroundColor: YEAR_BG, fontSize: 11, fontWeight: 700, color: TEAL, textAlign: 'left', letterSpacing: 0.6, textTransform: 'uppercase' })}>
                                 {t('Estimate Items')}
                             </th>
                         </tr>
                         <tr style={{ height: H_HEADER }}>
-                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'left' })}>{t('Name')}</th>
-                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'left' })}>{t('Code')}</th>
-                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'right' })}>{t('Qty')}</th>
-                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'left' })}>{t('Unit')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 600, fontSize: 12, textAlign: 'center' })}>{t('Code')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 600, fontSize: 12, textAlign: 'left' })}>{t('Name')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 600, fontSize: 12, textAlign: 'center' })}>{t('Unit')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 600, fontSize: 12, textAlign: 'right' })}>{t('Qty')}</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {rows.map(row => {
-                            if (row.kind === 'section') return (
-                                <tr key={row.key} style={{ height: H_SECTION }}>
-                                    <td colSpan={4} style={cell({ backgroundColor: SEC_BG, color: SEC_FG, fontWeight: 700, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', padding: '0 10px' })}>
-                                        {row.name}
-                                    </td>
-                                </tr>
-                            );
-                            if (row.kind === 'subsect') return (
-                                <tr key={row.key} style={{ height: H_SUBSECT, cursor: 'pointer' }} onClick={() => toggleSub(row.name)}>
-                                    <td colSpan={4} style={cell({ backgroundColor: SUB_BG, color: SUB_FG, fontWeight: 700, fontSize: 13, padding: '0 10px' })}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                            {row.isOpen
-                                                ? <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
-                                                : <KeyboardArrowRightIcon sx={{ fontSize: 16 }} />}
-                                            <span style={{ textTransform: 'uppercase', letterSpacing: 0.4 }}>{row.name}</span>
-                                            <span style={{ opacity: 0.55, fontSize: 12 }}>({row.laborCount})</span>
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                            if (row.kind === 'labor') return (
-                                <tr key={row.key} style={{ height: H_ROW }}>
-                                    <td style={cell({ backgroundColor: row.bg, fontWeight: 500, fontSize: 14 })} title={row.item.name}>{row.item.name}</td>
-                                    <td style={cell({ backgroundColor: row.bg, color: '#555', fontSize: 14 })}>{row.item.code}</td>
-                                    <td style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: 14 })}>{row.item.qty}</td>
-                                    <td style={cell({ backgroundColor: row.bg, color: '#555', fontSize: 14 })}>{row.item.unit}</td>
-                                </tr>
-                            );
-                            return (
-                                <tr key={row.key} style={{ height: H_ROW }}>
-                                    <td style={cell({ backgroundColor: row.bg, color: '#4d4d4d', fontSize: 13, paddingLeft: 20 })} title={row.item.name}>└ {row.item.name}</td>
-                                    <td style={cell({ backgroundColor: row.bg, color: '#666', fontSize: 13 })}>{row.item.code}</td>
-                                    <td style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: 13 })}>{row.item.qty}</td>
-                                    <td style={cell({ backgroundColor: row.bg, color: '#666', fontSize: 13 })}>{row.item.unit}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
+                    {leftRows}
                 </table>
             </Box>
+
+            {/* ── RESIZE HANDLE ── */}
+            <Box
+                onMouseDown={onDividerDown}
+                sx={{ width: 5, flexShrink: 0, cursor: 'col-resize', backgroundColor: BORDER, zIndex: 3, transition: 'background-color 0.15s', '&:hover': { backgroundColor: '#a8dbd6' } }}
+            />
 
             {/* ── RIGHT SCROLLABLE PANEL ── */}
             <Box sx={{ flex: 1, overflowX: 'auto', minWidth: 0 }}>
@@ -229,7 +328,7 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
                     <thead>
                         <tr style={{ height: H_HEADER }}>
                             {yearGroups.map(({ year, months: ym }) => (
-                                <th key={year} colSpan={ym.length} style={cell({ backgroundColor: YEAR_BG, color: TEAL, fontWeight: 700, fontSize: 14, textAlign: 'center', borderLeft: `2px solid ${TEAL}` })}>
+                                <th key={year} colSpan={ym.length} style={cell({ backgroundColor: YEAR_BG, color: TEAL, fontWeight: 700, fontSize: 13, textAlign: 'center', borderLeft: `2px solid ${TEAL}` })}>
                                     {year}
                                 </th>
                             ))}
@@ -239,43 +338,14 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
                                 const mo = Number(m.split('-')[1]) - 1;
                                 const isFirst = idx === 0 || m.split('-')[0] !== months[idx - 1]?.split('-')[0];
                                 return (
-                                    <th key={m} style={cell({ backgroundColor: HDR_BG, fontSize: 13, textAlign: 'center', borderLeft: isFirst ? `2px solid ${TEAL}` : undefined })}>
+                                    <th key={m} style={cell({ backgroundColor: HDR_BG, fontSize: 12, textAlign: 'center', borderLeft: isFirst ? `2px solid ${TEAL}` : undefined })}>
                                         {MONTH_LABELS[mo]}
                                     </th>
                                 );
                             })}
                         </tr>
                     </thead>
-                    <tbody>
-                        {rows.map(row => {
-                            const h = rowHeight(row);
-                            if (row.kind === 'section') return (
-                                <tr key={row.key} style={{ height: h }}>
-                                    <td colSpan={months.length} style={cell({ backgroundColor: SEC_BG })} />
-                                </tr>
-                            );
-                            if (row.kind === 'subsect') return (
-                                <tr key={row.key} style={{ height: h }}>
-                                    <td colSpan={months.length} style={cell({ backgroundColor: SUB_BG })} />
-                                </tr>
-                            );
-                            const bg = row.bg;
-                            const prices = row.item.monthlyPrices;
-                            const fs = row.kind === 'labor' ? 14 : 13;
-                            return (
-                                <tr key={row.key} style={{ height: h }}>
-                                    {months.map((m, idx) => {
-                                        const isFirst = idx === 0 || m.split('-')[0] !== months[idx - 1]?.split('-')[0];
-                                        return (
-                                            <td key={m} style={cell({ backgroundColor: bg, textAlign: 'right', fontSize: fs, borderLeft: isFirst ? `2px solid ${TEAL}` : undefined })}>
-                                                {formatVal(prices[m])}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
+                    {rightRows}
                 </table>
             </Box>
         </Box>
