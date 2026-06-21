@@ -67,13 +67,28 @@ registerApiSession('estimate/get', async (req, res, session) => {
                     {$count: 'total'},
                 ]).toArray();
                 estimate.materialItemCount = materialAgg[0]?.total ?? 0;
+
+                // Compute Unit Time: sum(quantity / laborHours) for visible labor rows with laborHours > 0
+                const visibleLaborRows = await Db.getEstimateLaborItemsCollection()
+                    .find({estimateId, estimateSubsectionId: {$in: subsectionIds}, isHidden: {$ne: true}, laborItemId: {$exists: true}})
+                    .project({quantity: 1, laborHours: 1})
+                    .toArray();
+                let unitTime = 0;
+                for (const row of visibleLaborRows) {
+                    const qty = (row as any).quantity ?? 0;
+                    const hrs = (row as any).laborHours ?? 0;
+                    if (hrs > 0) unitTime += qty / hrs;
+                }
+                estimate.unitTime = Math.round(unitTime * 100) / 100;
             } else {
                 estimate.laborItemCount = 0;
                 estimate.materialItemCount = 0;
+                estimate.unitTime = 0;
             }
         } else {
             estimate.laborItemCount = 0;
             estimate.materialItemCount = 0;
+            estimate.unitTime = 0;
         }
     }
 

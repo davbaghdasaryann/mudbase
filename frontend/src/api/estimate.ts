@@ -20,6 +20,7 @@ export interface ApiEstimate {
     materialTotalCost?: number;
     laborItemCount?: number;
     materialItemCount?: number;
+    unitTime?: number;
 
     otherExpenses: EstimateOtherExpense[];
 
