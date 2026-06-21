@@ -15,6 +15,9 @@ import { useApiFetchOne } from '@/components/ApiDataFetch';
 import ProgressIndicator from '../../tsui/ProgressIndicator';
 import { EstimateShareToAccountConfirmationDialog } from '../EstimateShareToAccountConfirmationDialog';
 
+const BRAND = '#00ABBE';
+const BRAND_DARK = '#0099aa';
+
 // Activity labels matching backend company_activities.ts
 const ACTIVITY_LABELS: Record<string, string> = {
     F: 'Bank', C: 'Credit', I: 'Insurance', A: 'Architect',
@@ -123,8 +126,8 @@ function ShareDialogBody(props: Props) {
                 open
                 onClose={props.onClose}
                 fullWidth
-                maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden' } }}
+                maxWidth="md"
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 560 } }}
             >
                 {/* Header */}
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
@@ -150,11 +153,13 @@ function ShareDialogBody(props: Props) {
                                 ),
                             }}
                         />
-                        <FormControl size="small" sx={{ minWidth: 140 }}>
-                            <InputLabel>{t('Industry')}</InputLabel>
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                            <InputLabel shrink>{t('Industry')}</InputLabel>
                             <Select
                                 value={industry}
                                 label={t('Industry')}
+                                notched
+                                displayEmpty
                                 onChange={e => setIndustry(e.target.value)}
                             >
                                 <MenuItem value="All">{t('All')}</MenuItem>
@@ -178,7 +183,7 @@ function ShareDialogBody(props: Props) {
                             indeterminate={someChecked}
                             onChange={toggleAll}
                             disabled={filtered.length === 0}
-                            sx={{ color: '#00897b', '&.Mui-checked': { color: '#00897b' }, '&.MuiCheckbox-indeterminate': { color: '#00897b' } }}
+                            sx={{ color: BRAND, '&.Mui-checked': { color: BRAND }, '&.MuiCheckbox-indeterminate': { color: BRAND } }}
                         />
                     </Box>
 
@@ -186,7 +191,7 @@ function ShareDialogBody(props: Props) {
                     <Box sx={{ maxHeight: 360, overflowY: 'auto' }}>
                         {apiData.loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                                <CircularProgress size={28} sx={{ color: '#00897b' }} />
+                                <CircularProgress size={28} sx={{ color: BRAND }} />
                             </Box>
                         ) : filtered.length === 0 ? (
                             <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontSize: 14 }}>
@@ -217,7 +222,7 @@ function ShareDialogBody(props: Props) {
                                             checked={isChecked}
                                             onChange={() => toggleOne(id)}
                                             onClick={e => e.stopPropagation()}
-                                            sx={{ color: '#b2dfdb', '&.Mui-checked': { color: '#00897b' } }}
+                                            sx={{ color: '#b2e4ea', '&.Mui-checked': { color: BRAND } }}
                                         />
                                     </Box>
                                 );
@@ -229,16 +234,16 @@ function ShareDialogBody(props: Props) {
                 {/* Footer */}
                 <Divider />
                 <DialogActions sx={{ px: 3, py: 1.5, justifyContent: 'flex-end', gap: 1 }}>
-                    <Button onClick={props.onClose} sx={{ color: '#00897b', fontWeight: 600 }}>
+                    <Button onClick={props.onClose} sx={{ color: BRAND, fontWeight: 600 }}>
                         {t('CANCEL')}
                     </Button>
                     <Button
                         variant="contained"
                         disabled={selected.size === 0}
                         onClick={handleSave}
-                        sx={{ backgroundColor: '#00897b', '&:hover': { backgroundColor: '#00695c' }, fontWeight: 600, px: 3 }}
+                        sx={{ backgroundColor: BRAND, '&:hover': { backgroundColor: BRAND_DARK }, '&.Mui-disabled': { backgroundColor: '#b2e4ea', color: '#fff' }, fontWeight: 600, px: 3 }}
                     >
-                        {t('SAVE')}
+                        {t('SHARE')}
                     </Button>
                 </DialogActions>
             </Dialog>
