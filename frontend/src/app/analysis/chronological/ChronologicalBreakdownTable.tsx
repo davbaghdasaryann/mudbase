@@ -136,15 +136,17 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
     }), []);
 
     // ── Resizable left panel — width persisted to localStorage ─────────────
-    const [leftWidth, setLeftWidth] = useState(() => {
-        if (typeof window === 'undefined') return DEF_LEFT;
-        const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
-        return isNaN(saved) || saved < MIN_LEFT ? DEF_LEFT : saved;
-    });
+    const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
+    const leftWidthRef = useRef(DEF_LEFT);
 
+    // Restore saved width after hydration (can't read localStorage on server)
     useEffect(() => {
-        localStorage.setItem('chron-left-width', String(leftWidth));
-    }, [leftWidth]);
+        const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
+        if (!isNaN(saved) && saved >= MIN_LEFT) {
+            leftWidthRef.current = saved;
+            setLeftWidth(saved);
+        }
+    }, []);
     const dragging  = useRef(false);
     const startX    = useRef(0);
     const startW    = useRef(0);
@@ -189,9 +191,14 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         // Only the resize divider still needs document-level listeners
         const onMove = (e: MouseEvent) => {
             if (!dragging.current) return;
-            setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
+            const w = Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current));
+            leftWidthRef.current = w;
+            setLeftWidth(w);
         };
-        const onUp = () => { dragging.current = false; };
+        const onUp = () => {
+            if (dragging.current) localStorage.setItem('chron-left-width', String(leftWidthRef.current));
+            dragging.current = false;
+        };
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
         return () => {
