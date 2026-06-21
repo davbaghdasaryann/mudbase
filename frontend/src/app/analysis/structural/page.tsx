@@ -14,6 +14,7 @@ import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from './ChooseEstimationDialog';
 import BreakdownTable from './BreakdownTable';
 import OtherExpensesChart from './OtherExpensesChart';
+import CostBreakdownChart from './CostBreakdownChart';
 import LaborTab from './LaborTab';
 import MaterialsTab from './MaterialsTab';
 import { mainPrimaryColor } from '@/theme';
@@ -129,8 +130,8 @@ export default function StructuralAnalysisPage() {
                                 <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
                                     {/* Top row: pie placeholder | bar chart | param cards */}
                                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                        {/* Pie chart placeholder (empty for now) */}
-                                        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', minHeight: 220 }} />
+                                        {/* Cost breakdown donut chart */}
+                                        <CostBreakdownChart estimate={selectedEstimate!} />
                                         {/* Other Expenses bar chart */}
                                         <Box sx={{ flex: 1 }}>
                                             <OtherExpensesChart estimate={selectedEstimate!} height={220} />
