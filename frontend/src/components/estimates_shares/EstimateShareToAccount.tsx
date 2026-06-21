@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Box, Typography, TextField, Select, MenuItem,
+    Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel,
     Checkbox, InputAdornment, Button, Divider, CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -127,7 +127,7 @@ function ShareDialogBody(props: Props) {
                 onClose={props.onClose}
                 fullWidth
                 maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 620, maxWidth: 600 } }}
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 713, maxWidth: 600 } }}
             >
                 {/* Header */}
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
@@ -138,7 +138,7 @@ function ShareDialogBody(props: Props) {
                     {progIndic && <ProgressIndicator show background="backdrop" />}
 
                     {/* Filters */}
-                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2, mt: 1, alignItems: 'flex-end' }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2, mt: 2, alignItems: 'center' }}>
                         <TextField
                             size="small"
                             placeholder={t('Search...')}
@@ -153,16 +153,14 @@ function ShareDialogBody(props: Props) {
                                 ),
                             }}
                         />
-                        <Box sx={{ minWidth: 150 }}>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, pl: 0.25 }}>
-                                {t('Industry')}
-                            </Typography>
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                            <InputLabel shrink>{t('Industry')}</InputLabel>
                             <Select
-                                size="small"
                                 value={industry}
+                                label={t('Industry')}
+                                notched
                                 displayEmpty
                                 onChange={e => setIndustry(e.target.value)}
-                                sx={{ width: '100%' }}
                             >
                                 <MenuItem value="All">{t('All')}</MenuItem>
                                 {industryOptions.map(act => (
@@ -171,26 +169,25 @@ function ShareDialogBody(props: Props) {
                                     </MenuItem>
                                 ))}
                             </Select>
+                        </FormControl>
+                    </Box>
+
+                    {/* Company list with sticky header inside so checkboxes always share the same content width */}
+                    <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
+                        {/* Companies header — sticky so it stays visible while scrolling */}
+                        <Box sx={{ position: 'sticky', top: 0, zIndex: 1, display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, backgroundColor: '#f5f5f5', mb: 0.5 }}>
+                            <Typography sx={{ flex: 1, fontWeight: 700, fontSize: 13, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                {t('Companies')}
+                            </Typography>
+                            <Checkbox
+                                size="small"
+                                checked={allChecked}
+                                indeterminate={someChecked}
+                                onChange={toggleAll}
+                                disabled={filtered.length === 0}
+                                sx={{ p: '5px', color: BRAND, '&.Mui-checked': { color: BRAND }, '&.MuiCheckbox-indeterminate': { color: BRAND } }}
+                            />
                         </Box>
-                    </Box>
-
-                    {/* Companies header */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, backgroundColor: '#f5f5f5', borderRadius: 1, mb: 0.5 }}>
-                        <Typography sx={{ flex: 1, fontWeight: 700, fontSize: 13, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            {t('Companies')}
-                        </Typography>
-                        <Checkbox
-                            size="small"
-                            checked={allChecked}
-                            indeterminate={someChecked}
-                            onChange={toggleAll}
-                            disabled={filtered.length === 0}
-                            sx={{ p: '5px', color: BRAND, '&.Mui-checked': { color: BRAND }, '&.MuiCheckbox-indeterminate': { color: BRAND } }}
-                        />
-                    </Box>
-
-                    {/* Company list */}
-                    <Box sx={{ maxHeight: 360, overflowY: 'auto', scrollbarGutter: 'stable' }}>
                         {apiData.loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                                 <CircularProgress size={28} sx={{ color: BRAND }} />
