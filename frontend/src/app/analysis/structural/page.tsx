@@ -113,7 +113,7 @@ export default function StructuralAnalysisPage() {
 
             {hasData && (
                 <TabContext value={activeTab}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', position: 'sticky', top: { xs: 56, md: 64 }, zIndex: 10, backgroundColor: '#fff' }}>
                         <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)}>
                             <Tab label={t('General')} value='general' />
                             <Tab label={t('Labor')} value='labor' />

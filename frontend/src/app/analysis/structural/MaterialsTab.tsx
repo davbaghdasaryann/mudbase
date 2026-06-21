@@ -8,6 +8,7 @@ import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
+import { useTranslation } from 'react-i18next';
 
 interface MaterialRow {
     _id: string;
@@ -33,6 +34,7 @@ interface GroupedByMaterial {
 }
 
 export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
+    const { t } = useTranslation();
     const [groups, setGroups] = useState<GroupedByMaterial[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -93,8 +95,8 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>Name</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Cost</TableCell>
+                    <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
+                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                     <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                 </TableRow>
             </TableHead>
