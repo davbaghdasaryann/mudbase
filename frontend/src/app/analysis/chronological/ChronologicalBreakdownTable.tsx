@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Box } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -23,27 +23,32 @@ interface Props {
     items: BreakdownItem[];
 }
 
-// ── Column widths ─────────────────────────────────────────────────────────────
-const W_NAME  = 220;
-const W_CODE  = 90;
+// ── Column widths ────────────────────────────────────────────────────────────
+const W_NAME  = 230;
+const W_CODE  = 88;
 const W_QTY   = 60;
 const W_UNIT  = 54;
-const L_CODE  = W_NAME;
-const L_QTY   = W_NAME + W_CODE;
-const L_UNIT  = W_NAME + W_CODE + W_QTY;
+const LEFT_W  = W_NAME + W_CODE + W_QTY + W_UNIT; // 432
 const W_MONTH = 82;
 
-// ── Colors (all SOLID — no transparency so sticky cells don't bleed through) ──
-const BORDER        = '#e0e0e0';
-const HEADER_BG     = '#f5f5f5';
-const PURPLE        = '#6a1b9a';
-const YEAR_BG       = '#f0ecf7';
-const SUBCAT_BG     = '#ede4f3';
-const SUBCAT_TEXT   = PURPLE;
-const LABOR_EVEN    = '#fdfcff';
-const LABOR_ODD     = '#ffffff';
-const MAT_EVEN      = '#f8f5fc';
-const MAT_ODD       = '#fcfaff';
+// ── Row heights (fixed — guarantees left/right panel row alignment) ──────────
+const H_HEADER = 34; // each of the 2 header rows
+const H_SUBCAT = 34; // accordion header row
+const H_ROW    = 36; // data rows
+
+// ── Colors — teal/green matching the chart bars ──────────────────────────────
+const TEAL      = '#007a6e';
+const TEAL_MED  = '#4db6ac';
+const TEAL_LITE = '#a8e6df';
+const BORDER    = '#b2dfdb';
+const YEAR_BG   = '#b2dfdb';
+const HDR_BG    = '#e0f7fa';
+const SUBCAT_BG = '#e0f2f1';
+const SUBCAT_FG = '#004d40';
+const LBR_EVEN  = '#f0faf9';
+const LBR_ODD   = '#ffffff';
+const MAT_EVEN  = '#e6f7f5';
+const MAT_ODD   = '#f5fbfa';
 
 const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -59,162 +64,198 @@ function groupByYear(months: string[]): { year: number; months: string[] }[] {
         if (!map.has(y)) map.set(y, []);
         map.get(y)!.push(m);
     }
-    return Array.from(map.entries()).sort(([a],[b])=>a-b).map(([year,months])=>({year,months}));
+    return Array.from(map.entries()).sort(([a],[b]) => a - b).map(([year, months]) => ({ year, months }));
 }
 
-// Shared sticky-cell base style
-const stickyBase = (left: number, bg: string, zIdx = 2): React.CSSProperties => ({
-    position: 'sticky',
-    left,
-    zIndex: zIdx,
-    backgroundColor: bg,
-    // explicitly block the scroll-through bleed with a right shadow
-    boxShadow: left === L_UNIT ? '4px 0 6px -2px rgba(0,0,0,0.08)' : undefined,
+// Pre-computed row descriptor — both panels render from this same list
+type RowDesc =
+    | { kind: 'subcat'; key: string; subcat: string; laborCount: number; isOpen: boolean }
+    | { kind: 'labor';  key: string; item: BreakdownItem; bg: string }
+    | { kind: 'mat';    key: string; item: BreakdownItem; bg: string };
+
+// Shared cell style helpers
+const cell = (extra: React.CSSProperties = {}): React.CSSProperties => ({
+    padding: '0 8px', border: `1px solid ${BORDER}`, whiteSpace: 'nowrap',
+    verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis', ...extra,
 });
 
 export default function ChronologicalBreakdownTable({ months, items }: Props) {
     const { t } = useTranslation();
     const yearGroups = groupByYear(months);
-    const totalCols = 4 + months.length;
 
-    // Build subcategory groups: labor items with their material children
-    const laborItems = items.filter(i => i.parentId === null);
-    const matByParent = new Map<string, BreakdownItem[]>();
-    for (const mat of items.filter(i => i.parentId !== null)) {
-        if (!matByParent.has(mat.parentId!)) matByParent.set(mat.parentId!, []);
-        matByParent.get(mat.parentId!)!.push(mat);
-    }
+    // Build structures
+    const laborItems = useMemo(() => items.filter(i => i.parentId === null), [items]);
+    const matByParent = useMemo(() => {
+        const m = new Map<string, BreakdownItem[]>();
+        for (const mat of items.filter(i => i.parentId !== null)) {
+            if (!m.has(mat.parentId!)) m.set(mat.parentId!, []);
+            m.get(mat.parentId!)!.push(mat);
+        }
+        return m;
+    }, [items]);
 
-    const subcatOrder: string[] = [];
-    const subcatMap = new Map<string, BreakdownItem[]>();
-    for (const labor of laborItems) {
-        const key = labor.subcategoryName || '—';
-        if (!subcatMap.has(key)) { subcatMap.set(key, []); subcatOrder.push(key); }
-        subcatMap.get(key)!.push(labor);
-    }
+    const subcatOrder = useMemo(() => {
+        const seen = new Set<string>();
+        const order: string[] = [];
+        for (const l of laborItems) {
+            const k = l.subcategoryName || '—';
+            if (!seen.has(k)) { seen.add(k); order.push(k); }
+        }
+        return order;
+    }, [laborItems]);
 
-    // Accordion open state per subcategory
+    const subcatMap = useMemo(() => {
+        const m = new Map<string, BreakdownItem[]>();
+        for (const l of laborItems) {
+            const k = l.subcategoryName || '—';
+            if (!m.has(k)) m.set(k, []);
+            m.get(k)!.push(l);
+        }
+        return m;
+    }, [laborItems]);
+
     const [openSubcats, setOpenSubcats] = useState<Record<string, boolean>>(() => {
         const init: Record<string, boolean> = {};
-        for (const key of subcatOrder) init[key] = true;
+        for (const k of subcatOrder) init[k] = true;
         return init;
     });
-    const toggleSubcat = (key: string) => setOpenSubcats(s => ({ ...s, [key]: !s[key] }));
+    const toggle = (k: string) => setOpenSubcats(s => ({ ...s, [k]: !s[k] }));
 
-    // Global row counter for alternating colors
-    let rowIdx = 0;
-
-    const tdStyle = (base?: React.CSSProperties): React.CSSProperties => ({
-        padding: '5px 8px', fontSize: 14, border: `1px solid ${BORDER}`,
-        whiteSpace: 'nowrap', verticalAlign: 'middle', ...base,
-    });
+    // Flat row list — used by BOTH panels so they stay in sync
+    const rows = useMemo<RowDesc[]>(() => {
+        const list: RowDesc[] = [];
+        let ri = 0;
+        for (const subcat of subcatOrder) {
+            const laborList = subcatMap.get(subcat) ?? [];
+            const isOpen = openSubcats[subcat] ?? true;
+            list.push({ kind: 'subcat', key: `sc-${subcat}`, subcat, laborCount: laborList.length, isOpen });
+            if (isOpen) {
+                for (const labor of laborList) {
+                    const bg = (ri++ % 2 === 0) ? LBR_EVEN : LBR_ODD;
+                    list.push({ kind: 'labor', key: `lb-${labor.id}`, item: labor, bg });
+                    for (const mat of matByParent.get(labor.id) ?? []) {
+                        const mbg = (ri++ % 2 === 0) ? MAT_EVEN : MAT_ODD;
+                        list.push({ kind: 'mat', key: `mt-${mat.id}`, item: mat, bg: mbg });
+                    }
+                }
+            }
+        }
+        return list;
+    }, [subcatOrder, subcatMap, openSubcats, matByParent]);
 
     return (
-        <Box sx={{ mt: 3, borderRadius: 2, border: `1px solid ${BORDER}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <Box sx={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <Box sx={{ mt: 3, border: `1px solid ${BORDER}`, borderRadius: 2, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex' }}>
+
+            {/* ── LEFT FIXED PANEL (never scrolls horizontally) ── */}
+            <Box sx={{ flexShrink: 0, width: LEFT_W, zIndex: 2, boxShadow: '4px 0 10px rgba(0,0,0,0.10)', position: 'relative' }}>
+                <table style={{ tableLayout: 'fixed', width: LEFT_W, borderCollapse: 'collapse' }}>
                     <colgroup>
                         <col style={{ width: W_NAME }} />
                         <col style={{ width: W_CODE }} />
                         <col style={{ width: W_QTY }} />
                         <col style={{ width: W_UNIT }} />
+                    </colgroup>
+                    <thead>
+                        {/* Row 1 — matches year-group header height in right panel */}
+                        <tr style={{ height: H_HEADER }}>
+                            <th colSpan={4} style={cell({ backgroundColor: YEAR_BG, fontSize: 12, fontWeight: 700, color: TEAL, textAlign: 'left', letterSpacing: 0.5 })}>
+                                {t('Estimate Items')}
+                            </th>
+                        </tr>
+                        {/* Row 2 — column labels */}
+                        <tr style={{ height: H_HEADER }}>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'left' })}>{t('Name')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'left' })}>{t('Code')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'right' })}>{t('Qty')}</th>
+                            <th style={cell({ backgroundColor: HDR_BG, fontWeight: 700, fontSize: 13, textAlign: 'left' })}>{t('Unit')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map(row => {
+                            if (row.kind === 'subcat') return (
+                                <tr key={row.key} style={{ height: H_SUBCAT, cursor: 'pointer' }} onClick={() => toggle(row.subcat)}>
+                                    <td colSpan={4} style={cell({ backgroundColor: SUBCAT_BG, color: SUBCAT_FG, fontWeight: 700, fontSize: 13, padding: '0 10px' })}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            {row.isOpen
+                                                ? <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
+                                                : <KeyboardArrowRightIcon sx={{ fontSize: 16 }} />}
+                                            <span style={{ textTransform: 'uppercase', letterSpacing: 0.4 }}>{row.subcat}</span>
+                                            <span style={{ opacity: 0.55, fontSize: 12 }}>({row.laborCount})</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            );
+                            if (row.kind === 'labor') return (
+                                <tr key={row.key} style={{ height: H_ROW }}>
+                                    <td style={cell({ backgroundColor: row.bg, fontWeight: 500, fontSize: 14 })} title={row.item.name}>{row.item.name}</td>
+                                    <td style={cell({ backgroundColor: row.bg, color: '#555', fontSize: 14 })}>{row.item.code}</td>
+                                    <td style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: 14 })}>{row.item.qty}</td>
+                                    <td style={cell({ backgroundColor: row.bg, color: '#555', fontSize: 14 })}>{row.item.unit}</td>
+                                </tr>
+                            );
+                            // mat
+                            return (
+                                <tr key={row.key} style={{ height: H_ROW }}>
+                                    <td style={cell({ backgroundColor: row.bg, color: '#4d4d4d', fontSize: 13, paddingLeft: 20 })} title={row.item.name}>└ {row.item.name}</td>
+                                    <td style={cell({ backgroundColor: row.bg, color: '#666', fontSize: 13 })}>{row.item.code}</td>
+                                    <td style={cell({ backgroundColor: row.bg, textAlign: 'right', fontSize: 13 })}>{row.item.qty}</td>
+                                    <td style={cell({ backgroundColor: row.bg, color: '#666', fontSize: 13 })}>{row.item.unit}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </Box>
+
+            {/* ── RIGHT SCROLLABLE PANEL ── */}
+            <Box sx={{ flex: 1, overflowX: 'auto', minWidth: 0 }}>
+                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+                    <colgroup>
                         {months.map(m => <col key={m} style={{ width: W_MONTH }} />)}
                     </colgroup>
-
                     <thead>
-                        {/* Row 1: fixed column headers (rowSpan=2) + year group headers */}
-                        <tr>
-                            <th rowSpan={2} style={{ ...tdStyle({ fontWeight: 700, fontSize: 14, textAlign: 'left', ...stickyBase(0, HEADER_BG, 4) }) }}>
-                                {t('Name')}
-                            </th>
-                            <th rowSpan={2} style={{ ...tdStyle({ fontWeight: 700, fontSize: 14, textAlign: 'left', ...stickyBase(L_CODE, HEADER_BG, 4) }) }}>
-                                {t('Code')}
-                            </th>
-                            <th rowSpan={2} style={{ ...tdStyle({ fontWeight: 700, fontSize: 14, textAlign: 'right', ...stickyBase(L_QTY, HEADER_BG, 4) }) }}>
-                                {t('Qty')}
-                            </th>
-                            <th rowSpan={2} style={{ ...tdStyle({ fontWeight: 700, fontSize: 14, textAlign: 'left', ...stickyBase(L_UNIT, HEADER_BG, 4) }) }}>
-                                {t('Unit')}
-                            </th>
+                        {/* Row 1 — year groups */}
+                        <tr style={{ height: H_HEADER }}>
                             {yearGroups.map(({ year, months: ym }) => (
-                                <th
-                                    key={year}
-                                    colSpan={ym.length}
-                                    style={{ ...tdStyle({ backgroundColor: YEAR_BG, color: PURPLE, fontWeight: 700, fontSize: 14, textAlign: 'center', borderLeft: `2px solid ${PURPLE}`, borderRight: `2px solid ${PURPLE}` }) }}
-                                >
+                                <th key={year} colSpan={ym.length} style={cell({ backgroundColor: YEAR_BG, color: TEAL, fontWeight: 700, fontSize: 14, textAlign: 'center', borderLeft: `2px solid ${TEAL}` })}>
                                     {year}
                                 </th>
                             ))}
                         </tr>
-
-                        {/* Row 2: month labels */}
-                        <tr>
+                        {/* Row 2 — month labels */}
+                        <tr style={{ height: H_HEADER }}>
                             {months.map((m, idx) => {
                                 const mo = Number(m.split('-')[1]) - 1;
-                                const isFirst = idx === 0 || m.split('-')[0] !== months[idx-1]?.split('-')[0];
+                                const isFirst = idx === 0 || m.split('-')[0] !== months[idx - 1]?.split('-')[0];
                                 return (
-                                    <th key={m} style={{ ...tdStyle({ backgroundColor: HEADER_BG, fontSize: 13, textAlign: 'center', borderLeft: isFirst ? `2px solid ${PURPLE}` : undefined }) }}>
+                                    <th key={m} style={cell({ backgroundColor: HDR_BG, fontSize: 13, textAlign: 'center', borderLeft: isFirst ? `2px solid ${TEAL}` : undefined })}>
                                         {MONTH_LABELS[mo]}
                                     </th>
                                 );
                             })}
                         </tr>
                     </thead>
-
                     <tbody>
-                        {subcatOrder.map(subcat => {
-                            const laborList = subcatMap.get(subcat) ?? [];
-                            const isOpen = openSubcats[subcat] ?? true;
-
+                        {rows.map(row => {
+                            if (row.kind === 'subcat') return (
+                                <tr key={row.key} style={{ height: H_SUBCAT }}>
+                                    <td colSpan={months.length} style={cell({ backgroundColor: SUBCAT_BG })} />
+                                </tr>
+                            );
+                            const bg = row.bg;
+                            const prices = row.kind === 'labor' ? row.item.monthlyPrices : row.item.monthlyPrices;
+                            const fs = row.kind === 'labor' ? 14 : 13;
                             return (
-                                <>
-                                    {/* Subcategory accordion header */}
-                                    <tr key={`subcat-${subcat}`} onClick={() => toggleSubcat(subcat)} style={{ cursor: 'pointer' }}>
-                                        <td colSpan={totalCols} style={{ ...tdStyle({ backgroundColor: SUBCAT_BG, color: SUBCAT_TEXT, fontWeight: 700, fontSize: 13, ...stickyBase(0, SUBCAT_BG, 3), padding: '5px 10px' }) }}>
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                                {isOpen
-                                                    ? <KeyboardArrowDownIcon sx={{ fontSize: 16, verticalAlign: 'middle' }} />
-                                                    : <KeyboardArrowRightIcon sx={{ fontSize: 16, verticalAlign: 'middle' }} />}
-                                                <span style={{ textTransform: 'uppercase', letterSpacing: 0.4 }}>{subcat}</span>
-                                                <span style={{ opacity: 0.6, fontSize: 12, marginLeft: 4 }}>({laborList.length})</span>
-                                            </span>
-                                        </td>
-                                    </tr>
-
-                                    {isOpen && laborList.map(labor => {
-                                        const ri = rowIdx++;
-                                        const laborBg = ri % 2 === 0 ? LABOR_EVEN : LABOR_ODD;
-                                        const children = matByParent.get(labor.id) ?? [];
-
+                                <tr key={row.key} style={{ height: H_ROW }}>
+                                    {months.map((m, idx) => {
+                                        const isFirst = idx === 0 || m.split('-')[0] !== months[idx - 1]?.split('-')[0];
                                         return (
-                                            <>
-                                                {/* Labor row */}
-                                                <tr key={labor.id}>
-                                                    <td style={{ ...tdStyle({ fontWeight: 500, ...stickyBase(0, laborBg) }) }} title={labor.name}>{labor.name}</td>
-                                                    <td style={{ ...tdStyle({ color: '#555', ...stickyBase(L_CODE, laborBg) }) }}>{labor.code}</td>
-                                                    <td style={{ ...tdStyle({ textAlign: 'right', ...stickyBase(L_QTY, laborBg) }) }}>{labor.qty}</td>
-                                                    <td style={{ ...tdStyle({ color: '#555', ...stickyBase(L_UNIT, laborBg) }) }}>{labor.unit}</td>
-                                                    {months.map(m => <td key={m} style={{ ...tdStyle({ textAlign: 'right', backgroundColor: laborBg }) }}>{formatVal(labor.monthlyPrices[m])}</td>)}
-                                                </tr>
-
-                                                {/* Material child rows */}
-                                                {children.map(mat => {
-                                                    const mri = rowIdx++;
-                                                    const matBg = mri % 2 === 0 ? MAT_EVEN : MAT_ODD;
-                                                    return (
-                                                        <tr key={mat.id}>
-                                                            <td style={{ ...tdStyle({ fontSize: 13, color: '#555', paddingLeft: 22, ...stickyBase(0, matBg) }) }} title={mat.name}>└ {mat.name}</td>
-                                                            <td style={{ ...tdStyle({ fontSize: 13, color: '#777', ...stickyBase(L_CODE, matBg) }) }}>{mat.code}</td>
-                                                            <td style={{ ...tdStyle({ fontSize: 13, textAlign: 'right', ...stickyBase(L_QTY, matBg) }) }}>{mat.qty}</td>
-                                                            <td style={{ ...tdStyle({ fontSize: 13, color: '#777', ...stickyBase(L_UNIT, matBg) }) }}>{mat.unit}</td>
-                                                            {months.map(m => <td key={m} style={{ ...tdStyle({ fontSize: 13, textAlign: 'right', backgroundColor: matBg }) }}>{formatVal(mat.monthlyPrices[m])}</td>)}
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </>
+                                            <td key={m} style={cell({ backgroundColor: bg, textAlign: 'right', fontSize: fs, borderLeft: isFirst ? `2px solid ${TEAL}` : undefined })}>
+                                                {formatVal(prices[m])}
+                                            </td>
                                         );
                                     })}
-                                </>
+                                </tr>
                             );
                         })}
                     </tbody>
