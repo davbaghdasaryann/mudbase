@@ -10,14 +10,8 @@ import { useTranslation } from 'react-i18next';
 import { ApiEstimate } from '@/api/estimate';
 
 const BAR_GRADIENTS = [
-    { top: '#00CCDD', bottom: '#00899B' },
-    { top: '#4EE89A', bottom: '#1CA461' },
-    { top: '#A8DED9', bottom: '#5CB8B0' },
-    { top: '#27C97A', bottom: '#00855A' },
-    { top: '#6FE0D8', bottom: '#2BADA6' },
-    { top: '#00B28F', bottom: '#007060' },
-    { top: '#C5E8C6', bottom: '#7DB87E' },
-    { top: '#3DC9BF', bottom: '#1A8A84' },
+    { top: '#a8e6df', bottom: '#007a6e', stroke: '#005f56' },
+    { top: '#e1bee7', bottom: '#6a1b9a', stroke: '#4a148c' },
 ];
 
 const formatYAxis = (value: number) => {
@@ -58,6 +52,7 @@ export default function OtherExpensesChart({ estimate, height = 260 }: Props) {
                 value: Math.round(base * pct / 100),
                 gradId: `bar-grad-${i % BAR_GRADIENTS.length}`,
                 dotColor: grad.top,
+                stroke: grad.stroke,
             };
         }).filter(d => d.value > 0);
     }, [estimate, t]);
@@ -97,7 +92,7 @@ export default function OtherExpensesChart({ estimate, height = 260 }: Props) {
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,171,190,0.06)' }} />
                     <Bar dataKey='value' radius={[4, 4, 0, 0]} maxBarSize={64}>
                         {data.map((d) => (
-                            <Cell key={d.name} fill={`url(#${d.gradId})`} />
+                            <Cell key={d.name} fill={`url(#${d.gradId})`} stroke={d.stroke} strokeWidth={0.5} />
                         ))}
                     </Bar>
                 </BarChart>
