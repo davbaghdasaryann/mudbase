@@ -127,7 +127,7 @@ function ShareDialogBody(props: Props) {
                 onClose={props.onClose}
                 fullWidth
                 maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 620, maxWidth: 520 } }}
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 620, maxWidth: 600 } }}
             >
                 {/* Header */}
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
@@ -138,7 +138,7 @@ function ShareDialogBody(props: Props) {
                     {progIndic && <ProgressIndicator show background="backdrop" />}
 
                     {/* Filters */}
-                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2, mt: 1, alignItems: 'flex-end' }}>
                         <TextField
                             size="small"
                             placeholder={t('Search...')}
@@ -185,12 +185,12 @@ function ShareDialogBody(props: Props) {
                             indeterminate={someChecked}
                             onChange={toggleAll}
                             disabled={filtered.length === 0}
-                            sx={{ color: BRAND, '&.Mui-checked': { color: BRAND }, '&.MuiCheckbox-indeterminate': { color: BRAND } }}
+                            sx={{ p: '5px', color: BRAND, '&.Mui-checked': { color: BRAND }, '&.MuiCheckbox-indeterminate': { color: BRAND } }}
                         />
                     </Box>
 
                     {/* Company list */}
-                    <Box sx={{ maxHeight: 360, overflowY: 'scroll' }}>
+                    <Box sx={{ maxHeight: 360, overflowY: 'auto', scrollbarGutter: 'stable' }}>
                         {apiData.loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                                 <CircularProgress size={28} sx={{ color: BRAND }} />
@@ -224,7 +224,7 @@ function ShareDialogBody(props: Props) {
                                             checked={isChecked}
                                             onChange={() => toggleOne(id)}
                                             onClick={e => e.stopPropagation()}
-                                            sx={{ color: '#b2e4ea', '&.Mui-checked': { color: BRAND } }}
+                                            sx={{ p: '5px', color: '#b2e4ea', '&.Mui-checked': { color: BRAND } }}
                                         />
                                     </Box>
                                 );
