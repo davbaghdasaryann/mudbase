@@ -29,7 +29,7 @@ const W_CODE  = 94;
 const W_UNIT  = 52;
 const W_QTY   = 58;
 const W_FIXED = W_CODE + W_UNIT + W_QTY; // 204
-const DEF_LEFT = 620;
+const DEF_LEFT = 1054;
 const MIN_LEFT = 280;
 const W_MONTH  = 80;
 
