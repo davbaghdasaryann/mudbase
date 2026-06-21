@@ -527,5 +527,14 @@
   "Industry": "Ոլորտ",
   "All": "Բոլորը",
   "CANCEL": "ՉԵՂԱՐԿԵԼ",
-  "SHARE": "ԿԻՍՎԵԼ"
+  "SHARE": "ԿԻՍՎԵԼ",
+  "overheadCosts": "Վերադիր ծախսեր",
+  "profit": "Շահույթ",
+  "valueAddedTax": "ԱԱՀ",
+  "unforeseenWorks": "Անկանխատեսելի աշխատանքներ",
+  "climaticImpactCosts": "Կլիմայական ազդեցության ծախսեր",
+  "temporaryStructures": "Ժամանակավոր կառույցներ",
+  "transportationCosts": "Տրանսպորտային ծախսեր",
+  "smallScaleConstructionWork": "Փոքրածավալ շինաշխատանք",
+  "smallScaleConstructionMaterials": "Փոքրածավալ շինանյութ"
 }

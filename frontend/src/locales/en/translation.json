@@ -204,5 +204,14 @@
   "Industry": "Industry",
   "All": "All",
   "CANCEL": "CANCEL",
-  "SHARE": "SHARE"
+  "SHARE": "SHARE",
+  "overheadCosts": "Overhead Costs",
+  "profit": "Profit",
+  "valueAddedTax": "VAT",
+  "unforeseenWorks": "Unforeseen Works",
+  "climaticImpactCosts": "Climatic Impact Costs",
+  "temporaryStructures": "Temporary Structures",
+  "transportationCosts": "Transportation Costs",
+  "smallScaleConstructionWork": "Small Scale Construction Work",
+  "smallScaleConstructionMaterials": "Small Scale Construction Materials"
 }

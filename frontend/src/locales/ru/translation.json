@@ -136,5 +136,14 @@
     "Industry": "Отрасль",
     "All": "Все",
     "CANCEL": "ОТМЕНА",
-    "SHARE": "ПОДЕЛИТЬСЯ"
+    "SHARE": "ПОДЕЛИТЬСЯ",
+    "overheadCosts": "Накладные расходы",
+    "profit": "Прибыль",
+    "valueAddedTax": "НДС",
+    "unforeseenWorks": "Непредвиденные работы",
+    "climaticImpactCosts": "Затраты на климатическое воздействие",
+    "temporaryStructures": "Временные сооружения",
+    "transportationCosts": "Транспортные расходы",
+    "smallScaleConstructionWork": "Мелкомасштабные строительные работы",
+    "smallScaleConstructionMaterials": "Мелкомасштабные строительные материалы"
 }
