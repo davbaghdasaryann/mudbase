@@ -27,36 +27,46 @@ registerApiSession('estimate/get', async (req, res, session) => {
             const subsectionIds = subsections.map(s => s._id);
 
             if (subsectionIds.length > 0) {
-                const allLaborItems = await Db.getEstimateLaborItemsCollection()
-                    .find({estimateId, estimateSubsectionId: {$in: subsectionIds}})
-                    .project({_id: 1, laborItemId: 1, isHidden: 1})
+                // Count distinct labor catalog items (by fullCode) across visible rows
+                const laborAgg = await Db.getEstimateLaborItemsCollection().aggregate([
+                    {$match: {estimateId, estimateSubsectionId: {$in: subsectionIds}, isHidden: {$ne: true}, laborItemId: {$exists: true}}},
+                    {$lookup: {
+                        from: 'labor_items',
+                        localField: 'laborItemId',
+                        foreignField: '_id',
+                        as: 'catalogItem',
+                    }},
+                    {$unwind: {path: '$catalogItem', preserveNullAndEmptyArrays: false}},
+                    {$group: {_id: '$catalogItem.fullCode'}},
+                    {$count: 'total'},
+                ]).toArray();
+                estimate.laborItemCount = laborAgg[0]?.total ?? 0;
+
+                // Get hidden labor _ids to exclude their materials
+                const hiddenLabor = await Db.getEstimateLaborItemsCollection()
+                    .find({estimateId, estimateSubsectionId: {$in: subsectionIds}, isHidden: true})
+                    .project({_id: 1})
                     .toArray();
+                const hiddenLaborIds = hiddenLabor.map(l => l._id as ObjectId);
 
-                const hiddenLaborObjectIds = allLaborItems
-                    .filter(l => l.isHidden)
-                    .map(l => l._id as ObjectId);
-
-                estimate.laborItemCount = new Set(
-                    allLaborItems
-                        .filter(l => !l.isHidden && l.laborItemId)
-                        .map(l => l.laborItemId.toString())
-                ).size;
-
-                const materialQuery: any = {estimateId, estimateSubsectionId: {$in: subsectionIds}};
-                if (hiddenLaborObjectIds.length > 0) {
-                    materialQuery.estimatedLaborId = {$nin: hiddenLaborObjectIds};
+                // Count distinct material catalog items (by fullCode) across visible rows
+                const materialMatch: any = {estimateId, estimateSubsectionId: {$in: subsectionIds}, materialItemId: {$exists: true}};
+                if (hiddenLaborIds.length > 0) {
+                    materialMatch.estimatedLaborId = {$nin: hiddenLaborIds};
                 }
-
-                const materialItems = await Db.getEstimateMaterialItemsCollection()
-                    .find(materialQuery)
-                    .project({materialItemId: 1})
-                    .toArray();
-
-                estimate.materialItemCount = new Set(
-                    materialItems
-                        .filter(m => m.materialItemId)
-                        .map(m => m.materialItemId.toString())
-                ).size;
+                const materialAgg = await Db.getEstimateMaterialItemsCollection().aggregate([
+                    {$match: materialMatch},
+                    {$lookup: {
+                        from: 'material_items',
+                        localField: 'materialItemId',
+                        foreignField: '_id',
+                        as: 'catalogItem',
+                    }},
+                    {$unwind: {path: '$catalogItem', preserveNullAndEmptyArrays: false}},
+                    {$group: {_id: '$catalogItem.fullCode'}},
+                    {$count: 'total'},
+                ]).toArray();
+                estimate.materialItemCount = materialAgg[0]?.total ?? 0;
             } else {
                 estimate.laborItemCount = 0;
                 estimate.materialItemCount = 0;
