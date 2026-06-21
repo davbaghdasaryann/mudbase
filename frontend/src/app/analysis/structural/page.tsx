@@ -19,7 +19,7 @@ import MaterialsTab from './MaterialsTab';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
-import { formatCurrencyRounded } from '@/lib/format_currency';
+import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
 
@@ -41,7 +41,7 @@ const MetricCard = ({ label, value }: { label: string; value: number }) => (
     >
         <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, mb: 1 }} />
         <Typography variant='body2' sx={{ color: 'text.secondary', mb: 0.5 }}>{label}</Typography>
-        <Typography variant='h6' sx={{ fontWeight: 700 }}>AMD {formatCurrencyRounded(value)}</Typography>
+        <Typography variant='h6' sx={{ fontWeight: 700 }}>{formatCurrencyRoundedSymbol(value)}</Typography>
     </Paper>
 );
 

@@ -32,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 140 }}>
             <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{label}</Typography>
             <Typography variant='body2' sx={{ color: '#00ABBE' }}>
-                AMD {Number(payload[0].value).toLocaleString()}
+                {Number(payload[0].value).toLocaleString()} AMD
             </Typography>
         </Paper>
     );
