@@ -46,6 +46,14 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
         if (isMobile) closeDrawer();
     }, [pathname, isMobile, closeDrawer]);
 
+    // Auto-open any accordion whose child path matches the current pathname.
+    // Never auto-close — only manual toggle closes it.
+    React.useEffect(() => {
+        if (pathname.startsWith('/analysis/')) {
+            setOpenItems(prev => prev['analysis'] ? prev : { ...prev, analysis: true });
+        }
+    }, [pathname]);
+
     const {nav} = useMainNavigation();
 
     const [iconColor, setIconColor] = React.useState(theme.palette.mode === 'dark' ? 'white' : 'black');
@@ -63,9 +71,21 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
             const renderPageItem = (item: NavigationPageItem, path: string, depth: number) => {
                 const segment = item.segment!;
                 const href = `${path}/${segment}`;
+                const isActive = isPathnameEqual(pathname, href);
+
+                const handleClick = (e: React.MouseEvent) => {
+                    if (isActive) {
+                        // Already on this page — force full reload to reset to initial state
+                        e.preventDefault();
+                        window.location.href = href;
+                        return;
+                    }
+                    if (isMobile) closeDrawer();
+                };
+
                 return (
                     <ListItem sx={{px: 1, py: 0, overflowX: 'hidden'}}>
-                        <ListItemButton selected={isPathnameEqual(pathname, href)} component={Link} href={href} onClick={isMobile ? closeDrawer : undefined} sx={{textDecoration: 'none', color: iconColor}}>
+                        <ListItemButton selected={isActive} component={Link} href={href} onClick={handleClick} sx={{textDecoration: 'none', color: iconColor}}>
                             {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: iconColor}}>{item.icon}</ListItemIcon>}
                             <ListItemText primary={item.title} />
                         </ListItemButton>
