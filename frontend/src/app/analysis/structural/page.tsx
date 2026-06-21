@@ -17,6 +17,7 @@ import OtherExpensesChart from './OtherExpensesChart';
 import LaborTab from './LaborTab';
 import MaterialsTab from './MaterialsTab';
 import { mainPrimaryColor } from '@/theme';
+import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 
@@ -78,9 +79,14 @@ export default function StructuralAnalysisPage() {
 
     const hasData = !!selectedEstimate;
 
-    const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
+    const handleSelect = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
-        setSelectedEstimate(estimate);
+        try {
+            const full = await Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(estimate._id) } });
+            setSelectedEstimate(full ?? estimate);
+        } catch {
+            setSelectedEstimate(estimate);
+        }
     };
 
     const outlinedCreateSx = {
