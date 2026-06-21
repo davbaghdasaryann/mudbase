@@ -137,16 +137,19 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
 
     // ── Resizable left panel — width persisted to localStorage ─────────────
     const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
-    const leftWidthRef = useRef(DEF_LEFT);
+    const isFirstRender = useRef(true);
 
-    // Restore saved width after hydration (can't read localStorage on server)
+    // First run: restore from localStorage. All later runs: save to localStorage.
     useEffect(() => {
-        const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
-        if (!isNaN(saved) && saved >= MIN_LEFT) {
-            leftWidthRef.current = saved;
-            setLeftWidth(saved);
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
+            if (!isNaN(saved) && saved >= MIN_LEFT) setLeftWidth(saved);
+            return;
         }
-    }, []);
+        localStorage.setItem('chron-left-width', String(leftWidth));
+    }, [leftWidth]);
+
     const dragging  = useRef(false);
     const startX    = useRef(0);
     const startW    = useRef(0);
@@ -191,14 +194,9 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         // Only the resize divider still needs document-level listeners
         const onMove = (e: MouseEvent) => {
             if (!dragging.current) return;
-            const w = Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current));
-            leftWidthRef.current = w;
-            setLeftWidth(w);
+            setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
         };
-        const onUp = () => {
-            if (dragging.current) localStorage.setItem('chron-left-width', String(leftWidthRef.current));
-            dragging.current = false;
-        };
+        const onUp = () => { dragging.current = false; };
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
         return () => {
