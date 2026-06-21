@@ -136,19 +136,19 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
     }), []);
 
     // ── Resizable left panel — width persisted to localStorage ─────────────
-    const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
-    const isFirstRender = useRef(true);
+    const [leftWidth, setLeftWidthState] = useState(DEF_LEFT);
 
-    // First run: restore from localStorage. All later runs: save to localStorage.
+    // Wrap setter so every programmatic resize immediately persists
+    const setLeftWidth = useCallback((w: number) => {
+        setLeftWidthState(w);
+        localStorage.setItem('chron-left-width', String(w));
+    }, []);
+
+    // Restore saved width once after mount
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
-            if (!isNaN(saved) && saved >= MIN_LEFT) setLeftWidth(saved);
-            return;
-        }
-        localStorage.setItem('chron-left-width', String(leftWidth));
-    }, [leftWidth]);
+        const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
+        if (!isNaN(saved) && saved >= MIN_LEFT) setLeftWidthState(saved);
+    }, []);
 
     const dragging  = useRef(false);
     const startX    = useRef(0);
