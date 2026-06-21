@@ -271,9 +271,9 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                         {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
                                             ? props.disableEditIcons
                                                 ? <Box sx={{ pointerEvents: 'none', width: '100%', '& .MuiAutocomplete-popupIndicator': { display: 'none' } }}>
-                                                    <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" />
+                                                    <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={expenseKey} label="Type of cost" />
                                                   </Box>
-                                                : <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={t(expenseKey) ?? "typeOfCost"} label="Type of cost" />
+                                                : <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={expenseKey} label="Type of cost" />
                                             : <F.InputText form={form} xs={12} id={`${expenseKey}-${index}`} value={t(expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey)))} label={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))} placeholder={expenseKey === 'typeOfCost' ? "" : t(getEstimateOtherExpenseName(expenseKey))} />
                                         }
                                     </F.PageForm>
