@@ -41,20 +41,26 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
     const laborCatalogIds = [...new Set(visibleLabor.map((l) => l.laborItemId.toString()))].map((id) => new ObjectId(id));
     const materialCatalogIds = [...new Set(visibleMaterial.map((m) => m.materialItemId.toString()))].map((id) => new ObjectId(id));
 
-    // Fetch catalog item info (name, unit)
-    const [catalogLabor, catalogMaterial, measurementUnits] = await Promise.all([
+    // Fetch catalog item info (name, unit, subcategoryId)
+    const [catalogLabor, catalogMaterial, measurementUnits, laborSubcats, materialSubcats] = await Promise.all([
         laborCatalogIds.length > 0
-            ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1 } }).toArray()
+            ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1, subcategoryId: 1 } }).toArray()
             : [],
         materialCatalogIds.length > 0
-            ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1 } }).toArray()
+            ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1, subcategoryId: 1 } }).toArray()
             : [],
         Db.getMeasurementUnitCollection().find({}, { projection: { _id: 1, representationSymbol: 1, name: 1 } }).toArray(),
+        Db.getLaborSubcategoriesCollection().find({}, { projection: { _id: 1, name: 1 } }).toArray(),
+        Db.getMaterialSubcategoriesCollection().find({}, { projection: { _id: 1, name: 1 } }).toArray(),
     ]);
+
+    const laborSubcatMap = new Map<string, string>((laborSubcats as any[]).map((s) => [s._id.toString(), s.name || '']));
+    const materialSubcatMap = new Map<string, string>((materialSubcats as any[]).map((s) => [s._id.toString(), s.name || '']));
 
     const unitMap = new Map<string, string>((measurementUnits as any[]).map((u) => [u._id.toString(), u.representationSymbol || u.name || '']));
     const laborInfo = new Map<string, any>((catalogLabor as any[]).map((i) => [i._id.toString(), i]));
     const materialInfo = new Map<string, any>((catalogMaterial as any[]).map((i) => [i._id.toString(), i]));
+
 
     // Get offer IDs for all catalog items
     const [laborOffers, materialOffers] = await Promise.all([
@@ -126,7 +132,8 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
             const p = itemMonthPrice(id, m, laborOfferCatalog, laborAvgByOffer, fallback);
             if (p > 0) monthlyPrices[m] = Math.round(p);
         }
-        items.push({ id, name: info.name, code: info.fullCode ?? '', type: 'labor', qty: Math.round(qty * 100) / 100, unit, monthlyPrices });
+        const subcategoryName = laborSubcatMap.get(info.subcategoryId?.toString() ?? '') ?? '';
+        items.push({ id, name: info.name, code: info.fullCode ?? '', type: 'labor', qty: Math.round(qty * 100) / 100, unit, monthlyPrices, subcategoryName });
     }
 
     // Materials
@@ -145,7 +152,8 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
             const p = itemMonthPrice(id, m, materialOfferCatalog, materialAvgByOffer, fallback);
             if (p > 0) monthlyPrices[m] = Math.round(p);
         }
-        items.push({ id, name: info.name, code: info.fullCode ?? '', type: 'material', qty: Math.round(qty * 100) / 100, unit, monthlyPrices });
+        const subcategoryName = materialSubcatMap.get(info.subcategoryId?.toString() ?? '') ?? '';
+        items.push({ id, name: info.name, code: info.fullCode ?? '', type: 'material', qty: Math.round(qty * 100) / 100, unit, monthlyPrices, subcategoryName });
     }
 
     return res.json({ months, items });
