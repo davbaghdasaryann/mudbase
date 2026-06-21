@@ -69,6 +69,19 @@ async function computeEstimateCostFromCatalog(estimateId: ObjectId): Promise<num
     return directCost * otherExpensesMultiplier(estimate?.otherExpenses ?? []);
 }
 
+/** Compute live market average price for a catalog item, excluding dev/test accounts — matches catalog display. */
+async function getLiveAveragePrice(itemId: ObjectId, isLabor: boolean): Promise<number | null> {
+    const coll = isLabor ? Db.getLaborOffersCollection() : Db.getMaterialOffersCollection();
+    const rows = await coll.aggregate([
+        { $match: { itemId, price: { $ne: 0, $exists: true }, $or: [{ isArchived: false }, { isArchived: { $exists: false } }] } },
+        { $lookup: { from: 'accounts', localField: 'accountId', foreignField: '_id', as: 'accountInfo' } },
+        { $match: { 'accountInfo.isDev': { $ne: true } } },
+        { $group: { _id: null, avg: { $avg: '$price' } } },
+    ]).toArray();
+    if (rows.length === 0 || !(rows[0] as any).avg) return null;
+    return Math.round((rows[0] as any).avg);
+}
+
 /** Get current value for the widget — reads live stored values that match what users see in the UI. */
 async function getCurrentValueForWidget(
     widget: { dataSource: string; dataSourceConfig?: { itemId?: unknown; estimateId?: unknown } },
@@ -78,16 +91,14 @@ async function getCurrentValueForWidget(
         if (widget.dataSource === 'materials' && widget.dataSourceConfig?.itemId) {
             const itemId = typeof widget.dataSourceConfig.itemId === 'string'
                 ? new ObjectId(widget.dataSourceConfig.itemId)
-                : widget.dataSourceConfig.itemId;
-            const item = await Db.getMaterialItemsCollection().findOne({ _id: itemId });
-            return item?.averagePrice ?? null;
+                : widget.dataSourceConfig.itemId as ObjectId;
+            return getLiveAveragePrice(itemId, false);
         }
         if (widget.dataSource === 'labor' && widget.dataSourceConfig?.itemId) {
             const itemId = typeof widget.dataSourceConfig.itemId === 'string'
                 ? new ObjectId(widget.dataSourceConfig.itemId)
-                : widget.dataSourceConfig.itemId;
-            const item = await Db.getLaborItemsCollection().findOne({ _id: itemId });
-            return item?.averagePrice ?? null;
+                : widget.dataSourceConfig.itemId as ObjectId;
+            return getLiveAveragePrice(itemId, true);
         }
         if (widget.dataSource === 'estimates' && widget.dataSourceConfig?.estimateId) {
             const estimateId = typeof widget.dataSourceConfig.estimateId === 'string'

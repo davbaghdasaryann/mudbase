@@ -21,15 +21,23 @@ export async function updateLaborItemStats(laborItemId: ObjectId) {
                 },
             },
             {
+                $lookup: {
+                    from: 'accounts',
+                    localField: 'accountId',
+                    foreignField: '_id',
+                    as: 'accountInfo',
+                },
+            },
+            { $match: { 'accountInfo.isDev': { $ne: true } } },
+            {
                 $group: {
                     _id: '$itemId',
                     avgPrice: {$avg: '$price'},
                 },
             },
-
             {
                 $project: {
-                    averagePrice: {$round: '$avgPrice'}, // ✅ round after grouping
+                    averagePrice: {$round: '$avgPrice'},
                 },
             },
             {
@@ -41,7 +49,7 @@ export async function updateLaborItemStats(laborItemId: ObjectId) {
                 },
             },
         ])
-        .toArray(); // ensures the pipeline executes
+        .toArray();
 }
 
 registerApiSession('labor/fetch_items_with_average_price', async (req, res, session) => {

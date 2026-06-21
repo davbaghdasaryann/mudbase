@@ -22,6 +22,15 @@ export async function updateMaterialItemStats(materialItemId: ObjectId) {
                 },
             },
             {
+                $lookup: {
+                    from: 'accounts',
+                    localField: 'accountId',
+                    foreignField: '_id',
+                    as: 'accountInfo',
+                },
+            },
+            { $match: { 'accountInfo.isDev': { $ne: true } } },
+            {
                 $group: {
                     _id: '$itemId',
                     avgPrice: {$avg: '$price'},
@@ -29,7 +38,7 @@ export async function updateMaterialItemStats(materialItemId: ObjectId) {
             },
             {
                 $project: {
-                    averagePrice: {$round: '$avgPrice'}, // ✅ round after grouping
+                    averagePrice: {$round: '$avgPrice'},
                 },
             },
             {
@@ -41,7 +50,7 @@ export async function updateMaterialItemStats(materialItemId: ObjectId) {
                 },
             },
         ])
-        .toArray(); // ensures the pipeline executes
+        .toArray();
 
     log_.info(result);
 }
