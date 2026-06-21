@@ -10,8 +10,14 @@ import { useTranslation } from 'react-i18next';
 import { ApiEstimate } from '@/api/estimate';
 
 const BAR_GRADIENTS = [
-    { top: '#a8e6df', bottom: '#007a6e', stroke: '#005f56' },
-    { top: '#e1bee7', bottom: '#6a1b9a', stroke: '#4a148c' },
+    { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
+    { top: '#4EE89A', bottom: '#1CA461', stroke: '#148048' },
+    { top: '#A8DED9', bottom: '#5CB8B0', stroke: '#44908a' },
+    { top: '#27C97A', bottom: '#00855A', stroke: '#006644' },
+    { top: '#6FE0D8', bottom: '#2BADA6', stroke: '#1e8880' },
+    { top: '#00B28F', bottom: '#007060', stroke: '#005548' },
+    { top: '#C5E8C6', bottom: '#7DB87E', stroke: '#5e9660' },
+    { top: '#3DC9BF', bottom: '#1A8A84', stroke: '#116b66' },
 ];
 
 const formatYAxis = (value: number) => {
