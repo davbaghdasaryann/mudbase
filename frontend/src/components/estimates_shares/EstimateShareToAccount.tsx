@@ -127,7 +127,7 @@ function ShareDialogBody(props: Props) {
                 onClose={props.onClose}
                 fullWidth
                 maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 713, maxWidth: 600, display: 'flex', flexDirection: 'column' } }}
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 713, maxWidth: 660, display: 'flex', flexDirection: 'column' } }}
             >
                 {/* Header */}
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
