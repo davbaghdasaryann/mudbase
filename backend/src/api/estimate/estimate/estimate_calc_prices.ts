@@ -128,10 +128,8 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     // log_.info('est', estimate)
 
     // Update the document in the database.
-    const visibleLaborItems = laborItems.filter(l => !l.isHidden);
-    const laborItemCount = new Set(visibleLaborItems.map(l => l.laborItemId.toString())).size;
-    const visibleMaterialItems = materialItems.filter(m => !hiddenLaborIds.has(m.estimatedLaborId.toString()));
-    const materialItemCount = new Set(visibleMaterialItems.map(m => m.materialItemId.toString())).size;
+    const laborItemCount = laborItems.filter(l => !l.isHidden && l.laborItemId).length;
+    const materialItemCount = materialItems.filter(m => !hiddenLaborIds.has(m.estimatedLaborId.toString()) && m.materialItemId).length;
 
     const result = await estimatesColl.updateOne(
         {_id: estimate._id},
