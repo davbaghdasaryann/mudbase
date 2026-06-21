@@ -135,8 +135,16 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n;
     }), []);
 
-    // ── Resizable left panel ────────────────────────────────────────────────
-    const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
+    // ── Resizable left panel — width persisted to localStorage ─────────────
+    const [leftWidth, setLeftWidth] = useState(() => {
+        if (typeof window === 'undefined') return DEF_LEFT;
+        const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
+        return isNaN(saved) || saved < MIN_LEFT ? DEF_LEFT : saved;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('chron-left-width', String(leftWidth));
+    }, [leftWidth]);
     const dragging  = useRef(false);
     const startX    = useRef(0);
     const startW    = useRef(0);
