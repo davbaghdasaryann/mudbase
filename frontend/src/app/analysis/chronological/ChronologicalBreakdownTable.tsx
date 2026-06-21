@@ -156,8 +156,6 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
     const [isGrabbing, setIsGrabbing] = useState(false);
 
     const onRightMouseDown = useCallback((e: React.MouseEvent) => {
-        // ignore clicks on interactive elements (arrows, etc.)
-        if ((e.target as HTMLElement).closest('span[data-toggle]')) return;
         grabbing.current    = true;
         grabStartX.current  = e.clientX;
         grabScrollX.current = rightRef.current?.scrollLeft ?? 0;
@@ -165,8 +163,16 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         e.preventDefault();
     }, []);
 
+    const onRightTouchStart = useCallback((e: React.TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        grabbing.current    = true;
+        grabStartX.current  = e.touches[0].clientX;
+        grabScrollX.current = rightRef.current?.scrollLeft ?? 0;
+        setIsGrabbing(true);
+    }, []);
+
     useEffect(() => {
-        const onMove = (e: MouseEvent) => {
+        const onMouseMove = (e: MouseEvent) => {
             if (dragging.current) {
                 setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
             }
@@ -175,13 +181,25 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
                 rightRef.current.scrollLeft = grabScrollX.current - dx;
             }
         };
-        const onUp = () => {
+        const onTouchMove = (e: TouchEvent) => {
+            if (!grabbing.current || !rightRef.current || e.touches.length !== 1) return;
+            const dx = e.touches[0].clientX - grabStartX.current;
+            rightRef.current.scrollLeft = grabScrollX.current - dx;
+        };
+        const onEnd = () => {
             dragging.current = false;
             if (grabbing.current) { grabbing.current = false; setIsGrabbing(false); }
         };
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-        return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchmove', onTouchMove, { passive: true });
+        document.addEventListener('touchend', onEnd);
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onEnd);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onEnd);
+        };
     }, []);
 
     const wName = Math.max(60, leftWidth - W_FIXED);
@@ -345,7 +363,7 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
             />
 
             {/* ── RIGHT SCROLLABLE PANEL ── */}
-            <Box ref={rightRef} onMouseDown={onRightMouseDown} sx={{ flex: 1, overflowX: 'auto', minWidth: 0, cursor: isGrabbing ? 'grabbing' : 'grab' }}>
+            <Box ref={rightRef} onMouseDown={onRightMouseDown} onTouchStart={onRightTouchStart} sx={{ flex: 1, overflowX: 'auto', minWidth: 0, cursor: isGrabbing ? 'grabbing' : 'grab', touchAction: 'pan-y' }}>
                 <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                     <colgroup>
                         {months.map(m => <col key={m} style={{ width: W_MONTH }} />)}
