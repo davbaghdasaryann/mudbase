@@ -403,7 +403,7 @@ export default function AccountSharedEstimatesByMeTab() {
                     >
                         <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Stack direction='row' justifyContent='space-between' alignItems='center' width='100%'>
-                                <Typography>{estimateShare.name}</Typography>
+                                <Typography sx={{ fontSize: 14 }}>{estimateShare.name}</Typography>
                                 <Box flex={2}>&nbsp;</Box>
 
                                 <Tooltip title={t('Average price')} arrow placement='top'>
