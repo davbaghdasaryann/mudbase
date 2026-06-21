@@ -127,14 +127,14 @@ function ShareDialogBody(props: Props) {
                 onClose={props.onClose}
                 fullWidth
                 maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 713, maxWidth: 600 } }}
+                PaperProps={{ sx: { borderRadius: '12px', overflow: 'hidden', minHeight: 713, maxWidth: 600, display: 'flex', flexDirection: 'column' } }}
             >
                 {/* Header */}
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600, fontSize: 18, pb: 1 }}>
                     {t('Share')}
                 </DialogTitle>
 
-                <DialogContent sx={{ px: 3, pb: 0, pt: 1 }}>
+                <DialogContent sx={{ px: 3, pb: 0, pt: 1, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                     {progIndic && <ProgressIndicator show background="backdrop" />}
 
                     {/* Filters */}
@@ -173,7 +173,7 @@ function ShareDialogBody(props: Props) {
                     </Box>
 
                     {/* Company list with sticky header inside so checkboxes always share the same content width */}
-                    <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
+                    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                         {/* Companies header — sticky so it stays visible while scrolling */}
                         <Box sx={{ position: 'sticky', top: 0, zIndex: 1, display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, backgroundColor: '#f5f5f5', mb: 0.5 }}>
                             <Typography sx={{ flex: 1, fontWeight: 700, fontSize: 13, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 }}>
