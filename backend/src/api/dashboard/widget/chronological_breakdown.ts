@@ -4,8 +4,11 @@ import * as Db from '@/db';
 
 /**
  * Per-item monthly price breakdown for an estimate.
- * Returns items in estimate hierarchy: each labor item followed by its material children.
+ * Items are ordered by the estimation's own section → subsection → labor hierarchy,
+ * matching exactly what is shown in the Estimations modal.
+ * Each labor item is followed immediately by its material children.
  * parentId on material rows = the estimate labor item's _id (string).
+ * sectionName / subsectionName drive the accordion groups in the UI.
  */
 registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req, res, session) => {
     const { estimateId, fromDate, toDate } = req.body ?? {};
@@ -20,24 +23,51 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
     const rangeStart = new Date(months[0] + '-01T00:00:00.000Z');
     const rangeEnd = monthEndDate(months[months.length - 1]);
 
-    const [laborItems, materialItems] = await Promise.all([
+    // Fetch estimate structure + items in parallel
+    const [sections, subsections, laborItems, materialItems] = await Promise.all([
+        Db.getEstimateSectionsCollection()
+            .find({ estimateId: estId }, { projection: { _id: 1, name: 1, displayIndex: 1 } })
+            .toArray(),
+        Db.getEstimateSubsectionsCollection()
+            .find({ estimateId: estId }, { projection: { _id: 1, name: 1, estimateSectionId: 1, displayIndex: 1 } })
+            .toArray(),
         Db.getEstimateLaborItemsCollection()
-            .find({ estimateId: estId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, _id: 1 } })
+            .find({ estimateId: estId }, { projection: { laborItemId: 1, quantity: 1, isHidden: 1, estimateSubsectionId: 1, displayIndex: 1, _id: 1 } })
             .toArray(),
         Db.getEstimateMaterialItemsCollection()
             .find({ estimateId: estId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, _id: 1 } })
             .toArray(),
     ]);
 
+    // Build section/subsection lookup maps
+    const sectionMap = new Map<string, any>((sections as any[]).map(s => [s._id.toString(), s]));
+    const subsectionMap = new Map<string, any>((subsections as any[]).map(s => [s._id.toString(), s]));
+
+    // Filter hidden labor
     const hiddenLaborIds = new Set(
-        (laborItems as any[]).filter((l) => l.isHidden).map((l) => l._id!.toString())
+        (laborItems as any[]).filter(l => l.isHidden).map(l => l._id!.toString())
     );
-    const visibleLabor = (laborItems as any[]).filter((l) => !l.isHidden);
+    const visibleLabor = (laborItems as any[]).filter(l => !l.isHidden);
     const visibleMaterial = (materialItems as any[]).filter(
-        (m) => !hiddenLaborIds.has(m.estimatedLaborId?.toString())
+        m => !hiddenLaborIds.has(m.estimatedLaborId?.toString())
     );
 
-    // Group materials by their parent labor estimate item ID
+    // Sort labor items by section.displayIndex → subsection.displayIndex → labor.displayIndex
+    visibleLabor.sort((a: any, b: any) => {
+        const subA = subsectionMap.get(a.estimateSubsectionId?.toString() ?? '');
+        const subB = subsectionMap.get(b.estimateSubsectionId?.toString() ?? '');
+        const secA = subA ? sectionMap.get(subA.estimateSectionId?.toString() ?? '') : null;
+        const secB = subB ? sectionMap.get(subB.estimateSectionId?.toString() ?? '') : null;
+        const secIdxA = secA?.displayIndex ?? 0;
+        const secIdxB = secB?.displayIndex ?? 0;
+        if (secIdxA !== secIdxB) return secIdxA - secIdxB;
+        const subIdxA = subA?.displayIndex ?? 0;
+        const subIdxB = subB?.displayIndex ?? 0;
+        if (subIdxA !== subIdxB) return subIdxA - subIdxB;
+        return (a.displayIndex ?? 0) - (b.displayIndex ?? 0);
+    });
+
+    // Group materials by parent labor estimate item ID
     const materialsByParent = new Map<string, any[]>();
     for (const m of visibleMaterial) {
         const key = m.estimatedLaborId?.toString() ?? '__none__';
@@ -46,27 +76,24 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
     }
 
     // Unique catalog IDs
-    const laborCatalogIds = [...new Set(visibleLabor.map((l: any) => l.laborItemId.toString()))].map((id) => new ObjectId(id));
-    const materialCatalogIds = [...new Set(visibleMaterial.map((m: any) => m.materialItemId.toString()))].map((id) => new ObjectId(id));
+    const laborCatalogIds = [...new Set(visibleLabor.map((l: any) => l.laborItemId.toString()))].map(id => new ObjectId(id));
+    const materialCatalogIds = [...new Set(visibleMaterial.map((m: any) => m.materialItemId.toString()))].map(id => new ObjectId(id));
 
-    const [catalogLabor, catalogMaterial, measurementUnits, laborSubcats, materialSubcats] = await Promise.all([
+    const [catalogLabor, catalogMaterial, measurementUnits] = await Promise.all([
         laborCatalogIds.length > 0
-            ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1, subcategoryId: 1 } }).toArray()
+            ? Db.getLaborItemsCollection().find({ _id: { $in: laborCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1 } }).toArray()
             : [],
         materialCatalogIds.length > 0
-            ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1, subcategoryId: 1 } }).toArray()
+            ? Db.getMaterialItemsCollection().find({ _id: { $in: materialCatalogIds } }, { projection: { _id: 1, name: 1, fullCode: 1, averagePrice: 1, measurementUnitMongoId: 1 } }).toArray()
             : [],
         Db.getMeasurementUnitCollection().find({}, { projection: { _id: 1, representationSymbol: 1, name: 1 } }).toArray(),
-        Db.getLaborSubcategoriesCollection().find({}, { projection: { _id: 1, name: 1 } }).toArray(),
-        Db.getMaterialSubcategoriesCollection().find({}, { projection: { _id: 1, name: 1 } }).toArray(),
     ]);
 
-    const laborSubcatMap = new Map<string, string>((laborSubcats as any[]).map((s) => [s._id.toString(), s.name || '']));
-    const unitMap = new Map<string, string>((measurementUnits as any[]).map((u) => [u._id.toString(), u.representationSymbol || u.name || '']));
-    const laborInfo = new Map<string, any>((catalogLabor as any[]).map((i) => [i._id.toString(), i]));
-    const materialInfo = new Map<string, any>((catalogMaterial as any[]).map((i) => [i._id.toString(), i]));
+    const unitMap = new Map<string, string>((measurementUnits as any[]).map(u => [u._id.toString(), u.representationSymbol || u.name || '']));
+    const laborInfo = new Map<string, any>((catalogLabor as any[]).map(i => [i._id.toString(), i]));
+    const materialInfo = new Map<string, any>((catalogMaterial as any[]).map(i => [i._id.toString(), i]));
 
-    // Offer IDs (non-dev accounts only)
+    // Non-dev offer IDs for price journal queries
     const [laborOffers, materialOffers] = await Promise.all([
         laborCatalogIds.length > 0
             ? Db.getLaborOffersCollection().aggregate([
@@ -86,8 +113,8 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
             : [],
     ]);
 
-    const allLaborOfferIds = (laborOffers as any[]).map((o) => o._id);
-    const allMaterialOfferIds = (materialOffers as any[]).map((o) => o._id);
+    const allLaborOfferIds = (laborOffers as any[]).map(o => o._id);
+    const allMaterialOfferIds = (materialOffers as any[]).map(o => o._id);
 
     async function monthlyAvgByOffer(journalColl: any, offerIds: ObjectId[]): Promise<Map<string, Map<string, number>>> {
         if (offerIds.length === 0) return new Map();
@@ -110,10 +137,9 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
         monthlyAvgByOffer(Db.getMaterialPricesJournalCollection(), allMaterialOfferIds),
     ]);
 
-    const laborOfferCatalog = new Map<string, string>((laborOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
-    const materialOfferCatalog = new Map<string, string>((materialOffers as any[]).map((o) => [o._id.toString(), o.itemId.toString()]));
+    const laborOfferCatalog = new Map<string, string>((laborOffers as any[]).map(o => [o._id.toString(), o.itemId.toString()]));
+    const materialOfferCatalog = new Map<string, string>((materialOffers as any[]).map(o => [o._id.toString(), o.itemId.toString()]));
 
-    // Cache monthly prices per catalog item to avoid recomputing for duplicate catalog IDs
     const laborPriceCache = new Map<string, Record<string, number>>();
     const materialPriceCache = new Map<string, Record<string, number>>();
 
@@ -140,7 +166,7 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
         return result;
     }
 
-    // Build output: labor items in order, each followed by their material children
+    // Build output: ordered by estimation hierarchy, each labor followed by its materials
     const items: any[] = [];
 
     for (const laborItem of visibleLabor) {
@@ -149,26 +175,29 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
         const info = laborInfo.get(catalogId);
         if (!info) continue;
 
+        // Resolve section/subsection names from estimation structure
+        const subsection = subsectionMap.get(laborItem.estimateSubsectionId?.toString() ?? '');
+        const section = subsection ? sectionMap.get(subsection.estimateSectionId?.toString() ?? '') : null;
+        const subsectionName: string = subsection?.name ?? '';
+        const sectionName: string = section?.name ?? subsection?.name ?? '';
+
         const unit = unitMap.get(info.measurementUnitMongoId?.toString() ?? '') ?? '';
-        const subcategoryName = laborSubcatMap.get(info.subcategoryId?.toString() ?? '') ?? '';
         const monthlyPrices = getCatalogMonthlyPrices(catalogId, laborOfferCatalog, laborAvgByOffer, info.averagePrice ?? 0, laborPriceCache);
 
         items.push({
             id: laborItemId,
-            catalogId,
             name: info.name,
             code: info.fullCode ?? '',
             type: 'labor',
             qty: Math.round((laborItem.quantity ?? 0) * 100) / 100,
             unit,
-            subcategoryName,
+            sectionName,
+            subsectionName,
             parentId: null,
             monthlyPrices,
         });
 
-        // Material children for this labor item
-        const children = materialsByParent.get(laborItemId) ?? [];
-        for (const matItem of children) {
+        for (const matItem of materialsByParent.get(laborItemId) ?? []) {
             const matCatalogId = matItem.materialItemId.toString();
             const matInfo = materialInfo.get(matCatalogId);
             if (!matInfo) continue;
@@ -176,13 +205,13 @@ registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req
             const matMonthlyPrices = getCatalogMonthlyPrices(matCatalogId, materialOfferCatalog, materialAvgByOffer, matInfo.averagePrice ?? 0, materialPriceCache);
             items.push({
                 id: matItem._id.toString(),
-                catalogId: matCatalogId,
                 name: matInfo.name,
                 code: matInfo.fullCode ?? '',
                 type: 'material',
                 qty: Math.round((matItem.quantity ?? 0) * 100) / 100,
                 unit: matUnit,
-                subcategoryName,
+                sectionName,
+                subsectionName,
                 parentId: laborItemId,
                 monthlyPrices: matMonthlyPrices,
             });
