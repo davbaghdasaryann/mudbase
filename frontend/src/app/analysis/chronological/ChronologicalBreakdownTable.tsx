@@ -148,12 +148,37 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         e.preventDefault();
     }, [leftWidth]);
 
+    // ── Grab-to-scroll for right panel ──────────────────────────────────────
+    const rightRef      = useRef<HTMLDivElement>(null);
+    const grabbing      = useRef(false);
+    const grabStartX    = useRef(0);
+    const grabScrollX   = useRef(0);
+    const [isGrabbing, setIsGrabbing] = useState(false);
+
+    const onRightMouseDown = useCallback((e: React.MouseEvent) => {
+        // ignore clicks on interactive elements (arrows, etc.)
+        if ((e.target as HTMLElement).closest('span[data-toggle]')) return;
+        grabbing.current    = true;
+        grabStartX.current  = e.clientX;
+        grabScrollX.current = rightRef.current?.scrollLeft ?? 0;
+        setIsGrabbing(true);
+        e.preventDefault();
+    }, []);
+
     useEffect(() => {
         const onMove = (e: MouseEvent) => {
-            if (!dragging.current) return;
-            setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
+            if (dragging.current) {
+                setLeftWidth(Math.max(MIN_LEFT, startW.current + (e.clientX - startX.current)));
+            }
+            if (grabbing.current && rightRef.current) {
+                const dx = e.clientX - grabStartX.current;
+                rightRef.current.scrollLeft = grabScrollX.current - dx;
+            }
         };
-        const onUp = () => { dragging.current = false; };
+        const onUp = () => {
+            dragging.current = false;
+            if (grabbing.current) { grabbing.current = false; setIsGrabbing(false); }
+        };
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
         return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
@@ -320,7 +345,7 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
             />
 
             {/* ── RIGHT SCROLLABLE PANEL ── */}
-            <Box sx={{ flex: 1, overflowX: 'auto', minWidth: 0 }}>
+            <Box ref={rightRef} onMouseDown={onRightMouseDown} sx={{ flex: 1, overflowX: 'auto', minWidth: 0, cursor: isGrabbing ? 'grabbing' : 'grab' }}>
                 <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                     <colgroup>
                         {months.map(m => <col key={m} style={{ width: W_MONTH }} />)}
