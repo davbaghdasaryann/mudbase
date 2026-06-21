@@ -29,7 +29,7 @@ const W_CODE  = 94;
 const W_UNIT  = 52;
 const W_QTY   = 58;
 const W_FIXED = W_CODE + W_UNIT + W_QTY; // 204
-const DEF_LEFT = 470;
+const DEF_LEFT = 620;
 const MIN_LEFT = 280;
 const W_MONTH  = 80;
 
@@ -135,21 +135,8 @@ export default function ChronologicalBreakdownTable({ months, items }: Props) {
         const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n;
     }), []);
 
-    // ── Resizable left panel — width persisted to localStorage ─────────────
-    const [leftWidth, setLeftWidthState] = useState(DEF_LEFT);
-
-    // Wrap setter so every programmatic resize immediately persists
-    const setLeftWidth = useCallback((w: number) => {
-        setLeftWidthState(w);
-        localStorage.setItem('chron-left-width', String(w));
-    }, []);
-
-    // Restore saved width once after mount
-    useEffect(() => {
-        const saved = parseInt(localStorage.getItem('chron-left-width') ?? '', 10);
-        if (!isNaN(saved) && saved >= MIN_LEFT) setLeftWidthState(saved);
-    }, []);
-
+    // ── Resizable left panel ────────────────────────────────────────────────
+    const [leftWidth, setLeftWidth] = useState(DEF_LEFT);
     const dragging  = useRef(false);
     const startX    = useRef(0);
     const startW    = useRef(0);
