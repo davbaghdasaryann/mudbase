@@ -85,8 +85,19 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
 
                 return (
                     <ListItem sx={{px: 1, py: 0, overflowX: 'hidden'}}>
-                        <ListItemButton selected={isActive} component={Link} href={href} onClick={handleClick} sx={{textDecoration: 'none', color: iconColor}}>
-                            {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: iconColor}}>{item.icon}</ListItemIcon>}
+                        <ListItemButton
+                            selected={isActive}
+                            component={Link}
+                            href={href}
+                            onClick={handleClick}
+                            sx={{
+                                textDecoration: 'none',
+                                color: isActive ? '#00abbe' : iconColor,
+                                '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
+                                '&.Mui-selected:hover': { backgroundColor: 'rgba(0, 171, 190, 0.08)' },
+                            }}
+                        >
+                            {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: isActive ? '#00abbe' : iconColor}}>{item.icon}</ListItemIcon>}
                             <ListItemText primary={item.title} />
                         </ListItemButton>
                     </ListItem>
@@ -99,7 +110,15 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 return (
                     <>
                         <ListItem sx={{px: 1, py: 0, overflowX: 'hidden'}}>
-                            <ListItemButton onClick={() => handleToggle(segment)} selected={isPathnameEqual(pathname, href)} sx={{color: iconColor}}>
+                            <ListItemButton
+                                onClick={() => handleToggle(segment)}
+                                selected={isPathnameEqual(pathname, href)}
+                                sx={{
+                                    color: iconColor,
+                                    '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
+                                    '&.Mui-selected:hover': { backgroundColor: 'rgba(0, 171, 190, 0.08)' },
+                                }}
+                            >
                                 {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: iconColor}}>{item.icon}</ListItemIcon>}
                                 <ListItemText primary={item.title} />
                                 {openItems[segment] ? <ExpandLess /> : <ExpandMore />}

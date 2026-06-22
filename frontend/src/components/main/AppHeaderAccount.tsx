@@ -101,7 +101,7 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                                 avatar: {
                                     children: initials || undefined,
                                     sx: {
-                                        background: 'linear-gradient(135deg, #00BBEB 0%, #007FA8 100%)',
+                                        background: 'linear-gradient(135deg, #00abbe 0%, #007080 100%)',
                                         fontWeight: 600,
                                         fontSize: '0.95rem',
                                         borderRadius: '50%',
