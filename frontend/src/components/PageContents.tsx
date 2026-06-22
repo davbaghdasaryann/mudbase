@@ -37,8 +37,6 @@ export interface PageContentsProps {
     requiredPermission?: string;
 
     sx?: SxProps<Theme>;
-
-    isScrolled?: boolean;
 }
 
 export default function PageContents(props: PageContentsProps) {
@@ -157,13 +155,6 @@ function PageContentsProtectedBody(props: PageContentsProps) {
     const router = useRouter();
     const {t} = useTranslation();
 
-    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-    const [isScrolled, setIsScrolled] = React.useState(false);
-
-    const handleScroll = React.useCallback(() => {
-        setIsScrolled((scrollContainerRef.current?.scrollTop ?? 0) > 10);
-    }, []);
-
     return (
         <Box
             sx={{
@@ -174,11 +165,9 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                 minWidth: 0,
             }}
         >
-            <AppHeaderNoAppBar {...props} isScrolled={isScrolled} />
+            <AppHeaderNoAppBar {...props} />
 
             <Box
-                ref={scrollContainerRef}
-                onScroll={handleScroll}
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
