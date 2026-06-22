@@ -194,6 +194,14 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
         </>
     );
 
+    const drawerPaperGlass = {
+        background: 'linear-gradient(to bottom, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.72) 60%, rgba(0,171,190,0.10) 100%)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: '2px 0 20px rgba(0,171,190,0.08)',
+        borderRight: 0,
+    };
+
     if (isMobile) {
         return (
             <Drawer
@@ -203,7 +211,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 ModalProps={{ keepMounted: true }}
                 sx={{
                     display: { xs: 'block', md: 'none' },
-                    [`& .MuiDrawer-paper`]: { width: drawerWidth, maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box', top: 0, left: 0 },
+                    [`& .MuiDrawer-paper`]: { width: drawerWidth, maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box', top: 0, left: 0, ...drawerPaperGlass },
                 }}
             >
                 {drawerContent}
@@ -218,7 +226,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 display: { xs: 'none', md: 'block' },
                 width: drawerWidth,
                 flexShrink: 0,
-                [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', top: 0, left: 0, borderRight: 0 },
+                [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', top: 0, left: 0, ...drawerPaperGlass },
             }}
         >
             {drawerContent}
