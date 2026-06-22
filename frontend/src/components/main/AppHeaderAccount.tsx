@@ -93,7 +93,7 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                                     children: initials || undefined,
                                     sx: {
                                         bgcolor: (theme) => theme.palette.primary.main,
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        background: 'linear-gradient(135deg, #00BBEB 0%, #007FA8 100%)',
                                         fontWeight: 600,
                                         fontSize: '0.95rem',
                                         border: (theme) =>
