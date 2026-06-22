@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {Box, Button, Divider, MenuList, Stack, Typography} from '@mui/material';
+import {Button, Divider, MenuList, Stack, Typography} from '@mui/material';
 
 import {useSession} from 'next-auth/react';
 
@@ -70,8 +70,6 @@ function AppHeaderAccountBody(props: PageContentsProps) {
     return (
         <AuthenticationContext.Provider value={authentication}>
             <SessionContext.Provider value={session}>
-                {/* Outer clip ensures nothing bleeds past the circle */}
-                <Box sx={{ borderRadius: '50%', overflow: 'hidden', display: 'inline-flex' }}>
                 <Account
                     // key={forceRender}
                     localeText={{
@@ -85,25 +83,29 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                             slotProps: {
                                 avatarIconButton: {
                                     sx: {
+                                        p: 0,
                                         borderRadius: '50%',
                                         overflow: 'hidden',
-                                        transition: 'all 0.2s ease-in-out',
+                                        background: 'transparent',
+                                        backgroundColor: 'transparent',
+                                        transition: 'transform 0.2s ease-in-out',
                                         '&:hover': {
+                                            background: 'transparent',
+                                            backgroundColor: 'transparent',
                                             transform: 'scale(1.05)',
                                         },
+                                        '&:active': { background: 'transparent', backgroundColor: 'transparent' },
+                                        '&.Mui-focusVisible': { background: 'transparent', backgroundColor: 'transparent' },
                                     },
                                 },
                                 avatar: {
                                     children: initials || undefined,
                                     sx: {
-                                        bgcolor: (theme) => theme.palette.primary.main,
                                         background: 'linear-gradient(135deg, #00BBEB 0%, #007FA8 100%)',
                                         fontWeight: 600,
                                         fontSize: '0.95rem',
                                         borderRadius: '50%',
                                         overflow: 'hidden',
-                                        border: (theme) =>
-                                            `2px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
                                     },
                                 },
                             },
@@ -133,7 +135,6 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                         },
                     }}
                 />
-                </Box>
             </SessionContext.Provider>
         </AuthenticationContext.Provider>
     );
