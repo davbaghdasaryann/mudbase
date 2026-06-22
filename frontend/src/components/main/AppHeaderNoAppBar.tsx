@@ -75,6 +75,9 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 right: 0,
                 left: 0,
                 zIndex: 1100,
+                backgroundColor: 'rgba(0, 171, 190, 0.07)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
             }}
         >
             <Stack
@@ -84,9 +87,6 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 sx={{
                     height: { xs: 56, md: 64 },
                     px: { xs: 1.5, sm: 2, md: 3 },
-                    backgroundColor: 'rgba(0, 171, 190, 0.08)',
-                    backdropFilter: 'blur(24px)',
-                    WebkitBackdropFilter: 'blur(24px)',
                 }}
             >
                 {isMobile && (
