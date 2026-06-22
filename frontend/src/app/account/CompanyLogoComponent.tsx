@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Slider } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Slider } from '@mui/material';
 
 import BusinessIcon from '@mui/icons-material/Business';
 import EditIcon from '@mui/icons-material/Edit';
@@ -127,24 +127,28 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
 
     return (
         <>
-            <Box position='relative' display='inline-block' sx={{
-                        // paddingTop: `${companyLogoMarginTop}px`,
-            }}>
-                {imageSrc ? (
-                    <Avatar
-                        alt='Company Logo'
-                        src={imageSrc}
-                        slotProps={{ img: { onError: () => setImageSrc(undefined) } }}
-                        sx={{
-                            marginTop: `${companyLogoMarginTop}px`,
-                            width: companyLogoAvatarSize,
-                            height: companyLogoAvatarSize,
-                            cursor: props.canEdit ? 'pointer' : undefined,
-                        }}
-                    />
-                ) : (
-                    <LogoPlaceholder marginTop={companyLogoMarginTop} canEdit={props.canEdit} />
-                )}
+            <Box position='relative' display='inline-block'>
+                {/* Always-visible circle: grey bg shows when image is absent or 404s */}
+                <Box
+                    sx={{
+                        marginTop: `${companyLogoMarginTop}px`,
+                        width: companyLogoAvatarSize,
+                        height: companyLogoAvatarSize,
+                        borderRadius: '50%',
+                        backgroundColor: '#e0e0e0',
+                        backgroundImage: imageSrc ? `url(${imageSrc})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        overflow: 'hidden',
+                        cursor: props.canEdit ? 'pointer' : undefined,
+                    }}
+                >
+                    {!imageSrc && <BusinessIcon sx={{ fontSize: 64, color: '#757575' }} />}
+                </Box>
 
                 {props.canEdit && (
                     <Box
