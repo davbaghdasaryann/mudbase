@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import fs from 'fs';
+import path from 'path';
 import {makeFilePath} from '../tslib/filename';
 
 // expressApp_.use(`${setup_.apiRoot}/account/upload_logo`, upload.single('file'));
@@ -16,7 +17,7 @@ expressApp_.get('/api/static/*', async (req: Request, res: Response) => {
     const fileName = req.params[0];
     // const fileName = req.params.file;
 
-    const filePath = makeFilePath(staticRoot, fileName);
+    const filePath = path.resolve(makeFilePath(staticRoot, fileName));
 
     try {
         fs.accessSync(filePath, fs.constants.R_OK);
