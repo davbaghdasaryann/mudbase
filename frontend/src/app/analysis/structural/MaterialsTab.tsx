@@ -134,7 +134,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                     {group.unitSymbol}
                                 </TableCell>
                                 <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
-                                    {group.totalQuantity.toLocaleString()}
+                                    {group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                                 </TableCell>
                                 <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
                                     {formatCurrencyRounded(group.totalCost)} AMD
@@ -155,7 +155,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                         {item.unitSymbol}
                                     </TableCell>
                                     <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        {Number(item.quantity ?? 0).toLocaleString()}
+                                        {Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}
                                     </TableCell>
                                     <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         {formatCurrencyRounded(item.cost)} AMD
