@@ -121,23 +121,33 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
             <Box position='relative' display='inline-block' sx={{
                         // paddingTop: `${companyLogoMarginTop}px`,
             }}>
-                <Avatar
-                    alt='Company Logo'
-                    src={imageSrc}
-                    sx={{
-                        marginTop: `${companyLogoMarginTop}px`,
-                        width: companyLogoAvatarSize,
-                        height: companyLogoAvatarSize,
-                        bgcolor: imageSrc ? 'transparent' : 'grey.300',
-                        color: 'grey.600',
-                        backgroundImage: imageSrc ? `url(${imageSrc})` : 'none',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        cursor: props.canEdit ? 'pointer' : undefined,
-                    }}
-                >
-                    {!imageSrc && <BusinessIcon fontSize='large' />}
-                </Avatar>
+                {imageSrc ? (
+                    <Avatar
+                        alt='Company Logo'
+                        src={imageSrc}
+                        sx={{
+                            marginTop: `${companyLogoMarginTop}px`,
+                            width: companyLogoAvatarSize,
+                            height: companyLogoAvatarSize,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            cursor: props.canEdit ? 'pointer' : undefined,
+                        }}
+                    />
+                ) : (
+                    <Avatar
+                        sx={{
+                            marginTop: `${companyLogoMarginTop}px`,
+                            width: companyLogoAvatarSize,
+                            height: companyLogoAvatarSize,
+                            bgcolor: 'grey.300',
+                            color: 'grey.600',
+                            cursor: props.canEdit ? 'pointer' : undefined,
+                        }}
+                    >
+                        <BusinessIcon fontSize='large' />
+                    </Avatar>
+                )}
 
                 {props.canEdit && (
                     <Box
