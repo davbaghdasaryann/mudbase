@@ -18,21 +18,30 @@ interface CompanyLogoComponentProps {
     canEdit: boolean;
 }
 
+function LogoPlaceholder({ marginTop = 0, canEdit = false }: { marginTop?: number; canEdit?: boolean }) {
+    return (
+        <Box
+            sx={{
+                marginTop: `${marginTop}px`,
+                width: companyLogoAvatarSize,
+                height: companyLogoAvatarSize,
+                borderRadius: '50%',
+                backgroundColor: '#e0e0e0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                cursor: canEdit ? 'pointer' : undefined,
+            }}
+        >
+            <BusinessIcon sx={{ fontSize: 64, color: '#757575' }} />
+        </Box>
+    );
+}
+
 export default function CompanyLogoComponent(props: CompanyLogoComponentProps) {
     if (!props.account) {
-        return (
-            <Avatar
-                alt='Company Logo'
-                sx={{
-                    width: companyLogoAvatarSize,
-                    height: companyLogoAvatarSize,
-                    bgcolor: 'grey.300',
-                    color: 'grey.600',
-                }}
-            >
-                <BusinessIcon fontSize='large' />
-            </Avatar>
-        );
+        return <LogoPlaceholder />;
     }
 
     return <CompanyLogoComponentBody {...props} />;
@@ -125,28 +134,16 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
                     <Avatar
                         alt='Company Logo'
                         src={imageSrc}
+                        slotProps={{ img: { onError: () => setImageSrc(undefined) } }}
                         sx={{
                             marginTop: `${companyLogoMarginTop}px`,
                             width: companyLogoAvatarSize,
                             height: companyLogoAvatarSize,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
                             cursor: props.canEdit ? 'pointer' : undefined,
                         }}
                     />
                 ) : (
-                    <Avatar
-                        sx={{
-                            marginTop: `${companyLogoMarginTop}px`,
-                            width: companyLogoAvatarSize,
-                            height: companyLogoAvatarSize,
-                            bgcolor: 'grey.300',
-                            color: 'grey.600',
-                            cursor: props.canEdit ? 'pointer' : undefined,
-                        }}
-                    >
-                        <BusinessIcon fontSize='large' />
-                    </Avatar>
+                    <LogoPlaceholder marginTop={companyLogoMarginTop} canEdit={props.canEdit} />
                 )}
 
                 {props.canEdit && (
