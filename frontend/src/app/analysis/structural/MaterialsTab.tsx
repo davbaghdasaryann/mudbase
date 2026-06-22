@@ -69,7 +69,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
-                    g.totalQuantity += row.quantity ?? 0;
+                    g.totalQuantity += Number(row.quantity ?? 0);
                     g.items.push(row);
                 }
                 const grouped = Array.from(map.values());
@@ -155,7 +155,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                         {item.unitSymbol}
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        {(item.quantity ?? 0).toLocaleString()}
+                                        {Number(item.quantity ?? 0).toLocaleString()}
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         {formatCurrencyRounded(item.cost)} AMD
