@@ -29,6 +29,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { openDrawer } = useMobileDrawer();
     const { session, permissionsSet } = usePermissions();
+    const isScrolled = props.isScrolled ?? false;
 
     // Map pathnames to icons (matching navigation)
     const getPageIcon = () => {
@@ -84,8 +85,9 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 sx={{
                     height: { xs: 56, md: 64 },
                     px: { xs: 1.5, sm: 2, md: 3 },
-                    backgroundColor: 'transparent',
-                    backdropFilter: 'blur(10px)',
+                    backgroundColor: isScrolled ? 'transparent' : 'white',
+                    backdropFilter: isScrolled ? 'blur(10px)' : 'none',
+                    transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease',
                 }}
             >
                 {isMobile && (
