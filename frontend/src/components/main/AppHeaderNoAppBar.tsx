@@ -87,7 +87,9 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                     px: { xs: 1.5, sm: 2, md: 3 },
                     backgroundColor: isScrolled ? 'transparent' : 'white',
                     backdropFilter: isScrolled ? 'blur(10px)' : 'none',
-                    transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.07)',
+                    boxShadow: isScrolled ? 'none' : '0 1px 4px rgba(0, 0, 0, 0.06)',
+                    transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease',
                 }}
             >
                 {isMobile && (
