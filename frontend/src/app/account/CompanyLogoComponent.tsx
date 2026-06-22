@@ -26,6 +26,8 @@ export default function CompanyLogoComponent(props: CompanyLogoComponentProps) {
                 sx={{
                     width: companyLogoAvatarSize,
                     height: companyLogoAvatarSize,
+                    bgcolor: 'grey.300',
+                    color: 'grey.600',
                 }}
             >
                 <BusinessIcon fontSize='large' />
@@ -126,7 +128,8 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
                         marginTop: `${companyLogoMarginTop}px`,
                         width: companyLogoAvatarSize,
                         height: companyLogoAvatarSize,
-                        // backgroundColor: imageSrc ? 'transparent' : 'grey.300',
+                        bgcolor: imageSrc ? 'transparent' : 'grey.300',
+                        color: 'grey.600',
                         backgroundImage: imageSrc ? `url(${imageSrc})` : 'none',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
