@@ -94,10 +94,12 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 textDecoration: 'none',
                                 color: isActive ? '#00abbe' : iconColor,
                                 '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
+                                '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
+                                '&.Mui-selected .MuiSvgIcon-root': { color: '#00abbe' },
                                 '&.Mui-selected:hover': { backgroundColor: 'rgba(0, 171, 190, 0.08)' },
                             }}
                         >
-                            {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: isActive ? '#00abbe' : iconColor}}>{item.icon}</ListItemIcon>}
+                            {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2}}>{item.icon}</ListItemIcon>}
                             <ListItemText primary={item.title} />
                         </ListItemButton>
                     </ListItem>
@@ -116,10 +118,12 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 sx={{
                                     color: iconColor,
                                     '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
+                                    '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
+                                    '&.Mui-selected .MuiSvgIcon-root': { color: '#00abbe' },
                                     '&.Mui-selected:hover': { backgroundColor: 'rgba(0, 171, 190, 0.08)' },
                                 }}
                             >
-                                {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2, color: iconColor}}>{item.icon}</ListItemIcon>}
+                                {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2}}>{item.icon}</ListItemIcon>}
                                 <ListItemText primary={item.title} />
                                 {openItems[segment] ? <ExpandLess /> : <ExpandMore />}
                             </ListItemButton>
