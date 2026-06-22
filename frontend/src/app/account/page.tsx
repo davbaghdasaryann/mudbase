@@ -75,7 +75,7 @@ export default function AccountPage() {
             {(value === 'material' && permissionsSet?.has?.('OFF_VW_LOC_MTRL')) && <AccountOffersPage offerType={value} accountViewId={session?.user.accountId} canEdit={true} />}
             {/* {(value === 'estimates' && session?.user && permissionsSet?.has?.('EST_USE')) && <AccountEstimatesPage />} */}
             {/* {(value === 'sharedEstimates' && session?.user && permissionsSet?.has?.('EST_USE')) && <AccountSharedEstimatesPage />} */}
-            {value === 'aboutCompany' && <AboutCompanyPage account={apiData.data} />}
+            {value === 'aboutCompany' && <AboutCompanyPage account={apiData.data} onDataChanged={() => apiData.invalidate()} />}
         </PageContents>
     );
 }
