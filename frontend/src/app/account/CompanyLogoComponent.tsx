@@ -42,6 +42,10 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
     const [imageSrc, setImageSrc] = React.useState<string | undefined>(Api.makeCompanyLogoUrl(props.account));
 
+    React.useEffect(() => {
+        setImageSrc(Api.makeCompanyLogoUrl(props.account));
+    }, [props.account?.companyLogo]);
+
     const [open, setOpen] = React.useState(false);
     const [crop, setCrop] = React.useState({ x: 0, y: 0 });
     const [zoom, setZoom] = React.useState(1);
