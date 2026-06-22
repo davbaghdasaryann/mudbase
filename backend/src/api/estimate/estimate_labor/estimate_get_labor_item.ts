@@ -380,7 +380,16 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                     let: { itemIdVar: '$laborItemId' },
                     pipeline: [
                         { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
-                        { $project: { fullCode: 1, name: 1, _id: 0 } },
+                        {
+                            $lookup: {
+                                from: 'measurement_unit',
+                                localField: 'measurementUnitMongoId',
+                                foreignField: '_id',
+                                as: 'measurementUnitData',
+                            },
+                        },
+                        { $unwind: { path: '$measurementUnitData', preserveNullAndEmptyArrays: true } },
+                        { $project: { fullCode: 1, name: 1, _id: 0, unitSymbol: '$measurementUnitData.representationSymbol' } },
                     ],
                     as: 'catalogItem',
                 },
@@ -395,6 +404,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                     fullCode: '$catalogItem.fullCode',
                     catalogName: '$catalogItem.name',
                     laborOfferItemName: 1,
+                    unitSymbol: '$catalogItem.unitSymbol',
                     displayIndex: 1,
                 },
             },
@@ -408,6 +418,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
         fullCode: item.fullCode ?? '',
         catalogName: item.catalogName ?? '',
         laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+        unitSymbol: item.unitSymbol ?? '',
         quantity: item.quantity ?? 0,
         changableAveragePrice: item.changableAveragePrice ?? 0,
         cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),

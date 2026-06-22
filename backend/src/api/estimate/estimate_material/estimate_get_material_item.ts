@@ -470,7 +470,16 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
                     let: { itemIdVar: '$materialItemId' },
                     pipeline: [
                         { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
-                        { $project: { fullCode: 1, name: 1, _id: 0 } },
+                        {
+                            $lookup: {
+                                from: 'measurement_unit',
+                                localField: 'measurementUnitMongoId',
+                                foreignField: '_id',
+                                as: 'measurementUnitData',
+                            },
+                        },
+                        { $unwind: { path: '$measurementUnitData', preserveNullAndEmptyArrays: true } },
+                        { $project: { fullCode: 1, name: 1, _id: 0, unitSymbol: '$measurementUnitData.representationSymbol' } },
                     ],
                     as: 'catalogItem',
                 },
@@ -486,6 +495,7 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
                     materialCatalogFullCode: '$catalogItem.fullCode',
                     materialCatalogName: '$catalogItem.name',
                     materialOfferItemName: 1,
+                    unitSymbol: '$catalogItem.unitSymbol',
                     displayIndex: 1,
                 },
             },
@@ -507,6 +517,7 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
             materialCatalogName: item.materialCatalogName ?? '',
             materialCatalogFullCode: item.materialCatalogFullCode ?? '',
             materialOfferItemName: item.materialOfferItemName ?? item.materialCatalogName ?? '',
+            unitSymbol: item.unitSymbol ?? '',
             quantity: item.quantity ?? 0,
             changableAveragePrice: item.changableAveragePrice ?? 0,
             cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),

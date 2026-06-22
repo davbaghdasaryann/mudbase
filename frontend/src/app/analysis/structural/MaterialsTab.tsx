@@ -20,6 +20,7 @@ interface MaterialRow {
     materialCatalogName: string;
     materialCatalogFullCode: string;
     materialOfferItemName: string;
+    unitSymbol: string;
     quantity: number;
     changableAveragePrice: number;
     cost: number;
@@ -29,6 +30,7 @@ interface GroupedByMaterial {
     materialItemId: string;
     materialFullCode: string;
     materialName: string;
+    unitSymbol: string;
     totalCost: number;
     totalQuantity: number;
     items: MaterialRow[];
@@ -59,6 +61,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                             materialItemId: key,
                             materialFullCode: row.materialCatalogFullCode,
                             materialName: row.materialCatalogName || row.materialOfferItemName,
+                            unitSymbol: row.unitSymbol ?? '',
                             totalCost: 0,
                             totalQuantity: 0,
                             items: [],
@@ -99,6 +102,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                     <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                     <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
                     <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                     <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
@@ -126,6 +130,9 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                         </Typography>
                                     </Box>
                                 </TableCell>
+                                <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>
+                                    {group.unitSymbol}
+                                </TableCell>
                                 <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
                                     {group.totalQuantity.toLocaleString()}
                                 </TableCell>
@@ -143,6 +150,9 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                         <Typography variant='body2' color='text.secondary'>
                                             {i + 1}. {item.laborCatalogName || item.laborOfferItemName}
                                         </Typography>
+                                    </TableCell>
+                                    <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
+                                        {item.unitSymbol}
                                     </TableCell>
                                     <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         {(item.quantity ?? 0).toLocaleString()}
