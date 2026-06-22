@@ -83,6 +83,8 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                             slotProps: {
                                 avatarIconButton: {
                                     sx: {
+                                        borderRadius: '50%',
+                                        overflow: 'hidden',
                                         transition: 'all 0.2s ease-in-out',
                                         '&:hover': {
                                             transform: 'scale(1.05)',
@@ -96,6 +98,8 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                                         background: 'linear-gradient(135deg, #00BBEB 0%, #007FA8 100%)',
                                         fontWeight: 600,
                                         fontSize: '0.95rem',
+                                        borderRadius: '50%',
+                                        overflow: 'hidden',
                                         border: (theme) =>
                                             `2px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
                                     },
