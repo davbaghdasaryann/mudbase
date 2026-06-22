@@ -122,6 +122,8 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 selected={isPathnameEqual(pathname, href)}
                                 sx={{
                                     color: iconColor,
+                                    '& .MuiListItemIcon-root': { color: iconColor },
+                                    '& .MuiSvgIcon-root': { color: iconColor },
                                     '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
                                     '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
                                     '&.Mui-selected .MuiSvgIcon-root': { color: '#00abbe' },
