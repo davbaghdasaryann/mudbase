@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {Button, Divider, MenuList, Stack, Typography} from '@mui/material';
+import {Box, Button, Divider, MenuList, Stack, Typography} from '@mui/material';
 
 import {useSession} from 'next-auth/react';
 
@@ -70,6 +70,8 @@ function AppHeaderAccountBody(props: PageContentsProps) {
     return (
         <AuthenticationContext.Provider value={authentication}>
             <SessionContext.Provider value={session}>
+                {/* Outer clip ensures nothing bleeds past the circle */}
+                <Box sx={{ borderRadius: '50%', overflow: 'hidden', display: 'inline-flex' }}>
                 <Account
                     // key={forceRender}
                     localeText={{
@@ -131,6 +133,7 @@ function AppHeaderAccountBody(props: PageContentsProps) {
                         },
                     }}
                 />
+                </Box>
             </SessionContext.Provider>
         </AuthenticationContext.Provider>
     );

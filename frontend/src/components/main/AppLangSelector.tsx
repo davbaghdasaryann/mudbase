@@ -82,23 +82,22 @@ export default function AppLangSelector() {
             <IconButton
                 onClick={handleClick}
                 sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
+                    width: 36,
+                    height: 36,
+                    p: 0,
+                    borderRadius: '50%',
                     overflow: 'hidden',
                     transition: 'all 0.2s ease-in-out',
                     border: (theme) =>
                         `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`,
                     '&:hover': {
                         transform: 'scale(1.05)',
-                        backgroundColor: (theme) =>
-                            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
                         borderColor: (theme) =>
                             theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.12)',
                     },
                 }}
             >
-                <Flag code={langItem.countryCode} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <Flag code={langItem.countryCode} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </IconButton>
             <Menu
                 id='language-menu'
