@@ -39,6 +39,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
         const currentPath = pathname?.split('/')[1]; // Get first segment after /
 
         switch (currentPath) {
+            case '': // root path renders DashboardBuilderPage
             case 'dashboard':
             case 'dashboard-builder':
                 return <DashboardIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
