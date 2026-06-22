@@ -92,10 +92,15 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                             onClick={handleClick}
                             sx={{
                                 textDecoration: 'none',
-                                color: isActive ? '#00abbe' : iconColor,
+                                color: iconColor,
+                                // Force icon container and SVG icons to be black at rest
+                                '& .MuiListItemIcon-root': { color: iconColor },
+                                '& .MuiSvgIcon-root': { color: iconColor },
+                                // Active state: teal text, icon, svg, and img
                                 '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
                                 '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
                                 '&.Mui-selected .MuiSvgIcon-root': { color: '#00abbe' },
+                                '&.Mui-selected img': { filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' },
                                 '&.Mui-selected:hover': { backgroundColor: 'rgba(0, 171, 190, 0.08)' },
                             }}
                         >
