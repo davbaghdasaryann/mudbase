@@ -128,17 +128,15 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
     return (
         <>
             <Box position='relative' display='inline-block'>
-                {/* Always-visible circle: grey bg shows when image is absent or 404s */}
+                {/* Grey circle with icon — always visible */}
                 <Box
                     sx={{
+                        position: 'relative',
                         marginTop: `${companyLogoMarginTop}px`,
                         width: companyLogoAvatarSize,
                         height: companyLogoAvatarSize,
                         borderRadius: '50%',
                         backgroundColor: '#e0e0e0',
-                        backgroundImage: imageSrc ? `url(${imageSrc})` : 'none',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -147,7 +145,23 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
                         cursor: props.canEdit ? 'pointer' : undefined,
                     }}
                 >
-                    {!imageSrc && <BusinessIcon sx={{ fontSize: 64, color: '#757575' }} />}
+                    <BusinessIcon sx={{ fontSize: 64, color: '#757575' }} />
+                    {/* Logo image overlays the icon when it loads; onError resets to icon-only */}
+                    {imageSrc && (
+                        <img
+                            src={imageSrc}
+                            alt='Company Logo'
+                            onError={() => setImageSrc(undefined)}
+                            style={{
+                                position: 'absolute',
+                                inset: 0,
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: '50%',
+                            }}
+                        />
+                    )}
                 </Box>
 
                 {props.canEdit && (
