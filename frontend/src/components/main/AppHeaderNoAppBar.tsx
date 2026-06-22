@@ -75,10 +75,10 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 right: 0,
                 left: 0,
                 zIndex: 1100,
-                background: 'transparent',
-                backdropFilter: 'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                boxShadow: '0 4px 24px rgba(0, 171, 190, 0.10), inset 0 -1px 0 rgba(0, 171, 190, 0.18)',
+                background: 'rgba(245,249,249,0.25)',
+                backdropFilter: 'blur(8px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(8px) saturate(120%)',
+                boxShadow: '0 4px 24px rgba(0, 171, 190, 0.06)',
             }}
         >
             <Stack
