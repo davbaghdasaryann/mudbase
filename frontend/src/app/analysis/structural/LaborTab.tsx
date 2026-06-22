@@ -73,7 +73,7 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
     }, [estimateId]);
 
     const toggle = (key: string) => setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
-    const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(1) + '%' : '0%';
+    const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
