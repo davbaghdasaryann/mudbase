@@ -103,8 +103,8 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                     <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
+                    <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                     <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                 </TableRow>
             </TableHead>
@@ -133,10 +133,10 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                 <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>
                                     {group.unitSymbol}
                                 </TableCell>
-                                <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
+                                <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
                                     {group.totalQuantity.toLocaleString()}
                                 </TableCell>
-                                <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
+                                <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
                                     {formatCurrencyRounded(group.totalCost)} AMD
                                 </TableCell>
                                 <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
@@ -154,10 +154,10 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                     <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         {item.unitSymbol}
                                     </TableCell>
-                                    <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
+                                    <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         {Number(item.quantity ?? 0).toLocaleString()}
                                     </TableCell>
-                                    <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
+                                    <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
                                         {formatCurrencyRounded(item.cost)} AMD
                                     </TableCell>
                                     <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
