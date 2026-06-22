@@ -104,7 +104,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                             variant='h6'
                             sx={{
                                 fontWeight: 600,
-                                color: (theme) => theme.palette.text.primary,
+                                color: '#00ABBE',
                                 letterSpacing: '0.02em',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
