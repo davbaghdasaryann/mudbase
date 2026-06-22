@@ -164,6 +164,7 @@ export function createAppTheme(mode: Mode | string) {
                 styleOverrides: {
                     paper: {
                         border: dialogPaperBorder,
+                        borderRadius: '12px',
                     },
                 },
             },
