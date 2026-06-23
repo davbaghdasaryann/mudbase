@@ -123,10 +123,14 @@ export default function LoginPageContents() {
                     emailField: {
                         autoFocus: true,
                         sx: toolpadTextFieldSx,
+                        InputLabelProps: { shrink: true },
+                        placeholder: ' ',
                     },
                     passwordField: {
                         type: showPassword ? 'text' : 'password',
                         sx: toolpadTextFieldSx,
+                        InputLabelProps: { shrink: true },
+                        placeholder: ' ',
                         InputProps: {
                             endAdornment: (
                                 <InputAdornment position="end">
