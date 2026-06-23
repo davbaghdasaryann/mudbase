@@ -73,7 +73,7 @@ export default function ComparativeAnalysisPage() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden', minHeight: 0 }}>
                     <TabContext value={activeTab}>
                         {/* Fixed header — stays pinned, no sticky needed */}
-                        <Box sx={{ flexShrink: 0, pt: 1 }}>
+                        <Box sx={{ flexShrink: 0 }}>
                             <Button
                                 startIcon={<ArrowBackIcon fontSize='small' />}
                                 size='small'

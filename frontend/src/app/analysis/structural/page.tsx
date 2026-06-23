@@ -109,7 +109,7 @@ export default function StructuralAnalysisPage() {
                 {hasData && (
                     <>
                         {/* Back button + estimate title — fixed, doesn't scroll */}
-                        <Box sx={{ flexShrink: 0, mt: 1, mb: 0.5 }}>
+                        <Box sx={{ flexShrink: 0, mb: 0.5 }}>
                             <Button
                                 startIcon={<ArrowBackIcon fontSize='small' />}
                                 size='small'

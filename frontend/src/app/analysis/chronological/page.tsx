@@ -165,6 +165,21 @@ export default function ChronologicalAnalysisPage() {
 
                 {/* Chart result */}
                 {analytics && !chartLoading && (
+                    <>
+                    {/* Back button + title above card */}
+                    <Box sx={{ flexShrink: 0, mb: 0.5 }}>
+                        <Button
+                            startIcon={<ArrowBackIcon fontSize='small' />}
+                            size='small'
+                            onClick={() => { setAnalytics(null); setSelection(null); }}
+                            sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
+                        >
+                            {t('Back')}
+                        </Button>
+                        <Typography sx={{ fontSize: 15, fontWeight: 500, color: TEXT_DARK }}>
+                            {analytics.itemName}
+                        </Typography>
+                    </Box>
                     <Box
                         sx={{
                             background: 'rgba(255,255,255,0.80)',
@@ -178,17 +193,6 @@ export default function ChronologicalAnalysisPage() {
                         {/* Header row */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                             <Box>
-                                <Button
-                                    startIcon={<ArrowBackIcon fontSize='small' />}
-                                    size='small'
-                                    onClick={() => { setAnalytics(null); setSelection(null); }}
-                                    sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
-                                >
-                                    {t('Back')}
-                                </Button>
-                                <Typography sx={{ fontSize: 15, fontWeight: 500, color: TEXT_DARK, mb: 0.5 }}>
-                                    {analytics.itemName}
-                                </Typography>
                                 <Typography variant='body2' color='text.secondary'>
                                     {analytics.fromDate} → {analytics.toDate}
                                 </Typography>
@@ -266,6 +270,7 @@ export default function ChronologicalAnalysisPage() {
                         />
                     )}
                     </Box>
+                    </>
                 )}
             </Box>
 
