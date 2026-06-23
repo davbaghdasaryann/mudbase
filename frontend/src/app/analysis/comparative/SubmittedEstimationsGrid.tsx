@@ -298,6 +298,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                         })}
                     </TableRow>
 
+                    {mode === 'general' && (
                     <TableRow sx={{ background: '#eef9f9' }}>
                         <TableCell colSpan={4} sx={{ fontWeight: 700, py: 1.5, pl: 2 }}>{t('Total')}</TableCell>
                         <TableCell align='center' sx={{ fontWeight: 700, py: 1.5 }}>{formatCurrencyRounded(displayBaseSummary.total)}</TableCell>
@@ -315,6 +316,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                             );
                         })}
                     </TableRow>
+                    )}
                 </TableBody>
             </Table>
         </Box>
