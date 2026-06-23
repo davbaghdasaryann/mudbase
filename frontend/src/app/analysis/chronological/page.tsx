@@ -98,14 +98,16 @@ export default function ChronologicalAnalysisPage() {
         }).catch(() => setChartLoading(false));
     };
 
+    const AM_MONTHS = ['հնվ','փտվ','մրտ','ապր','մյս','հնս','հլս','օգս','սեպ','հոկ','նոյ','դեկ'];
+
     const formatMonth = (m: string) => {
         const [y, mo] = m.split('-');
-        return new Date(Number(y), Number(mo) - 1).toLocaleString('hy-AM', { month: 'short', year: '2-digit' });
+        return `${AM_MONTHS[Number(mo) - 1]} ${y.slice(2)}`;
     };
 
     const formatMonthTooltip = (m: string) => {
         const [y, mo] = m.split('-');
-        return new Date(Number(y), Number(mo) - 1).toLocaleString('hy-AM', { month: 'short', year: 'numeric' });
+        return `${AM_MONTHS[Number(mo) - 1]} ${y}`;
     };
 
     const formatY = (v: number) => {

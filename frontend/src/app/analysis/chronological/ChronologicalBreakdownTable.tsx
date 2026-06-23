@@ -53,7 +53,7 @@ const LBR_ODD   = '#ffffff';
 const MAT_EVEN  = '#f2faf8';
 const MAT_ODD   = '#f8fdfc';
 
-const MONTH_LABELS = ['Հնվ','Փտր','Մրտ','Ապ','Մայ','Հնս','Հլ','Օգ','Սպ','Հկ','Նյ','Դկ'];
+const MONTH_LABELS = ['հնվ','փտվ','մրտ','ապր','մյս','հնս','հլս','օգս','սեպ','հոկ','նոյ','դեկ'];
 
 function formatVal(v: number | undefined): string {
     if (!v) return '—';
