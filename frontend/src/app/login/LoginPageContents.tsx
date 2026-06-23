@@ -96,19 +96,20 @@ export default function LoginPageContents() {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                height: '100vh',
+                minHeight: '100vh',
                 width: '100vw',
+                px: { xs: 2, sm: 3 },
+                boxSizing: 'border-box',
                 '& .MuiContainer-root': {
-                    maxWidth: '800px !important', // Adjust width as needed
+                    maxWidth: { xs: '100%', sm: '460px' },
                     width: '100%',
+                    px: { xs: 0, sm: 0 },
                 },
-
-                // '& > .MuiBox-root > .MuiContainer-root > .MuiBox-root': {
-                //     border: dialogPaperBorder, // Adjust the border style as needed
-                // },
                 '& .MuiContainer-root > .MuiStack-root': {
                     border: '1px solid #00ABBE',
                     borderRadius: '8px',
+                    width: '100%',
+                    boxSizing: 'border-box',
                 },
             }}
         >
@@ -124,12 +125,12 @@ export default function LoginPageContents() {
                     emailField: {
                         autoFocus: true,
                         sx: toolpadTextFieldSx,
-                        slotProps: { inputLabel: { shrink: true, sx: { lineHeight: 'normal' } } },
+                        slotProps: { inputLabel: { sx: { lineHeight: 'normal' } } },
                     },
                     passwordField: {
                         type: showPassword ? 'text' : 'password',
                         sx: toolpadTextFieldSx,
-                        slotProps: { inputLabel: { shrink: true, sx: { lineHeight: 'normal' } } },
+                        slotProps: { inputLabel: { sx: { lineHeight: 'normal' } } },
                         InputProps: {
                             endAdornment: (
                                 <InputAdornment position="end">
@@ -160,7 +161,7 @@ export default function LoginPageContents() {
                     signInRememberMe: t('Remember Me'),
                 }}
                 sx={{
-                    minWidth: 500,
+                    width: '100%',
                 }}
             />
         </Box>
