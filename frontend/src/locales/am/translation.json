@@ -538,5 +538,7 @@
   "temporaryStructures": "Ժամանակավոր կառույցներ",
   "transportationCosts": "Տրանսպորտային ծախսեր",
   "smallScaleConstructionWork": "Փոքրածավալ շինաշխատանք",
-  "smallScaleConstructionMaterials": "Փոքրածավալ շինանյութ"
+  "smallScaleConstructionMaterials": "Փոքրածավալ շինանյութ",
+  "Direct Costs": "Ուղղակի ծախսեր",
+  "Other Costs": "Այլ ծախսեր"
 }
