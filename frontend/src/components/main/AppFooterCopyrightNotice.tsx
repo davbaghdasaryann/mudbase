@@ -20,8 +20,10 @@ export default function AppFooterCopyrightNotice(
                 py: 2,
                 px: 2,
                 display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: 'center',
                 alignItems: 'center',
+                gap: { xs: 1, sm: 0 },
             }}
         >
             <Typography variant="body2">
@@ -30,10 +32,8 @@ export default function AppFooterCopyrightNotice(
 
             <Box
                 sx={{
-                    position: 'absolute',
-                    right: 18,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
+                    position: { xs: 'static', sm: 'absolute' },
+                    right: { sm: 18 },
                     display: 'flex',
                     gap: 1.5,
                     alignItems: 'center',
