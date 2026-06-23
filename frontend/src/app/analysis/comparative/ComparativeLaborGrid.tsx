@@ -143,19 +143,23 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
                 </TableRow>
             </TableHead>
             <TableBody>
-                {groups.map((group, si) => (
+                {(() => {
+                    let flatIndex = 0;
+                    return groups.map((group, si) => (
                     <React.Fragment key={group.sectionName || si}>
-                        <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                            <TableCell colSpan={6} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
-                                {String(si + 1).padStart(2, '0')}. {group.sectionName}
-                            </TableCell>
-                        </TableRow>
+                        {!materialsOnly && (
+                            <TableRow sx={{ backgroundColor: '#fafafa' }}>
+                                <TableCell colSpan={6} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
+                                    {String(si + 1).padStart(2, '0')}. {group.sectionName}
+                                </TableCell>
+                            </TableRow>
+                        )}
 
                         {group.items.map((item, i) => (
                             <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                 <TableCell align='left' sx={{ py: 1.5 }}>
                                     <Typography variant='body2' color='text.secondary'>
-                                        {si + 1}.{i + 1} {item.itemName}
+                                        {materialsOnly ? `${++flatIndex}. ${item.itemName}` : `${si + 1}.${i + 1} ${item.itemName}`}
                                     </Typography>
                                 </TableCell>
                                 <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>
@@ -179,7 +183,8 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
                             </TableRow>
                         ))}
                     </React.Fragment>
-                ))}
+                ));
+                })()}
 
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                     <TableCell align='left' sx={{ fontWeight: 700, pl: 1 }}>{t('Total')}</TableCell>
