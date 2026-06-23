@@ -195,7 +195,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     );
 
     const drawerPaperGlass = {
-        background: 'linear-gradient(to bottom, rgba(255,255,255,0.97) 0%, rgba(248,253,254,0.95) 40%, rgba(240,251,253,0.93) 70%, rgba(232,249,252,0.91) 100%)',
+        background: '#ffffff',
         backdropFilter: 'blur(20px) saturate(180%)',
         WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         boxShadow: '2px 0 20px rgba(0,171,190,0.08)',
