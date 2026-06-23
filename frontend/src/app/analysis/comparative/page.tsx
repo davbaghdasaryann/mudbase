@@ -127,6 +127,7 @@ export default function ComparativeAnalysisPage() {
                     </TabContext>
                 </Box>
             ) : (
+                <Box sx={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', pb: 8 }}>
                 <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ width: '100%' }}>
                     {cards.map((card) => (
                         <Box
@@ -180,6 +181,7 @@ export default function ComparativeAnalysisPage() {
                         </Box>
                     ))}
                 </Stack>
+                </Box>
             )}
 
             {/* SVG gradient defs — kept after main content so it's not the first Stack child */}
