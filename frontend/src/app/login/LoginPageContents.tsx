@@ -124,12 +124,12 @@ export default function LoginPageContents() {
                     emailField: {
                         autoFocus: true,
                         sx: toolpadTextFieldSx,
-                        slotProps: { inputLabel: { shrink: true } },
+                        slotProps: { inputLabel: { shrink: true, sx: { lineHeight: 'normal' } } },
                     },
                     passwordField: {
                         type: showPassword ? 'text' : 'password',
                         sx: toolpadTextFieldSx,
-                        slotProps: { inputLabel: { shrink: true } },
+                        slotProps: { inputLabel: { shrink: true, sx: { lineHeight: 'normal' } } },
                         InputProps: {
                             endAdornment: (
                                 <InputAdornment position="end">
