@@ -40,17 +40,13 @@ export const defaultThemeMode: ColorThemeMode = 'light';
 export const toolpadTextFieldSx: SxProps<Theme> = {
     pt: 1,
     pb: 2,
-    '& .MuiOutlinedInput-root': {
-        borderRadius: '8px',
-        '& fieldset': { borderWidth: '1px' },
-        '&:hover fieldset': { borderWidth: '1px' },
-        '&.Mui-focused fieldset': { borderWidth: '1.5px' },
-    },
+    overflow: 'visible',
     '& .MuiInputLabel-root.MuiInputLabel-shrink': {
         backgroundColor: 'white',
         paddingLeft: '4px',
         paddingRight: '4px',
         borderRadius: '2px',
+        zIndex: 1,
     },
 };
 

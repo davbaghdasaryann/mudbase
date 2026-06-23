@@ -12,7 +12,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import { signInWithEmail } from '../../api/auth';
 import { useTranslation } from 'react-i18next';
-import { dialogPaperBorder, mainPrimaryColor, toolpadTextFieldSx } from '../../theme';
+import { mainPrimaryColor, toolpadTextFieldSx } from '../../theme';
 
 export default function LoginPageContents() {
     const router = useRouter();
@@ -107,7 +107,8 @@ export default function LoginPageContents() {
                 //     border: dialogPaperBorder, // Adjust the border style as needed
                 // },
                 '& .MuiContainer-root > .MuiStack-root': {
-                    border: dialogPaperBorder, // Adjust the border style as needed
+                    border: '1px solid #00ABBE',
+                    borderRadius: '8px',
                 },
             }}
         >
@@ -123,14 +124,12 @@ export default function LoginPageContents() {
                     emailField: {
                         autoFocus: true,
                         sx: toolpadTextFieldSx,
-                        InputLabelProps: { shrink: true },
-                        placeholder: ' ',
+                        slotProps: { inputLabel: { shrink: true } },
                     },
                     passwordField: {
                         type: showPassword ? 'text' : 'password',
                         sx: toolpadTextFieldSx,
-                        InputLabelProps: { shrink: true },
-                        placeholder: ' ',
+                        slotProps: { inputLabel: { shrink: true } },
                         InputProps: {
                             endAdornment: (
                                 <InputAdornment position="end">
