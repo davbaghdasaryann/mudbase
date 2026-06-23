@@ -540,5 +540,11 @@
   "smallScaleConstructionWork": "Փոքրածավալ շինաշխատանք",
   "smallScaleConstructionMaterials": "Փոքրածավալ շինանյութ",
   "Direct Costs": "Ուղղակի ծախսեր",
-  "Other Costs": "Այլ ծախսեր"
+  "Other Costs": "Այլ ծախսեր",
+  "Done": "Ավարտ",
+  "Select the date range for analysis": "Ընտրեք վերլուծության ժամկետը",
+  "From": "Սկսած",
+  "To": "Մինչև",
+  "Estimate Items": "Նախահաշվի հոդվածներ",
+  "Qty": "Քնկ."
 }

@@ -100,12 +100,12 @@ export default function ChronologicalAnalysisPage() {
 
     const formatMonth = (m: string) => {
         const [y, mo] = m.split('-');
-        return new Date(Number(y), Number(mo) - 1).toLocaleString('default', { month: 'short', year: '2-digit' });
+        return new Date(Number(y), Number(mo) - 1).toLocaleString('hy-AM', { month: 'short', year: '2-digit' });
     };
 
     const formatMonthTooltip = (m: string) => {
         const [y, mo] = m.split('-');
-        return new Date(Number(y), Number(mo) - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+        return new Date(Number(y), Number(mo) - 1).toLocaleString('hy-AM', { month: 'short', year: 'numeric' });
     };
 
     const formatY = (v: number) => {
