@@ -53,7 +53,7 @@ export const mainNavigationDrawerWidth = 280;
 
 export const mainBackgroundColor = '#F5F9F9';
 // export const dialogPaperBorder = '2px solid #90caf9';
-export const dialogPaperBorder = '2px solid #00ABBE';
+export const dialogPaperBorder = '1px solid #00ABBE';
 export const mainPrimaryColor = '#00ABBE';
 export const mainIconColor = '#1CA461';
 export const accordionBorderColor = '#D9D9D9';
@@ -171,7 +171,7 @@ export function createAppTheme(mode: Mode | string) {
                 styleOverrides: {
                     paper: {
                         border: dialogPaperBorder,
-                        borderRadius: '12px',
+                        borderRadius: '8px',
                     },
                 },
             },
@@ -228,7 +228,7 @@ export function createAppTheme(mode: Mode | string) {
                 rowHoverColor: mode === 'dark' ? '#101010' : '#e0e0e0',
             },
             form: {
-                // textFieldBorderRadius: '10px',
+                textFieldBorderRadius: '8px',
                 textFieldDisplayBorder: 'none',
             },
 

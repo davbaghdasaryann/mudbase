@@ -62,9 +62,6 @@ export default function UserSignUpPagePassword() {
 
     return (
         <>
-            {/* <F.PageFormDialog type='confirm' title='Sign Up' form={form} size='xs' onSubmit={onSubmit} confirmLabel='Sign Up' loading={busy} modeless confirmButtonSx={{
-                width: '100%',
-            }}> */}
             <F.PageFormDialog
                 type='confirm'
                 title='Sign Up'
@@ -73,14 +70,22 @@ export default function UserSignUpPagePassword() {
                 onSubmit={onSubmit}
                 loading={busy}
                 modeless
+                onCancel={() => router.push('/login')}
                 slotProps={{
                     cancelButton: {
-                        show: false,
-                    },
+                        label: 'Back to Login',
+                        variant: 'text',
+                        sx: {
+                            width: '100%',
+                            color: 'text.secondary',
+                            '&:hover': { backgroundColor: 'transparent', color: 'primary.main' },
+                        },
+                    } as any,
                     submitButton: {
                         label: 'Sign Up',
                         sx: {
                             width: '100%',
+                            borderRadius: '8px',
                         },
                     },
                 }}

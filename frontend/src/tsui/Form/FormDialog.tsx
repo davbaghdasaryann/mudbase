@@ -139,7 +139,7 @@ function PageFormDialogBody(props: PageFormDialogProps) {
                         </Box>
                     )}
 
-                    <DialogButton show={!!cancelButtonLabel} disabled={props.loading} label={cancelButtonLabel} onClick={onCancelButton} sx={props.slotProps?.cancelButton?.sx} />
+                    <DialogButton show={!!cancelButtonLabel} disabled={props.loading} label={cancelButtonLabel} onClick={onCancelButton} variant={(props.slotProps?.cancelButton as any)?.variant} sx={props.slotProps?.cancelButton?.sx} />
                     <DialogButton show={!!confirmButtonLabel} type='submit' disabled={props.loading} label={confirmButtonLabel} default sx={props.slotProps?.submitButton?.sx} />
                 </DialogActions>
             )}
@@ -149,7 +149,7 @@ function PageFormDialogBody(props: PageFormDialogProps) {
 
 function makeCancelButtonLabel(props: PageFormDialogProps) {
     if (props.slotProps?.cancelButton?.show === false) return undefined;
-    if (props.slotProps?.cancelButton?.label) return props.slotProps?.submitButton?.label;
+    if (props.slotProps?.cancelButton?.label) return props.slotProps?.cancelButton?.label;
     if (props.type === 'panel') return undefined;
     if (props.type === 'yes-no') return 'No';
     return 'Cancel';
