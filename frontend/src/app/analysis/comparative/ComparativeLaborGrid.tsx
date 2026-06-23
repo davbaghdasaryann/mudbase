@@ -193,6 +193,7 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
                 ));
                 })()}
 
+                {includeMaterials && (
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                     <TableCell align='left' sx={{ fontWeight: 700, pl: 1 }}>{t('Total')}</TableCell>
                     <TableCell />
@@ -201,6 +202,7 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
                     <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMinPrice)}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMaxPrice)}</TableCell>
                 </TableRow>
+                )}
             </TableBody>
         </Table>
     );
