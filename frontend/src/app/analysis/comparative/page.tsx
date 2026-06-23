@@ -52,23 +52,6 @@ export default function ComparativeAnalysisPage() {
 
     return (
         <PageContents title='Comparative Analytics'>
-            <Box component='svg' width={0} height={0} sx={{ position: 'absolute' }}>
-                <defs>
-                    <linearGradient id='comparativeGradientGreen' x1='0%' y1='0%' x2='100%' y2='100%'>
-                        <stop offset='0%' stopColor='#2ECC71' />
-                        <stop offset='100%' stopColor='#1CA461' />
-                    </linearGradient>
-                    <linearGradient id='comparativeGradientBlue' x1='0%' y1='0%' x2='100%' y2='100%'>
-                        <stop offset='0%' stopColor='#29B6F6' />
-                        <stop offset='100%' stopColor='#0288D1' />
-                    </linearGradient>
-                    <linearGradient id='comparativeGradientTeal' x1='0%' y1='0%' x2='100%' y2='100%'>
-                        <stop offset='0%' stopColor='#1CA461' />
-                        <stop offset='100%' stopColor='#00ABBE' />
-                    </linearGradient>
-                </defs>
-            </Box>
-
             {hasData ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden', minHeight: 0 }}>
                     <TabContext value={activeTab}>
@@ -198,6 +181,24 @@ export default function ComparativeAnalysisPage() {
                     ))}
                 </Stack>
             )}
+
+            {/* SVG gradient defs — kept after main content so it's not the first Stack child */}
+            <Box component='svg' width={0} height={0} sx={{ position: 'absolute' }}>
+                <defs>
+                    <linearGradient id='comparativeGradientGreen' x1='0%' y1='0%' x2='100%' y2='100%'>
+                        <stop offset='0%' stopColor='#2ECC71' />
+                        <stop offset='100%' stopColor='#1CA461' />
+                    </linearGradient>
+                    <linearGradient id='comparativeGradientBlue' x1='0%' y1='0%' x2='100%' y2='100%'>
+                        <stop offset='0%' stopColor='#29B6F6' />
+                        <stop offset='100%' stopColor='#0288D1' />
+                    </linearGradient>
+                    <linearGradient id='comparativeGradientTeal' x1='0%' y1='0%' x2='100%' y2='100%'>
+                        <stop offset='0%' stopColor='#1CA461' />
+                        <stop offset='100%' stopColor='#00ABBE' />
+                    </linearGradient>
+                </defs>
+            </Box>
 
             <ChooseEstimationDialog
                 open={dialogOpen}
