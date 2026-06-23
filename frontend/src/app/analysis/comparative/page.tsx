@@ -5,6 +5,7 @@ import { Box, Button, Stack, Typography, Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -73,6 +74,14 @@ export default function ComparativeAnalysisPage() {
                     <TabContext value={activeTab}>
                         {/* Fixed header — stays pinned, no sticky needed */}
                         <Box sx={{ flexShrink: 0, pt: 1 }}>
+                            <Button
+                                startIcon={<ArrowBackIcon fontSize='small' />}
+                                size='small'
+                                onClick={() => { setSelectedEstimate(null); setSubmittedSelection(null); }}
+                                sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
+                            >
+                                {t('Back')}
+                            </Button>
                             <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
                                 {submittedSelection ? submittedSelection.estimate.name : selectedEstimate!.name}
                             </Typography>
@@ -82,14 +91,13 @@ export default function ComparativeAnalysisPage() {
                                     <Tab label={t('Labor')} value='labor' />
                                     <Tab label={t('Materials')} value='materials' />
                                 </TabList>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, pb: '4px' }}>
-                                    {analysisType === 'base_proposals' && !submittedSelection && (
+                                {analysisType === 'base_proposals' && !submittedSelection && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', px: 1, pb: '4px' }}>
                                         <Button variant='text' size='small' onClick={() => setCompanyDialogOpen(true)} sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
                                             {t('Add')} +
                                         </Button>
-                                    )}
-                                    <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => { setSubmittedSelection(null); setDialogOpen(true); }} />
-                                </Box>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
 

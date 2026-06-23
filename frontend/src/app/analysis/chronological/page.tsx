@@ -6,6 +6,7 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDownOutlined';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -177,6 +178,14 @@ export default function ChronologicalAnalysisPage() {
                         {/* Header row */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                             <Box>
+                                <Button
+                                    startIcon={<ArrowBackIcon fontSize='small' />}
+                                    size='small'
+                                    onClick={() => { setAnalytics(null); setSelection(null); }}
+                                    sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
+                                >
+                                    {t('Back')}
+                                </Button>
                                 <Typography sx={{ fontSize: 15, fontWeight: 500, color: TEXT_DARK, mb: 0.5 }}>
                                     {analytics.itemName}
                                 </Typography>
@@ -204,21 +213,6 @@ export default function ChronologicalAnalysisPage() {
                                         }}
                                     />
                                 </Box>
-                                <Button
-                                    variant='outlined'
-                                    size='small'
-                                    startIcon={<AddIcon />}
-                                    onClick={() => setDialog('create')}
-                                    sx={{
-                                        ml: 2,
-                                        borderRadius: '20px',
-                                        borderColor: mainPrimaryColor,
-                                        color: mainPrimaryColor,
-                                        '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff' },
-                                    }}
-                                >
-                                    {t('New')}
-                                </Button>
                             </Box>
                         </Box>
 

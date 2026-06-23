@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography, Tab, Paper } from '@mui/material';
+import { Box, Typography, Tab, Paper, Button } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -107,12 +108,19 @@ export default function StructuralAnalysisPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 {hasData && (
                     <>
-                        {/* Project name + Create button — fixed, doesn't scroll */}
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1, mt: 1, mb: 0.5, flexShrink: 0 }}>
-                            <Typography variant='h5' sx={{ fontWeight: 700, flex: 1 }}>
+                        {/* Back button + estimate title — fixed, doesn't scroll */}
+                        <Box sx={{ flexShrink: 0, mt: 1, mb: 0.5 }}>
+                            <Button
+                                startIcon={<ArrowBackIcon fontSize='small' />}
+                                size='small'
+                                onClick={() => setSelectedEstimate(null)}
+                                sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
+                            >
+                                {t('Back')}
+                            </Button>
+                            <Typography variant='h5' sx={{ fontWeight: 700 }}>
                                 {selectedEstimate!.name}
                             </Typography>
-                            <PageButton variant='outlined' label='Create' size='large' sx={{ ...outlinedCreateSx, flexShrink: 0 }} onClick={() => setDialogOpen(true)} />
                         </Box>
 
                         <TabContext value={activeTab}>
