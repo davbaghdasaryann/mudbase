@@ -265,6 +265,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                     )}
 
                     {/* Summary rows — computed from visible items */}
+                    {mode === 'general' && (<>
                     <TableRow sx={{ background: '#f5f5f5', borderTop: '2px solid #e0e0e0' }}>
                         <TableCell colSpan={4} sx={{ fontWeight: 600, py: 1.5, pl: 2 }}>{t('Direct Costs')}</TableCell>
                         <TableCell align='center' sx={{ fontWeight: 600, py: 1.5 }}>{formatCurrencyRounded(displayBaseSummary.directCost)}</TableCell>
@@ -297,6 +298,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                             );
                         })}
                     </TableRow>
+                    </>)}
 
                     {mode === 'general' && (
                     <TableRow sx={{ background: '#eef9f9' }}>
