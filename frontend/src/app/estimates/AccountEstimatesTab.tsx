@@ -19,7 +19,7 @@ import EstimateShareToAccountSelectionDialog from '../../components/estimates_sh
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
 import DataTableComponent from '@/components/DataTableComponent';
-import {actionColumnWidth5, mainIconColor} from '@/theme';
+import {actionColumnWidth5, mainIconColor, mainPrimaryColor} from '@/theme';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import {PageButton} from '../../tsui/Buttons/PageButton';
 import {usePermissions} from '@/api/auth';
@@ -179,7 +179,7 @@ export default function AccountEstimatesTab() {
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 
-                {permCreate && <PageButton variant='contained' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} sx={{ borderRadius: '25px', height: '40px' }} />}
+                {permCreate && <PageButton variant='outlined' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }} />}
             </Toolbar>
 
             <DataTableComponent
