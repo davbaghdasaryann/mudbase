@@ -42,6 +42,7 @@ export const toolpadTextFieldSx: SxProps<Theme> = {
     pb: 2,
     overflow: 'visible',
     '& .MuiOutlinedInput-root': {
+        borderRadius: '8px',
         '& fieldset': { borderWidth: '1px' },
         '&:hover fieldset': { borderWidth: '1px' },
         '&.Mui-focused fieldset': { borderWidth: '1.5px' },

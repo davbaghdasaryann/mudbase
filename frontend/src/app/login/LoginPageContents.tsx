@@ -147,6 +147,7 @@ export default function LoginPageContents() {
                             border: 'none',
                             color: 'white',
                             my: 2,
+                            borderRadius: '8px',
                         }
                     },
                 }}
