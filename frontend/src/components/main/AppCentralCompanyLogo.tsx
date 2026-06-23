@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function AppCentralCompanyLogo(props: PageContentsProps) {
     return (
-        <Box 
+        <Box
             sx={{
                 position: 'fixed',
                 top: 50,
@@ -13,6 +13,7 @@ export default function AppCentralCompanyLogo(props: PageContentsProps) {
                 width: '100%',
                 py: 2,
                 textAlign: 'center',
+                display: { xs: 'none', sm: 'block' },
             }}>
 
             {/* <ImgElement src='/images/mudbase_header_title.svg' sx={{height: 30}} /> */}
