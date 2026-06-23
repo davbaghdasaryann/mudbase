@@ -93,8 +93,15 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
 
         request
             .then((rows) => {
+                const seen = new Set<string>();
+                const unique = rows.filter((row) => {
+                    const dedupKey = `${row.itemName}|${row.unitSymbol}|${row.unitCost}|${row.marketAveragePrice}|${row.marketMinPrice}|${row.marketMaxPrice}`;
+                    if (seen.has(dedupKey)) return false;
+                    seen.add(dedupKey);
+                    return true;
+                });
                 const map = new Map<string, SectionGroup>();
-                for (const row of rows) {
+                for (const row of unique) {
                     const key = row.sectionName;
                     if (!map.has(key)) {
                         map.set(key, { sectionName: row.sectionName, sectionDisplayIndex: row.sectionDisplayIndex, items: [] });
