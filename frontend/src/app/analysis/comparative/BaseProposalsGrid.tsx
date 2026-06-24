@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import { useGrabScroll } from '@/hooks/useGrabScroll';
 import NorthEastIcon from '@mui/icons-material/NorthEast';
 import SouthWestIcon from '@mui/icons-material/SouthWest';
 import CheckIcon from '@mui/icons-material/Check';
@@ -45,6 +46,7 @@ interface Props {
 
 export default function BaseProposalsGrid({ estimate, companies = [], mode = 'general' }: Props) {
     const { t } = useTranslation();
+    const grab = useGrabScroll();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [companyPrices, setCompanyPrices] = useState<Record<string, Record<string, number | null>>>({});
     const [loading, setLoading] = useState(true);
@@ -133,6 +135,7 @@ export default function BaseProposalsGrid({ estimate, companies = [], mode = 'ge
     const colSpan = 3 + Math.max(companies.length, 1);
 
     return (
+        <Box ref={grab.ref} onMouseDown={grab.onMouseDown} onMouseMove={grab.onMouseMove} onMouseUp={grab.onMouseUp} onMouseLeave={grab.onMouseLeave} sx={{ overflowX: 'auto', cursor: 'grab' }}>
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
@@ -203,5 +206,6 @@ export default function BaseProposalsGrid({ estimate, companies = [], mode = 'ge
                 })()}
             </TableBody>
         </Table>
+        </Box>
     );
 }
