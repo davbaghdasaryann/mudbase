@@ -1104,9 +1104,14 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                                                         <Button
                                                                                             fullWidth
                                                                                             sx={{
-                                                                                                border: '1px dashed green',
-                                                                                                color: mainIconColor,
-                                                                                                background: 'rgba(0, 255, 0, 0.04)'
+                                                                                                border: '1px dashed #00abbe',
+                                                                                                color: '#00abbe',
+                                                                                                background: 'rgba(0, 171, 190, 0.06)',
+                                                                                                '&:hover': {
+                                                                                                    border: '1px dashed #008a9a',
+                                                                                                    color: '#008a9a',
+                                                                                                    background: 'rgba(0, 138, 154, 0.10)',
+                                                                                                }
                                                                                             }}
                                                                                             onClick={() => {
                                                                                                 const firstOfferId = subChild.children?.[0]?._id;
