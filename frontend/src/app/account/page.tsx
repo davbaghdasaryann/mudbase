@@ -62,11 +62,11 @@ export default function AccountPage() {
             <TabContext value={value}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange}>
+                        <Tab label={t('About My Company')} value='aboutCompany' />
                         {session?.user && permissionsSet?.has?.('OFF_VW_LOC_LBR') && <Tab label={t('My Labors')} value='labor' />}
                         {session?.user && permissionsSet?.has?.('OFF_VW_LOC_MTRL') && <Tab label={t('My Materials')} value='material' />}
                         {/* {session?.user && permissionsSet?.has?.('EST_USE') && <Tab label={t('Estimates')} value='estimates' />}
                         {session?.user && permissionsSet?.has?.('EST_USE') && <Tab label={t('Shared Estimates')} value='sharedEstimates' />} */}
-                        <Tab label={t('About My Company')} value='aboutCompany' />
                     </TabList>
                 </Box>
             </TabContext>
