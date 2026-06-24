@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import { useGrabScroll } from '@/hooks/useGrabScroll';
 import NorthEastIcon from '@mui/icons-material/NorthEast';
 import SouthWestIcon from '@mui/icons-material/SouthWest';
 import CheckIcon from '@mui/icons-material/Check';
@@ -71,6 +72,7 @@ const formatValue = (value: number | null) => value === null ? '-' : formatCurre
 
 export default function ComparativeLaborGrid({ estimate, includeMaterials, materialsOnly }: { estimate: EstimatesApi.ApiEstimate; includeMaterials?: boolean; materialsOnly?: boolean }) {
     const { t } = useTranslation();
+    const grab = useGrabScroll();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -128,6 +130,7 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
     if (groups.length === 0) return null;
 
     return (
+        <Box ref={grab.ref} onMouseDown={grab.onMouseDown} onMouseMove={grab.onMouseMove} onMouseUp={grab.onMouseUp} onMouseLeave={grab.onMouseLeave} sx={{ overflowX: 'auto', cursor: 'grab' }}>
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
@@ -185,5 +188,6 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
 
             </TableBody>
         </Table>
+        </Box>
     );
 }

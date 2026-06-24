@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useGrabScroll } from '@/hooks/useGrabScroll';
 import {
     Box, CircularProgress, Table, TableBody, TableCell, TableHead, TableRow, Typography,
 } from '@mui/material';
@@ -91,6 +92,7 @@ interface Props {
 
 export default function SubmittedEstimationsGrid({ originalEstimateId, companies, mode = 'general' }: Props) {
     const { t } = useTranslation();
+    const grab = useGrabScroll();
     const [data, setData] = useState<ComparisonData | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -173,7 +175,7 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
     const cellSx = { py: 1, px: 1.5 };
 
     return (
-        <Box sx={{ overflowX: 'auto', mt: 1 }}>
+        <Box ref={grab.ref} onMouseDown={grab.onMouseDown} onMouseMove={grab.onMouseMove} onMouseUp={grab.onMouseUp} onMouseLeave={grab.onMouseLeave} sx={{ overflowX: 'auto', mt: 1, cursor: 'grab' }}>
             <Table size='small' sx={{ minWidth: 700, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
                 <TableHead>
                     <TableRow sx={{ background: '#f9f9f9' }}>
