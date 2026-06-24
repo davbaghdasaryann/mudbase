@@ -30,23 +30,32 @@ export default function CompanyHeaderComponent({
     return (
         <>
             <Stack
-                direction='row'
-                alignItems='flex-end'
-                spacing={4}
+                direction={{ xs: 'column', sm: 'row' }}
+                alignItems={{ xs: 'center', sm: 'flex-end' }}
+                spacing={{ xs: 1, sm: 4 }}
                 sx={{
                     w: 1,
-                    pl: 5,
+                    pl: { xs: 2, sm: 5 },
                     pr: 2,
+                    pb: { xs: 1, sm: 0 },
                 }}
             >
                 <CompanyLogoComponent
                     account={account}
                     canEdit={canEdit} />
-                <Typography variant='h4' sx={{ position: 'relative', bottom: 28 }}>
+                <Typography
+                    sx={{
+                        position: 'relative',
+                        bottom: { xs: 0, sm: 28 },
+                        fontSize: { xs: '1.2rem', sm: '2.125rem' },
+                        fontWeight: 600,
+                        textAlign: { xs: 'center', sm: 'left' },
+                    }}
+                >
                     {account?.companyName}
                 </Typography>
                 <SpacerComponent />
-                <PageButton show={editEnabled} title='Edit' variant='text' onClickTrue={setEditAccount} sx={{ position: 'relative', bottom: 30 }} />
+                <PageButton show={editEnabled} title='Edit' variant='text' onClickTrue={setEditAccount} sx={{ position: 'relative', bottom: { xs: 0, sm: 30 } }} />
             </Stack>
 
             <EditAccountInfoDialog

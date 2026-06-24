@@ -133,8 +133,8 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
                     sx={{
                         position: 'relative',
                         marginTop: `${companyLogoMarginTop}px`,
-                        width: companyLogoAvatarSize,
-                        height: companyLogoAvatarSize,
+                        width: { xs: 90, sm: companyLogoAvatarSize },
+                        height: { xs: 90, sm: companyLogoAvatarSize },
                         borderRadius: '50%',
                         backgroundColor: '#e0e0e0',
                         display: 'flex',
@@ -145,7 +145,7 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
                         cursor: props.canEdit ? 'pointer' : undefined,
                     }}
                 >
-                    <BusinessIcon sx={{ fontSize: 64, color: '#757575' }} />
+                    <BusinessIcon sx={{ fontSize: { xs: 36, sm: 64 }, color: '#757575' }} />
                     {/* Logo image overlays the icon when it loads; onError resets to icon-only */}
                     {imageSrc && (
                         <img
@@ -170,8 +170,8 @@ function CompanyLogoComponentBody(props: CompanyLogoComponentProps) {
                             position: 'absolute',
                             top: `${companyLogoMarginTop}px`,
                             left: 0,
-                            width: companyLogoAvatarSize,
-                            height: companyLogoAvatarSize,
+                            width: { xs: 90, sm: companyLogoAvatarSize },
+                            height: { xs: 90, sm: companyLogoAvatarSize },
                             bgcolor: 'rgba(0, 0, 0, 0.4)',
                             display: 'flex',
                             alignItems: 'center',

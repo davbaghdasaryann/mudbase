@@ -40,11 +40,11 @@ interface InlineFieldProps {
     displayonly?: boolean;
     multiline?: boolean;
     isLink?: boolean;
-    gridSize?: number;
+    gridSize?: number | Record<string, number>;
     onSave: (fieldId: string, value: string) => Promise<void>;
 }
 
-function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLink, gridSize = 6, onSave }: InlineFieldProps) {
+function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLink, gridSize = { xs: 12, sm: 6 }, onSave }: InlineFieldProps) {
     const [editing, setEditing] = React.useState(false);
     const [editValue, setEditValue] = React.useState(value);
     const [hovered, setHovered] = React.useState(false);
@@ -243,7 +243,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
 
     return (
         <Box sx={{ width: '100%', overflowY: 'auto', pb: 3 }}>
-        <Box sx={{ backgroundColor: '#fff', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', p: 2.5 }}>
+        <Box sx={{ backgroundColor: '#fff', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', p: { xs: 1.5, sm: 2.5 } }}>
             <Grid container spacing={1.5}>
                 {field('companyName',   t('Company Name'),  <BusinessIcon />)}
                 {field('phoneNumber',   t('Phone Number'),  <PhoneIcon />)}
