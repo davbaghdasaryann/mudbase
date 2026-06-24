@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormLabel, Grid, IconButton, Link, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, Grid, IconButton, Link, Switch, TextField, Typography } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -246,27 +246,34 @@ function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm }:
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: '12px', border: '1px solid #00abbe' } }}>
-            <DialogTitle sx={{ fontWeight: 600, pb: 1 }}>{t('Choose Activities')}</DialogTitle>
-            <DialogContent>
+            <DialogTitle sx={{ fontWeight: 600, pb: 1.5 }}>{t('Choose Activities')}</DialogTitle>
+            <Divider />
+            <DialogContent sx={{ pt: 1, pb: 1 }}>
                 <FormControl component='fieldset' sx={{ width: '100%' }}>
                     <Box display='flex' flexDirection='column'>
                         {accountActivities.map(activity => (
                             <FormControlLabel
                                 key={activity.id}
+                                labelPlacement='start'
                                 control={
-                                    <Checkbox
+                                    <Switch
                                         checked={selectedMap[activity.id as AccountActivity]}
                                         onChange={() => toggle(activity.id as AccountActivity)}
-                                        sx={{ color: BRAND, '&.Mui-checked': { color: BRAND } }}
+                                        sx={{
+                                            '& .MuiSwitch-switchBase.Mui-checked': { color: BRAND },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: BRAND },
+                                        }}
                                     />
                                 }
                                 label={t(activity.label)}
+                                sx={{ mx: 0, justifyContent: 'space-between', width: '100%', py: 0.25 }}
                             />
                         ))}
                     </Box>
                 </FormControl>
             </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Divider />
+            <DialogActions sx={{ px: 3, py: 1.5 }}>
                 <Button onClick={onClose} disabled={saving} sx={{ color: 'text.secondary' }}>{t('Cancel')}</Button>
                 <Button onClick={handleConfirm} disabled={saving} variant='contained' sx={{ borderRadius: '8px', backgroundColor: BRAND, '&:hover': { backgroundColor: '#009aaa' } }}>
                     {saving ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : t('Confirm')}
