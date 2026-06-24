@@ -5,25 +5,38 @@ import { Box, CircularProgress, Grid, IconButton, Link, TextField, Typography } 
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import BusinessIcon from '@mui/icons-material/Business';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BadgeIcon from '@mui/icons-material/Badge';
+import CategoryIcon from '@mui/icons-material/Category';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import MarkunreadMailboxIcon from '@mui/icons-material/MarkunreadMailbox';
+import EmailIcon from '@mui/icons-material/Email';
+import LanguageIcon from '@mui/icons-material/Language';
+import PersonIcon from '@mui/icons-material/Person';
+import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
 
 import * as Api from 'api';
 import { makeAccountActivitiesString } from '@/lib/account_activities';
-import { aboutCompanyBottomDividerColor } from '../../theme';
 
 const BRAND = '#00abbe';
+const BORDER_DEFAULT = '#e5e7eb';
+const BORDER_HOVER   = 'rgba(0,171,190,0.35)';
+const BORDER_ACTIVE  = BRAND;
+const ICON_BG        = 'rgba(0,171,190,0.10)';
 
 interface AboutCompanyPageProps {
     account: Api.ApiAccount | undefined;
     onDataChanged?: () => void;
 }
 
-// ─── Inline field ────────────────────────────────────────────────────────────
-
 interface InlineFieldProps {
     label: string;
     fieldId: string;
     value: string;
+    icon: React.ReactElement;
     displayonly?: boolean;
     multiline?: boolean;
     isLink?: boolean;
@@ -31,7 +44,7 @@ interface InlineFieldProps {
     onSave: (fieldId: string, value: string) => Promise<void>;
 }
 
-function InlineField({ label, fieldId, value, displayonly, multiline, isLink, gridSize = 6, onSave }: InlineFieldProps) {
+function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLink, gridSize = 6, onSave }: InlineFieldProps) {
     const [editing, setEditing] = React.useState(false);
     const [editValue, setEditValue] = React.useState(value);
     const [hovered, setHovered] = React.useState(false);
@@ -64,11 +77,7 @@ function InlineField({ label, fieldId, value, displayonly, multiline, isLink, gr
         if (e.key === 'Escape') cancel();
     };
 
-    const borderColor = editing
-        ? BRAND
-        : hovered && !displayonly
-        ? 'rgba(0,171,190,0.30)'
-        : aboutCompanyBottomDividerColor;
+    const borderColor = editing ? BORDER_ACTIVE : hovered && !displayonly ? BORDER_HOVER : BORDER_DEFAULT;
 
     return (
         <Grid size={gridSize}>
@@ -77,104 +86,120 @@ function InlineField({ label, fieldId, value, displayonly, multiline, isLink, gr
                 onMouseLeave={() => setHovered(false)}
                 onClick={!editing && !displayonly ? startEdit : undefined}
                 sx={{
-                    px: 1.5,
-                    pt: 1.5,
-                    pb: 0.75,
-                    borderBottom: `2px solid ${borderColor}`,
-                    borderRadius: '4px 4px 0 0',
-                    transition: 'border-color 0.2s ease, background-color 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1.5,
+                    p: 1.5,
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: '10px',
+                    backgroundColor: editing ? 'rgba(0,171,190,0.015)' : hovered && !displayonly ? 'rgba(0,171,190,0.02)' : '#fff',
+                    transition: 'border-color 0.18s ease, background-color 0.15s ease',
                     cursor: displayonly || editing ? 'default' : 'pointer',
-                    ...(!displayonly && !editing && { '&:hover': { backgroundColor: 'rgba(0,171,190,0.03)' } }),
+                    minHeight: 68,
                 }}
             >
-                {/* Label */}
-                <Typography
-                    variant='caption'
-                    sx={{
-                        display: 'block',
-                        color: editing ? BRAND : 'text.disabled',
-                        fontSize: '0.72rem',
-                        letterSpacing: '0.04em',
-                        mb: 0.5,
-                        transition: 'color 0.2s ease',
-                        userSelect: 'none',
-                    }}
-                >
-                    {label}
-                </Typography>
+                {/* Icon chip */}
+                <Box sx={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '8px',
+                    backgroundColor: editing ? 'rgba(0,171,190,0.18)' : ICON_BG,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    mt: 0.25,
+                    transition: 'background-color 0.18s ease',
+                }}>
+                    {React.cloneElement(icon, { sx: { fontSize: 18, color: BRAND } } as any)}
+                </Box>
 
-                {editing ? (
-                    /* ── Edit mode ── */
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
-                        <TextField
-                            inputRef={inputRef}
-                            value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
-                            onKeyDown={onKeyDown}
-                            multiline={multiline}
-                            minRows={multiline ? 2 : undefined}
-                            maxRows={multiline ? 8 : undefined}
-                            variant='standard'
-                            fullWidth
-                            sx={{
-                                '& .MuiInput-root': { fontSize: '20px', fontWeight: 600, color: 'text.primary' },
-                                '& .MuiInput-underline:before': { borderBottom: 'none' },
-                                '& .MuiInput-underline:after': { borderBottom: 'none' },
-                                '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
-                            }}
-                        />
-                        <Box sx={{ display: 'flex', flexShrink: 0, alignItems: 'center', mt: 0.5 }}>
-                            {saving ? (
-                                <CircularProgress size={18} sx={{ color: BRAND, mx: 1 }} />
+                {/* Label + value */}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                        variant='caption'
+                        sx={{
+                            display: 'block',
+                            color: editing ? BRAND : 'text.disabled',
+                            fontSize: '0.70rem',
+                            letterSpacing: '0.05em',
+                            mb: 0.4,
+                            transition: 'color 0.18s ease',
+                            userSelect: 'none',
+                        }}
+                    >
+                        {label}
+                    </Typography>
+
+                    {editing ? (
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+                            <TextField
+                                inputRef={inputRef}
+                                value={editValue}
+                                onChange={e => setEditValue(e.target.value)}
+                                onKeyDown={onKeyDown}
+                                multiline={multiline}
+                                minRows={multiline ? 2 : undefined}
+                                maxRows={multiline ? 8 : undefined}
+                                variant='standard'
+                                fullWidth
+                                sx={{
+                                    '& .MuiInput-root': { fontSize: '0.95rem', fontWeight: 500, color: 'text.primary' },
+                                    '& .MuiInput-underline:before': { borderBottom: 'none' },
+                                    '& .MuiInput-underline:after': { borderBottom: 'none' },
+                                    '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+                                }}
+                            />
+                            <Box sx={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
+                                {saving ? (
+                                    <CircularProgress size={18} sx={{ color: BRAND, mx: 1 }} />
+                                ) : (
+                                    <>
+                                        <IconButton size='small' onClick={save} sx={{ color: BRAND, '&:hover': { backgroundColor: 'rgba(0,171,190,0.1)' } }}>
+                                            <CheckIcon sx={{ fontSize: 17 }} />
+                                        </IconButton>
+                                        <IconButton size='small' onClick={cancel} sx={{ color: 'text.disabled', '&:hover': { backgroundColor: 'rgba(0,0,0,0.05)' } }}>
+                                            <CloseIcon sx={{ fontSize: 17 }} />
+                                        </IconButton>
+                                    </>
+                                )}
+                            </Box>
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: '28px' }}>
+                            {isLink && value ? (
+                                <Link
+                                    href={/^https?:\/\//.test(value) ? value : `https://${value}`}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    underline='hover'
+                                    onClick={e => e.stopPropagation()}
+                                    sx={{ fontSize: '0.95rem', fontWeight: 500, color: BRAND }}
+                                >
+                                    {value}
+                                </Link>
                             ) : (
-                                <>
-                                    <IconButton size='small' onClick={save} sx={{ color: BRAND, '&:hover': { backgroundColor: 'rgba(0,171,190,0.1)' } }}>
-                                        <CheckIcon sx={{ fontSize: 18 }} />
-                                    </IconButton>
-                                    <IconButton size='small' onClick={cancel} sx={{ color: 'text.disabled', '&:hover': { backgroundColor: 'rgba(0,0,0,0.05)' } }}>
-                                        <CloseIcon sx={{ fontSize: 18 }} />
-                                    </IconButton>
-                                </>
+                                <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: value ? 'text.secondary' : 'text.disabled', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                    {value || '—'}
+                                </Typography>
+                            )}
+
+                            {!displayonly && hovered && (
+                                <IconButton
+                                    size='small'
+                                    onClick={e => { e.stopPropagation(); startEdit(); }}
+                                    sx={{ color: 'rgba(0,171,190,0.45)', flexShrink: 0, ml: 1, '&:hover': { color: BRAND, backgroundColor: 'rgba(0,171,190,0.08)' } }}
+                                >
+                                    <EditOutlinedIcon sx={{ fontSize: 15 }} />
+                                </IconButton>
                             )}
                         </Box>
-                    </Box>
-                ) : (
-                    /* ── Display mode ── */
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: '34px' }}>
-                        {isLink && value ? (
-                            <Link
-                                href={/^https?:\/\//.test(value) ? value : `https://${value}`}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                underline='hover'
-                                onClick={e => e.stopPropagation()}
-                                sx={{ fontSize: '20px', fontWeight: 600, color: BRAND }}
-                            >
-                                {value}
-                            </Link>
-                        ) : (
-                            <Typography sx={{ fontSize: '20px', fontWeight: 600, color: value ? 'text.secondary' : 'text.disabled', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>
-                                {value || '—'}
-                            </Typography>
-                        )}
-
-                        {!displayonly && hovered && (
-                            <IconButton
-                                size='small'
-                                onClick={e => { e.stopPropagation(); startEdit(); }}
-                                sx={{ color: 'rgba(0,171,190,0.45)', flexShrink: 0, ml: 1, '&:hover': { color: BRAND, backgroundColor: 'rgba(0,171,190,0.08)' } }}
-                            >
-                                <EditOutlinedIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                        )}
-                    </Box>
-                )}
+                    )}
+                </Box>
             </Box>
         </Grid>
     );
 }
-
-// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     const { t } = useTranslation();
@@ -212,24 +237,24 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
         return <Box sx={{ p: 2 }}><Typography color='text.disabled'>{t('Loading...')}</Typography></Box>;
     }
 
-    const field = (id: string, label: string, opts?: Partial<InlineFieldProps>) => (
-        <InlineField key={id} label={label} fieldId={id} value={values[id] ?? ''} onSave={handleSave} {...opts} />
+    const field = (id: string, label: string, icon: React.ReactElement, opts?: Partial<InlineFieldProps>) => (
+        <InlineField key={id} label={label} fieldId={id} value={values[id] ?? ''} icon={icon} onSave={handleSave} {...opts} />
     );
 
     return (
         <Box sx={{ width: '100%', overflowY: 'auto', pb: 3 }}>
-            <Grid container spacing={0}>
-                {field('companyName',   t('Company Name'),    { gridSize: 12 })}
-                {field('establishedAt', t('Establish Date'))}
-                {field('phoneNumber',   t('Phone Number'))}
-                <InlineField label={t('TIN')}      fieldId='companyTin'      value={account.companyTin ?? ''} displayonly onSave={handleSave} />
-                <InlineField label={t('Activity')} fieldId='accountActivity' value={activityValue}           displayonly onSave={handleSave} />
-                {field('address',    t('Address'),       { multiline: true })}
-                {field('lawAddress', t('Legal Address'), { multiline: true })}
-                {field('email',   t('Email'))}
-                {field('website', t('Website'), { isLink: true })}
-                {field('director',    t('Director'),       { gridSize: 12 })}
-                {field('companyInfo', t('About Company'),  { gridSize: 12, multiline: true })}
+            <Grid container spacing={1.5}>
+                {field('companyName', t('Company Name'), <BusinessIcon />, { gridSize: 12 })}
+                {field('establishedAt', t('Establish Date'), <CalendarTodayIcon />)}
+                {field('phoneNumber',   t('Phone Number'),  <PhoneIcon />)}
+                <InlineField label={t('TIN')}      fieldId='companyTin'      value={account.companyTin ?? ''}  icon={<BadgeIcon />}    displayonly onSave={handleSave} />
+                <InlineField label={t('Activity')} fieldId='accountActivity' value={activityValue}             icon={<CategoryIcon />} displayonly onSave={handleSave} />
+                {field('lawAddress', t('Legal Address'), <MarkunreadMailboxIcon />, { multiline: true })}
+                {field('address',    t('Address'),       <LocationOnIcon />,        { multiline: true })}
+                {field('email',   t('Email'),   <EmailIcon />)}
+                {field('website', t('Website'), <LanguageIcon />, { isLink: true })}
+                {field('director', t('Director'), <PersonIcon />, { gridSize: 12 })}
+                {field('companyInfo', t('About Company'), <InfoIcon />, { gridSize: 12, multiline: true })}
             </Grid>
         </Box>
     );
