@@ -280,7 +280,8 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     const { t } = useTranslation();
     const account = props.account;
 
-    const activityValue = React.useMemo(() => makeAccountActivitiesString(account?.accountActivity), [account]);
+    const [currentActivities, setCurrentActivities] = React.useState<AccountActivity[]>([]);
+    const activityValue = React.useMemo(() => makeAccountActivitiesString(currentActivities), [currentActivities]);
 
     const [values, setValues] = React.useState<Record<string, string>>({});
     const [activityDialogOpen, setActivityDialogOpen] = React.useState(false);
@@ -298,6 +299,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
             director:      account.director      ?? '',
             companyInfo:   account.companyInfo   ?? '',
         });
+        setCurrentActivities(account.accountActivity ?? []);
     }, [account]);
 
     const handleSave = React.useCallback(async (fieldId: string, value: string) => {
@@ -314,8 +316,8 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
             command: 'profile/update_account',
             values: { accountActivity: activities },
         });
-        props.onDataChanged?.();
-    }, [props.onDataChanged]);
+        setCurrentActivities(activities);
+    }, []);
 
     if (!account) {
         return <Box sx={{ p: 2 }}><Typography color='text.disabled'>{t('Loading...')}</Typography></Box>;
@@ -330,7 +332,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
         <Box sx={{ backgroundColor: '#fff', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', p: { xs: 1.5, sm: 2.5 } }}>
             <ChooseActivitiesDialog
                 open={activityDialogOpen}
-                currentActivities={account.accountActivity ?? []}
+                currentActivities={currentActivities}
                 onClose={() => setActivityDialogOpen(false)}
                 onConfirm={handleSaveActivities}
             />
