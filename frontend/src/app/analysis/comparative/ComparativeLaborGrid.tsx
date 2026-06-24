@@ -127,16 +127,6 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
 
     if (groups.length === 0) return null;
 
-    const totals = groups.reduce((acc, group) => {
-        for (const item of group.items) {
-            acc.unitCost += item.unitCost ?? 0;
-            acc.marketAveragePrice += item.marketAveragePrice ?? 0;
-            acc.marketMinPrice += item.marketMinPrice ?? 0;
-            acc.marketMaxPrice += item.marketMaxPrice ?? 0;
-        }
-        return acc;
-    }, { unitCost: 0, marketAveragePrice: 0, marketMinPrice: 0, marketMaxPrice: 0 });
-
     return (
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
@@ -193,16 +183,6 @@ export default function ComparativeLaborGrid({ estimate, includeMaterials, mater
                 ));
                 })()}
 
-                {includeMaterials && (
-                <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    <TableCell align='left' sx={{ fontWeight: 700, pl: 1 }}>{t('Total')}</TableCell>
-                    <TableCell />
-                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.unitCost)}</TableCell>
-                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketAveragePrice)}</TableCell>
-                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMinPrice)}</TableCell>
-                    <TableCell align='center' sx={{ fontWeight: 700 }}>{formatCurrencyRounded(totals.marketMaxPrice)}</TableCell>
-                </TableRow>
-                )}
             </TableBody>
         </Table>
     );

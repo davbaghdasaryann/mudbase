@@ -264,41 +264,6 @@ export default function SubmittedEstimationsGrid({ originalEstimateId, companies
                     ))
                     )}
 
-                    {/* Summary rows — computed from visible items */}
-                    {mode === 'general' && (<>
-                    <TableRow sx={{ background: '#f5f5f5', borderTop: '2px solid #e0e0e0' }}>
-                        <TableCell colSpan={4} sx={{ fontWeight: 600, py: 1.5, pl: 2 }}>{t('Direct Costs')}</TableCell>
-                        <TableCell align='center' sx={{ fontWeight: 600, py: 1.5 }}>{formatCurrencyRounded(displayBaseSummary.directCost)}</TableCell>
-                        {companies.map(c => {
-                            const acctId = String(c._id);
-                            const companyDirect = displayItems.reduce((sum, item) => sum + item.quantity * (item.companyPrices[acctId] ?? 0), 0);
-                            return (
-                                <React.Fragment key={acctId}>
-                                    <TableCell />
-                                    <SummaryTrendCell base={displayBaseSummary.directCost} value={companyDirect} />
-                                </React.Fragment>
-                            );
-                        })}
-                    </TableRow>
-
-                    <TableRow sx={{ background: '#f5f5f5' }}>
-                        <TableCell colSpan={4} sx={{ fontWeight: 600, py: 1.5, pl: 2 }}>{t('Other Costs')}</TableCell>
-                        <TableCell align='center' sx={{ fontWeight: 600, py: 1.5 }}>{formatCurrencyRounded(displayBaseSummary.otherCost)}</TableCell>
-                        {companies.map(c => {
-                            const acctId = String(c._id);
-                            const cs = data.companySummaries[acctId];
-                            const companyOtherRatio = cs && cs.totalCost > 0 ? (cs.totalWithOther - cs.totalCost) / cs.totalCost : baseOtherRatio;
-                            const companyDirect = displayItems.reduce((sum, item) => sum + item.quantity * (item.companyPrices[acctId] ?? 0), 0);
-                            const companyOther = companyDirect * companyOtherRatio;
-                            return (
-                                <React.Fragment key={acctId}>
-                                    <TableCell />
-                                    <SummaryTrendCell base={displayBaseSummary.otherCost} value={companyOther} />
-                                </React.Fragment>
-                            );
-                        })}
-                    </TableRow>
-                    </>)}
 
                     {mode === 'general' && (
                     <TableRow sx={{ background: '#eef9f9' }}>
