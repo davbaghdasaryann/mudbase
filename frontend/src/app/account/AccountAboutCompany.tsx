@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import * as Api from 'api';
 import { makeAccountActivitiesString } from '@/lib/account_activities';
 import { accountActivities, AccountActivity } from '@/tsmudbase/company_activities';
+import { authSignOut } from '@/api/auth';
 
 const BRAND = '#00abbe';
 const BORDER_DEFAULT = '#e5e7eb';
@@ -204,11 +205,51 @@ function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLi
     );
 }
 
-function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm }: {
+function activitiesChanged(a: AccountActivity[], b: AccountActivity[]) {
+    if (a.length !== b.length) return true;
+    return [...a].sort().join(',') !== [...b].sort().join(',');
+}
+
+function DeactivationNoticeDialog({ open }: { open: boolean }) {
+    const { t } = useTranslation();
+    const [signingOut, setSigningOut] = React.useState(false);
+
+    const handleSignOut = async () => {
+        setSigningOut(true);
+        await authSignOut();
+    };
+
+    return (
+        <Dialog open={open} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: '12px', border: '1px solid #00abbe' } }}>
+            <DialogTitle sx={{ fontWeight: 700, pb: 1.5 }}>{t('account_deactivated_title')}</DialogTitle>
+            <Divider />
+            <DialogContent sx={{ pt: 2, pb: 2 }}>
+                <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
+                    {t('account_deactivated_message')}
+                </Typography>
+            </DialogContent>
+            <Divider />
+            <DialogActions sx={{ px: 3, py: 1.5 }}>
+                <Button
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                    variant='contained'
+                    fullWidth
+                    sx={{ borderRadius: '8px', backgroundColor: BRAND, '&:hover': { backgroundColor: '#009aaa' } }}
+                >
+                    {signingOut ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : t('Sign out')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
+
+function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm, onDeactivated }: {
     open: boolean;
     currentActivities: AccountActivity[];
     onClose: () => void;
     onConfirm: (activities: AccountActivity[]) => Promise<void>;
+    onDeactivated: () => void;
 }) {
     const { t } = useTranslation();
     const [selectedMap, setSelectedMap] = React.useState<Record<AccountActivity, boolean>>({ A: false, F: false, C: false, I: false, V: false, B: false, D: false });
@@ -232,8 +273,13 @@ function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm }:
 
     const handleConfirm = async () => {
         const selected = Object.keys(selectedMap).filter(k => selectedMap[k as AccountActivity]) as AccountActivity[];
+        const changed = activitiesChanged(currentActivities, selected);
         setSaving(true);
-        try { await onConfirm(selected); onClose(); }
+        try {
+            await onConfirm(selected);
+            if (changed) { onDeactivated(); }
+            else { onClose(); }
+        }
         finally { setSaving(false); }
     };
 
@@ -289,6 +335,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
 
     const [values, setValues] = React.useState<Record<string, string>>({});
     const [activityDialogOpen, setActivityDialogOpen] = React.useState(false);
+    const [deactivationNoticeOpen, setDeactivationNoticeOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (!props.account) return;
@@ -334,11 +381,13 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     return (
         <Box sx={{ width: '100%', overflowY: 'auto', pb: 3 }}>
         <Box sx={{ backgroundColor: '#fff', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', p: { xs: 1.5, sm: 2.5 } }}>
+            <DeactivationNoticeDialog open={deactivationNoticeOpen} />
             <ChooseActivitiesDialog
                 open={activityDialogOpen}
                 currentActivities={currentActivities}
                 onClose={() => setActivityDialogOpen(false)}
                 onConfirm={handleSaveActivities}
+                onDeactivated={() => { setActivityDialogOpen(false); setDeactivationNoticeOpen(true); }}
             />
             <Grid container spacing={1.5}>
                 {field('companyName',   t('Company Name'),  <BusinessIcon />)}
