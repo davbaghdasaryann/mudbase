@@ -249,10 +249,7 @@ function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm }:
             <DialogTitle sx={{ fontWeight: 600, pb: 1 }}>{t('Choose Activities')}</DialogTitle>
             <DialogContent>
                 <FormControl component='fieldset' sx={{ width: '100%' }}>
-                    <FormLabel component='legend' sx={{ color: 'text.secondary', fontSize: '0.85rem', mb: 1, '&.Mui-focused': { color: 'text.secondary' } }}>
-                        {t('Select up to 4 activities')}
-                    </FormLabel>
-                    <Box display='flex' flexWrap='wrap'>
+                    <Box display='flex' flexDirection='column'>
                         {accountActivities.map(activity => (
                             <FormControlLabel
                                 key={activity.id}
