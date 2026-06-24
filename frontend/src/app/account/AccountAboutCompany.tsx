@@ -244,16 +244,16 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     return (
         <Box sx={{ width: '100%', overflowY: 'auto', pb: 3 }}>
             <Grid container spacing={1.5}>
-                {field('companyName', t('Company Name'), <BusinessIcon />, { gridSize: 12 })}
-                {field('establishedAt', t('Establish Date'), <CalendarTodayIcon />)}
+                {field('companyName',   t('Company Name'),  <BusinessIcon />)}
                 {field('phoneNumber',   t('Phone Number'),  <PhoneIcon />)}
-                <InlineField label={t('TIN')}      fieldId='companyTin'      value={account.companyTin ?? ''}  icon={<BadgeIcon />}    displayonly onSave={handleSave} />
-                <InlineField label={t('Activity')} fieldId='accountActivity' value={activityValue}             icon={<CategoryIcon />} displayonly onSave={handleSave} />
-                {field('lawAddress', t('Legal Address'), <MarkunreadMailboxIcon />, { multiline: true })}
+                {field('establishedAt', t('Establish Date'), <CalendarTodayIcon />)}
+                <InlineField label={t('Activity')} fieldId='accountActivity' value={activityValue} icon={<CategoryIcon />} displayonly onSave={handleSave} />
+                <InlineField label={t('TIN')}      fieldId='companyTin'      value={account.companyTin ?? ''} icon={<BadgeIcon />} displayonly onSave={handleSave} />
                 {field('address',    t('Address'),       <LocationOnIcon />,        { multiline: true })}
-                {field('email',   t('Email'),   <EmailIcon />)}
+                {field('lawAddress', t('Legal Address'), <MarkunreadMailboxIcon />, { multiline: true })}
                 {field('website', t('Website'), <LanguageIcon />, { isLink: true })}
-                {field('director', t('Director'), <PersonIcon />, { gridSize: 12 })}
+                {field('email',    t('Email'),    <EmailIcon />)}
+                {field('director', t('Director'), <PersonIcon />)}
                 {field('companyInfo', t('About Company'), <InfoIcon />, { gridSize: 12, multiline: true })}
             </Grid>
         </Box>
