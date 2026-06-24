@@ -243,6 +243,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
 
     return (
         <Box sx={{ width: '100%', overflowY: 'auto', pb: 3 }}>
+        <Box sx={{ backgroundColor: '#fff', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', p: 2.5 }}>
             <Grid container spacing={1.5}>
                 {field('companyName',   t('Company Name'),  <BusinessIcon />)}
                 {field('phoneNumber',   t('Phone Number'),  <PhoneIcon />)}
@@ -256,6 +257,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
                 {field('director', t('Director'), <PersonIcon />)}
                 {field('companyInfo', t('About Company'), <InfoIcon />, { gridSize: 12, multiline: true })}
             </Grid>
+        </Box>
         </Box>
     );
 }
