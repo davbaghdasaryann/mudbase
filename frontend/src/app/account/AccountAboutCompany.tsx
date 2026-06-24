@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 
 import * as Api from 'api';
 import { makeAccountActivitiesString } from '@/lib/account_activities';
-import { accountActivities, AccountActivity, allFinancialIds } from '@/tsmudbase/company_activities';
+import { accountActivities, AccountActivity } from '@/tsmudbase/company_activities';
 
 const BRAND = '#00abbe';
 const BORDER_DEFAULT = '#e5e7eb';
@@ -223,16 +223,9 @@ function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm }:
 
     const toggle = (id: AccountActivity) => {
         setSelectedMap(prev => {
-            const next = { ...prev };
-            if (allFinancialIds.includes(id)) {
-                Object.keys(next).forEach(k => { next[k as AccountActivity] = k === id; });
-            } else {
-                allFinancialIds.forEach(v => { if (prev[v as AccountActivity]) next[v as AccountActivity] = false; });
-                next[id] = !prev[id];
-                const count = Object.values(next).filter(Boolean).length;
-                if (count === 0) next[id] = true;
-                if (count > 4) next[id] = prev[id];
-            }
+            const next = { ...prev, [id]: !prev[id] };
+            const count = Object.values(next).filter(Boolean).length;
+            if (count === 0) return prev;
             return next;
         });
     };
