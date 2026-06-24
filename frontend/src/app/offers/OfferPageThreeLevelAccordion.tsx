@@ -848,7 +848,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                             alignItems: 'center',
                             gap: '8px',
                             paddingLeft: '10px',
-                            // position: 'relative',
+                            '&:hover': { backgroundColor: '#E8EFEF' },
                         }}>
 
                             <Stack direction="row" alignItems="center" spacing={1}>
@@ -899,7 +899,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                     alignItems: 'center',
                                                     gap: '8px',
                                                     paddingLeft: '10px',
-                                                    // position: 'relative',
+                                                    '&:hover': { backgroundColor: '#E8EFEF' },
                                                 }}>
                                                     {/* Left Side: Label & Count */}
                                                     <Stack direction="row" alignItems="center" spacing={1}>
@@ -952,7 +952,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                                             alignItems: 'center',
                                                                             gap: '8px',
                                                                             paddingLeft: '10px',
-                                                                            // position: 'relative',
+                                                                            '&:hover': { backgroundColor: '#E8EFEF' },
                                                                         }}>
                                                                             {/* Left Side: Label & Count */}
                                                                             <Stack direction="row" alignItems="center" spacing={1}>
