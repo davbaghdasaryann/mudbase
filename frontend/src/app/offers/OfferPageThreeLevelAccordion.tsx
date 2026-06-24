@@ -991,7 +991,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                                                 <CircularProgress size={24} sx={{ ml: 4 }} />
                                                                             ) : (
                                                                                 <DataTableComponent
-                                                                                    sx={{ width: '100%', }}
+                                                                                    sx={{ width: '100%', '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' } }}
                                                                                     columns={[
                                                                                         // { field: 'itemFullCode', headerName: t('ID'), headerAlign: 'left', flex:0.2},
                                                                                         { field: 'accountName', headerName: t('Company'), headerAlign: 'left', flex: 0.6, disableColumnMenu: true },
