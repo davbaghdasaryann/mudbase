@@ -278,7 +278,11 @@ function ChooseActivitiesDialog({ open, currentActivities, onClose, onConfirm }:
 
 export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     const { t } = useTranslation();
-    const account = props.account;
+
+    // Cache the last known good account so a transient undefined prop (during refetch) never flashes to loading
+    const [cachedAccount, setCachedAccount] = React.useState(props.account);
+    React.useEffect(() => { if (props.account) setCachedAccount(props.account); }, [props.account]);
+    const account = cachedAccount;
 
     const [currentActivities, setCurrentActivities] = React.useState<AccountActivity[]>([]);
     const activityValue = React.useMemo(() => makeAccountActivitiesString(currentActivities), [currentActivities]);
@@ -287,20 +291,20 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     const [activityDialogOpen, setActivityDialogOpen] = React.useState(false);
 
     React.useEffect(() => {
-        if (!account) return;
+        if (!props.account) return;
         setValues({
-            companyName:   account.companyName   ?? '',
-            establishedAt: account.establishedAt ?? '',
-            phoneNumber:   account.phoneNumber   ?? '',
-            address:       account.address       ?? '',
-            lawAddress:    account.lawAddress    ?? '',
-            email:         account.email         ?? '',
-            website:       account.website       ?? '',
-            director:      account.director      ?? '',
-            companyInfo:   account.companyInfo   ?? '',
+            companyName:   props.account.companyName   ?? '',
+            establishedAt: props.account.establishedAt ?? '',
+            phoneNumber:   props.account.phoneNumber   ?? '',
+            address:       props.account.address       ?? '',
+            lawAddress:    props.account.lawAddress    ?? '',
+            email:         props.account.email         ?? '',
+            website:       props.account.website       ?? '',
+            director:      props.account.director      ?? '',
+            companyInfo:   props.account.companyInfo   ?? '',
         });
-        setCurrentActivities(account.accountActivity ?? []);
-    }, [account]);
+        setCurrentActivities(props.account.accountActivity ?? []);
+    }, [props.account]);
 
     const handleSave = React.useCallback(async (fieldId: string, value: string) => {
         await Api.requestSession<any>({
