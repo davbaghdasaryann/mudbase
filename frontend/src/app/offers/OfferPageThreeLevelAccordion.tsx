@@ -327,6 +327,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                         setProgIndic(false)
 
                     })
+                    .catch(() => setProgIndic(false))
                 setDataRequested(true);
 
                 return;
@@ -370,6 +371,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                         setProgIndic(false)
 
                     })
+                    .catch(() => setProgIndic(false))
                 setDataRequested(true);
 
                 return;
