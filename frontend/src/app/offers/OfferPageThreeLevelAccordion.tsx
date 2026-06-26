@@ -32,7 +32,7 @@ import SpacerComponent from "../../components/SpacerComponent";
 import DataTableComponent from "@/components/DataTableComponent";
 import { accordionBorderColor, mainBackgroundColor, mainIconColor } from "../../theme";
 import { usePermissions } from "../../api/auth";
-import { EstimateChildAccordion, EstimateRootAccordion, EstimateSubChildAccordion } from "../../components/AccordionComponent";
+import { EstimateChildAccordion, EstimateRootAccordion, EstimateRootAccordionSummary, EstimateSubChildAccordion } from "../../components/AccordionComponent";
 import { fixedToThree } from "../../tslib/parse";
 import { PageSelect } from "../../tsui/PageSelect";
 
@@ -849,14 +849,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                         onChange={handleAccordionChange(item._id, item.code, 2)}
                     >
 
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
-                            display: 'flex',
-                            flexDirection: 'row-reverse',
-                            alignItems: 'center',
-                            gap: '8px',
-                            paddingLeft: '10px',
-                            '&:hover': { backgroundColor: '#E8EFEF' },
-                        }}>
+                        <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
 
                             <Stack direction="row" alignItems="center" spacing={1}>
                                 <Typography>{item.code}</Typography>
@@ -874,9 +867,10 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                     </Typography>
                                 </Typography>
                             </Stack>
-                        </AccordionSummary>
+                        </EstimateRootAccordionSummary>
                         <AccordionDetails sx={{
                             position: 'relative',
+                            padding: 0,
                             '&::before': {
                                 content: '""',
                                 position: 'absolute',
@@ -884,7 +878,6 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                 top: 0,
                                 width: '2px',
                                 height: '100%',
-                                // backgroundColor: '#000',
                                 backgroundColor: accordionBorderColor,
                             },
                             backgroundColor: mainBackgroundColor,
@@ -900,15 +893,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                             // <Accordion key={child.id} expanded={expandedAccordions.includes(`${item.fullCode + child.fullCode}`)} onChange={handleAccordionChange(`${item.fullCode + child.fullCode}`, 3)}>
                                             <EstimateChildAccordion key={child._id} expanded={expandedAccordions.includes(child.categoryFullCode)} onChange={handleAccordionChange(child._id, child.categoryFullCode, 3)}>
 
-                                                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row-reverse',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    paddingLeft: '10px',
-                                                    '&:hover': { backgroundColor: '#E8EFEF' },
-                                                }}>
-                                                    {/* Left Side: Label & Count */}
+                                                <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                                                     <Stack direction="row" alignItems="center" spacing={1}>
                                                         <Typography>{child.code}</Typography>
                                                         <Typography sx={{ minWidth: 530, maxWidth: 700, wordBreak: 'break-word' }}>
@@ -925,11 +910,10 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                             </Typography>
                                                         </Typography>
                                                     </Stack>
-
-                                                    {/* {child.label} */}
-                                                </AccordionSummary>
+                                                </EstimateRootAccordionSummary>
                                                 <AccordionDetails sx={{
                                                     position: 'relative',
+                                                    padding: 0,
                                                     '&::before': {
                                                         content: '""',
                                                         position: 'absolute',
@@ -937,7 +921,6 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                         top: 0,
                                                         width: '2px',
                                                         height: '100%',
-                                                        // backgroundColor: '#000',
                                                         backgroundColor: accordionBorderColor,
                                                     },
                                                     backgroundColor: mainBackgroundColor,
@@ -946,7 +929,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                         <CircularProgress size={24} sx={{ ml: 4 }} />
                                                     ) : (
                                                         child.children && child.children.length > 0 ? (
-                                                            <Stack spacing={2} sx={{ ml: 4 }}>
+                                                            <Stack spacing={0} sx={{ ml: 4 }}>
 
                                                                 {child.children.map((subChild) => {
                                                                     const canEditOffers = session?.user && (
