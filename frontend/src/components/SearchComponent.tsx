@@ -71,8 +71,9 @@ export default function SearchComponent(props: SeachComponentProps) {
 
             sx={{
                 minWidth: 160,
-                width: focused ? '100%' : 'auto',
-                transition: 'width 0.25s ease',
+                width: '100%',
+                maxWidth: focused ? 9999 : 200,
+                transition: 'max-width 0.35s ease',
                 '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
             }}
