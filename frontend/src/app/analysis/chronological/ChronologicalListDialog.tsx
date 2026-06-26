@@ -13,6 +13,7 @@ import ImgElement from '@/tsui/DomElements/ImgElement';
 import { mainPrimaryColor } from '@/theme';
 import { ChronologicalSourceType } from './ChronologicalCreateDialog';
 import WidgetItemHierarchyPicker from '@/components/dashboard/WidgetItemHierarchyPicker';
+import WidgetEciHierarchyPicker from '@/components/dashboard/WidgetEciHierarchyPicker';
 import * as Api from '@/api';
 import moment from 'moment';
 
@@ -41,7 +42,8 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
     const [selectedItemName, setSelectedItemName] = useState<string>('');
 
     const isRepository = type === 'work_repository' || type === 'materials_repository';
-    const isEstimates = type === 'list_of_estimates' || type === 'consolidated_estimates';
+    const isEci = type === 'consolidated_estimates';
+    const isEstimates = type === 'list_of_estimates';
 
     useEffect(() => {
         if (!open) return;
@@ -53,8 +55,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
         if (!open || !isEstimates) return;
         setLoading(true);
         setEstimates([]);
-        const command = type === 'list_of_estimates' ? 'estimates/fetch' : 'admin/fetch_all_estimates';
-        Api.requestSession<any[]>({ command, args: { searchVal: 'empty' } })
+        Api.requestSession<any[]>({ command: 'estimates/fetch', args: { searchVal: 'empty' } })
             .then((data) => { setEstimates(data ?? []); setLoading(false); })
             .catch(() => setLoading(false));
     }, [open, type]);
@@ -83,13 +84,21 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                 </Stepper>
             </Box>
 
-            <DialogContent sx={{ p: isRepository ? 2 : 0, minHeight: 380 }}>
-                {/* Work / Materials repository — full hierarchy picker */}
+            <DialogContent sx={{ p: isRepository || isEci ? 2 : 0, minHeight: 380 }}>
+                {/* Work / Materials catalog — full hierarchy picker */}
                 {isRepository && type && (
                     <WidgetItemHierarchyPicker
                         catalogType={type === 'work_repository' ? 'labor' : 'material'}
                         selectedId={selectedItemId}
                         onSelect={(item) => { setSelectedItemId(item._id); setSelectedItemName(item.name ?? item.title ?? item._id); }}
+                    />
+                )}
+
+                {/* Aggregated catalog — ECI hierarchy picker */}
+                {isEci && (
+                    <WidgetEciHierarchyPicker
+                        selectedId={selectedItemId}
+                        onSelect={(item) => { setSelectedItemId(item._id); setSelectedItemName(item.name ?? item._id); }}
                     />
                 )}
 
