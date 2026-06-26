@@ -75,7 +75,7 @@ export default function AccountViewPageContents() {
             {value === 'labor' && accountViewId && <AccountOffersPage offerType={value} accountViewId={accountViewId} />}
             {value === 'material' && accountViewId && <AccountOffersPage offerType={value} accountViewId={accountViewId} />}
 
-            {value === 'aboutCompany' && <AboutCompanyPage account={apiData.data} />}
+            {value === 'aboutCompany' && <AboutCompanyPage account={apiData.data} canEdit={false} />}
         </>
     );
 

@@ -32,6 +32,7 @@ const ICON_BG        = 'rgba(0,171,190,0.10)';
 interface AboutCompanyPageProps {
     account: Api.ApiAccount | undefined;
     onDataChanged?: () => void;
+    canEdit?: boolean;
 }
 
 interface InlineFieldProps {
@@ -374,8 +375,10 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
         return <Box sx={{ p: 2 }}><Typography color='text.disabled'>{t('Loading...')}</Typography></Box>;
     }
 
+    const canEdit = props.canEdit !== false;
+
     const field = (id: string, label: string, icon: React.ReactElement, opts?: Partial<InlineFieldProps>) => (
-        <InlineField key={id} label={label} fieldId={id} value={values[id] ?? ''} icon={icon} onSave={handleSave} {...opts} />
+        <InlineField key={id} label={label} fieldId={id} value={values[id] ?? ''} icon={icon} onSave={handleSave} displayonly={!canEdit} {...opts} />
     );
 
     return (
@@ -393,7 +396,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
                 {field('companyName',   t('Company Name'),  <BusinessIcon />)}
                 {field('phoneNumber',   t('Phone Number'),  <PhoneIcon />)}
                 {field('establishedAt', t('Establish Date'), <CalendarTodayIcon />)}
-                <InlineField label={t('Activity')} fieldId='accountActivity' value={activityValue} icon={<CategoryIcon />} displayonly onTileClick={() => setActivityDialogOpen(true)} onSave={handleSave} />
+                <InlineField label={t('Activity')} fieldId='accountActivity' value={activityValue} icon={<CategoryIcon />} displayonly onTileClick={canEdit ? () => setActivityDialogOpen(true) : undefined} onSave={handleSave} />
                 <InlineField label={t('TIN')}      fieldId='companyTin'      value={account.companyTin ?? ''} icon={<BadgeIcon />} displayonly onSave={handleSave} />
                 {field('address',    t('Address'),       <LocationOnIcon />,        { multiline: true })}
                 {field('lawAddress', t('Legal Address'), <MarkunreadMailboxIcon />, { multiline: true })}
