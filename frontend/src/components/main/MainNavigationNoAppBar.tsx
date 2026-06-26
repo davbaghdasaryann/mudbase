@@ -21,6 +21,10 @@ import ContactMailIcon from '@mui/icons-material/ContactMail';
 import DatasetIcon from '@mui/icons-material/Dataset';
 import BusinessIcon from '@mui/icons-material/Business';
 import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
+import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import Tooltip from '@mui/material/Tooltip';
 
 import {PageContentsProps} from '../PageContents';
 
@@ -174,6 +178,52 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
             </Link>
 
             <List>{renderNavItems(nav, '', 0)}</List>
+
+            <List sx={{ px: 1, pt: 0 }}>
+                {([
+                    { label: "Ուgeciuyc", icon: <AutoStoriesOutlinedIcon /> },
+                    { label: "Փat’et’ner", icon: <Inventory2OutlinedIcon /> },
+                    { label: "Ռiskmoni’toring", icon: <MonitorHeartOutlinedIcon /> },
+                ] as { label: string; icon: React.ReactNode }[]).map((item) => (
+                    <Tooltip
+                        key={item.label}
+                        title='Շutyov'
+                        placement='right'
+                        slotProps={{
+                            tooltip: {
+                                sx: {
+                                    backgroundColor: 'rgba(255,255,255,0.7)',
+                                    backdropFilter: 'blur(8px)',
+                                    color: 'text.secondary',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    borderRadius: '20px',
+                                    fontSize: '0.72rem',
+                                    px: 1.5,
+                                    py: 0.4,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                },
+                            },
+                        }}
+                    >
+                        <ListItem sx={{ px: 0, py: 0 }}>
+                            <ListItemButton
+                                disableRipple
+                                sx={{
+                                    opacity: 0.38,
+                                    cursor: 'default',
+                                    borderRadius: 1,
+                                    color: iconColor,
+                                    '& .MuiListItemIcon-root': { color: iconColor },
+                                    '&:hover': { backgroundColor: 'transparent' },
+                                }}
+                            >
+                                <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>
+                                <ListItemText primary={item.label} />
+                            </ListItemButton>
+                        </ListItem>
+                    </Tooltip>
+                ))}
+            </List>
 
             <Stack component='nav' spacing={1.5} sx={{mb: 0.8, mt: 'auto', width: '100%'}}>
                 <Divider />
