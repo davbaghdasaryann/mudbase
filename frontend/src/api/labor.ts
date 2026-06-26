@@ -37,4 +37,8 @@ export interface ApiLaborItems{
 
     childrenQuantity?: number;
 
+    price?: number;
+    isArchived?: boolean;
+    offerId?: string;
+
 }

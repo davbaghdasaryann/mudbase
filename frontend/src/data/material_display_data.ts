@@ -61,6 +61,10 @@ export class MaterialItemDisplayData {
 
     childrenQuantity?: number;
 
+    price?: number;
+    isArchived?: boolean;
+    offerId?: string;
+
 
     constructor(materialCat?: MaterialsApi.ApiMaterialItems) {
         if (!materialCat)
@@ -88,6 +92,9 @@ export class MaterialItemDisplayData {
             }
         }
 
+        if (materialCat.price != null) this.price = materialCat.price;
+        if (materialCat.isArchived != null) this.isArchived = materialCat.isArchived;
+        if (materialCat.offerId) this.offerId = materialCat.offerId;
 
     }
 }

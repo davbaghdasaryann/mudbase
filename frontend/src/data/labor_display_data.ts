@@ -55,11 +55,15 @@ export class LaborItemDisplayData {
 
     averagePrice?: number; //this for estimation table
     laborHours?: number; //this for estimation table //🔴 TODO: this will need us in version 2 🔴
-    
+
     measurementUnitName?: string;
     measurementUnitMongoId?: string;
     measurementUnitRepresentationSymbol?: string;
     childrenQuantity?: number;
+
+    price?: number;
+    isArchived?: boolean;
+    offerId?: string;
 
 
     constructor(laborCat?: LaborsApi.ApiLaborItems) {
@@ -92,6 +96,10 @@ export class LaborItemDisplayData {
                 this.measurementUnitRepresentationSymbol = measurementUnitDetails.representationSymbol;
             }
         }
+
+        if (laborCat.price != null) this.price = laborCat.price;
+        if (laborCat.isArchived != null) this.isArchived = laborCat.isArchived;
+        if (laborCat.offerId) this.offerId = laborCat.offerId;
 
     }
 }

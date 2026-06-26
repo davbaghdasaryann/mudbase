@@ -40,5 +40,9 @@ export interface ApiMaterialItems{
 
     childrenQuantity?: number;
 
+    price?: number;
+    isArchived?: boolean;
+    offerId?: string;
+
 }
 
