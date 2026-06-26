@@ -346,23 +346,26 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                     <Box sx={{ flexGrow: 1 }} />
 
                     {props.catalogType === 'aggregated' && (item as any).buildingType && (
-                        <Box
-                            component='span'
-                            sx={{
-                                display: { xs: 'none', sm: 'inline-block' },
-                                whiteSpace: 'nowrap',
-                                fontSize: '0.72rem',
-                                px: 1,
-                                py: 0.3,
-                                borderRadius: '12px',
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                color: 'text.secondary',
-                                lineHeight: 1.4,
-                            }}
-                        >
-                            {t((item as any).buildingType)}
-                        </Box>
+                        <Tooltip title={t('Building Type')} arrow placement='top'>
+                            <Box
+                                component='span'
+                                sx={{
+                                    display: { xs: 'none', sm: 'inline-block' },
+                                    whiteSpace: 'nowrap',
+                                    fontSize: '0.72rem',
+                                    px: 1,
+                                    py: 0.3,
+                                    borderRadius: '12px',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    color: 'text.secondary',
+                                    lineHeight: 1.4,
+                                    cursor: 'default',
+                                }}
+                            >
+                                {t((item as any).buildingType)}
+                            </Box>
+                        </Tooltip>
                     )}
 
                     <Tooltip title={props.catalogType === 'aggregated' ? t('Construction cost per sq. m.') : t('Average market price')} arrow placement='top'>
