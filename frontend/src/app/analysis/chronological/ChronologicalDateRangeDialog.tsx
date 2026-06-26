@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Typography, Box, Stack, IconButton, TextField,
+    Stepper, Step, StepLabel,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,7 @@ interface Props {
     onDone: (fromDate: string, toDate: string) => void;
 }
 
+const STEPS = ['Source', 'Select Item', 'Date Range'];
 const TODAY = new Date().toISOString().slice(0, 10);
 const FROM_DEFAULT = '2025-01-01';
 
@@ -61,6 +63,14 @@ export default function ChronologicalDateRangeDialog({ open, itemName, onClose, 
                     </Box>
                 </Stack>
             </DialogTitle>
+
+            <Box sx={{ px: 3, pt: 2, pb: 1 }}>
+                <Stepper activeStep={2} alternativeLabel>
+                    {STEPS.map((label) => (
+                        <Step key={label}><StepLabel>{t(label)}</StepLabel></Step>
+                    ))}
+                </Stepper>
+            </Box>
 
             <DialogContent sx={{ pt: 3, pb: 2 }}>
                 <Typography variant='body2' color='text.secondary' sx={{ mb: 2.5 }}>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Typography, Box, Stack,
+    Button, Typography, Box, Stack, Stepper, Step, StepLabel,
 } from '@mui/material';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ForestIcon from '@mui/icons-material/Forest';
@@ -21,30 +21,32 @@ interface Props {
     onContinue: (type: ChronologicalSourceType) => void;
 }
 
+const STEPS = ['Source', 'Select Item', 'Date Range'];
+
 const OPTIONS: { type: ChronologicalSourceType; icon: React.ReactNode; titleKey: string; descKey: string }[] = [
     {
         type: 'work_repository',
         icon: <MenuBookIcon sx={{ fontSize: 28, color: '#00ABBE' }} />,
-        titleKey: 'Work repository',
-        descKey: 'Shows the list of available works in the repository',
+        titleKey: 'Labor Catalog',
+        descKey: 'Shows the list of available works in the catalog',
     },
     {
         type: 'materials_repository',
         icon: <ForestIcon sx={{ fontSize: 28, color: '#00ABBE' }} />,
-        titleKey: 'Materials repository',
-        descKey: 'Shows the list of available materials in the repository',
+        titleKey: 'Materials Catalog',
+        descKey: 'Shows the list of available materials in the catalog',
     },
     {
         type: 'list_of_estimates',
         icon: <ListAltIcon sx={{ fontSize: 28, color: '#00ABBE' }} />,
-        titleKey: 'List of estimates',
+        titleKey: 'Estimations List',
         descKey: 'Shows the list of estimates created by you',
     },
     {
         type: 'consolidated_estimates',
         icon: <SummarizeIcon sx={{ fontSize: 28, color: '#00ABBE' }} />,
-        titleKey: 'Consolidated estimates',
-        descKey: 'Shows the list of consolidated estimates in the repository',
+        titleKey: 'Aggregated Catalog',
+        descKey: 'Shows the list of consolidated estimates in the catalog',
     },
 ];
 
@@ -76,6 +78,14 @@ export default function ChronologicalCreateDialog({ open, onClose, onContinue }:
                     </Typography>
                 </Stack>
             </DialogTitle>
+
+            <Box sx={{ px: 3, pt: 2, pb: 1 }}>
+                <Stepper activeStep={0} alternativeLabel>
+                    {STEPS.map((label) => (
+                        <Step key={label}><StepLabel>{t(label)}</StepLabel></Step>
+                    ))}
+                </Stepper>
+            </Box>
 
             <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
                 <Stack spacing={1.5}>

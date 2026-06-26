@@ -5,6 +5,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Typography, Box, Stack, CircularProgress,
     Table, TableHead, TableBody, TableRow, TableCell, Radio, IconButton,
+    Stepper, Step, StepLabel,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
@@ -23,11 +24,13 @@ interface Props {
     onCreate: (itemId: string, itemName: string) => void;
 }
 
+const STEPS = ['Source', 'Select Item', 'Date Range'];
+
 const TYPE_TITLES: Record<ChronologicalSourceType, string> = {
-    work_repository: 'Work repository',
-    materials_repository: 'Materials repository',
-    list_of_estimates: 'List of estimates',
-    consolidated_estimates: 'Consolidated estimates',
+    work_repository: 'Labor Catalog',
+    materials_repository: 'Materials Catalog',
+    list_of_estimates: 'Estimations List',
+    consolidated_estimates: 'Aggregated Catalog',
 };
 
 export default function ChronologicalListDialog({ open, type, onClose, onPrevious, onCreate }: Props) {
@@ -71,6 +74,14 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                     </Box>
                 </Stack>
             </DialogTitle>
+
+            <Box sx={{ px: 3, pt: 2, pb: 1 }}>
+                <Stepper activeStep={1} alternativeLabel>
+                    {STEPS.map((label) => (
+                        <Step key={label}><StepLabel>{t(label)}</StepLabel></Step>
+                    ))}
+                </Stepper>
+            </Box>
 
             <DialogContent sx={{ p: isRepository ? 2 : 0, minHeight: 380 }}>
                 {/* Work / Materials repository — full hierarchy picker */}

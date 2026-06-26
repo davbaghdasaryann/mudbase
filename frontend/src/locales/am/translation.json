@@ -548,5 +548,8 @@
   "Aggregated Catalog": "Խոշորացված շտեմարան",
   "Shows the list of available works in the catalog": "Ցուցադրում է շտեմարանում հասանելի աշխատանքների ցանկը",
   "Shows the list of available materials in the catalog": "Ցուցադրում է շտեմարանում հասանելի նյութերի ցանկը",
-  "Shows the list of consolidated estimates in the catalog": "Ցուցադրում է շտեմարանում եղած խոշորացված նախահաշիվների ցանկը"
+  "Shows the list of consolidated estimates in the catalog": "Ցուցադրում է շտեմարանում եղած խոշորացված նախահաշիվների ցանկը",
+  "Source": "Աղբյուր",
+  "Select Item": "Ընտրել տարրը",
+  "Date Range": "Ամսաթվեր"
 }
