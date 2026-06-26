@@ -20,6 +20,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
 import DatasetIcon from '@mui/icons-material/Dataset';
 import BusinessIcon from '@mui/icons-material/Business';
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 
 import {PageContentsProps} from '../PageContents';
 
@@ -295,7 +296,7 @@ function useMainNavigation() {
             navigation.push({segment: 'users', title: t('Users'), icon: <ImgElement src='/images/icons/users.svg' sx={{height: 30}} />});
         }
 
-        navigation.push({segment: 'account', title: t('My Company'), icon: <ImgElement src='/images/icons/company.svg' sx={{height: 25}} />});
+        navigation.push({segment: 'account', title: t('My Company'), icon: <BusinessOutlinedIcon /> });
 
         if (session?.user && permissionsSet?.has('ACC_FCH')) {
             navigation.push({segment: 'accounts', title: t('Accounts'), icon: <BusinessIcon />});

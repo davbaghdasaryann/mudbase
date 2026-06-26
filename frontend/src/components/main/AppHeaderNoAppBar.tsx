@@ -15,6 +15,7 @@ import { useMobileDrawer } from './MobileDrawerContext';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import BusinessIcon from '@mui/icons-material/Business';
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import DatasetIcon from '@mui/icons-material/Dataset';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -51,7 +52,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <ImgElement src='/images/icons/users.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
             case 'account':
             case 'account_view':
-                return <ImgElement src='/images/icons/company.svg' sx={{ height: 25, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
+                return <BusinessOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'accounts':
                 return <BusinessIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'schedule':
