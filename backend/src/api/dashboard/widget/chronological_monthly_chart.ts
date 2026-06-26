@@ -30,6 +30,13 @@ registerApiSession('analysis/chronological/fetch_monthly_chart', async (req, res
 
     if (sourceType === 'work_repository' || sourceType === 'materials_repository') {
         monthlyData = await computeItemMonthly(catalogId, sourceType === 'work_repository', months);
+    } else if (sourceType === 'consolidated_estimates') {
+        // catalogId is an eci_estimates _id — resolve to the linked estimate
+        const eciEntry = await Db.getEciEstimatesCollection().findOne({ _id: catalogId }, { projection: { estimateId: 1 } });
+        const linkedId = (eciEntry as any)?.estimateId;
+        if (linkedId) {
+            monthlyData = await computeEstimateMonthly(new ObjectId(linkedId), months);
+        }
     } else {
         monthlyData = await computeEstimateMonthly(catalogId, months);
     }
