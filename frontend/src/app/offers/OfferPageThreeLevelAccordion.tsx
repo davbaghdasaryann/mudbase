@@ -892,7 +892,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                             {item.isLoading ? (
                                 <CircularProgress size={24} sx={{ ml: 4 }} />
                             ) : item.children && item.children.length > 0 ? (
-                                <Stack spacing={2} sx={{ ml: 4 }}>
+                                <Stack spacing={0} sx={{ ml: 4 }}>
 
                                     {item.children.map((child) => (
                                         child.children ? (
