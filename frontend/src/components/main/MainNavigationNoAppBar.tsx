@@ -189,7 +189,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
                         <Tooltip
                             title={t('Coming soon')}
-                            placement='top'
+                            placement='right'
                             slotProps={{
                                 tooltip: {
                                     sx: {
