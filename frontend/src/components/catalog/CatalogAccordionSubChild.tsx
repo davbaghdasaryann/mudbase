@@ -346,9 +346,23 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                     <Box sx={{ flexGrow: 1 }} />
 
                     {props.catalogType === 'aggregated' && (item as any).buildingType && (
-                        <Typography sx={{ whiteSpace: 'nowrap', fontSize: { xs: '0.75rem', sm: '0.875rem' }, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
+                        <Box
+                            component='span'
+                            sx={{
+                                display: { xs: 'none', sm: 'inline-block' },
+                                whiteSpace: 'nowrap',
+                                fontSize: '0.72rem',
+                                px: 1,
+                                py: 0.3,
+                                borderRadius: '12px',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                color: 'text.secondary',
+                                lineHeight: 1.4,
+                            }}
+                        >
                             {t((item as any).buildingType)}
-                        </Typography>
+                        </Box>
                     )}
 
                     <Tooltip title={props.catalogType === 'aggregated' ? t('Construction cost per sq. m.') : t('Average market price')} arrow placement='top'>
@@ -361,7 +375,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
 
                     <Typography sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
                         {props.catalogType === 'aggregated'
-                            ? `(AMD / m²)`
+                            ? `(AMD / ${t('m²')})`
                             : `(${item.measurementUnitRepresentationSymbol})`}
                     </Typography>
 
