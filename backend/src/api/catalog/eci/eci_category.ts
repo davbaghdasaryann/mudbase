@@ -64,11 +64,16 @@ registerApiSession('eci/fetch_categories', async (req, res, session) => {
         }
     });
 
-    // Filter out categories that have no subcategories at all
+    // Filter out categories that have no subcategories with items
     if (filterEmpty) {
         pipeline.push({
             $match: {
-                $expr: { $gt: [{ $size: '$children' }, 0] },
+                $expr: {
+                    $gt: [
+                        { $size: { $filter: { input: '$children', as: 'c', cond: { $gt: [{ $size: '$$c.items' }, 0] } } } },
+                        0,
+                    ],
+                },
             },
         });
     }
