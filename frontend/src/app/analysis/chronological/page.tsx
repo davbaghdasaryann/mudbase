@@ -178,7 +178,7 @@ export default function ChronologicalAnalysisPage() {
                         >
                             {t('Back')}
                         </Button>
-                        <Typography sx={{ fontSize: 15, fontWeight: 500, color: TEXT_DARK }}>
+                        <Typography variant='h5' sx={{ fontWeight: 700 }}>
                             {analytics.itemName}
                         </Typography>
                     </Box>
