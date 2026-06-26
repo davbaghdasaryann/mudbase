@@ -336,6 +336,7 @@ export default function WidgetBuilderDialog({ onClose, onSuccess, defaultGroupId
                             <WidgetEciHierarchyPicker
                                 selectedId={selectedItem?._id ?? null}
                                 onSelect={(item) => setSelectedItem(item)}
+                                filterEmpty
                             />
                         ) : null}
                     </Box>
