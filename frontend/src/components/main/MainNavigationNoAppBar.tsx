@@ -3,7 +3,7 @@ import {usePathname} from 'next/navigation';
 
 import {NavigationPageItem, type Navigation} from '@toolpad/core';
 
-import {Box, ListItem, ListItemText, Collapse, List, ListItemButton, Drawer, ListItemIcon, Divider, useTheme, useMediaQuery, Stack} from '@mui/material';
+import {Box, ListItem, ListItemText, Collapse, List, ListItemButton, Drawer, ListItemIcon, Divider, useTheme, useMediaQuery, Stack, Tooltip} from '@mui/material';
 
 import Link from 'next/link';
 
@@ -198,24 +198,32 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                             }}
                         >
                             <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>
-                            <ListItemText primary={t(item.labelKey)} />
-                            <Box
-                                component='span'
-                                sx={{
-                                    ml: 1,
-                                    px: 1,
-                                    py: 0.3,
-                                    fontSize: '0.62rem',
-                                    borderRadius: '20px',
-                                    backgroundColor: 'rgba(0,171,190,0.12)',
-                                    color: '#00ABBE',
-                                    border: '1px solid rgba(0,171,190,0.25)',
-                                    whiteSpace: 'nowrap',
-                                    lineHeight: 1.4,
-                                }}
-                            >
-                                {t('Coming soon')}
-                            </Box>
+                            <ListItemText
+                                primary={
+                                    <Tooltip
+                                        title={t('Coming soon')}
+                                        placement='right'
+                                        slotProps={{
+                                            popper: { sx: { zIndex: 2000 } },
+                                            tooltip: {
+                                                sx: {
+                                                    backgroundColor: 'rgba(0,171,190,0.12)',
+                                                    backdropFilter: 'blur(8px)',
+                                                    color: '#00ABBE',
+                                                    border: '1px solid rgba(0,171,190,0.25)',
+                                                    borderRadius: '20px',
+                                                    fontSize: '0.72rem',
+                                                    px: 1.5,
+                                                    py: 0.4,
+                                                    boxShadow: 'none',
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <Box component='span' sx={{ display: 'inline-block' }}>{t(item.labelKey)}</Box>
+                                    </Tooltip>
+                                }
+                            />
                         </ListItemButton>
                     </ListItem>
                 ))}
