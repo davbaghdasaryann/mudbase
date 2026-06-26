@@ -43,10 +43,10 @@ export const EstimateRootAccordionDetails = styled(AccordionDetails)(({theme}) =
 
 export const EstimateChildAccordion = styled(Accordion)(({theme}) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.paper,
-    // backgroundColor: 'red',
-    // marginLeft: 15,
     border: 'none',
     boxShadow: 'none',
+    margin: 0,
+    '&.Mui-expanded': { margin: 0 },
     '&:before': {
         display: 'none',
     },
@@ -54,9 +54,10 @@ export const EstimateChildAccordion = styled(Accordion)(({theme}) => ({
 
 export const EstimateSubChildAccordion = styled(Accordion)(({theme}) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.paper,
-    // backgroundColor: theme.palette.background.default,
     border: 'none',
     boxShadow: 'none',
+    margin: 0,
+    '&.Mui-expanded': { margin: 0 },
     '&:before': {
         display: 'none',
     },
