@@ -24,7 +24,6 @@ import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
-import Tooltip from '@mui/material/Tooltip';
 
 import {PageContentsProps} from '../PageContents';
 
@@ -187,40 +186,37 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     { labelKey: 'Risk Monitoring', icon: <MonitorHeartOutlinedIcon /> },
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
                     <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
-                        <Tooltip
-                            title={t('Coming soon')}
-                            placement='right'
-                            slotProps={{
-                                tooltip: {
-                                    sx: {
-                                        backgroundColor: 'rgba(0,171,190,0.12)',
-                                        backdropFilter: 'blur(8px)',
-                                        color: '#00ABBE',
-                                        border: '1px solid rgba(0,171,190,0.25)',
-                                        borderRadius: '20px',
-                                        fontSize: '0.72rem',
-                                        px: 1.5,
-                                        py: 0.4,
-                                        boxShadow: 'none',
-                                    },
-                                },
+                        <ListItemButton
+                            disableRipple
+                            sx={{
+                                opacity: 0.38,
+                                cursor: 'default',
+                                borderRadius: 1,
+                                color: iconColor,
+                                '& .MuiListItemIcon-root': { color: iconColor },
+                                '&:hover': { backgroundColor: 'transparent' },
                             }}
                         >
-                            <ListItemButton
-                                disableRipple
+                            <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>
+                            <ListItemText primary={t(item.labelKey)} />
+                            <Box
+                                component='span'
                                 sx={{
-                                    opacity: 0.38,
-                                    cursor: 'default',
-                                    borderRadius: 1,
-                                    color: iconColor,
-                                    '& .MuiListItemIcon-root': { color: iconColor },
-                                    '&:hover': { backgroundColor: 'transparent' },
+                                    ml: 1,
+                                    px: 1,
+                                    py: 0.3,
+                                    fontSize: '0.62rem',
+                                    borderRadius: '20px',
+                                    backgroundColor: 'rgba(0,171,190,0.12)',
+                                    color: '#00ABBE',
+                                    border: '1px solid rgba(0,171,190,0.25)',
+                                    whiteSpace: 'nowrap',
+                                    lineHeight: 1.4,
                                 }}
                             >
-                                <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>
-                                <ListItemText primary={t(item.labelKey)} />
-                            </ListItemButton>
-                        </Tooltip>
+                                {t('Coming soon')}
+                            </Box>
+                        </ListItemButton>
                     </ListItem>
                 ))}
             </List>
