@@ -1,13 +1,11 @@
 'use client';
 
-import {companyLogoAvatarSize, companyLogoMarginTop} from '../account/CompanyLogoComponent';
 import {useApiFetchOne} from '../../components/ApiDataFetch';
 import {useSearchParams} from 'next/navigation';
 import {raiseError} from '../../lib/app_errors';
 import * as Api from 'api';
 import React, {useState} from 'react';
 import {Box, Tab} from '@mui/material';
-import {mainNavigationDrawerWidth} from '@/theme';
 import AboutCompanyPage from '@/app/account/AccountAboutCompany';
 import CompanyHeaderComponent from '@/app/account/CompanyHeaderComponent';
 import {TabContext, TabList} from '@mui/lab';
@@ -49,17 +47,6 @@ export default function AccountViewPageContents() {
 
     return (
         <>
-            <Box
-                sx={{
-                    position: 'absolute',
-                    backgroundColor: 'white',
-                    left: mainNavigationDrawerWidth + 32,
-                    right: 32,
-                    top: companyLogoMarginTop + 16 + companyLogoAvatarSize / 2,
-                    bottom: 4,
-                    zIndex: -1,
-                }}
-            />
             <CompanyHeaderComponent canEdit={false} account={apiData.data} onDataChanged={() => apiData.invalidate()} />
 
             <TabContext value={value}>
