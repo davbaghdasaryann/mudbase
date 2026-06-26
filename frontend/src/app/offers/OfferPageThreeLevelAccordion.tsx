@@ -699,145 +699,6 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="center">
-
-                    <PageSelect
-                        withAll={true}
-                        sx={{ minWidth: 300 }}
-                        onSelected={(selected) => {
-                            if (selected?.label) {
-                                setSelectedCategoryFilter(selected.label);
-                                setSelectedCategoryId(selected.id);
-
-                                if (selected?.id === 'all') {
-                                    setSelectedCategoryFilter(null);
-                                    selectedFiltersDataRef.current.categoryId = null;
-                                    selectedFiltersDataRef.current.subcategoryId = null;
-                                } else {
-                                    if (selected.id !== selectedFiltersDataRef.current.categoryId) {
-                                        selectedFiltersDataRef.current.subcategoryId = null;
-                                        subcategorySelectList.data = undefined;
-                                        subcategorySelectList.setApi({
-                                            // command: props.catalogType === 'labor' ? 'labor/fetch_subcategories' : 'material/fetch_subcategories',
-                                            command: props.catalogType === 'labor'
-                                                ? (props.accountViewId ? `labor/fetch_current_account_offers_subcategories` : `labor/fetch_subcategories`)
-                                                : (props.accountViewId ? `material/fetch_current_account_offers_subcategories` : `material/fetch_subcategories`),
-                                            args: { accountViewId: props.accountViewId ?? '', categoryMongoId: selected.id }
-                                        });
-                                    }
-
-                                    selectedFiltersDataRef.current.categoryId = selected.id;
-                                }
-
-                                onSearch(searchVal)
-                            } else {
-                                setSelectedCategoryFilter('All');
-                                setSelectedCategoryId(null);
-                                setSelectedSubcategoryFilter('All');
-                                setSelectedSubcategoryId(null);
-
-                                selectedFiltersDataRef.current.subcategoryId = null;
-                                selectedFiltersDataRef.current.categoryId = null;
-
-                                subcategorySelectList.data = undefined;
-
-                                categorySelectList.data = undefined;
-                                categorySelectList.setApi({
-                                    // command: props.catalogType === 'labor' ? `labor/fetch_categories` : `material/fetch_categories`,
-                                    command: props.catalogType === 'labor'
-                                        ? (props.accountViewId ? `labor/fetch_current_account_offers_categories` : `labor/fetch_categories`)
-                                        : (props.accountViewId ? `material/fetch_current_account_offers_categories` : `material/fetch_categories`),
-                                    args: {
-                                        accountViewId: props.accountViewId ?? '',
-                                    }
-
-                                });
-
-
-
-                                console.log('selectedFiltersDataRef.current', selectedFiltersDataRef.current)
-                                onSearch(searchVal)
-
-                            }
-                        }}
-                        items={
-                            categorySelectList.data
-                                ? categorySelectList.data
-                                    .filter((unit, index, self) =>
-                                        index === self.findIndex(u => u.name === unit.name)
-                                    )
-                                    .map((unit) => ({
-                                        key: unit._id,
-                                        id: unit._id,
-                                        name: unit.name,
-                                        label: unit.name,
-                                    }))
-
-                                : []
-                        }
-                        value={selectedCategoryId ?? "All"}
-                        label={'Category'}
-                    />
-
-                    {/* {selectedCategoryFilter && subcategorySelectList.data && */}
-                    <PageSelect
-                        withAll={true}
-                        sx={{ minWidth: 300 }}
-                        readonly={!(selectedCategoryFilter && subcategorySelectList.data)}
-                        onSelected={(selected) => {
-                            console.log('selected', selected)
-                            if (selected) {
-                                // setItems([])
-                                // setExpandedAccordions([])
-                                setSelectedSubcategoryFilter(selected.label);
-                                setSelectedSubcategoryId(selected.id);
-
-                                if (selected?.id === 'all') {
-                                    selectedFiltersDataRef.current.subcategoryId = null;
-                                } else {
-                                    selectedFiltersDataRef.current.subcategoryId = selected.id;
-                                }
-
-                                onSearch(searchVal)
-
-                            } else {
-                                setSelectedSubcategoryFilter('All');
-                                setSelectedSubcategoryId('all');
-                                selectedFiltersDataRef.current.subcategoryId = null;
-
-                                subcategorySelectList.data = undefined;
-                                subcategorySelectList.setApi({
-                                    // command: props.catalogType === 'labor' ? 'labor/fetch_subcategories' : 'material/fetch_subcategories',
-                                    command: props.catalogType === 'labor'
-                                        ? (props.accountViewId ? `labor/fetch_current_account_offers_subcategories` : `labor/fetch_subcategories`)
-                                        : (props.accountViewId ? `material/fetch_current_account_offers_subcategories` : `material/fetch_subcategories`),
-                                    args: { accountViewId: props.accountViewId ?? '', categoryMongoId: selectedFiltersDataRef.current.categoryId }
-                                });
-
-                                onSearch(searchVal)
-
-                            }
-                        }}
-                        items={
-                            subcategorySelectList.data
-                                ? subcategorySelectList.data
-                                    .filter((unit, index, self) =>
-                                        index === self.findIndex(u => u.name === unit.name)
-                                    )
-                                    .map((unit) => ({
-                                        key: unit._id,
-                                        id: unit._id,
-                                        name: unit.name,
-                                        label: unit.name,
-                                    }))
-                                : []
-
-                        }
-                        value={selectedSubcategoryId ?? "All"} // value should be the id of the selected item
-                        label={'Subcategory'}
-                    />
-
-                </Stack>
             </Toolbar>
             <Stack >
                 {/* <Stack spacing={2}> */}
@@ -944,8 +805,8 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                                             alignItems: 'center',
                                                                             px: 1.5,
                                                                             py: 0.75,
-                                                                            borderRadius: 1,
                                                                             gap: 1,
+                                                                            borderBottom: '1px solid #E3E6E6',
                                                                             '&:hover': { backgroundColor: '#E8EFEF' },
                                                                         }}
                                                                     >

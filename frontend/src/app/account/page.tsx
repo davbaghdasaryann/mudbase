@@ -5,6 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Stack, Tab } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
+import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
+import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 
 
 import PageContents from '@/components/PageContents';
@@ -62,9 +65,9 @@ export default function AccountPage() {
             <TabContext value={value}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange}>
-                        <Tab label={t('About My Company')} value='aboutCompany' />
-                        {session?.user && permissionsSet?.has?.('OFF_VW_LOC_LBR') && <Tab label={t('My Labors')} value='labor' />}
-                        {session?.user && permissionsSet?.has?.('OFF_VW_LOC_MTRL') && <Tab label={t('My Materials')} value='material' />}
+                        <Tab icon={<BusinessOutlinedIcon />} iconPosition="start" label={t('About My Company')} value='aboutCompany' />
+                        {session?.user && permissionsSet?.has?.('OFF_VW_LOC_LBR') && <Tab icon={<EngineeringOutlinedIcon />} iconPosition="start" label={t('My Labors')} value='labor' />}
+                        {session?.user && permissionsSet?.has?.('OFF_VW_LOC_MTRL') && <Tab icon={<InventoryOutlinedIcon />} iconPosition="start" label={t('My Materials')} value='material' />}
                         {/* {session?.user && permissionsSet?.has?.('EST_USE') && <Tab label={t('Estimates')} value='estimates' />}
                         {session?.user && permissionsSet?.has?.('EST_USE') && <Tab label={t('Shared Estimates')} value='sharedEstimates' />} */}
                     </TabList>
