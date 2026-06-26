@@ -177,9 +177,9 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 </Box>
             </Link>
 
-            <List>{renderNavItems(nav, '', 0)}</List>
+            <List sx={{ pb: 0 }}>{renderNavItems(nav, '', 0)}</List>
 
-            <List sx={{ px: 1, pt: 0 }}>
+            <List sx={{ px: 1, pt: 0, pb: 0 }}>
                 {([
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
                     { labelKey: 'Packages', icon: <Inventory2OutlinedIcon /> },
