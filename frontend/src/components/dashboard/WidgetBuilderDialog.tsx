@@ -42,10 +42,10 @@ const WIDGET_TYPES = [
 ];
 
 const DATA_SOURCES = [
-    { id: 'labor', labelKey: 'Labor Catalog', descKey: 'Shows the list of available works in the repository', icon: MenuBookIcon, iconColor: TEAL },
-    { id: 'materials', labelKey: 'Materials Catalog', descKey: 'Shows the list of available materials in the repository', icon: LocalFloristIcon, iconColor: '#6b8e6b' },
+    { id: 'labor', labelKey: 'Labor Catalog', descKey: 'Shows the list of available works in the catalog', icon: MenuBookIcon, iconColor: TEAL },
+    { id: 'materials', labelKey: 'Materials Catalog', descKey: 'Shows the list of available materials in the catalog', icon: LocalFloristIcon, iconColor: '#6b8e6b' },
     { id: 'estimates', labelKey: 'Estimations List', descKey: 'Shows the list of estimates created by you', icon: StraightenIcon, iconColor: '#5eb8e0' },
-    { id: 'eci', labelKey: 'Aggregated Catalog', descKey: 'Shows the list of consolidated estimates in the repository', icon: AssignmentIcon, iconColor: '#6b8e6b' },
+    { id: 'eci', labelKey: 'Aggregated Catalog', descKey: 'Shows the list of consolidated estimates in the catalog', icon: AssignmentIcon, iconColor: '#6b8e6b' },
 ];
 
 interface Props {
