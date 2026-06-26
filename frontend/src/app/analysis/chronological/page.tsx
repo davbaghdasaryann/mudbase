@@ -82,7 +82,7 @@ export default function ChronologicalAnalysisPage() {
         const breakdownReq = isEstimate
             ? Api.requestSession<{ months: string[]; items: BreakdownItem[] }>({
                 command: 'analysis/chronological/fetch_estimate_breakdown',
-                json: { estimateId: selection.itemId, fromDate, toDate },
+                json: { estimateId: selection.itemId, sourceType: selection.sourceType, fromDate, toDate },
             })
             : Promise.resolve(null);
 

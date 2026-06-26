@@ -11,10 +11,18 @@ import * as Db from '@/db';
  * sectionName / subsectionName drive the accordion groups in the UI.
  */
 registerApiSession('analysis/chronological/fetch_estimate_breakdown', async (req, res, session) => {
-    const { estimateId, fromDate, toDate } = req.body ?? {};
+    const { estimateId, sourceType, fromDate, toDate } = req.body ?? {};
     if (!estimateId) return res.json({ error: 'Missing estimateId' });
 
-    const estId = new ObjectId(estimateId);
+    let estId = new ObjectId(estimateId);
+
+    // For ECI items, estimateId is the eci_estimates _id — resolve to the linked estimate
+    if (sourceType === 'consolidated_estimates') {
+        const eciEntry = await Db.getEciEstimatesCollection().findOne({ _id: estId }, { projection: { estimateId: 1 } });
+        const linkedId = (eciEntry as any)?.estimateId;
+        if (!linkedId) return res.json({ months: [], items: [] });
+        estId = new ObjectId(linkedId);
+    }
     const from = new Date(fromDate ?? '2023-01-01');
     const to = new Date(toDate ?? new Date().toISOString().slice(0, 10));
     to.setHours(23, 59, 59, 999);
