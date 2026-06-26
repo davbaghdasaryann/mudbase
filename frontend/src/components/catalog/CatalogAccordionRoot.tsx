@@ -182,7 +182,7 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
             </EstimateRootAccordionSummary>
 
             <EstimateRootAccordionDetails sx={{
-                    backgroundColor: '#F5F9F4',
+                    backgroundColor: '#F5F9F9',
                     position: 'relative',
                     '&::before': {
                         content: '""',

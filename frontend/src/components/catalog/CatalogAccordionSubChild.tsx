@@ -316,7 +316,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
         <>
             <Box
                 sx={{
-                    backgroundColor: '#F5F9F4',
+                    backgroundColor: '#F5F9F9',
                     borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
                     '&:hover': {
                         backgroundColor: (theme) => theme.palette.action.hover,
@@ -325,7 +325,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
             >
                 <Stack
                     direction='row'
-                    alignItems='flex-start'
+                    alignItems='center'
                     width='100%'
                     spacing={{ xs: 0.5, sm: 1 }}
                     sx={{ py: 1, px: { xs: 1, sm: 2 } }}
