@@ -679,20 +679,6 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
 
 
 
-    if (progIndic) {
-        return <ProgressIndicator show={progIndic} background='backdrop' />
-    }
-
-
-    if (subcategorySelectList.loading && (selectedCategoryFilter && selectedCategoryFilter !== 'All')) {
-        return <ProgressIndicator show={subcategorySelectList.loading} background='backdrop' />
-    }
-
-    if (categorySelectList.loading && categorySelectList.data === undefined) {
-        return <ProgressIndicator show={categorySelectList.loading} background='backdrop' />
-    }
-
-
     return (
         <>
             <Toolbar disableGutters sx={{ backgroundColor: 'inherit' }}>
@@ -701,9 +687,11 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
 
             </Toolbar>
             <Stack >
-                {/* <Stack spacing={2}> */}
-
-                {items.map((item) => (
+                {progIndic ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                        <CircularProgress size={32} />
+                    </Box>
+                ) : items.map((item) => (
                     // <Accordion key={item.id} expanded={expandedAccordions.includes(item.id)} onChange={handleAccordionChange(item.id, 2)}>
                     <EstimateRootAccordion key={item._id}
                         expanded={expandedAccordions.includes(item.code)}
