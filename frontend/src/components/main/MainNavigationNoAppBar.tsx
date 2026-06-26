@@ -44,6 +44,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const pathname = usePathname();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { open: mobileOpen, closeDrawer } = useMobileDrawer();
+    const { t } = useTranslation();
 
     const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({});
 
