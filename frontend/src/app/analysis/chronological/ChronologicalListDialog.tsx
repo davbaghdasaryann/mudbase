@@ -99,6 +99,7 @@ export default function ChronologicalListDialog({ open, type, onClose, onPreviou
                     <WidgetEciHierarchyPicker
                         selectedId={selectedItemId}
                         onSelect={(item) => { setSelectedItemId(item._id); setSelectedItemName(item.name ?? item._id); }}
+                        filterEmpty
                     />
                 )}
 

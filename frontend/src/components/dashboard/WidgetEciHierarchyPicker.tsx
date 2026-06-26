@@ -28,6 +28,7 @@ const TEAL_LIGHT = 'rgba(0, 171, 190, 0.08)';
 interface Props {
     selectedId: string | null;
     onSelect: (item: { _id: string; name: string;[k: string]: any }) => void;
+    filterEmpty?: boolean;
 }
 
 interface CategoryNode {
@@ -35,6 +36,7 @@ interface CategoryNode {
     name: string;
     children: SubcategoryNode[];
     loading?: boolean;
+    hidden?: boolean;
 }
 
 interface SubcategoryNode {
@@ -42,6 +44,7 @@ interface SubcategoryNode {
     name: string;
     items: ItemNode[];
     loading?: boolean;
+    hidden?: boolean;
 }
 
 interface ItemNode {
@@ -52,7 +55,7 @@ interface ItemNode {
     measurementUnitRepresentationSymbol?: string;
 }
 
-export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props) {
+export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterEmpty }: Props) {
     const { t } = useTranslation();
     const [searchVal, setSearchVal] = useState('');
     const [searchSubmitted, setSearchSubmitted] = useState('');
@@ -106,9 +109,10 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props
                 return { _id: id, name: D.name || s.name || '', items: [] };
             });
             setCategories((prev) =>
-                prev.map((cat) =>
-                    cat._id === categoryId ? { ...cat, children: mapped, loading: false } : cat
-                )
+                prev.map((cat) => {
+                    if (cat._id !== categoryId) return cat;
+                    return { ...cat, children: mapped, loading: false, hidden: filterEmpty && mapped.length === 0 };
+                })
             );
         } catch (e) {
             console.error('Failed to fetch ECI subcategories', e);
@@ -116,7 +120,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props
                 prev.map((cat) => (cat._id === categoryId ? { ...cat, loading: false } : cat))
             );
         }
-    }, [searchSubmitted]);
+    }, [searchSubmitted, filterEmpty]);
 
     const loadItems = useCallback(async (categoryId: string, subcategoryId: string) => {
         setCategories((prev) =>
@@ -152,12 +156,12 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props
             setCategories((prev) =>
                 prev.map((cat) => {
                     if (cat._id !== categoryId) return cat;
-                    return {
-                        ...cat,
-                        children: cat.children.map((sub) =>
-                            sub._id === subcategoryId ? { ...sub, items: mapped, loading: false } : sub
-                        ),
-                    };
+                    const updatedChildren = cat.children.map((sub) =>
+                        sub._id === subcategoryId
+                            ? { ...sub, items: mapped, loading: false, hidden: filterEmpty && mapped.length === 0 }
+                            : sub
+                    );
+                    return { ...cat, children: updatedChildren };
                 })
             );
         } catch (e) {
@@ -174,7 +178,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props
                 })
             );
         }
-    }, [searchSubmitted]);
+    }, [searchSubmitted, filterEmpty]);
 
     const handleCategoryExpand = (categoryId: string, expanded: boolean) => {
         setExpandedCategory(expanded ? categoryId : null);
@@ -226,7 +230,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props
                 </Box>
             ) : (
                 <Box sx={{ '& .MuiAccordion-root': { boxShadow: '0 1px 4px rgba(0,0,0,0.06)', borderRadius: 1, mb: 0.5 } }}>
-                    {categories.map((category) => (
+                    {categories.filter((c) => !c.hidden).map((category) => (
                         <Accordion
                             key={category._id}
                             expanded={expandedCategory === category._id}
@@ -239,7 +243,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect }: Props
                                 {category.loading && <CircularProgress size={16} sx={{ ml: 1, color: TEAL }} />}
                             </AccordionSummary>
                             <AccordionDetails sx={{ pt: 0 }}>
-                                {category.children.map((sub) => (
+                                {category.children.filter((s) => !s.hidden).map((sub) => (
                                     <Accordion
                                         key={sub._id}
                                         sx={{ boxShadow: 'none', '&:before': { display: 'none' }, border: '1px solid #eee', borderRadius: 1, mb: 0.5 }}
