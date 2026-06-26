@@ -19,7 +19,7 @@ interface Props {
 }
 
 const TODAY = new Date().toISOString().slice(0, 10);
-const FROM_DEFAULT = '2023-01-01';
+const FROM_DEFAULT = '2025-01-01';
 
 export default function ChronologicalDateRangeDialog({ open, itemName, onClose, onPrevious, onDone }: Props) {
     const { t } = useTranslation();
