@@ -46,9 +46,11 @@ interface InlineFieldProps {
     gridSize?: number | Record<string, number>;
     onTileClick?: () => void;
     onSave: (fieldId: string, value: string) => Promise<void>;
+    onActivate?: () => void;
+    forceClose?: boolean;
 }
 
-function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLink, gridSize = { xs: 12, sm: 6 }, onTileClick, onSave }: InlineFieldProps) {
+function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLink, gridSize = { xs: 12, sm: 6 }, onTileClick, onSave, onActivate, forceClose }: InlineFieldProps) {
     const [editing, setEditing] = React.useState(false);
     const [editValue, setEditValue] = React.useState(value);
     const [hovered, setHovered] = React.useState(false);
@@ -58,6 +60,10 @@ function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLi
     React.useEffect(() => { setEditValue(value); }, [value]);
 
     React.useEffect(() => {
+        if (forceClose && editing) { setEditValue(value); setEditing(false); }
+    }, [forceClose]);
+
+    React.useEffect(() => {
         if (editing && inputRef.current) {
             inputRef.current.focus();
             const len = inputRef.current.value.length;
@@ -65,7 +71,7 @@ function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLi
         }
     }, [editing]);
 
-    const startEdit = () => { if (!displayonly && !saving) setEditing(true); };
+    const startEdit = () => { if (!displayonly && !saving) { onActivate?.(); setEditing(true); } };
 
     const save = async () => {
         if (editValue === value) { setEditing(false); return; }
@@ -337,6 +343,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     const [values, setValues] = React.useState<Record<string, string>>({});
     const [activityDialogOpen, setActivityDialogOpen] = React.useState(false);
     const [deactivationNoticeOpen, setDeactivationNoticeOpen] = React.useState(false);
+    const [activeFieldId, setActiveFieldId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         if (!props.account) return;
@@ -378,7 +385,7 @@ export default function AboutCompanyPage(props: AboutCompanyPageProps) {
     const canEdit = props.canEdit !== false;
 
     const field = (id: string, label: string, icon: React.ReactElement, opts?: Partial<InlineFieldProps>) => (
-        <InlineField key={id} label={label} fieldId={id} value={values[id] ?? ''} icon={icon} onSave={handleSave} displayonly={!canEdit} {...opts} />
+        <InlineField key={id} label={label} fieldId={id} value={values[id] ?? ''} icon={icon} onSave={handleSave} displayonly={!canEdit} onActivate={() => setActiveFieldId(id)} forceClose={activeFieldId !== null && activeFieldId !== id} {...opts} />
     );
 
     return (
