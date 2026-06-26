@@ -27,7 +27,7 @@ const OPTIONS: { type: ChronologicalSourceType; icon: React.ReactNode; titleKey:
     {
         type: 'work_repository',
         icon: <MenuBookIcon sx={{ fontSize: 28, color: '#00ABBE' }} />,
-        titleKey: 'Labor Catalog',
+        titleKey: 'Labors catalog',
         descKey: 'Shows the list of available works in the catalog',
     },
     {

@@ -27,7 +27,7 @@ interface Props {
 const STEPS = ['Source', 'Select Item', 'Date Range'];
 
 const TYPE_TITLES: Record<ChronologicalSourceType, string> = {
-    work_repository: 'Labor Catalog',
+    work_repository: 'Labors catalog',
     materials_repository: 'Materials Catalog',
     list_of_estimates: 'Estimations List',
     consolidated_estimates: 'Aggregated Catalog',
