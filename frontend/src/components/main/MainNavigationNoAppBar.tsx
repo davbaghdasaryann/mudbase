@@ -186,27 +186,26 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     { labelKey: 'Packages', icon: <Inventory2OutlinedIcon /> },
                     { labelKey: 'Risk Monitoring', icon: <MonitorHeartOutlinedIcon /> },
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
-                    <Tooltip
-                        key={item.labelKey}
-                        title={t('Coming soon')}
-                        placement='top'
-                        slotProps={{
-                            tooltip: {
-                                sx: {
-                                    backgroundColor: 'rgba(0,171,190,0.12)',
-                                    backdropFilter: 'blur(8px)',
-                                    color: '#00ABBE',
-                                    border: '1px solid rgba(0,171,190,0.25)',
-                                    borderRadius: '20px',
-                                    fontSize: '0.72rem',
-                                    px: 1.5,
-                                    py: 0.4,
-                                    boxShadow: 'none',
+                    <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
+                        <Tooltip
+                            title={t('Coming soon')}
+                            placement='top'
+                            slotProps={{
+                                tooltip: {
+                                    sx: {
+                                        backgroundColor: 'rgba(0,171,190,0.12)',
+                                        backdropFilter: 'blur(8px)',
+                                        color: '#00ABBE',
+                                        border: '1px solid rgba(0,171,190,0.25)',
+                                        borderRadius: '20px',
+                                        fontSize: '0.72rem',
+                                        px: 1.5,
+                                        py: 0.4,
+                                        boxShadow: 'none',
+                                    },
                                 },
-                            },
-                        }}
-                    >
-                        <ListItem sx={{ px: 0, py: 0 }}>
+                            }}
+                        >
                             <ListItemButton
                                 disableRipple
                                 sx={{
@@ -221,8 +220,8 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>
                                 <ListItemText primary={t(item.labelKey)} />
                             </ListItemButton>
-                        </ListItem>
-                    </Tooltip>
+                        </Tooltip>
+                    </ListItem>
                 ))}
             </List>
 
