@@ -545,5 +545,8 @@
   "No.": "#",
   "Back to Login": "Վերադառնալ մուտք",
   "Estimations List": "Նախահաշիվների ցանկ",
-  "Aggregated Catalog": "Խոշորացված շտեմարան"
+  "Aggregated Catalog": "Խոշորացված շտեմարան",
+  "Shows the list of available works in the catalog": "Ցուցադրում է շտեմարանում հասանելի աշխատանքների ցանկը",
+  "Shows the list of available materials in the catalog": "Ցուցադրում է շտեմարանում հասանելի նյութերի ցանկը",
+  "Shows the list of consolidated estimates in the catalog": "Ցուցադրում է շտեմարանում եղած խոշորացված նախահաշիվների ցանկը"
 }
