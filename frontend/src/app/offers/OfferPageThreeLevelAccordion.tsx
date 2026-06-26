@@ -1,5 +1,8 @@
 import React, { useRef, useState } from "react";
-import { AccordionSummary, AccordionDetails, CircularProgress, Typography, IconButton, Toolbar, Stack, Button, Checkbox } from "@mui/material";
+import { AccordionSummary, AccordionDetails, CircularProgress, Typography, IconButton, Toolbar, Stack, Button, Checkbox, Box, Tooltip } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 
 import { useTranslation } from "react-i18next";
 
@@ -61,6 +64,7 @@ interface AccardionItem {
     updatedAt?: Date
 
     isArchived?: boolean;
+    offerId?: string;
 
     childrenQuantity?: number;
 
@@ -505,6 +509,7 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
             itemArr.price = item.price;
             itemArr.createdAt = item.createdAt;
             itemArr.isArchived = item.isArchived;
+            itemArr.offerId = item.offerId ? item.offerId.toString() : undefined;
             itemArr.updatedAt = item.updatedAt;
 
             itemArr.childrenQuantity = item.childrenQuantity;
@@ -943,207 +948,65 @@ export default function OfferPageThreeLevelAccordion(props: Props) {
                                                         child.children && child.children.length > 0 ? (
                                                             <Stack spacing={2} sx={{ ml: 4 }}>
 
-                                                                {child.children.map((subChild) => (
-                                                                    // ✅ Level 3 & 4: Wrap DataGrid inside an Accordion
-                                                                    // <Accordion key={subChild.id} expanded={expandedAccordions.includes(subChild.id)} onChange={handleAccordionChange(subChild.id, 4)}>
-                                                                    <EstimateSubChildAccordion key={subChild._id} expanded={expandedAccordions.includes(subChild.fullCode)} onChange={handleAccordionChange(subChild._id, subChild.fullCode, 4)}>
-
-                                                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{
+                                                                {child.children.map((subChild) => {
+                                                                    const canEditOffers = session?.user && (
+                                                                        (props.catalogType === 'labor' && permissionsSet?.has?.('OFF_CRT_LBR')) ||
+                                                                        (props.catalogType === 'material' && permissionsSet?.has?.('OFF_CRT_MTRL'))
+                                                                    ) && props.canEdit;
+                                                                    return (
+                                                                    <Box
+                                                                        key={subChild._id}
+                                                                        sx={{
                                                                             display: 'flex',
-                                                                            flexDirection: 'row-reverse',
                                                                             alignItems: 'center',
-                                                                            gap: '8px',
-                                                                            paddingLeft: '10px',
+                                                                            px: 1.5,
+                                                                            py: 0.75,
+                                                                            borderRadius: 1,
+                                                                            gap: 1,
                                                                             '&:hover': { backgroundColor: '#E8EFEF' },
-                                                                        }}>
-                                                                            {/* Left Side: Label & Count */}
-                                                                            <Stack direction="row" alignItems="center" spacing={1}>
-                                                                                <Typography>{subChild.code}</Typography>
-                                                                                <Typography sx={{ maxWidth: 650, wordBreak: 'break-word' }}>
-                                                                                    {subChild.label}&nbsp;
-                                                                                    <Typography
-                                                                                        component="span"
-                                                                                        sx={{ fontWeight: 'inherit' }}
-                                                                                    >
-                                                                                        {(typeof subChild.childrenQuantity === 'number' &&
-                                                                                            !isNaN(subChild.childrenQuantity) &&
-                                                                                            subChild.childrenQuantity > 0)
-                                                                                            ? `(${subChild.childrenQuantity})`
-                                                                                            : '(0)'}
-                                                                                    </Typography>
+                                                                        }}
+                                                                    >
+                                                                        <Typography sx={{ flexShrink: 0 }}>{subChild.code}</Typography>
+                                                                        <Typography sx={{ flexGrow: 1, flexShrink: 1, minWidth: 0, overflowWrap: 'break-word' }}>
+                                                                            {subChild.label}
+                                                                        </Typography>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                                                                            {subChild.price != null && (
+                                                                                <Typography sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                                                                    {subChild.price}
                                                                                 </Typography>
-                                                                            </Stack>
-
-                                                                        </AccordionSummary>
-                                                                        <AccordionDetails
-                                                                        //  sx={{
-                                                                        //     position: 'relative',
-                                                                        //     '&::before': {
-                                                                        //         content: '""',
-                                                                        //         position: 'absolute',
-                                                                        //         left: 20,
-                                                                        //         top: 0,
-                                                                        //         width: '2px',
-                                                                        //         height: '100%',
-                                                                        //         backgroundColor: '#000',
-                                                                        //     },
-                                                                        // }}
-                                                                        >
-                                                                            {subChild.isLoading ? (
-                                                                                <CircularProgress size={24} sx={{ ml: 4 }} />
-                                                                            ) : (
-                                                                                <DataTableComponent
-                                                                                    sx={{ width: '100%', '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' } }}
-                                                                                    columns={[
-                                                                                        // { field: 'itemFullCode', headerName: t('ID'), headerAlign: 'left', flex:0.2},
-                                                                                        { field: 'accountName', headerName: t('Company'), headerAlign: 'left', flex: 0.6, disableColumnMenu: true },
-                                                                                        // { field: 'laborHours', headerName: t('Work per hour'), headerAlign: 'left', flex: 0.2 },
-                                                                                        ...(props.catalogType === 'labor'
-                                                                                            ? [
-                                                                                                {
-                                                                                                    field: "laborHours",
-                                                                                                    headerName: t("Work per hour"),
-                                                                                                    headerAlign: "center",
-                                                                                                    align: "center",
-                                                                                                    flex: 0.2,
-
-                                                                                                } as GridActionsColDef,
-                                                                                            ]
-                                                                                            : []),
-
-                                                                                        { field: 'measurementUnitRepresentationSymbol', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true },
-                                                                                        { field: 'price', headerName: t('Price'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true },
-                                                                                        {
-                                                                                            field: 'createdAt', type: 'dateTime', headerName: t('Uploaded'), headerAlign: 'left', align: 'left', flex: 0.3, valueFormatter: (params: any) =>
-                                                                                                moment(params).format('DD.MM.YYYY HH:mm'),
-                                                                                            disableColumnMenu: true
-                                                                                        },
-                                                                                        {
-                                                                                            field: 'updatedAt', type: 'dateTime', headerName: t('Updated'), headerAlign: 'left', align: 'left', flex: 0.3, valueFormatter: (params: any) =>
-                                                                                                moment(params).format('DD.MM.YYYY HH:mm'),
-                                                                                            disableColumnMenu: true
-                                                                                        },
-                                                                                        // {
-                                                                                        //     field: 'isArchived', type: 'actions', headerName: t('Archived Status'), flex: 0.2, renderCell: (cell) => {
-
-                                                                                        //         return <>
-                                                                                        //             <F.InputCheckbox id='isArchived' value={cell.row.isArchived} data={cell.row.isArchived} form={form} onChange={(checked) => { onArchiveStatusChange(checked, cell.row._id) }} xsMax />
-
-                                                                                        //         </>;
-                                                                                        //     }
-                                                                                        // }, 
-                                                                                        // {
-                                                                                        //     field: 'info', type: 'actions', headerName: t('Edit'), flex: 0.2, renderCell: (cell) => {
-                                                                                        //         return <>
-                                                                                        //             <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                                                                        //                 // console.log('cell', cell)
-                                                                                        //                 // setOfferItemName(cell.row.itemName)
-                                                                                        //                 // setOfferItemDetailsId(cell.id as string)
-                                                                                        //                 console.log('aaaa cell', cell)
-                                                                                        //                 setOfferItemEditId(cell.row._id as string)
-                                                                                        //                 // handleClick(event);
-
-                                                                                        //             }
-                                                                                        //             }
-                                                                                        //             >
-                                                                                        //                 <EditOutlinedIcon />
-                                                                                        //             </IconButton>
-                                                                                        //         </>;
-                                                                                        //     }
-                                                                                        // }, 
-                                                                                        ...(
-                                                                                            ((props.catalogType === 'labor' && permissionsSet?.has?.('OFF_CRT_LBR')) ||
-                                                                                                (props.catalogType === 'material' && permissionsSet?.has?.('OFF_CRT_MTRL'))) && props.canEdit
-                                                                                                ? [
-                                                                                                    {
-                                                                                                        field: 'isArchived',
-                                                                                                        type: 'actions',
-                                                                                                        headerName: t('Archived Status'),
-                                                                                                        flex: 0.2,
-                                                                                                        renderCell: (cell) => (
-                                                                                                            <Checkbox
-                                                                                                                // id="isArchived"
-                                                                                                                value={cell.row.isArchived}
-                                                                                                                // checked={cell.row.isArchived}
-                                                                                                                defaultChecked={cell.row.isArchived}
-                                                                                                                onChange={(event) => onArchiveStatusChange(event.target.checked, cell.row._id)}
-                                                                                                            />
-                                                                                                        )
-                                                                                                    } as GridActionsColDef,
-                                                                                                    {
-                                                                                                        field: 'info',
-                                                                                                        type: 'actions',
-                                                                                                        headerName: t('Edit'),
-                                                                                                        flex: 0.2,
-                                                                                                        renderCell: (cell) => (
-                                                                                                            <IconButton
-                                                                                                                onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                                                                                                    console.log('Cell:', cell);
-                                                                                                                    setOfferItemEditId(cell.row._id as string);
-                                                                                                                }}
-                                                                                                            >
-                                                                                                                <EditOutlinedIcon />
-                                                                                                            </IconButton>
-                                                                                                        )
-                                                                                                    } as GridActionsColDef,
-                                                                                                ]
-                                                                                                : []
-                                                                                        )
-                                                                                    ]}
-                                                                                    rows={subChild.children ?? []}
-                                                                                    disableRowSelectionOnClick
-                                                                                    getRowId={(row) => row?._id ?? crypto.randomUUID()}
-                                                                                />
-
                                                                             )}
-                                                                            {/* {session?.user && permissionsSet?.has?.('OFF_VW_LOC_LBR') && } */}
-                                                                            {session?.user && (
-                                                                                ((props.catalogType === 'labor' && permissionsSet?.has?.('OFF_CRT_LBR'))
-                                                                                    ||
-                                                                                    (props.catalogType === 'material' && permissionsSet?.has?.('OFF_CRT_MTRL'))) && props.canEdit
-                                                                            ) && (
-                                                                                    subChild.children && subChild.children.length > 0 ? (
-                                                                                        <Button
-                                                                                            fullWidth
-                                                                                            sx={{
-                                                                                                border: '1px dashed #00abbe',
-                                                                                                color: '#00abbe',
-                                                                                                background: 'rgba(0, 171, 190, 0.06)',
-                                                                                                '&:hover': {
-                                                                                                    border: '1px dashed #008a9a',
-                                                                                                    color: '#008a9a',
-                                                                                                    background: 'rgba(0, 138, 154, 0.10)',
-                                                                                                }
-                                                                                            }}
-                                                                                            onClick={() => {
-                                                                                                const firstOfferId = subChild.children?.[0]?._id;
-                                                                                                if (firstOfferId) {
-                                                                                                    setOfferItemEditId(firstOfferId);
-                                                                                                }
-                                                                                            }}
-                                                                                        >
-
-                                                                                            {t('edit Offer')}
-                                                                                        </Button>
-                                                                                    ) : (
-                                                                                        <Button
-                                                                                            fullWidth
-                                                                                            sx={{
-                                                                                                border: '1px dashed rgba(151, 71, 255)',
-                                                                                                color: 'rgba(151, 71, 255)',
-                                                                                                background: 'rgba(151, 71, 255, 0.04)'
-                                                                                            }}
-                                                                                            onClick={() => setOfferItemIdDialog(subChild._id)}
-                                                                                        >
-                                                                                            {t('add Offer')}
-                                                                                        </Button>
-                                                                                    )
-                                                                                )}
-                                                                            {/* <Button fullWidth sx={{ border: '1px dashed rgba(151, 71, 255)', color: ' rgba(151, 71, 255)', background: 'rgba(151, 71, 255, 0.04)' }} onClick={() => setOfferItemIdDialog(subChild._id)}>{t('add Offer')}</Button> */}
-
-                                                                        </AccordionDetails>
-                                                                    </EstimateSubChildAccordion>
-                                                                ))}
+                                                                            {subChild.measurementUnitRepresentationSymbol && (
+                                                                                <Typography sx={{ color: 'text.secondary', mr: 0.5 }}>
+                                                                                    ({subChild.measurementUnitRepresentationSymbol})
+                                                                                </Typography>
+                                                                            )}
+                                                                            {canEditOffers && subChild.offerId && (
+                                                                                <>
+                                                                                    <Tooltip title={subChild.isArchived ? t('Unarchive') : t('Archive')}>
+                                                                                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onArchiveStatusChange(!subChild.isArchived, subChild.offerId!); }}>
+                                                                                            <ArchiveOutlinedIcon fontSize="small" sx={{ color: subChild.isArchived ? '#bdbdbd' : '#616161' }} />
+                                                                                        </IconButton>
+                                                                                    </Tooltip>
+                                                                                    <Tooltip title={subChild.isArchived ? t('Hidden from catalog') : t('Visible in catalog')}>
+                                                                                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onArchiveStatusChange(!subChild.isArchived, subChild.offerId!); }}>
+                                                                                            {subChild.isArchived
+                                                                                                ? <VisibilityOffIcon fontSize="small" sx={{ color: '#bdbdbd' }} />
+                                                                                                : <VisibilityIcon fontSize="small" sx={{ color: '#00abbe' }} />
+                                                                                            }
+                                                                                        </IconButton>
+                                                                                    </Tooltip>
+                                                                                    <Tooltip title={t('Edit')}>
+                                                                                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setOfferItemEditId(subChild.offerId!); }}>
+                                                                                            <EditOutlinedIcon fontSize="small" sx={{ color: '#616161' }} />
+                                                                                        </IconButton>
+                                                                                    </Tooltip>
+                                                                                </>
+                                                                            )}
+                                                                        </Box>
+                                                                    </Box>
+                                                                    );
+                                                                })}
                                                             </Stack>
 
                                                         ) : (

@@ -679,6 +679,13 @@ registerApiSession(
                 },
             },
             {
+                $addFields: {
+                    price: { $arrayElemAt: ['$filteredOffers.price', 0] },
+                    isArchived: { $arrayElemAt: ['$filteredOffers.isArchived', 0] },
+                    offerId: { $arrayElemAt: ['$filteredOffers._id', 0] },
+                },
+            },
+            {
                 $project: {
                     offers: 0,
                     filteredOffers: 0,
