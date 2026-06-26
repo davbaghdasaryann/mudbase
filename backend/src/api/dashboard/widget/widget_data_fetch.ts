@@ -519,7 +519,18 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
             const estimateId = new ObjectId(rawEstimateId);
             if (useDaily) {
                 const dayCount = widgetType === '30-day' ? 30 : 15;
+                const todayKey = roundToDay(now).toISOString().slice(0, 10);
                 const pts = await getEstimateDailyPoints(estimateId, now, dayCount);
+                // Apply today-override with stored estimate total (same as widget_data_fetch path)
+                if (session.mongoAccountId) {
+                    const currentValue = await getCurrentValueForWidget(widget, session.mongoAccountId);
+                    if (currentValue != null && currentValue > 0) {
+                        const todayIdx = pts.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
+                        const todayPoint = { timestamp: roundToDay(now), value: currentValue, min: currentValue, max: currentValue };
+                        if (todayIdx >= 0) pts[todayIdx] = todayPoint;
+                        else pts.push(todayPoint);
+                    }
+                }
                 dailySnapshots = normalizeToDailyBuckets(pts, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
