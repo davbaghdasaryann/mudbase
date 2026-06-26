@@ -10,6 +10,7 @@ import { verify } from '@/tslib/verify';
 
 registerApiSession('eci/fetch_categories', async (req, res, session) => {
     let searchVal = getReqParam(req, 'searchVal');
+    const filterEmpty = getReqParam(req, 'filterEmpty') === 'true';
 
     const categoriesColl = Db.getEciCategoriesCollection();
 
@@ -62,6 +63,20 @@ registerApiSession('eci/fetch_categories', async (req, res, session) => {
             }
         }
     });
+
+    // Filter out categories that have no subcategories with items
+    if (filterEmpty) {
+        pipeline.push({
+            $match: {
+                $expr: {
+                    $gt: [
+                        { $size: { $filter: { input: '$children', as: 'c', cond: { $gt: [{ $size: '$$c.items' }, 0] } } } },
+                        0,
+                    ],
+                },
+            },
+        });
+    }
 
     // Search filter
     if (searchVal && searchVal !== '') {

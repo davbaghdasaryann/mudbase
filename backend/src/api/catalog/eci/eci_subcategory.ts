@@ -10,6 +10,7 @@ import { verify } from '@/tslib/verify';
 registerApiSession('eci/fetch_subcategories', async (req, res, session) => {
     const categoryMongoId = new ObjectId(requireQueryParam(req, 'categoryMongoId'));
     let searchVal = getReqParam(req, 'searchVal');
+    const filterEmpty = getReqParam(req, 'filterEmpty') === 'true';
 
     const subcategoriesCollection = Db.getEciSubcategoriesCollection();
     const estimatesCollection = Db.getEciEstimatesCollection();
@@ -64,6 +65,9 @@ registerApiSession('eci/fetch_subcategories', async (req, res, session) => {
             childrenQuantity: { $size: '$items' },
         },
     });
+    if (filterEmpty) {
+        pipeline.push({ $match: { childrenQuantity: { $gt: 0 } } });
+    }
     pipeline.push({ $sort: { code: 1 } });
     pipeline.push({ $project: { items: 0 } });
 

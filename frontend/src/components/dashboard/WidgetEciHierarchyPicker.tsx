@@ -67,9 +67,12 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterE
     const fetchCategories = useCallback(async () => {
         setCategoriesLoading(true);
         try {
+            const args: Record<string, string> = {};
+            if (searchSubmitted.trim()) args.searchVal = searchSubmitted;
+            if (filterEmpty) args.filterEmpty = 'true';
             const data = await Api.requestSession<any[]>({
                 command: 'eci/fetch_categories',
-                ...(searchSubmitted.trim() ? { args: { searchVal: searchSubmitted } } : {}),
+                ...(Object.keys(args).length ? { args } : {}),
             });
             const mapped: CategoryNode[] = (data || []).map((c: any) => {
                 const id = typeof c._id === 'string' ? c._id : (c._id?.$oid ?? String(c._id));
@@ -83,7 +86,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterE
         } finally {
             setCategoriesLoading(false);
         }
-    }, [searchSubmitted]);
+    }, [searchSubmitted, filterEmpty]);
 
     React.useEffect(() => {
         fetchCategories();
@@ -96,12 +99,12 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterE
             )
         );
         try {
+            const subcatArgs: Record<string, string> = { categoryMongoId: categoryId };
+            if (searchSubmitted.trim()) subcatArgs.searchVal = searchSubmitted;
+            if (filterEmpty) subcatArgs.filterEmpty = 'true';
             const data = await Api.requestSession<any[]>({
                 command: 'eci/fetch_subcategories',
-                args: {
-                    categoryMongoId: categoryId,
-                    ...(searchSubmitted.trim() ? { searchVal: searchSubmitted } : {}),
-                },
+                args: subcatArgs,
             });
             const mapped: SubcategoryNode[] = (data || []).map((s: any) => {
                 const id = typeof s._id === 'string' ? s._id : (s._id?.$oid ?? String(s._id));
@@ -111,7 +114,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterE
             setCategories((prev) =>
                 prev.map((cat) => {
                     if (cat._id !== categoryId) return cat;
-                    return { ...cat, children: mapped, loading: false, hidden: filterEmpty && mapped.length === 0 };
+                    return { ...cat, children: mapped, loading: false };
                 })
             );
         } catch (e) {
@@ -158,7 +161,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterE
                     if (cat._id !== categoryId) return cat;
                     const updatedChildren = cat.children.map((sub) =>
                         sub._id === subcategoryId
-                            ? { ...sub, items: mapped, loading: false, hidden: filterEmpty && mapped.length === 0 }
+                            ? { ...sub, items: mapped, loading: false }
                             : sub
                     );
                     return { ...cat, children: updatedChildren };
@@ -178,7 +181,7 @@ export default function WidgetEciHierarchyPicker({ selectedId, onSelect, filterE
                 })
             );
         }
-    }, [searchSubmitted, filterEmpty]);
+    }, [searchSubmitted]);
 
     const handleCategoryExpand = (categoryId: string, expanded: boolean) => {
         setExpandedCategory(expanded ? categoryId : null);
