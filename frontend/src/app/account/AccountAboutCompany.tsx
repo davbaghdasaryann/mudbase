@@ -150,7 +150,7 @@ function InlineField({ label, fieldId, value, icon, displayonly, multiline, isLi
                                 onChange={e => setEditValue(e.target.value)}
                                 onKeyDown={onKeyDown}
                                 multiline={multiline}
-                                minRows={multiline ? 2 : undefined}
+                                minRows={multiline ? 1 : undefined}
                                 maxRows={multiline ? 8 : undefined}
                                 variant='standard'
                                 fullWidth
