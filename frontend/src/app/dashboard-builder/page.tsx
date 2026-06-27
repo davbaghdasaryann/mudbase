@@ -42,23 +42,23 @@ export default function DashboardBuilderPage() {
     const [liveSnapshots, setLiveSnapshots] = useState<Array<{ widgetId: string; timestamp: string; value: number }>>([]);
     const { t } = useTranslation();
 
-    // Redirect superadmin to old dashboard
-    useEffect(() => {
-        const isSuperAdmin = permissionsSet?.has('ALL') ||
-                           permissionsSet?.has('USR_FCH_ALL') ||
-                           permissionsSet?.has('ACC_FCH');
-        if (isSuperAdmin) {
-            router.push('/dashboard');
-        }
-    }, [permissionsSet, router]);
-
     useEffect(() => {
         mounted.current = true;
-        fetchGroups();
-        return () => {
-            mounted.current = false;
-        };
+        return () => { mounted.current = false; };
     }, []);
+
+    // Wait for permissions before acting — redirect superadmin, fetch for regular users
+    useEffect(() => {
+        if (!permissionsSet) return;
+        const isSuperAdmin = permissionsSet.has('ALL') ||
+                             permissionsSet.has('USR_FCH_ALL') ||
+                             permissionsSet.has('ACC_FCH');
+        if (isSuperAdmin) {
+            router.push('/dashboard');
+            return;
+        }
+        fetchGroups();
+    }, [permissionsSet]);
 
     const fetchGroups = async () => {
         try {
