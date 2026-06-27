@@ -39,14 +39,14 @@ const CARD_SX = (isActive: boolean, isDimmed: boolean) => ({
 // Per-chart gradient palette — logo teal shades only
 const CHART_PALETTE: Record<string, { top: string; bottom: string; stroke: string; lastTop: string; lastBottom: string; lastStroke: string }> = {
     'Labor Offers':      { top: '#b2ebf2', bottom: '#0097a7', stroke: '#006064', lastTop: '#e0f7fa', lastBottom: '#00BCD4', lastStroke: '#0097a7' },
-    'Material Offers':   { top: '#80deea', bottom: '#00838f', stroke: '#006064', lastTop: '#b2ebf2', lastBottom: '#00acc1', lastStroke: '#007c91' },
+    'Material Offers':   { top: '#4dd0e1', bottom: '#005f6b', stroke: '#004d57', lastTop: '#80deea', lastBottom: '#00838f', lastStroke: '#006064' },
     'Labor Catalog':     { top: '#80cbc4', bottom: '#00796b', stroke: '#004d40', lastTop: '#b2dfdb', lastBottom: '#009688', lastStroke: '#00695c' },
-    'Materials Catalog': { top: '#4db6ac', bottom: '#00695c', stroke: '#004d40', lastTop: '#80cbc4', lastBottom: '#00897a', lastStroke: '#005b4f' },
+    'Materials Catalog': { top: '#26a69a', bottom: '#003d35', stroke: '#002d27', lastTop: '#4db6ac', lastBottom: '#00695c', lastStroke: '#004d40' },
 };
 
 const fmtDay = (iso: string, locale: string) => {
     const d = new Date(iso);
-    const lang = locale.startsWith('hy') ? 'hy-AM' : 'en-US';
+    const lang = locale.startsWith('am') ? 'hy-AM' : 'en-US';
     return d.toLocaleDateString(lang, { day: 'numeric', month: 'short' });
 };
 
