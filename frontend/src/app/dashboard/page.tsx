@@ -56,37 +56,25 @@ export default function DashboardPage() {
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
-                <Box sx={{ position: 'relative', p: { xs: 2, md: 4 }, borderRadius: 4, overflow: 'hidden' }}>
+                <>
+                    {/* Row 1 — 4 cards */}
+                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                        {topRow.map((field, index) => (
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
+                                <StatCard {...field} />
+                            </Grid>
+                        ))}
+                    </Grid>
 
-                    {/* Decorative blobs — source for the blur to work against */}
-                    <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-                        <Box sx={{ position: 'absolute', width: 480, height: 480, borderRadius: '50%', top: -160, left: -80, background: 'radial-gradient(circle, rgba(0,171,190,0.32) 0%, transparent 70%)', filter: 'blur(64px)' }} />
-                        <Box sx={{ position: 'absolute', width: 360, height: 360, borderRadius: '50%', bottom: -100, right: 60, background: 'radial-gradient(circle, rgba(0,200,220,0.22) 0%, transparent 70%)', filter: 'blur(56px)' }} />
-                        <Box sx={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', top: 40, right: -60, background: 'radial-gradient(circle, rgba(0,130,160,0.18) 0%, transparent 70%)', filter: 'blur(72px)' }} />
-                        <Box sx={{ position: 'absolute', width: 240, height: 240, borderRadius: '50%', bottom: 20, left: '35%', background: 'radial-gradient(circle, rgba(100,220,230,0.16) 0%, transparent 70%)', filter: 'blur(48px)' }} />
-                    </Box>
-
-                    {/* Cards */}
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        {/* Row 1 — 4 cards */}
-                        <Grid container spacing={3} sx={{ mb: 3 }}>
-                            {topRow.map((field, index) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <StatCard {...field} />
-                                </Grid>
-                            ))}
-                        </Grid>
-
-                        {/* Row 2 — 3 cards centered */}
-                        <Grid container spacing={3} justifyContent='center'>
-                            {bottomRow.map((field, index) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <StatCard {...field} />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Box>
-                </Box>
+                    {/* Row 2 — 3 cards centered */}
+                    <Grid container spacing={3} justifyContent='center'>
+                        {bottomRow.map((field, index) => (
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
+                                <StatCard {...field} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </>
             )}
         </PageContents>
     );
@@ -111,14 +99,15 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 textAlign: 'center',
-                background: 'rgba(255, 255, 255, 0.18)',
-                backdropFilter: 'blur(32px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-                border: '1px solid rgba(255, 255, 255, 0.52)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.65)',
-                transition: 'box-shadow 0.25s ease, transform 0.25s ease',
+                background: 'rgba(255, 255, 255, 0.62)',
+                backdropFilter: 'blur(28px) saturate(160%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(160%)',
+                border: '1px solid rgba(255, 255, 255, 0.55)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.85)',
+                transition: 'box-shadow 0.25s ease, transform 0.25s ease, background 0.25s ease',
                 '&:hover': {
-                    boxShadow: '0 16px 48px rgba(0,171,190,0.15), 0 4px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.7)',
+                    background: 'rgba(255, 255, 255, 0.78)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.1), 0 3px 10px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
                     transform: 'translateY(-5px)',
                 },
             }}
