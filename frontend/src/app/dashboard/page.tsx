@@ -56,13 +56,7 @@ export default function DashboardPage() {
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
-                <Box
-                    sx={{
-                        p: { xs: 2, md: 4 },
-                        borderRadius: 4,
-                        background: 'linear-gradient(135deg, rgba(0,171,190,0.07) 0%, rgba(0,0,0,0.04) 100%)',
-                    }}
-                >
+                <Box sx={{ p: { xs: 0, md: 1 } }}>
                     {/* Row 1 — 4 cards */}
                     <Grid container spacing={3} sx={{ mb: 3 }}>
                         {topRow.map((field, index) => (
@@ -105,14 +99,15 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 textAlign: 'center',
-                background: 'rgba(255, 255, 255, 0.58)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.42)',
-                boxShadow: '0 4px 28px rgba(0,0,0,0.07), 0 1px 6px rgba(0,0,0,0.04)',
-                transition: 'box-shadow 0.25s ease, transform 0.25s ease',
+                background: 'linear-gradient(135deg, rgba(0,171,190,0.15) 0%, rgba(220,247,250,0.35) 50%, rgba(255,255,255,0.72) 100%)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                border: '1px solid rgba(0,171,190,0.18)',
+                boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 6px rgba(0,0,0,0.04)',
+                transition: 'box-shadow 0.25s ease, transform 0.25s ease, background 0.25s ease',
                 '&:hover': {
-                    boxShadow: '0 10px 40px rgba(0,171,190,0.18), 0 3px 10px rgba(0,0,0,0.08)',
+                    background: 'linear-gradient(135deg, rgba(0,171,190,0.22) 0%, rgba(200,242,248,0.45) 50%, rgba(255,255,255,0.82) 100%)',
+                    boxShadow: '0 10px 40px rgba(0,171,190,0.2), 0 3px 10px rgba(0,0,0,0.06)',
                     transform: 'translateY(-4px)',
                 },
             }}
