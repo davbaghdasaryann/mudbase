@@ -60,7 +60,10 @@ function formatCount(val: string | number): string {
 // ── 30-Day Bar Chart — matches Widget30Day exactly ───────────────────────────
 type TrendPoint = { day: string; value: number; timestamp: string };
 
-function Offers30DayChart({ title, data, loading }: { title: string; data: TrendPoint[]; loading: boolean }) {
+function Offers30DayChart({ title, data, loading, isActive, isDimmed, onHover, onLeave }: {
+    title: string; data: TrendPoint[]; loading: boolean;
+    isActive: boolean; isDimmed: boolean; onHover: () => void; onLeave: () => void;
+}) {
     const { t } = useTranslation();
     const gradId = title.replace(/\s+/g, '-');
 
@@ -85,23 +88,27 @@ function Offers30DayChart({ title, data, loading }: { title: string; data: Trend
         : [0, yMax > 0 ? yMax * 1.1 : 1];
 
     return (
-        <Box sx={{
+        <Box
+            onMouseEnter={onHover}
+            onMouseLeave={onLeave}
+            sx={{
             background: 'rgba(255,255,255,0.72)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
             borderRadius: 3,
-            boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+            boxShadow: isActive
+                ? '0 12px 40px rgba(0,171,190,0.18), 0 4px 12px rgba(0,0,0,0.07)'
+                : '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
             border: '1px solid rgba(0,171,190,0.14)',
             p: 2,
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
             minHeight: 280,
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-            '&:hover': {
-                borderColor: 'rgba(0,171,190,0.45)',
-                boxShadow: '0 4px 24px rgba(0,171,190,0.14), 0 1px 6px rgba(0,0,0,0.06)',
-            },
+            opacity: isDimmed ? 0.5 : 1,
+            transform: isActive ? 'scale(1.01)' : 'scale(1)',
+            transition: 'opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
+            zIndex: isActive ? 2 : 1,
         }}>
             {/* Header row */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.75 }}>
@@ -297,7 +304,6 @@ function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHove
                 backdropFilter: 'blur(18px)',
                 WebkitBackdropFilter: 'blur(18px)',
                 border: '1px solid rgba(0,171,190,0.14)',
-                borderTop: '3px solid rgba(0,171,190,0.35)',
                 boxShadow: isActive
                     ? '0 12px 40px rgba(0,171,190,0.18), 0 4px 12px rgba(0,0,0,0.07)'
                     : '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
@@ -337,7 +343,7 @@ export default function DashboardPage() {
     const [trendData, setTrendData] = useState<{ laborOffers: TrendPoint[]; materialOffers: TrendPoint[]; laborItems: TrendPoint[]; materialItems: TrendPoint[] } | null>(null);
     const [trendLoading, setTrendLoading] = useState(true);
     const [dataRequested, setDataRequested] = useState(false);
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -373,32 +379,48 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Row 1 — Labor & Material Offers 30-day charts */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-                        <Offers30DayChart title='Labor Offers'    data={trendData?.laborOffers    ?? []} loading={trendLoading} />
-                        <Offers30DayChart title='Material Offers' data={trendData?.materialOffers ?? []} loading={trendLoading} />
-                    </Box>
-
-                    {/* Row 2 — Labor & Material Catalog 30-day charts */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-                        <Offers30DayChart title='Labor Catalog'     data={trendData?.laborItems    ?? []} loading={trendLoading} />
-                        <Offers30DayChart title='Materials Catalog' data={trendData?.materialItems ?? []} loading={trendLoading} />
-                    </Box>
-
-                    {/* Row 3 — 3 stat cards */}
+                    {/* Row 1 — 3 stat cards */}
                     <Grid container spacing={3}>
-                        {statCards.map((card, index) => (
+                        {statCards.map((card) => (
                             <Grid size={{ xs: 12, sm: 4 }} key={card.title} sx={{ display: 'flex' }}>
                                 <StatCard
                                     {...card}
-                                    isActive={hoveredIndex === index}
-                                    isDimmed={hoveredIndex !== null && hoveredIndex !== index}
-                                    onHover={() => setHoveredIndex(index)}
-                                    onLeave={() => setHoveredIndex(null)}
+                                    isActive={hoveredId === card.title}
+                                    isDimmed={hoveredId !== null && hoveredId !== card.title}
+                                    onHover={() => setHoveredId(card.title)}
+                                    onLeave={() => setHoveredId(null)}
                                 />
                             </Grid>
                         ))}
                     </Grid>
+
+                    {/* Row 2 — Labor & Material Offers 30-day charts */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                        {(['Labor Offers', 'Material Offers'] as const).map(key => (
+                            <Offers30DayChart key={key} title={key}
+                                data={key === 'Labor Offers' ? trendData?.laborOffers ?? [] : trendData?.materialOffers ?? []}
+                                loading={trendLoading}
+                                isActive={hoveredId === key}
+                                isDimmed={hoveredId !== null && hoveredId !== key}
+                                onHover={() => setHoveredId(key)}
+                                onLeave={() => setHoveredId(null)}
+                            />
+                        ))}
+                    </Box>
+
+                    {/* Row 3 — Labor & Material Catalog 30-day charts */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                        {(['Labor Catalog', 'Materials Catalog'] as const).map(key => (
+                            <Offers30DayChart key={key} title={key}
+                                data={key === 'Labor Catalog' ? trendData?.laborItems ?? [] : trendData?.materialItems ?? []}
+                                loading={trendLoading}
+                                isActive={hoveredId === key}
+                                isDimmed={hoveredId !== null && hoveredId !== key}
+                                onHover={() => setHoveredId(key)}
+                                onLeave={() => setHoveredId(null)}
+                            />
+                        ))}
+                    </Box>
                 </Box>
             )}
         </PageContents>
