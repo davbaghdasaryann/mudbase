@@ -62,6 +62,7 @@ type TrendPoint = { day: string; value: number; timestamp: string };
 
 function Offers30DayChart({ title, data, loading }: { title: string; data: TrendPoint[]; loading: boolean }) {
     const { t } = useTranslation();
+    const gradId = title.replace(/\s+/g, '-');
 
     const chartData = data.map((p, i) => ({
         day: fmtDay(p.day),
@@ -145,11 +146,11 @@ function Offers30DayChart({ title, data, loading }: { title: string; data: Trend
                 <ResponsiveContainer width='100%' height={162}>
                     <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
                         <defs>
-                            <linearGradient id={`barBlue-${title}`} x1='0' y1='0' x2='0' y2='1'>
+                            <linearGradient id={`barBlue-${gradId}`} x1='0' y1='0' x2='0' y2='1'>
                                 <stop offset='0%' stopColor={BAR_TOP} />
                                 <stop offset='100%' stopColor={BAR_BOTTOM} />
                             </linearGradient>
-                            <linearGradient id={`barPurple-${title}`} x1='0' y1='0' x2='0' y2='1'>
+                            <linearGradient id={`barPurple-${gradId}`} x1='0' y1='0' x2='0' y2='1'>
                                 <stop offset='0%' stopColor={BAR_LAST_TOP} />
                                 <stop offset='100%' stopColor={BAR_LAST_BOTTOM} />
                             </linearGradient>
