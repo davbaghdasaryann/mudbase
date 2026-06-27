@@ -33,9 +33,11 @@ async function getCroppedImg(src: string, pixels: { x: number; y: number; width:
 }
 
 // ── Inline editable field ────────────────────────────────────────────────────
-function ProfileInlineField({ label, fieldId, value, onSave }: {
+function ProfileInlineField({ label, fieldId, value, onSave, onActivate, forceClose }: {
     label: string; fieldId: string; value: string;
     onSave: (fieldId: string, value: string) => Promise<void>;
+    onActivate: () => void;
+    forceClose: boolean;
 }) {
     const [editing, setEditing] = React.useState(false);
     const [editValue, setEditValue] = React.useState(value);
@@ -44,6 +46,9 @@ function ProfileInlineField({ label, fieldId, value, onSave }: {
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => { setEditValue(value); }, [value]);
+    React.useEffect(() => {
+        if (forceClose && editing) { setEditValue(value); setEditing(false); }
+    }, [forceClose]);
     React.useEffect(() => {
         if (editing && inputRef.current) {
             inputRef.current.focus();
@@ -67,7 +72,7 @@ function ProfileInlineField({ label, fieldId, value, onSave }: {
         <Box
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            onClick={() => { if (!editing && !saving) setEditing(true); }}
+            onClick={() => { if (!editing && !saving) { onActivate(); setEditing(true); } }}
             sx={{
                 p: 1.5,
                 border: `1px solid ${borderColor}`,
@@ -229,6 +234,7 @@ export default function UserProfilePageContents() {
     const [changePasswordDialog, setChangePasswordDialog] = React.useState(false);
     const [avatarFilename, setAvatarFilename] = React.useState<string | undefined>();
     const [localValues, setLocalValues] = React.useState<Record<string, string>>({});
+    const [activeFieldId, setActiveFieldId] = React.useState<string | null>(null);
 
     const apiData = useApiFetchOne<Api.ApiUser>({ api: { command: 'profile/get' } });
     const user = apiData.data;
@@ -259,10 +265,17 @@ export default function UserProfilePageContents() {
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         <ProfileDisplayField label={t('Email')} value={user?.email ?? ''} />
-                        <ProfileInlineField label={t('First Name')}   fieldId='firstName'   value={localValues.firstName   ?? ''} onSave={handleSave} />
-                        <ProfileInlineField label={t('Middle Name')}  fieldId='middleName'  value={localValues.middleName  ?? ''} onSave={handleSave} />
-                        <ProfileInlineField label={t('Last Name')}    fieldId='lastName'    value={localValues.lastName    ?? ''} onSave={handleSave} />
-                        <ProfileInlineField label={t('Phone Number')} fieldId='phoneNumber' value={localValues.phoneNumber ?? ''} onSave={handleSave} />
+                        {(['firstName', 'middleName', 'lastName', 'phoneNumber'] as const).map((id, _, arr) => (
+                            <ProfileInlineField
+                                key={id}
+                                label={t({ firstName: 'First Name', middleName: 'Middle Name', lastName: 'Last Name', phoneNumber: 'Phone Number' }[id])}
+                                fieldId={id}
+                                value={localValues[id] ?? ''}
+                                onSave={handleSave}
+                                onActivate={() => setActiveFieldId(id)}
+                                forceClose={activeFieldId !== null && activeFieldId !== id}
+                            />
+                        ))}
 
                         <Button
                             variant='outlined'
