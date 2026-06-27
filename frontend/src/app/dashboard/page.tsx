@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Grid } from '@mui/material';
+import { keyframes } from '@emotion/react';
 import { useRouter } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import * as Api from 'api';
@@ -30,6 +31,17 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
     'Materials Catalog':  <CategoryOutlinedIcon sx={ICON_SX} />,
 };
 
+const floatUp = keyframes`
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+`;
+
+const hourglassFlip = keyframes`
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(180deg); }
+`;
+
 function formatCount(val: string): string {
     const n = Number(val);
     if (isNaN(n)) return val;
@@ -42,6 +54,7 @@ export default function DashboardPage() {
     const { permissionsSet } = usePermissions();
     const [dashboardData, setDashboardData] = useState<any | null>(null);
     const [dataRequested, setDataRequested] = useState(false);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -75,12 +88,10 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
-                    {/* Soft mesh blobs — localized to the card area only */}
                     <Box sx={{ position: 'relative', p: { xs: 2, md: 3 } }}>
+                        {/* Soft mesh blobs — localized to the card area only */}
                         <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 4 }}>
-                            {/* Left column — mint green */}
                             <Box sx={{ position: 'absolute', width: 480, height: '140%', borderRadius: '50%', top: '-20%', left: '-60px', background: 'radial-gradient(ellipse, rgba(178,220,186,0.52) 0%, transparent 65%)', filter: 'blur(64px)' }} />
-                            {/* Right column — sky cyan */}
                             <Box sx={{ position: 'absolute', width: 480, height: '140%', borderRadius: '50%', top: '-20%', right: '-60px', background: 'radial-gradient(ellipse, rgba(178,232,242,0.48) 0%, transparent 65%)', filter: 'blur(64px)' }} />
                         </Box>
 
@@ -89,7 +100,13 @@ export default function DashboardPage() {
                             <Grid container spacing={3} sx={{ mb: 3 }}>
                                 {topRow.map((field, index) => (
                                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                        <StatCard {...field} />
+                                        <StatCard
+                                            {...field}
+                                            isActive={hoveredIndex === index}
+                                            isDimmed={hoveredIndex !== null && hoveredIndex !== index}
+                                            onHover={() => setHoveredIndex(index)}
+                                            onLeave={() => setHoveredIndex(null)}
+                                        />
                                     </Grid>
                                 ))}
                             </Grid>
@@ -98,7 +115,13 @@ export default function DashboardPage() {
                             <Grid container spacing={3} justifyContent='center'>
                                 {bottomRow.map((field, index) => (
                                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                        <StatCard {...field} />
+                                        <StatCard
+                                            {...field}
+                                            isActive={hoveredIndex === 4 + index}
+                                            isDimmed={hoveredIndex !== null && hoveredIndex !== 4 + index}
+                                            onHover={() => setHoveredIndex(4 + index)}
+                                            onLeave={() => setHoveredIndex(null)}
+                                        />
                                     </Grid>
                                 ))}
                             </Grid>
@@ -110,12 +133,22 @@ export default function DashboardPage() {
     );
 }
 
-function StatCard({ title, count, hasPending = false }: StatCardProps) {
+type StatCardExtProps = StatCardProps & {
+    isActive: boolean;
+    isDimmed: boolean;
+    onHover: () => void;
+    onLeave: () => void;
+};
+
+function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHover, onLeave }: StatCardExtProps) {
     const { t } = useTranslation();
     const icon = CARD_ICONS[title] ?? null;
+    const isHourglass = title === 'Pending Users';
 
     return (
         <Box
+            onMouseEnter={onHover}
+            onMouseLeave={onLeave}
             sx={{
                 width: '100%',
                 minHeight: 170,
@@ -131,16 +164,33 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(25px)',
                 border: '1px solid rgba(255, 255, 255, 0.6)',
-                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.04)',
-                transition: 'box-shadow 0.25s ease, transform 0.25s ease',
+                boxShadow: isActive
+                    ? '0 20px 56px rgba(0,171,190,0.20), 0 6px 18px rgba(0,0,0,0.08)'
+                    : '0 8px 32px 0 rgba(0, 0, 0, 0.04)',
+                opacity: isDimmed ? 0.5 : 1,
+                transform: isActive ? 'scale(1.02)' : 'scale(1)',
+                transition: 'opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
                 cursor: 'default',
-                '&:hover': {
-                    boxShadow: '0 10px 36px rgba(0,171,190,0.16), 0 3px 8px rgba(0,0,0,0.06)',
-                    transform: 'translateY(-4px)',
-                },
+                zIndex: isActive ? 2 : 1,
             }}
         >
-            {icon && <Box sx={{ mb: 1.5 }}>{icon}</Box>}
+            {icon && (
+                <Box
+                    sx={{
+                        mb: 1.5,
+                        animation: isActive
+                            ? (isHourglass
+                                ? `${hourglassFlip} 0.65s ease forwards`
+                                : `${floatUp} 0.7s ease-in-out infinite`)
+                            : 'none',
+                        // Smoothly rotate back when hover ends on hourglass
+                        transform: !isActive && isHourglass ? 'rotate(0deg)' : undefined,
+                        transition: isHourglass ? 'transform 0.5s ease' : undefined,
+                    }}
+                >
+                    {icon}
+                </Box>
+            )}
             <Typography variant='subtitle1' fontWeight={600} color='text.secondary' sx={{ mb: 0.5, lineHeight: 1.3 }}>
                 {t(title)}
             </Typography>
