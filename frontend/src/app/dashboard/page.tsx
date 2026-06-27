@@ -53,10 +53,6 @@ export default function DashboardPage() {
 
     return (
         <PageContents requiredPermission='DASH_USE' title='Dashboard'>
-            <Typography variant='h4' sx={{ mb: 3, fontWeight: 'bold' }}>
-                {t('Dashboard')}
-            </Typography>
-
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
@@ -114,9 +110,10 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 WebkitBackdropFilter: 'blur(16px)',
                 border: '1px solid rgba(255, 255, 255, 0.42)',
                 boxShadow: '0 4px 28px rgba(0,0,0,0.07), 0 1px 6px rgba(0,0,0,0.04)',
-                transition: 'box-shadow 0.2s',
+                transition: 'box-shadow 0.25s ease, transform 0.25s ease',
                 '&:hover': {
-                    boxShadow: '0 8px 36px rgba(0,171,190,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+                    boxShadow: '0 10px 40px rgba(0,171,190,0.18), 0 3px 10px rgba(0,0,0,0.08)',
+                    transform: 'translateY(-4px)',
                 },
             }}
         >
