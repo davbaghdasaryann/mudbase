@@ -29,15 +29,15 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
     'Materials Catalog':  <CategoryOutlinedIcon sx={ICON_SX} />,
 };
 
-// Unique gradient per card position — logo teal/green/cyan palette, low saturation
+// Unique gradient per card — two logo-palette colors across the full surface
 const CARD_GRADIENTS = [
-    'linear-gradient(145deg, #ffffff 35%, #d8f5ed 100%)',  // light mint-green
-    'linear-gradient(155deg, #ffffff 35%, #d6f4f8 100%)',  // pale cyan
-    'linear-gradient(135deg, #ffffff 35%, #d2eff8 100%)',  // sky blue
-    'linear-gradient(150deg, #ffffff 35%, #cef3ec 100%)',  // aqua-green
-    'linear-gradient(140deg, #ffffff 35%, #d4f2f9 100%)',  // ice blue
-    'linear-gradient(160deg, #ffffff 35%, #d0f4ef 100%)',  // teal-mint
-    'linear-gradient(130deg, #ffffff 35%, #ccf0f8 100%)',  // cool cyan
+    'linear-gradient(135deg, #d6f4eb 0%, #cceef9 100%)',  // mint-green → ice blue
+    'linear-gradient(145deg, #d0f3f8 0%, #d8f5ec 100%)',  // cyan → mint
+    'linear-gradient(155deg, #c8edf8 0%, #d2f4f0 100%)',  // sky blue → teal
+    'linear-gradient(125deg, #ccf2ec 0%, #c6edf8 100%)',  // aqua → pale blue
+    'linear-gradient(140deg, #d2f2f9 0%, #ccf0e8 100%)',  // ice blue → green
+    'linear-gradient(150deg, #c8f0ea 0%, #cceaf8 100%)',  // teal-mint → blue
+    'linear-gradient(130deg, #c6eef8 0%, #d0f4ec 100%)',  // cool cyan → mint
 ];
 
 function formatCount(val: string): string {
@@ -84,8 +84,9 @@ export default function DashboardPage() {
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
-                /* Mesh gradient background — soft color blobs behind the cards */
-                <Box sx={{ mt: 4, position: 'relative', borderRadius: 4, overflow: 'hidden', p: { xs: 2, md: 3 } }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
+                {/* Mesh gradient background — soft color blobs behind the cards */}
+                <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', p: { xs: 2, md: 3 } }}>
 
                     {/* Soft blobs — low-saturation logo colors */}
                     <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
@@ -116,6 +117,7 @@ export default function DashboardPage() {
                             ))}
                         </Grid>
                     </Box>
+                </Box>
                 </Box>
             )}
         </PageContents>
