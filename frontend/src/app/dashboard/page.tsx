@@ -44,10 +44,10 @@ const CHART_PALETTE: Record<string, { top: string; bottom: string; stroke: strin
     'Materials Catalog': { top: '#4db6ac', bottom: '#00695c', stroke: '#004d40', lastTop: '#80cbc4', lastBottom: '#00897a', lastStroke: '#005b4f' },
 };
 
-const AM_MONTHS_SHORT = ['Հнв','Փтв','Мрт','Апр','Май','Хнс','Хлс','Өгс','Сеп','Хок','Ноя','Дек'];
-const fmtDay = (iso: string) => {
+const fmtDay = (iso: string, locale: string) => {
     const d = new Date(iso);
-    return `${d.getDate()} ${AM_MONTHS_SHORT[d.getMonth()]}`;
+    const lang = locale.startsWith('hy') ? 'hy-AM' : 'en-US';
+    return d.toLocaleDateString(lang, { day: 'numeric', month: 'short' });
 };
 
 const floatUp = keyframes`
@@ -74,12 +74,12 @@ function Chart30Day({ title, data, loading, isActive, isDimmed, onHover, onLeave
     title: string; data: TrendPoint[]; loading: boolean;
     isActive: boolean; isDimmed: boolean; onHover: () => void; onLeave: () => void;
 }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const gradId = title.replace(/\s+/g, '-');
     const pal = CHART_PALETTE[title] ?? CHART_PALETTE['Labor Offers'];
 
     const chartData = data.map((p, i) => ({
-        day: fmtDay(p.day),
+        day: fmtDay(p.day, i18n.language),
         value: p.value,
         isLast: i === data.length - 1,
     }));
@@ -202,28 +202,31 @@ function StatDonut({ label, segs, activeCount, inactiveCount, isActive, isDimmed
             sx={{ ...CARD_SX(isActive, isDimmed), width: '100%', minHeight: 150, px: 3, py: 3, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
             <Typography variant='subtitle2' fontWeight={600} color='text.secondary' sx={{ mb: 1 }}>{t(label)}</Typography>
             <Box sx={{ position: 'relative', width: 120, height: 120 }}>
-                <ResponsiveContainer width='100%' height='100%'>
-                    <PieChart>
-                        <defs>
-                            {segs.map(s => (
-                                <radialGradient key={s.gradId} id={s.gradId} cx='50%' cy='50%' r='50%'>
-                                    <stop offset='0%' stopColor={s.inner} />
-                                    <stop offset='100%' stopColor={s.outer} />
-                                </radialGradient>
-                            ))}
-                        </defs>
-                        <Pie data={data.length ? data : [{ key: 'empty', name: '', value: 1, pct: '0' }]}
-                            cx='50%' cy='50%' innerRadius={34} outerRadius={52} paddingAngle={data.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
-                            {(data.length ? data : [{ key: 'empty' }]).map((entry: any) => {
-                                const seg = segs.find(s => s.key === entry.key);
-                                return <Cell key={entry.key} fill={seg ? `url(#${seg.gradId})` : '#e0e0e0'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
-                            })}
-                        </Pie>
-                        {data.length > 0 && <Tooltip content={<DonutTip />} />}
-                    </PieChart>
-                </ResponsiveContainer>
-                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                {/* center label sits behind the chart so the tooltip renders on top */}
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 0 }}>
                     <Typography sx={{ fontWeight: 700, color: NUMBER_COLOR, lineHeight: 1, fontSize: '1.1rem' }}>{formatCount(total)}</Typography>
+                </Box>
+                <Box sx={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
+                    <ResponsiveContainer width='100%' height='100%'>
+                        <PieChart>
+                            <defs>
+                                {segs.map(s => (
+                                    <radialGradient key={s.gradId} id={s.gradId} cx='50%' cy='50%' r='50%'>
+                                        <stop offset='0%' stopColor={s.inner} />
+                                        <stop offset='100%' stopColor={s.outer} />
+                                    </radialGradient>
+                                ))}
+                            </defs>
+                            <Pie data={data.length ? data : [{ key: 'empty', name: '', value: 1, pct: '0' }]}
+                                cx='50%' cy='50%' innerRadius={34} outerRadius={52} paddingAngle={data.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
+                                {(data.length ? data : [{ key: 'empty' }]).map((entry: any) => {
+                                    const seg = segs.find(s => s.key === entry.key);
+                                    return <Cell key={entry.key} fill={seg ? `url(#${seg.gradId})` : '#e0e0e0'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
+                                })}
+                            </Pie>
+                            {data.length > 0 && <Tooltip content={<DonutTip />} />}
+                        </PieChart>
+                    </ResponsiveContainer>
                 </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1.5, mt: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
