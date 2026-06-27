@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Card, CardContent, Stack, Typography, useTheme, Grid } from '@mui/material';
+import { Box, Stack, Typography, Grid } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import * as Api from 'api';
@@ -89,8 +89,7 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
     }, [translatedTitle]);
 
     return (
-        <Card
-            elevation={0}
+        <Box
             sx={{
                 width: '100%',
                 p: 3,
@@ -100,13 +99,12 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 textAlign: 'center',
-                '--Paper-bg': 'transparent',
                 backgroundColor: 'rgba(255, 255, 255, 0.22)',
                 backdropFilter: 'blur(24px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                 border: '1px solid rgba(255, 255, 255, 0.6)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
-                transition: 'box-shadow 0.3s ease, transform 0.3s ease, backgroundColor 0.3s ease',
+                transition: 'box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease',
                 '&:hover': {
                     backgroundColor: 'rgba(255, 255, 255, 0.38)',
                     boxShadow: '0 16px 48px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.95)',
@@ -114,25 +112,23 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 },
             }}
         >
-            <CardContent sx={{ width: '100%', pb: '16px !important' }}>
-                <Typography variant='h5' fontWeight='bold' color='textSecondary' gutterBottom>
-                    <Textfit key={translatedTitle} min={12} max={24}>
-                        {translatedTitle}
-                    </Textfit>
+            <Typography variant='h5' fontWeight='bold' color='textSecondary' gutterBottom sx={{ width: '100%' }}>
+                <Textfit key={translatedTitle} min={12} max={24}>
+                    {translatedTitle}
+                </Textfit>
+            </Typography>
+            <Stack direction='row' justifyContent='center' alignItems='center'>
+                <Typography
+                    variant='h4'
+                    sx={{
+                        color: hasPending ? 'error.main' : '#00ABBE',
+                        fontWeight: 'bold',
+                    }}
+                >
+                    {count}
                 </Typography>
-                <Stack direction='row' justifyContent='center' alignItems='center'>
-                    <Typography
-                        variant='h4'
-                        sx={{
-                            color: hasPending ? 'error.main' : '#00ABBE',
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        {count}
-                    </Typography>
-                </Stack>
-            </CardContent>
-        </Card>
+            </Stack>
+        </Box>
     );
 }
 
