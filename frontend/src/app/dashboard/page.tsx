@@ -171,7 +171,7 @@ function Offers30DayChart({ title, data, loading }: { title: string; data: Trend
                             {chartData.map((entry, i) => (
                                 <Cell
                                     key={i}
-                                    fill={entry.isLast ? `url(#barPurple-${title})` : `url(#barBlue-${title})`}
+                                    fill={entry.isLast ? `url(#barPurple-${gradId})` : `url(#barBlue-${gradId})`}
                                     stroke={entry.isLast ? BAR_LAST_STROKE : BAR_STROKE}
                                     strokeWidth={0.5}
                                 />
