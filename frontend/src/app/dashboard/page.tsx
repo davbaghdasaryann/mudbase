@@ -37,12 +37,12 @@ const CARD_SX = (isActive: boolean, isDimmed: boolean) => ({
     zIndex: isActive ? 2 : 1,
 });
 
-// Per-chart gradient palette
+// Per-chart gradient palette — logo teal shades only
 const CHART_PALETTE: Record<string, { top: string; bottom: string; stroke: string; lastTop: string; lastBottom: string; lastStroke: string }> = {
-    'Labor Offers':      { top: '#a8e6df', bottom: '#007a6e', stroke: '#005f56', lastTop: '#e1bee7', lastBottom: '#6a1b9a', lastStroke: '#4a148c' },
-    'Material Offers':   { top: '#b3e5fc', bottom: '#0277bd', stroke: '#01579b', lastTop: '#ffe0b2', lastBottom: '#e65100', lastStroke: '#bf360c' },
-    'Labor Catalog':     { top: '#c8e6c9', bottom: '#2e7d32', stroke: '#1b5e20', lastTop: '#fff9c4', lastBottom: '#f57f17', lastStroke: '#e65100' },
-    'Materials Catalog': { top: '#b2dfdb', bottom: '#00695c', stroke: '#004d40', lastTop: '#f8bbd0', lastBottom: '#880e4f', lastStroke: '#6a0036' },
+    'Labor Offers':      { top: '#b2ebf2', bottom: '#0097a7', stroke: '#006064', lastTop: '#e0f7fa', lastBottom: '#00BCD4', lastStroke: '#0097a7' },
+    'Material Offers':   { top: '#80deea', bottom: '#00838f', stroke: '#006064', lastTop: '#b2ebf2', lastBottom: '#00acc1', lastStroke: '#007c91' },
+    'Labor Catalog':     { top: '#80cbc4', bottom: '#00796b', stroke: '#004d40', lastTop: '#b2dfdb', lastBottom: '#009688', lastStroke: '#00695c' },
+    'Materials Catalog': { top: '#4db6ac', bottom: '#00695c', stroke: '#004d40', lastTop: '#80cbc4', lastBottom: '#00897a', lastStroke: '#005b4f' },
 };
 
 const AM_MONTHS_SHORT = ['Հнв','Փтв','Мрт','Апр','Май','Хнс','Хлс','Өгс','Сеп','Хок','Ноя','Дек'];
@@ -321,28 +321,26 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Row 1 — Pending Users | Accounts Donut | Users */}
+                    {/* Row 1 — Pending Users | Users */}
                     <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, sm: 4 }} sx={{ display: 'flex' }}>
+                        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
                             <StatCard {...byTitle['Pending Users']} {...hover('Pending Users')} />
                         </Grid>
-                        <Grid size={{ xs: 12, sm: 4 }} sx={{ display: 'flex' }}>
-                            <AccountsDonut
-                                activeCount={dashboardData.activeAccounts ?? 0}
-                                inactiveCount={dashboardData.inactiveAccounts ?? 0}
-                                {...hover('Accounts')}
-                            />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 4 }} sx={{ display: 'flex' }}>
+                        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
                             <StatCard {...byTitle['Users']} {...hover('Users')} />
                         </Grid>
                     </Grid>
 
-                    {/* Row 2 — Labor Offers + Material Offers */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                    {/* Row 2 — Labor Offers | Material Offers | Accounts Donut */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                         {chartKeys.slice(0, 2).map(c => (
                             <Chart30Day key={c.key} title={c.title} data={c.data} loading={trendLoading} {...hover(c.key)} />
                         ))}
+                        <AccountsDonut
+                            activeCount={dashboardData.activeAccounts ?? 0}
+                            inactiveCount={dashboardData.inactiveAccounts ?? 0}
+                            {...hover('Accounts')}
+                        />
                     </Box>
 
                     {/* Row 3 — Labor Catalog + Materials Catalog */}
