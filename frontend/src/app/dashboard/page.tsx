@@ -44,10 +44,13 @@ const CHART_PALETTE: Record<string, { top: string; bottom: string; stroke: strin
     'Materials Catalog': { top: '#26a69a', bottom: '#003d35', stroke: '#002d27', lastTop: '#4db6ac', lastBottom: '#00695c', lastStroke: '#004d40' },
 };
 
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_AM = ['Հնվ','Փտր','Մրտ','Ապր','Մյս','Հնս','Հլս','Օգս','Սեպ','Հոկ','Նոյ','Դեկ'];
+
 const fmtDay = (iso: string, locale: string) => {
     const d = new Date(iso);
-    const lang = locale.startsWith('am') ? 'hy-AM' : 'en-US';
-    return d.toLocaleDateString(lang, { day: 'numeric', month: 'short' });
+    const months = locale.startsWith('am') ? MONTHS_AM : MONTHS_EN;
+    return `${d.getDate()} ${months[d.getMonth()]}`;
 };
 
 const floatUp = keyframes`
