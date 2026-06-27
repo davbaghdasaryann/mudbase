@@ -71,37 +71,37 @@ export default function DashboardPage() {
 
     return (
         <PageContents requiredPermission='DASH_USE' title='Dashboard'>
-            {/* Full-viewport gradient background — fixed so it spans the entire screen */}
-            <Box sx={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 0,
-                background: 'linear-gradient(to right, #E2F1E4, #E0F7FA)',
-                pointerEvents: 'none',
-            }} />
-
             {!dashboardData ? (
-                <Typography variant='h6' sx={{ position: 'relative', zIndex: 1 }}>{t('Loading...')}</Typography>
+                <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
-                <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
-                    <Box sx={{ p: { xs: 2, md: 3 } }}>
-                        {/* Row 1 — 4 cards */}
-                        <Grid container spacing={3} sx={{ mb: 3 }}>
-                            {topRow.map((field, index) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <StatCard {...field} />
-                                </Grid>
-                            ))}
-                        </Grid>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
+                    {/* Soft mesh blobs — localized to the card area only */}
+                    <Box sx={{ position: 'relative', p: { xs: 2, md: 3 } }}>
+                        <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 4 }}>
+                            <Box sx={{ position: 'absolute', width: 500, height: 400, borderRadius: '50%', top: -100, left: -80, background: 'radial-gradient(ellipse, rgba(178,220,186,0.55) 0%, transparent 65%)', filter: 'blur(60px)' }} />
+                            <Box sx={{ position: 'absolute', width: 420, height: 360, borderRadius: '50%', bottom: -80, right: -60, background: 'radial-gradient(ellipse, rgba(178,232,242,0.5) 0%, transparent 65%)', filter: 'blur(60px)' }} />
+                            <Box sx={{ position: 'absolute', width: 320, height: 280, borderRadius: '50%', top: '40%', left: '35%', background: 'radial-gradient(ellipse, rgba(200,235,240,0.35) 0%, transparent 65%)', filter: 'blur(50px)' }} />
+                        </Box>
 
-                        {/* Row 2 — 3 cards centered */}
-                        <Grid container spacing={3} justifyContent='center'>
-                            {bottomRow.map((field, index) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <StatCard {...field} />
-                                </Grid>
-                            ))}
-                        </Grid>
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                            {/* Row 1 — 4 cards */}
+                            <Grid container spacing={3} sx={{ mb: 3 }}>
+                                {topRow.map((field, index) => (
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
+                                        <StatCard {...field} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+
+                            {/* Row 2 — 3 cards centered */}
+                            <Grid container spacing={3} justifyContent='center'>
+                                {bottomRow.map((field, index) => (
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
+                                        <StatCard {...field} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Box>
                     </Box>
                 </Box>
             )}
