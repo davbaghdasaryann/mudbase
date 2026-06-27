@@ -49,6 +49,7 @@ export * from "./profile/profile_get_account";
 export * from "./profile/profile_password";
 export * from "./profile/profile_update";
 export * from "./profile/profile_update_account";
+export * from "./profile/profile_upload_avatar";
 export * from "./signup/signup_accept_invitation";
 export * from "./signup/signup_approve";
 export * from "./signup/signup_company";

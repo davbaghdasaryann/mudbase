@@ -1,4 +1,9 @@
 import { AccountActivity } from "../tsmudbase/company_activities";
+
+export function makeUserAvatarUrl(user: ApiUser | undefined): string | undefined {
+    if (!user?._id || !user?.profileAvatar) return undefined;
+    return `/api/static/users/${user._id}/${user.profileAvatar}`;
+}
 import { ChosenPermissionsMap } from "../tsmudbase/permissions_setup";
 
 export class Address {
@@ -43,7 +48,7 @@ export interface ApiUser {
     homeAddress?: Address;
 
     isActive?: boolean;
-
+    profileAvatar?: string;
 
     chosenPermissions?: ChosenPermissionsMap;
 
