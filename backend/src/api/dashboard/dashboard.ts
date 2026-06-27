@@ -16,6 +16,8 @@ registerApiSession('dashboard/fetch_data', async (req, res, session) => {
     const materialItemsCollection = Db.getMaterialItemsCollection();
 
     const userCountPromise = usersCollection.countDocuments();
+    const activeUserCountPromise = usersCollection.countDocuments({ isActive: true });
+    const inactiveUserCountPromise = usersCollection.countDocuments({ isActive: false });
     const pendingUserCountPromise = pendingUsersCollection.countDocuments();
     const accountCountPromise = accountsCollection.countDocuments();
     const activeAccountCountPromise = accountsCollection.countDocuments({ isActive: true });
@@ -27,6 +29,8 @@ registerApiSession('dashboard/fetch_data', async (req, res, session) => {
 
     const [
         userCount,
+        activeUserCount,
+        inactiveUserCount,
         pendingUserCount,
         accountCount,
         activeAccountCount,
@@ -37,6 +41,8 @@ registerApiSession('dashboard/fetch_data', async (req, res, session) => {
         materialItemsCount,
     ] = await Promise.all([
         userCountPromise,
+        activeUserCountPromise,
+        inactiveUserCountPromise,
         pendingUserCountPromise,
         accountCountPromise,
         activeAccountCountPromise,
@@ -72,6 +78,8 @@ registerApiSession('dashboard/fetch_data', async (req, res, session) => {
     let data = {
         activeAccounts: activeAccountCount,
         inactiveAccounts: inactiveAccountCount,
+        activeUsers: activeUserCount,
+        inactiveUsers: inactiveUserCount,
         dashboard: [
             {
                 title: "Pending Users",

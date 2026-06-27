@@ -8,7 +8,6 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
-import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import { useRouter } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import * as Api from 'api';
@@ -163,10 +162,16 @@ function Chart30Day({ title, data, loading, isActive, isDimmed, onHover, onLeave
     );
 }
 
-// ── Accounts Donut ───────────────────────────────────────────────────────────
-const DONUT_SEGS = [
-    { key: 'active',   gradId: 'acc-active',   inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
-    { key: 'inactive', gradId: 'acc-inactive',  inner: '#b2dfdb', outer: '#4db6ac', dot: '#4db6ac' },
+// ── Generic Donut Chart ───────────────────────────────────────────────────────
+type DonutSeg = { key: string; gradId: string; inner: string; outer: string; dot: string };
+
+const ACCOUNT_SEGS: DonutSeg[] = [
+    { key: 'active',   gradId: 'acc-active',  inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
+    { key: 'inactive', gradId: 'acc-inactive', inner: '#b2dfdb', outer: '#4db6ac', dot: '#4db6ac' },
+];
+const USER_SEGS: DonutSeg[] = [
+    { key: 'active',   gradId: 'usr-active',  inner: '#00A390', outer: '#006B61', dot: '#006B61' },
+    { key: 'inactive', gradId: 'usr-inactive', inner: '#80cbc4', outer: '#00796b', dot: '#00796b' },
 ];
 
 const DonutTip = ({ active, payload }: any) => {
@@ -180,7 +185,8 @@ const DonutTip = ({ active, payload }: any) => {
     );
 };
 
-function AccountsDonut({ activeCount, inactiveCount, isActive, isDimmed, onHover, onLeave }: {
+function StatDonut({ label, segs, activeCount, inactiveCount, isActive, isDimmed, onHover, onLeave }: {
+    label: string; segs: DonutSeg[];
     activeCount: number; inactiveCount: number;
     isActive: boolean; isDimmed: boolean; onHover: () => void; onLeave: () => void;
 }) {
@@ -194,12 +200,12 @@ function AccountsDonut({ activeCount, inactiveCount, isActive, isDimmed, onHover
     return (
         <Box onMouseEnter={onHover} onMouseLeave={onLeave}
             sx={{ ...CARD_SX(isActive, isDimmed), width: '100%', minHeight: 150, px: 3, py: 3, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-            <Typography variant='subtitle2' fontWeight={600} color='text.secondary' sx={{ mb: 1 }}>{t('Accounts')}</Typography>
+            <Typography variant='subtitle2' fontWeight={600} color='text.secondary' sx={{ mb: 1 }}>{t(label)}</Typography>
             <Box sx={{ position: 'relative', width: 120, height: 120 }}>
                 <ResponsiveContainer width='100%' height='100%'>
                     <PieChart>
                         <defs>
-                            {DONUT_SEGS.map(s => (
+                            {segs.map(s => (
                                 <radialGradient key={s.gradId} id={s.gradId} cx='50%' cy='50%' r='50%'>
                                     <stop offset='0%' stopColor={s.inner} />
                                     <stop offset='100%' stopColor={s.outer} />
@@ -209,7 +215,7 @@ function AccountsDonut({ activeCount, inactiveCount, isActive, isDimmed, onHover
                         <Pie data={data.length ? data : [{ key: 'empty', name: '', value: 1, pct: '0' }]}
                             cx='50%' cy='50%' innerRadius={34} outerRadius={52} paddingAngle={data.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
                             {(data.length ? data : [{ key: 'empty' }]).map((entry: any) => {
-                                const seg = DONUT_SEGS.find(s => s.key === entry.key);
+                                const seg = segs.find(s => s.key === entry.key);
                                 return <Cell key={entry.key} fill={seg ? `url(#${seg.gradId})` : '#e0e0e0'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
                             })}
                         </Pie>
@@ -222,7 +228,7 @@ function AccountsDonut({ activeCount, inactiveCount, isActive, isDimmed, onHover
             </Box>
             <Box sx={{ display: 'flex', gap: 1.5, mt: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {data.map(d => {
-                    const seg = DONUT_SEGS.find(s => s.key === d.key);
+                    const seg = segs.find(s => s.key === d.key);
                     return (
                         <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: seg?.dot, flexShrink: 0 }} />
@@ -240,7 +246,6 @@ type StatCardProps = { title: string; count: string; hasPending?: boolean };
 
 const STAT_ICONS: Record<string, React.ReactNode> = {
     'Pending Users': <HourglassEmptyOutlinedIcon sx={{ fontSize: 36, color: '#00ABBE', opacity: 0.9 }} />,
-    'Users':         <PeopleOutlinedIcon         sx={{ fontSize: 36, color: '#00ABBE', opacity: 0.9 }} />,
 };
 
 function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHover, onLeave }: StatCardProps & {
@@ -321,33 +326,33 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Row 1 — Pending Users | Users */}
-                    <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
-                            <StatCard {...byTitle['Pending Users']} {...hover('Pending Users')} />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
-                            <StatCard {...byTitle['Users']} {...hover('Users')} />
-                        </Grid>
-                    </Grid>
+                    {/* Row 1 — Pending Users */}
+                    <Box sx={{ maxWidth: 340 }}>
+                        <StatCard {...byTitle['Pending Users']} {...hover('Pending Users')} />
+                    </Box>
 
                     {/* Row 2 — Labor Offers | Material Offers | Accounts Donut */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                         {chartKeys.slice(0, 2).map(c => (
                             <Chart30Day key={c.key} title={c.title} data={c.data} loading={trendLoading} {...hover(c.key)} />
                         ))}
-                        <AccountsDonut
+                        <StatDonut label='Accounts' segs={ACCOUNT_SEGS}
                             activeCount={dashboardData.activeAccounts ?? 0}
                             inactiveCount={dashboardData.inactiveAccounts ?? 0}
                             {...hover('Accounts')}
                         />
                     </Box>
 
-                    {/* Row 3 — Labor Catalog + Materials Catalog */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                    {/* Row 3 — Labor Catalog | Materials Catalog | Users Donut */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                         {chartKeys.slice(2).map(c => (
                             <Chart30Day key={c.key} title={c.title} data={c.data} loading={trendLoading} {...hover(c.key)} />
                         ))}
+                        <StatDonut label='Users' segs={USER_SEGS}
+                            activeCount={dashboardData.activeUsers ?? 0}
+                            inactiveCount={dashboardData.inactiveUsers ?? 0}
+                            {...hover('Users')}
+                        />
                     </Box>
                 </Box>
             )}
