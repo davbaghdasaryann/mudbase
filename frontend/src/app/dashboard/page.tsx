@@ -173,8 +173,9 @@ const ACCOUNT_SEGS: DonutSeg[] = [
     { key: 'inactive', gradId: 'acc-inactive', inner: '#b2dfdb', outer: '#4db6ac', dot: '#4db6ac' },
 ];
 const USER_SEGS: DonutSeg[] = [
-    { key: 'active',   gradId: 'usr-active',  inner: '#00A390', outer: '#006B61', dot: '#006B61' },
-    { key: 'inactive', gradId: 'usr-inactive', inner: '#80cbc4', outer: '#00796b', dot: '#00796b' },
+    { key: 'active',   gradId: 'usr-active',   inner: '#00A390', outer: '#006B61', dot: '#006B61' },
+    { key: 'inactive', gradId: 'usr-inactive',  inner: '#80cbc4', outer: '#00796b', dot: '#00796b' },
+    { key: 'pending',  gradId: 'usr-pending',   inner: '#ef9a9a', outer: '#c62828', dot: '#c62828' },
 ];
 
 const DonutTip = ({ active, payload }: any) => {
@@ -188,17 +189,17 @@ const DonutTip = ({ active, payload }: any) => {
     );
 };
 
-function StatDonut({ label, segs, activeCount, inactiveCount, isActive, isDimmed, onHover, onLeave }: {
-    label: string; segs: DonutSeg[];
-    activeCount: number; inactiveCount: number;
+type DonutSlice = { key: string; count: number; label: string };
+
+function StatDonut({ label, segs, slices, isActive, isDimmed, onHover, onLeave }: {
+    label: string; segs: DonutSeg[]; slices: DonutSlice[];
     isActive: boolean; isDimmed: boolean; onHover: () => void; onLeave: () => void;
 }) {
     const { t } = useTranslation();
-    const total = activeCount + inactiveCount;
-    const data = total === 0 ? [] : [
-        { key: 'active',   name: t('Active'),   value: activeCount,   pct: ((activeCount / total) * 100).toFixed(1) },
-        { key: 'inactive', name: t('Inactive'), value: inactiveCount, pct: ((inactiveCount / total) * 100).toFixed(1) },
-    ];
+    const total = slices.reduce((s, sl) => s + sl.count, 0);
+    const data = total === 0 ? [] : slices
+        .filter(sl => sl.count > 0)
+        .map(sl => ({ key: sl.key, name: t(sl.label), value: sl.count, pct: ((sl.count / total) * 100).toFixed(1) }));
 
     return (
         <Box onMouseEnter={onHover} onMouseLeave={onLeave}
@@ -332,31 +333,31 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Row 1 — Pending Users */}
-                    <Box sx={{ maxWidth: 340 }}>
-                        <StatCard {...byTitle['Pending Users']} {...hover('Pending Users')} />
-                    </Box>
-
-                    {/* Row 2 — Labor Offers | Material Offers | Accounts Donut */}
+                    {/* Row 1 — Labor Offers | Material Offers | Accounts Donut */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                         {chartKeys.slice(0, 2).map(c => (
                             <Chart30Day key={c.key} title={c.title} data={c.data} loading={trendLoading} {...hover(c.key)} />
                         ))}
                         <StatDonut label='Accounts' segs={ACCOUNT_SEGS}
-                            activeCount={dashboardData.activeAccounts ?? 0}
-                            inactiveCount={dashboardData.inactiveAccounts ?? 0}
+                            slices={[
+                                { key: 'active',   count: dashboardData.activeAccounts   ?? 0, label: 'Active' },
+                                { key: 'inactive', count: dashboardData.inactiveAccounts ?? 0, label: 'Inactive' },
+                            ]}
                             {...hover('Accounts')}
                         />
                     </Box>
 
-                    {/* Row 3 — Labor Catalog | Materials Catalog | Users Donut */}
+                    {/* Row 2 — Labor Catalog | Materials Catalog | Users Donut */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                         {chartKeys.slice(2).map(c => (
                             <Chart30Day key={c.key} title={c.title} data={c.data} loading={trendLoading} {...hover(c.key)} />
                         ))}
                         <StatDonut label='Users' segs={USER_SEGS}
-                            activeCount={dashboardData.activeUsers ?? 0}
-                            inactiveCount={dashboardData.inactiveUsers ?? 0}
+                            slices={[
+                                { key: 'active',   count: dashboardData.activeUsers   ?? 0, label: 'Active' },
+                                { key: 'inactive', count: dashboardData.inactiveUsers ?? 0, label: 'Inactive' },
+                                { key: 'pending',  count: Number(byTitle['Pending Users']?.count ?? 0), label: 'Pending' },
+                            ]}
                             {...hover('Users')}
                         />
                     </Box>
