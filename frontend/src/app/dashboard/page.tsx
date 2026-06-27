@@ -17,7 +17,7 @@ import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
 const ICON_COLOR = '#00ABBE';
-const ICON_SX = { fontSize: 38, color: ICON_COLOR, opacity: 0.75, mb: 1 };
+const ICON_SX = { fontSize: 38, color: ICON_COLOR, opacity: 0.8 };
 
 const CARD_ICONS: Record<string, React.ReactNode> = {
     'Pending Users':      <HourglassEmptyOutlinedIcon sx={ICON_SX} />,
@@ -29,6 +29,22 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
     'Materials Catalog':  <CategoryOutlinedIcon sx={ICON_SX} />,
 };
 
+// Unique gradient per card position — logo teal/green/cyan palette, low saturation
+const CARD_GRADIENTS = [
+    'linear-gradient(145deg, #ffffff 35%, #d8f5ed 100%)',  // light mint-green
+    'linear-gradient(155deg, #ffffff 35%, #d6f4f8 100%)',  // pale cyan
+    'linear-gradient(135deg, #ffffff 35%, #d2eff8 100%)',  // sky blue
+    'linear-gradient(150deg, #ffffff 35%, #cef3ec 100%)',  // aqua-green
+    'linear-gradient(140deg, #ffffff 35%, #d4f2f9 100%)',  // ice blue
+    'linear-gradient(160deg, #ffffff 35%, #d0f4ef 100%)',  // teal-mint
+    'linear-gradient(130deg, #ffffff 35%, #ccf0f8 100%)',  // cool cyan
+];
+
+function formatCount(val: string): string {
+    const n = Number(val);
+    if (isNaN(n)) return val;
+    return n.toLocaleString('fr-FR'); // space as thousands separator: 4 493
+}
 
 export default function DashboardPage() {
     const mounted = useRef(false);
@@ -68,31 +84,45 @@ export default function DashboardPage() {
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
-                <Box sx={{ mt: 4 }}>
-                    {/* Row 1 — 4 cards */}
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
-                        {topRow.map((field, index) => (
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                <StatCard {...field} />
-                            </Grid>
-                        ))}
-                    </Grid>
+                /* Mesh gradient background — soft color blobs behind the cards */
+                <Box sx={{ mt: 4, position: 'relative', borderRadius: 4, overflow: 'hidden', p: { xs: 2, md: 3 } }}>
 
-                    {/* Row 2 — 3 cards centered */}
-                    <Grid container spacing={3} justifyContent='center'>
-                        {bottomRow.map((field, index) => (
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                <StatCard {...field} />
-                            </Grid>
-                        ))}
-                    </Grid>
+                    {/* Soft blobs — low-saturation logo colors */}
+                    <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+                        <Box sx={{ position: 'absolute', width: 420, height: 340, borderRadius: '50%', top: -80, left: -60,  background: 'radial-gradient(ellipse, rgba(80,200,140,0.18) 0%, transparent 70%)', filter: 'blur(48px)' }} />
+                        <Box sx={{ position: 'absolute', width: 360, height: 300, borderRadius: '50%', top: 20,  left: '28%', background: 'radial-gradient(ellipse, rgba(0,200,220,0.15) 0%, transparent 70%)', filter: 'blur(52px)' }} />
+                        <Box sx={{ position: 'absolute', width: 380, height: 320, borderRadius: '50%', top: -40, right: -40,  background: 'radial-gradient(ellipse, rgba(30,160,220,0.14) 0%, transparent 70%)', filter: 'blur(56px)' }} />
+                        <Box sx={{ position: 'absolute', width: 300, height: 260, borderRadius: '50%', bottom: -60, left: '15%',background: 'radial-gradient(ellipse, rgba(0,185,200,0.13) 0%, transparent 70%)', filter: 'blur(44px)' }} />
+                        <Box sx={{ position: 'absolute', width: 280, height: 240, borderRadius: '50%', bottom: -40, right: '20%',background: 'radial-gradient(ellipse, rgba(40,170,210,0.12) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+                    </Box>
+
+                    {/* Cards */}
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                        {/* Row 1 — 4 cards */}
+                        <Grid container spacing={3} sx={{ mb: 3 }}>
+                            {topRow.map((field, index) => (
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
+                                    <StatCard {...field} gradient={CARD_GRADIENTS[index]} />
+                                </Grid>
+                            ))}
+                        </Grid>
+
+                        {/* Row 2 — 3 cards centered */}
+                        <Grid container spacing={3} justifyContent='center'>
+                            {bottomRow.map((field, index) => (
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
+                                    <StatCard {...field} gradient={CARD_GRADIENTS[4 + index]} />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Box>
                 </Box>
             )}
         </PageContents>
     );
 }
 
-function StatCard({ title, count, hasPending = false }: StatCardProps) {
+function StatCard({ title, count, hasPending = false, gradient }: StatCardProps & { gradient?: string }) {
     const { t } = useTranslation();
     const icon = CARD_ICONS[title] ?? null;
 
@@ -109,19 +139,19 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 justifyContent: 'center',
                 alignItems: 'center',
                 textAlign: 'center',
-                background: 'linear-gradient(145deg, #ffffff 45%, #e2f6f9 100%)',
-                border: '1px solid rgba(0,171,190,0.1)',
-                boxShadow: '0 2px 14px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+                background: gradient ?? CARD_GRADIENTS[0],
+                border: '1px solid rgba(255,255,255,0.7)',
+                boxShadow: '0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
                 transition: 'box-shadow 0.25s ease, transform 0.25s ease',
                 cursor: 'default',
                 '&:hover': {
-                    boxShadow: '0 8px 32px rgba(0,171,190,0.14), 0 3px 8px rgba(0,0,0,0.06)',
+                    boxShadow: '0 10px 36px rgba(0,171,190,0.16), 0 3px 8px rgba(0,0,0,0.06)',
                     transform: 'translateY(-4px)',
                 },
             }}
         >
-            {icon}
-            <Typography variant='subtitle1' fontWeight={600} color='text.secondary' sx={{ mb: 0.5 }}>
+            {icon && <Box sx={{ mb: 1.5 }}>{icon}</Box>}
+            <Typography variant='subtitle1' fontWeight={600} color='text.secondary' sx={{ mb: 0.5, lineHeight: 1.3 }}>
                 {t(title)}
             </Typography>
             <Typography
@@ -129,7 +159,7 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 fontWeight='bold'
                 sx={{ color: hasPending ? 'error.main' : ICON_COLOR }}
             >
-                {count}
+                {formatCount(count)}
             </Typography>
         </Box>
     );
