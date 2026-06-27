@@ -1,20 +1,38 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Grid, Paper } from '@mui/material';
+import { Box, Typography, Grid, Chip, CircularProgress } from '@mui/material';
 import { keyframes } from '@emotion/react';
-import { PieChart, Pie, Cell, Tooltip as RTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, BarChart as RBarChart } from 'recharts';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import { useRouter } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 import { usePermissions } from '@/api/auth';
 
-import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
-import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
-import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
-
 const NUMBER_COLOR = '#00717C';
+const TEXT_DARK = '#424242';
+const GRID_STROKE = 'rgba(0,0,0,0.05)';
+const BAR_TOP = '#a8e6df';
+const BAR_BOTTOM = '#007a6e';
+const BAR_STROKE = '#005f56';
+const BAR_LAST_TOP = '#e1bee7';
+const BAR_LAST_BOTTOM = '#6a1b9a';
+const BAR_LAST_STROKE = '#4a148c';
+const BADGE_GREEN_BG = '#c8e6c9';
+const BADGE_GREEN_TEXT = '#2e7d32';
+
+const AM_MONTHS_SHORT = ['Հնվ','Փտվ','Մրտ','Ապр','Մայ','Հնс','Հলс','Օгс','Сеп','Հоկ','Ноյ','Դек'];
+const fmtDay = (iso: string) => {
+    const d = new Date(iso);
+    return `${d.getDate()} ${AM_MONTHS_SHORT[d.getMonth()]}`;
+};
 
 const CARD_ICONS: Record<string, React.ReactNode> = {
     'Pending Users': <HourglassEmptyOutlinedIcon sx={{ fontSize: 36, color: '#00ABBE', opacity: 0.9 }} />,
@@ -39,127 +57,182 @@ function formatCount(val: string | number): string {
     return n.toLocaleString('fr-FR');
 }
 
-// ── Shared chart Paper container style matching Structural Analysis ──────────
-const chartPaperSx = {
-    border: '1px solid #e0f0f4',
-    borderRadius: 3,
-    p: 2.5,
-    background: '#fff',
-    height: '100%',
-    boxSizing: 'border-box' as const,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-};
+// ── 30-Day Bar Chart — matches Widget30Day exactly ───────────────────────────
+type TrendPoint = { day: string; value: number; timestamp: string };
 
-// ── Donut: Offers Breakdown ──────────────────────────────────────────────────
-const DONUT_SEGMENTS = [
-    { key: 'labor',    label: 'Labor Offers',    gradId: 'pie-labor',    inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
-    { key: 'material', label: 'Material Offers', gradId: 'pie-material', inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
-];
-
-const DonutTooltip = ({ active, payload }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-        <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
-            <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{payload[0].name}</Typography>
-            <Typography variant='body2' sx={{ color: '#00ABBE' }}>{formatCount(payload[0].value)}</Typography>
-            <Typography variant='caption' sx={{ color: 'text.secondary' }}>{payload[0].payload.pct}%</Typography>
-        </Paper>
-    );
-};
-
-function OffersDonut({ laborOffers, materialOffers }: { laborOffers: number; materialOffers: number }) {
+function Offers30DayChart({ title, data, loading }: { title: string; data: TrendPoint[]; loading: boolean }) {
     const { t } = useTranslation();
-    const total = laborOffers + materialOffers;
-    const data = total === 0 ? [] : [
-        { key: 'labor',    name: t('Labor Offers'),    value: laborOffers,    pct: ((laborOffers / total) * 100).toFixed(1) },
-        { key: 'material', name: t('Material Offers'), value: materialOffers, pct: ((materialOffers / total) * 100).toFixed(1) },
-    ];
+
+    const chartData = data.map((p, i) => ({
+        day: fmtDay(p.day),
+        value: p.value,
+        ts: new Date(p.timestamp).getTime(),
+        isLast: i === data.length - 1,
+    }));
+
+    const currentValue = chartData.length > 0 ? chartData[chartData.length - 1].value : 0;
+    const prevValue    = chartData.length > 1 ? chartData[chartData.length - 2].value : currentValue;
+    const pctChange    = prevValue !== 0 ? ((currentValue - prevValue) / prevValue) * 100 : 0;
+
+    const activeValues = chartData.map(d => d.value).filter(v => v > 0);
+    const yMin = activeValues.length > 0 ? Math.min(...activeValues) : 0;
+    const yMax = activeValues.length > 0 ? Math.max(...activeValues) : 0;
+    const spread = yMax - yMin;
+    const pad = spread > 0 ? spread * 0.15 : yMax * 0.02;
+    const yDomain: [number, number] = activeValues.length > 1
+        ? [Math.max(0, Math.floor(yMin - pad)), Math.ceil(yMax + pad)]
+        : [0, yMax > 0 ? yMax * 1.1 : 1];
 
     return (
-        <Paper elevation={0} sx={chartPaperSx}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>{t('Offers Breakdown')}</Typography>
-            {data.length === 0 ? (
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Typography variant='body2' color='text.secondary'>—</Typography>
+        <Box sx={{
+            background: 'rgba(255,255,255,0.72)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            borderRadius: 3,
+            boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+            border: '1px solid rgba(0,171,190,0.14)',
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            minHeight: 280,
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            '&:hover': {
+                borderColor: 'rgba(0,171,190,0.45)',
+                boxShadow: '0 4px 24px rgba(0,171,190,0.14), 0 1px 6px rgba(0,0,0,0.06)',
+            },
+        }}>
+            {/* Header row */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.75 }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 400, color: TEXT_DARK }}>
+                    {t(title)}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <CalendarMonthIcon sx={{ fontSize: 18, color: '#00A390' }} />
+                    <Typography variant='body2' sx={{ fontSize: 14, color: TEXT_DARK }}>
+                        {t('30 days')}
+                    </Typography>
                 </Box>
+            </Box>
+
+            {/* Current value + trend */}
+            <Box sx={{ mb: 1 }}>
+                <Typography component='span' sx={{ fontSize: 24, fontWeight: 600, color: '#212121' }}>
+                    {Math.round(currentValue).toLocaleString()}
+                </Typography>
+                <Chip
+                    size='small'
+                    icon={pctChange >= 0
+                        ? <TrendingUpIcon sx={{ fontSize: 14, color: BADGE_GREEN_TEXT }} />
+                        : <TrendingDownIcon sx={{ fontSize: 14, color: '#c62828' }} />}
+                    label={`${pctChange >= 0 ? '+' : ''}${pctChange.toFixed(1).replace('.', ',')}%`}
+                    sx={{
+                        ml: 1.5, height: 22, fontSize: '0.75rem', fontWeight: 500,
+                        bgcolor: pctChange >= 0 ? BADGE_GREEN_BG : 'rgba(244,67,54,0.15)',
+                        color: pctChange >= 0 ? BADGE_GREEN_TEXT : '#c62828',
+                        borderRadius: 1.5,
+                        '& .MuiChip-icon': { color: 'inherit' },
+                    }}
+                />
+            </Box>
+
+            {/* Chart */}
+            {loading ? (
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CircularProgress size={32} />
+                </Box>
+            ) : chartData.length > 0 ? (
+                <ResponsiveContainer width='100%' height={162}>
+                    <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                        <defs>
+                            <linearGradient id={`barBlue-${title}`} x1='0' y1='0' x2='0' y2='1'>
+                                <stop offset='0%' stopColor={BAR_TOP} />
+                                <stop offset='100%' stopColor={BAR_BOTTOM} />
+                            </linearGradient>
+                            <linearGradient id={`barPurple-${title}`} x1='0' y1='0' x2='0' y2='1'>
+                                <stop offset='0%' stopColor={BAR_LAST_TOP} />
+                                <stop offset='100%' stopColor={BAR_LAST_BOTTOM} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid stroke={GRID_STROKE} strokeWidth={0.8} vertical={false} />
+                        <XAxis dataKey='day' tick={{ fontSize: 11, fill: TEXT_DARK }} axisLine={false} tickLine={false} />
+                        <YAxis
+                            tick={{ fontSize: 11, fill: TEXT_DARK }}
+                            axisLine={false} tickLine={false}
+                            domain={yDomain}
+                            tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}k` : String(Math.round(v))}
+                        />
+                        <Tooltip
+                            formatter={value => [value != null ? Math.round(Number(value)).toLocaleString() : '', '']}
+                            contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}
+                        />
+                        <Bar dataKey='value' radius={[3, 3, 0, 0]} maxBarSize={14}>
+                            {chartData.map((entry, i) => (
+                                <Cell
+                                    key={i}
+                                    fill={entry.isLast ? `url(#barPurple-${title})` : `url(#barBlue-${title})`}
+                                    stroke={entry.isLast ? BAR_LAST_STROKE : BAR_STROKE}
+                                    strokeWidth={0.5}
+                                />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
             ) : (
-                <>
-                    <Box sx={{ flex: 1, minHeight: 160, position: 'relative' }}>
-                        <ResponsiveContainer width='100%' height='100%'>
-                            <PieChart>
-                                <defs>
-                                    {DONUT_SEGMENTS.map(s => (
-                                        <radialGradient key={s.gradId} id={s.gradId} cx='50%' cy='50%' r='50%'>
-                                            <stop offset='0%' stopColor={s.inner} />
-                                            <stop offset='100%' stopColor={s.outer} />
-                                        </radialGradient>
-                                    ))}
-                                </defs>
-                                <Pie data={data} cx='50%' cy='50%' innerRadius={52} outerRadius={80} paddingAngle={2} dataKey='value' strokeWidth={0}>
-                                    {data.map((entry) => {
-                                        const seg = DONUT_SEGMENTS.find(s => s.key === entry.key);
-                                        return <Cell key={entry.key} fill={seg ? `url(#${seg.gradId})` : '#ccc'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
-                                    })}
-                                </Pie>
-                                <RTooltip content={<DonutTooltip />} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        {/* Center label */}
-                        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                            <Typography variant='h6' sx={{ fontWeight: 700, color: NUMBER_COLOR, lineHeight: 1 }}>{formatCount(total)}</Typography>
-                            <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>total</Typography>
-                        </Box>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1.5, flexWrap: 'wrap' }}>
-                        {data.map(d => {
-                            const seg = DONUT_SEGMENTS.find(s => s.key === d.key);
-                            return (
-                                <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: seg?.dot, flexShrink: 0 }} />
-                                    <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                                        {d.name} — {formatCount(d.value)} ({d.pct}%)
-                                    </Typography>
-                                </Box>
-                            );
-                        })}
-                    </Box>
-                </>
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant='body2' color='text.secondary'>{t('No data available yet.')}</Typography>
+                </Box>
             )}
-        </Paper>
+        </Box>
     );
 }
 
-// ── Bar: Inventory & Catalogs ────────────────────────────────────────────────
+// ── Inventory & Catalogs bar chart ───────────────────────────────────────────
 const BAR_GRADS = [
-    { id: 'bar-labor',    top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
-    { id: 'bar-material', top: '#4EE89A', bottom: '#1CA461', stroke: '#148048' },
+    { id: 'cat-labor',    top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
+    { id: 'cat-material', top: '#4EE89A', bottom: '#1CA461', stroke: '#148048' },
 ];
 
-const BarTooltip = ({ active, payload, label }: any) => {
+const CatTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     return (
-        <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
+        <Box sx={{ background: '#fff', border: '1px solid #e0f0f4', borderRadius: 2, p: 1.5, minWidth: 120, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
             <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{label}</Typography>
             <Typography variant='body2' sx={{ color: '#00ABBE' }}>{formatCount(payload[0].value)}</Typography>
-        </Paper>
+        </Box>
     );
 };
 
 function CatalogsBar({ laborCatalog, materialCatalog }: { laborCatalog: number; materialCatalog: number }) {
     const { t } = useTranslation();
     const data = [
-        { name: t('Labor Catalog'),    value: laborCatalog,    gradId: 'bar-labor' },
-        { name: t('Materials Catalog'), value: materialCatalog, gradId: 'bar-material' },
+        { name: t('Labor Catalog'),     value: laborCatalog,    gradId: 'cat-labor' },
+        { name: t('Materials Catalog'), value: materialCatalog, gradId: 'cat-material' },
     ];
 
     return (
-        <Paper elevation={0} sx={chartPaperSx}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>{t('Inventory & Catalogs')}</Typography>
-            <Box sx={{ flex: 1, minHeight: 160 }}>
+        <Box sx={{
+            background: 'rgba(255,255,255,0.72)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            borderRadius: 3,
+            boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+            border: '1px solid rgba(0,171,190,0.14)',
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            minHeight: 280,
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            '&:hover': {
+                borderColor: 'rgba(0,171,190,0.45)',
+                boxShadow: '0 4px 24px rgba(0,171,190,0.14), 0 1px 6px rgba(0,0,0,0.06)',
+            },
+        }}>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1, fontSize: 14, color: TEXT_DARK }}>{t('Inventory & Catalogs')}</Typography>
+            <Box sx={{ flex: 1, minHeight: 200 }}>
                 <ResponsiveContainer width='100%' height='100%'>
-                    <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap='40%'>
+                    <RBarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap='40%'>
                         <defs>
                             {BAR_GRADS.map(g => (
                                 <linearGradient key={g.id} id={g.id} x1='0' y1='0' x2='0' y2='1'>
@@ -169,16 +242,16 @@ function CatalogsBar({ laborCatalog, materialCatalog }: { laborCatalog: number; 
                             ))}
                         </defs>
                         <CartesianGrid vertical={false} strokeDasharray='3 3' stroke='#f0f0f0' />
-                        <XAxis dataKey='name' tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
+                        <XAxis dataKey='name' tick={{ fontSize: 12, fill: TEXT_DARK }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontSize: 11, fill: '#9e9e9e' }} axisLine={false} tickLine={false} width={44} />
-                        <RTooltip content={<BarTooltip />} cursor={{ fill: 'rgba(0,171,190,0.06)' }} />
+                        <Tooltip content={<CatTooltip />} cursor={{ fill: 'rgba(0,171,190,0.06)' }} />
                         <Bar dataKey='value' radius={[4, 4, 0, 0]} maxBarSize={72}>
                             {data.map(d => {
                                 const g = BAR_GRADS.find(gr => gr.id === d.gradId)!;
                                 return <Cell key={d.name} fill={`url(#${d.gradId})`} stroke={g.stroke} strokeWidth={0.5} />;
                             })}
                         </Bar>
-                    </BarChart>
+                    </RBarChart>
                 </ResponsiveContainer>
             </Box>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1.5, flexWrap: 'wrap' }}>
@@ -191,7 +264,7 @@ function CatalogsBar({ laborCatalog, materialCatalog }: { laborCatalog: number; 
                     </Box>
                 ))}
             </Box>
-        </Paper>
+        </Box>
     );
 }
 
@@ -214,7 +287,6 @@ function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHove
                 px: 3,
                 py: 3,
                 borderRadius: 3,
-                borderTop: '3px solid rgba(0,171,190,0.35)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -224,7 +296,7 @@ function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHove
                 backdropFilter: 'blur(18px)',
                 WebkitBackdropFilter: 'blur(18px)',
                 border: '1px solid rgba(0,171,190,0.14)',
-                borderTopColor: 'rgba(0,171,190,0.35)',
+                borderTop: '3px solid rgba(0,171,190,0.35)',
                 boxShadow: isActive
                     ? '0 12px 40px rgba(0,171,190,0.18), 0 4px 12px rgba(0,0,0,0.07)'
                     : '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
@@ -261,6 +333,8 @@ export default function DashboardPage() {
     const router = useRouter();
     const { permissionsSet } = usePermissions();
     const [dashboardData, setDashboardData] = useState<any | null>(null);
+    const [trendData, setTrendData] = useState<{ labor: TrendPoint[]; material: TrendPoint[] } | null>(null);
+    const [trendLoading, setTrendLoading] = useState(true);
     const [dataRequested, setDataRequested] = useState(false);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const { t } = useTranslation();
@@ -273,22 +347,25 @@ export default function DashboardPage() {
     useEffect(() => {
         mounted.current = true;
         if (!dataRequested) {
-            Api.requestSession<any>({ command: 'dashboard/fetch_data' }).then((data) => {
-                if (mounted.current) setDashboardData(data);
+            Promise.all([
+                Api.requestSession<any>({ command: 'dashboard/fetch_data' }),
+                Api.requestSession<any>({ command: 'dashboard/fetch_offers_trend' }),
+            ]).then(([main, trend]) => {
+                if (mounted.current) {
+                    setDashboardData(main);
+                    setTrendData(trend);
+                    setTrendLoading(false);
+                }
             });
             setDataRequested(true);
-            return;
         }
         return () => { mounted.current = false; };
     }, [dataRequested]);
 
     const raw: StatCardProps[] = dashboardData?.dashboard ?? [];
     const byTitle = Object.fromEntries(raw.map(c => [c.title, c]));
-
     const statCards = ['Pending Users', 'Users', 'Accounts'].map(k => byTitle[k]).filter(Boolean);
-    const laborOffers   = Number(byTitle['Labor Offers']?.count ?? 0);
-    const materialOffers = Number(byTitle['Material Offers']?.count ?? 0);
-    const laborCatalog  = Number(byTitle['Labor Catalog']?.count ?? 0);
+    const laborCatalog    = Number(byTitle['Labor Catalog']?.count ?? 0);
     const materialCatalog = Number(byTitle['Materials Catalog']?.count ?? 0);
 
     return (
@@ -297,9 +374,10 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Top row — two charts */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, minHeight: 300 }}>
-                        <OffersDonut laborOffers={laborOffers} materialOffers={materialOffers} />
+                    {/* Top row — offers trend charts + catalog bar */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
+                        <Offers30DayChart title='Labor Offers'    data={trendData?.labor    ?? []} loading={trendLoading} />
+                        <Offers30DayChart title='Material Offers' data={trendData?.material ?? []} loading={trendLoading} />
                         <CatalogsBar laborCatalog={laborCatalog} materialCatalog={materialCatalog} />
                     </Box>
 
