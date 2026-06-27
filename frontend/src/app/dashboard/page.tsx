@@ -332,7 +332,7 @@ export default function DashboardPage() {
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: '90px' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: '10px' }}>
                     {/* Row 1 — Labor Offers | Material Offers | Accounts Donut */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                         {chartKeys.slice(0, 2).map(c => (
