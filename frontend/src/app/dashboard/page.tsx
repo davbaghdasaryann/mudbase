@@ -17,9 +17,9 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
-const ICON_COLOR = '#00717C';
+const ICON_COLOR = '#00ABBE';
 const NUMBER_COLOR = '#00717C';
-const ICON_SX = { fontSize: 38, color: ICON_COLOR, opacity: 0.85 };
+const ICON_SX = { fontSize: 36, color: ICON_COLOR, opacity: 0.9 };
 
 const CARD_ICONS: Record<string, React.ReactNode> = {
     'Pending Users':      <HourglassEmptyOutlinedIcon sx={ICON_SX} />,
@@ -83,19 +83,13 @@ export default function DashboardPage() {
     const bottomRow = cards.slice(4);
 
     return (
-        <PageContents requiredPermission='DASH_USE' title='Dashboard'>
+        <PageContents requiredPermission='DASH_USE' title='Dashboard' sx={{ background: '#F5F9F9', minHeight: '100%' }}>
             {!dashboardData ? (
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
-                    <Box sx={{ position: 'relative', p: { xs: 2, md: 3 } }}>
-                        {/* Soft mesh blobs — localized to the card area only */}
-                        <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 4 }}>
-                            <Box sx={{ position: 'absolute', width: 480, height: '140%', borderRadius: '50%', top: '-20%', left: '-60px', background: 'radial-gradient(ellipse, rgba(178,220,186,0.52) 0%, transparent 65%)', filter: 'blur(64px)' }} />
-                            <Box sx={{ position: 'absolute', width: 480, height: '140%', borderRadius: '50%', top: '-20%', right: '-60px', background: 'radial-gradient(ellipse, rgba(178,232,242,0.48) 0%, transparent 65%)', filter: 'blur(64px)' }} />
-                        </Box>
-
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Box sx={{ p: { xs: 2, md: 3 } }}>
+                        <Box>
                             {/* Row 1 — 4 cards */}
                             <Grid container spacing={3} sx={{ mb: 3 }}>
                                 {topRow.map((field, index) => (
@@ -154,19 +148,21 @@ function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHove
                 minHeight: 170,
                 px: 3,
                 py: 3.5,
-                borderRadius: '16px',
+                borderRadius: 3,
+                borderTop: '3px solid rgba(0,171,190,0.35)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
                 textAlign: 'center',
-                background: 'rgba(255, 255, 255, 0.45)',
-                backdropFilter: 'blur(25px)',
-                WebkitBackdropFilter: 'blur(25px)',
-                border: '1px solid rgba(255, 255, 255, 0.6)',
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                border: '1px solid rgba(0,171,190,0.14)',
+                borderTopColor: 'rgba(0,171,190,0.35)',
                 boxShadow: isActive
-                    ? '0 20px 56px rgba(0,171,190,0.20), 0 6px 18px rgba(0,0,0,0.08)'
-                    : '0 8px 32px 0 rgba(0, 0, 0, 0.04)',
+                    ? '0 12px 40px rgba(0,171,190,0.18), 0 4px 12px rgba(0,0,0,0.07)'
+                    : '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
                 opacity: isDimmed ? 0.5 : 1,
                 transform: isActive ? 'scale(1.02)' : 'scale(1)',
                 transition: 'opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
