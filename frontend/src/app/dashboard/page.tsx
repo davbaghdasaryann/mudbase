@@ -90,6 +90,7 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
 
     return (
         <Card
+            elevation={0}
             sx={{
                 width: '100%',
                 p: 3,
@@ -99,14 +100,15 @@ function StatCard({ title, count, hasPending = false }: StatCardProps) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 textAlign: 'center',
-                background: 'rgba(255, 255, 255, 0.22)',
+                '--Paper-bg': 'transparent',
+                backgroundColor: 'rgba(255, 255, 255, 0.22)',
                 backdropFilter: 'blur(24px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                 border: '1px solid rgba(255, 255, 255, 0.6)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
-                transition: 'box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease',
+                transition: 'box-shadow 0.3s ease, transform 0.3s ease, backgroundColor 0.3s ease',
                 '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.38)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.38)',
                     boxShadow: '0 16px 48px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.95)',
                     transform: 'translateY(-5px)',
                 },
