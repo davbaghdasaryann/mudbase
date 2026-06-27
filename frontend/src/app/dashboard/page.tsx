@@ -78,9 +78,10 @@ export default function DashboardPage() {
                     {/* Soft mesh blobs — localized to the card area only */}
                     <Box sx={{ position: 'relative', p: { xs: 2, md: 3 } }}>
                         <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 4 }}>
-                            <Box sx={{ position: 'absolute', width: 500, height: 400, borderRadius: '50%', top: -100, left: -80, background: 'radial-gradient(ellipse, rgba(178,220,186,0.55) 0%, transparent 65%)', filter: 'blur(60px)' }} />
-                            <Box sx={{ position: 'absolute', width: 420, height: 360, borderRadius: '50%', bottom: -80, right: -60, background: 'radial-gradient(ellipse, rgba(178,232,242,0.5) 0%, transparent 65%)', filter: 'blur(60px)' }} />
-                            <Box sx={{ position: 'absolute', width: 320, height: 280, borderRadius: '50%', top: '40%', left: '35%', background: 'radial-gradient(ellipse, rgba(200,235,240,0.35) 0%, transparent 65%)', filter: 'blur(50px)' }} />
+                            {/* Left column — mint green */}
+                            <Box sx={{ position: 'absolute', width: 480, height: '140%', borderRadius: '50%', top: '-20%', left: '-60px', background: 'radial-gradient(ellipse, rgba(178,220,186,0.52) 0%, transparent 65%)', filter: 'blur(64px)' }} />
+                            {/* Right column — sky cyan */}
+                            <Box sx={{ position: 'absolute', width: 480, height: '140%', borderRadius: '50%', top: '-20%', right: '-60px', background: 'radial-gradient(ellipse, rgba(178,232,242,0.48) 0%, transparent 65%)', filter: 'blur(64px)' }} />
                         </Box>
 
                         <Box sx={{ position: 'relative', zIndex: 1 }}>
