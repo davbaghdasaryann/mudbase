@@ -333,7 +333,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const { permissionsSet } = usePermissions();
     const [dashboardData, setDashboardData] = useState<any | null>(null);
-    const [trendData, setTrendData] = useState<{ labor: TrendPoint[]; material: TrendPoint[] } | null>(null);
+    const [trendData, setTrendData] = useState<{ laborOffers: TrendPoint[]; materialOffers: TrendPoint[]; laborItems: TrendPoint[]; materialItems: TrendPoint[] } | null>(null);
     const [trendLoading, setTrendLoading] = useState(true);
     const [dataRequested, setDataRequested] = useState(false);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -365,8 +365,6 @@ export default function DashboardPage() {
     const raw: StatCardProps[] = dashboardData?.dashboard ?? [];
     const byTitle = Object.fromEntries(raw.map(c => [c.title, c]));
     const statCards = ['Pending Users', 'Users', 'Accounts'].map(k => byTitle[k]).filter(Boolean);
-    const laborCatalog    = Number(byTitle['Labor Catalog']?.count ?? 0);
-    const materialCatalog = Number(byTitle['Materials Catalog']?.count ?? 0);
 
     return (
         <PageContents requiredPermission='DASH_USE' title='Dashboard' sx={{ background: '#F5F9F9', minHeight: '100%' }}>
@@ -374,14 +372,19 @@ export default function DashboardPage() {
                 <Typography variant='h6'>{t('Loading...')}</Typography>
             ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Top row — offers trend charts + catalog bar */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
-                        <Offers30DayChart title='Labor Offers'    data={trendData?.labor    ?? []} loading={trendLoading} />
-                        <Offers30DayChart title='Material Offers' data={trendData?.material ?? []} loading={trendLoading} />
-                        <CatalogsBar laborCatalog={laborCatalog} materialCatalog={materialCatalog} />
+                    {/* Row 1 — Labor & Material Offers 30-day charts */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                        <Offers30DayChart title='Labor Offers'    data={trendData?.laborOffers    ?? []} loading={trendLoading} />
+                        <Offers30DayChart title='Material Offers' data={trendData?.materialOffers ?? []} loading={trendLoading} />
                     </Box>
 
-                    {/* Bottom row — 3 stat cards */}
+                    {/* Row 2 — Labor & Material Catalog 30-day charts */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                        <Offers30DayChart title='Labor Catalog'     data={trendData?.laborItems    ?? []} loading={trendLoading} />
+                        <Offers30DayChart title='Materials Catalog' data={trendData?.materialItems ?? []} loading={trendLoading} />
+                    </Box>
+
+                    {/* Row 3 — 3 stat cards */}
                     <Grid container spacing={3}>
                         {statCards.map((card, index) => (
                             <Grid size={{ xs: 12, sm: 4 }} key={card.title} sx={{ display: 'flex' }}>

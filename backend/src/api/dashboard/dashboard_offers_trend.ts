@@ -6,13 +6,16 @@ import { Permissions } from '@src/tsmudbase/permissions_setup';
 registerApiSession('dashboard/fetch_offers_trend', async (req, res, session) => {
     session.assertPermission(Permissions.DashboardUse);
 
-    const laborColl = Db.getLaborOffersCollection();
-    const materialColl = Db.getMaterialOffersCollection();
+    const laborOffersColl   = Db.getLaborOffersCollection();
+    const materialOffersColl = Db.getMaterialOffersCollection();
+    const laborItemsColl    = Db.getLaborItemsCollection();
+    const materialItemsColl = Db.getMaterialItemsCollection();
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const dailyNewAgg = (coll: any) => coll.aggregate([
+    // For collections with createdAt field
+    const dailyNewByCreatedAt = (coll: any) => coll.aggregate([
         { $match: { createdAt: { $gte: thirtyDaysAgo } } },
         { $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -21,11 +24,31 @@ registerApiSession('dashboard/fetch_offers_trend', async (req, res, session) => 
         { $sort: { _id: 1 } },
     ]).toArray();
 
-    const [laborDailyNew, materialDailyNew, laborTotal, materialTotal] = await Promise.all([
-        dailyNewAgg(laborColl),
-        dailyNewAgg(materialColl),
-        laborColl.countDocuments(),
-        materialColl.countDocuments(),
+    // For collections without createdAt — use ObjectId embedded timestamp
+    const dailyNewByObjectId = (coll: any) => coll.aggregate([
+        { $addFields: { _createdAt: { $toDate: '$_id' } } },
+        { $match: { _createdAt: { $gte: thirtyDaysAgo } } },
+        { $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$_createdAt' } },
+            count: { $sum: 1 },
+        }},
+        { $sort: { _id: 1 } },
+    ]).toArray();
+
+    const [
+        laborOffersDailyNew, materialOffersDailyNew,
+        laborItemsDailyNew,  materialItemsDailyNew,
+        laborOffersTotal,    materialOffersTotal,
+        laborItemsTotal,     materialItemsTotal,
+    ] = await Promise.all([
+        dailyNewByCreatedAt(laborOffersColl),
+        dailyNewByCreatedAt(materialOffersColl),
+        dailyNewByObjectId(laborItemsColl),
+        dailyNewByObjectId(materialItemsColl),
+        laborOffersColl.countDocuments(),
+        materialOffersColl.countDocuments(),
+        laborItemsColl.countDocuments(),
+        materialItemsColl.countDocuments(),
     ]);
 
     // Build ordered list of the last 30 days
@@ -47,7 +70,9 @@ registerApiSession('dashboard/fetch_offers_trend', async (req, res, session) => 
     };
 
     respondJsonData(res, {
-        labor:    buildCumulative(laborDailyNew,    laborTotal),
-        material: buildCumulative(materialDailyNew, materialTotal),
+        laborOffers:    buildCumulative(laborOffersDailyNew,   laborOffersTotal),
+        materialOffers: buildCumulative(materialOffersDailyNew, materialOffersTotal),
+        laborItems:     buildCumulative(laborItemsDailyNew,    laborItemsTotal),
+        materialItems:  buildCumulative(materialItemsDailyNew, materialItemsTotal),
     });
 });
