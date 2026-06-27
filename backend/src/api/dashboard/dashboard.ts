@@ -18,23 +18,29 @@ registerApiSession('dashboard/fetch_data', async (req, res, session) => {
     const userCountPromise = usersCollection.countDocuments();
     const pendingUserCountPromise = pendingUsersCollection.countDocuments();
     const accountCountPromise = accountsCollection.countDocuments();
+    const activeAccountCountPromise = accountsCollection.countDocuments({ isActive: true });
+    const inactiveAccountCountPromise = accountsCollection.countDocuments({ isActive: false });
     const laborOffersCountPromise = laborOffersCollection.countDocuments();
     const materialOffersCountPromise = materialOffersCollection.countDocuments();
     const laborItemsCountPromise = laborItemsCollection.countDocuments();
     const materialItemsCountPromise = materialItemsCollection.countDocuments();
 
     const [
-        userCount, 
+        userCount,
         pendingUserCount,
         accountCount,
+        activeAccountCount,
+        inactiveAccountCount,
         laborOffersCount,
         materialOffersCount,
         laborItemsCount,
         materialItemsCount,
     ] = await Promise.all([
-        userCountPromise, 
+        userCountPromise,
         pendingUserCountPromise,
         accountCountPromise,
+        activeAccountCountPromise,
+        inactiveAccountCountPromise,
         laborOffersCountPromise,
         materialOffersCountPromise,
         laborItemsCountPromise,
@@ -64,6 +70,8 @@ registerApiSession('dashboard/fetch_data', async (req, res, session) => {
 
 
     let data = {
+        activeAccounts: activeAccountCount,
+        inactiveAccounts: inactiveAccountCount,
         dashboard: [
             {
                 title: "Pending Users",
