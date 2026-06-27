@@ -30,15 +30,15 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
     'Materials Catalog':  <CategoryOutlinedIcon sx={ICON_SX} />,
 };
 
-// Subtle near-white cool gradient — matching reference aesthetic
+// Position-based gradient: left=green (#D4EDDA), right=sky-blue (#E1F5FE)
 const CARD_GRADIENTS = [
-    'linear-gradient(145deg, #f8fcfe 0%, #e8f5f9 100%)',
-    'linear-gradient(155deg, #f7fbfd 0%, #eaf6fa 100%)',
-    'linear-gradient(135deg, #f8fdfe 0%, #e6f4f8 100%)',
-    'linear-gradient(150deg, #f6fbfd 0%, #ebf7fa 100%)',
-    'linear-gradient(140deg, #f7fcfe 0%, #e8f5f9 100%)',
-    'linear-gradient(160deg, #f8fdfe 0%, #e9f6f9 100%)',
-    'linear-gradient(130deg, #f6fbfd 0%, #eaf6f9 100%)',
+    'linear-gradient(145deg, #D4EDDA 0%, #f5fbf6 100%)',  // card 0 — rich mint
+    'linear-gradient(145deg, #E2F1E4 0%, #E0F7FA 100%)',  // card 1 — mint → cyan
+    'linear-gradient(145deg, #E0F7FA 0%, #E2F1E4 100%)',  // card 2 — cyan → mint
+    'linear-gradient(145deg, #E1F5FE 0%, #E0F7FA 100%)',  // card 3 — sky blue
+    'linear-gradient(145deg, #D4EDDA 0%, #E0F7FA 100%)',  // card 4 — mint → cyan
+    'linear-gradient(145deg, #E0F7FA 0%, #E2F1E4 100%)',  // card 5 — cyan → mint
+    'linear-gradient(145deg, #E1F5FE 0%, #E0F7FA 100%)',  // card 6 — sky blue
 ];
 
 function formatCount(val: string): string {
