@@ -16,8 +16,9 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
-const ICON_COLOR = '#00ABBE';
-const ICON_SX = { fontSize: 38, color: ICON_COLOR, opacity: 0.8 };
+const ICON_COLOR = '#00717C';
+const NUMBER_COLOR = '#00717C';
+const ICON_SX = { fontSize: 38, color: ICON_COLOR, opacity: 0.85 };
 
 const CARD_ICONS: Record<string, React.ReactNode> = {
     'Pending Users':      <HourglassEmptyOutlinedIcon sx={ICON_SX} />,
@@ -29,15 +30,15 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
     'Materials Catalog':  <CategoryOutlinedIcon sx={ICON_SX} />,
 };
 
-// Unique gradient per card — two logo-palette colors across the full surface
+// Subtle near-white cool gradient — matching reference aesthetic
 const CARD_GRADIENTS = [
-    'linear-gradient(135deg, #d6f4eb 0%, #cceef9 100%)',  // mint-green → ice blue
-    'linear-gradient(145deg, #d0f3f8 0%, #d8f5ec 100%)',  // cyan → mint
-    'linear-gradient(155deg, #c8edf8 0%, #d2f4f0 100%)',  // sky blue → teal
-    'linear-gradient(125deg, #ccf2ec 0%, #c6edf8 100%)',  // aqua → pale blue
-    'linear-gradient(140deg, #d2f2f9 0%, #ccf0e8 100%)',  // ice blue → green
-    'linear-gradient(150deg, #c8f0ea 0%, #cceaf8 100%)',  // teal-mint → blue
-    'linear-gradient(130deg, #c6eef8 0%, #d0f4ec 100%)',  // cool cyan → mint
+    'linear-gradient(145deg, #f8fcfe 0%, #e8f5f9 100%)',
+    'linear-gradient(155deg, #f7fbfd 0%, #eaf6fa 100%)',
+    'linear-gradient(135deg, #f8fdfe 0%, #e6f4f8 100%)',
+    'linear-gradient(150deg, #f6fbfd 0%, #ebf7fa 100%)',
+    'linear-gradient(140deg, #f7fcfe 0%, #e8f5f9 100%)',
+    'linear-gradient(160deg, #f8fdfe 0%, #e9f6f9 100%)',
+    'linear-gradient(130deg, #f6fbfd 0%, #eaf6f9 100%)',
 ];
 
 function formatCount(val: string): string {
@@ -159,7 +160,7 @@ function StatCard({ title, count, hasPending = false, gradient }: StatCardProps 
             <Typography
                 variant='h4'
                 fontWeight='bold'
-                sx={{ color: hasPending ? 'error.main' : ICON_COLOR }}
+                sx={{ color: hasPending ? 'error.main' : NUMBER_COLOR }}
             >
                 {formatCount(count)}
             </Typography>
