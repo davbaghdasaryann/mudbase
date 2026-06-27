@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Stack, Typography, Grid } from '@mui/material';
+import { Box, Typography, Grid } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import * as Api from 'api';
@@ -30,21 +30,10 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
     'Materials Catalog':  <CategoryOutlinedIcon sx={ICON_SX} />,
 };
 
-// Position-based gradient: left=green (#D4EDDA), right=sky-blue (#E1F5FE)
-const CARD_GRADIENTS = [
-    'linear-gradient(145deg, #D4EDDA 0%, #f5fbf6 100%)',  // card 0 — rich mint
-    'linear-gradient(145deg, #E2F1E4 0%, #E0F7FA 100%)',  // card 1 — mint → cyan
-    'linear-gradient(145deg, #E0F7FA 0%, #E2F1E4 100%)',  // card 2 — cyan → mint
-    'linear-gradient(145deg, #E1F5FE 0%, #E0F7FA 100%)',  // card 3 — sky blue
-    'linear-gradient(145deg, #D4EDDA 0%, #E0F7FA 100%)',  // card 4 — mint → cyan
-    'linear-gradient(145deg, #E0F7FA 0%, #E2F1E4 100%)',  // card 5 — cyan → mint
-    'linear-gradient(145deg, #E1F5FE 0%, #E0F7FA 100%)',  // card 6 — sky blue
-];
-
 function formatCount(val: string): string {
     const n = Number(val);
     if (isNaN(n)) return val;
-    return n.toLocaleString('fr-FR'); // space as thousands separator: 4 493
+    return n.toLocaleString('fr-FR');
 }
 
 export default function DashboardPage() {
@@ -82,29 +71,25 @@ export default function DashboardPage() {
 
     return (
         <PageContents requiredPermission='DASH_USE' title='Dashboard'>
+            {/* Full-viewport gradient background — fixed so it spans the entire screen */}
+            <Box sx={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 0,
+                background: 'linear-gradient(to right, #E2F1E4, #E0F7FA)',
+                pointerEvents: 'none',
+            }} />
+
             {!dashboardData ? (
-                <Typography variant='h6'>{t('Loading...')}</Typography>
+                <Typography variant='h6' sx={{ position: 'relative', zIndex: 1 }}>{t('Loading...')}</Typography>
             ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
-                {/* Mesh gradient background — soft color blobs behind the cards */}
-                <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', p: { xs: 2, md: 3 } }}>
-
-                    {/* Soft blobs — low-saturation logo colors */}
-                    <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-                        <Box sx={{ position: 'absolute', width: 420, height: 340, borderRadius: '50%', top: -80, left: -60,  background: 'radial-gradient(ellipse, rgba(80,200,140,0.18) 0%, transparent 70%)', filter: 'blur(48px)' }} />
-                        <Box sx={{ position: 'absolute', width: 360, height: 300, borderRadius: '50%', top: 20,  left: '28%', background: 'radial-gradient(ellipse, rgba(0,200,220,0.15) 0%, transparent 70%)', filter: 'blur(52px)' }} />
-                        <Box sx={{ position: 'absolute', width: 380, height: 320, borderRadius: '50%', top: -40, right: -40,  background: 'radial-gradient(ellipse, rgba(30,160,220,0.14) 0%, transparent 70%)', filter: 'blur(56px)' }} />
-                        <Box sx={{ position: 'absolute', width: 300, height: 260, borderRadius: '50%', bottom: -60, left: '15%',background: 'radial-gradient(ellipse, rgba(0,185,200,0.13) 0%, transparent 70%)', filter: 'blur(44px)' }} />
-                        <Box sx={{ position: 'absolute', width: 280, height: 240, borderRadius: '50%', bottom: -40, right: '20%',background: 'radial-gradient(ellipse, rgba(40,170,210,0.12) 0%, transparent 70%)', filter: 'blur(50px)' }} />
-                    </Box>
-
-                    {/* Cards */}
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '70vh' }}>
+                    <Box sx={{ p: { xs: 2, md: 3 } }}>
                         {/* Row 1 — 4 cards */}
                         <Grid container spacing={3} sx={{ mb: 3 }}>
                             {topRow.map((field, index) => (
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <StatCard {...field} gradient={CARD_GRADIENTS[index]} />
+                                    <StatCard {...field} />
                                 </Grid>
                             ))}
                         </Grid>
@@ -113,19 +98,18 @@ export default function DashboardPage() {
                         <Grid container spacing={3} justifyContent='center'>
                             {bottomRow.map((field, index) => (
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <StatCard {...field} gradient={CARD_GRADIENTS[4 + index]} />
+                                    <StatCard {...field} />
                                 </Grid>
                             ))}
                         </Grid>
                     </Box>
-                </Box>
                 </Box>
             )}
         </PageContents>
     );
 }
 
-function StatCard({ title, count, hasPending = false, gradient }: StatCardProps & { gradient?: string }) {
+function StatCard({ title, count, hasPending = false }: StatCardProps) {
     const { t } = useTranslation();
     const icon = CARD_ICONS[title] ?? null;
 
@@ -142,9 +126,11 @@ function StatCard({ title, count, hasPending = false, gradient }: StatCardProps 
                 justifyContent: 'center',
                 alignItems: 'center',
                 textAlign: 'center',
-                background: gradient ?? CARD_GRADIENTS[0],
-                border: '1px solid rgba(255,255,255,0.7)',
-                boxShadow: '0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+                background: 'rgba(255, 255, 255, 0.45)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(255, 255, 255, 0.6)',
+                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.04)',
                 transition: 'box-shadow 0.25s ease, transform 0.25s ease',
                 cursor: 'default',
                 '&:hover': {
