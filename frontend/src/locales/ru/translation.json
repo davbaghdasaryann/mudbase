@@ -161,7 +161,12 @@
   "Package Settings": "Настройки пакета",
   "Number of Users": "Количество пользователей",
   "Number of Estimations": "Количество смет",
+  "Package Name": "Название пакета",
   "Library Access": "Доступ к библиотекам",
+  "Estimation Permissions": "Права на сметы",
+  "See Offers": "Просмотр предложений",
+  "Archive Estimations": "Архивировать сметы",
+  "Share Estimations": "Поделиться сметами",
   "Works Catalog": "Каталог работ",
   "Materials Catalog": "Каталог материалов",
   "Aggregated Catalog": "Агрегированный каталог"

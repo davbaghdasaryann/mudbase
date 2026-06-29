@@ -63,19 +63,27 @@ const createButtonSx = {
 export default function PackagesPage() {
     const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
+    const [packageName, setPackageName] = React.useState('');
     const [numberOfUsers, setNumberOfUsers] = React.useState('');
     const [numberOfEstimations, setNumberOfEstimations] = React.useState('');
     const [worksCatalog, setWorksCatalog] = React.useState(false);
     const [materialsCatalog, setMaterialsCatalog] = React.useState(false);
     const [aggregatedCatalog, setAggregatedCatalog] = React.useState(false);
+    const [seeOffers, setSeeOffers] = React.useState(false);
+    const [archiveEstimations, setArchiveEstimations] = React.useState(false);
+    const [shareEstimations, setShareEstimations] = React.useState(false);
 
     const handleClose = () => {
         setOpen(false);
+        setPackageName('');
         setNumberOfUsers('');
         setNumberOfEstimations('');
         setWorksCatalog(false);
         setMaterialsCatalog(false);
         setAggregatedCatalog(false);
+        setSeeOffers(false);
+        setArchiveEstimations(false);
+        setShareEstimations(false);
     };
 
     return (
@@ -101,6 +109,16 @@ export default function PackagesPage() {
 
                 <DialogContent sx={{ pt: 1 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <FieldRow label={t('Package Name')}>
+                            <TextField
+                                value={packageName}
+                                onChange={e => setPackageName(e.target.value)}
+                                size='small'
+                                fullWidth
+                                sx={numberFieldSx}
+                            />
+                        </FieldRow>
+
                         <FieldRow label={t('Number of Users')}>
                             <TextField
                                 type='number'
@@ -136,6 +154,18 @@ export default function PackagesPage() {
                         <SwitchRow label={t('Works Catalog')} checked={worksCatalog} onChange={setWorksCatalog} />
                         <SwitchRow label={t('Materials Catalog')} checked={materialsCatalog} onChange={setMaterialsCatalog} />
                         <SwitchRow label={t('Aggregated Catalog')} checked={aggregatedCatalog} onChange={setAggregatedCatalog} />
+                    </Box>
+
+                    <Divider sx={{ my: 2.5 }} />
+
+                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1.5 }}>
+                        {t('Estimation Permissions')}
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <SwitchRow label={t('See Offers')} checked={seeOffers} onChange={setSeeOffers} />
+                        <SwitchRow label={t('Archive Estimations')} checked={archiveEstimations} onChange={setArchiveEstimations} />
+                        <SwitchRow label={t('Share Estimations')} checked={shareEstimations} onChange={setShareEstimations} />
                     </Box>
                 </DialogContent>
 

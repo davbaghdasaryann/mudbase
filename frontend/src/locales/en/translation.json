@@ -223,7 +223,12 @@
   "Package Settings": "Package Settings",
   "Number of Users": "Number of Users",
   "Number of Estimations": "Number of Estimations",
+  "Package Name": "Package Name",
   "Library Access": "Library Access",
+  "Estimation Permissions": "Estimation Permissions",
+  "See Offers": "See Offers",
+  "Archive Estimations": "Archive Estimations",
+  "Share Estimations": "Share Estimations",
   "Works Catalog": "Works Catalog",
   "Materials Catalog": "Materials Catalog",
   "Aggregated Catalog": "Aggregated Catalog"
