@@ -19,8 +19,8 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
 import DatasetIcon from '@mui/icons-material/Dataset';
-import BusinessIcon from '@mui/icons-material/Business';
 import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
+import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
@@ -357,7 +357,7 @@ function useMainNavigation() {
         navigation.push({segment: 'account', title: t('My Company'), icon: <BusinessOutlinedIcon /> });
 
         if (session?.user && permissionsSet?.has('ACC_FCH')) {
-            navigation.push({segment: 'accounts', title: t('Accounts'), icon: <BusinessIcon />});
+            navigation.push({segment: 'accounts', title: t('Accounts'), icon: <CorporateFareIcon />});
         }
 
         if (Env.isDev) {
