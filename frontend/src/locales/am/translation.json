@@ -561,6 +561,11 @@
   "m²": "մ²",
   "Settings": "Կարգավորումներ",
   "Create Package": "Ստեղծել փաթեթ",
+  "Package Settings": "Փաթեթի կարգավորումներ",
   "Number of Users": "Օգտատերերի քանակ",
-  "Number of Estimations": "Նախահաշիվների քանակ"
+  "Number of Estimations": "Նախահաշիվների քանակ",
+  "Library Access": "Մատյանների հասանելիություն",
+  "Works Catalog": "Աշխատանքների մատյան",
+  "Materials Catalog": "Նյութերի մատյան",
+  "Aggregated Catalog": "Ագրեգատացված մատյան"
 }

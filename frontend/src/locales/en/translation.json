@@ -218,6 +218,11 @@
   "Other Expenses": "Other Costs",
   "Settings": "Settings",
   "Create Package": "Create Package",
+  "Package Settings": "Package Settings",
   "Number of Users": "Number of Users",
-  "Number of Estimations": "Number of Estimations"
+  "Number of Estimations": "Number of Estimations",
+  "Library Access": "Library Access",
+  "Works Catalog": "Works Catalog",
+  "Materials Catalog": "Materials Catalog",
+  "Aggregated Catalog": "Aggregated Catalog"
 }

@@ -156,6 +156,11 @@
   "m²": "м²",
   "Settings": "Настройки",
   "Create Package": "Создать пакет",
+  "Package Settings": "Настройки пакета",
   "Number of Users": "Количество пользователей",
-  "Number of Estimations": "Количество смет"
+  "Number of Estimations": "Количество смет",
+  "Library Access": "Доступ к библиотекам",
+  "Works Catalog": "Каталог работ",
+  "Materials Catalog": "Каталог материалов",
+  "Aggregated Catalog": "Агрегированный каталог"
 }
