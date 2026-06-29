@@ -53,6 +53,29 @@ const numberFieldSx = {
     '& .MuiInputLabel-root.Mui-focused': { color: BRAND },
 };
 
+function formatThousands(raw: string): string {
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return '';
+    return Number(digits).toLocaleString('en-US');
+}
+
+function NumericField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const digits = e.target.value.replace(/\D/g, '');
+        onChange(digits);
+    };
+    return (
+        <TextField
+            value={formatThousands(value)}
+            onChange={handleChange}
+            size='small'
+            fullWidth
+            inputProps={{ inputMode: 'numeric' }}
+            sx={numberFieldSx}
+        />
+    );
+}
+
 const createButtonSx = {
     borderRadius: '25px',
     height: '40px',
@@ -129,39 +152,15 @@ export default function PackagesPage() {
                         </FieldRow>
 
                         <FieldRow label={t('Package Price')}>
-                            <TextField
-                                type='number'
-                                value={packagePrice}
-                                onChange={e => setPackagePrice(e.target.value)}
-                                inputProps={{ min: 0 }}
-                                size='small'
-                                fullWidth
-                                sx={numberFieldSx}
-                            />
+                            <NumericField value={packagePrice} onChange={setPackagePrice} />
                         </FieldRow>
 
                         <FieldRow label={t('Number of Users')}>
-                            <TextField
-                                type='number'
-                                value={numberOfUsers}
-                                onChange={e => setNumberOfUsers(e.target.value)}
-                                inputProps={{ min: 0 }}
-                                size='small'
-                                fullWidth
-                                sx={numberFieldSx}
-                            />
+                            <NumericField value={numberOfUsers} onChange={setNumberOfUsers} />
                         </FieldRow>
 
                         <FieldRow label={t('Number of Estimations')}>
-                            <TextField
-                                type='number'
-                                value={numberOfEstimations}
-                                onChange={e => setNumberOfEstimations(e.target.value)}
-                                inputProps={{ min: 0 }}
-                                size='small'
-                                fullWidth
-                                sx={numberFieldSx}
-                            />
+                            <NumericField value={numberOfEstimations} onChange={setNumberOfEstimations} />
                         </FieldRow>
                     </Box>
 
