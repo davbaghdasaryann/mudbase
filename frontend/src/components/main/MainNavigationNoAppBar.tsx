@@ -24,6 +24,7 @@ import SupervisorAccountOutlinedIcon from '@mui/icons-material/SupervisorAccount
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 import {PageContentsProps} from '../PageContents';
 
@@ -358,6 +359,17 @@ function useMainNavigation() {
 
         if (session?.user && permissionsSet?.has('ACC_FCH')) {
             navigation.push({segment: 'accounts', title: t('Accounts'), icon: <SupervisorAccountOutlinedIcon />});
+        }
+
+        if (isSuperAdmin) {
+            navigation.push({
+                segment: 'settings',
+                title: t('Settings'),
+                icon: <SettingsOutlinedIcon />,
+                children: [
+                    { segment: 'packages', title: t('Packages'), icon: <Inventory2OutlinedIcon /> },
+                ],
+            });
         }
 
         if (Env.isDev) {
