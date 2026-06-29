@@ -72,6 +72,8 @@ export default function PackagesPage() {
     const [seeOffers, setSeeOffers] = React.useState(false);
     const [archiveEstimations, setArchiveEstimations] = React.useState(false);
     const [shareEstimations, setShareEstimations] = React.useState(false);
+    const [exportEstimation, setExportEstimation] = React.useState(false);
+    const [exportBoQ, setExportBoQ] = React.useState(false);
 
     const handleClose = () => {
         setOpen(false);
@@ -84,6 +86,8 @@ export default function PackagesPage() {
         setSeeOffers(false);
         setArchiveEstimations(false);
         setShareEstimations(false);
+        setExportEstimation(false);
+        setExportBoQ(false);
     };
 
     return (
@@ -159,13 +163,24 @@ export default function PackagesPage() {
                     <Divider sx={{ my: 2.5 }} />
 
                     <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1.5 }}>
-                        {t('Estimation Permissions')}
+                        {t('Offer Permissions')}
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <SwitchRow label={t('See Offers')} checked={seeOffers} onChange={setSeeOffers} />
+                    </Box>
+
+                    <Divider sx={{ my: 2.5 }} />
+
+                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1.5 }}>
+                        {t('Estimation Permissions')}
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <SwitchRow label={t('Archive Estimations')} checked={archiveEstimations} onChange={setArchiveEstimations} />
                         <SwitchRow label={t('Share Estimations')} checked={shareEstimations} onChange={setShareEstimations} />
+                        <SwitchRow label={t('Export Estimation')} checked={exportEstimation} onChange={setExportEstimation} />
+                        <SwitchRow label={t('Export BoQ')} checked={exportBoQ} onChange={setExportBoQ} />
                     </Box>
                 </DialogContent>
 

@@ -163,10 +163,13 @@
   "Number of Estimations": "Количество смет",
   "Package Name": "Название пакета",
   "Library Access": "Доступ к библиотекам",
+  "Offer Permissions": "Права на предложения",
   "Estimation Permissions": "Права на сметы",
   "See Offers": "Просмотр предложений",
   "Archive Estimations": "Архивировать сметы",
   "Share Estimations": "Поделиться сметами",
+  "Export Estimation": "Экспорт сметы",
+  "Export BoQ": "Экспорт ВОР",
   "Works Catalog": "Каталог работ",
   "Materials Catalog": "Каталог материалов",
   "Aggregated Catalog": "Агрегированный каталог"

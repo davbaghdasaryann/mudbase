@@ -225,10 +225,13 @@
   "Number of Estimations": "Number of Estimations",
   "Package Name": "Package Name",
   "Library Access": "Library Access",
+  "Offer Permissions": "Offer Permissions",
   "Estimation Permissions": "Estimation Permissions",
   "See Offers": "See Offers",
   "Archive Estimations": "Archive Estimations",
   "Share Estimations": "Share Estimations",
+  "Export Estimation": "Export Estimation",
+  "Export BoQ": "Export BoQ",
   "Works Catalog": "Works Catalog",
   "Materials Catalog": "Materials Catalog",
   "Aggregated Catalog": "Aggregated Catalog"
