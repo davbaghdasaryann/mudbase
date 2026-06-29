@@ -16,7 +16,7 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
             <Typography sx={{ width: 230, flexShrink: 0, fontSize: '0.95rem', color: 'text.primary' }}>
                 {label}
             </Typography>
-            <Box sx={{ width: 120, flexShrink: 0 }}>{children}</Box>
+            <Box sx={{ flex: 1 }}>{children}</Box>
         </Box>
     );
 }
@@ -90,7 +90,7 @@ export default function PackagesPage() {
                 </Button>
             </Toolbar>
 
-            <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: '14px' } }}>
+            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 500 } }}>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.1rem', pb: 1 }}>
                     {t('Package Settings')}
                 </DialogTitle>
