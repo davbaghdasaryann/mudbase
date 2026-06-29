@@ -561,6 +561,8 @@
   "m²": "մ²",
   "Settings": "Կարգավորումներ",
   "Payments": "Վճարումներ",
+  "No payments yet": "Վճարումներ դեռ չկան",
+  "Payment history will appear here": "Վճարումների պատմությունը կցուցադրվի այստեղ",
   "Create Package": "Ստեղծել փաթեթ",
   "No packages yet": "Փաթեթներ դեռ չկան",
   "Create your first package to get started": "Ստեղծեք առաջին փաթեթը սկսելու համար",
