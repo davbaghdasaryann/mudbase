@@ -25,6 +25,7 @@ import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 
 import {PageContentsProps} from '../PageContents';
 
@@ -371,6 +372,7 @@ function useMainNavigation() {
                 icon: <SettingsOutlinedIcon />,
                 children: [
                     { segment: 'packages', title: t('Packages'), icon: <Inventory2OutlinedIcon /> },
+                    { segment: 'payments', title: t('Payments'), icon: <PaymentsOutlinedIcon /> },
                 ],
             });
         }
