@@ -16,10 +16,10 @@ const BRAND = '#00abbe';
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 48 }}>
-            <Typography sx={{ width: 230, flexShrink: 0, fontSize: '0.95rem', color: 'text.primary' }}>
+            <Typography sx={{ flex: 1, fontSize: '0.95rem', color: 'text.primary' }}>
                 {label}
             </Typography>
-            <Box sx={{ flex: 1 }}>{children}</Box>
+            <Box sx={{ width: 275, flexShrink: 0 }}>{children}</Box>
         </Box>
     );
 }
@@ -111,7 +111,7 @@ export default function PackagesPage() {
                 </Button>
             </Box>
 
-            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 550, height: 750 } }}>
+            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 660, height: 750 } }}>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.1rem', pb: 1 }}>
                     {t('Package Settings')}
                 </DialogTitle>
