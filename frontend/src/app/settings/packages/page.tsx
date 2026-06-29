@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Switch, Divider } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Switch, Divider, Toolbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PageContents from '@/components/PageContents';
+import SpacerComponent from '@/components/SpacerComponent';
 import { useTranslation } from 'react-i18next';
+import { mainPrimaryColor } from '@/theme';
 
 const BRAND = '#00abbe';
 
@@ -68,22 +70,25 @@ export default function PackagesPage() {
 
     return (
         <PageContents title='Packages'>
-            <Box sx={{ p: 3 }}>
+            <Toolbar disableGutters sx={{ px: 2, backgroundColor: 'inherit' }}>
+                <SpacerComponent />
                 <Button
-                    variant='contained'
+                    variant='outlined'
                     startIcon={<AddIcon />}
                     onClick={() => setOpen(true)}
                     sx={{
-                        borderRadius: '8px',
-                        bgcolor: BRAND,
-                        '&:hover': { bgcolor: '#009aaa' },
+                        borderRadius: '25px',
+                        height: '40px',
+                        borderColor: mainPrimaryColor,
+                        color: mainPrimaryColor,
                         textTransform: 'none',
                         fontWeight: 600,
+                        '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
                     }}
                 >
                     {t('Create')}
                 </Button>
-            </Box>
+            </Toolbar>
 
             <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: '14px' } }}>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.1rem', pb: 1 }}>
