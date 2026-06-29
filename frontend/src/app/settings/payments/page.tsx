@@ -13,7 +13,7 @@ export default function PaymentsPage() {
 
     const columns = [
         { field: 'no',               headerName: t('No.'),               width: 70 },
-        { field: 'companyName',      headerName: t('Company Name'),       flex: 1, minWidth: 160 },
+        { field: 'companyName',      headerName: t('Company Name'),       flex: 1, minWidth: 230 },
         { field: 'paymentDate',      headerName: t('Payment Date'),       flex: 1, minWidth: 130 },
         { field: 'packageName',      headerName: t('Package Name'),       flex: 1, minWidth: 140 },
         { field: 'packageDuration',  headerName: t('Package Duration'),   flex: 1, minWidth: 150 },
