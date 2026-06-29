@@ -4,6 +4,9 @@ import React from 'react';
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Switch, Divider } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
+import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
@@ -106,7 +109,7 @@ export default function PackagesPage() {
                 </Button>
             </Box>
 
-            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 500 } }}>
+            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 520 } }}>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.1rem', pb: 1 }}>
                     {t('Package Settings')}
                 </DialogTitle>
@@ -150,9 +153,10 @@ export default function PackagesPage() {
 
                     <Divider sx={{ my: 2.5 }} />
 
-                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1.5 }}>
-                        {t('Library Access')}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                        <MenuBookOutlinedIcon sx={{ fontSize: 18, color: BRAND }} />
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{t('Library Access')}</Typography>
+                    </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <SwitchRow label={t('Works Catalog')} checked={worksCatalog} onChange={setWorksCatalog} />
@@ -162,9 +166,10 @@ export default function PackagesPage() {
 
                     <Divider sx={{ my: 2.5 }} />
 
-                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1.5 }}>
-                        {t('Offer Permissions')}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                        <SellOutlinedIcon sx={{ fontSize: 18, color: BRAND }} />
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{t('Offer Permissions')}</Typography>
+                    </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <SwitchRow label={t('See Offers')} checked={seeOffers} onChange={setSeeOffers} />
@@ -172,9 +177,10 @@ export default function PackagesPage() {
 
                     <Divider sx={{ my: 2.5 }} />
 
-                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1.5 }}>
-                        {t('Estimation Permissions')}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                        <CalculateOutlinedIcon sx={{ fontSize: 18, color: BRAND }} />
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{t('Estimation Permissions')}</Typography>
+                    </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <SwitchRow label={t('Archive Estimations')} checked={archiveEstimations} onChange={setArchiveEstimations} />
