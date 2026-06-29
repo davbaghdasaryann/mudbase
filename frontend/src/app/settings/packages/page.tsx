@@ -10,7 +10,7 @@ export default function PackagesPage() {
     const { t } = useTranslation();
 
     return (
-        <PageContents>
+        <PageContents title='Packages'>
             <Box sx={{ p: 3 }}>
                 <Button
                     variant='contained'

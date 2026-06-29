@@ -22,6 +22,8 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -61,6 +63,9 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <DatasetIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'analysis':
                 return <BarChartIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'settings':
+                if (pathname === '/settings/packages') return <Inventory2OutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+                return <SettingsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             default:
                 return null;
         }
