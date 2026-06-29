@@ -4,6 +4,7 @@ import React from 'react';
 import { Toolbar } from '@mui/material';
 import PageContents from '@/components/PageContents';
 import SearchComponent from '@/components/SearchComponent';
+import SpacerComponent from '@/components/SpacerComponent';
 import DataTableComponent from '@/components/DataTableComponent';
 import { useTranslation } from 'react-i18next';
 
@@ -24,6 +25,7 @@ export default function PaymentsPage() {
     return (
         <PageContents title='Payments'>
             <Toolbar disableGutters sx={{ px: 2, backgroundColor: 'inherit' }}>
+                <SpacerComponent />
                 <SearchComponent onSearch={setSearch} />
             </Toolbar>
 
