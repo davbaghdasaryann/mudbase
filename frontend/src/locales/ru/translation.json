@@ -154,5 +154,8 @@
   "Coming soon": "Скоро",
   "Construction cost per sq. m.": "Стоимость строительства за м²",
   "m²": "м²",
-  "Settings": "Настройки"
+  "Settings": "Настройки",
+  "Create Package": "Создать пакет",
+  "Number of Users": "Количество пользователей",
+  "Number of Estimations": "Количество смет"
 }
