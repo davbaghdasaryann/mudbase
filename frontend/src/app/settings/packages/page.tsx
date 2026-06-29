@@ -13,10 +13,10 @@ const BRAND = '#00abbe';
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 48 }}>
-            <Typography sx={{ width: 180, flexShrink: 0, fontSize: '0.95rem', color: 'text.primary' }}>
+            <Typography sx={{ width: 230, flexShrink: 0, fontSize: '0.95rem', color: 'text.primary' }}>
                 {label}
             </Typography>
-            <Box sx={{ flex: 1 }}>{children}</Box>
+            <Box sx={{ width: 120, flexShrink: 0 }}>{children}</Box>
         </Box>
     );
 }
