@@ -67,6 +67,7 @@ export default function PackagesPage() {
     const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
     const [packageName, setPackageName] = React.useState('');
+    const [packagePrice, setPackagePrice] = React.useState('');
     const [numberOfUsers, setNumberOfUsers] = React.useState('');
     const [numberOfEstimations, setNumberOfEstimations] = React.useState('');
     const [worksCatalog, setWorksCatalog] = React.useState(false);
@@ -81,6 +82,7 @@ export default function PackagesPage() {
     const handleClose = () => {
         setOpen(false);
         setPackageName('');
+        setPackagePrice('');
         setNumberOfUsers('');
         setNumberOfEstimations('');
         setWorksCatalog(false);
@@ -109,7 +111,7 @@ export default function PackagesPage() {
                 </Button>
             </Box>
 
-            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 520 } }}>
+            <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 550, height: 750 } }}>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.1rem', pb: 1 }}>
                     {t('Package Settings')}
                 </DialogTitle>
@@ -120,6 +122,18 @@ export default function PackagesPage() {
                             <TextField
                                 value={packageName}
                                 onChange={e => setPackageName(e.target.value)}
+                                size='small'
+                                fullWidth
+                                sx={numberFieldSx}
+                            />
+                        </FieldRow>
+
+                        <FieldRow label={t('Package Price')}>
+                            <TextField
+                                type='number'
+                                value={packagePrice}
+                                onChange={e => setPackagePrice(e.target.value)}
+                                inputProps={{ min: 0 }}
                                 size='small'
                                 fullWidth
                                 sx={numberFieldSx}
