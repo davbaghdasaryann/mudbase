@@ -99,6 +99,7 @@ export default function PackagesPage() {
     const [seeOffers, setSeeOffers] = React.useState(false);
     const [archiveEstimations, setArchiveEstimations] = React.useState(false);
     const [shareEstimations, setShareEstimations] = React.useState(false);
+    const [duplicateEstimation, setDuplicateEstimation] = React.useState(false);
     const [exportEstimation, setExportEstimation] = React.useState(false);
     const [exportBoQ, setExportBoQ] = React.useState(false);
 
@@ -114,6 +115,7 @@ export default function PackagesPage() {
         setSeeOffers(false);
         setArchiveEstimations(false);
         setShareEstimations(false);
+        setDuplicateEstimation(false);
         setExportEstimation(false);
         setExportBoQ(false);
     };
@@ -196,8 +198,9 @@ export default function PackagesPage() {
                     </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <SwitchRow label={t('Archive Estimations')} checked={archiveEstimations} onChange={setArchiveEstimations} />
-                        <SwitchRow label={t('Share Estimations')} checked={shareEstimations} onChange={setShareEstimations} />
+                        <SwitchRow label={t('Archive Estimation')} checked={archiveEstimations} onChange={setArchiveEstimations} />
+                        <SwitchRow label={t('Share Estimation')} checked={shareEstimations} onChange={setShareEstimations} />
+                        <SwitchRow label={t('Duplicate Estimation')} checked={duplicateEstimation} onChange={setDuplicateEstimation} />
                         <SwitchRow label={t('Export Estimation')} checked={exportEstimation} onChange={setExportEstimation} />
                         <SwitchRow label={t('Export BoQ')} checked={exportBoQ} onChange={setExportBoQ} />
                     </Box>
