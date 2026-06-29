@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Switch, Divider, Toolbar } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Switch, Divider } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PageContents from '@/components/PageContents';
-import SpacerComponent from '@/components/SpacerComponent';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
 
@@ -50,6 +50,16 @@ const numberFieldSx = {
     '& .MuiInputLabel-root.Mui-focused': { color: BRAND },
 };
 
+const createButtonSx = {
+    borderRadius: '25px',
+    height: '40px',
+    borderColor: mainPrimaryColor,
+    color: mainPrimaryColor,
+    textTransform: 'none',
+    fontWeight: 600,
+    '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
+} as const;
+
 export default function PackagesPage() {
     const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
@@ -70,25 +80,19 @@ export default function PackagesPage() {
 
     return (
         <PageContents title='Packages'>
-            <Toolbar disableGutters sx={{ px: 2, backgroundColor: 'inherit' }}>
-                <SpacerComponent />
-                <Button
-                    variant='outlined'
-                    startIcon={<AddIcon />}
-                    onClick={() => setOpen(true)}
-                    sx={{
-                        borderRadius: '25px',
-                        height: '40px',
-                        borderColor: mainPrimaryColor,
-                        color: mainPrimaryColor,
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
-                    }}
-                >
+            {/* Empty state — centered illustration + text + button */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: 2 }}>
+                <Inventory2OutlinedIcon sx={{ fontSize: 130, color: BRAND, opacity: 0.10 }} />
+                <Typography variant='h6' sx={{ fontWeight: 600, color: 'text.secondary', mt: -1 }}>
+                    {t('No packages yet')}
+                </Typography>
+                <Typography variant='body2' sx={{ color: 'text.disabled', mb: 1 }}>
+                    {t('Create your first package to get started')}
+                </Typography>
+                <Button variant='outlined' startIcon={<AddIcon />} onClick={() => setOpen(true)} sx={createButtonSx}>
                     {t('Create')}
                 </Button>
-            </Toolbar>
+            </Box>
 
             <Dialog open={open} onClose={handleClose} maxWidth={false} PaperProps={{ sx: { borderRadius: '14px', width: 500 } }}>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.1rem', pb: 1 }}>
