@@ -60,6 +60,8 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     }, [pathname]);
 
     const {nav} = useMainNavigation();
+    const { permissionsSet } = usePermissions();
+    const isSuperAdmin = permissionsSet?.has('ALL') || permissionsSet?.has('USR_FCH_ALL') || permissionsSet?.has('ACC_FCH');
 
     const [iconColor, setIconColor] = React.useState(theme.palette.mode === 'dark' ? 'white' : 'black');
 
@@ -182,8 +184,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
             <List sx={{ px: 1, pt: 0, pb: 0 }}>
                 {([
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
-                    { labelKey: 'Packages', icon: <Inventory2OutlinedIcon /> },
-                    { labelKey: 'Risk Monitoring', icon: <MonitorHeartOutlinedIcon /> },
+                    ...(!isSuperAdmin ? [
+                        { labelKey: 'Packages', icon: <Inventory2OutlinedIcon /> },
+                        { labelKey: 'Risk Monitoring', icon: <MonitorHeartOutlinedIcon /> },
+                    ] : []),
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
                     <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
                         <ListItemButton
