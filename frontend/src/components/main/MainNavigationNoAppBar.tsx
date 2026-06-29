@@ -58,6 +58,9 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
         if (pathname.startsWith('/analysis/')) {
             setOpenItems(prev => prev['analysis'] ? prev : { ...prev, analysis: true });
         }
+        if (pathname.startsWith('/settings/')) {
+            setOpenItems(prev => prev['settings'] ? prev : { ...prev, settings: true });
+        }
     }, [pathname]);
 
     const {nav} = useMainNavigation();
