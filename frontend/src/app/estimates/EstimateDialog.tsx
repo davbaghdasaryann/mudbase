@@ -767,7 +767,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             {/* Chronological date range dialog */}
             <ChronologicalDateRangeDialog
                 open={chronologicalDialogOpen}
-                itemName={props.estimateTitle}
+                itemName={t('Chronological Analytics')}
                 onClose={() => setChronologicalDialogOpen(false)}
                 onPrevious={() => setChronologicalDialogOpen(false)}
                 onDone={(fromDate, toDate) => {
