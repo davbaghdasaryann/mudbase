@@ -4,13 +4,15 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import AddIcon from '@mui/icons-material/Add';
+import ExtensionIcon from '@mui/icons-material/Extension';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -62,6 +64,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [showMoveDialog, setShowMoveDialog] = useState(false);
     const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
     const [showImportFromFavoritesDialog, setShowImportFromFavoritesDialog] = useState(false);
+    const [comparativeModalOpen, setComparativeModalOpen] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -674,7 +677,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             {[
                                 { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
-                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => router.push(`/analysis/comparative?estimateId=${props.estimateId}`) },
+                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => setComparativeModalOpen(true) },
                                 { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => router.push(`/analysis/chronological?estimateId=${props.estimateId}`) },
                             ].map((item) => (
                                 <Box key={item.label} onClick={item.onClick} sx={{
@@ -755,6 +758,76 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}
                 />
             )}
+            {/* Comparative Analysis Modal */}
+            <Dialog open={comparativeModalOpen} onClose={() => setComparativeModalOpen(false)} maxWidth='sm' fullWidth>
+                <DialogTitle sx={{ pb: 1 }}>
+                    {t('Comparative')}
+                    <IconButton onClick={() => setComparativeModalOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}>
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <Box component='svg' width={0} height={0} sx={{ position: 'absolute' }}>
+                        <defs>
+                            <linearGradient id='comparativeGradientGreen2' x1='0%' y1='0%' x2='100%' y2='100%'>
+                                <stop offset='0%' stopColor='#2ECC71' />
+                                <stop offset='100%' stopColor='#1CA461' />
+                            </linearGradient>
+                            <linearGradient id='comparativeGradientBlue2' x1='0%' y1='0%' x2='100%' y2='100%'>
+                                <stop offset='0%' stopColor='#29B6F6' />
+                                <stop offset='100%' stopColor='#0288D1' />
+                            </linearGradient>
+                            <linearGradient id='comparativeGradientTeal2' x1='0%' y1='0%' x2='100%' y2='100%'>
+                                <stop offset='0%' stopColor='#1CA461' />
+                                <stop offset='100%' stopColor='#00ABBE' />
+                            </linearGradient>
+                        </defs>
+                    </Box>
+                    <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ py: 2 }}>
+                        {[
+                            { key: 'By Market Value',           gradientId: 'comparativeGradientGreen2', type: 'market' },
+                            { key: 'By Submitted Estimations',  gradientId: 'comparativeGradientBlue2',  type: 'submitted' },
+                            { key: 'By Base Proposals',         gradientId: 'comparativeGradientTeal2',  type: 'base_proposals' },
+                        ].map((card) => (
+                            <Box
+                                key={card.key}
+                                role='button'
+                                tabIndex={0}
+                                onClick={() => {
+                                    setComparativeModalOpen(false);
+                                    window.open(`/analysis/comparative?estimateId=${props.estimateId}&type=${card.type}`, '_blank');
+                                }}
+                                sx={{
+                                    position: 'relative',
+                                    width: 160,
+                                    minHeight: 150,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 1.5,
+                                    px: 2,
+                                    py: 3,
+                                    cursor: 'pointer',
+                                    borderRadius: 3,
+                                    background: 'rgba(255,255,255,0.55)',
+                                    backdropFilter: 'blur(12px)',
+                                    border: '1px solid rgba(255,255,255,0.4)',
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 12px 36px rgba(0,0,0,0.12)' },
+                                }}
+                            >
+                                <AddIcon sx={{ position: 'absolute', top: 12, left: 12, fontSize: 20, color: 'text.primary' }} />
+                                <ExtensionIcon sx={{ fontSize: 56, fill: `url(#${card.gradientId})` }} />
+                                <Typography variant='body2' align='center' sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                    {t(card.key)}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </DialogContent>
+            </Dialog>
         </Dialog>
     );
 }
