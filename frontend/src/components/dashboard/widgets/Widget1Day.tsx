@@ -5,7 +5,7 @@ import { Card, CardContent, Typography, Box, IconButton, Button, CircularProgres
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import RemoveIcon from '@mui/icons-material/Remove';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DescriptionIcon from '@mui/icons-material/Description';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
@@ -114,13 +114,21 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
     };
 
     const latestValue = merged.length > 0 ? merged[merged.length - 1] : null;
-    const prevValue = merged.length > 1 ? merged[merged.length - 2].value : latestValue?.value ?? 0;
-    const diff = latestValue ? latestValue.value - prevValue : 0;
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayStartTs = todayStart.getTime();
+    const yesterdaySnapshots = merged.filter(s => s.ts < todayStartTs);
+    const yesterdayValue = yesterdaySnapshots.length > 0
+        ? yesterdaySnapshots[yesterdaySnapshots.length - 1].value
+        : null;
+
+    const diff = latestValue && yesterdayValue !== null ? latestValue.value - yesterdayValue : 0;
     const trendIcon = diff > 0
         ? <TrendingUpIcon sx={{ fontSize: 14, color: 'error.main' }} />
         : diff < 0
             ? <TrendingDownIcon sx={{ fontSize: 14, color: 'success.main' }} />
-            : <RemoveIcon sx={{ fontSize: 14, color: 'text.secondary' }} />;
+            : <CheckCircleOutlineIcon sx={{ fontSize: 14, color: '#F9A825' }} />;
 
     const rowContent = loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
@@ -137,7 +145,7 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                             ? <TrendingUpIcon sx={{ fontSize: 14, color: 'error.main' }} />
                             : d < 0
                                 ? <TrendingDownIcon sx={{ fontSize: 14, color: 'success.main' }} />
-                                : <RemoveIcon sx={{ fontSize: 14, color: 'text.secondary' }} />;
+                                : <CheckCircleOutlineIcon sx={{ fontSize: 14, color: '#F9A825' }} />;
                         return (
                             <ListItem
                                 key={index}
