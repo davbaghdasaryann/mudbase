@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -368,6 +369,17 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 sx={{ minHeight: 43, height: 43 }}
                             />
                         )}
+                        {!props.isOnlyEstInfo && (
+                            <Tab
+                                label={
+                                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                        <BarChartIcon sx={{ height: 20, width: 20, mr: 1 }} />
+                                        {t('Analysis')}
+                                    </Box>
+                                }
+                                sx={{ minHeight: 43, height: 43 }}
+                            />
+                        )}
                     </Tabs>
                     <IconButton
                         onClick={() => setToolbarOpen((prev) => !prev)}
@@ -642,6 +654,18 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             ))}
                         </Box>
                     </Box>
+                )}
+                {/* Analysis Tab Content */}
+                {!props.isOnlyEstInfo && activeTab === 3 && (
+                    <Box sx={{
+                        mb: 2,
+                        p: 1.5,
+                        backgroundColor: '#F5F9F9',
+                        border: '1px solid #00ABBE',
+                        borderTop: 0,
+                        borderRadius: '0 4px 4px 4px',
+                        height: 130,
+                    }} />
                 )}
                 </Collapse>
 
