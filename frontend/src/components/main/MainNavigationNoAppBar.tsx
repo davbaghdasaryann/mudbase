@@ -207,7 +207,24 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 }}
                             >
                                 {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2}}>{item.icon}</ListItemIcon>}
-                                <ListItemText primary={item.title} />
+                                <ListItemText
+                                    primary={
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                            {item.title}
+                                            {segment === 'analysis' && (
+                                                <Box component='span' sx={{
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 600,
+                                                    color: '#00ABBE',
+                                                    flexShrink: 0,
+                                                    lineHeight: 1,
+                                                }}>
+                                                    β
+                                                </Box>
+                                            )}
+                                        </Box>
+                                    }
+                                />
                                 {openItems[segment] ? <ExpandLess /> : <ExpandMore />}
                             </ListItemButton>
                         </ListItem>
