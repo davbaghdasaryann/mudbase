@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Box, Button, Stack, Typography, Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import ExtensionIcon from '@mui/icons-material/Extension';
@@ -15,6 +16,7 @@ import BaseProposalsGrid from './BaseProposalsGrid';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
 import SelectSharedEstimationDialog, { SharedEstimationSelection } from './SelectSharedEstimationDialog';
 import SubmittedEstimationsGrid from './SubmittedEstimationsGrid';
+import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
@@ -27,6 +29,7 @@ const cards = [
 
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
+    const searchParams = useSearchParams();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
@@ -37,6 +40,42 @@ export default function ComparativeAnalysisPage() {
     const [submittedSelection, setSubmittedSelection] = useState<SharedEstimationSelection | null>(null);
 
     const hasData = !!selectedEstimate || !!submittedSelection;
+
+    useEffect(() => {
+        const type = searchParams.get('type');
+        if (!type) return;
+
+        if (type === 'market') {
+            const estimateId = searchParams.get('estimateId');
+            if (!estimateId) return;
+            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId } })
+                .then(full => { if (full) { setAnalysisType('market'); setSelectedEstimate(full); setActiveTab('general'); } })
+                .catch(() => {});
+        } else if (type === 'base_proposals') {
+            const estimateId = searchParams.get('estimateId');
+            const companiesRaw = searchParams.get('companies');
+            if (!estimateId || !companiesRaw) return;
+            try {
+                const companies: CompanyOption[] = JSON.parse(companiesRaw);
+                Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId } })
+                    .then(full => { if (full) { setAnalysisType('base_proposals'); setSelectedEstimate(full); setSelectedCompanies(companies); setActiveTab('labor'); } })
+                    .catch(() => {});
+            } catch {}
+        } else if (type === 'submitted') {
+            const originalEstimateId = searchParams.get('originalEstimateId');
+            const estimateRaw = searchParams.get('estimate');
+            const companiesRaw = searchParams.get('companies');
+            if (!originalEstimateId || !estimateRaw || !companiesRaw) return;
+            try {
+                setSubmittedSelection({
+                    originalEstimateId,
+                    estimate: JSON.parse(estimateRaw),
+                    companies: JSON.parse(companiesRaw),
+                });
+                setActiveTab('general');
+            } catch {}
+        }
+    }, [searchParams]);
 
     const handleCardClick = (key: string) => {
         if (key === 'By Market Value') { setSubmittedSelection(null); setAnalysisType('market'); setDialogOpen(true); }

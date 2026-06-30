@@ -26,6 +26,8 @@ import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAcco
 
 const TOOLBAR_ICON = '/images/icons/toolbar';
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
+import SelectCompanyDialog, { CompanyOption } from '@/app/analysis/comparative/SelectCompanyDialog';
+import SelectSharedEstimationDialog, { SharedEstimationSelection } from '@/app/analysis/comparative/SelectSharedEstimationDialog';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
 import EstimateMoveWorksDialog from '@/components/estimate/EstimateMoveWorksDialog';
@@ -65,6 +67,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
     const [showImportFromFavoritesDialog, setShowImportFromFavoritesDialog] = useState(false);
     const [comparativeModalOpen, setComparativeModalOpen] = useState(false);
+    const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
+    const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -758,6 +762,37 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}
                 />
             )}
+            {/* By Submitted Estimations dialog */}
+            <SelectSharedEstimationDialog
+                open={sharedEstimationDialogOpen}
+                onClose={() => setSharedEstimationDialogOpen(false)}
+                onConfirm={(selection: SharedEstimationSelection) => {
+                    setSharedEstimationDialogOpen(false);
+                    const params = new URLSearchParams({
+                        type: 'submitted',
+                        originalEstimateId: selection.originalEstimateId,
+                        estimate: JSON.stringify(selection.estimate),
+                        companies: JSON.stringify(selection.companies),
+                    });
+                    window.open(`/analysis/comparative?${params.toString()}`, '_blank');
+                }}
+            />
+
+            {/* By Base Proposals dialog */}
+            <SelectCompanyDialog
+                open={companyDialogOpen}
+                onClose={() => setCompanyDialogOpen(false)}
+                onConfirm={(companies: CompanyOption[]) => {
+                    setCompanyDialogOpen(false);
+                    const params = new URLSearchParams({
+                        type: 'base_proposals',
+                        estimateId: props.estimateId,
+                        companies: JSON.stringify(companies),
+                    });
+                    window.open(`/analysis/comparative?${params.toString()}`, '_blank');
+                }}
+            />
+
             {/* Comparative Analysis Modal */}
             <Dialog open={comparativeModalOpen} onClose={() => setComparativeModalOpen(false)} maxWidth='sm' fullWidth>
                 <DialogTitle sx={{ pb: 1 }}>
@@ -785,18 +820,36 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     </Box>
                     <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ py: 2 }}>
                         {[
-                            { key: 'By Market Value',           gradientId: 'comparativeGradientGreen2', type: 'market' },
-                            { key: 'By Submitted Estimations',  gradientId: 'comparativeGradientBlue2',  type: 'submitted' },
-                            { key: 'By Base Proposals',         gradientId: 'comparativeGradientTeal2',  type: 'base_proposals' },
+                            {
+                                key: 'By Market Value',
+                                gradientId: 'comparativeGradientGreen2',
+                                onClick: () => {
+                                    setComparativeModalOpen(false);
+                                    window.open(`/analysis/comparative?estimateId=${props.estimateId}&type=market`, '_blank');
+                                },
+                            },
+                            {
+                                key: 'By Submitted Estimations',
+                                gradientId: 'comparativeGradientBlue2',
+                                onClick: () => {
+                                    setComparativeModalOpen(false);
+                                    setSharedEstimationDialogOpen(true);
+                                },
+                            },
+                            {
+                                key: 'By Base Proposals',
+                                gradientId: 'comparativeGradientTeal2',
+                                onClick: () => {
+                                    setComparativeModalOpen(false);
+                                    setCompanyDialogOpen(true);
+                                },
+                            },
                         ].map((card) => (
                             <Box
                                 key={card.key}
                                 role='button'
                                 tabIndex={0}
-                                onClick={() => {
-                                    setComparativeModalOpen(false);
-                                    window.open(`/analysis/comparative?estimateId=${props.estimateId}&type=${card.type}`, '_blank');
-                                }}
+                                onClick={card.onClick}
                                 sx={{
                                     position: 'relative',
                                     width: 160,
