@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
-import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -376,8 +376,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             <Tab
                                 label={
                                     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                        <BarChartOutlinedIcon sx={{ height: 20, width: 20, mr: 1 }} />
-                                        {t('Analysis')}
+                                        <ShowChartIcon sx={{ height: 20, width: 20, mr: 1 }} />
+                                        {t('Analytics')}
                                     </Box>
                                 }
                                 sx={{ minHeight: 43, height: 43 }}
