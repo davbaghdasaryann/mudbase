@@ -6,7 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -373,7 +376,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             <Tab
                                 label={
                                     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                        <BarChartIcon sx={{ height: 20, width: 20, mr: 1 }} />
+                                        <BarChartOutlinedIcon sx={{ height: 20, width: 20, mr: 1 }} />
                                         {t('Analysis')}
                                     </Box>
                                 }
@@ -665,7 +668,29 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         borderTop: 0,
                         borderRadius: '0 4px 4px 4px',
                         height: 130,
-                    }} />
+                    }}>
+                        <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                            {[
+                                { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 22, color: '#00ABBE' }} /> },
+                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} /> },
+                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} /> },
+                            ].map((item) => (
+                                <Box key={item.label} sx={{
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                    p: 1, backgroundColor: 'transparent', borderRadius: 2, cursor: 'pointer',
+                                    width: { xs: 85, md: 100, lg: 115 }, minHeight: { xs: 65, md: 75, lg: 85 },
+                                    boxShadow: '0 4px 6px rgba(0,0,0,0.15), 2px 0 4px rgba(0,0,0,0.05), -2px 0 4px rgba(0,0,0,0.05)',
+                                    transition: 'all 0.2s',
+                                    '&:hover': { boxShadow: '0 6px 10px rgba(0,0,0,0.2)', transform: 'translateY(-2px)' },
+                                }}>
+                                    <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon}</Box>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
+                                        {t(item.label)}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    </Box>
                 )}
                 </Collapse>
 
