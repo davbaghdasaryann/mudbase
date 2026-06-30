@@ -207,7 +207,10 @@ export default function EstimateInfoAccordionContent(props: Props) {
                         },
                         '& .MuiInputBase-input': {
                             padding: '8px 14px',
-                        }
+                        },
+                        '& fieldset': {
+                            borderRadius: '8px',
+                        },
                     },
                     '& .MuiFormControl-root': {
                         marginBottom: '8px !important',
@@ -221,7 +224,10 @@ export default function EstimateInfoAccordionContent(props: Props) {
                         },
                         '& .MuiInputLabel-root': {
                             fontSize: '0.875rem',
-                        }
+                        },
+                        '& fieldset': {
+                            borderRadius: '8px',
+                        },
                     }
                 }}
             >
