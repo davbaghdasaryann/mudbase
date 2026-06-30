@@ -28,6 +28,7 @@ const TOOLBAR_ICON = '/images/icons/toolbar';
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
 import SelectCompanyDialog, { CompanyOption } from '@/app/analysis/comparative/SelectCompanyDialog';
 import SelectSharedEstimationDialog, { SharedEstimationSelection } from '@/app/analysis/comparative/SelectSharedEstimationDialog';
+import ChronologicalDateRangeDialog from '@/app/analysis/chronological/ChronologicalDateRangeDialog';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
 import EstimateMoveWorksDialog from '@/components/estimate/EstimateMoveWorksDialog';
@@ -69,6 +70,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [comparativeModalOpen, setComparativeModalOpen] = useState(false);
     const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
     const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
+    const [chronologicalDialogOpen, setChronologicalDialogOpen] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -682,7 +684,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {[
                                 { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
                                 { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => setComparativeModalOpen(true) },
-                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => router.push(`/analysis/chronological?estimateId=${props.estimateId}`) },
+                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => setChronologicalDialogOpen(true) },
                             ].map((item) => (
                                 <Box key={item.label} onClick={item.onClick} sx={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -762,6 +764,25 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}
                 />
             )}
+            {/* Chronological date range dialog */}
+            <ChronologicalDateRangeDialog
+                open={chronologicalDialogOpen}
+                itemName={props.estimateTitle}
+                onClose={() => setChronologicalDialogOpen(false)}
+                onPrevious={() => setChronologicalDialogOpen(false)}
+                onDone={(fromDate, toDate) => {
+                    setChronologicalDialogOpen(false);
+                    const params = new URLSearchParams({
+                        estimateId: props.estimateId,
+                        estimateName: props.estimateTitle,
+                        sourceType: 'list_of_estimates',
+                        fromDate,
+                        toDate,
+                    });
+                    window.open(`/analysis/chronological?${params.toString()}`, '_blank');
+                }}
+            />
+
             {/* By Submitted Estimations dialog */}
             <SelectSharedEstimationDialog
                 open={sharedEstimationDialogOpen}

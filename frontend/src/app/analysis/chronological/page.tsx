@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Box, Typography, Button, CircularProgress, Chip, IconButton } from '@mui/material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -51,10 +52,41 @@ const BADGE_GREEN_TEXT = '#2e7d32';
 
 export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
+    const searchParams = useSearchParams();
+    const autoLoaded = useRef(false);
     const [dialog, setDialog] = useState<DialogState>('none');
     const [selection, setSelection] = useState<SelectionParams | null>(null);
     const [analytics, setAnalytics] = useState<AnalyticsResult | null>(null);
     const [chartLoading, setChartLoading] = useState(false);
+
+    useEffect(() => {
+        if (autoLoaded.current) return;
+        const estimateId = searchParams.get('estimateId');
+        const sourceType = searchParams.get('sourceType') as ChronologicalSourceType | null;
+        const fromDate = searchParams.get('fromDate');
+        const toDate = searchParams.get('toDate');
+        const estimateName = searchParams.get('estimateName') ?? '';
+        if (!estimateId || !sourceType || !fromDate || !toDate) return;
+        autoLoaded.current = true;
+        const sel: SelectionParams = { sourceType, itemId: estimateId, itemName: estimateName };
+        setSelection(sel);
+        setChartLoading(true);
+        const isEstimate = sourceType === 'list_of_estimates' || sourceType === 'consolidated_estimates';
+        const chartReq = Api.requestSession<{ data: { month: string; value: number }[] }>({
+            command: 'analysis/chronological/fetch_monthly_chart',
+            json: { sourceType, itemId: estimateId, fromDate, toDate },
+        });
+        const breakdownReq = isEstimate
+            ? Api.requestSession<{ months: string[]; items: BreakdownItem[] }>({
+                command: 'analysis/chronological/fetch_estimate_breakdown',
+                json: { estimateId, sourceType, fromDate, toDate },
+            })
+            : Promise.resolve(null);
+        Promise.all([chartReq, breakdownReq]).then(([chart, bd]) => {
+            setAnalytics({ ...sel, fromDate, toDate, data: chart?.data ?? [], breakdown: bd ?? null });
+            setChartLoading(false);
+        }).catch(() => setChartLoading(false));
+    }, [searchParams]);
 
     const listType = (dialog !== 'none' && dialog !== 'create' && dialog !== 'daterange')
         ? dialog as ChronologicalSourceType
