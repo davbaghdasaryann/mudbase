@@ -170,18 +170,13 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                         {item.title}
                                         {segment === 'dashboard-builder' && (
                                             <Box component='span' sx={{
-                                                fontSize: '0.58rem',
-                                                fontWeight: 700,
-                                                color: '#fff',
-                                                bgcolor: '#00ABBE',
-                                                borderRadius: '4px',
-                                                px: 0.6,
-                                                py: 0.15,
-                                                lineHeight: 1.4,
-                                                letterSpacing: '0.05em',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 600,
+                                                color: '#00ABBE',
                                                 flexShrink: 0,
+                                                lineHeight: 1,
                                             }}>
-                                                BETA
+                                                β
                                             </Box>
                                         )}
                                     </Box>
