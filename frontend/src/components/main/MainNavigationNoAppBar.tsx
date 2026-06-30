@@ -164,7 +164,29 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                             }}
                         >
                             {item.icon && <ListItemIcon sx={{minWidth: listItemIconSize, mr: 1.2}}>{item.icon}</ListItemIcon>}
-                            <ListItemText primary={item.title} />
+                            <ListItemText
+                                primary={
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                        {item.title}
+                                        {segment === 'dashboard-builder' && (
+                                            <Box component='span' sx={{
+                                                fontSize: '0.58rem',
+                                                fontWeight: 700,
+                                                color: '#fff',
+                                                bgcolor: '#00ABBE',
+                                                borderRadius: '4px',
+                                                px: 0.6,
+                                                py: 0.15,
+                                                lineHeight: 1.4,
+                                                letterSpacing: '0.05em',
+                                                flexShrink: 0,
+                                            }}>
+                                                BETA
+                                            </Box>
+                                        )}
+                                    </Box>
+                                }
+                            />
                         </ListItemButton>
                     </ListItem>
                 );
