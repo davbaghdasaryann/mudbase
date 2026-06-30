@@ -8,7 +8,6 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
-import ImgElement from '@/tsui/DomElements/ImgElement';
 import { mainPrimaryColor } from '@/theme';
 
 interface Props {
@@ -40,27 +39,21 @@ export default function ChronologicalDateRangeDialog({ open, itemName, onClose, 
         >
             <DialogTitle sx={{ pb: 1.5 }}>
                 <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
-                    <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
                     <Typography
                         variant='h6'
                         sx={{
                             fontWeight: 600,
-                            position: 'absolute',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
+                            flex: 1,
                             whiteSpace: 'nowrap',
-                            maxWidth: '55%',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                         }}
                     >
                         {itemName}
                     </Typography>
-                    <Box sx={{ ml: 'auto' }}>
-                        <IconButton size='small' onClick={onClose} sx={{ color: 'text.secondary' }}>
-                            <CloseIcon fontSize='small' />
-                        </IconButton>
-                    </Box>
+                    <IconButton size='small' onClick={onClose} sx={{ color: 'text.secondary' }}>
+                        <CloseIcon fontSize='small' />
+                    </IconButton>
                 </Stack>
             </DialogTitle>
 
