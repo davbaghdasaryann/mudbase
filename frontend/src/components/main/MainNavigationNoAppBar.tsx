@@ -89,23 +89,45 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 if (segment === 'schedule') {
                     return (
                         <ListItem sx={{ px: 1, py: 0, overflowX: 'hidden' }}>
-                            <Tooltip title={t('Coming soon')} placement='right' arrow>
-                                <Box component='span' sx={{ width: '100%', display: 'block' }}>
-                                    <ListItemButton
-                                        disabled
-                                        sx={{
-                                            opacity: 0.45,
-                                            pointerEvents: 'none',
-                                            color: iconColor,
-                                            '& .MuiListItemIcon-root': { color: iconColor },
-                                            '& .MuiSvgIcon-root': { color: iconColor },
-                                        }}
-                                    >
-                                        {item.icon && <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>}
-                                        <ListItemText primary={item.title} />
-                                    </ListItemButton>
-                                </Box>
-                            </Tooltip>
+                            <ListItemButton
+                                disableRipple
+                                sx={{
+                                    opacity: 0.38,
+                                    cursor: 'default',
+                                    borderRadius: 1,
+                                    color: iconColor,
+                                    '& .MuiListItemIcon-root': { color: iconColor },
+                                    '&:hover': { backgroundColor: 'transparent' },
+                                }}
+                            >
+                                {item.icon && <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>}
+                                <ListItemText
+                                    primary={
+                                        <Tooltip
+                                            title={t('Coming soon')}
+                                            placement='right'
+                                            slotProps={{
+                                                popper: { sx: { zIndex: 2000 } },
+                                                tooltip: {
+                                                    sx: {
+                                                        backgroundColor: 'rgba(0,171,190,0.12)',
+                                                        backdropFilter: 'blur(8px)',
+                                                        color: '#00ABBE',
+                                                        border: '1px solid rgba(0,171,190,0.25)',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.72rem',
+                                                        px: 1.5,
+                                                        py: 0.4,
+                                                        boxShadow: 'none',
+                                                    },
+                                                },
+                                            }}
+                                        >
+                                            <Box component='span' sx={{ display: 'inline-block' }}>{item.title}</Box>
+                                        </Tooltip>
+                                    }
+                                />
+                            </ListItemButton>
                         </ListItem>
                     );
                 }
