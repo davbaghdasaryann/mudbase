@@ -815,9 +815,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             />
 
             {/* Comparative Analysis Modal */}
-            <Dialog open={comparativeModalOpen} onClose={() => setComparativeModalOpen(false)} maxWidth='sm' fullWidth>
+            <Dialog open={comparativeModalOpen} onClose={() => setComparativeModalOpen(false)} maxWidth='xs' fullWidth>
                 <DialogTitle sx={{ pb: 1 }}>
-                    {t('Comparative')}
+                    {t('Comparative Analytics')}
                     <IconButton onClick={() => setComparativeModalOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}>
                         <CloseIcon />
                     </IconButton>
