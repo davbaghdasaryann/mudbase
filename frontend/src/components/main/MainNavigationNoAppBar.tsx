@@ -85,6 +85,31 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 const href = `${path}/${segment}`;
                 const isActive = isPathnameEqual(pathname, href);
 
+                // Visually disabled with "Coming soon" tooltip — page/route still exists
+                if (segment === 'schedule') {
+                    return (
+                        <ListItem sx={{ px: 1, py: 0, overflowX: 'hidden' }}>
+                            <Tooltip title={t('Coming soon')} placement='right' arrow>
+                                <Box component='span' sx={{ width: '100%', display: 'block' }}>
+                                    <ListItemButton
+                                        disabled
+                                        sx={{
+                                            opacity: 0.45,
+                                            pointerEvents: 'none',
+                                            color: iconColor,
+                                            '& .MuiListItemIcon-root': { color: iconColor },
+                                            '& .MuiSvgIcon-root': { color: iconColor },
+                                        }}
+                                    >
+                                        {item.icon && <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>}
+                                        <ListItemText primary={item.title} />
+                                    </ListItemButton>
+                                </Box>
+                            </Tooltip>
+                        </ListItem>
+                    );
+                }
+
                 const handleClick = (e: React.MouseEvent) => {
                     if (isActive) {
                         // Already on this page — force full reload to reset to initial state
