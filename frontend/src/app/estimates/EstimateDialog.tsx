@@ -682,9 +682,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}>
                         <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             {[
-                                { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
-                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => setComparativeModalOpen(true) },
-                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} />, onClick: () => setChronologicalDialogOpen(true) },
+                                { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
+                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => setComparativeModalOpen(true) },
+                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => setChronologicalDialogOpen(true) },
                             ].map((item) => (
                                 <Box key={item.label} onClick={item.onClick} sx={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -694,7 +694,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     transition: 'all 0.2s',
                                     '&:hover': { boxShadow: '0 6px 10px rgba(0,0,0,0.2)', transform: 'translateY(-2px)' },
                                 }}>
-                                    <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon}</Box>
+                                    <Box sx={{ height: 34, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</Box>
                                     <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
                                         {t(item.label)}
                                     </Typography>
