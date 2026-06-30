@@ -2,8 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Box, Grid, Stack, IconButton, TextField } from '@mui/material';
-import EditIcon from '@mui/icons-material/EditOutlined';
+import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 
@@ -69,25 +68,6 @@ export default function EstimateInfoAccordionContent(props: Props) {
     const [progIndic, setProgIndic] = useState(false);
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<any | null>(null); //TODO change any to interface
-    const [editingName, setEditingName] = useState(false);
-    const [nameInput, setNameInput] = useState('');
-
-    useEffect(() => {
-        if (data?.name !== undefined) setNameInput(data.name ?? '');
-    }, [data?.name]);
-
-    const canEdit = !!(session?.user && permissionsSet?.has?.('EST_EDT_INFO'));
-
-    const saveNameInline = async (newName: string) => {
-        if (!newName || newName === data?.name) { setEditingName(false); return; }
-        const updated = await Api.requestSession<any>({
-            command: 'estimate/rename',
-            args: { estimateId: props.estimateId, fieldKey: 'name', fieldValue: newName },
-        });
-        setData(updated);
-        props.onDataUpdated?.(true);
-        setEditingName(false);
-    };
 
     useEffect(() => {
         const updateData = () => {
@@ -232,43 +212,7 @@ export default function EstimateInfoAccordionContent(props: Props) {
                 }}
             >
                 {/* Row 1 */}
-                <Grid size={2.4}>
-                    {editingName ? (
-                        <TextField
-                            autoFocus
-                            fullWidth
-                            label={t('Title')}
-                            value={nameInput}
-                            onChange={(e) => setNameInput(e.target.value)}
-                            onBlur={() => saveNameInline(nameInput)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') saveNameInline(nameInput);
-                                if (e.key === 'Escape') { setNameInput(data?.name ?? ''); setEditingName(false); }
-                            }}
-                            slotProps={{ inputLabel: { shrink: true } }}
-                        />
-                    ) : (
-                        <Stack direction='row' alignItems='center' spacing={0.5}>
-                            <TextField
-                                fullWidth
-                                label={t('Title')}
-                                value={data?.name ?? ''}
-                                color='secondary'
-                                slotProps={{ inputLabel: { shrink: true }, input: { readOnly: true } }}
-                                sx={{ '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                            />
-                            {canEdit && (
-                                <IconButton
-                                    size='small'
-                                    onClick={() => { setNameInput(data?.name ?? ''); setEditingName(true); }}
-                                    sx={{ color: '#00ABBE', flexShrink: 0, '&:hover': { color: '#007A87', backgroundColor: 'rgba(0,171,190,0.1)' } }}
-                                >
-                                    <EditIcon fontSize='small' />
-                                </IconButton>
-                            )}
-                        </Stack>
-                    )}
-                </Grid>
+                <F.InputText xs={2.4} id='name' value={data?.name} label={t('Title')} placeholder={t('Title')} />
                 <F.InputText xs={2.4} id='address' value={data?.address} label={t('Address')} placeholder={t('Address')} />
                 <F.SelectField
                     xs={2.4}
