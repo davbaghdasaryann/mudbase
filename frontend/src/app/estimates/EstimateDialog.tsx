@@ -850,14 +850,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 },
                             },
                             {
-                                key: 'By Submitted Estimations',
-                                gradientId: 'comparativeGradientBlue2',
-                                onClick: () => {
-                                    setComparativeModalOpen(false);
-                                    setSharedEstimationDialogOpen(true);
-                                },
-                            },
-                            {
                                 key: 'By Base Proposals',
                                 gradientId: 'comparativeGradientTeal2',
                                 onClick: () => {
