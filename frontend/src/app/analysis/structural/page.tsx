@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Box, Typography, Tab, Paper, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -75,11 +76,22 @@ const ParamCard = ({ label, icon, value }: { label: string; icon: React.ReactNod
 
 export default function StructuralAnalysisPage() {
     const { t } = useTranslation();
+    const searchParams = useSearchParams();
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
 
     const hasData = !!selectedEstimate;
+
+    // Auto-load estimate when navigated from estimation dialog
+    useEffect(() => {
+        const estimateId = searchParams.get('estimateId');
+        if (estimateId && !selectedEstimate) {
+            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId } })
+                .then(full => { if (full) setSelectedEstimate(full); })
+                .catch(() => {});
+        }
+    }, [searchParams]);
 
     const handleSelect = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);

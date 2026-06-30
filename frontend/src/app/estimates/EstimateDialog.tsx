@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse } from '@mui/material';
 
@@ -49,6 +50,7 @@ interface EstimatePageDialogProps {
 export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const { t } = useTranslation();
     const { session, permissionsSet } = usePermissions();
+    const router = useRouter();
     const dataUpdatedRef = useRef(false);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
     const [activeTab, setActiveTab] = useState(0); // 0: Tools (hidden when isOnlyEstInfo→becomes GeneralInfo), 1: General Info, 2: Export
@@ -671,11 +673,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}>
                         <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             {[
-                                { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 22, color: '#00ABBE' }} /> },
-                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} /> },
-                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} /> },
+                                { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 22, color: '#00ABBE' }} />, path: `/analysis/structural?estimateId=${props.estimateId}` },
+                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 22, color: '#00ABBE' }} />, path: `/analysis/comparative?estimateId=${props.estimateId}` },
+                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 22, color: '#00ABBE' }} />, path: `/analysis/chronological?estimateId=${props.estimateId}` },
                             ].map((item) => (
-                                <Box key={item.label} sx={{
+                                <Box key={item.label} onClick={() => router.push(item.path)} sx={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                                     p: 1, backgroundColor: 'transparent', borderRadius: 2, cursor: 'pointer',
                                     width: { xs: 85, md: 100, lg: 115 }, minHeight: { xs: 65, md: 75, lg: 85 },
