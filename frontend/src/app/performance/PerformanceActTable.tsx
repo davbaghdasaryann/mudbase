@@ -244,7 +244,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
             onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = counter % 2 === 0 ? '#fafeff' : '#fff'; }}
         >
             <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
-            <td style={td({ paddingLeft: descIndent })}>
+            <td style={td({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
                 {row.fullCode && <span style={{ color: mainPrimaryColor, marginRight: 6, fontSize: '0.75rem', fontWeight: 600 }}>{row.fullCode}</span>}
                 {row.laborOfferItemName || row.catalogName}
             </td>
@@ -356,16 +356,44 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                                     }
 
                                     <tr style={{ backgroundColor: SUB_TOTAL_BG }}>
-                                        <td colSpan={5 + acts.length * 3} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
+                                        <td colSpan={5} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
                                         <td style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        {acts.map((_, actIdx) => {
+                                            const actQtySum = sectionItems.reduce((s, r) => s + parseNum(actsData[actIdx]?.[String(r._id)]?.quantity ?? '0'), 0);
+                                            const actTotalSum = sectionItems.reduce((s, r) => {
+                                                const v = actsData[actIdx]?.[String(r._id)];
+                                                return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
+                                            }, 0);
+                                            return (
+                                                <>
+                                                    <td key={`sub-${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', color: '#00818f' })}></td>
+                                                    <td key={`sub-${actIdx}-qty`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{actQtySum.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                                    <td key={`sub-${actIdx}-tot`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(actTotalSum)} AMD</td>
+                                                </>
+                                            );
+                                        })}
                                     </tr>
                                 </>
                             );
                         })}
 
                         <tr style={{ backgroundColor: GRAND_BG }}>
-                            <td colSpan={5 + acts.length * 3} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, fontSize: '0.85rem', paddingRight: 12, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
+                            <td colSpan={5} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, fontSize: '0.85rem', paddingRight: 12, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
                             <td style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(grandTotal)} AMD</td>
+                            {acts.map((_, actIdx) => {
+                                const actQtyGrand = rows.reduce((s, r) => s + parseNum(actsData[actIdx]?.[String(r._id)]?.quantity ?? '0'), 0);
+                                const actTotalGrand = rows.reduce((s, r) => {
+                                    const v = actsData[actIdx]?.[String(r._id)];
+                                    return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
+                                }, 0);
+                                return (
+                                    <>
+                                        <td key={`grand-${actIdx}-up`} style={td({ ...actCellBorderLeft, borderTop: `2px solid ${mainPrimaryColor}` })}></td>
+                                        <td key={`grand-${actIdx}-qty`} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{actQtyGrand.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                        <td key={`grand-${actIdx}-tot`} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(actTotalGrand)} AMD</td>
+                                    </>
+                                );
+                            })}
                         </tr>
                     </tbody>
                 </table>
