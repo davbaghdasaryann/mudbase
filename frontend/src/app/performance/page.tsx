@@ -1,12 +1,65 @@
 'use client';
 
+import { useState } from 'react';
+import { Box, Typography, Button } from '@mui/material';
+import SpeedIcon from '@mui/icons-material/Speed';
+import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
-import { Box } from '@mui/material';
+import { PageButton } from '@/tsui/Buttons/PageButton';
+import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
+import { mainPrimaryColor } from '@/theme';
+import * as EstimatesApi from '@/api/estimate';
+
+const outlinedCreateSx = {
+    borderRadius: '25px',
+    height: '40px',
+    mt: 1,
+    '&:hover': {
+        backgroundColor: mainPrimaryColor,
+        color: '#ffffff',
+        borderColor: mainPrimaryColor,
+    },
+};
 
 export default function PerformancePage() {
+    const { t } = useTranslation();
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+
+    const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
+        setDialogOpen(false);
+        setSelectedEstimate(estimate);
+    };
+
     return (
         <PageContents title='Performance'>
-            <Box />
+            <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                {!selectedEstimate && (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flex: 1,
+                            gap: 2,
+                            pb: 8,
+                        }}
+                    >
+                        <SpeedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
+                        <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
+                            {t('No analytics created yet')}
+                        </Typography>
+                        <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
+                    </Box>
+                )}
+            </Box>
+
+            <ChooseEstimationDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                onSelect={handleSelect}
+            />
         </PageContents>
     );
 }
