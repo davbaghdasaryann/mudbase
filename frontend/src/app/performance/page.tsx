@@ -48,7 +48,7 @@ export default function PerformancePage() {
                     >
                         <SpeedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
-                            {t('No analytics created yet')}
+                            {t('No Performance Acts created yet')}
                         </Typography>
                         <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
                     </Box>
