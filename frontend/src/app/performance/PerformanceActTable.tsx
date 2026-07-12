@@ -285,7 +285,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: acts.length > 0 ? 'grab' : 'default' }}>
-                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: colWidths.reduce((s, w) => s + w, 0) }}>
+                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: colWidths.reduce((s, w) => s + w, 0) }}>
                     <colgroup>
                         {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                     </colgroup>

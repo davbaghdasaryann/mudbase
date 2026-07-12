@@ -58,7 +58,7 @@ export default function PerformancePage() {
                             {t('Back')}
                         </Button>
 
-                        <Typography variant='h4' sx={{ fontWeight: 800, mb: 3, letterSpacing: '-0.01em' }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>
                             {selectedEstimate.name}
                         </Typography>
 
