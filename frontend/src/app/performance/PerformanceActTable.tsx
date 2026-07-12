@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     Box, Button, CircularProgress, InputBase,
     Table, TableBody, TableCell, TableHead, TableRow, Typography,
@@ -91,6 +91,11 @@ const editableCellSx = {
     '&:focus-within': { boxShadow: `0 0 0 2px rgba(0,171,190,0.18)` },
 };
 
+function parseNum(v: string): number {
+    const n = parseFloat(v.replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+}
+
 export default function PerformanceActTable({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
@@ -99,10 +104,13 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // acts[i] = label e.g. "ACT-1"
     const [acts, setActs] = useState<string[]>([]);
-    // actsData[actIndex][itemId] = { unitPrice, quantity }
     const [actsData, setActsData] = useState<ActData[]>([]);
+
+    // Drag-to-scroll refs
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const isDragging = useRef(false);
+    const dragStart = useRef({ x: 0, scrollLeft: 0 });
 
     const estimateId = String(estimate._id);
 
@@ -135,10 +143,18 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
             .finally(() => setLoading(false));
     }, [estimateId]);
 
-    const handleAddAct = useCallback(() => {
+    const handleAddAct = useCallback((currentRows: LaborRow[]) => {
         const next = acts.length + 1;
         setActs(prev => [...prev, `ACT-${next}`]);
-        setActsData(prev => [...prev, {}]);
+        // Pre-fill from base estimation data
+        const prefilled: ActData = {};
+        for (const row of currentRows) {
+            prefilled[String(row._id)] = {
+                unitPrice: String(row.changableAveragePrice ?? ''),
+                quantity: String(row.quantity ?? ''),
+            };
+        }
+        setActsData(prev => [...prev, prefilled]);
     }, [acts.length]);
 
     const handleActValue = useCallback((actIdx: number, itemId: string, field: 'unitPrice' | 'quantity', value: string) => {
@@ -151,6 +167,28 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
             return copy;
         });
     }, []);
+
+    // Drag-to-scroll handlers
+    const onMouseDown = useCallback((e: React.MouseEvent) => {
+        if (!scrollRef.current || acts.length === 0) return;
+        isDragging.current = true;
+        dragStart.current = { x: e.clientX, scrollLeft: scrollRef.current.scrollLeft };
+        scrollRef.current.style.cursor = 'grabbing';
+        scrollRef.current.style.userSelect = 'none';
+    }, [acts.length]);
+
+    const onMouseMove = useCallback((e: React.MouseEvent) => {
+        if (!isDragging.current || !scrollRef.current) return;
+        const dx = e.clientX - dragStart.current.x;
+        scrollRef.current.scrollLeft = dragStart.current.scrollLeft - dx;
+    }, []);
+
+    const onMouseUp = useCallback(() => {
+        if (!scrollRef.current) return;
+        isDragging.current = false;
+        scrollRef.current.style.cursor = acts.length > 0 ? 'grab' : 'default';
+        scrollRef.current.style.userSelect = '';
+    }, [acts.length]);
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -177,6 +215,10 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                 .sort((a, b) => a.displayIndex - b.displayIndex)
         );
     }
+
+    // 6 base cols + 3 per act (Unit Price, Quantity, Total)
+    const ACT_COLS = 3;
+    const baseColCount = 6 + acts.length * ACT_COLS;
 
     let itemCounter = 0;
 
@@ -205,14 +247,16 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
             </TableCell>
             {acts.map((_, actIdx) => {
                 const vals = actsData[actIdx]?.[String(row._id)];
+                const actTotal = parseNum(vals?.unitPrice ?? '0') * parseNum(vals?.quantity ?? '0');
                 return (
                     <>
-                        <TableCell key={`act-${actIdx}-up-${row._id}`} sx={{ textAlign: 'right', px: 1 }}>
+                        <TableCell key={`act-${actIdx}-up-${row._id}`} sx={{ textAlign: 'right', px: 1, borderLeft: '2px solid #b2e8ed' }}>
                             <InputBase
                                 value={vals?.unitPrice ?? ''}
                                 onChange={e => handleActValue(actIdx, String(row._id), 'unitPrice', e.target.value)}
                                 placeholder='0'
                                 sx={editableCellSx}
+                                onMouseDown={e => e.stopPropagation()}
                             />
                         </TableCell>
                         <TableCell key={`act-${actIdx}-qty-${row._id}`} sx={{ textAlign: 'right', px: 1 }}>
@@ -221,7 +265,11 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                                 onChange={e => handleActValue(actIdx, String(row._id), 'quantity', e.target.value)}
                                 placeholder='0'
                                 sx={editableCellSx}
+                                onMouseDown={e => e.stopPropagation()}
                             />
+                        </TableCell>
+                        <TableCell key={`act-${actIdx}-total-${row._id}`} sx={{ textAlign: 'right', whiteSpace: 'nowrap', fontWeight: 600, color: mainPrimaryColor }}>
+                            {formatCurrencyRounded(actTotal)}
                         </TableCell>
                     </>
                 );
@@ -237,7 +285,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                     variant='outlined'
                     size='small'
                     startIcon={<AddIcon />}
-                    onClick={handleAddAct}
+                    onClick={() => handleAddAct(rows)}
                     sx={{
                         borderRadius: '20px',
                         borderColor: mainPrimaryColor,
@@ -250,10 +298,23 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                 </Button>
             </Box>
 
-            <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto' }}>
+            {/* Drag-to-scroll wrapper */}
+            <Box
+                ref={scrollRef}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseUp}
+                sx={{
+                    border: '1px solid #e0f5f7',
+                    borderRadius: 2,
+                    overflow: 'auto',
+                    cursor: acts.length > 0 ? 'grab' : 'default',
+                }}
+            >
                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#e8f7f9' } }}>
                     <TableHead>
-                        {/* Row 1: base column headers (rowSpan=2) + ACT group headers */}
+                        {/* Row 1: base headers (rowSpan=2 when acts exist) + ACT group headers */}
                         <TableRow>
                             <TableCell rowSpan={acts.length > 0 ? 2 : 1} sx={{ ...colHeaderSx, width: 48, textAlign: 'center' }}>{t('No.')}</TableCell>
                             <TableCell rowSpan={acts.length > 0 ? 2 : 1} sx={colHeaderSx}>{t('Description of Work')}</TableCell>
@@ -262,19 +323,20 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                             <TableCell rowSpan={acts.length > 0 ? 2 : 1} sx={{ ...colHeaderSx, textAlign: 'right' }}>{t('Unit Price')}</TableCell>
                             <TableCell rowSpan={acts.length > 0 ? 2 : 1} sx={{ ...colHeaderSx, textAlign: 'right' }}>{t('Total')}</TableCell>
                             {acts.map(label => (
-                                <TableCell key={label} colSpan={2} sx={{ ...actHeaderSx, borderLeft: '2px solid #b2e8ed' }}>
+                                <TableCell key={label} colSpan={ACT_COLS} sx={{ ...actHeaderSx, borderLeft: '2px solid #b2e8ed' }}>
                                     {label}
                                 </TableCell>
                             ))}
                         </TableRow>
 
-                        {/* Row 2: sub-headers for each ACT's two columns (only when acts exist) */}
+                        {/* Row 2: sub-headers per ACT */}
                         {acts.length > 0 && (
                             <TableRow>
                                 {acts.map(label => (
                                     <>
                                         <TableCell key={`${label}-up`} sx={{ ...actSubHeaderSx, borderLeft: '2px solid #b2e8ed' }}>{t('Unit Price')}</TableCell>
                                         <TableCell key={`${label}-qty`} sx={actSubHeaderSx}>{t('Quantity')}</TableCell>
+                                        <TableCell key={`${label}-tot`} sx={{ ...actSubHeaderSx, fontWeight: 700, color: mainPrimaryColor }}>{t('Total')}</TableCell>
                                     </>
                                 ))}
                             </TableRow>
@@ -288,7 +350,6 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
 
                             const subs = subsectionsBySection.get(String(section._id)) ?? [];
                             const sectionTotal = sectionItems.reduce((sum, r) => sum + (r.cost ?? 0), 0);
-                            const baseColCount = 6 + acts.length * 2;
 
                             return (
                                 <>
@@ -316,7 +377,6 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                                             if (subItems.length === 0) return null;
                                             return (
                                                 <>
-                                                    {/* Subsection label */}
                                                     <TableRow key={`sub-${sub._id}`} sx={{ backgroundColor: '#f7fdfe' }}>
                                                         <TableCell
                                                             colSpan={baseColCount}
@@ -335,7 +395,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                                     {/* Section subtotal */}
                                     <TableRow sx={{ backgroundColor: '#eaf8fa' }}>
                                         <TableCell
-                                            colSpan={5 + acts.length * 2}
+                                            colSpan={5 + acts.length * ACT_COLS}
                                             sx={{ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', py: 1, pr: 2 }}
                                         >
                                             {t('Subtotal')}
@@ -351,7 +411,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                         {/* Grand total */}
                         <TableRow sx={{ backgroundColor: '#d6f4f7' }}>
                             <TableCell
-                                colSpan={5 + acts.length * 2}
+                                colSpan={5 + acts.length * ACT_COLS}
                                 sx={{ fontWeight: 800, textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}`, color: mainPrimaryColor, fontSize: '0.85rem', py: 1.2, pr: 2 }}
                             >
                                 {t('Total')}
