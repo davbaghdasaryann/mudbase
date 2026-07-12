@@ -14,6 +14,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import SpeedIcon from '@mui/icons-material/Speed';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -428,6 +429,7 @@ function useMainNavigation() {
                     {segment: 'structural', title: t('Structural'), icon: <AccountTreeIcon />},
                     {segment: 'comparative', title: t('Comparative'), icon: <CompareArrowsIcon />},
                     {segment: 'chronological', title: t('Chronological'), icon: <TimelineIcon />},
+                    {segment: 'performance', title: t('Performance'), icon: <SpeedIcon />},
                 ],
             });
         }
