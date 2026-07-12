@@ -199,128 +199,146 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const cell = (val: string | number, bold = false, bg = '', align = 'left', colspan = 1) =>
-            `<td colspan="${colspan}" style="border:1px solid #ccc;padding:5px 8px;${bold ? 'font-weight:bold;' : ''}${bg ? `background:${bg};` : ''}text-align:${align};">${esc(val)}</td>`;
+        const S = (css: string) => `style="${css}"`;
+        const BASE_CSS = 'border:1px solid #ccc;padding:5px 8px;';
+        const HDR_CSS = 'border:1px solid #ccc;padding:6px 8px;font-weight:bold;';
 
-        const actLabels = acts.map(n => `${t('ACT')}-${n}`);
-        const totalBaseCols = 6;
-        const totalCols = totalBaseCols + acts.length * 3;
+        const TOTAL_COLS = 12; // No., Desc, Unit + 3 groups × 3 cols
+        const lastActIdx = acts.length - 1;
+        const actNum = acts.length > 0 ? acts[lastActIdx] : 1;
 
-        let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">`;
+        // Per-row group computations (all use contract unit price as per reference)
+        const getFactQty = (rowId: string): number => {
+            if (acts.length <= 1) return 0;
+            let q = 0;
+            for (let ai = 0; ai < acts.length - 1; ai++) q += parseNum(actsData[ai]?.[rowId]?.quantity ?? '0');
+            return q;
+        };
+        const getCurQty = (rowId: string): number =>
+            acts.length === 0 ? 0 : parseNum(actsData[lastActIdx]?.[rowId]?.quantity ?? '0');
 
-        // Header row 1
+        const G1 = '#F2F2F2'; // Contract — light grey (also used for general headers)
+        const G2 = '#E6F0FA'; // Factually Completed — pastel blue
+        const G3 = '#E2EFDA'; // Current Performance — pastel green
+        const G1D = '#FFFFFF'; // Contract data rows — white
+        const G2D = '#FFFFFF'; // Factually data rows — white
+        const G3D = '#FFFFFF'; // Current data rows — white
+
+        let html = `<table border="1" ${S('border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;')}>`;
+
+        // Title row
+        html += `<tr><td colspan="${TOTAL_COLS}" ${S(`${HDR_CSS}text-align:center;font-size:14px;background:${G1};`)}>${esc(`${t('Performance Act').toUpperCase()} N${actNum}`)}</td></tr>`;
+        html += `<tr><td colspan="${TOTAL_COLS}" ${S(BASE_CSS)}>&nbsp;</td></tr>`;
+
+        // Header row 1: 3 fixed (rowspan=2) + 3 group labels (colspan=3)
         html += '<tr>';
-        html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:6px 8px;" rowspan="${acts.length > 0 ? 2 : 1}">${esc(t('No.'))}</th>`;
-        html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:6px 8px;" rowspan="${acts.length > 0 ? 2 : 1}">${esc(t('Description of Work'))}</th>`;
-        html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:6px 8px;" rowspan="${acts.length > 0 ? 2 : 1}">${esc(t('Unit'))}</th>`;
-        html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:6px 8px;" rowspan="${acts.length > 0 ? 2 : 1}">${esc(t('Quantity'))}</th>`;
-        html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:6px 8px;" rowspan="${acts.length > 0 ? 2 : 1}">${esc(t('Unit Price'))}</th>`;
-        html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:6px 8px;" rowspan="${acts.length > 0 ? 2 : 1}">${esc(t('Total'))}</th>`;
-        for (const label of actLabels) {
-            html += `<th colspan="3" style="background:#b2ebf2;border:1px solid #ccc;padding:6px 8px;text-align:center;">${esc(label)}</th>`;
+        html += `<th rowspan="2" ${S(`${HDR_CSS}text-align:center;vertical-align:middle;background:${G1};`)}>Հ/հ</th>`;
+        html += `<th rowspan="2" ${S(`${HDR_CSS}vertical-align:middle;background:${G1};`)}>${esc(t('Description of Work'))}</th>`;
+        html += `<th rowspan="2" ${S(`${HDR_CSS}text-align:center;vertical-align:middle;background:${G1};`)}>Չ/մ</th>`;
+        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G1};`)}>Ըստ պայմանագրի</th>`;
+        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G2};`)}>Փաստացի Կատարված</th>`;
+        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G3};`)}>Ընթացիկ կատարողական</th>`;
+        html += '</tr>';
+
+        // Header row 2: sub-column labels per group
+        html += '<tr>';
+        for (const bg of [G1, G2, G3]) {
+            html += `<th ${S(`${HDR_CSS}text-align:right;background:${bg};`)}>${esc(t('Quantity'))}</th>`;
+            html += `<th ${S(`${HDR_CSS}text-align:right;background:${bg};`)}>${esc(t('Unit Price'))}</th>`;
+            html += `<th ${S(`${HDR_CSS}text-align:right;background:${bg};`)}>${esc(t('Total'))}</th>`;
         }
         html += '</tr>';
 
-        // Header row 2 (ACT sub-headers)
-        if (acts.length > 0) {
-            html += '<tr>';
-            for (const label of actLabels) {
-                html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:5px 8px;">${esc(t('Unit Price'))}</th>`;
-                html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:5px 8px;">${esc(t('Quantity'))}</th>`;
-                html += `<th style="background:#e0f7fa;border:1px solid #ccc;padding:5px 8px;">${esc(t('Total'))}</th>`;
-            }
-            html += '</tr>';
-        }
+        // 3 value cells for a data row (uses contract unit price for all groups)
+        const dataGroup = (qty: number, up: number, bg: string) => {
+            const tot = qty * up;
+            return `<td ${S(`${BASE_CSS}text-align:right;background:${bg};`)}>${qty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                `<td ${S(`${BASE_CSS}text-align:right;background:${bg};`)}>${formatCurrencyRounded(up)}</td>` +
+                `<td ${S(`${BASE_CSS}text-align:right;font-weight:bold;background:${bg};`)}>${formatCurrencyRounded(tot)}</td>`;
+        };
+        // 3 summary cells for subtotal/total rows (unit price blank, qty+total bold)
+        const sumGroup = (qty: number, total: number, bg: string) =>
+            `<td ${S(`${BASE_CSS}text-align:right;font-weight:bold;background:${bg};`)}>${qty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+            `<td ${S(`${BASE_CSS}background:${bg};`)}></td>` +
+            `<td ${S(`${BASE_CSS}text-align:right;font-weight:bold;background:${bg};`)}>${formatCurrencyRounded(total)} AMD</td>`;
 
-        let counter = 0;
-        const subs = subsections;
         const subsMap = new Map<string, Subsection[]>();
         for (const sect of sections) {
             subsMap.set(String(sect._id),
-                subs.filter(s => String(s.estimateSectionId) === String(sect._id)).sort((a, b) => a.displayIndex - b.displayIndex));
+                subsections.filter(s => String(s.estimateSectionId) === String(sect._id)).sort((a, b) => a.displayIndex - b.displayIndex));
         }
+
+        let counter = 0;
 
         for (let si = 0; si < sections.length; si++) {
             const section = sections[si];
             const sectionItems = rows.filter(r => r.sectionName === section.name);
             if (sectionItems.length === 0) continue;
-            const sectionSubsections = subsMap.get(String(section._id)) ?? [];
-            const sectionTotal = sectionItems.reduce((s, r) => s + (r.cost ?? 0), 0);
+            const subs = subsMap.get(String(section._id)) ?? [];
 
-            // Section header
-            html += `<tr style="background:#e0f5f7;"><td colspan="${totalCols}" style="font-weight:bold;border:1px solid #ccc;padding:6px 10px;font-size:13px;">${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
+            html += `<tr><td colspan="${TOTAL_COLS}" ${S(`${BASE_CSS}font-weight:bold;font-size:13px;background:${G1};text-align:center;`)}>${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
 
-            const renderRow = (row: LaborRow, idx: number, indent: string) => {
-                let r = '<tr>';
-                r += cell(idx, false, '', 'center');
-                r += cell(indent + (row.laborOfferItemName || row.catalogName));
-                r += cell(row.unitSymbol, false, '', 'center');
-                r += cell(Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 }), false, '', 'right');
-                r += cell(formatCurrencyRounded(row.changableAveragePrice), false, '', 'right');
-                r += cell(formatCurrencyRounded(row.cost), true, '', 'right');
-                for (let ai = 0; ai < acts.length; ai++) {
-                    const v = actsData[ai]?.[String(row._id)];
-                    const tot = parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-                    r += cell(v?.unitPrice ?? '0', false, '', 'right');
-                    r += cell(v?.quantity ?? '0', false, '', 'right');
-                    r += cell(formatCurrencyRounded(tot), true, '#f0fbfc', 'right');
-                }
-                r += '</tr>';
-                return r;
+            const renderRow = (row: LaborRow, idx: number) => {
+                const up = row.changableAveragePrice ?? 0;
+                return `<tr>` +
+                    `<td ${S(`${BASE_CSS}text-align:center;`)}>${idx}</td>` +
+                    `<td ${S(BASE_CSS)}>${esc(row.laborOfferItemName || row.catalogName)}</td>` +
+                    `<td ${S(`${BASE_CSS}text-align:center;`)}>${esc(row.unitSymbol)}</td>` +
+                    dataGroup(row.quantity ?? 0, up, G1D) +
+                    dataGroup(getFactQty(String(row._id)), up, G2D) +
+                    dataGroup(getCurQty(String(row._id)), up, G3D) +
+                    `</tr>`;
             };
 
-            if (sectionSubsections.length > 0) {
-                for (let subI = 0; subI < sectionSubsections.length; subI++) {
-                    const sub = sectionSubsections[subI];
+            if (subs.length > 0) {
+                for (let subI = 0; subI < subs.length; subI++) {
+                    const sub = subs[subI];
                     const subItems = sectionItems.filter(r => r.subsectionName === sub.name);
                     if (subItems.length === 0) continue;
-                    html += `<tr style="background:#f7fdfe;"><td colspan="${totalCols}" style="font-style:italic;border:1px solid #ccc;padding:5px 10px;padding-left:20px;font-size:11px;">${esc(`${si + 1}.${subI + 1}. ${sub.name}`)}</td></tr>`;
-                    for (const row of subItems) html += renderRow(row, ++counter, '    ');
+                    html += `<tr><td colspan="${TOTAL_COLS}" ${S(`${BASE_CSS}font-style:italic;padding-left:20px;font-size:11px;background:#f7fdfe;`)}>${esc(`${si + 1}.${subI + 1}. ${sub.name}`)}</td></tr>`;
+                    for (const row of subItems) html += renderRow(row, ++counter);
                 }
             } else {
-                for (const row of sectionItems) html += renderRow(row, ++counter, '');
+                for (const row of sectionItems) html += renderRow(row, ++counter);
             }
 
             // Section subtotal
-            html += '<tr style="background:#eaf8fa;">';
-            html += `<td colspan="5" style="font-weight:bold;text-align:right;border:1px solid #ccc;padding:5px 10px;">${esc(t('Subtotal'))}</td>`;
-            html += cell(formatCurrencyRounded(sectionTotal) + ' AMD', true, '#eaf8fa', 'right');
-            for (let ai = 0; ai < acts.length; ai++) {
-                const qtySum = sectionItems.reduce((s, r) => s + parseNum(actsData[ai]?.[String(r._id)]?.quantity ?? '0'), 0);
-                const totSum = sectionItems.reduce((s, r) => {
-                    const v = actsData[ai]?.[String(r._id)];
-                    return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-                }, 0);
-                html += cell('', false, '#eaf8fa', 'right');
-                html += cell(qtySum.toLocaleString(undefined, { maximumFractionDigits: 2 }), true, '#eaf8fa', 'right');
-                html += cell(formatCurrencyRounded(totSum) + ' AMD', true, '#eaf8fa', 'right');
-            }
-            html += '</tr>';
+            const secCQty = sectionItems.reduce((s, r) => s + (r.quantity ?? 0), 0);
+            const secCTotal = sectionItems.reduce((s, r) => s + (r.cost ?? 0), 0);
+            const secFQty = sectionItems.reduce((s, r) => s + getFactQty(String(r._id)), 0);
+            const secFTotal = sectionItems.reduce((s, r) => s + getFactQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
+            const secCurQty = sectionItems.reduce((s, r) => s + getCurQty(String(r._id)), 0);
+            const secCurTotal = sectionItems.reduce((s, r) => s + getCurQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
+
+            html += `<tr>` +
+                `<td colspan="3" ${S(`${BASE_CSS}font-weight:bold;text-align:right;background:${G1};`)}>${esc(t('Subtotal'))}</td>` +
+                sumGroup(secCQty, secCTotal, G1) +
+                sumGroup(secFQty, secFTotal, G2) +
+                sumGroup(secCurQty, secCurTotal, G3) +
+                `</tr>`;
         }
 
         // Grand total
-        const grandTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
-        html += '<tr style="background:#d6f4f7;">';
-        html += `<td colspan="5" style="font-weight:bold;text-align:right;border:2px solid #00ABBE;padding:6px 10px;">${esc(t('Total'))}</td>`;
-        html += cell(formatCurrencyRounded(grandTotal) + ' AMD', true, '#d6f4f7', 'right');
-        for (let ai = 0; ai < acts.length; ai++) {
-            const qtyG = rows.reduce((s, r) => s + parseNum(actsData[ai]?.[String(r._id)]?.quantity ?? '0'), 0);
-            const totG = rows.reduce((s, r) => {
-                const v = actsData[ai]?.[String(r._id)];
-                return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-            }, 0);
-            html += cell('', false, '#d6f4f7', 'right');
-            html += cell(qtyG.toLocaleString(undefined, { maximumFractionDigits: 2 }), true, '#d6f4f7', 'right');
-            html += cell(formatCurrencyRounded(totG) + ' AMD', true, '#d6f4f7', 'right');
-        }
-        html += '</tr></table>';
+        const grandCQty = rows.reduce((s, r) => s + (r.quantity ?? 0), 0);
+        const grandCTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
+        const grandFQty = rows.reduce((s, r) => s + getFactQty(String(r._id)), 0);
+        const grandFTotal = rows.reduce((s, r) => s + getFactQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
+        const grandCurQty = rows.reduce((s, r) => s + getCurQty(String(r._id)), 0);
+        const grandCurTotal = rows.reduce((s, r) => s + getCurQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
+
+        html += `<tr>` +
+            `<td colspan="3" ${S(`${BASE_CSS}font-weight:bold;text-align:right;background:${G1};border-top:2px solid #999;`)}>${esc(t('Total'))}</td>` +
+            sumGroup(grandCQty, grandCTotal, G1) +
+            sumGroup(grandFQty, grandFTotal, G2) +
+            sumGroup(grandCurQty, grandCurTotal, G3) +
+            `</tr></table>`;
 
         const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
         const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `performance-act.xls`;
+        a.download = 'performance-act.xls';
         a.click();
         URL.revokeObjectURL(url);
     }, [rows, sections, subsections, acts, actsData, t]);
