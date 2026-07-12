@@ -429,9 +429,9 @@ function useMainNavigation() {
                     {segment: 'structural', title: t('Structural'), icon: <AccountTreeIcon />},
                     {segment: 'comparative', title: t('Comparative'), icon: <CompareArrowsIcon />},
                     {segment: 'chronological', title: t('Chronological'), icon: <TimelineIcon />},
-                    {segment: 'performance', title: t('Performance'), icon: <SpeedIcon />},
                 ],
             });
+            navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
         }
 
         if (isSuperAdmin) {
