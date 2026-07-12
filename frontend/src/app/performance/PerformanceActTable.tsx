@@ -47,7 +47,7 @@ type ActData = Record<string, ActValues>;
 // Base column definitions (index → default width in px)
 const BASE_COLS = [
     { key: 'no',    defaultW: 52  },
-    { key: 'desc',  defaultW: 280 },
+    { key: 'desc',  defaultW: 500 },
     { key: 'unit',  defaultW: 72  },
     { key: 'qty',   defaultW: 90  },
     { key: 'up',    defaultW: 100 },
