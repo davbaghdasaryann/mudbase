@@ -204,6 +204,13 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
         });
     }, []);
 
+    // Auto-scroll to right edge when a new ACT is added
+    useEffect(() => {
+        if (acts.length > 0 && scrollRef.current) {
+            scrollRef.current.scrollTo({ left: scrollRef.current.scrollWidth, behavior: 'smooth' });
+        }
+    }, [acts.length]);
+
     // Scroll drag
     const onMouseDown = useCallback((e: React.MouseEvent) => {
         if (!scrollRef.current || resizingCol.current) return;
