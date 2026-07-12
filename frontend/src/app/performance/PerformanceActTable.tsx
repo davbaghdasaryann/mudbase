@@ -151,7 +151,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
         for (const row of currentRows) {
             prefilled[String(row._id)] = {
                 unitPrice: String(row.changableAveragePrice ?? ''),
-                quantity: String(row.quantity ?? ''),
+                quantity: '0',
             };
         }
         setActsData(prev => [...prev, prefilled]);
