@@ -345,19 +345,9 @@ export default function PerformanceActTable({
                 `</tr>`;
         }
 
-        // Grand total
-        const grandCQty = rows.reduce((s, r) => s + (r.quantity ?? 0), 0);
-        const grandCTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
-        const grandFQty = rows.reduce((s, r) => s + getFactQty(String(r._id)), 0);
-        const grandFTotal = rows.reduce((s, r) => s + getFactQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
-        const grandCurQty = rows.reduce((s, r) => s + getCurQty(String(r._id)), 0);
-        const grandCurTotal = rows.reduce((s, r) => s + getCurQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
-
+        // Grand total — label only, no numeric values
         html += `<tr>` +
-            `<td colspan="3" ${S(`${BASE_CSS}font-weight:bold;text-align:right;background:${G1};border-top:2px solid #999;`)}>${esc(t('Total'))}</td>` +
-            sumGroup(grandCQty, grandCTotal, G1) +
-            sumGroup(grandFQty, grandFTotal, G2) +
-            sumGroup(grandCurQty, grandCurTotal, G3) +
+            `<td colspan="${TOTAL_COLS}" ${S(`${BASE_CSS}font-weight:bold;text-align:left;background:${G1};border-top:2px solid #999;`)}>${esc(t('Total'))}</td>` +
             `</tr></table>`;
 
         const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
@@ -563,22 +553,7 @@ export default function PerformanceActTable({
                         })}
 
                         <tr style={{ backgroundColor: GRAND_BG }}>
-                            <td colSpan={5} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, fontSize: '0.85rem', paddingRight: 12, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
-                            <td style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(grandTotal)} AMD</td>
-                            {acts.map((_, actIdx) => {
-                                const actQtyGrand = rows.reduce((s, r) => s + parseNum(actsData[actIdx]?.[String(r._id)]?.quantity ?? '0'), 0);
-                                const actTotalGrand = rows.reduce((s, r) => {
-                                    const v = actsData[actIdx]?.[String(r._id)];
-                                    return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-                                }, 0);
-                                return (
-                                    <>
-                                        <td key={`grand-${actIdx}-up`} style={td({ ...actCellBorderLeft, borderTop: `2px solid ${mainPrimaryColor}` })}></td>
-                                        <td key={`grand-${actIdx}-qty`} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{actQtyGrand.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                                        <td key={`grand-${actIdx}-tot`} style={td({ fontWeight: 800, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(actTotalGrand)} AMD</td>
-                                    </>
-                                );
-                            })}
+                            <td colSpan={totalCols} style={td({ fontWeight: 800, textAlign: 'left', color: mainPrimaryColor, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
                         </tr>
                     </tbody>
                 </table>
