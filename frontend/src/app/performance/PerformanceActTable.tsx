@@ -125,7 +125,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [acts, setActs] = useState<string[]>([]);
+    const [acts, setActs] = useState<number[]>([]);
     const [actsData, setActsData] = useState<ActData[]>([]);
 
     // Column widths: base cols first, then 3 per act
@@ -187,7 +187,7 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
 
     const handleAddAct = useCallback((currentRows: LaborRow[]) => {
         const next = acts.length + 1;
-        setActs(prev => [...prev, `ACT-${next}`]);
+        setActs(prev => [...prev, next]);
         const prefilled: ActData = {};
         for (const row of currentRows) {
             prefilled[String(row._id)] = { unitPrice: String(row.changableAveragePrice ?? ''), quantity: '0' };
@@ -245,7 +245,6 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
         >
             <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
             <td style={td({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
-                {row.fullCode && <span style={{ color: mainPrimaryColor, marginRight: 6, fontSize: '0.75rem', fontWeight: 600 }}>{row.fullCode}</span>}
                 {row.laborOfferItemName || row.catalogName}
             </td>
             <td style={td({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
@@ -299,20 +298,20 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
                                     <ResizeHandle onDragStart={e => startResize(i, e)} />
                                 </th>
                             ))}
-                            {acts.map((label, ai) => (
-                                <th key={label} colSpan={3}
+                            {acts.map((num, ai) => (
+                                <th key={num} colSpan={3}
                                     style={th({ textAlign: 'center', backgroundColor: '#e6f7f9', borderLeft: '2px solid #b2e8ed', verticalAlign: 'middle' })}>
-                                    {label}
+                                    {t('ACT')}-{num}
                                 </th>
                             ))}
                         </tr>
                         {/* Row 2: ACT sub-headers */}
                         {acts.length > 0 && (
                             <tr>
-                                {acts.map((label, ai) => {
+                                {acts.map((num, ai) => {
                                     const base = BASE_COLS.length + ai * 3;
                                     return ACT_COL_KEYS.map((k, ki) => (
-                                        <th key={`${label}-${k}`}
+                                        <th key={`${num}-${k}`}
                                             style={th({ textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: '#00818f', backgroundColor: HDR_BG, borderBottom: `1px solid #b2e8ed`, ...(ki === 0 ? actCellBorderLeft : {}), verticalAlign: 'middle' })}>
                                             {k === 'up' ? t('Unit Price') : k === 'qty' ? t('Quantity') : t('Total')}
                                             <ResizeHandle onDragStart={e => startResize(base + ki, e)} />
