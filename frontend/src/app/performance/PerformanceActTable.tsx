@@ -9,9 +9,17 @@ import AddIcon from '@mui/icons-material/Add';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
-import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
+
+interface PerformanceActRecord {
+    _id: string;
+    estimateId: string;
+    estimateName: string;
+    acts: number[];
+    actsData: ActData[];
+    createdAt: string;
+}
 
 interface LaborRow {
     _id: string;
@@ -118,7 +126,13 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function PerformanceActTable({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
+export default function PerformanceActTable({
+    record,
+    onUpdate,
+}: {
+    record: PerformanceActRecord;
+    onUpdate: (updated: PerformanceActRecord) => void;
+}) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
@@ -126,8 +140,10 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [acts, setActs] = useState<number[]>([]);
-    const [actsData, setActsData] = useState<ActData[]>([]);
+    const [acts, setActs] = useState<number[]>(record.acts ?? []);
+    const [actsData, setActsData] = useState<ActData[]>(record.actsData ?? []);
+
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Column widths: base cols first, then 3 per act
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
@@ -140,7 +156,15 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
     // Column resize
     const resizingCol = useRef<{ colIdx: number; startX: number; startW: number } | null>(null);
 
-    const estimateId = String(estimate._id);
+    const estimateId = record.estimateId;
+
+    const saveToDb = useCallback((newActs: number[], newActsData: ActData[]) => {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(async () => {
+            await Api.requestSession({ command: 'performance/update', args: { id: record._id }, json: { acts: newActs, actsData: newActsData } });
+            onUpdate({ ...record, acts: newActs, actsData: newActsData });
+        }, 800);
+    }, [record, onUpdate]);
 
     useEffect(() => {
         setLoading(true);
@@ -188,14 +212,17 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
 
     const handleAddAct = useCallback((currentRows: LaborRow[]) => {
         const next = acts.length + 1;
-        setActs(prev => [...prev, next]);
+        const newActs = [...acts, next];
         const prefilled: ActData = {};
         for (const row of currentRows) {
             prefilled[String(row._id)] = { unitPrice: String(row.changableAveragePrice ?? ''), quantity: '0' };
         }
-        setActsData(prev => [...prev, prefilled]);
+        const newActsData = [...actsData, prefilled];
+        setActs(newActs);
+        setActsData(newActsData);
         setColWidths(prev => [...prev, ...ACT_COL_DEFAULTS]);
-    }, [acts.length]);
+        saveToDb(newActs, newActsData);
+    }, [acts, actsData, saveToDb]);
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -347,9 +374,10 @@ export default function PerformanceActTable({ estimate }: { estimate: EstimatesA
         setActsData(prev => {
             const copy = [...prev];
             copy[actIdx] = { ...copy[actIdx], [itemId]: { ...copy[actIdx]?.[itemId], [field]: value } };
+            saveToDb(acts, copy);
             return copy;
         });
-    }, []);
+    }, [acts, saveToDb]);
 
     // Auto-scroll to right edge when a new ACT is added
     useEffect(() => {
