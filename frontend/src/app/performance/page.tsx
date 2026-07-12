@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import SpeedIcon from '@mui/icons-material/Speed';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
+import PerformanceActTable from './PerformanceActTable';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 
@@ -34,18 +36,9 @@ export default function PerformancePage() {
     return (
         <PageContents title='Performance'>
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+
                 {!selectedEstimate && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flex: 1,
-                            gap: 2,
-                            pb: 8,
-                        }}
-                    >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
                         <SpeedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
                             {t('No Performance Acts created yet')}
@@ -53,6 +46,29 @@ export default function PerformancePage() {
                         <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
                     </Box>
                 )}
+
+                {selectedEstimate && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        <Button
+                            startIcon={<ArrowBackIcon fontSize='small' />}
+                            size='small'
+                            onClick={() => setSelectedEstimate(null)}
+                            sx={{ color: 'text.secondary', pl: 0, mb: 1.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
+                        >
+                            {t('Back')}
+                        </Button>
+
+                        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+                            {t('Performance Act')}
+                        </Typography>
+                        <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
+                            {selectedEstimate.name}
+                        </Typography>
+
+                        <PerformanceActTable estimate={selectedEstimate} />
+                    </Box>
+                )}
+
             </Box>
 
             <ChooseEstimationDialog
