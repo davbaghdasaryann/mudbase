@@ -25,6 +25,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import SpeedIcon from '@mui/icons-material/Speed';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -64,6 +65,8 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <DatasetIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'analysis':
                 return <BarChartIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'performance':
+                return <SpeedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'settings':
                 if (pathname === '/settings/packages') return <Inventory2OutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
                 if (pathname === '/settings/payments') return <PaymentsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
