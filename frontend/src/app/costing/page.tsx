@@ -60,8 +60,8 @@ const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), desc
 // Informative detail row — label left, content right, with bottom border
 function DetailRow({ label, children, last }: { label: string; children: React.ReactNode; last?: boolean }) {
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, gap: 2, borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
-            <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 140, flexShrink: 0 }}>{label}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, gap: 3, borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
+            <Typography sx={{ fontSize: '0.78rem', color: '#999', width: 160, flexShrink: 0 }}>{label}</Typography>
             <Box sx={{ flex: 1 }}>{children}</Box>
         </Box>
     );
@@ -290,9 +290,9 @@ export default function CostingPage() {
             <Dialog
                 open={!!editEntry}
                 onClose={(_, reason) => { if (reason !== 'backdropClick') setEditEntry(null); }}
-                maxWidth='sm'
+                maxWidth={false}
                 fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
+                PaperProps={{ sx: { borderRadius: 3, width: '100%', maxWidth: 680 } }}
             >
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Cost Details')}</DialogTitle>
                 <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
