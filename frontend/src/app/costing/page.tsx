@@ -60,7 +60,7 @@ const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), desc
 // Informative detail row — label left, content right, with bottom border
 function DetailRow({ label, children, last }: { label: string; children: React.ReactNode; last?: boolean }) {
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, gap: 2, borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
             <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 140, flexShrink: 0 }}>{label}</Typography>
             <Box sx={{ flex: 1 }}>{children}</Box>
         </Box>
@@ -135,7 +135,6 @@ export default function CostingPage() {
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
     const [editUnit, setEditUnit] = useState('');
     const [editQuantityStr, setEditQuantityStr] = useState('');
-    const [editContractor, setEditContractor] = useState('');
     const [editIsSubcontractor, setEditIsSubcontractor] = useState(false);
     const [editNote, setEditNote] = useState('');
     const [editPaymentMethod, setEditPaymentMethod] = useState('');
@@ -162,7 +161,6 @@ export default function CostingPage() {
         setEditEntry(entry);
         setEditUnit(entry.unit);
         setEditQuantityStr(String(entry.quantity));
-        setEditContractor(entry.contractor ?? '');
         setEditIsSubcontractor(entry.isSubcontractor ?? false);
         setEditNote(entry.note ?? '');
         setEditPaymentMethod(entry.paymentMethod ?? '');
@@ -177,7 +175,7 @@ export default function CostingPage() {
         const qty = parseFloat(editQuantityStr.replace(',', '.')) || editEntry.quantity;
         setCostHistory(prev => prev.map(e =>
             e.id === editEntry.id
-                ? { ...e, unit: editUnit, quantity: qty, contractor: editContractor, isSubcontractor: editIsSubcontractor, note: editNote, paymentMethod: editPaymentMethod, paymentValue: editPaymentValue, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
+                ? { ...e, unit: editUnit, quantity: qty, isSubcontractor: editIsSubcontractor, note: editNote, paymentMethod: editPaymentMethod, paymentValue: editPaymentValue, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
                 : e
         ));
         setEditEntry(null);
@@ -292,7 +290,7 @@ export default function CostingPage() {
             <Dialog
                 open={!!editEntry}
                 onClose={(_, reason) => { if (reason !== 'backdropClick') setEditEntry(null); }}
-                maxWidth='md'
+                maxWidth='sm'
                 fullWidth
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
@@ -307,41 +305,27 @@ export default function CostingPage() {
                         <DetailRow label={t('Date of Creation')}>
                             <Typography sx={{ fontSize: '0.88rem', color: '#555' }}>{editEntry?.addedAt.toLocaleString()}</Typography>
                         </DetailRow>
-                        {/* Unit + Quantity side-by-side */}
-                        <Box sx={{ display: 'flex', minHeight: 40, borderBottom: '1px solid #e8f7f9' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, borderRight: '1px solid #e8f7f9', pr: 2 }}>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 90, flexShrink: 0 }}>{t('Unit')}</Typography>
-                                <InputBase value={editUnit} onChange={e => setEditUnit(e.target.value)} sx={{ fontSize: '0.88rem', color: '#222', '& input': { p: 0 } }} />
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, pl: 2 }}>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 90, flexShrink: 0 }}>{t('Quantity')}</Typography>
-                                <InputBase value={editQuantityStr} onChange={e => setEditQuantityStr(e.target.value)} inputProps={{ style: { padding: 0 } }} sx={{ fontSize: '0.88rem', color: '#222' }} />
-                            </Box>
-                        </Box>
-                        <DetailRow label={t('Contractor')} last>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <InputBase
-                                    value={editContractor}
-                                    onChange={e => setEditContractor(e.target.value)}
-                                    placeholder={t('Contractor name') + '...'}
-                                    disabled={editIsSubcontractor}
-                                    sx={{ fontSize: '0.88rem', color: '#222', flex: 1, '& input': { p: 0 } }}
-                                />
-                                <Chip
-                                    label={t('Subcontractor')}
-                                    size='small'
-                                    onClick={() => setEditIsSubcontractor(v => !v)}
-                                    sx={{
-                                        fontSize: '0.72rem',
-                                        cursor: 'pointer',
-                                        backgroundColor: editIsSubcontractor ? '#e65100' : '#f0fbfc',
-                                        color: editIsSubcontractor ? '#fff' : '#00818f',
-                                        border: `1px solid ${editIsSubcontractor ? '#e65100' : '#b2e8ed'}`,
-                                        fontWeight: editIsSubcontractor ? 700 : 400,
-                                        '&:hover': { opacity: 0.85 },
-                                    }}
-                                />
-                            </Box>
+                        <DetailRow label={t('Unit')}>
+                            <InputBase value={editUnit} onChange={e => setEditUnit(e.target.value)} sx={{ fontSize: '0.88rem', color: '#222', '& input': { p: 0 } }} />
+                        </DetailRow>
+                        <DetailRow label={t('Quantity')}>
+                            <InputBase value={editQuantityStr} onChange={e => setEditQuantityStr(e.target.value)} inputProps={{ style: { padding: 0 } }} sx={{ fontSize: '0.88rem', color: '#222' }} />
+                        </DetailRow>
+                        <DetailRow label={t('Subcontractor')} last>
+                            <Chip
+                                label={editIsSubcontractor ? t('Active') : t('Inactive')}
+                                size='small'
+                                onClick={() => setEditIsSubcontractor(v => !v)}
+                                sx={{
+                                    fontSize: '0.72rem',
+                                    cursor: 'pointer',
+                                    backgroundColor: editIsSubcontractor ? '#e65100' : '#f0fbfc',
+                                    color: editIsSubcontractor ? '#fff' : '#00818f',
+                                    border: `1px solid ${editIsSubcontractor ? '#e65100' : '#b2e8ed'}`,
+                                    fontWeight: editIsSubcontractor ? 700 : 400,
+                                    '&:hover': { opacity: 0.85 },
+                                }}
+                            />
                         </DetailRow>
                     </Box>
 

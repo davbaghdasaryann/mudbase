@@ -184,6 +184,8 @@
   "Rate-based": "Rate-based",
   "Value": "Value",
   "Subcontractor": "Subcontractor",
+  "Active": "Active",
+  "Inactive": "Inactive",
   "Contractor": "Contractor",
   "Contractor name": "Contractor name",
   "Note": "Note",
