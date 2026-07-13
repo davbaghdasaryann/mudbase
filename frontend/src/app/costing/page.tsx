@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
-    Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Tooltip,
-    Divider, InputBase, Radio, RadioGroup, FormControlLabel, FormLabel,
+    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
+    Divider, InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -36,8 +36,8 @@ export interface CostHistoryEntry {
     unitPrice: number;
     total: number;
     addedAt: Date;
-    date?: string;
     contractor?: string;
+    isSubcontractor?: boolean;
     note?: string;
     paymentMethod?: string;
     paymentValue?: string;
@@ -57,14 +57,25 @@ type TabValue = 'main' | 'history';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
+// Informative detail row — label left, content right, with bottom border
+function DetailRow({ label, children, last }: { label: string; children: React.ReactNode; last?: boolean }) {
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
+            <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 140, flexShrink: 0 }}>{label}</Typography>
+            <Box sx={{ flex: 1 }}>{children}</Box>
+        </Box>
+    );
+}
+
 interface SectionBlockProps {
     title: string;
     rows: SectionRow[];
     onChange: (rows: SectionRow[]) => void;
     onPlusClick?: () => void;
+    disabled?: boolean;
 }
 
-function SectionBlock({ title, rows, onChange, onPlusClick }: SectionBlockProps) {
+function SectionBlock({ title, rows, onChange, onPlusClick, disabled }: SectionBlockProps) {
     const { t } = useTranslation();
     const addRow = () => onChange([...rows, newRow()]);
     const updateRow = (id: string, field: keyof SectionRow, val: string) =>
@@ -72,24 +83,22 @@ function SectionBlock({ title, rows, onChange, onPlusClick }: SectionBlockProps)
     const removeRow = (id: string) => onChange(rows.filter(r => r.id !== id));
 
     return (
-        <Box>
+        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#00818f' }}>
-                    {title}
-                </Typography>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#00818f' }}>{title}</Typography>
                 <IconButton size='small' onClick={onPlusClick ?? addRow} sx={{ color: mainPrimaryColor }}>
                     <AddCircleOutlineIcon fontSize='small' />
                 </IconButton>
             </Box>
             {rows.length > 0 && (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.5 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', gap: 0, backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
                         {[t('Description of Work'), t('Qty'), t('Unit Price'), ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0 }}>{h}</Typography>
                         ))}
                     </Box>
                     {rows.map(row => (
-                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', gap: 0, borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
+                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
                             <InputBase value={row.description} onChange={e => updateRow(row.id, 'description', e.target.value)} placeholder='...' sx={{ fontSize: '0.82rem', pr: 1 }} />
                             <InputBase value={row.quantity} onChange={e => updateRow(row.id, 'quantity', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
                             <InputBase value={row.unitPrice} onChange={e => updateRow(row.id, 'unitPrice', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
@@ -123,10 +132,12 @@ export default function CostingPage() {
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
 
-    // Details modal
+    // Details modal state
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
-    const [editDate, setEditDate] = useState('');
+    const [editUnit, setEditUnit] = useState('');
+    const [editQuantityStr, setEditQuantityStr] = useState('');
     const [editContractor, setEditContractor] = useState('');
+    const [editIsSubcontractor, setEditIsSubcontractor] = useState(false);
     const [editNote, setEditNote] = useState('');
     const [editPaymentMethod, setEditPaymentMethod] = useState('');
     const [editPaymentValue, setEditPaymentValue] = useState('');
@@ -150,8 +161,10 @@ export default function CostingPage() {
 
     const openEditModal = (entry: CostHistoryEntry) => {
         setEditEntry(entry);
-        setEditDate(entry.date ?? '');
+        setEditUnit(entry.unit);
+        setEditQuantityStr(String(entry.quantity));
         setEditContractor(entry.contractor ?? '');
+        setEditIsSubcontractor(entry.isSubcontractor ?? false);
         setEditNote(entry.note ?? '');
         setEditPaymentMethod(entry.paymentMethod ?? '');
         setEditPaymentValue(entry.paymentValue ?? '');
@@ -162,9 +175,10 @@ export default function CostingPage() {
 
     const handleEditSave = () => {
         if (!editEntry) return;
+        const qty = parseFloat(editQuantityStr.replace(',', '.')) || editEntry.quantity;
         setCostHistory(prev => prev.map(e =>
             e.id === editEntry.id
-                ? { ...e, date: editDate, contractor: editContractor, note: editNote, paymentMethod: editPaymentMethod, paymentValue: editPaymentValue, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
+                ? { ...e, unit: editUnit, quantity: qty, contractor: editContractor, isSubcontractor: editIsSubcontractor, note: editNote, paymentMethod: editPaymentMethod, paymentValue: editPaymentValue, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
                 : e
         ));
         setEditEntry(null);
@@ -234,7 +248,7 @@ export default function CostingPage() {
                                             <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Quantity')}</TableCell>
                                             <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Unit Price')}</TableCell>
                                             <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Total')}</TableCell>
-                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Date')}</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Date of Creation')}</TableCell>
                                             <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Contractor')}</TableCell>
                                             <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Note')}</TableCell>
                                             <TableCell sx={{ width: 40 }} />
@@ -248,8 +262,13 @@ export default function CostingPage() {
                                                 <TableCell align='right'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
                                                 <TableCell align='right'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
                                                 <TableCell align='right' sx={{ fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(entry.total)} AMD</TableCell>
-                                                <TableCell sx={{ color: entry.date ? '#333' : '#ccc', fontSize: '0.82rem' }}>{entry.date || '—'}</TableCell>
-                                                <TableCell sx={{ color: entry.contractor ? '#333' : '#ccc', fontSize: '0.82rem' }}>{entry.contractor || '—'}</TableCell>
+                                                <TableCell sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
+                                                <TableCell sx={{ fontSize: '0.82rem' }}>
+                                                    {entry.isSubcontractor
+                                                        ? <Chip label={t('Subcontractor')} size='small' sx={{ fontSize: '0.72rem', height: 20, backgroundColor: '#fff3e0', color: '#e65100' }} />
+                                                        : <span style={{ color: entry.contractor ? '#333' : '#ccc' }}>{entry.contractor || '—'}</span>
+                                                    }
+                                                </TableCell>
                                                 <TableCell sx={{ color: entry.note ? '#333' : '#ccc', fontSize: '0.82rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.note || '—'}</TableCell>
                                                 <TableCell padding='none'>
                                                     <Tooltip title={t('Edit')}>
@@ -270,41 +289,101 @@ export default function CostingPage() {
 
             <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleSelect} />
 
-            {/* Cost details modal */}
-            <Dialog open={!!editEntry} onClose={() => setEditEntry(null)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            {/* Cost details modal — does not close on backdrop click */}
+            <Dialog
+                open={!!editEntry}
+                onClose={(_, reason) => { if (reason !== 'backdropClick') setEditEntry(null); }}
+                maxWidth='sm'
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Cost Details')}</DialogTitle>
-                <DialogContent sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {editEntry && (
-                        <Box sx={{ backgroundColor: '#f0fbfc', borderRadius: 2, px: 2, py: 1.5 }}>
-                            <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#333' }}>{editEntry.workName}</Typography>
-                            <Typography sx={{ fontSize: '0.8rem', color: '#888', mt: 0.25 }}>
-                                {editEntry.unit} · {t('Quantity')}: {editEntry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })} · {t('Total')}: {formatCurrencyRounded(editEntry.total)} AMD
-                            </Typography>
-                        </Box>
-                    )}
+                <DialogContent sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <TextField label={t('Date')} type='date' value={editDate} onChange={e => setEditDate(e.target.value)} size='small' InputLabelProps={{ shrink: true }} fullWidth />
-                        <TextField label={t('Contractor')} value={editContractor} onChange={e => setEditContractor(e.target.value)} size='small' fullWidth placeholder={t('Contractor name') + '...'} />
+                    {/* Info rows */}
+                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2, mb: 2 }}>
+                        <DetailRow label={t('Description of Work')}>
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#222' }}>{editEntry?.workName}</Typography>
+                        </DetailRow>
+                        <DetailRow label={t('Date of Creation')}>
+                            <Typography sx={{ fontSize: '0.88rem', color: '#555' }}>{editEntry?.addedAt.toLocaleString()}</Typography>
+                        </DetailRow>
+                        <DetailRow label={t('Unit')}>
+                            <InputBase
+                                value={editUnit}
+                                onChange={e => setEditUnit(e.target.value)}
+                                sx={{ fontSize: '0.88rem', color: '#222', '& input': { p: 0 } }}
+                            />
+                        </DetailRow>
+                        <DetailRow label={t('Quantity')}>
+                            <InputBase
+                                value={editQuantityStr}
+                                onChange={e => setEditQuantityStr(e.target.value)}
+                                inputProps={{ style: { padding: 0 } }}
+                                sx={{ fontSize: '0.88rem', color: '#222' }}
+                            />
+                        </DetailRow>
+                        <DetailRow label={t('Contractor')}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <InputBase
+                                    value={editContractor}
+                                    onChange={e => setEditContractor(e.target.value)}
+                                    placeholder={t('Contractor name') + '...'}
+                                    disabled={editIsSubcontractor}
+                                    sx={{ fontSize: '0.88rem', color: '#222', flex: 1, '& input': { p: 0 } }}
+                                />
+                                <Chip
+                                    label={t('Subcontractor')}
+                                    size='small'
+                                    onClick={() => setEditIsSubcontractor(v => !v)}
+                                    sx={{
+                                        fontSize: '0.72rem',
+                                        cursor: 'pointer',
+                                        backgroundColor: editIsSubcontractor ? '#e65100' : '#f0fbfc',
+                                        color: editIsSubcontractor ? '#fff' : '#00818f',
+                                        border: `1px solid ${editIsSubcontractor ? '#e65100' : '#b2e8ed'}`,
+                                        fontWeight: editIsSubcontractor ? 700 : 400,
+                                        '&:hover': { opacity: 0.85 },
+                                    }}
+                                />
+                            </Box>
+                        </DetailRow>
                     </Box>
-                    <TextField label={t('Note')} value={editNote} onChange={e => setEditNote(e.target.value)} size='small' fullWidth multiline rows={2} placeholder={t('Additional notes') + '...'} />
 
-                    <Divider />
+                    <Divider sx={{ mb: 2 }} />
 
-                    <SectionBlock
-                        title={`1. ${t('Labor / Wages')}`}
-                        rows={editLaborRows}
-                        onChange={setEditLaborRows}
-                        onPlusClick={openPaymentModal}
+                    {/* 3 cost sections */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                        <SectionBlock
+                            title={`1. ${t('Labor / Wages')}`}
+                            rows={editLaborRows}
+                            onChange={setEditLaborRows}
+                            onPlusClick={openPaymentModal}
+                            disabled={editIsSubcontractor}
+                        />
+                        {editPaymentMethod && !editIsSubcontractor && (
+                            <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: -1, pl: 0.25 }}>
+                                {t('Payment Method')}: <strong>{t(editPaymentMethod)}</strong>
+                                {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
+                            </Typography>
+                        )}
+                        <SectionBlock title={`2. ${t('Operation of Mechanisms')}`} rows={editMechanismRows} onChange={setEditMechanismRows} disabled={editIsSubcontractor} />
+                        <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} />
+                    </Box>
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    {/* Note at end */}
+                    <TextField
+                        label={t('Note')}
+                        value={editNote}
+                        onChange={e => setEditNote(e.target.value)}
+                        size='small'
+                        fullWidth
+                        multiline
+                        rows={2}
+                        placeholder={t('Additional notes') + '...'}
                     />
-                    {editPaymentMethod && (
-                        <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: -1.5, pl: 0.25 }}>
-                            {t('Payment Method')}: <strong>{t(editPaymentMethod)}</strong>
-                            {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
-                        </Typography>
-                    )}
-                    <SectionBlock title={`2. ${t('Operation of Mechanisms')}`} rows={editMechanismRows} onChange={setEditMechanismRows} />
-                    <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} />
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={() => setEditEntry(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
@@ -316,7 +395,13 @@ export default function CostingPage() {
             </Dialog>
 
             {/* Payment Method modal */}
-            <Dialog open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog
+                open={paymentModalOpen}
+                onClose={(_, reason) => { if (reason !== 'backdropClick') setPaymentModalOpen(false); }}
+                maxWidth='xs'
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Payment Method')}</DialogTitle>
                 <DialogContent sx={{ pt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <RadioGroup value={tempPaymentMethod} onChange={e => setTempPaymentMethod(e.target.value)}>
