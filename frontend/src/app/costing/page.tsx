@@ -76,22 +76,23 @@ interface SectionBlockProps {
     rows: SectionRow[];
     onChange: (rows: SectionRow[]) => void;
     onPlusClick?: () => void;
+    descLabel?: string;
     disabled?: boolean;
     last?: boolean;
 }
 
-function SectionBlock({ num, title, rows, onChange, onPlusClick, disabled, last }: SectionBlockProps) {
+function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disabled, last }: SectionBlockProps) {
     const { t } = useTranslation();
     const addRow = () => onChange([...rows, newRow()]);
     const updateRow = (id: string, field: keyof SectionRow, val: string) =>
         onChange(rows.map(r => r.id === id ? { ...r, [field]: val } : r));
     const removeRow = (id: string) => onChange(rows.filter(r => r.id !== id));
     const secTotal = calcTotal(rows);
+    const colLabel = descLabel ?? t('Description of Work');
 
     return (
         <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #e8f7f9', py: 0.5 }}>
-            {/* Styled header row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, backgroundColor: '#f7fdfe', borderRadius: 1.5, px: 1.5, mb: rows.length > 0 ? 1 : 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, backgroundColor: '#f7fdfe', borderRadius: 1.5, px: 1.5, mb: rows.length > 0 ? 0.75 : 0 }}>
                 <Box sx={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: '#d6f4f7', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1.5, flexShrink: 0 }}>
                     <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: mainPrimaryColor, lineHeight: 1 }}>{num}</Typography>
                 </Box>
@@ -104,19 +105,36 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, disabled, last 
                 </IconButton>
             </Box>
             {rows.length > 0 && (
-                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.5 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 72px 130px 32px', backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
-                        {[t('Description of Work'), t('Qty'), t('Unit Price'), ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0, whiteSpace: 'nowrap', overflow: 'hidden' }}>{h}</Typography>
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.75 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', backgroundColor: '#edf9fb', px: 1.5, py: 0.6 }}>
+                        {[colLabel, t('Qty'), t('Unit Price'), ''].map((h, i) => (
+                            <Typography key={i} sx={{ fontSize: '0.69rem', fontWeight: 700, color: '#00818f', textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center', whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{h}</Typography>
                         ))}
                     </Box>
-                    {rows.map(row => (
-                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 72px 130px 32px', borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
-                            <InputBase value={row.description} onChange={e => updateRow(row.id, 'description', e.target.value)} placeholder='...' sx={{ fontSize: '0.82rem', pr: 1 }} />
-                            <InputBase value={row.quantity} onChange={e => updateRow(row.id, 'quantity', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
-                            <InputBase value={row.unitPrice} onChange={e => updateRow(row.id, 'unitPrice', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
-                            <IconButton size='small' onClick={() => removeRow(row.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
-                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                    {rows.map((row, idx) => (
+                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', borderTop: '1px solid #e8f7f9', px: 1.5, py: 0.4, alignItems: 'center', backgroundColor: idx % 2 === 1 ? '#fbfeff' : '#fff', '&:hover': { backgroundColor: '#f2fcfd' } }}>
+                            <InputBase
+                                value={row.description}
+                                onChange={e => updateRow(row.id, 'description', e.target.value)}
+                                placeholder='—'
+                                sx={{ fontSize: '0.81rem', color: '#333', '& input': { p: 0, pr: 1 } }}
+                            />
+                            <InputBase
+                                value={row.quantity}
+                                onChange={e => updateRow(row.id, 'quantity', e.target.value)}
+                                placeholder='0'
+                                inputProps={{ style: { textAlign: 'right', padding: 0, paddingRight: 6 } }}
+                                sx={{ fontSize: '0.81rem', color: '#333' }}
+                            />
+                            <InputBase
+                                value={row.unitPrice}
+                                onChange={e => updateRow(row.id, 'unitPrice', e.target.value)}
+                                placeholder='0'
+                                inputProps={{ style: { textAlign: 'right', padding: 0, paddingRight: 6 } }}
+                                sx={{ fontSize: '0.81rem', color: '#333' }}
+                            />
+                            <IconButton size='small' onClick={() => removeRow(row.id)} sx={{ p: 0.25, color: '#ddd', '&:hover': { color: '#e53935' } }}>
+                                <DeleteOutlineIcon sx={{ fontSize: 14 }} />
                             </IconButton>
                         </Box>
                     ))}
@@ -192,6 +210,7 @@ export default function CostingPage() {
     const handlePaymentSave = () => {
         setEditPaymentMethod(tempPaymentMethod);
         setEditPaymentValue(tempPaymentValue);
+        setEditLaborRows(prev => [...prev, newRow()]);
         setPaymentModalOpen(false);
     };
 
@@ -352,7 +371,7 @@ export default function CostingPage() {
                             title={t('Labor / Wages')}
                             rows={editLaborRows}
                             onChange={setEditLaborRows}
-                            onPlusClick={openPaymentModal}
+                            onPlusClick={editPaymentMethod ? () => setEditLaborRows(prev => [...prev, newRow()]) : openPaymentModal}
                             disabled={editIsSubcontractor}
                         />
                         {editPaymentMethod && !editIsSubcontractor && (
@@ -361,8 +380,8 @@ export default function CostingPage() {
                                 {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
                             </Typography>
                         )}
-                        <SectionBlock num={2} title={t('Operation of Mechanisms')} rows={editMechanismRows} onChange={setEditMechanismRows} disabled={editIsSubcontractor} />
-                        <SectionBlock num={3} title={t('Materials')} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} last />
+                        <SectionBlock num={2} title={t('Operation of Mechanisms')} rows={editMechanismRows} onChange={setEditMechanismRows} descLabel={t('Mechanism Name')} disabled={editIsSubcontractor} />
+                        <SectionBlock num={3} title={t('Materials')} rows={editMaterialRows} onChange={setEditMaterialRows} descLabel={t('Material Name')} disabled={editIsSubcontractor} last />
                     </Box>
 
                     {/* Note — soft border matching the boxes above */}
