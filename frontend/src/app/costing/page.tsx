@@ -210,7 +210,8 @@ export default function CostingPage() {
     const handlePaymentSave = () => {
         setEditPaymentMethod(tempPaymentMethod);
         setEditPaymentValue(tempPaymentValue);
-        setEditLaborRows(prev => [...prev, newRow()]);
+        const row: SectionRow = { id: String(Date.now() + Math.random()), description: t(tempPaymentMethod), quantity: '', unitPrice: tempPaymentValue };
+        setEditLaborRows(prev => [...prev, row]);
         setPaymentModalOpen(false);
     };
 
@@ -371,15 +372,10 @@ export default function CostingPage() {
                             title={t('Labor / Wages')}
                             rows={editLaborRows}
                             onChange={setEditLaborRows}
-                            onPlusClick={editPaymentMethod ? () => setEditLaborRows(prev => [...prev, newRow()]) : openPaymentModal}
+                            descLabel={t('Payment Method')}
+                            onPlusClick={editPaymentMethod ? () => setEditLaborRows(prev => [...prev, { id: String(Date.now() + Math.random()), description: t(editPaymentMethod), quantity: '', unitPrice: '' }]) : openPaymentModal}
                             disabled={editIsSubcontractor}
                         />
-                        {editPaymentMethod && !editIsSubcontractor && (
-                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mb: 0.5, pl: 0.25 }}>
-                                {t('Payment Method')}: <strong>{t(editPaymentMethod)}</strong>
-                                {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
-                            </Typography>
-                        )}
                         <SectionBlock num={2} title={t('Operation of Mechanisms')} rows={editMechanismRows} onChange={setEditMechanismRows} descLabel={t('Mechanism Name')} disabled={editIsSubcontractor} />
                         <SectionBlock num={3} title={t('Materials')} rows={editMaterialRows} onChange={setEditMaterialRows} descLabel={t('Material Name')} disabled={editIsSubcontractor} last />
                     </Box>
