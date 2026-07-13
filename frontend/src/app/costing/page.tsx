@@ -40,6 +40,7 @@ export interface CostHistoryEntry {
     contractor?: string;
     note?: string;
     paymentMethod?: string;
+    paymentValue?: string;
     laborRows?: SectionRow[];
     mechanismRows?: SectionRow[];
     materialRows?: SectionRow[];
@@ -128,6 +129,7 @@ export default function CostingPage() {
     const [editContractor, setEditContractor] = useState('');
     const [editNote, setEditNote] = useState('');
     const [editPaymentMethod, setEditPaymentMethod] = useState('');
+    const [editPaymentValue, setEditPaymentValue] = useState('');
     const [editLaborRows, setEditLaborRows] = useState<SectionRow[]>([]);
     const [editMechanismRows, setEditMechanismRows] = useState<SectionRow[]>([]);
     const [editMaterialRows, setEditMaterialRows] = useState<SectionRow[]>([]);
@@ -135,6 +137,7 @@ export default function CostingPage() {
     // Payment method modal
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
+    const [tempPaymentValue, setTempPaymentValue] = useState('');
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -151,6 +154,7 @@ export default function CostingPage() {
         setEditContractor(entry.contractor ?? '');
         setEditNote(entry.note ?? '');
         setEditPaymentMethod(entry.paymentMethod ?? '');
+        setEditPaymentValue(entry.paymentValue ?? '');
         setEditLaborRows(entry.laborRows ?? []);
         setEditMechanismRows(entry.mechanismRows ?? []);
         setEditMaterialRows(entry.materialRows ?? []);
@@ -160,7 +164,7 @@ export default function CostingPage() {
         if (!editEntry) return;
         setCostHistory(prev => prev.map(e =>
             e.id === editEntry.id
-                ? { ...e, date: editDate, contractor: editContractor, note: editNote, paymentMethod: editPaymentMethod, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
+                ? { ...e, date: editDate, contractor: editContractor, note: editNote, paymentMethod: editPaymentMethod, paymentValue: editPaymentValue, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
                 : e
         ));
         setEditEntry(null);
@@ -168,11 +172,13 @@ export default function CostingPage() {
 
     const openPaymentModal = () => {
         setTempPaymentMethod(editPaymentMethod);
+        setTempPaymentValue(editPaymentValue);
         setPaymentModalOpen(true);
     };
 
     const handlePaymentSave = () => {
         setEditPaymentMethod(tempPaymentMethod);
+        setEditPaymentValue(tempPaymentValue);
         setPaymentModalOpen(false);
     };
 
@@ -294,6 +300,7 @@ export default function CostingPage() {
                     {editPaymentMethod && (
                         <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: -1.5, pl: 0.25 }}>
                             {t('Payment Method')}: <strong>{t(editPaymentMethod)}</strong>
+                            {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
                         </Typography>
                     )}
                     <SectionBlock title={`2. ${t('Operation of Mechanisms')}`} rows={editMechanismRows} onChange={setEditMechanismRows} />
@@ -311,22 +318,33 @@ export default function CostingPage() {
             {/* Payment Method modal */}
             <Dialog open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Payment Method')}</DialogTitle>
-                <DialogContent sx={{ pt: 1.5 }}>
+                <DialogContent sx={{ pt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <RadioGroup value={tempPaymentMethod} onChange={e => setTempPaymentMethod(e.target.value)}>
-                        <FormControlLabel value='Hourly' control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={
-                            <Box><Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('Hourly')}</Typography><Typography sx={{ fontSize: '0.75rem', color: '#888' }}>Ժամային</Typography></Box>
-                        } />
-                        <FormControlLabel value='Piece-rate' control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={
-                            <Box><Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('Piece-rate')}</Typography><Typography sx={{ fontSize: '0.75rem', color: '#888' }}>Գործարքային</Typography></Box>
-                        } />
-                        <FormControlLabel value='Rate-based' control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={
-                            <Box><Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('Rate-based')}</Typography><Typography sx={{ fontSize: '0.75rem', color: '#888' }}>Դրույքային</Typography></Box>
-                        } />
+                        {(['Hourly', 'Piece-rate', 'Rate-based'] as const).map(method => (
+                            <FormControlLabel
+                                key={method}
+                                value={method}
+                                control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />}
+                                label={<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t(method)}</Typography>}
+                            />
+                        ))}
                     </RadioGroup>
+                    {tempPaymentMethod && (
+                        <TextField
+                            label={t('Value')}
+                            value={tempPaymentValue}
+                            onChange={e => setTempPaymentValue(e.target.value)}
+                            size='small'
+                            fullWidth
+                            placeholder='0'
+                            type='number'
+                            inputProps={{ min: 0 }}
+                        />
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={() => setPaymentModalOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
-                    <Button variant='contained' onClick={handlePaymentSave}
+                    <Button variant='contained' onClick={handlePaymentSave} disabled={!tempPaymentMethod}
                         sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
                         {t('Save')}
                     </Button>
