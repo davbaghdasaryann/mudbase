@@ -15,6 +15,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import SpeedIcon from '@mui/icons-material/Speed';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -432,6 +433,7 @@ function useMainNavigation() {
                 ],
             });
             navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
+            navigation.push({segment: 'costing', title: t('Costing'), icon: <RequestQuoteOutlinedIcon />});
         }
 
         if (isSuperAdmin) {

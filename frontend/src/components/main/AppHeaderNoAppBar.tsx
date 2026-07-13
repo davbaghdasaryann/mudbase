@@ -26,6 +26,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import SpeedIcon from '@mui/icons-material/Speed';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -67,6 +68,8 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <BarChartIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'performance':
                 return <SpeedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'costing':
+                return <RequestQuoteOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'settings':
                 if (pathname === '/settings/packages') return <Inventory2OutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
                 if (pathname === '/settings/payments') return <PaymentsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
