@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
     Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
-    Divider, InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip,
+    InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -91,9 +91,9 @@ function SectionBlock({ title, rows, onChange, onPlusClick, disabled, last }: Se
 
     return (
         <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
-            {/* Header row — same pattern as DetailRow */}
+            {/* Header row */}
             <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', flex: 1 }}>{title}</Typography>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#111', flex: 1 }}>{title}</Typography>
                 {secTotal > 0 && (
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: mainPrimaryColor, mr: 1 }}>{formatCurrencyRounded(secTotal)} AMD</Typography>
                 )}
@@ -103,13 +103,13 @@ function SectionBlock({ title, rows, onChange, onPlusClick, disabled, last }: Se
             </Box>
             {rows.length > 0 && (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 1 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 72px 130px 32px', backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
                         {[t('Description of Work'), t('Qty'), t('Unit Price'), ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0 }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0, whiteSpace: 'nowrap', overflow: 'hidden' }}>{h}</Typography>
                         ))}
                     </Box>
                     {rows.map(row => (
-                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
+                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 72px 130px 32px', borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
                             <InputBase value={row.description} onChange={e => updateRow(row.id, 'description', e.target.value)} placeholder='...' sx={{ fontSize: '0.82rem', pr: 1 }} />
                             <InputBase value={row.quantity} onChange={e => updateRow(row.id, 'quantity', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
                             <InputBase value={row.unitPrice} onChange={e => updateRow(row.id, 'unitPrice', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
@@ -297,32 +297,28 @@ export default function CostingPage() {
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Cost Details')}</DialogTitle>
-                <DialogContent sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
 
                     {/* Info rows */}
-                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2, mb: 2 }}>
+                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2 }}>
                         <DetailRow label={t('Description of Work')}>
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#222' }}>{editEntry?.workName}</Typography>
                         </DetailRow>
                         <DetailRow label={t('Date of Creation')}>
                             <Typography sx={{ fontSize: '0.88rem', color: '#555' }}>{editEntry?.addedAt.toLocaleString()}</Typography>
                         </DetailRow>
-                        <DetailRow label={t('Unit')}>
-                            <InputBase
-                                value={editUnit}
-                                onChange={e => setEditUnit(e.target.value)}
-                                sx={{ fontSize: '0.88rem', color: '#222', '& input': { p: 0 } }}
-                            />
-                        </DetailRow>
-                        <DetailRow label={t('Quantity')}>
-                            <InputBase
-                                value={editQuantityStr}
-                                onChange={e => setEditQuantityStr(e.target.value)}
-                                inputProps={{ style: { padding: 0 } }}
-                                sx={{ fontSize: '0.88rem', color: '#222' }}
-                            />
-                        </DetailRow>
-                        <DetailRow label={t('Contractor')}>
+                        {/* Unit + Quantity side-by-side */}
+                        <Box sx={{ display: 'flex', minHeight: 40, borderBottom: '1px solid #e8f7f9' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, borderRight: '1px solid #e8f7f9', pr: 2 }}>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 90, flexShrink: 0 }}>{t('Unit')}</Typography>
+                                <InputBase value={editUnit} onChange={e => setEditUnit(e.target.value)} sx={{ fontSize: '0.88rem', color: '#222', '& input': { p: 0 } }} />
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, pl: 2 }}>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#999', minWidth: 90, flexShrink: 0 }}>{t('Quantity')}</Typography>
+                                <InputBase value={editQuantityStr} onChange={e => setEditQuantityStr(e.target.value)} inputProps={{ style: { padding: 0 } }} sx={{ fontSize: '0.88rem', color: '#222' }} />
+                            </Box>
+                        </Box>
+                        <DetailRow label={t('Contractor')} last>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <InputBase
                                     value={editContractor}
@@ -349,10 +345,8 @@ export default function CostingPage() {
                         </DetailRow>
                     </Box>
 
-                    <Divider sx={{ mb: 2 }} />
-
-                    {/* 3 cost sections — same bordered box as info rows */}
-                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2, mb: 2 }}>
+                    {/* 3 cost sections */}
+                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2 }}>
                         <SectionBlock
                             title={`1. ${t('Labor / Wages')}`}
                             rows={editLaborRows}
@@ -370,9 +364,7 @@ export default function CostingPage() {
                         <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} last />
                     </Box>
 
-                    <Divider sx={{ mb: 2 }} />
-
-                    {/* Note at end */}
+                    {/* Note — soft border matching the boxes above */}
                     <TextField
                         label={t('Note')}
                         value={editNote}
@@ -382,6 +374,17 @@ export default function CostingPage() {
                         multiline
                         rows={2}
                         placeholder={t('Additional notes') + '...'}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                fontSize: '0.88rem',
+                                '& fieldset': { borderColor: '#e8f7f9' },
+                                '&:hover fieldset': { borderColor: '#b2e8ed' },
+                                '&.Mui-focused fieldset': { borderColor: mainPrimaryColor, borderWidth: 1 },
+                            },
+                            '& .MuiInputLabel-root': { fontSize: '0.85rem', color: '#999' },
+                            '& .MuiInputLabel-root.Mui-focused': { color: mainPrimaryColor },
+                        }}
                     />
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
