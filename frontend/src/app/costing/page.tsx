@@ -60,10 +60,10 @@ interface SectionBlockProps {
     title: string;
     rows: SectionRow[];
     onChange: (rows: SectionRow[]) => void;
-    onTitleClick?: () => void;
+    onPlusClick?: () => void;
 }
 
-function SectionBlock({ title, rows, onChange, onTitleClick }: SectionBlockProps) {
+function SectionBlock({ title, rows, onChange, onPlusClick }: SectionBlockProps) {
     const { t } = useTranslation();
     const addRow = () => onChange([...rows, newRow()]);
     const updateRow = (id: string, field: keyof SectionRow, val: string) =>
@@ -73,16 +73,10 @@ function SectionBlock({ title, rows, onChange, onTitleClick }: SectionBlockProps
     return (
         <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography
-                    onClick={onTitleClick}
-                    sx={{
-                        fontWeight: 700, fontSize: '0.88rem', color: '#00818f',
-                        ...(onTitleClick ? { cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 3, '&:hover': { color: mainPrimaryColor } } : {}),
-                    }}
-                >
+                <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#00818f' }}>
                     {title}
                 </Typography>
-                <IconButton size='small' onClick={addRow} sx={{ color: mainPrimaryColor }}>
+                <IconButton size='small' onClick={onPlusClick ?? addRow} sx={{ color: mainPrimaryColor }}>
                     <AddCircleOutlineIcon fontSize='small' />
                 </IconButton>
             </Box>
@@ -295,7 +289,7 @@ export default function CostingPage() {
                         title={`1. ${t('Labor / Wages')}`}
                         rows={editLaborRows}
                         onChange={setEditLaborRows}
-                        onTitleClick={openPaymentModal}
+                        onPlusClick={openPaymentModal}
                     />
                     {editPaymentMethod && (
                         <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: -1.5, pl: 0.25 }}>
