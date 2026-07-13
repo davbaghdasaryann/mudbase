@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
     Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Tooltip,
-    Divider, InputBase,
+    Divider, InputBase, Radio, RadioGroup, FormControlLabel, FormLabel,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -39,6 +39,7 @@ export interface CostHistoryEntry {
     date?: string;
     contractor?: string;
     note?: string;
+    paymentMethod?: string;
     laborRows?: SectionRow[];
     mechanismRows?: SectionRow[];
     materialRows?: SectionRow[];
@@ -59,9 +60,10 @@ interface SectionBlockProps {
     title: string;
     rows: SectionRow[];
     onChange: (rows: SectionRow[]) => void;
+    onTitleClick?: () => void;
 }
 
-function SectionBlock({ title, rows, onChange }: SectionBlockProps) {
+function SectionBlock({ title, rows, onChange, onTitleClick }: SectionBlockProps) {
     const { t } = useTranslation();
     const addRow = () => onChange([...rows, newRow()]);
     const updateRow = (id: string, field: keyof SectionRow, val: string) =>
@@ -71,36 +73,37 @@ function SectionBlock({ title, rows, onChange }: SectionBlockProps) {
     return (
         <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#00818f' }}>{title}</Typography>
+                <Typography
+                    onClick={onTitleClick}
+                    sx={{
+                        fontWeight: 700, fontSize: '0.88rem', color: '#00818f',
+                        ...(onTitleClick ? { cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 3, '&:hover': { color: mainPrimaryColor } } : {}),
+                    }}
+                >
+                    {title}
+                </Typography>
                 <IconButton size='small' onClick={addRow} sx={{ color: mainPrimaryColor }}>
                     <AddCircleOutlineIcon fontSize='small' />
                 </IconButton>
             </Box>
             {rows.length > 0 && (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.5 }}>
-                    {/* mini header */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', gap: 0, backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
                         {[t('Description of Work'), t('Qty'), t('Unit Price'), ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0 }}>{h}</Typography>
                         ))}
                     </Box>
-                    {rows.map(row => {
-                        const q = parseFloat(row.quantity.replace(',', '.')) || 0;
-                        const p = parseFloat(row.unitPrice.replace(',', '.')) || 0;
-                        const tot = q * p;
-                        return (
-                            <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', gap: 0, borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
-                                <InputBase value={row.description} onChange={e => updateRow(row.id, 'description', e.target.value)} placeholder='...' sx={{ fontSize: '0.82rem', pr: 1 }} />
-                                <InputBase value={row.quantity} onChange={e => updateRow(row.id, 'quantity', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
-                                <InputBase value={row.unitPrice} onChange={e => updateRow(row.id, 'unitPrice', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
-                                <IconButton size='small' onClick={() => removeRow(row.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
-                                    <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Box>
-                        );
-                    })}
-                    {/* section total */}
-                    {rows.length > 0 && (() => {
+                    {rows.map(row => (
+                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', gap: 0, borderTop: '1px solid #e0f5f7', px: 1, py: 0.25, alignItems: 'center', '&:hover': { backgroundColor: '#fafeff' } }}>
+                            <InputBase value={row.description} onChange={e => updateRow(row.id, 'description', e.target.value)} placeholder='...' sx={{ fontSize: '0.82rem', pr: 1 }} />
+                            <InputBase value={row.quantity} onChange={e => updateRow(row.id, 'quantity', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
+                            <InputBase value={row.unitPrice} onChange={e => updateRow(row.id, 'unitPrice', e.target.value)} placeholder='0' inputProps={{ style: { textAlign: 'right' } }} sx={{ fontSize: '0.82rem', pr: 1 }} />
+                            <IconButton size='small' onClick={() => removeRow(row.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                        </Box>
+                    ))}
+                    {(() => {
                         const secTotal = rows.reduce((s, r) => {
                             const q = parseFloat(r.quantity.replace(',', '.')) || 0;
                             const p = parseFloat(r.unitPrice.replace(',', '.')) || 0;
@@ -130,9 +133,14 @@ export default function CostingPage() {
     const [editDate, setEditDate] = useState('');
     const [editContractor, setEditContractor] = useState('');
     const [editNote, setEditNote] = useState('');
+    const [editPaymentMethod, setEditPaymentMethod] = useState('');
     const [editLaborRows, setEditLaborRows] = useState<SectionRow[]>([]);
     const [editMechanismRows, setEditMechanismRows] = useState<SectionRow[]>([]);
     const [editMaterialRows, setEditMaterialRows] = useState<SectionRow[]>([]);
+
+    // Payment method modal
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [tempPaymentMethod, setTempPaymentMethod] = useState('');
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -148,6 +156,7 @@ export default function CostingPage() {
         setEditDate(entry.date ?? '');
         setEditContractor(entry.contractor ?? '');
         setEditNote(entry.note ?? '');
+        setEditPaymentMethod(entry.paymentMethod ?? '');
         setEditLaborRows(entry.laborRows ?? []);
         setEditMechanismRows(entry.mechanismRows ?? []);
         setEditMaterialRows(entry.materialRows ?? []);
@@ -157,10 +166,20 @@ export default function CostingPage() {
         if (!editEntry) return;
         setCostHistory(prev => prev.map(e =>
             e.id === editEntry.id
-                ? { ...e, date: editDate, contractor: editContractor, note: editNote, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
+                ? { ...e, date: editDate, contractor: editContractor, note: editNote, paymentMethod: editPaymentMethod, laborRows: editLaborRows, mechanismRows: editMechanismRows, materialRows: editMaterialRows }
                 : e
         ));
         setEditEntry(null);
+    };
+
+    const openPaymentModal = () => {
+        setTempPaymentMethod(editPaymentMethod);
+        setPaymentModalOpen(true);
+    };
+
+    const handlePaymentSave = () => {
+        setEditPaymentMethod(tempPaymentMethod);
+        setPaymentModalOpen(false);
     };
 
     return (
@@ -272,13 +291,48 @@ export default function CostingPage() {
 
                     <Divider />
 
-                    <SectionBlock title='1. Աշխատավարձ' rows={editLaborRows} onChange={setEditLaborRows} />
-                    <SectionBlock title='2. Մեխանիզմների շահագործում' rows={editMechanismRows} onChange={setEditMechanismRows} />
-                    <SectionBlock title='3. Նյութեր' rows={editMaterialRows} onChange={setEditMaterialRows} />
+                    <SectionBlock
+                        title={`1. ${t('Labor / Wages')}`}
+                        rows={editLaborRows}
+                        onChange={setEditLaborRows}
+                        onTitleClick={openPaymentModal}
+                    />
+                    {editPaymentMethod && (
+                        <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: -1.5, pl: 0.25 }}>
+                            {t('Payment Method')}: <strong>{t(editPaymentMethod)}</strong>
+                        </Typography>
+                    )}
+                    <SectionBlock title={`2. ${t('Operation of Mechanisms')}`} rows={editMechanismRows} onChange={setEditMechanismRows} />
+                    <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} />
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={() => setEditEntry(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                     <Button variant='contained' onClick={handleEditSave}
+                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
+                        {t('Save')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Payment Method modal */}
+            <Dialog open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Payment Method')}</DialogTitle>
+                <DialogContent sx={{ pt: 1.5 }}>
+                    <RadioGroup value={tempPaymentMethod} onChange={e => setTempPaymentMethod(e.target.value)}>
+                        <FormControlLabel value='Hourly' control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={
+                            <Box><Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('Hourly')}</Typography><Typography sx={{ fontSize: '0.75rem', color: '#888' }}>Ժամային</Typography></Box>
+                        } />
+                        <FormControlLabel value='Piece-rate' control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={
+                            <Box><Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('Piece-rate')}</Typography><Typography sx={{ fontSize: '0.75rem', color: '#888' }}>Գործարքային</Typography></Box>
+                        } />
+                        <FormControlLabel value='Rate-based' control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={
+                            <Box><Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('Rate-based')}</Typography><Typography sx={{ fontSize: '0.75rem', color: '#888' }}>Դրույքային</Typography></Box>
+                        } />
+                    </RadioGroup>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                    <Button onClick={() => setPaymentModalOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                    <Button variant='contained' onClick={handlePaymentSave}
                         sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
                         {t('Save')}
                     </Button>
