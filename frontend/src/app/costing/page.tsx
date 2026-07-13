@@ -73,25 +73,36 @@ interface SectionBlockProps {
     onChange: (rows: SectionRow[]) => void;
     onPlusClick?: () => void;
     disabled?: boolean;
+    last?: boolean;
 }
 
-function SectionBlock({ title, rows, onChange, onPlusClick, disabled }: SectionBlockProps) {
+function SectionBlock({ title, rows, onChange, onPlusClick, disabled, last }: SectionBlockProps) {
     const { t } = useTranslation();
     const addRow = () => onChange([...rows, newRow()]);
     const updateRow = (id: string, field: keyof SectionRow, val: string) =>
         onChange(rows.map(r => r.id === id ? { ...r, [field]: val } : r));
     const removeRow = (id: string) => onChange(rows.filter(r => r.id !== id));
 
+    const secTotal = rows.reduce((s, r) => {
+        const q = parseFloat(r.quantity.replace(',', '.')) || 0;
+        const p = parseFloat(r.unitPrice.replace(',', '.')) || 0;
+        return s + q * p;
+    }, 0);
+
     return (
-        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#00818f' }}>{title}</Typography>
+        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
+            {/* Header row — same pattern as DetailRow */}
+            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', flex: 1 }}>{title}</Typography>
+                {secTotal > 0 && (
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: mainPrimaryColor, mr: 1 }}>{formatCurrencyRounded(secTotal)} AMD</Typography>
+                )}
                 <IconButton size='small' onClick={onPlusClick ?? addRow} sx={{ color: mainPrimaryColor }}>
                     <AddCircleOutlineIcon fontSize='small' />
                 </IconButton>
             </Box>
             {rows.length > 0 && (
-                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.5 }}>
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 1 }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 32px', backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
                         {[t('Description of Work'), t('Qty'), t('Unit Price'), ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0 }}>{h}</Typography>
@@ -107,18 +118,6 @@ function SectionBlock({ title, rows, onChange, onPlusClick, disabled }: SectionB
                             </IconButton>
                         </Box>
                     ))}
-                    {(() => {
-                        const secTotal = rows.reduce((s, r) => {
-                            const q = parseFloat(r.quantity.replace(',', '.')) || 0;
-                            const p = parseFloat(r.unitPrice.replace(',', '.')) || 0;
-                            return s + q * p;
-                        }, 0);
-                        return secTotal > 0 ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, py: 0.5, borderTop: '1px solid #e0f5f7', backgroundColor: '#f7fdfe' }}>
-                                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: mainPrimaryColor }}>{formatCurrencyRounded(secTotal)} AMD</Typography>
-                            </Box>
-                        ) : null;
-                    })()}
                 </Box>
             )}
         </Box>
@@ -293,7 +292,7 @@ export default function CostingPage() {
             <Dialog
                 open={!!editEntry}
                 onClose={(_, reason) => { if (reason !== 'backdropClick') setEditEntry(null); }}
-                maxWidth='sm'
+                maxWidth='md'
                 fullWidth
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
@@ -352,8 +351,8 @@ export default function CostingPage() {
 
                     <Divider sx={{ mb: 2 }} />
 
-                    {/* 3 cost sections */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                    {/* 3 cost sections — same bordered box as info rows */}
+                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2, mb: 2 }}>
                         <SectionBlock
                             title={`1. ${t('Labor / Wages')}`}
                             rows={editLaborRows}
@@ -362,13 +361,13 @@ export default function CostingPage() {
                             disabled={editIsSubcontractor}
                         />
                         {editPaymentMethod && !editIsSubcontractor && (
-                            <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: -1, pl: 0.25 }}>
+                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mb: 0.5, pl: 0.25 }}>
                                 {t('Payment Method')}: <strong>{t(editPaymentMethod)}</strong>
                                 {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
                             </Typography>
                         )}
                         <SectionBlock title={`2. ${t('Operation of Mechanisms')}`} rows={editMechanismRows} onChange={setEditMechanismRows} disabled={editIsSubcontractor} />
-                        <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} />
+                        <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} last />
                     </Box>
 
                     <Divider sx={{ mb: 2 }} />
