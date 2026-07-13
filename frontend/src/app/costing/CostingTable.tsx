@@ -10,6 +10,7 @@ import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
+import type { CostHistoryEntry } from './page';
 
 interface ActualEntry { quantity: string; unitPrice: string; }
 type ActualData = Record<string, ActualEntry>;
@@ -100,7 +101,7 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate }: { estimate: EstimatesApi.ApiEstimate }) {
+export default function CostingTable({ estimate, onCostAdded }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
@@ -196,8 +197,19 @@ export default function CostingTable({ estimate }: { estimate: EstimatesApi.ApiE
     const handleModalConfirm = useCallback(() => {
         if (!modalSelected) return;
         setActualData(prev => ({ ...prev, [String(modalSelected._id)]: { quantity: modalQty, unitPrice: modalPrice } }));
+        const q = parseFloat(modalQty.replace(',', '.')) || 0;
+        const p = parseFloat(modalPrice.replace(',', '.')) || 0;
+        onCostAdded?.({
+            id: `${Date.now()}-${String(modalSelected._id)}`,
+            workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
+            unit: modalSelected.unitSymbol,
+            quantity: q,
+            unitPrice: p,
+            total: q * p,
+            addedAt: new Date(),
+        });
         setModalOpen(false);
-    }, [modalSelected, modalQty, modalPrice]);
+    }, [modalSelected, modalQty, modalPrice, onCostAdded]);
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
