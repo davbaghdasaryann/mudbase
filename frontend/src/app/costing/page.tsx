@@ -105,14 +105,14 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
                 </IconButton>
             </Box>
             {rows.length > 0 && (
-                <Box sx={{ border: '1px solid #eaedf0', borderRadius: 1.5, overflow: 'hidden', mb: 0.75 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', backgroundColor: '#f7f9fa', px: 1.5, py: 0.6 }}>
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.75 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', backgroundColor: '#edf9fb', px: 1.5, py: 0.6 }}>
                         {[colLabel, t('Qty'), t('Unit Price'), ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.69rem', fontWeight: 700, color: '#888', textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center', whiteSpace: 'nowrap', letterSpacing: '0.02em', textTransform: 'uppercase' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.69rem', fontWeight: 700, color: '#00818f', textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center', whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{h}</Typography>
                         ))}
                     </Box>
                     {rows.map((row, idx) => (
-                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', borderTop: '1px solid #f0f2f4', px: 1.5, py: 0.4, alignItems: 'center', backgroundColor: idx % 2 === 1 ? '#fafafa' : '#fff', '&:hover': { backgroundColor: '#f4fbfc' } }}>
+                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', borderTop: '1px solid #e8f7f9', px: 1.5, py: 0.4, alignItems: 'center', backgroundColor: idx % 2 === 1 ? '#fbfeff' : '#fff', '&:hover': { backgroundColor: '#f2fcfd' } }}>
                             <InputBase
                                 value={row.description}
                                 onChange={e => updateRow(row.id, 'description', e.target.value)}
