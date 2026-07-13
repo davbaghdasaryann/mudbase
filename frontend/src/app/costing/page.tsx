@@ -67,7 +67,11 @@ function DetailRow({ label, children, last }: { label: string; children: React.R
     );
 }
 
+const calcTotal = (rows: SectionRow[]) =>
+    rows.reduce((s, r) => s + (parseFloat(r.quantity.replace(',', '.')) || 0) * (parseFloat(r.unitPrice.replace(',', '.')) || 0), 0);
+
 interface SectionBlockProps {
+    num: number;
     title: string;
     rows: SectionRow[];
     onChange: (rows: SectionRow[]) => void;
@@ -76,33 +80,31 @@ interface SectionBlockProps {
     last?: boolean;
 }
 
-function SectionBlock({ title, rows, onChange, onPlusClick, disabled, last }: SectionBlockProps) {
+function SectionBlock({ num, title, rows, onChange, onPlusClick, disabled, last }: SectionBlockProps) {
     const { t } = useTranslation();
     const addRow = () => onChange([...rows, newRow()]);
     const updateRow = (id: string, field: keyof SectionRow, val: string) =>
         onChange(rows.map(r => r.id === id ? { ...r, [field]: val } : r));
     const removeRow = (id: string) => onChange(rows.filter(r => r.id !== id));
-
-    const secTotal = rows.reduce((s, r) => {
-        const q = parseFloat(r.quantity.replace(',', '.')) || 0;
-        const p = parseFloat(r.unitPrice.replace(',', '.')) || 0;
-        return s + q * p;
-    }, 0);
+    const secTotal = calcTotal(rows);
 
     return (
-        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
-            {/* Header row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #e8f7f9', py: 0.5 }}>
+            {/* Styled header row */}
+            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, backgroundColor: '#f7fdfe', borderRadius: 1.5, px: 1.5, mb: rows.length > 0 ? 1 : 0 }}>
+                <Box sx={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: '#d6f4f7', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1.5, flexShrink: 0 }}>
+                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: mainPrimaryColor, lineHeight: 1 }}>{num}</Typography>
+                </Box>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#111', flex: 1 }}>{title}</Typography>
                 {secTotal > 0 && (
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: mainPrimaryColor, mr: 1 }}>{formatCurrencyRounded(secTotal)} AMD</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: mainPrimaryColor, mr: 0.5 }}>{formatCurrencyRounded(secTotal)} AMD</Typography>
                 )}
                 <IconButton size='small' onClick={onPlusClick ?? addRow} sx={{ color: mainPrimaryColor }}>
                     <AddCircleOutlineIcon fontSize='small' />
                 </IconButton>
             </Box>
             {rows.length > 0 && (
-                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 1 }}>
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.5 }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 72px 130px 32px', backgroundColor: '#f0fbfc', px: 1, py: 0.5 }}>
                         {[t('Description of Work'), t('Qty'), t('Unit Price'), ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i > 0 ? 'right' : 'left', pr: i > 0 && i < 3 ? 1 : 0, whiteSpace: 'nowrap', overflow: 'hidden' }}>{h}</Typography>
@@ -311,7 +313,7 @@ export default function CostingPage() {
                         <DetailRow label={t('Quantity')}>
                             <InputBase value={editQuantityStr} onChange={e => setEditQuantityStr(e.target.value)} inputProps={{ style: { padding: 0 } }} sx={{ fontSize: '0.88rem', color: '#222' }} />
                         </DetailRow>
-                        <DetailRow label={t('Subcontractor')} last>
+                        <DetailRow label={t('Subcontractor')}>
                             <Chip
                                 label={editIsSubcontractor ? t('Active') : t('Inactive')}
                                 size='small'
@@ -327,12 +329,27 @@ export default function CostingPage() {
                                 }}
                             />
                         </DetailRow>
+                        {/* Section totals — live from second block */}
+                        {(() => {
+                            const lTotal = calcTotal(editLaborRows);
+                            const mTotal = calcTotal(editMechanismRows);
+                            const matTotal = calcTotal(editMaterialRows);
+                            const fmt = (v: number) => v > 0 ? <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(v)} AMD</Typography> : <Typography sx={{ fontSize: '0.88rem', color: '#ccc' }}>—</Typography>;
+                            return (
+                                <>
+                                    <DetailRow label={t('Labor / Wages')}>{fmt(lTotal)}</DetailRow>
+                                    <DetailRow label={t('Mechanisms')}>{fmt(mTotal)}</DetailRow>
+                                    <DetailRow label={t('Materials')} last>{fmt(matTotal)}</DetailRow>
+                                </>
+                            );
+                        })()}
                     </Box>
 
                     {/* 3 cost sections */}
                     <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2 }}>
                         <SectionBlock
-                            title={`1. ${t('Labor / Wages')}`}
+                            num={1}
+                            title={t('Labor / Wages')}
                             rows={editLaborRows}
                             onChange={setEditLaborRows}
                             onPlusClick={openPaymentModal}
@@ -344,8 +361,8 @@ export default function CostingPage() {
                                 {editPaymentValue && <> · {t('Value')}: <strong>{editPaymentValue}</strong></>}
                             </Typography>
                         )}
-                        <SectionBlock title={`2. ${t('Operation of Mechanisms')}`} rows={editMechanismRows} onChange={setEditMechanismRows} disabled={editIsSubcontractor} />
-                        <SectionBlock title={`3. ${t('Materials')}`} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} last />
+                        <SectionBlock num={2} title={t('Operation of Mechanisms')} rows={editMechanismRows} onChange={setEditMechanismRows} disabled={editIsSubcontractor} />
+                        <SectionBlock num={3} title={t('Materials')} rows={editMaterialRows} onChange={setEditMaterialRows} disabled={editIsSubcontractor} last />
                     </Box>
 
                     {/* Note — soft border matching the boxes above */}
