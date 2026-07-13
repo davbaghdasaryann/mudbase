@@ -60,7 +60,7 @@ const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), desc
 // Informative detail row — label left, content right, with bottom border
 function DetailRow({ label, children, last }: { label: string; children: React.ReactNode; last?: boolean }) {
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, gap: 3, borderBottom: last ? 'none' : '1px solid #e8f7f9' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, gap: 3, borderBottom: last ? 'none' : '1px solid #eef0f3' }}>
             <Typography sx={{ fontSize: '0.78rem', color: '#999', width: 160, flexShrink: 0 }}>{label}</Typography>
             <Box sx={{ flex: 1 }}>{children}</Box>
         </Box>
@@ -91,9 +91,9 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
     const colLabel = descLabel ?? t('Description of Work');
 
     return (
-        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #e8f7f9', py: 0.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, backgroundColor: '#f7fdfe', borderRadius: 1.5, px: 1.5, mb: rows.length > 0 ? 0.75 : 0 }}>
-                <Box sx={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: '#d6f4f7', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1.5, flexShrink: 0 }}>
+        <Box sx={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', borderBottom: last ? 'none' : '1px solid #eef0f3', py: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, background: 'linear-gradient(90deg, rgba(0,171,190,0.07) 0%, rgba(0,171,190,0.02) 100%)', borderRadius: 1.5, px: 1.5, mb: rows.length > 0 ? 0.75 : 0 }}>
+                <Box sx={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(0,171,190,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1.5, flexShrink: 0 }}>
                     <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: mainPrimaryColor, lineHeight: 1 }}>{num}</Typography>
                 </Box>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#111', flex: 1 }}>{title}</Typography>
@@ -105,14 +105,14 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
                 </IconButton>
             </Box>
             {rows.length > 0 && (
-                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, overflow: 'hidden', mb: 0.75 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', backgroundColor: '#edf9fb', px: 1.5, py: 0.6 }}>
+                <Box sx={{ border: '1px solid #eaedf0', borderRadius: 1.5, overflow: 'hidden', mb: 0.75 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', backgroundColor: '#f7f9fa', px: 1.5, py: 0.6 }}>
                         {[colLabel, t('Qty'), t('Unit Price'), ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.69rem', fontWeight: 700, color: '#00818f', textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center', whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.69rem', fontWeight: 700, color: '#888', textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center', whiteSpace: 'nowrap', letterSpacing: '0.02em', textTransform: 'uppercase' }}>{h}</Typography>
                         ))}
                     </Box>
                     {rows.map((row, idx) => (
-                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', borderTop: '1px solid #e8f7f9', px: 1.5, py: 0.4, alignItems: 'center', backgroundColor: idx % 2 === 1 ? '#fbfeff' : '#fff', '&:hover': { backgroundColor: '#f2fcfd' } }}>
+                        <Box key={row.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 68px 118px 28px', borderTop: '1px solid #f0f2f4', px: 1.5, py: 0.4, alignItems: 'center', backgroundColor: idx % 2 === 1 ? '#fafafa' : '#fff', '&:hover': { backgroundColor: '#f4fbfc' } }}>
                             <InputBase
                                 value={row.description}
                                 onChange={e => updateRow(row.id, 'description', e.target.value)}
@@ -133,7 +133,7 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
                                 inputProps={{ style: { textAlign: 'right', padding: 0, paddingRight: 6 } }}
                                 sx={{ fontSize: '0.81rem', color: '#333' }}
                             />
-                            <IconButton size='small' onClick={() => removeRow(row.id)} sx={{ p: 0.25, color: '#ddd', '&:hover': { color: '#e53935' } }}>
+                            <IconButton size='small' onClick={() => removeRow(row.id)} sx={{ p: 0.25, color: '#ccc', '&:hover': { color: '#e53935' } }}>
                                 <DeleteOutlineIcon sx={{ fontSize: 14 }} />
                             </IconButton>
                         </Box>
@@ -314,13 +314,13 @@ export default function CostingPage() {
                 onClose={(_, reason) => { if (reason !== 'backdropClick') setEditEntry(null); }}
                 maxWidth={false}
                 fullWidth
-                PaperProps={{ sx: { borderRadius: 3, width: '100%', maxWidth: 680 } }}
+                PaperProps={{ sx: { borderRadius: 3, width: '100%', maxWidth: 680, backgroundColor: '#fafcfc', boxShadow: '0 24px 48px rgba(0,0,0,0.12), 0 8px 24px rgba(0,171,190,0.08)' } }}
             >
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Cost Details')}</DialogTitle>
                 <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
 
                     {/* Info rows */}
-                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2 }}>
+                    <Box sx={{ border: '1px solid #eaedf0', borderRadius: 2, px: 2, backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                         <DetailRow label={t('Description of Work')}>
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#222' }}>{editEntry?.workName}</Typography>
                         </DetailRow>
@@ -341,9 +341,9 @@ export default function CostingPage() {
                                 sx={{
                                     fontSize: '0.72rem',
                                     cursor: 'pointer',
-                                    backgroundColor: editIsSubcontractor ? '#e65100' : '#f0fbfc',
-                                    color: editIsSubcontractor ? '#fff' : '#00818f',
-                                    border: `1px solid ${editIsSubcontractor ? '#e65100' : '#b2e8ed'}`,
+                                    backgroundColor: editIsSubcontractor ? '#e65100' : '#f4f6f8',
+                                    color: editIsSubcontractor ? '#fff' : '#666',
+                                    border: `1px solid ${editIsSubcontractor ? '#e65100' : '#dde0e4'}`,
                                     fontWeight: editIsSubcontractor ? 700 : 400,
                                     '&:hover': { opacity: 0.85 },
                                 }}
@@ -366,7 +366,7 @@ export default function CostingPage() {
                     </Box>
 
                     {/* 3 cost sections */}
-                    <Box sx={{ border: '1px solid #e8f7f9', borderRadius: 2, px: 2 }}>
+                    <Box sx={{ border: '1px solid #eaedf0', borderRadius: 2, px: 2, backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                         <SectionBlock
                             num={1}
                             title={t('Labor / Wages')}
