@@ -1,15 +1,14 @@
 'use client';
 
-import { Box } from '@mui/material';
-import LandingHeader from './Header';
 import AppProviderWrapper from '@/components/main/AppProviderWrapper';
+import LandingHeader from './Header';
+import HeroSection from './HeroSection';
 
 export default function LandingPage() {
     return (
         <AppProviderWrapper>
-            <Box sx={{ minHeight: '100vh', backgroundColor: '#f0f4f5' }}>
-                <LandingHeader />
-            </Box>
+            <LandingHeader />
+            <HeroSection />
         </AppProviderWrapper>
     );
 }
