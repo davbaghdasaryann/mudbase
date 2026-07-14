@@ -8,14 +8,12 @@ import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlin
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import { ElementType } from 'react';
 
-const TEAL = '#00ABBE';
-
-const CARDS: { Icon: ElementType }[] = [
-    { Icon: ConstructionOutlinedIcon },
-    { Icon: DrawOutlinedIcon },
-    { Icon: ApartmentOutlinedIcon },
-    { Icon: AccountBalanceOutlinedIcon },
-    { Icon: CalculateOutlinedIcon },
+const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
+    { Icon: ConstructionOutlinedIcon, circleBg: 'rgba(245,158,11,0.13)',  iconColor: '#D97706' },
+    { Icon: DrawOutlinedIcon,         circleBg: 'rgba(0,171,190,0.12)',   iconColor: '#00ABBE' },
+    { Icon: ApartmentOutlinedIcon,    circleBg: 'rgba(99,102,241,0.12)',  iconColor: '#6366F1' },
+    { Icon: AccountBalanceOutlinedIcon, circleBg: 'rgba(14,165,233,0.13)', iconColor: '#0EA5E9' },
+    { Icon: CalculateOutlinedIcon,    circleBg: 'rgba(34,197,94,0.12)',   iconColor: '#16A34A' },
 ];
 
 export default function TargetSection() {
@@ -44,7 +42,7 @@ export default function TargetSection() {
                         fontSize: '0.6rem',
                         fontWeight: 700,
                         letterSpacing: '0.13em',
-                        color: TEAL,
+                        color: '#00ABBE',
                         textTransform: 'uppercase',
                         whiteSpace: 'nowrap',
                     }}>
@@ -82,7 +80,7 @@ export default function TargetSection() {
                 flexWrap: { xs: 'wrap', md: 'nowrap' },
                 justifyContent: 'center',
             }}>
-                {CARDS.map(({ Icon }, i) => (
+                {CARDS.map(({ Icon, circleBg, iconColor }, i) => (
                     <Box
                         key={i}
                         sx={{
@@ -92,12 +90,12 @@ export default function TargetSection() {
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            py: { xs: 4, md: 7 },
+                            py: { xs: 5, md: 9 },
                             borderRadius: '18px',
                             border: '1.5px solid rgba(0,171,190,0.22)',
                             boxShadow: '0 4px 24px rgba(0,171,190,0.06), 0 1px 4px rgba(0,0,0,0.03)',
                             backgroundColor: '#fff',
-                            gap: 2.5,
+                            gap: 3,
                             transition: 'box-shadow 0.2s',
                             '&:hover': {
                                 boxShadow: '0 8px 32px rgba(0,171,190,0.13), 0 2px 8px rgba(0,0,0,0.05)',
@@ -106,25 +104,25 @@ export default function TargetSection() {
                     >
                         {/* Icon circle */}
                         <Box sx={{
-                            width: 62,
-                            height: 62,
+                            width: 64,
+                            height: 64,
                             borderRadius: '50%',
-                            backgroundColor: 'rgba(0,171,190,0.09)',
+                            backgroundColor: circleBg,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}>
-                            <Icon sx={{ fontSize: 26, color: TEAL }} />
+                            <Icon sx={{ fontSize: 28, color: iconColor }} />
                         </Box>
 
-                        {/* Flip link */}
+                        {/* Link */}
                         <Typography sx={{
                             fontSize: '0.78rem',
                             color: '#94a3ac',
                             cursor: 'pointer',
                             userSelect: 'none',
                             transition: 'color 0.15s',
-                            '&:hover': { color: TEAL },
+                            '&:hover': { color: '#00ABBE' },
                         }}>
                             Պտտել ›
                         </Typography>

@@ -11,7 +11,7 @@ export default function HeroSection() {
 
     return (
         <Box sx={{
-            minHeight: '100vh',
+            height: '100vh',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -65,8 +65,8 @@ export default function HeroSection() {
                 </Box>
             </Box>
 
-            {/* City skyline — anchored at viewport bottom */}
-            <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, lineHeight: 0, zIndex: 0 }}>
+            {/* City skyline — anchored at hero section bottom */}
+            <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, lineHeight: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src='/images/hero_skyline.svg' alt='' style={{ width: '100%', display: 'block', transform: 'translateY(23%)' }} />
             </Box>
