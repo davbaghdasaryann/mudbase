@@ -6,8 +6,8 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import { ElementType } from 'react';
 
-const TEAL = '#00ABBE';
-const ICON_BG = 'rgba(0,171,190,0.09)';
+const TEAL = '#00A390';
+const ICON_BG = 'rgba(0,163,144,0.09)';
 
 const CONTACTS: { Icon: ElementType; label: string; value: string }[] = [
     { Icon: EmailOutlinedIcon,     label: 'Էլ. Հասցև',  value: 'info@mudbase.am' },
@@ -56,8 +56,8 @@ export default function ContactSection() {
                     {/* Pill badge */}
                     <Box sx={{
                         display: 'inline-block',
-                        backgroundColor: 'rgba(0,171,190,0.07)',
-                        border: '1px solid rgba(0,171,190,0.18)',
+                        backgroundColor: 'rgba(0,163,144,0.07)',
+                        border: '1px solid rgba(0,163,144,0.18)',
                         borderRadius: '100px',
                         px: 2, py: 0.55, mb: 2.5,
                     }}>
@@ -111,10 +111,10 @@ export default function ContactSection() {
                     backgroundColor: '#fff',
                     borderRadius: '20px',
                     boxShadow: '0 8px 40px rgba(0,0,0,0.08), 0 2px 12px rgba(0,0,0,0.04)',
-                    p: { xs: 3, md: 4 },
+                    p: { xs: 3, md: 5 },
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 2.5,
+                    gap: 3,
                 }}>
                     {/* Name + Email row */}
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
@@ -122,7 +122,7 @@ export default function ContactSection() {
                             label='Անուն Ազգանուն'
                             placeholder='JOHN DOE'
                             fullWidth
-                            size='small'
+                            size='medium'
                             InputLabelProps={{ shrink: true }}
                             sx={{...inputSx}}
                         />
@@ -130,7 +130,7 @@ export default function ContactSection() {
                             label='Էլ. Հասցև'
                             placeholder='johndoe@example.com'
                             fullWidth
-                            size='small'
+                            size='medium'
                             InputLabelProps={{ shrink: true }}
                             sx={{...inputSx}}
                         />
@@ -152,7 +152,7 @@ export default function ContactSection() {
                         placeholder='Tshetsher yenk ajakcel yenk hartserin dustin'
                         fullWidth
                         multiline
-                        rows={6}
+                        rows={9}
                         InputLabelProps={{ shrink: true }}
                         sx={{
                             ...inputSx,
@@ -177,7 +177,7 @@ export default function ContactSection() {
                             borderRadius: '10px',
                             py: 1.5,
                             boxShadow: 'none',
-                            '&:hover': { backgroundColor: '#009aab', boxShadow: 'none' },
+                            '&:hover': { backgroundColor: '#00897a', boxShadow: 'none' },
                         }}
                     >
                         Ողարկել
