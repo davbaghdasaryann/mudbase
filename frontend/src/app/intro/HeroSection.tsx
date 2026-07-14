@@ -202,34 +202,24 @@ export default function HeroSection() {
                 <Image src='/images/logo_square.svg' alt='Mudbase' width={130} height={130} priority />
             </Box>
 
-            {/* Headline */}
-            <Box sx={{ textAlign: 'center', maxWidth: 700, px: 3 }}>
-                <Typography
-                    sx={{
-                        fontWeight: 700,
-                        lineHeight: 1.55,
-                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
-                        color: '#1a2e35',
-                        letterSpacing: '-0.01em',
-                    }}
-                >
-                    {isAm ? (
-                        <>
-                            Շինарարական աշխատանքների{' '}
-                            <Box component='span' sx={{ color: TEAL }}>արժեքի</Box>
-                            {' '}հաշվարկման և վերլուծության
-                            <br />
-                            էլեկտրոնային համակարգ
-                        </>
-                    ) : (
-                        <>
-                            Electronic System for Construction Works
-                            <br />
-                            <Box component='span' sx={{ color: TEAL }}>Cost</Box>
-                            {' '}Calculation and Analysis
-                        </>
-                    )}
-                </Typography>
+            {/* Headline — three action words in logo colors */}
+            <Box sx={{ textAlign: 'center', px: 3 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', gap: { xs: 0.5, md: 1 } }}>
+                    {[
+                        { am: 'Հաշվարկիր', en: 'Calculate', color: '#41a240' },
+                        { am: 'Վերլուծիր', en: 'Analyze',   color: '#00a390' },
+                        { am: 'կառավարիր', en: 'Manage',    color: '#00abbe' },
+                    ].map((item, i) => (
+                        <Box key={i} component='span' sx={{ display: 'inline-flex', alignItems: 'baseline' }}>
+                            <Typography component='span' sx={{ fontWeight: 800, fontSize: { xs: '2.4rem', sm: '3.2rem', md: '4rem' }, lineHeight: 1.15, color: item.color, textTransform: 'uppercase', letterSpacing: '0.04em', display: 'inline' }}>
+                                {isAm ? item.am : item.en}
+                            </Typography>
+                            {i < 2 && (
+                                <Typography component='span' sx={{ fontWeight: 800, fontSize: { xs: '2.4rem', sm: '3.2rem', md: '4rem' }, color: '#ccc', lineHeight: 1.15, mx: 0.5 }}>{','}</Typography>
+                            )}
+                        </Box>
+                    ))}
+                </Box>
             </Box>
 
             {/* City skyline — anchored at bottom */}
