@@ -329,7 +329,7 @@
   "Add expense type": "Ավելացնել ծախսի տեսակ",
   "Print PDF": "Տպել PDF",
   "Active": "Ակտիվ",
-  "Inactive": "Չակտիվացված",
+  "Inactive": "Ոչ ակտիվ",
   "Activate": "Ակտիվացնել",
   "ACTIVATE": "Ակտիվացնել",
   "Deactivate": "Ապաակտիվացնել",
@@ -506,14 +506,10 @@
   "Rate-based": "Դրույքային",
   "Value": "Արժեք",
   "Subcontractor": "Ենթակապալառու",
-  "Active": "Ակտիվ",
-  "Inactive": "Ոչ ակտիվ",
   "Contractor": "Կապալառու",
   "Contractor name": "Կապալառուի անվանում",
   "Note": "Նշում",
   "Additional notes": "Լրացուցիչ նշումներ",
-  "Date": "Ամսաթիվ",
-  "Edit": "Խմբագրել",
   "Structural Analytics": "Կառուցվածքային վերլուծություն",
   "Comparative Analytics": "Համեմատական վերլուծություն",
   "Chronological Analytics": "Ժամանակագրական վերլուծություն",
@@ -619,5 +615,7 @@
   "Export Estimation": "Ներբեռնել Նախահաշիվը",
   "Export BoQ": "Ներբեռնել ծավալաթերթը",
   "Works Catalog": "Աշխատանքների շտեմարան",
-  "Analysis": "Վերլուծություն"
+  "Analysis": "Վերլուծություն",
+  "Subscription": "Բաժանորդագրություն",
+  "Contacts": "Կոնտակտներներ"
 }

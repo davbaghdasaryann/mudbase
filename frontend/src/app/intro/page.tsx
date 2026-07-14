@@ -1,29 +1,15 @@
 'use client';
 
-import Carousel from '@/app/intro/IntroCarousel';
-import InfoSection from '@/app/intro/IntroInfoSection';
-import ProcessTimeline from '@/app/intro/IntroProcessTimelineLabels';
-import TabbedFeatures from '@/app/intro/IntroTabbedCards';
-import VideoSection from '@/app/intro/IntroVideoSection';
-import ContactSection from '@/app/intro/IntroContactSection';
-import PageContents from '@/components/PageContents';
-import { youtubeUrl } from '@/theme';
-import { AppBar, Box, Button, Toolbar } from '@mui/material';
-import Footer from '@/app/intro/Footer';
-import Header from '@/app/intro/Header';
+import { Box } from '@mui/material';
+import LandingHeader from './Header';
+import AppProviderWrapper from '@/components/main/AppProviderWrapper';
 
-export default function IntroPage() {
+export default function LandingPage() {
     return (
-        <>
-          
-        <Header/>
-            <Carousel />
-            <InfoSection />
-            <ProcessTimeline />
-            <TabbedFeatures />
-            <VideoSection youtubeUrl={youtubeUrl} />
-            <ContactSection />
-            <Footer/>
-        </>
+        <AppProviderWrapper>
+            <Box sx={{ minHeight: '100vh', backgroundColor: '#f0f4f5' }}>
+                <LandingHeader />
+            </Box>
+        </AppProviderWrapper>
     );
 }
