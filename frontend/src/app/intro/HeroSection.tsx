@@ -49,7 +49,7 @@ export default function HeroSection() {
             {/* City skyline — anchored at viewport bottom */}
             <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, lineHeight: 0, zIndex: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src='/images/hero_skyline.svg' alt='' style={{ width: '100%', display: 'block' }} />
+                <img src='/images/hero_skyline.svg' alt='' style={{ width: '100%', display: 'block', transform: 'translateY(23%)' }} />
             </Box>
         </Box>
     );
