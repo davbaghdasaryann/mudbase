@@ -29,7 +29,7 @@ export default function Footer() {
                         <Image src="/images/logo_square.svg" alt="Mudbase" width={110} height={38} style={{ objectFit: 'contain', objectPosition: 'left' }} />
                     </Box>
                     <Typography sx={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, maxWidth: 260 }}>
-                        Շինարարական աշխատանկների արժեքի հաշվարկման եվ վերլուծման ելեկտրոնային համակարգ
+                        Շինարարական աշխատանքների արժեքի հաշվարկման եվ վերլուծման էլեկտրոնային համակարգ
                     </Typography>
                 </Box>
 
@@ -39,7 +39,7 @@ export default function Footer() {
                         Նավիգացիա
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {['Գործիկներ', 'Բաժանանդորդագրություն', 'Կոնտակտներ'].map((link) => (
+                        {['Գործիքներ', 'Բաժանանորդագրություն', 'Կոնտակտներ'].map((link) => (
                             <Typography key={link} component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
                                 {link}
                             </Typography>
@@ -53,7 +53,7 @@ export default function Footer() {
                         Իրավական
                     </Typography>
                     <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
-                        Գաղտնիության քաղակականության
+                        Գաղտնիության կաղակականության
                     </Typography>
                 </Box>
 
@@ -77,11 +77,11 @@ export default function Footer() {
                     <Button variant="contained" href="/register" sx={{ width: '160px',
                         backgroundColor: TEAL,
                         color: '#fff',
-                        fontWeight: 700,
+                        fontWeight: 500,
                         fontSize: '0.78rem',
                         letterSpacing: '0.08em',
                         borderRadius: '8px',
-                        py: 1.15,
+                        py: '7px',
                         boxShadow: 'none',
                         textTransform: 'none',
                         '&:hover': { backgroundColor: '#00897a', boxShadow: 'none' },
