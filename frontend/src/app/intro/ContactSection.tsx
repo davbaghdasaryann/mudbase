@@ -10,9 +10,9 @@ const TEAL = '#00A390';
 const ICON_BG = 'rgba(0,163,144,0.09)';
 
 const CONTACTS: { Icon: ElementType; label: string; value: string }[] = [
-    { Icon: EmailOutlinedIcon,     label: 'Էլ. Հասցև',  value: 'info@mudbase.am' },
-    { Icon: LocationOnOutlinedIcon, label: 'Հասցև', value: 'Yerevan, Armenia' },
-    { Icon: PhoneOutlinedIcon,     label: 'Հևսահար',  value: '+374 (10) 55-00-55' },
+    { Icon: EmailOutlinedIcon,      label: 'Էլ. հաշե',   value: 'info@mudbase.am' },
+    { Icon: LocationOnOutlinedIcon, label: 'Հաշե',  value: 'Yerevan, Armenia' },
+    { Icon: PhoneOutlinedIcon,      label: 'տելեփոն',  value: '+374 (10) 55-00-55' },
 ];
 
 const inputSx = {
@@ -62,7 +62,7 @@ export default function ContactSection() {
                         px: 2, py: 0.55, mb: 2.5,
                     }}>
                         <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.13em', color: TEAL, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                            հետադարձ կապ
+                            Հետադարձ կապ
                         </Typography>
                     </Box>
 
@@ -73,7 +73,7 @@ export default function ContactSection() {
 
                     {/* Description */}
                     <Typography sx={{ fontSize: '0.9rem', color: '#7a9098', lineHeight: 1.7, mb: 4 }}>
-                        Մեր թիմը սիրով կՊասում ենք Պասկանելու ձևր հարծերն` համակարգի ևնդ ԱՊՀ ինտևգրման հարծերին:
+                        Մեր տիմակ սիրով կպատասխանենք Ձեր հարծերնին համակարգի եվ API ինտեգրման.
                     </Typography>
 
                     {/* Contact items */}
@@ -127,7 +127,7 @@ export default function ContactSection() {
                             sx={{...inputSx}}
                         />
                         <TextField
-                            label='Էլ. Հասցև'
+                            label='Էլ. Հաշե'
                             placeholder='johndoe@example.com'
                             fullWidth
                             size='medium'
@@ -139,7 +139,7 @@ export default function ContactSection() {
                     {/* Subject */}
                     <TextField
                         label='Թեմա'
-                        placeholder='Նշեք լյarnер bkre ouzer'
+                        placeholder=''
                         fullWidth
                         size='small'
                         InputLabelProps={{ shrink: true }}
@@ -149,7 +149,7 @@ export default function ContactSection() {
                     {/* Message */}
                     <TextField
                         label='Հաղորդագրություն'
-                        placeholder='Tshetsher yenk ajakcel yenk hartserin dustin'
+                        placeholder=''
                         fullWidth
                         multiline
                         rows={9}
