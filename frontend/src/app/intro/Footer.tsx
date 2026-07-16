@@ -12,7 +12,7 @@ const TEAL = '#00A390';
 
 export default function Footer() {
     return (
-        <Box component="footer" sx={{ backgroundColor: BG, pt: { xs: 7, md: 9 }, pb: 0 }}>
+        <Box component="footer" sx={{ backgroundColor: BG, pt: { xs: 4, md: 5 }, pb: 0 }}>
             <Box sx={{
                 maxWidth: 1100,
                 mx: 'auto',
@@ -20,7 +20,7 @@ export default function Footer() {
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
                 gap: { xs: 6, md: 5 },
-                pb: { xs: 6, md: 8 },
+                pb: { xs: 4, md: 5 },
             }}>
 
                 {/* Col 1: Logo + description */}
@@ -35,7 +35,7 @@ export default function Footer() {
 
                 {/* Col 2: Navigation */}
                 <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.14em', color: TEAL, textTransform: 'uppercase', mb: 2.5 }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: TEAL, textTransform: 'uppercase', mb: 2.5 }}>
                         Նավիգացիա
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -49,7 +49,7 @@ export default function Footer() {
 
                 {/* Col 3: Legal */}
                 <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.14em', color: TEAL, textTransform: 'uppercase', mb: 2.5 }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: '#00ABBE', textTransform: 'uppercase', mb: 2.5 }}>
                         Իրավական
                     </Typography>
                     <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
@@ -59,7 +59,7 @@ export default function Footer() {
 
                 {/* Col 4: Contact + social + CTA */}
                 <Box sx={{ flex: '0 0 auto', width: { xs: '100%', md: '22%' } }}>
-                    <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.14em', color: TEAL, textTransform: 'uppercase', mb: 2.5 }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: '#FFFFFF', textTransform: 'uppercase', mb: 2.5 }}>
                         Կապ մեզ հետ
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
@@ -74,7 +74,7 @@ export default function Footer() {
                             </IconButton>
                         ))}
                     </Box>
-                    <Button variant="contained" href="/register" fullWidth sx={{
+                    <Button variant="contained" href="/register" sx={{ width: '160px',
                         backgroundColor: TEAL,
                         color: '#fff',
                         fontWeight: 700,
