@@ -62,13 +62,13 @@ const BASE_COLS = [
     { key: 'desc',      defaultW: 500 },
     { key: 'unit',      defaultW: 72  },
     { key: 'qty',       defaultW: 90  },
-    { key: 'up',        defaultW: 100 },
+    { key: 'up',        defaultW: 145 },
     { key: 'total',     defaultW: 110 },
-    { key: 'complete',  defaultW: 80  },
-    { key: 'remaining', defaultW: 90  },
+    { key: 'complete',  defaultW: 90  },
+    { key: 'remaining', defaultW: 130 },
 ];
 const ACT_COL_KEYS = ['up', 'qty', 'total'];
-const ACT_COL_DEFAULTS = [100, 90, 110];
+const ACT_COL_DEFAULTS = [140, 90, 110];
 const MIN_COL_W = 50;
 
 function parseNum(v: string): number {
@@ -87,6 +87,8 @@ const th = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     border: `1px solid ${BORDER}`,
     padding: '6px 8px',
     whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     position: 'relative',
     fontWeight: 700,
     fontSize: '0.8rem',
@@ -102,7 +104,6 @@ const td = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    maxWidth: 0,
     fontSize: '0.82rem',
     verticalAlign: 'middle',
     ...extra,
@@ -200,7 +201,7 @@ export default function PerformanceActTable({
     const startResize = useCallback((colIdx: number, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        const startW = Math.round((e.currentTarget as HTMLDivElement).parentElement?.getBoundingClientRect().width ?? colWidths[colIdx] ?? 100);
+        const startW = colWidths[colIdx] ?? 100;
         resizingCol.current = { colIdx, startX: e.clientX, startW };
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
@@ -536,7 +537,7 @@ export default function PerformanceActTable({
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: acts.length > 0 ? 'grab' : 'default' }}>
-                <table style={{ tableLayout: 'auto', borderCollapse: 'collapse', width: '100%', minWidth: colWidths.reduce((s, w) => s + w, 0) }}>
+                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: colWidths.reduce((s, w) => s + w, 0) }}>
                     <colgroup>
                         {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                     </colgroup>
