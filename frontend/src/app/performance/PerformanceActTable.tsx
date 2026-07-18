@@ -599,14 +599,14 @@ export default function PerformanceActTable({
                                                 <span
                                                     title={isEditable ? t('Lock ACT') : t('Edit ACT')}
                                                     onMouseDown={e => { e.stopPropagation(); setLockedActIndices(prev => { const next = new Set(prev); if (next.has(ai)) next.delete(ai); else next.add(ai); return next; }); }}
-                                                    style={{ cursor: 'pointer', color: isEditable ? mainPrimaryColor : '#bbb', fontSize: '0.9rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    style={{ cursor: 'pointer', color: isEditable ? mainPrimaryColor : '#bbb', fontSize: '1rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
                                                     onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = mainPrimaryColor; }}
                                                     onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = isEditable ? mainPrimaryColor : '#bbb'; }}
                                                 >✎</span>
                                                 <span
                                                     title={t('Delete ACT')}
                                                     onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
-                                                    style={{ cursor: 'pointer', color: '#bbb', fontSize: '0.9rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
                                                     onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
                                                     onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
                                                 >×</span>
