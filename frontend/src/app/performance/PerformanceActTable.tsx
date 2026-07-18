@@ -60,7 +60,7 @@ type ActData = Record<string, ActValues>;
 const BASE_COLS = [
     { key: 'no',        defaultW: 52  },
     { key: 'desc',      defaultW: 500 },
-    { key: 'unit',      defaultW: 72  },
+    { key: 'unit',      defaultW: 95  },
     { key: 'qty',       defaultW: 90  },
     { key: 'up',        defaultW: 145 },
     { key: 'total',     defaultW: 110 },
@@ -537,7 +537,7 @@ export default function PerformanceActTable({
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: acts.length > 0 ? 'grab' : 'default' }}>
-                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: colWidths.reduce((s, w) => s + w, 0) }}>
+                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: acts.length === 0 ? '100%' : colWidths.reduce((s, w) => s + w, 0) }}>
                     <colgroup>
                         {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                     </colgroup>
