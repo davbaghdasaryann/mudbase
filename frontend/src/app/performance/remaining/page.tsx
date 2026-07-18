@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Box, CircularProgress, Typography, Button } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import * as Api from '@/api';
@@ -9,7 +9,6 @@ import { mainPrimaryColor } from '@/theme';
 
 interface LaborRow {
     _id: string;
-    laborItemId: string;
     fullCode: string;
     catalogName: string;
     laborOfferItemName: string;
@@ -20,32 +19,13 @@ interface LaborRow {
     subsectionName: string;
     sectionName: string;
 }
-
-interface Section {
-    _id: string;
-    name: string;
-    displayIndex: number;
-    totalCost: number;
-}
-
-interface Subsection {
-    _id: string;
-    estimateSectionId: string;
-    name: string;
-    displayIndex: number;
-    totalCost: number;
-}
-
+interface Section { _id: string; name: string; displayIndex: number; }
+interface Subsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
 interface ActValues { unitPrice: string; quantity: string; }
 type ActData = Record<string, ActValues>;
-
 interface StoredData {
-    recordId: string;
-    estimateId: string;
-    estimateName: string;
-    acts: number[];
-    actsData: ActData[];
-    actsDates: { from: string; to: string }[];
+    recordId: string; estimateId: string; estimateName: string;
+    acts: number[]; actsData: ActData[]; actsDates: { from: string; to: string }[];
 }
 
 function parseNum(v: string): number {
@@ -53,27 +33,117 @@ function parseNum(v: string): number {
     return isNaN(n) ? 0 : n;
 }
 
-const BORDER = '#cde8ec';
+function buildTableHtml(
+    estimateName: string, rows: LaborRow[], sections: Section[],
+    subsections: Subsection[], acts: number[], actsData: ActData[],
+): string {
+    const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const S = (css: string) => 'style="' + css + '"';
+    const BC = 'border:1px solid #ccc;padding:5px 8px;font-size:12px;';
+    const HC = 'border:1px solid #ccc;padding:6px 8px;font-weight:bold;font-size:12px;';
+    const NC = 12;
+    const G1 = '#F2F2F2', G2 = '#E6F0FA', G3 = '#E2EFDA', GD = '#FFFFFF';
 
-const cellStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`,
-    padding: '5px 8px',
-    fontSize: '0.78rem',
-    verticalAlign: 'middle',
-    ...extra,
-});
+    const allQty = (id: string) => acts.reduce((s, _, ai) => s + parseNum(actsData[ai]?.[id]?.quantity ?? '0'), 0);
 
-const hdrStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`,
-    padding: '7px 8px',
-    fontSize: '0.78rem',
-    fontWeight: 700,
-    backgroundColor: '#e8f7f9',
-    color: '#111',
-    textAlign: 'center',
-    verticalAlign: 'middle',
-    ...extra,
-});
+    const dg = (qty: number, up: number) => {
+        const tot = qty * up;
+        return '<td ' + S(BC + 'text-align:right;background:' + GD + ';') + '>' + (qty > 0 ? qty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '') + '</td>' +
+            '<td ' + S(BC + 'text-align:right;background:' + GD + ';') + '>' + (up > 0 ? formatCurrencyRounded(up) : '') + '</td>' +
+            '<td ' + S(BC + 'text-align:right;font-weight:bold;background:' + GD + ';') + '>' + (tot > 0 ? formatCurrencyRounded(tot) : '') + '</td>';
+    };
+    const rg = (cQty: number, compQty: number, up: number) => {
+        const rQty = cQty - compQty, rTot = rQty * up;
+        return '<td ' + S(BC + 'text-align:right;background:' + GD + ';') + '>' + (rQty > 0 ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '') + '</td>' +
+            '<td ' + S(BC + 'text-align:right;background:' + GD + ';') + '>' + (up > 0 ? formatCurrencyRounded(up) : '') + '</td>' +
+            '<td ' + S(BC + 'text-align:right;font-weight:bold;background:' + GD + ';') + '>' + (rTot > 0 ? formatCurrencyRounded(rTot) : '') + '</td>';
+    };
+    const sg = (qty: number, total: number, bg: string) =>
+        '<td ' + S(BC + 'text-align:right;font-weight:bold;background:' + bg + ';') + '>' + (qty > 0 ? qty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '') + '</td>' +
+        '<td ' + S(BC + 'background:' + bg + ';') + '></td>' +
+        '<td ' + S(BC + 'text-align:right;font-weight:bold;background:' + bg + ';') + '>' + (total > 0 ? formatCurrencyRounded(total) + ' AMD' : '') + '</td>';
+
+    let html = '<table border="1" ' + S('border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%;') + '>';
+    html += '<tr><td colspan="' + NC + '" ' + S(HC + 'text-align:center;font-size:14px;background:' + G1 + ';') + '>' + esc('Մնացորդային հաշվարկ — ' + estimateName) + '</td></tr>';
+    html += '<tr><td colspan="' + NC + '" ' + S(BC) + '>&nbsp;</td></tr>';
+    html += '<tr>';
+    html += '<th rowspan="2" ' + S(HC + 'text-align:center;vertical-align:middle;background:' + G1 + ';') + '>N</th>';
+    html += '<th rowspan="2" ' + S(HC + 'vertical-align:middle;background:' + G1 + ';') + '>Աշխատանքի անվանումը</th>';
+    html += '<th rowspan="2" ' + S(HC + 'text-align:center;vertical-align:middle;background:' + G1 + ';') + '>Չ/մ</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G1 + ';') + '>Ըeknap paymanagri</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G2 + ';') + '>Ավարտած</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G3 + ';') + '>Մնացորդային</th>';
+    html += '</tr><tr>';
+    for (const bg of [G1, G2, G3]) {
+        html += '<th ' + S(HC + 'text-align:right;background:' + bg + ';') + '>Քանակ</th>';
+        html += '<th ' + S(HC + 'text-align:right;background:' + bg + ';') + '>Միավորի արժեքը</th>';
+        html += '<th ' + S(HC + 'text-align:right;background:' + bg + ';') + '>Ընդհանուր</th>';
+    }
+    html += '</tr>';
+
+    const subsMap = new Map<string, Subsection[]>();
+    for (const sect of sections) {
+        subsMap.set(String(sect._id),
+            subsections.filter(s => String(s.estimateSectionId) === String(sect._id))
+                .sort((a, b) => a.displayIndex - b.displayIndex));
+    }
+
+    let counter = 0;
+    for (let si = 0; si < sections.length; si++) {
+        const sect = sections[si];
+        const sItems = rows.filter(r => r.sectionName === sect.name);
+        if (sItems.length === 0) continue;
+        const subs = subsMap.get(String(sect._id)) ?? [];
+        html += '<tr><td colspan="' + NC + '" ' + S(BC + 'font-weight:bold;font-size:13px;background:' + G1 + ';text-align:center;') + '>' + esc((si + 1) + '. ' + sect.name.toUpperCase()) + '</td></tr>';
+
+        const renderRow = (row: LaborRow, idx: number) => {
+            const up = row.changableAveragePrice ?? 0;
+            const cQty = row.quantity ?? 0;
+            const compQty = allQty(String(row._id));
+            return '<tr>' +
+                '<td ' + S(BC + 'text-align:center;') + '>' + idx + '</td>' +
+                '<td ' + S(BC) + '>' + esc(row.laborOfferItemName || row.catalogName) + '</td>' +
+                '<td ' + S(BC + 'text-align:center;') + '>' + esc(row.unitSymbol) + '</td>' +
+                dg(cQty, up) + dg(compQty, up) + rg(cQty, compQty, up) +
+                '</tr>';
+        };
+
+        if (subs.length > 0) {
+            for (let subI = 0; subI < subs.length; subI++) {
+                const sub = subs[subI];
+                const subItems = sItems.filter(r => r.subsectionName === sub.name);
+                if (subItems.length === 0) continue;
+                html += '<tr><td colspan="' + NC + '" ' + S(BC + 'font-style:italic;padding-left:20px;font-size:11px;background:#f7fdfe;') + '>' + esc((si + 1) + '.' + (subI + 1) + '. ' + sub.name) + '</td></tr>';
+                for (const row of subItems) html += renderRow(row, ++counter);
+            }
+        } else {
+            for (const row of sItems) html += renderRow(row, ++counter);
+        }
+
+        const sCQty = sItems.reduce((s, r) => s + (r.quantity ?? 0), 0);
+        const sCTot = sItems.reduce((s, r) => s + (r.cost ?? 0), 0);
+        const sCompQty = sItems.reduce((s, r) => s + allQty(String(r._id)), 0);
+        const sCompTot = sItems.reduce((s, r) => s + allQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
+
+        html += '<tr>' +
+            '<td colspan="3" ' + S(BC + 'font-weight:bold;text-align:right;background:' + G1 + ';') + '>Ընդամենը</td>' +
+            sg(sCQty, sCTot, G1) + sg(sCompQty, sCompTot, G2) + sg(sCQty - sCompQty, sCTot - sCompTot, G3) +
+            '</tr>';
+    }
+
+    const gCTot = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
+    const gCompTot = rows.reduce((s, r) => s + allQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
+    const gRemTot = gCTot - gCompTot;
+
+    html += '<tr>' +
+        '<td colspan="3" ' + S(BC + 'font-weight:bold;text-align:left;background:' + G1 + ';border-top:2px solid #999;') + '>Ընդհանուր</td>' +
+        '<td colspan="3" ' + S(BC + 'font-weight:bold;text-align:right;background:' + G1 + ';border-top:2px solid #999;') + '>' + formatCurrencyRounded(gCTot) + ' AMD</td>' +
+        '<td colspan="3" ' + S(BC + 'font-weight:bold;text-align:right;background:' + G2 + ';border-top:2px solid #999;') + '>' + (gCompTot > 0 ? formatCurrencyRounded(gCompTot) + ' AMD' : '') + '</td>' +
+        '<td colspan="3" ' + S(BC + 'font-weight:bold;text-align:right;background:' + G3 + ';border-top:2px solid #999;') + '>' + (gRemTot > 0 ? formatCurrencyRounded(gRemTot) + ' AMD' : '') + '</td>' +
+        '</tr></table>';
+
+    return html;
+}
 
 export default function RemainingCalculationPage() {
     const [data, setData] = useState<StoredData | null>(null);
@@ -85,14 +155,12 @@ export default function RemainingCalculationPage() {
 
     useEffect(() => {
         const raw = sessionStorage.getItem('remainingCalcData');
-        if (!raw) { setError('No data found. Please open this page from the Performance tab.'); setLoading(false); return; }
+        if (!raw) { setError('No data. Open this page from the Performance tab.'); setLoading(false); return; }
         const stored: StoredData = JSON.parse(raw);
         setData(stored);
-
-        const { estimateId } = stored;
         Promise.all([
-            Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
-            Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
+            Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId: stored.estimateId } }),
+            Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId: stored.estimateId } }),
         ])
             .then(async ([laborData, sectData]) => {
                 const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
@@ -110,232 +178,41 @@ export default function RemainingCalculationPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleDownload = useCallback(() => {
+        if (!data) return;
+        const html = buildTableHtml(data.estimateName, rows, sections, subsections, data.acts, data.actsData);
+        const full = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>' + html + '</body></html>';
+        const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'remaining-calculation.xls'; a.click();
+        URL.revokeObjectURL(url);
+    }, [data, rows, sections, subsections]);
+
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
             <CircularProgress sx={{ color: mainPrimaryColor }} />
         </Box>
     );
+    if (error || !data) return <Box sx={{ p: 4 }}><Typography color='error'>{error ?? 'Unknown error'}</Typography></Box>;
 
-    if (error || !data) return (
-        <Box sx={{ p: 4 }}>
-            <Typography color='error'>{error ?? 'Unknown error'}</Typography>
-        </Box>
-    );
-
-    const { estimateName, acts, actsData, actsDates } = data;
-
-    const subsectionsBySection = new Map<string, Subsection[]>();
-    for (const sect of sections) {
-        subsectionsBySection.set(String(sect._id),
-            subsections.filter(s => String(s.estimateSectionId) === String(sect._id))
-                .sort((a, b) => a.displayIndex - b.displayIndex));
-    }
-
-    let counter = 0;
-
-    const grandContractTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
-    const grandActTotal = acts.length > 0
-        ? rows.reduce((s, r) => {
-            const actT = acts.reduce((as, _, ai) => {
-                const v = actsData[ai]?.[String(r._id)];
-                return as + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-            }, 0);
-            return s + actT;
-        }, 0)
-        : 0;
-    const grandRemainingTotal = grandContractTotal - grandActTotal;
+    const tableHtml = buildTableHtml(data.estimateName, rows, sections, subsections, data.acts, data.actsData);
 
     return (
-        <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto', fontFamily: 'Inter, sans-serif' }}>
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }} className='no-print'>
+        <Box sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box>
-                    <Typography sx={{ fontWeight: 700, fontSize: '1.3rem', color: '#111' }}>
-                        Remaining Calculation
+                    <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111' }}>
+                        Մնացորդային հաշվարկ
                     </Typography>
-                    <Typography sx={{ fontSize: '0.9rem', color: '#555', mt: 0.5 }}>
-                        {estimateName}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.25 }}>
-                        Generated: {new Date().toLocaleDateString()}
-                    </Typography>
+                    <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>{data.estimateName}</Typography>
                 </Box>
-                <Button
-                    variant='contained'
-                    startIcon={<DownloadIcon />}
-                    onClick={() => window.print()}
-                    sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, fontWeight: 600, '&:hover': { backgroundColor: '#006f7a' } }}
-                >
-                    Download PDF
+                <Button variant='contained' startIcon={<DownloadIcon />} onClick={handleDownload}
+                    sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, fontWeight: 600, '&:hover': { backgroundColor: '#006f7a' } }}>
+                    Download XLS
                 </Button>
             </Box>
-
-            {/* Print header (visible only on print) */}
-            <Box className='print-only' sx={{ display: 'none', mb: 2 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>Remaining Calculation — {estimateName}</Typography>
-                <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>Generated: {new Date().toLocaleDateString()}</Typography>
-            </Box>
-
-            {/* Summary cards */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                {[
-                    { label: 'Contract Total', value: `${formatCurrencyRounded(grandContractTotal)} AMD`, color: '#1565c0' },
-                    { label: 'Completed Total', value: `${formatCurrencyRounded(grandActTotal)} AMD`, color: '#2e7d32' },
-                    { label: 'Remaining Total', value: `${formatCurrencyRounded(grandRemainingTotal)} AMD`, color: grandRemainingTotal < 0 ? '#c62828' : '#e65100' },
-                ].map(c => (
-                    <Box key={c.label} sx={{ flex: '1 1 180px', border: `1px solid ${BORDER}`, borderRadius: 2, p: 2, backgroundColor: '#fafeff' }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#777', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.label}</Typography>
-                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: c.color, mt: 0.5 }}>{c.value}</Typography>
-                    </Box>
-                ))}
-            </Box>
-
-            {/* Table */}
-            <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', tableLayout: 'auto' }}>
-                    <thead>
-                        <tr>
-                            <th style={hdrStyle({ width: 40 })}>No.</th>
-                            <th style={hdrStyle({ textAlign: 'left', minWidth: 240 })}>Description of Work</th>
-                            <th style={hdrStyle({ width: 60 })}>Unit</th>
-                            <th style={hdrStyle({ width: 90 })}>Contract Qty</th>
-                            <th style={hdrStyle({ width: 90 })}>Completed Qty</th>
-                            <th style={hdrStyle({ width: 90 })}>Remaining Qty</th>
-                            <th style={hdrStyle({ width: 110 })}>Unit Price</th>
-                            <th style={hdrStyle({ width: 120 })}>Contract Total</th>
-                            <th style={hdrStyle({ width: 120 })}>Completed Total</th>
-                            <th style={hdrStyle({ width: 120 })}>Remaining Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sections.map(sect => {
-                            const subs = subsectionsBySection.get(String(sect._id)) ?? [];
-                            const sectionItems = rows.filter(r => r.sectionName === sect.name);
-
-                            if (sectionItems.length === 0 && subs.length === 0) return null;
-
-                            const sectionContractTotal = sectionItems.reduce((s, r) => s + (r.cost ?? 0), 0);
-                            const sectionActTotal = acts.length > 0
-                                ? sectionItems.reduce((s, r) => {
-                                    return s + acts.reduce((as, _, ai) => {
-                                        const v = actsData[ai]?.[String(r._id)];
-                                        return as + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-                                    }, 0);
-                                }, 0)
-                                : 0;
-
-                            return (
-                                <>
-                                    {/* Section header */}
-                                    <tr key={`sect-${sect._id}`} style={{ backgroundColor: '#e6f7f9' }}>
-                                        <td colSpan={10} style={cellStyle({ fontWeight: 700, fontSize: '0.82rem', paddingLeft: 10, letterSpacing: '0.03em', color: '#111' })}>
-                                            {sect.name}
-                                        </td>
-                                    </tr>
-
-                                    {subs.length > 0 ? subs.map(sub => {
-                                        const subItems = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sect.name);
-                                        if (subItems.length === 0) return null;
-
-                                        return (
-                                            <>
-                                                <tr key={`sub-${sub._id}`} style={{ backgroundColor: '#f0fbfc' }}>
-                                                    <td colSpan={10} style={cellStyle({ fontStyle: 'italic', paddingLeft: 20, color: '#444', fontSize: '0.77rem' })}>
-                                                        {sub.name}
-                                                    </td>
-                                                </tr>
-                                                {subItems.map(row => {
-                                                    counter++;
-                                                    const contractQty = row.quantity ?? 0;
-                                                    const unitPrice = row.changableAveragePrice ?? 0;
-                                                    const contractTotal = row.cost ?? 0;
-                                                    const completedQty = acts.reduce((s, _, ai) =>
-                                                        s + parseNum(actsData[ai]?.[String(row._id)]?.quantity ?? '0'), 0);
-                                                    const completedTotal = acts.reduce((s, _, ai) => {
-                                                        const v = actsData[ai]?.[String(row._id)];
-                                                        return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-                                                    }, 0);
-                                                    const remainingQty = contractQty - completedQty;
-                                                    const remainingTotal = contractTotal - completedTotal;
-                                                    const isFullyDone = remainingQty <= 0;
-
-                                                    return (
-                                                        <tr key={row._id} style={{ backgroundColor: isFullyDone ? '#f9fff9' : '#fff', opacity: isFullyDone ? 0.6 : 1 }}>
-                                                            <td style={cellStyle({ textAlign: 'center', color: '#888' })}>{counter}</td>
-                                                            <td style={cellStyle({ paddingLeft: 28 })}>{row.laborOfferItemName || row.catalogName}</td>
-                                                            <td style={cellStyle({ textAlign: 'center' })}>{row.unitSymbol}</td>
-                                                            <td style={cellStyle({ textAlign: 'right' })}>{contractQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                                                            <td style={cellStyle({ textAlign: 'right', color: completedQty > 0 ? '#2e7d32' : '#aaa' })}>{completedQty > 0 ? completedQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                                                            <td style={cellStyle({ textAlign: 'right', fontWeight: remainingQty > 0 ? 600 : 400, color: remainingQty < 0 ? '#c62828' : remainingQty === 0 ? '#aaa' : '#111' })}>{remainingQty !== 0 ? remainingQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                                                            <td style={cellStyle({ textAlign: 'right' })}>{unitPrice > 0 ? formatCurrencyRounded(unitPrice) : '—'}</td>
-                                                            <td style={cellStyle({ textAlign: 'right' })}>{contractTotal > 0 ? formatCurrencyRounded(contractTotal) : '—'}</td>
-                                                            <td style={cellStyle({ textAlign: 'right', color: completedTotal > 0 ? '#2e7d32' : '#aaa' })}>{completedTotal > 0 ? formatCurrencyRounded(completedTotal) : '—'}</td>
-                                                            <td style={cellStyle({ textAlign: 'right', fontWeight: remainingTotal > 0 ? 600 : 400, color: remainingTotal < 0 ? '#c62828' : remainingTotal === 0 ? '#aaa' : '#e65100' })}>{remainingTotal > 0 ? formatCurrencyRounded(remainingTotal) : '—'}</td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </>
-                                        );
-                                    }) : sectionItems.map(row => {
-                                        counter++;
-                                        const contractQty = row.quantity ?? 0;
-                                        const unitPrice = row.changableAveragePrice ?? 0;
-                                        const contractTotal = row.cost ?? 0;
-                                        const completedQty = acts.reduce((s, _, ai) =>
-                                            s + parseNum(actsData[ai]?.[String(row._id)]?.quantity ?? '0'), 0);
-                                        const completedTotal = acts.reduce((s, _, ai) => {
-                                            const v = actsData[ai]?.[String(row._id)];
-                                            return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
-                                        }, 0);
-                                        const remainingQty = contractQty - completedQty;
-                                        const remainingTotal = contractTotal - completedTotal;
-                                        const isFullyDone = remainingQty <= 0;
-
-                                        return (
-                                            <tr key={row._id} style={{ backgroundColor: isFullyDone ? '#f9fff9' : '#fff', opacity: isFullyDone ? 0.6 : 1 }}>
-                                                <td style={cellStyle({ textAlign: 'center', color: '#888' })}>{counter}</td>
-                                                <td style={cellStyle({ paddingLeft: 18 })}>{row.laborOfferItemName || row.catalogName}</td>
-                                                <td style={cellStyle({ textAlign: 'center' })}>{row.unitSymbol}</td>
-                                                <td style={cellStyle({ textAlign: 'right' })}>{contractQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                                                <td style={cellStyle({ textAlign: 'right', color: completedQty > 0 ? '#2e7d32' : '#aaa' })}>{completedQty > 0 ? completedQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                                                <td style={cellStyle({ textAlign: 'right', fontWeight: remainingQty > 0 ? 600 : 400, color: remainingQty < 0 ? '#c62828' : remainingQty === 0 ? '#aaa' : '#111' })}>{remainingQty !== 0 ? remainingQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                                                <td style={cellStyle({ textAlign: 'right' })}>{unitPrice > 0 ? formatCurrencyRounded(unitPrice) : '—'}</td>
-                                                <td style={cellStyle({ textAlign: 'right' })}>{contractTotal > 0 ? formatCurrencyRounded(contractTotal) : '—'}</td>
-                                                <td style={cellStyle({ textAlign: 'right', color: completedTotal > 0 ? '#2e7d32' : '#aaa' })}>{completedTotal > 0 ? formatCurrencyRounded(completedTotal) : '—'}</td>
-                                                <td style={cellStyle({ textAlign: 'right', fontWeight: remainingTotal > 0 ? 600 : 400, color: remainingTotal < 0 ? '#c62828' : remainingTotal === 0 ? '#aaa' : '#e65100' })}>{remainingTotal > 0 ? formatCurrencyRounded(remainingTotal) : '—'}</td>
-                                            </tr>
-                                        );
-                                    })}
-
-                                    {/* Section subtotal */}
-                                    <tr style={{ backgroundColor: '#eaf8fa' }}>
-                                        <td colSpan={7} style={cellStyle({ fontWeight: 700, textAlign: 'right', fontSize: '0.78rem', paddingRight: 10 })}>Subtotal</td>
-                                        <td style={cellStyle({ fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionContractTotal)} AMD</td>
-                                        <td style={cellStyle({ fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap', color: '#2e7d32' })}>{sectionActTotal > 0 ? `${formatCurrencyRounded(sectionActTotal)} AMD` : '—'}</td>
-                                        <td style={cellStyle({ fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap', color: '#e65100' })}>{sectionContractTotal - sectionActTotal > 0 ? `${formatCurrencyRounded(sectionContractTotal - sectionActTotal)} AMD` : '—'}</td>
-                                    </tr>
-                                </>
-                            );
-                        })}
-
-                        {/* Grand total */}
-                        <tr style={{ backgroundColor: '#d6f4f7' }}>
-                            <td colSpan={7} style={cellStyle({ fontWeight: 800, textAlign: 'right', fontSize: '0.82rem', paddingRight: 10, borderTop: `2px solid ${mainPrimaryColor}` })}>Total</td>
-                            <td style={cellStyle({ fontWeight: 800, textAlign: 'right', whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(grandContractTotal)} AMD</td>
-                            <td style={cellStyle({ fontWeight: 800, textAlign: 'right', whiteSpace: 'nowrap', color: '#2e7d32', borderTop: `2px solid ${mainPrimaryColor}` })}>{grandActTotal > 0 ? `${formatCurrencyRounded(grandActTotal)} AMD` : '—'}</td>
-                            <td style={cellStyle({ fontWeight: 800, textAlign: 'right', whiteSpace: 'nowrap', color: '#e65100', borderTop: `2px solid ${mainPrimaryColor}` })}>{grandRemainingTotal > 0 ? `${formatCurrencyRounded(grandRemainingTotal)} AMD` : '—'}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </Box>
-
-            <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    .print-only { display: block !important; }
-                    body { margin: 0; }
-                }
-            `}</style>
+            <Box sx={{ overflowX: 'auto' }} dangerouslySetInnerHTML={{ __html: tableHtml }} />
         </Box>
     );
 }
