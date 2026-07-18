@@ -3,14 +3,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     Box, Button, CircularProgress, InputBase,
-    Typography,
+    Typography, Dialog, DialogTitle, DialogContent, DialogActions,
+    TextField, IconButton, Stack,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 
 interface PerformanceActRecord {
     _id: string;
@@ -18,6 +21,7 @@ interface PerformanceActRecord {
     estimateName: string;
     acts: number[];
     actsData: ActData[];
+    actsDates?: { from: string; to: string }[];
     createdAt: string;
 }
 
@@ -53,14 +57,14 @@ interface Subsection {
 interface ActValues { unitPrice: string; quantity: string; }
 type ActData = Record<string, ActValues>;
 
-// Base column definitions (index → default width in px)
 const BASE_COLS = [
-    { key: 'no',    defaultW: 52  },
-    { key: 'desc',  defaultW: 500 },
-    { key: 'unit',  defaultW: 72  },
-    { key: 'qty',   defaultW: 90  },
-    { key: 'up',    defaultW: 100 },
-    { key: 'total', defaultW: 110 },
+    { key: 'no',       defaultW: 52  },
+    { key: 'desc',     defaultW: 500 },
+    { key: 'unit',     defaultW: 72  },
+    { key: 'qty',      defaultW: 90  },
+    { key: 'up',       defaultW: 100 },
+    { key: 'total',    defaultW: 110 },
+    { key: 'complete', defaultW: 80  },
 ];
 const ACT_COL_KEYS = ['up', 'qty', 'total'];
 const ACT_COL_DEFAULTS = [100, 90, 110];
@@ -104,22 +108,11 @@ const td = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     ...extra,
 });
 
-// Resize handle rendered inside each <th>
 function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => void }) {
     return (
         <div
             onMouseDown={onDragStart}
-            style={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 5,
-                cursor: 'col-resize',
-                zIndex: 10,
-                backgroundColor: 'transparent',
-                transition: 'background-color 0.15s',
-            }}
+            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', zIndex: 10, backgroundColor: 'transparent', transition: 'background-color 0.15s' }}
             onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(0,171,190,0.35)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent'; }}
         />
@@ -142,27 +135,26 @@ export default function PerformanceActTable({
 
     const [acts, setActs] = useState<number[]>(record.acts ?? []);
     const [actsData, setActsData] = useState<ActData[]>(record.actsData ?? []);
+    const [actsDates, setActsDates] = useState<{ from: string; to: string }[]>(record.actsDates ?? []);
+
+    const [dateRangeOpen, setDateRangeOpen] = useState(false);
+    const [pendingFrom, setPendingFrom] = useState('');
+    const [pendingTo, setPendingTo] = useState('');
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Column widths: base cols first, then 3 per act
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
-
-    // Drag-to-scroll
     const scrollRef = useRef<HTMLDivElement>(null);
     const isScrollDragging = useRef(false);
     const scrollDragStart = useRef({ x: 0, scrollLeft: 0 });
-
-    // Column resize
     const resizingCol = useRef<{ colIdx: number; startX: number; startW: number } | null>(null);
 
     const estimateId = record.estimateId;
 
-    const saveToDb = useCallback((newActs: number[], newActsData: ActData[]) => {
+    const saveToDb = useCallback((newActs: number[], newActsData: ActData[], newActsDates: { from: string; to: string }[]) => {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(async () => {
-            await Api.requestSession({ command: 'performance/update', args: { id: record._id }, json: { acts: newActs, actsData: newActsData } });
-            onUpdate({ ...record, acts: newActs, actsData: newActsData });
+            await Api.requestSession({ command: 'performance/update', args: { id: record._id }, json: { acts: newActs, actsData: newActsData, actsDates: newActsDates } });
+            onUpdate({ ...record, acts: newActs, actsData: newActsData, actsDates: newActsDates });
         }, 800);
     }, [record, onUpdate]);
 
@@ -188,7 +180,6 @@ export default function PerformanceActTable({
             .finally(() => setLoading(false));
     }, [estimateId]);
 
-    // Column resize global listeners
     useEffect(() => {
         const onMove = (e: MouseEvent) => {
             if (!resizingCol.current) return;
@@ -210,19 +201,43 @@ export default function PerformanceActTable({
         document.body.style.userSelect = 'none';
     }, [colWidths]);
 
-    const handleAddAct = useCallback((currentRows: LaborRow[]) => {
+    const handleAddAct = useCallback((currentRows: LaborRow[], dateFrom: string, dateTo: string) => {
         const next = acts.length + 1;
         const newActs = [...acts, next];
         const prefilled: ActData = {};
         for (const row of currentRows) {
-            prefilled[String(row._id)] = { unitPrice: String(row.changableAveragePrice ?? ''), quantity: '0' };
+            prefilled[String(row._id)] = { unitPrice: String(row.changableAveragePrice ?? ''), quantity: '' };
         }
         const newActsData = [...actsData, prefilled];
+        const newActsDates = [...actsDates, { from: dateFrom, to: dateTo }];
         setActs(newActs);
         setActsData(newActsData);
+        setActsDates(newActsDates);
         setColWidths(prev => [...prev, ...ACT_COL_DEFAULTS]);
-        saveToDb(newActs, newActsData);
-    }, [acts, actsData, saveToDb]);
+        saveToDb(newActs, newActsData, newActsDates);
+    }, [acts, actsData, actsDates, saveToDb]);
+
+    const handleDeleteAct = useCallback((actIdx: number) => {
+        const newActs = acts.filter((_, i) => i !== actIdx).map((_, i) => i + 1);
+        const newActsData = actsData.filter((_, i) => i !== actIdx);
+        const newActsDates = actsDates.filter((_, i) => i !== actIdx);
+        setActs(newActs);
+        setActsData(newActsData);
+        setActsDates(newActsDates);
+        setColWidths(prev => {
+            const copy = [...prev];
+            copy.splice(BASE_COLS.length + actIdx * 3, 3);
+            return copy;
+        });
+        saveToDb(newActs, newActsData, newActsDates);
+    }, [acts, actsData, actsDates, saveToDb]);
+
+    const handleConfirmDate = useCallback(() => {
+        setDateRangeOpen(false);
+        handleAddAct(rows, pendingFrom, pendingTo);
+        setPendingFrom('');
+        setPendingTo('');
+    }, [handleAddAct, rows, pendingFrom, pendingTo]);
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -230,11 +245,10 @@ export default function PerformanceActTable({
         const BASE_CSS = 'border:1px solid #ccc;padding:5px 8px;';
         const HDR_CSS = 'border:1px solid #ccc;padding:6px 8px;font-weight:bold;';
 
-        const TOTAL_COLS = 12; // No., Desc, Unit + 3 groups × 3 cols
+        const TOTAL_COLS = 12;
         const lastActIdx = acts.length - 1;
         const actNum = acts.length > 0 ? acts[lastActIdx] : 1;
 
-        // Per-row group computations (all use contract unit price as per reference)
         const getFactQty = (rowId: string): number => {
             if (acts.length <= 1) return 0;
             let q = 0;
@@ -244,31 +258,24 @@ export default function PerformanceActTable({
         const getCurQty = (rowId: string): number =>
             acts.length === 0 ? 0 : parseNum(actsData[lastActIdx]?.[rowId]?.quantity ?? '0');
 
-        const G1 = '#F2F2F2'; // Contract — light grey (also used for general headers)
-        const G2 = '#E6F0FA'; // Factually Completed — pastel blue
-        const G3 = '#E2EFDA'; // Current Performance — pastel green
-        const G1D = '#FFFFFF'; // Contract data rows — white
-        const G2D = '#FFFFFF'; // Factually data rows — white
-        const G3D = '#FFFFFF'; // Current data rows — white
+        const G1 = '#F2F2F2';
+        const G2 = '#E6F0FA';
+        const G3 = '#E2EFDA';
+        const G1D = '#FFFFFF';
+        const G2D = '#FFFFFF';
+        const G3D = '#FFFFFF';
 
         let html = `<table border="1" ${S('border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;')}>`;
-
-        // Title row
         html += `<tr><td colspan="${TOTAL_COLS}" ${S(`${HDR_CSS}text-align:center;font-size:14px;background:${G1};`)}>${esc(`${t('Performance Act').toUpperCase()} N${actNum}`)}</td></tr>`;
         html += `<tr><td colspan="${TOTAL_COLS}" ${S(BASE_CSS)}>&nbsp;</td></tr>`;
-
-        // Header row 1: 3 fixed (rowspan=2) + 3 group labels (colspan=3)
         html += '<tr>';
         html += `<th rowspan="2" ${S(`${HDR_CSS}text-align:center;vertical-align:middle;background:${G1};`)}>Հ/հ</th>`;
         html += `<th rowspan="2" ${S(`${HDR_CSS}vertical-align:middle;background:${G1};`)}>${esc(t('Description of Work'))}</th>`;
         html += `<th rowspan="2" ${S(`${HDR_CSS}text-align:center;vertical-align:middle;background:${G1};`)}>Չ/մ</th>`;
-        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G1};`)}>Ըստ պայմանագրի</th>`;
-        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G2};`)}>Փաստացի Կատարված</th>`;
-        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G3};`)}>Ընթացիկ կատարողական</th>`;
-        html += '</tr>';
-
-        // Header row 2: sub-column labels per group
-        html += '<tr>';
+        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G1};`)}>Ըստ պայմանagри</th>`;
+        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G2};`)}>Փաstacи Катарван</th>`;
+        html += `<th colspan="3" ${S(`${HDR_CSS}text-align:center;background:${G3};`)}>Ynamcig катарogakan</th>`;
+        html += '</tr><tr>';
         for (const bg of [G1, G2, G3]) {
             html += `<th ${S(`${HDR_CSS}text-align:right;background:${bg};`)}>${esc(t('Quantity'))}</th>`;
             html += `<th ${S(`${HDR_CSS}text-align:right;background:${bg};`)}>${esc(t('Unit Price'))}</th>`;
@@ -276,14 +283,12 @@ export default function PerformanceActTable({
         }
         html += '</tr>';
 
-        // 3 value cells for a data row (uses contract unit price for all groups)
         const dataGroup = (qty: number, up: number, bg: string) => {
             const tot = qty * up;
             return `<td ${S(`${BASE_CSS}text-align:right;background:${bg};`)}>${qty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
                 `<td ${S(`${BASE_CSS}text-align:right;background:${bg};`)}>${formatCurrencyRounded(up)}</td>` +
                 `<td ${S(`${BASE_CSS}text-align:right;font-weight:bold;background:${bg};`)}>${formatCurrencyRounded(tot)}</td>`;
         };
-        // 3 summary cells for subtotal/total rows (unit price blank, qty+total bold)
         const sumGroup = (qty: number, total: number, bg: string) =>
             `<td ${S(`${BASE_CSS}text-align:right;font-weight:bold;background:${bg};`)}>${qty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
             `<td ${S(`${BASE_CSS}background:${bg};`)}></td>` +
@@ -296,15 +301,12 @@ export default function PerformanceActTable({
         }
 
         let counter = 0;
-
         for (let si = 0; si < sections.length; si++) {
             const section = sections[si];
             const sectionItems = rows.filter(r => r.sectionName === section.name);
             if (sectionItems.length === 0) continue;
             const subs = subsMap.get(String(section._id)) ?? [];
-
             html += `<tr><td colspan="${TOTAL_COLS}" ${S(`${BASE_CSS}font-weight:bold;font-size:13px;background:${G1};text-align:center;`)}>${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
-
             const renderRow = (row: LaborRow, idx: number) => {
                 const up = row.changableAveragePrice ?? 0;
                 return `<tr>` +
@@ -316,7 +318,6 @@ export default function PerformanceActTable({
                     dataGroup(getCurQty(String(row._id)), up, G3D) +
                     `</tr>`;
             };
-
             if (subs.length > 0) {
                 for (let subI = 0; subI < subs.length; subI++) {
                     const sub = subs[subI];
@@ -328,35 +329,24 @@ export default function PerformanceActTable({
             } else {
                 for (const row of sectionItems) html += renderRow(row, ++counter);
             }
-
-            // Section subtotal
             const secCQty = sectionItems.reduce((s, r) => s + (r.quantity ?? 0), 0);
             const secCTotal = sectionItems.reduce((s, r) => s + (r.cost ?? 0), 0);
             const secFQty = sectionItems.reduce((s, r) => s + getFactQty(String(r._id)), 0);
             const secFTotal = sectionItems.reduce((s, r) => s + getFactQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
             const secCurQty = sectionItems.reduce((s, r) => s + getCurQty(String(r._id)), 0);
             const secCurTotal = sectionItems.reduce((s, r) => s + getCurQty(String(r._id)) * (r.changableAveragePrice ?? 0), 0);
-
             html += `<tr>` +
                 `<td colspan="3" ${S(`${BASE_CSS}font-weight:bold;text-align:right;background:${G1};`)}>${esc(t('Subtotal'))}</td>` +
-                sumGroup(secCQty, secCTotal, G1) +
-                sumGroup(secFQty, secFTotal, G2) +
-                sumGroup(secCurQty, secCurTotal, G3) +
+                sumGroup(secCQty, secCTotal, G1) + sumGroup(secFQty, secFTotal, G2) + sumGroup(secCurQty, secCurTotal, G3) +
                 `</tr>`;
         }
-
-        // Grand total — label only, no numeric values
-        html += `<tr>` +
-            `<td colspan="${TOTAL_COLS}" ${S(`${BASE_CSS}font-weight:bold;text-align:left;background:${G1};border-top:2px solid #999;`)}>${esc(t('Total'))}</td>` +
-            `</tr></table>`;
+        html += `<tr><td colspan="${TOTAL_COLS}" ${S(`${BASE_CSS}font-weight:bold;text-align:left;background:${G1};border-top:2px solid #999;`)}>${esc(t('Total'))}</td></tr></table>`;
 
         const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
         const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = 'performance-act.xls';
-        a.click();
+        a.href = url; a.download = 'performance-act.xls'; a.click();
         URL.revokeObjectURL(url);
     }, [rows, sections, subsections, acts, actsData, t]);
 
@@ -364,19 +354,17 @@ export default function PerformanceActTable({
         setActsData(prev => {
             const copy = [...prev];
             copy[actIdx] = { ...copy[actIdx], [itemId]: { ...copy[actIdx]?.[itemId], [field]: value } };
-            saveToDb(acts, copy);
+            saveToDb(acts, copy, actsDates);
             return copy;
         });
-    }, [acts, saveToDb]);
+    }, [acts, actsDates, saveToDb]);
 
-    // Auto-scroll to right edge when a new ACT is added
     useEffect(() => {
         if (acts.length > 0 && scrollRef.current) {
             scrollRef.current.scrollTo({ left: scrollRef.current.scrollWidth, behavior: 'smooth' });
         }
     }, [acts.length]);
 
-    // Scroll drag
     const onMouseDown = useCallback((e: React.MouseEvent) => {
         if (!scrollRef.current || resizingCol.current) return;
         isScrollDragging.current = true;
@@ -407,43 +395,59 @@ export default function PerformanceActTable({
 
     const totalCols = BASE_COLS.length + acts.length * ACT_COL_KEYS.length;
     let itemCounter = 0;
-
     const actCellBorderLeft: React.CSSProperties = { borderLeft: `2px solid #b2e8ed` };
 
-    const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => (
-        <tr key={String(row._id)} style={{ backgroundColor: counter % 2 === 0 ? '#fafeff' : '#fff' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = counter % 2 === 0 ? '#fafeff' : '#fff'; }}
-        >
-            <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
-            <td style={td({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
-                {row.laborOfferItemName || row.catalogName}
-            </td>
-            <td style={td({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
-            <td style={td({ textAlign: 'right' })}>{Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-            <td style={td({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
-            <td style={td({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
-            {acts.map((_, actIdx) => {
-                const vals = actsData[actIdx]?.[String(row._id)];
-                const actTotal = parseNum(vals?.unitPrice ?? '0') * parseNum(vals?.quantity ?? '0');
-                return (
-                    <>
-                        <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', padding: '3px 6px' })}>
-                            <InputBase value={vals?.unitPrice ?? ''} onChange={e => handleActValue(actIdx, String(row._id), 'unitPrice', e.target.value)} placeholder='0'
-                                sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
-                                onMouseDown={e => e.stopPropagation()} />
-                        </td>
-                        <td key={`${actIdx}-qty`} style={td({ textAlign: 'right', padding: '3px 6px' })}>
-                            <InputBase value={vals?.quantity ?? ''} onChange={e => handleActValue(actIdx, String(row._id), 'quantity', e.target.value)} placeholder='0'
-                                sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
-                                onMouseDown={e => e.stopPropagation()} />
-                        </td>
-                        <td key={`${actIdx}-tot`} style={td({ textAlign: 'right', fontWeight: 600, color: mainPrimaryColor })}>{formatCurrencyRounded(actTotal)}</td>
-                    </>
-                );
-            })}
-        </tr>
-    );
+    const getCompletePct = (rowId: string, contractQty: number): number => {
+        if (contractQty <= 0) return 0;
+        const totalActQty = acts.reduce((s, _, ai) => s + parseNum(actsData[ai]?.[rowId]?.quantity ?? '0'), 0);
+        return Math.round((totalActQty / contractQty) * 100);
+    };
+
+    const pctColor = (pct: number) => pct >= 100 ? '#2e7d32' : pct > 0 ? '#e65100' : '#aaa';
+
+    const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
+        const pct = getCompletePct(String(row._id), row.quantity ?? 0);
+        return (
+            <tr key={String(row._id)} style={{ backgroundColor: counter % 2 === 0 ? '#fafeff' : '#fff' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = counter % 2 === 0 ? '#fafeff' : '#fff'; }}
+            >
+                <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
+                <td style={td({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
+                    {row.laborOfferItemName || row.catalogName}
+                </td>
+                <td style={td({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
+                <td style={td({ textAlign: 'right' })}>{Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                <td style={td({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
+                <td style={td({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
+                <td style={td({ textAlign: 'center', fontWeight: 600, color: pctColor(pct) })}>
+                    {acts.length > 0 ? `${pct}%` : ''}
+                </td>
+                {acts.map((_, actIdx) => {
+                    const vals = actsData[actIdx]?.[String(row._id)];
+                    const actTotal = parseNum(vals?.unitPrice ?? '0') * parseNum(vals?.quantity ?? '0');
+                    const qtyVal = vals?.quantity ?? '';
+                    return (
+                        <>
+                            <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', padding: '3px 6px' })}>
+                                <InputBase value={vals?.unitPrice ?? ''} onChange={e => handleActValue(actIdx, String(row._id), 'unitPrice', e.target.value)} placeholder='0'
+                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
+                                    onMouseDown={e => e.stopPropagation()} />
+                            </td>
+                            <td key={`${actIdx}-qty`} style={td({ textAlign: 'right', padding: '3px 6px' })}>
+                                <InputBase value={qtyVal} onChange={e => handleActValue(actIdx, String(row._id), 'quantity', e.target.value)} placeholder='0'
+                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
+                                    onMouseDown={e => e.stopPropagation()} />
+                            </td>
+                            <td key={`${actIdx}-tot`} style={td({ textAlign: 'right', fontWeight: 600, color: mainPrimaryColor })}>{actTotal > 0 ? formatCurrencyRounded(actTotal) : ''}</td>
+                        </>
+                    );
+                })}
+            </tr>
+        );
+    };
+
+    const datesValid = pendingFrom && pendingTo && pendingFrom <= pendingTo;
 
     return (
         <Box sx={{ mb: 4 }}>
@@ -452,11 +456,38 @@ export default function PerformanceActTable({
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                     {t('Export')}
                 </Button>
-                <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={() => handleAddAct(rows)}
+                <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={() => { setPendingFrom(''); setPendingTo(''); setDateRangeOpen(true); }}
                     sx={{ borderRadius: '20px', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}>
                     {t('Add Performance')}
                 </Button>
             </Box>
+
+            {/* Date range dialog */}
+            <Dialog open={dateRangeOpen} onClose={() => setDateRangeOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+                <DialogTitle sx={{ pb: 1 }}>
+                    <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
+                        <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
+                        <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
+                            {t('Choose Date Range')}
+                        </Typography>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent sx={{ pt: 2, pb: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 2, pt: 1 }}>
+                        <TextField label={t('From')} type='date' value={pendingFrom} onChange={e => setPendingFrom(e.target.value)}
+                            InputLabelProps={{ shrink: true }} fullWidth />
+                        <TextField label={t('To')} type='date' value={pendingTo} onChange={e => setPendingTo(e.target.value)}
+                            InputLabelProps={{ shrink: true }} inputProps={{ min: pendingFrom }} fullWidth />
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+                    <Button onClick={() => setDateRangeOpen(false)} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>{t('Cancel')}</Button>
+                    <Button variant='contained' disabled={!datesValid} onClick={handleConfirmDate}
+                        sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor }}>
+                        {t('Confirm')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: acts.length > 0 ? 'grab' : 'default' }}>
@@ -465,23 +496,35 @@ export default function PerformanceActTable({
                         {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                     </colgroup>
                     <thead>
-                        {/* Row 1: base headers (rowSpan=2 when acts exist) + ACT group labels */}
                         <tr>
                             {BASE_COLS.map((col, i) => (
                                 <th key={col.key} rowSpan={acts.length > 0 ? 2 : 1}
                                     style={th({ textAlign: i === 0 ? 'center' : i >= 3 ? 'right' : 'left', verticalAlign: 'middle' })}>
-                                    {i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : t('Total')}
+                                    {i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : i === 5 ? t('Total') : t('Complete')}
                                     <ResizeHandle onDragStart={e => startResize(i, e)} />
                                 </th>
                             ))}
                             {acts.map((num, ai) => (
                                 <th key={num} colSpan={3}
                                     style={th({ textAlign: 'center', backgroundColor: '#e6f7f9', borderLeft: '2px solid #b2e8ed', verticalAlign: 'middle' })}>
-                                    {t('ACT')}-{num}
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                        {t('ACT')}-{num}
+                                        {actsDates[ai] && (
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#666', marginLeft: 4 }}>
+                                                {actsDates[ai].from} – {actsDates[ai].to}
+                                            </span>
+                                        )}
+                                        <span
+                                            title={t('Delete ACT')}
+                                            onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
+                                            style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, marginLeft: 2, display: 'inline-flex', alignItems: 'center' }}
+                                            onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
+                                            onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
+                                        >×</span>
+                                    </span>
                                 </th>
                             ))}
                         </tr>
-                        {/* Row 2: ACT sub-headers */}
                         {acts.length > 0 && (
                             <tr>
                                 {acts.map((num, ai) => {
@@ -503,6 +546,9 @@ export default function PerformanceActTable({
                             if (sectionItems.length === 0) return null;
                             const subs = subsectionsBySection.get(String(section._id)) ?? [];
                             const sectionTotal = sectionItems.reduce((sum, r) => sum + (r.cost ?? 0), 0);
+                            const secContractQty = sectionItems.reduce((s, r) => s + (r.quantity ?? 0), 0);
+                            const secTotalActQty = acts.reduce((s, _, ai) => s + sectionItems.reduce((sum, r) => sum + parseNum(actsData[ai]?.[String(r._id)]?.quantity ?? '0'), 0), 0);
+                            const secPct = secContractQty > 0 ? Math.round((secTotalActQty / secContractQty) * 100) : 0;
 
                             return (
                                 <>
@@ -533,6 +579,7 @@ export default function PerformanceActTable({
                                     <tr style={{ backgroundColor: SUB_TOTAL_BG }}>
                                         <td colSpan={5} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
                                         <td style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        <td style={td({ textAlign: 'center', fontWeight: 700, color: pctColor(secPct) })}>{acts.length > 0 ? `${secPct}%` : ''}</td>
                                         {acts.map((_, actIdx) => {
                                             const actQtySum = sectionItems.reduce((s, r) => s + parseNum(actsData[actIdx]?.[String(r._id)]?.quantity ?? '0'), 0);
                                             const actTotalSum = sectionItems.reduce((s, r) => {
@@ -542,8 +589,8 @@ export default function PerformanceActTable({
                                             return (
                                                 <>
                                                     <td key={`sub-${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', color: '#00818f' })}></td>
-                                                    <td key={`sub-${actIdx}-qty`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{actQtySum.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                                                    <td key={`sub-${actIdx}-tot`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(actTotalSum)} AMD</td>
+                                                    <td key={`sub-${actIdx}-qty`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{actQtySum > 0 ? actQtySum.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                                                    <td key={`sub-${actIdx}-tot`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{actTotalSum > 0 ? `${formatCurrencyRounded(actTotalSum)} AMD` : ''}</td>
                                                 </>
                                             );
                                         })}
