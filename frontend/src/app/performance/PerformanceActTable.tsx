@@ -516,7 +516,7 @@ export default function PerformanceActTable({
                 </Button>
                 <Button variant='outlined' size='small'
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                    Մնացordаyin հашварk
+                    Մնացordаyin հашварк
                 </Button>
                 <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
