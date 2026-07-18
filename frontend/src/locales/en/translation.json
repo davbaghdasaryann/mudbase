@@ -205,7 +205,7 @@
   "No Performance Acts created yet": "No Performance Acts created yet",
   "Performance Act": "Performance Act",
   "Add Performance": "Add Performance",
-  "ACT": "ACT",
+  "ACT": "Kataroughakan",
   "Subtotal": "Subtotal",
   "Description of Work": "Description of Work",
   "By Market Value": "By Market Value",
@@ -260,7 +260,6 @@
   "Payment Date": "Payment Date",
   "Package Duration": "Package Duration",
   "Expiration Date": "Expiration Date",
-  "Price": "Price",
   "No payments yet": "No payments yet",
   "Payment history will appear here": "Payment history will appear here",
   "Create Package": "Create Package",
@@ -282,5 +281,7 @@
   "Export BoQ": "Export BoQ",
   "Works Catalog": "Works Catalog",
   "Materials Catalog": "Materials Catalog",
-  "Aggregated Catalog": "Aggregated Catalog"
+  "Aggregated Catalog": "Aggregated Catalog",
+  "Performance Calculation": "Performance Calculation",
+  "Remaining": "Remaining"
 }

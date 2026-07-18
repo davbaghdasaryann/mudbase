@@ -58,13 +58,14 @@ interface ActValues { unitPrice: string; quantity: string; }
 type ActData = Record<string, ActValues>;
 
 const BASE_COLS = [
-    { key: 'no',       defaultW: 52  },
-    { key: 'desc',     defaultW: 500 },
-    { key: 'unit',     defaultW: 72  },
-    { key: 'qty',      defaultW: 90  },
-    { key: 'up',       defaultW: 100 },
-    { key: 'total',    defaultW: 110 },
-    { key: 'complete', defaultW: 80  },
+    { key: 'no',        defaultW: 52  },
+    { key: 'desc',      defaultW: 500 },
+    { key: 'unit',      defaultW: 72  },
+    { key: 'qty',       defaultW: 90  },
+    { key: 'up',        defaultW: 100 },
+    { key: 'total',     defaultW: 110 },
+    { key: 'complete',  defaultW: 80  },
+    { key: 'remaining', defaultW: 90  },
 ];
 const ACT_COL_KEYS = ['up', 'qty', 'total'];
 const ACT_COL_DEFAULTS = [100, 90, 110];
@@ -397,16 +398,21 @@ export default function PerformanceActTable({
     let itemCounter = 0;
     const actCellBorderLeft: React.CSSProperties = { borderLeft: `2px solid #b2e8ed` };
 
+    const getTotalActQty = (rowId: string): number =>
+        acts.reduce((s, _, ai) => s + parseNum(actsData[ai]?.[rowId]?.quantity ?? '0'), 0);
+
     const getCompletePct = (rowId: string, contractQty: number): number => {
         if (contractQty <= 0) return 0;
-        const totalActQty = acts.reduce((s, _, ai) => s + parseNum(actsData[ai]?.[rowId]?.quantity ?? '0'), 0);
-        return Math.round((totalActQty / contractQty) * 100);
+        return Math.round((getTotalActQty(rowId) / contractQty) * 100);
     };
 
     const pctColor = (pct: number) => pct >= 100 ? '#2e7d32' : pct > 0 ? '#e65100' : '#aaa';
 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
-        const pct = getCompletePct(String(row._id), row.quantity ?? 0);
+        const contractQty = row.quantity ?? 0;
+        const totalActQty = getTotalActQty(String(row._id));
+        const remainingQty = contractQty - totalActQty;
+        const pct = contractQty > 0 ? Math.round((totalActQty / contractQty) * 100) : 0;
         return (
             <tr key={String(row._id)} style={{ backgroundColor: counter % 2 === 0 ? '#fafeff' : '#fff' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
@@ -417,11 +423,14 @@ export default function PerformanceActTable({
                     {row.laborOfferItemName || row.catalogName}
                 </td>
                 <td style={td({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
-                <td style={td({ textAlign: 'right' })}>{Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                <td style={td({ textAlign: 'right' })}>{Number(contractQty).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                 <td style={td({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
                 <td style={td({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
                 <td style={td({ textAlign: 'center', fontWeight: 600, color: pctColor(pct) })}>
                     {acts.length > 0 ? `${pct}%` : ''}
+                </td>
+                <td style={td({ textAlign: 'right', color: remainingQty < 0 ? '#c62828' : '#444' })}>
+                    {acts.length > 0 ? remainingQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}
                 </td>
                 {acts.map((_, actIdx) => {
                     const vals = actsData[actIdx]?.[String(row._id)];
@@ -454,7 +463,7 @@ export default function PerformanceActTable({
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mb: 1.5 }}>
                 <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                    {t('Export')}
+                    {t('Performance Calculation')}
                 </Button>
                 <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={() => { setPendingFrom(''); setPendingTo(''); setDateRangeOpen(true); }}
                     sx={{ borderRadius: '20px', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}>
@@ -500,28 +509,30 @@ export default function PerformanceActTable({
                             {BASE_COLS.map((col, i) => (
                                 <th key={col.key} rowSpan={acts.length > 0 ? 2 : 1}
                                     style={th({ textAlign: i === 0 ? 'center' : i >= 3 ? 'right' : 'left', verticalAlign: 'middle' })}>
-                                    {i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : i === 5 ? t('Total') : t('Complete')}
+                                    {i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : i === 5 ? t('Total') : i === 6 ? t('Complete') : t('Remaining')}
                                     <ResizeHandle onDragStart={e => startResize(i, e)} />
                                 </th>
                             ))}
                             {acts.map((num, ai) => (
                                 <th key={num} colSpan={3}
                                     style={th({ textAlign: 'center', backgroundColor: '#e6f7f9', borderLeft: '2px solid #b2e8ed', verticalAlign: 'middle' })}>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                        {t('ACT')}-{num}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            {t('ACT').toUpperCase()}-{num}
+                                            <span
+                                                title={t('Delete ACT')}
+                                                onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
+                                                style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, marginLeft: 2, display: 'inline-flex', alignItems: 'center' }}
+                                                onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
+                                                onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
+                                            >×</span>
+                                        </span>
                                         {actsDates[ai] && (
-                                            <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#666', marginLeft: 4 }}>
+                                            <span style={{ fontSize: '0.68rem', fontWeight: 400, color: '#555' }}>
                                                 {actsDates[ai].from} – {actsDates[ai].to}
                                             </span>
                                         )}
-                                        <span
-                                            title={t('Delete ACT')}
-                                            onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
-                                            style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, marginLeft: 2, display: 'inline-flex', alignItems: 'center' }}
-                                            onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
-                                            onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
-                                        >×</span>
-                                    </span>
+                                    </div>
                                 </th>
                             ))}
                         </tr>
@@ -580,6 +591,9 @@ export default function PerformanceActTable({
                                         <td colSpan={5} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
                                         <td style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
                                         <td style={td({ textAlign: 'center', fontWeight: 700, color: pctColor(secPct) })}>{acts.length > 0 ? `${secPct}%` : ''}</td>
+                                        <td style={td({ textAlign: 'right', fontWeight: 700, color: secContractQty - secTotalActQty < 0 ? '#c62828' : '#00818f' })}>
+                                            {acts.length > 0 ? (secContractQty - secTotalActQty).toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}
+                                        </td>
                                         {acts.map((_, actIdx) => {
                                             const actQtySum = sectionItems.reduce((s, r) => s + parseNum(actsData[actIdx]?.[String(r._id)]?.quantity ?? '0'), 0);
                                             const actTotalSum = sectionItems.reduce((s, r) => {

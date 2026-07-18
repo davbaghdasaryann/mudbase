@@ -518,7 +518,7 @@
   "No Performance Acts created yet": "Կատարողական ակտեր դեռ չկան",
   "Performance Act": "Կատարողական Ակտ",
   "Add Performance": "Ավելացնել կատարողական",
-  "ACT": "Ակտ",
+  "ACT": "Կատարողական",
   "Subtotal": "Ընդամենը",
   "Description of Work": "Աշխատանքի անվանումը",
   "No schedules created yet": "Ժամանակացույցներ դեռ չկան",
@@ -617,5 +617,7 @@
   "Works Catalog": "Աշխատանքների շտեմարան",
   "Analysis": "Վերլուծություն",
   "Subscription": "Բաժանորդագրություն",
-  "Contacts": "Կոնտակտներներ"
+  "Contacts": "Կոնտակտներներ",
+  "Performance Calculation": "Կատարողական հաշվարկման",
+  "Remaining": "Մնասորդային"
 }
