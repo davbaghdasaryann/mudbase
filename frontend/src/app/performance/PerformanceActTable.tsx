@@ -433,6 +433,8 @@ export default function PerformanceActTable({
     const totalCols = BASE_COLS.length + acts.length * ACT_COL_KEYS.length;
     let itemCounter = 0;
     const actCellBorderLeft: React.CSSProperties = { borderLeft: `2px solid #b2e8ed` };
+    const isActEditable = (actIdx: number) =>
+        editableActIndices.size > 0 ? editableActIndices.has(actIdx) : actIdx === acts.length - 1;
 
     const getTotalActQty = (rowId: string): number =>
         acts.reduce((s, _, ai) => s + parseNum(actsData[ai]?.[rowId]?.quantity ?? '0'), 0);
@@ -472,7 +474,7 @@ export default function PerformanceActTable({
                     const vals = actsData[actIdx]?.[String(row._id)];
                     const actTotal = parseNum(vals?.unitPrice ?? '0') * parseNum(vals?.quantity ?? '0');
                     const qtyVal = vals?.quantity ?? '';
-                    const isEditable = editableActIndices.has(actIdx);
+                    const isEditable = isActEditable(actIdx);
                     return (
                         <>
                             <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
@@ -564,7 +566,7 @@ export default function PerformanceActTable({
                                 );
                             })}
                             {acts.map((num, ai) => {
-                                const isEditable = editableActIndices.has(ai);
+                                const isEditable = isActEditable(ai);
                                 const actTitle = `${t('ACT').toUpperCase()}-${num}${actsDates[ai] ? ` (${actsDates[ai].from} – ${actsDates[ai].to})` : ''}`;
                                 return (
                                     <th key={num} colSpan={3} title={actTitle}
