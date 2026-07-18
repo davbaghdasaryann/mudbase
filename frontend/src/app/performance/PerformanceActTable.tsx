@@ -146,6 +146,14 @@ export default function PerformanceActTable({
     const [pendingTo, setPendingTo] = useState('');
     const [editingActDateIdx, setEditingActDateIdx] = useState<number | null>(null);
 
+    const prevActsLenRef = useRef(acts.length);
+    useEffect(() => {
+        if (acts.length > prevActsLenRef.current) {
+            setEditableActIndices(new Set([acts.length - 1]));
+        }
+        prevActsLenRef.current = acts.length;
+    }, [acts.length]);
+
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -537,10 +545,12 @@ export default function PerformanceActTable({
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: acts.length > 0 ? 'grab' : 'default' }}>
-                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: acts.length === 0 ? '100%' : colWidths.reduce((s, w) => s + w, 0) }}>
-                    <colgroup>
-                        {colWidths.map((w, i) => <col key={i} style={acts.length === 0 && i === 1 ? {} : { width: w }} />)}
-                    </colgroup>
+                <table style={{ tableLayout: acts.length === 0 ? 'auto' : 'fixed', borderCollapse: 'collapse', width: acts.length === 0 ? '100%' : colWidths.reduce((s, w) => s + w, 0) }}>
+                    {acts.length > 0 && (
+                        <colgroup>
+                            {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
+                        </colgroup>
+                    )}
                     <thead>
                         <tr>
                             {BASE_COLS.map((col, i) => {
