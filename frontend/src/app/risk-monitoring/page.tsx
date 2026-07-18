@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -8,16 +8,9 @@ import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import RiskMonitorBuilderDialog, { type RiskMonitorConfig } from './RiskMonitorBuilderDialog';
+import RiskGaugeWidget from './RiskGaugeWidget';
+import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
-
-const CARD_SX = {
-    background: 'rgba(255,255,255,0.82)',
-    backdropFilter: 'blur(18px)',
-    WebkitBackdropFilter: 'blur(18px)',
-    borderRadius: 3,
-    border: '1px solid rgba(0,171,190,0.18)',
-    boxShadow: '0 4px 24px rgba(0,171,190,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-};
 
 const outlinedCreateSx = {
     borderRadius: '25px',
@@ -30,10 +23,49 @@ const outlinedCreateSx = {
     },
 };
 
+function useLivePrice(config: RiskMonitorConfig | null): number {
+    const [price, setPrice] = useState<number>(0);
+
+    useEffect(() => {
+        if (!config) return;
+        // Use baseline as initial price — fetch live price from catalog
+        setPrice(config.baselinePrice);
+
+        const fetchPrice = async () => {
+            try {
+                if (config.dataSource === 'labor' || config.dataSource === 'materials') {
+                    const type = config.dataSource === 'labor' ? 'labor' : 'material';
+                    const data = await Api.requestSession<any>({
+                        command: `${type}/fetch_item_price`,
+                        args: { itemId: config.selectedItem._id },
+                    });
+                    if (data?.price) setPrice(data.price);
+                    else if (data?.averagePrice) setPrice(data.averagePrice);
+                } else if (config.dataSource === 'estimates' || config.dataSource === 'eci') {
+                    const data = await Api.requestSession<any>({
+                        command: 'estimate/get',
+                        args: { estimateId: config.selectedItem._id },
+                    });
+                    const p = data?.totalCostWithOtherExpenses ?? data?.totalCost;
+                    if (p) setPrice(p);
+                }
+            } catch {
+                // keep baseline if fetch fails
+            }
+        };
+
+        fetchPrice();
+    }, [config]);
+
+    return price;
+}
+
 export default function RiskMonitoringPage() {
     const { t } = useTranslation();
     const [builderOpen, setBuilderOpen] = useState(false);
     const [config, setConfig] = useState<RiskMonitorConfig | null>(null);
+
+    const currentPrice = useLivePrice(config);
 
     const handleConfirm = (cfg: RiskMonitorConfig) => {
         setConfig(cfg);
@@ -54,7 +86,7 @@ export default function RiskMonitoringPage() {
                 </Box>
             )}
 
-            {/* ── Monitoring widget (Step 4+ placeholder) ──────────────────── */}
+            {/* ── Gauge widget ─────────────────────────────────────────────── */}
             {config && (
                 <Box>
                     <Button
@@ -65,9 +97,8 @@ export default function RiskMonitoringPage() {
                     >
                         {t('Back')}
                     </Button>
-                    <Box sx={{ ...CARD_SX, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: '#bbb' }}>
-                        <MonitorHeartOutlinedIcon sx={{ fontSize: '3rem', mb: 1, opacity: 0.35 }} />
-                        <Typography sx={{ fontSize: '0.85rem' }}>{t('Risk gauge widget — coming next')}</Typography>
+                    <Box sx={{ maxWidth: 480 }}>
+                        <RiskGaugeWidget config={config} currentPrice={currentPrice} />
                     </Box>
                 </Box>
             )}
