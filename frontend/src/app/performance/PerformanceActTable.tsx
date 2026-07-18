@@ -582,7 +582,7 @@ export default function PerformanceActTable({
                                 const label = i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : i === 5 ? t('Total') : i === 6 ? t('Complete') : t('Remaining');
                                 return (
                                     <th key={col.key} rowSpan={acts.length > 0 ? 2 : 1} title={label}
-                                        style={th({ textAlign: i === 0 ? 'center' : i >= 3 ? 'right' : 'left', verticalAlign: 'middle' })}>
+                                        style={th({ textAlign: i === 1 ? 'left' : 'center', verticalAlign: 'middle' })}>
                                         {label}
                                         <ResizeHandle onDragStart={e => startResize(i, e)} />
                                     </th>
