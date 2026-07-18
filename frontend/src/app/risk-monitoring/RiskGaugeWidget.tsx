@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Box, Typography, Stack, IconButton, Tooltip } from '@mui/material';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -65,6 +65,16 @@ function arcPath(cx: number, cy: number, r: number, fromDeg: number, toDeg: numb
 
 // ─── SVG gauge ──────────────────────────────────────────────────────────────
 function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: number }) {
+    // Trigger needle animation after first paint
+    const [ready, setReady] = useState(false);
+    useEffect(() => { const id = requestAnimationFrame(() => setReady(true)); return () => cancelAnimationFrame(id); }, []);
+
+    // Unique IDs so multiple gauges on the same page don't share gradient defs
+    const uid   = useId().replace(/:/g, '');
+    const gT    = `gT${uid}`;
+    const gA    = `gA${uid}`;
+    const gR    = `gR${uid}`;
+
     const W = 360, H = 220;
     const CX = 180, CY = 165;
     const R = 130, SW = 22;
@@ -79,57 +89,98 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
     const isAlert     = currentPct > ceilingPct;
     const needleColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
 
-    const needleTip  = polarToXY(CX, CY, trackR - 8, angCurrent);
-    const needleBase = polarToXY(CX, CY, 16, angCurrent);
+    // Gradient endpoint coords follow the actual arc direction for each zone
+    const p = (ang: number) => polarToXY(CX, CY, trackR, ang);
+    const z1s = p(angStart), z1e = p(angBase);
+    const z2s = z1e,         z2e = p(angCeiling);
+    const z3s = z2e,         z3e = p(angEnd);
 
-    // Rounded terminal caps at the two arc endpoints
-    const capLeft  = polarToXY(CX, CY, trackR, angStart);
-    const capRight = polarToXY(CX, CY, trackR, angEnd);
+    const capLeft  = p(angStart);
+    const capRight = p(angEnd);
 
-    // White separator helper
+    // White separator at a zone boundary
     const sep = (ang: number) => {
-        const o = polarToXY(CX, CY, trackR + SW / 2 + 1, ang);
-        const i = polarToXY(CX, CY, trackR - SW / 2 - 1, ang);
+        const o = polarToXY(CX, CY, trackR + SW / 2 + 2, ang);
+        const i = polarToXY(CX, CY, trackR - SW / 2 - 2, ang);
         return <line key={ang} x1={i.x.toFixed(2)} y1={i.y.toFixed(2)} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
-            stroke='white' strokeWidth={3} />;
+            stroke='white' strokeWidth={3.5} strokeLinecap='round' />;
     };
 
     const pos0   = polarToXY(CX, CY, R + 20, angStart);
     const pos100 = polarToXY(CX, CY, R + 20, angBase);
     const pos130 = polarToXY(CX, CY, R + 20, angEnd);
 
+    // Needle rotation: vertical needle (90°) rotated by (90 - targetAngle) degrees clockwise
+    const needleRot = ready ? 90 - angCurrent : 90 - angStart;
+
     return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} overflow='visible'>
-            {/* Zone 1 — Teal: 0% → 100% (within baseline) */}
-            <path d={arcPath(CX, CY, trackR, angStart, angBase)}
-                fill='none' stroke={TEAL} strokeWidth={SW} strokeLinecap='butt' />
+            <defs>
+                {/* Zone 1 — teal: dark teal → bright cyan, follows arc direction */}
+                <linearGradient id={gT} x1={z1s.x.toFixed(1)} y1={z1s.y.toFixed(1)}
+                    x2={z1e.x.toFixed(1)} y2={z1e.y.toFixed(1)} gradientUnits='userSpaceOnUse'>
+                    <stop offset='0%'   stopColor='#00796B' />
+                    <stop offset='100%' stopColor='#4DD0E1' />
+                </linearGradient>
 
-            {/* Zone 2 — Orange: 100% → ceiling% (warning band) */}
+                {/* Zone 2 — amber: deep amber → light gold, follows arc direction */}
+                <linearGradient id={gA} x1={z2s.x.toFixed(1)} y1={z2s.y.toFixed(1)}
+                    x2={z2e.x.toFixed(1)} y2={z2e.y.toFixed(1)} gradientUnits='userSpaceOnUse'>
+                    <stop offset='0%'   stopColor='#E65100' />
+                    <stop offset='100%' stopColor='#FFD54F' />
+                </linearGradient>
+
+                {/* Zone 3 — red: bright red → dark crimson, follows arc direction */}
+                <linearGradient id={gR} x1={z3s.x.toFixed(1)} y1={z3s.y.toFixed(1)}
+                    x2={z3e.x.toFixed(1)} y2={z3e.y.toFixed(1)} gradientUnits='userSpaceOnUse'>
+                    <stop offset='0%'   stopColor='#EF5350' />
+                    <stop offset='100%' stopColor='#B71C1C' />
+                </linearGradient>
+            </defs>
+
+            {/* Zone 1 — teal gradient */}
+            <path d={arcPath(CX, CY, trackR, angStart, angBase)}
+                fill='none' stroke={`url(#${gT})`} strokeWidth={SW} strokeLinecap='butt' />
+
+            {/* Zone 2 — amber gradient */}
             {ceilingPct > 100 && (
                 <path d={arcPath(CX, CY, trackR, angBase, angCeiling)}
-                    fill='none' stroke={AMBER} strokeWidth={SW} strokeLinecap='butt' />
+                    fill='none' stroke={`url(#${gA})`} strokeWidth={SW} strokeLinecap='butt' />
             )}
 
-            {/* Zone 3 — Red: ceiling% → 130% (critical overrun) */}
+            {/* Zone 3 — red gradient */}
             <path d={arcPath(CX, CY, trackR, angCeiling, angEnd)}
-                fill='none' stroke={RED} strokeWidth={SW} strokeLinecap='butt' />
+                fill='none' stroke={`url(#${gR})`} strokeWidth={SW} strokeLinecap='butt' />
 
-            {/* Rounded outer terminal caps */}
-            <circle cx={capLeft.x.toFixed(2)}  cy={capLeft.y.toFixed(2)}  r={SW / 2} fill={TEAL} />
-            <circle cx={capRight.x.toFixed(2)} cy={capRight.y.toFixed(2)} r={SW / 2} fill={RED}  />
+            {/* Rounded terminal caps */}
+            <circle cx={capLeft.x.toFixed(2)}  cy={capLeft.y.toFixed(2)}  r={SW / 2} fill='#00796B' />
+            <circle cx={capRight.x.toFixed(2)} cy={capRight.y.toFixed(2)} r={SW / 2} fill='#B71C1C' />
 
             {/* White separators at zone boundaries */}
             {sep(angBase)}
             {ceilingPct > 100 && ceilingPct <= RANGE_MAX && sep(angCeiling)}
 
-            {/* Needle */}
-            <line x1={needleBase.x.toFixed(2)} y1={needleBase.y.toFixed(2)}
-                x2={needleTip.x.toFixed(2)} y2={needleTip.y.toFixed(2)}
-                stroke='white' strokeWidth={5} strokeLinecap='round' />
-            <line x1={needleBase.x.toFixed(2)} y1={needleBase.y.toFixed(2)}
-                x2={needleTip.x.toFixed(2)} y2={needleTip.y.toFixed(2)}
-                stroke={needleColor} strokeWidth={3} strokeLinecap='round' />
-            <circle cx={CX} cy={CY} r={9} fill={needleColor} stroke='white' strokeWidth={2.5} />
+            {/* Animated needle — sweeps from start (left) to current position on mount */}
+            <g style={{
+                transformOrigin: `${CX}px ${CY}px`,
+                transform: `rotate(${needleRot}deg)`,
+                transition: ready ? 'transform 1.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+            }}>
+                {/* Drop shadow */}
+                <line x1={CX} y1={CY + 6} x2={CX} y2={CY - (trackR - 10)}
+                    stroke='rgba(0,0,0,0.12)' strokeWidth={7} strokeLinecap='round' />
+                {/* White outline */}
+                <line x1={CX} y1={CY + 4} x2={CX} y2={CY - (trackR - 10)}
+                    stroke='white' strokeWidth={5} strokeLinecap='round' />
+                {/* Needle body */}
+                <line x1={CX} y1={CY + 4} x2={CX} y2={CY - (trackR - 10)}
+                    stroke={needleColor} strokeWidth={3} strokeLinecap='round' />
+            </g>
+
+            {/* Hub */}
+            <circle cx={CX} cy={CY} r={12} fill='white' />
+            <circle cx={CX} cy={CY} r={9}  fill={needleColor} />
+            <circle cx={CX} cy={CY} r={4}  fill='white' opacity={0.7} />
 
             {/* Centre readout */}
             <text x={CX} y={CY + 26} textAnchor='middle' fontSize='26' fontWeight='700'
@@ -137,9 +188,9 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
             <text x={CX} y={CY + 44} textAnchor='middle' fontSize='10' fill='#aaa'>of baseline</text>
 
             {/* Arc end labels */}
-            <text x={pos0.x.toFixed(2)} y={pos0.y.toFixed(2)} textAnchor='end' fontSize='9' fill='#999'>0%</text>
-            <text x={pos100.x.toFixed(2)} y={pos100.y.toFixed(2)} textAnchor='middle' fontSize='9' fill='#666'>100%</text>
-            <text x={pos130.x.toFixed(2)} y={pos130.y.toFixed(2)} textAnchor='start' fontSize='9' fill='#999'>{RANGE_MAX}%</text>
+            <text x={pos0.x.toFixed(2)}   y={pos0.y.toFixed(2)}   textAnchor='end'    fontSize='9' fill='#aaa'>0%</text>
+            <text x={pos100.x.toFixed(2)} y={pos100.y.toFixed(2)} textAnchor='middle' fontSize='9' fill='#777'>100%</text>
+            <text x={pos130.x.toFixed(2)} y={pos130.y.toFixed(2)} textAnchor='start'  fontSize='9' fill='#aaa'>{RANGE_MAX}%</text>
         </svg>
     );
 }
