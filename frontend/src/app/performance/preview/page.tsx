@@ -72,9 +72,9 @@ function buildTableHtml(
     html += '<th rowspan="2" ' + S(HC + 'text-align:center;vertical-align:middle;background:' + G1 + ';') + '>N</th>';
     html += '<th rowspan="2" ' + S(HC + 'vertical-align:middle;background:' + G1 + ';') + '>Աշխատանքի անվանումը</th>';
     html += '<th rowspan="2" ' + S(HC + 'text-align:center;vertical-align:middle;background:' + G1 + ';') + '>Չ/մ</th>';
-    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G1 + ';') + '>Ըst paymanagri</th>';
-    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G2 + ';') + '>Factik katarum</th>';
-    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G3 + ';') + '>ACT-' + actNum + '</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G1 + ';') + '>Ըստ պայմանագրի</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G2 + ';') + '>Փաստացի կատարված</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G3 + ';') + '>Կատարողական-' + actNum + '</th>';
     html += '</tr><tr>';
     for (const bg of [G1, G2, G3]) {
         html += '<th ' + S(HC + 'text-align:right;background:' + bg + ';') + '>Քանակ</th>';
