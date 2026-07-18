@@ -70,8 +70,8 @@ function buildTableHtml(
     html += '<th rowspan="2" ' + S(HC + 'text-align:center;vertical-align:middle;background:' + G1 + ';') + '>N</th>';
     html += '<th rowspan="2" ' + S(HC + 'vertical-align:middle;background:' + G1 + ';') + '>Աշխատանքի անվանումը</th>';
     html += '<th rowspan="2" ' + S(HC + 'text-align:center;vertical-align:middle;background:' + G1 + ';') + '>Չ/մ</th>';
-    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G1 + ';') + '>Ըeknap paymanagri</th>';
-    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G2 + ';') + '>Ավարտած</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G1 + ';') + '>Ըստ պայմանագրի</th>';
+    html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G2 + ';') + '>Ավարտված</th>';
     html += '<th colspan="3" ' + S(HC + 'text-align:center;background:' + G3 + ';') + '>Մնացորդային</th>';
     html += '</tr><tr>';
     for (const bg of [G1, G2, G3]) {
