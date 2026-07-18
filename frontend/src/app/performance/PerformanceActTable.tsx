@@ -724,7 +724,7 @@ export default function PerformanceActTable({
                             return (
                                 <>
                                     <tr key={`section-${section._id}`} style={{ backgroundColor: SEC_BG }}>
-                                        <td colSpan={totalCols} style={td({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? '2px solid #b2e8ed' : undefined })}>
+                                        <td colSpan={totalCols} style={td({ fontWeight: 700, fontSize: '0.85rem', color: '#111', paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? '2px solid #b2e8ed' : undefined })}>
                                             {sectionIdx + 1}. {section.name.toUpperCase()}
                                         </td>
                                     </tr>
