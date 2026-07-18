@@ -62,7 +62,7 @@ type ActData = Record<string, ActValues>;
 
 const BASE_COLS = [
     { key: 'no',        defaultW: 52  },
-    { key: 'desc',      defaultW: 500 },
+    { key: 'desc',      defaultW: 620 },
     { key: 'unit',      defaultW: 95  },
     { key: 'qty',       defaultW: 90  },
     { key: 'up',        defaultW: 145 },
@@ -474,13 +474,13 @@ export default function PerformanceActTable({
                     {row.laborOfferItemName || row.catalogName}
                 </td>
                 <td style={td({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
-                <td style={td({ textAlign: 'right' })}>{Number(contractQty).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                <td style={td({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
-                <td style={td({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
+                <td style={td({ textAlign: 'center' })}>{Number(contractQty).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                <td style={td({ textAlign: 'center', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
+                <td style={td({ textAlign: 'center', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
                 <td style={td({ textAlign: 'center', fontWeight: 600, color: pctColor(pct) })}>
                     {acts.length > 0 ? `${pct}%` : ''}
                 </td>
-                <td style={td({ textAlign: 'right', color: remainingQty < 0 ? '#c62828' : '#444' })}>
+                <td style={td({ textAlign: 'center', color: remainingQty < 0 ? '#c62828' : '#444' })}>
                     {acts.length > 0 ? remainingQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}
                 </td>
                 {acts.map((_, actIdx) => {
