@@ -152,7 +152,10 @@ export default function PerformanceActTable({
     const [editingActDateIdx, setEditingActDateIdx] = useState<number | null>(null);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
+    const [colWidths, setColWidths] = useState<number[]>(() => [
+        ...BASE_COLS.map(c => c.defaultW),
+        ...(record.acts ?? []).flatMap(() => ACT_COL_DEFAULTS),
+    ]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const isScrollDragging = useRef(false);
     const scrollDragStart = useRef({ x: 0, scrollLeft: 0 });
