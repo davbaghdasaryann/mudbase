@@ -524,11 +524,22 @@ export default function PerformanceActTable({
                 <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <Button variant='outlined' size='small' startIcon={<InfoOutlinedIcon />}
                         sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                        Տեղեկատվություն
+                        {t('Information')}
                     </Button>
                     <Button variant='outlined' size='small' startIcon={<CalculateOutlinedIcon />}
+                        onClick={() => {
+                            sessionStorage.setItem('remainingCalcData', JSON.stringify({
+                                recordId: record._id,
+                                estimateId: record.estimateId,
+                                estimateName: record.estimateName,
+                                acts,
+                                actsData,
+                                actsDates,
+                            }));
+                            window.open('/performance/remaining', '_blank');
+                        }}
                         sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                        Մնացորդային հաշվարկ
+                        {t('Remaining Calculation')}
                     </Button>
                     <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
                         sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>

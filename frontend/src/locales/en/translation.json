@@ -205,7 +205,7 @@
   "No Performance Acts created yet": "No Performance Acts created yet",
   "Performance Act": "Performance Act",
   "Add Performance": "Add Performance",
-  "ACT": "Kataroughakan",
+  "ACT": "ACT",
   "Subtotal": "Subtotal",
   "Description of Work": "Description of Work",
   "By Market Value": "By Market Value",
@@ -283,6 +283,8 @@
   "Materials Catalog": "Materials Catalog",
   "Aggregated Catalog": "Aggregated Catalog",
   "Performance Calculation": "Performance Calculation",
+  "Remaining Calculation": "Remaining Calculation",
+  "Information": "Information",
   "Remaining": "Remaining",
   "Complete": "Complete"
 }

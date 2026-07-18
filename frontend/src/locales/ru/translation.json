@@ -183,5 +183,11 @@
   "Export BoQ": "Экспорт ВОР",
   "Works Catalog": "Каталог работ",
   "Materials Catalog": "Каталог материалов",
-  "Aggregated Catalog": "Агрегированный каталог"
+  "Aggregated Catalog": "Агрегированный каталог",
+  "ACT": "Акт",
+  "Information": "Информация",
+  "Performance Calculation": "Расчёт выполнения",
+  "Remaining Calculation": "Остаточный расчёт",
+  "Remaining": "Остаток",
+  "Complete": "Выполнено"
 }
