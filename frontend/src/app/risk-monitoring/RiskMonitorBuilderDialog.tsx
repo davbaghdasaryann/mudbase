@@ -12,7 +12,6 @@ import StraightenIcon from '@mui/icons-material/Straighten';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import * as Api from '@/api';
 import { useTranslation } from 'react-i18next';
 import WidgetItemHierarchyPicker from '@/components/dashboard/WidgetItemHierarchyPicker';
 import WidgetEstimatesListPicker from '@/components/dashboard/WidgetEstimatesListPicker';
@@ -27,8 +26,6 @@ const CATALOG_SOURCES = [
     { id: 'estimates', labelKey: 'Estimations List',     descKey: 'Shows the list of estimates created by you',                icon: StraightenIcon,    iconColor: '#5eb8e0' },
     { id: 'eci',       labelKey: 'Aggregated Catalog',   descKey: 'Shows the list of consolidated estimates in the catalog',   icon: AssignmentIcon,    iconColor: '#9b7ec8' },
 ];
-
-interface Group { _id: string; name: string; }
 
 export interface RiskMonitorConfig {
     groupId: string;
@@ -48,8 +45,6 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
     const [step, setStep] = useState(0);
 
     // Step 0 — group
-    const [groups, setGroups] = useState<Group[]>([]);
-    const [selectedGroupId, setSelectedGroupId] = useState('');
     const [newGroupName, setNewGroupName] = useState('');
 
     // Step 1 — catalog
@@ -58,18 +53,10 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
     // Step 2 — item picker
     const [selectedItem, setSelectedItem] = useState<any>(null);
 
-    useEffect(() => {
-        Api.requestSession<Group[]>({ command: 'dashboard/groups/fetch' })
-            .then(d => setGroups(d ?? []))
-            .catch(() => {});
-    }, []);
-
-    const resolvedGroupName = selectedGroupId
-        ? (groups.find(g => g._id === selectedGroupId)?.name ?? '')
-        : newGroupName;
+    const resolvedGroupName = newGroupName;
 
     const canProceed = () => {
-        if (step === 0) return !!selectedGroupId || !!newGroupName.trim();
+        if (step === 0) return !!newGroupName.trim();
         if (step === 1) return !!dataSource;
         if (step === 2) return selectedItem != null;
         return false;
@@ -81,7 +68,7 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
     const handleFinish = () => {
         const src = CATALOG_SOURCES.find(s => s.id === dataSource);
         onConfirm({
-            groupId: selectedGroupId,
+            groupId: '',
             groupName: resolvedGroupName,
             dataSource,
             dataSourceLabel: src ? t(src.labelKey) : dataSource,
@@ -130,34 +117,14 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
                                 {t('Group Name')}
                             </Typography>
                             <TextField
-                                fullWidth size='small'
-                                placeholder={t('Enter name for new group or select existing below')}
-                                value={selectedGroupId ? (groups.find(g => g._id === selectedGroupId)?.name ?? '') : newGroupName}
-                                onChange={e => { setSelectedGroupId(''); setNewGroupName(e.target.value); }}
-                                onFocus={() => setSelectedGroupId('')}
+                                fullWidth size='small' autoFocus
+                                placeholder={t('Enter a name for this monitoring group')}
+                                value={newGroupName}
+                                onChange={e => setNewGroupName(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter' && newGroupName.trim()) handleNext(); }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#d5eef0' }, '&:hover fieldset': { borderColor: TEAL }, '&.Mui-focused fieldset': { borderColor: TEAL } } }}
                             />
                         </Box>
-                        {groups.length > 0 && (
-                            <Box>
-                                <Typography variant='subtitle2' fontWeight={600} sx={{ mb: 1 }}>
-                                    {t('Select Existing Group')}
-                                </Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                                    {groups.map(g => {
-                                        const sel = selectedGroupId === g._id;
-                                        return (
-                                            <Button key={g._id} size='small'
-                                                variant={sel ? 'contained' : 'outlined'}
-                                                onClick={() => { setSelectedGroupId(g._id); setNewGroupName(''); }}
-                                                sx={{ borderRadius: '24px', py: 0.8, px: 1.5, fontSize: '0.8125rem', textTransform: 'none', whiteSpace: 'nowrap', bgcolor: sel ? TEAL : 'transparent', color: sel ? 'white' : TEAL, borderColor: TEAL, '&:hover': { bgcolor: sel ? TEAL : 'rgba(0,171,190,0.08)', borderColor: TEAL } }}>
-                                                {g.name}
-                                            </Button>
-                                        );
-                                    })}
-                                </Box>
-                            </Box>
-                        )}
                     </Stack>
                 )}
 
