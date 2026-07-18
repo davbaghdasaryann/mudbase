@@ -68,68 +68,68 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
     const W = 360, H = 220;
     const CX = 180, CY = 165;
     const R = 130, SW = 22;
-    const trackR = R - SW / 2; // 119
+    const trackR = R - SW / 2;
 
-    const angStart   = pctToAngle(0);           // 195° — left endpoint
-    const angEnd     = pctToAngle(RANGE_MAX);   // -15° — right endpoint
-    const angBase    = pctToAngle(100);          // baseline (100%) marker
+    const angStart   = pctToAngle(0);
+    const angEnd     = pctToAngle(RANGE_MAX);
+    const angBase    = pctToAngle(100);
     const angCeiling = pctToAngle(Math.min(ceilingPct, RANGE_MAX));
     const angCurrent = pctToAngle(Math.min(currentPct, RANGE_MAX));
 
-    const isAlert  = currentPct > ceilingPct;
-    const fillColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
+    const isAlert     = currentPct > ceilingPct;
+    const needleColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
 
     const needleTip  = polarToXY(CX, CY, trackR - 8, angCurrent);
     const needleBase = polarToXY(CX, CY, 16, angCurrent);
 
-    // Fixed tick labels: "0%" at left end, "100%" above-right, "130%" at right end
+    // Rounded terminal caps at the two arc endpoints
+    const capLeft  = polarToXY(CX, CY, trackR, angStart);
+    const capRight = polarToXY(CX, CY, trackR, angEnd);
+
+    // White separator helper
+    const sep = (ang: number) => {
+        const o = polarToXY(CX, CY, trackR + SW / 2 + 1, ang);
+        const i = polarToXY(CX, CY, trackR - SW / 2 - 1, ang);
+        return <line key={ang} x1={i.x.toFixed(2)} y1={i.y.toFixed(2)} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
+            stroke='white' strokeWidth={3} />;
+    };
+
     const pos0   = polarToXY(CX, CY, R + 20, angStart);
     const pos100 = polarToXY(CX, CY, R + 20, angBase);
     const pos130 = polarToXY(CX, CY, R + 20, angEnd);
 
     return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} overflow='visible'>
-            {/* Gray background track */}
-            <path d={arcPath(CX, CY, trackR, angStart, angEnd)}
-                fill='none' stroke='#e5e5e5' strokeWidth={SW} strokeLinecap='round' />
-
-            {/* Zone tints */}
+            {/* Zone 1 — Teal: 0% → 100% (within baseline) */}
             <path d={arcPath(CX, CY, trackR, angStart, angBase)}
-                fill='none' stroke='#4caf5030' strokeWidth={SW} />
-            {ceilingPct > 100 && ceilingPct <= RANGE_MAX && (
+                fill='none' stroke={TEAL} strokeWidth={SW} strokeLinecap='butt' />
+
+            {/* Zone 2 — Orange: 100% → ceiling% (warning band) */}
+            {ceilingPct > 100 && (
                 <path d={arcPath(CX, CY, trackR, angBase, angCeiling)}
-                    fill='none' stroke='#ff980030' strokeWidth={SW} />
+                    fill='none' stroke={AMBER} strokeWidth={SW} strokeLinecap='butt' />
             )}
+
+            {/* Zone 3 — Red: ceiling% → 130% (critical overrun) */}
             <path d={arcPath(CX, CY, trackR, angCeiling, angEnd)}
-                fill='none' stroke='#f4433630' strokeWidth={SW} />
+                fill='none' stroke={RED} strokeWidth={SW} strokeLinecap='butt' />
 
-            {/* Solid fill up to current position */}
-            {currentPct > 0 && (
-                <path d={arcPath(CX, CY, trackR, angStart, angCurrent)}
-                    fill='none' stroke={fillColor} strokeWidth={SW} strokeLinecap='round' />
-            )}
+            {/* Rounded outer terminal caps */}
+            <circle cx={capLeft.x.toFixed(2)}  cy={capLeft.y.toFixed(2)}  r={SW / 2} fill={TEAL} />
+            <circle cx={capRight.x.toFixed(2)} cy={capRight.y.toFixed(2)} r={SW / 2} fill={RED}  />
 
-            {/* Baseline tick (100%) */}
-            {(() => {
-                const o = polarToXY(CX, CY, trackR + SW / 2 + 4, angBase);
-                const i = polarToXY(CX, CY, trackR - SW / 2 - 4, angBase);
-                return <line x1={i.x.toFixed(2)} y1={i.y.toFixed(2)} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
-                    stroke='#333' strokeWidth={2.5} strokeLinecap='round' />;
-            })()}
-
-            {/* Ceiling tick */}
-            {ceilingPct <= RANGE_MAX && (() => {
-                const o = polarToXY(CX, CY, trackR + SW / 2 + 4, angCeiling);
-                const i = polarToXY(CX, CY, trackR - SW / 2 - 4, angCeiling);
-                return <line x1={i.x.toFixed(2)} y1={i.y.toFixed(2)} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
-                    stroke={RED} strokeWidth={2.5} strokeLinecap='round' />;
-            })()}
+            {/* White separators at zone boundaries */}
+            {sep(angBase)}
+            {ceilingPct > 100 && ceilingPct <= RANGE_MAX && sep(angCeiling)}
 
             {/* Needle */}
             <line x1={needleBase.x.toFixed(2)} y1={needleBase.y.toFixed(2)}
                 x2={needleTip.x.toFixed(2)} y2={needleTip.y.toFixed(2)}
-                stroke={fillColor} strokeWidth={3} strokeLinecap='round' />
-            <circle cx={CX} cy={CY} r={8} fill={fillColor} stroke='white' strokeWidth={2} />
+                stroke='white' strokeWidth={5} strokeLinecap='round' />
+            <line x1={needleBase.x.toFixed(2)} y1={needleBase.y.toFixed(2)}
+                x2={needleTip.x.toFixed(2)} y2={needleTip.y.toFixed(2)}
+                stroke={needleColor} strokeWidth={3} strokeLinecap='round' />
+            <circle cx={CX} cy={CY} r={9} fill={needleColor} stroke='white' strokeWidth={2.5} />
 
             {/* Centre readout */}
             <text x={CX} y={CY + 26} textAnchor='middle' fontSize='26' fontWeight='700'
@@ -137,12 +137,9 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
             <text x={CX} y={CY + 44} textAnchor='middle' fontSize='10' fill='#aaa'>of baseline</text>
 
             {/* Arc end labels */}
-            <text x={pos0.x.toFixed(2)} y={pos0.y.toFixed(2)} textAnchor='end'
-                fontSize='9' fill='#aaa'>0%</text>
-            <text x={pos100.x.toFixed(2)} y={pos100.y.toFixed(2)} textAnchor='middle'
-                fontSize='9' fill='#555'>100%</text>
-            <text x={pos130.x.toFixed(2)} y={pos130.y.toFixed(2)} textAnchor='start'
-                fontSize='9' fill='#aaa'>{RANGE_MAX}%</text>
+            <text x={pos0.x.toFixed(2)} y={pos0.y.toFixed(2)} textAnchor='end' fontSize='9' fill='#999'>0%</text>
+            <text x={pos100.x.toFixed(2)} y={pos100.y.toFixed(2)} textAnchor='middle' fontSize='9' fill='#666'>100%</text>
+            <text x={pos130.x.toFixed(2)} y={pos130.y.toFixed(2)} textAnchor='start' fontSize='9' fill='#999'>{RANGE_MAX}%</text>
         </svg>
     );
 }
@@ -174,23 +171,20 @@ export default function RiskGaugeWidget({ config, onDelete }: Props) {
             transition: 'all 0.4s',
         }}>
             {/* Header */}
-            <Stack direction='row' alignItems='flex-start' justifyContent='space-between' sx={{ mb: 1 }}>
-                <Box>
-                    <Stack direction='row' alignItems='center' spacing={1} sx={{ mb: 0.3 }}>
-                        {isAlert
-                            ? <WarningAmberIcon sx={{ color: RED, fontSize: '1.1rem' }} />
-                            : <MonitorHeartOutlinedIcon sx={{ color: TEAL, fontSize: '1.1rem' }} />}
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: isAlert ? RED : '#111' }}>
-                            {groupName}
-                        </Typography>
-                    </Stack>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{dataSourceLabel}</Typography>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#555', mt: 0.2, fontWeight: 500 }}>{itemLabel}</Typography>
-                </Box>
+            <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 1 }}>
+                <Stack direction='row' alignItems='center' spacing={1}>
+                    {isAlert
+                        ? <WarningAmberIcon sx={{ color: RED, fontSize: '1.15rem' }} />
+                        : <MonitorHeartOutlinedIcon sx={{ color: TEAL, fontSize: '1.15rem' }} />}
+                    <Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#888', lineHeight: 1.2 }}>{dataSourceLabel}</Typography>
+                        <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 600, lineHeight: 1.3 }}>{itemLabel}</Typography>
+                    </Box>
+                </Stack>
                 <Stack direction='row' spacing={0.5} alignItems='center'>
                     {isAlert && (
-                        <Box sx={{ px: 1.5, py: 0.5, borderRadius: 2, bgcolor: 'rgba(198,40,40,0.1)', border: '1px solid rgba(198,40,40,0.3)' }}>
-                            <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: RED, letterSpacing: '0.05em' }}>OVERRUN</Typography>
+                        <Box sx={{ px: 1.2, py: 0.4, borderRadius: 2, bgcolor: 'rgba(198,40,40,0.1)', border: '1px solid rgba(198,40,40,0.3)' }}>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: RED, letterSpacing: '0.05em' }}>OVERRUN</Typography>
                         </Box>
                     )}
                     {onDelete && (
