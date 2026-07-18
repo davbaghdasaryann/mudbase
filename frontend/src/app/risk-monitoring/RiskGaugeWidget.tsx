@@ -9,38 +9,57 @@ import { RiskMonitorConfig } from './RiskMonitorBuilderDialog';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import * as Api from '@/api';
 
-function useLivePrice(config: RiskMonitorConfig): number {
-    const [price, setPrice] = useState(config.baselinePrice);
+// ─── Live prices hook ────────────────────────────────────────────────────────
+function usePrices(config: RiskMonitorConfig): { currentPrice: number; minPrice: number | null } {
+    const [currentPrice, setCurrentPrice] = useState(config.baselinePrice);
+    const [minPrice, setMinPrice] = useState<number | null>(
+        // check if the stored item already has a min price field
+        config.selectedItem?.minAveragePrice
+        ?? config.selectedItem?.minPrice
+        ?? config.selectedItem?.minimumPrice
+        ?? null
+    );
+
     useEffect(() => {
-        setPrice(config.baselinePrice);
-        const fetch = async () => {
+        setCurrentPrice(config.baselinePrice);
+        const run = async () => {
             try {
                 if (config.dataSource === 'labor' || config.dataSource === 'materials') {
                     const type = config.dataSource === 'labor' ? 'labor' : 'material';
-                    const data = await Api.requestSession<any>({ command: `${type}/fetch_item_price`, args: { itemId: config.selectedItem._id } });
+                    const data = await Api.requestSession<any>({
+                        command: `${type}/fetch_item_price`,
+                        args: { itemId: config.selectedItem._id },
+                    });
                     const p = data?.price ?? data?.averagePrice;
-                    if (p) setPrice(p);
+                    if (p) setCurrentPrice(p);
+                    const m = data?.minAveragePrice ?? data?.minPrice ?? data?.minimumPrice ?? null;
+                    if (m && m > 0) setMinPrice(m);
                 } else {
-                    const data = await Api.requestSession<any>({ command: 'estimate/get', args: { estimateId: config.selectedItem._id } });
+                    const data = await Api.requestSession<any>({
+                        command: 'estimate/get',
+                        args: { estimateId: config.selectedItem._id },
+                    });
                     const p = data?.totalCostWithOtherExpenses ?? data?.totalCost;
-                    if (p) setPrice(p);
+                    if (p) setCurrentPrice(p);
+                    const m = data?.minCost ?? data?.minimumCost ?? null;
+                    if (m && m > 0) setMinPrice(m);
                 }
             } catch { }
         };
-        fetch();
+        run();
     }, [config]);
-    return price;
+
+    return { currentPrice, minPrice };
 }
 
+// ─── Constants & helpers ─────────────────────────────────────────────────────
 const TEAL  = '#00ABBE';
 const RED   = '#c62828';
 const AMBER = '#f57c00';
 
-// Gauge: 210° arc from bottom-left (195°) over the top to bottom-right (-15°)
-// 0% = 195°, 130% = -15°
-const START_DEG  = 195;
-const SWEEP_DEG  = 210;
-const RANGE_MAX  = 130;
+const START_DEG = 195;   // 0%   = bottom-left
+const SWEEP_DEG = 210;   // 210° arc
+const RANGE_MAX = 130;   // 130% = bottom-right
 
 function toRad(deg: number) { return (deg * Math.PI) / 180; }
 
@@ -49,13 +68,10 @@ function pctToAngle(pct: number): number {
 }
 
 function polarToXY(cx: number, cy: number, r: number, deg: number) {
-    return {
-        x: cx + r * Math.cos(toRad(deg)),
-        y: cy - r * Math.sin(toRad(deg)),
-    };
+    return { x: cx + r * Math.cos(toRad(deg)), y: cy - r * Math.sin(toRad(deg)) };
 }
 
-// sweep=1 = clockwise on SVG screen = draws arc going OVER THE TOP (not underneath)
+// sweep=1 → clockwise on screen → arc goes over the top
 function arcPath(cx: number, cy: number, r: number, fromDeg: number, toDeg: number): string {
     const s = polarToXY(cx, cy, r, fromDeg);
     const e = polarToXY(cx, cy, r, toDeg);
@@ -63,19 +79,30 @@ function arcPath(cx: number, cy: number, r: number, fromDeg: number, toDeg: numb
     return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
 }
 
-// ─── SVG gauge ──────────────────────────────────────────────────────────────
-function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: number }) {
-    // Small delay so needle starts at left, then smoothly sweeps to target
+// ─── SVG gauge ───────────────────────────────────────────────────────────────
+interface GaugeProps {
+    currentPct: number;
+    ceilingPct: number;
+    minPct?: number | null;   // optional minimum market price marker
+}
+
+function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
     const [ready, setReady] = useState(false);
-    useEffect(() => { const id = setTimeout(() => setReady(true), 80); return () => clearTimeout(id); }, []);
+    useEffect(() => {
+        const id = setTimeout(() => setReady(true), 80);
+        return () => clearTimeout(id);
+    }, []);
 
     const uid  = useId().replace(/:/g, '');
-    const gT   = `gT${uid}`, gA = `gA${uid}`, gR = `gR${uid}`, gHub = `gHub${uid}`, gGlow = `gGl${uid}`;
+    const gT   = `gT${uid}`, gA = `gA${uid}`, gR = `gR${uid}`;
+    const gHub = `gHub${uid}`, gGlow = `gGl${uid}`;
 
     const W = 360, H = 220;
     const CX = 180, CY = 165;
     const R = 130, SW = 22;
-    const trackR = R - SW / 2;
+    const trackR  = R - SW / 2;       // 119 — centre-line of track
+    const innerR  = trackR - SW / 2;  // 108 — inner edge
+    const outerR  = trackR + SW / 2;  // 130 — outer edge
 
     const angStart   = pctToAngle(0);
     const angEnd     = pctToAngle(RANGE_MAX);
@@ -86,97 +113,137 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
     const isAlert     = currentPct > ceilingPct;
     const needleColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
 
-    const p = (ang: number) => polarToXY(CX, CY, trackR, ang);
-    const z1s = p(angStart), z1e = p(angBase);
-    const z2s = z1e,         z2e = p(angCeiling);
-    const z3s = z2e,         z3e = p(angEnd);
-    const capLeft = p(angStart), capRight = p(angEnd);
+    const p        = (ang: number) => polarToXY(CX, CY, trackR, ang);
+    const capLeft  = p(angStart);
+    const capRight = p(angEnd);
 
+    // Zone separator: white slash across full track width
     const sep = (ang: number) => {
-        const o = polarToXY(CX, CY, trackR + SW / 2 + 2, ang);
-        const i = polarToXY(CX, CY, trackR - SW / 2 - 2, ang);
-        return <line key={ang} x1={i.x} y1={i.y} x2={o.x} y2={o.y}
-            stroke='white' strokeWidth={3.5} strokeLinecap='round' />;
+        const o = polarToXY(CX, CY, outerR + 2, ang);
+        const i = polarToXY(CX, CY, innerR - 2, ang);
+        return (
+            <line key={ang} x1={i.x} y1={i.y} x2={o.x} y2={o.y}
+                stroke='white' strokeWidth={3.5} strokeLinecap='round' />
+        );
     };
 
-    const pos0   = polarToXY(CX, CY, R + 22, angStart);
-    const pos100 = polarToXY(CX, CY, R + 22, angBase);
-    const pos130 = polarToXY(CX, CY, R + 22, angEnd);
+    // Tick mark (narrower, for baseline / min markers)
+    const tick = (ang: number, color: string, widthExtra = 0) => {
+        const o = polarToXY(CX, CY, outerR + 2 + widthExtra, ang);
+        const i = polarToXY(CX, CY, innerR - 2 - widthExtra, ang);
+        return <line x1={i.x} y1={i.y} x2={o.x} y2={o.y} stroke={color} strokeWidth={2.5} strokeLinecap='round' />;
+    };
 
-    // Needle: vertical triangle pointing up, rotated via CSS
+    const pos0   = polarToXY(CX, CY, outerR + 18, angStart);
+    const pos100 = polarToXY(CX, CY, outerR + 18, angBase);
+    const pos130 = polarToXY(CX, CY, outerR + 18, angEnd);
+
+    // Needle rotation: vertical line at 90° rotated to target angle
     const needleRot = ready ? 90 - angCurrent : 90 - angStart;
     const tipY  = CY - (trackR - 12);
     const baseY = CY + 10;
-    const hw    = 4.5; // half-width at base
+    const hw    = 4.5;
+
+    // Radial gradient stop for inner edge (as % of outerR)
+    const innerPct = `${(innerR / outerR * 100).toFixed(1)}%`;
 
     return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} overflow='visible'>
             <defs>
-                <linearGradient id={gT} x1={z1s.x} y1={z1s.y} x2={z1e.x} y2={z1e.y} gradientUnits='userSpaceOnUse'>
-                    <stop offset='0%'   stopColor='#00796B' />
-                    <stop offset='100%' stopColor='#4DD0E1' />
-                </linearGradient>
-                <linearGradient id={gA} x1={z2s.x} y1={z2s.y} x2={z2e.x} y2={z2e.y} gradientUnits='userSpaceOnUse'>
-                    <stop offset='0%'   stopColor='#E65100' />
-                    <stop offset='100%' stopColor='#FFD54F' />
-                </linearGradient>
-                <linearGradient id={gR} x1={z3s.x} y1={z3s.y} x2={z3e.x} y2={z3e.y} gradientUnits='userSpaceOnUse'>
-                    <stop offset='0%'   stopColor='#EF5350' />
-                    <stop offset='100%' stopColor='#B71C1C' />
-                </linearGradient>
+                {/*
+                    Radial gradients centered at gauge origin (CX, CY).
+                    This correctly follows the arc curvature for ANY zone length
+                    — unlike linear gradients which fail on small arcs.
+                    Gradient: dark at inner edge → bright at outer edge (neon glow look).
+                */}
+                <radialGradient id={gT} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
+                    <stop offset={innerPct}  stopColor='#00695C' />  {/* inner — dark teal */}
+                    <stop offset='100%'      stopColor='#80DEEA' />  {/* outer — bright cyan */}
+                </radialGradient>
+                <radialGradient id={gA} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
+                    <stop offset={innerPct}  stopColor='#BF360C' />  {/* inner — burnt orange */}
+                    <stop offset='100%'      stopColor='#FFE082' />  {/* outer — warm gold */}
+                </radialGradient>
+                <radialGradient id={gR} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
+                    <stop offset={innerPct}  stopColor='#7F0000' />  {/* inner — dark crimson */}
+                    <stop offset='100%'      stopColor='#EF9A9A' />  {/* outer — soft red */}
+                </radialGradient>
+
                 {/* Metallic hub */}
                 <radialGradient id={gHub} cx='38%' cy='32%' r='65%'>
                     <stop offset='0%'   stopColor='#ffffff' />
                     <stop offset='50%'  stopColor='#e0e0e0' />
                     <stop offset='100%' stopColor='#9e9e9e' />
                 </radialGradient>
-                {/* Subtle glow on arcs */}
+
+                {/* Arc glow */}
                 <filter id={gGlow} x='-25%' y='-25%' width='150%' height='150%'>
                     <feGaussianBlur stdDeviation='2' result='blur' />
                     <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
                 </filter>
             </defs>
 
-            {/* Soft dial background */}
+            {/* Soft dial plate */}
             <circle cx={CX} cy={CY} r={R + 2} fill='rgba(0,0,0,0.03)' />
 
-            {/* Zone arcs — gradient + glow */}
+            {/* Zone 1 — Teal: 0% → 100% */}
             <path d={arcPath(CX, CY, trackR, angStart, angBase)}
-                fill='none' stroke={`url(#${gT})`} strokeWidth={SW} strokeLinecap='butt' filter={`url(#${gGlow})`} />
+                fill='none' stroke={`url(#${gT})`} strokeWidth={SW} strokeLinecap='butt'
+                filter={`url(#${gGlow})`} />
+
+            {/* Zone 2 — Amber: 100% → ceiling% */}
             {ceilingPct > 100 && (
                 <path d={arcPath(CX, CY, trackR, angBase, angCeiling)}
-                    fill='none' stroke={`url(#${gA})`} strokeWidth={SW} strokeLinecap='butt' filter={`url(#${gGlow})`} />
+                    fill='none' stroke={`url(#${gA})`} strokeWidth={SW} strokeLinecap='butt'
+                    filter={`url(#${gGlow})`} />
             )}
-            <path d={arcPath(CX, CY, trackR, angCeiling, angEnd)}
-                fill='none' stroke={`url(#${gR})`} strokeWidth={SW} strokeLinecap='butt' filter={`url(#${gGlow})`} />
 
-            {/* Terminal caps */}
-            <circle cx={capLeft.x}  cy={capLeft.y}  r={SW / 2} fill='#00796B' />
-            <circle cx={capRight.x} cy={capRight.y} r={SW / 2} fill='#B71C1C' />
+            {/* Zone 3 — Red: ceiling% → 130% */}
+            <path d={arcPath(CX, CY, trackR, angCeiling, angEnd)}
+                fill='none' stroke={`url(#${gR})`} strokeWidth={SW} strokeLinecap='butt'
+                filter={`url(#${gGlow})`} />
+
+            {/* Rounded terminal caps */}
+            <circle cx={capLeft.x}  cy={capLeft.y}  r={SW / 2} fill='#00695C' />
+            <circle cx={capRight.x} cy={capRight.y} r={SW / 2} fill='#7F0000' />
 
             {/* Zone separators */}
             {sep(angBase)}
             {ceilingPct > 100 && ceilingPct <= RANGE_MAX && sep(angCeiling)}
 
-            {/* Animated tapered needle — 2.8s slow sweep with gentle settle */}
+            {/* Minimum market price marker (static, inside teal zone) */}
+            {minPct != null && minPct > 0 && minPct < 100 && (() => {
+                const ang    = pctToAngle(minPct);
+                const label  = polarToXY(CX, CY, outerR + 14, ang);
+                return (
+                    <>
+                        {tick(ang, 'white', 2)}
+                        {tick(ang, '#004D40')}
+                        <text x={label.x.toFixed(1)} y={label.y.toFixed(1)}
+                            textAnchor='middle' dominantBaseline='middle'
+                            fontSize='8' fontWeight='700' fill='#004D40'>MIN</text>
+                    </>
+                );
+            })()}
+
+            {/* Baseline tick at 100% */}
+            {tick(angBase, '#333')}
+
+            {/* Ceiling tick */}
+            {ceilingPct <= RANGE_MAX && tick(angCeiling, RED)}
+
+            {/* Animated needle */}
             <g style={{
                 transformOrigin: `${CX}px ${CY}px`,
                 transform: `rotate(${needleRot}deg)`,
                 transition: ready ? 'transform 2.8s cubic-bezier(0.34, 1.12, 0.64, 1)' : 'none',
             }}>
-                {/* Drop shadow (offset polygon) */}
-                <polygon
-                    points={`${CX - hw},${baseY} ${CX + hw},${baseY} ${CX},${tipY}`}
+                <polygon points={`${CX - hw},${baseY} ${CX + hw},${baseY} ${CX},${tipY}`}
                     fill='rgba(0,0,0,0.2)' transform='translate(2,3)' />
-                {/* White halo for depth */}
-                <polygon
-                    points={`${CX - hw - 1},${baseY + 1} ${CX + hw + 1},${baseY + 1} ${CX},${tipY - 1}`}
+                <polygon points={`${CX - hw - 1},${baseY + 1} ${CX + hw + 1},${baseY + 1} ${CX},${tipY - 1}`}
                     fill='white' opacity={0.65} />
-                {/* Needle body */}
-                <polygon
-                    points={`${CX - hw},${baseY} ${CX + hw},${baseY} ${CX},${tipY}`}
+                <polygon points={`${CX - hw},${baseY} ${CX + hw},${baseY} ${CX},${tipY}`}
                     fill={needleColor} />
-                {/* Specular highlight on left edge */}
                 <line x1={CX - 1} y1={baseY - 2} x2={CX - 0.5} y2={tipY + 6}
                     stroke='rgba(255,255,255,0.4)' strokeWidth={1.2} strokeLinecap='round' />
             </g>
@@ -191,7 +258,7 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
                 fill={isAlert ? RED : '#111'}>{currentPct.toFixed(0)}%</text>
             <text x={CX} y={CY + 44} textAnchor='middle' fontSize='10' fill='#aaa'>of baseline</text>
 
-            {/* Labels */}
+            {/* Arc end labels */}
             <text x={pos0.x}   y={pos0.y}   textAnchor='end'    fontSize='9' fill='#aaa'>0%</text>
             <text x={pos100.x} y={pos100.y} textAnchor='middle' fontSize='9' fill='#777'>100%</text>
             <text x={pos130.x} y={pos130.y} textAnchor='start'  fontSize='9' fill='#aaa'>{RANGE_MAX}%</text>
@@ -203,11 +270,12 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
 interface Props { config: RiskMonitorConfig; onDelete?: () => void; }
 
 export default function RiskGaugeWidget({ config, onDelete }: Props) {
-    const { baselinePrice, budget, groupName, dataSourceLabel, selectedItem } = config;
-    const currentPrice = useLivePrice(config);
+    const { baselinePrice, budget, dataSourceLabel, selectedItem } = config;
+    const { currentPrice, minPrice } = usePrices(config);
 
     const currentPct = baselinePrice > 0 ? (currentPrice / baselinePrice) * 100 : 0;
-    const ceilingPct = baselinePrice > 0 ? (budget   / baselinePrice) * 100 : 110;
+    const ceilingPct = baselinePrice > 0 ? (budget      / baselinePrice) * 100 : 110;
+    const minPct     = minPrice && baselinePrice > 0 ? (minPrice / baselinePrice) * 100 : null;
     const isAlert    = currentPct > ceilingPct;
 
     const itemLabel = selectedItem?.name ?? selectedItem?.estimateNumber ?? selectedItem?.title ?? '—';
@@ -255,26 +323,34 @@ export default function RiskGaugeWidget({ config, onDelete }: Props) {
 
             {/* Gauge */}
             <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'visible' }}>
-                <Gauge currentPct={currentPct} ceilingPct={ceilingPct} />
+                <Gauge currentPct={currentPct} ceilingPct={ceilingPct} minPct={minPct} />
             </Box>
 
             {/* Legend */}
-            <Stack direction='row' justifyContent='space-between' sx={{ pt: 1.5, borderTop: '1px solid #f0f0f0', mt: 0.5 }}>
+            <Stack direction='row' justifyContent='space-between' sx={{ pt: 1.5, borderTop: '1px solid #f0f0f0', mt: 0.5, flexWrap: 'wrap', gap: 1 }}>
+                {minPrice != null && (
+                    <Box>
+                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Min Market Price</Typography>
+                        <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#004D40' }}>
+                            {formatCurrencyRounded(minPrice)} AMD
+                        </Typography>
+                    </Box>
+                )}
                 <Box>
                     <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Baseline (100%)</Typography>
-                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: TEAL }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: TEAL }}>
                         {formatCurrencyRounded(baselinePrice)} AMD
                     </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
                     <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Current Price</Typography>
-                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: isAlert ? RED : '#111' }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: isAlert ? RED : '#111' }}>
                         {formatCurrencyRounded(currentPrice)} AMD
                     </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
                     <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Budget Ceiling ({ceilingPct.toFixed(0)}%)</Typography>
-                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: RED }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: RED }}>
                         {formatCurrencyRounded(budget)} AMD
                     </Typography>
                 </Box>
