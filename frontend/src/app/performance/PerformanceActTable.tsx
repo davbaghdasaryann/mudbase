@@ -9,6 +9,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CloseIcon from '@mui/icons-material/Close';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -510,11 +512,11 @@ export default function PerformanceActTable({
     return (
         <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mb: 1.5 }}>
-                <Button variant='outlined' size='small'
+                <Button variant='outlined' size='small' startIcon={<InfoOutlinedIcon />}
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                     Տեղեկատվություն
                 </Button>
-                <Button variant='outlined' size='small'
+                <Button variant='outlined' size='small' startIcon={<CalculateOutlinedIcon />}
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                     Մնացորդային հաշվարկ
                 </Button>
