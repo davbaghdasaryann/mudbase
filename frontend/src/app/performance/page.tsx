@@ -8,7 +8,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
-import PerformanceCreateDialog from './PerformanceCreateDialog';
+import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import PerformanceActTable from './PerformanceActTable';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
@@ -51,11 +51,11 @@ export default function PerformancePage() {
 
     useEffect(() => { loadRecords(); }, [loadRecords]);
 
-    const handleSelect = useCallback(async (estimate: EstimatesApi.ApiEstimate, dateFrom: string, dateTo: string) => {
+    const handleSelect = useCallback(async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         const created = await Api.requestSession<PerformanceActRecord>({
             command: 'performance/create',
-            args: { estimateId: String(estimate._id), estimateName: estimate.name, dateFrom, dateTo },
+            args: { estimateId: String(estimate._id), estimateName: estimate.name },
         });
         setRecords(prev => [created, ...prev]);
         setSelected(created);
@@ -162,7 +162,7 @@ export default function PerformancePage() {
 
             </Box>
 
-            <PerformanceCreateDialog
+            <ChooseEstimationDialog
                 open={dialogOpen}
                 onClose={() => setDialogOpen(false)}
                 onSelect={handleSelect}
