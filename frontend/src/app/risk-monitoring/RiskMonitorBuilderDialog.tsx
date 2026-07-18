@@ -35,6 +35,7 @@ export interface RiskMonitorConfig {
     selectedItem: any;
     baselinePrice: number;
     budget: number;
+    minMarketPrice?: number;
 }
 
 interface Props {
@@ -59,11 +60,16 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm, presetGro
     const [dataSource, setDataSource] = useState('');
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [budgetInput, setBudgetInput] = useState('');
+    const [minPriceInput, setMinPriceInput] = useState('');
 
     const baselinePrice = selectedItem ? getBaselinePrice(selectedItem, dataSource) : 0;
     const budgetValue = parseFloat(budgetInput.replace(/[^0-9.]/g, '')) || 0;
+    const minPriceValue = parseFloat(minPriceInput.replace(/[^0-9.]/g, '')) || 0;
     const ceilingPct = baselinePrice > 0 && budgetValue > 0
         ? Math.round((budgetValue / baselinePrice) * 100)
+        : null;
+    const minPricePct = baselinePrice > 0 && minPriceValue > 0
+        ? Math.round((minPriceValue / baselinePrice) * 100)
         : null;
 
     // Display step index (0-based from user's perspective)
@@ -90,6 +96,7 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm, presetGro
             selectedItem,
             baselinePrice,
             budget: budgetValue,
+            minMarketPrice: minPriceValue > 0 ? minPriceValue : undefined,
         });
     };
 
@@ -254,7 +261,6 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm, presetGro
                                 value={budgetInput}
                                 onChange={e => setBudgetInput(e.target.value.replace(/[^0-9.]/g, ''))}
                                 placeholder='0'
-                                onKeyDown={e => { if (e.key === 'Enter' && budgetValue > 0) handleFinish(); }}
                                 endAdornment={
                                     <InputAdornment position='end'>
                                         <Typography sx={{ fontSize: '0.8rem', color: '#888', fontWeight: 600 }}>AMD</Typography>
@@ -282,6 +288,52 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm, presetGro
                                         <Box sx={{ px: 0.8, py: 0.2, borderRadius: 1, minWidth: 38, textAlign: 'center', bgcolor: ceilingPct > 100 ? 'rgba(229,57,53,0.12)' : 'rgba(67,160,71,0.12)' }}>
                                             <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: ceilingPct > 100 ? '#c62828' : '#2e7d32' }}>
                                                 {ceilingPct}%
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        )}
+
+                        {/* Minimum market price input (optional) */}
+                        <Box>
+                            <Typography variant='subtitle2' fontWeight={600} sx={{ mb: 0.75 }}>
+                                {t('Minimum Market Price')}
+                                <Typography component='span' sx={{ fontSize: '0.72rem', color: '#aaa', fontWeight: 400, ml: 1 }}>({t('optional')})</Typography>
+                            </Typography>
+                            <OutlinedInput
+                                fullWidth size='small'
+                                value={minPriceInput}
+                                onChange={e => setMinPriceInput(e.target.value.replace(/[^0-9.]/g, ''))}
+                                placeholder='0'
+                                onKeyDown={e => { if (e.key === 'Enter' && budgetValue > 0) handleFinish(); }}
+                                endAdornment={
+                                    <InputAdornment position='end'>
+                                        <Typography sx={{ fontSize: '0.8rem', color: '#888', fontWeight: 600 }}>AMD</Typography>
+                                    </InputAdornment>
+                                }
+                                sx={{ borderRadius: 2, fontWeight: 600, fontSize: '1.05rem', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d5eef0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: TEAL }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: TEAL } }}
+                            />
+                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', mt: 0.8 }}>
+                                {t('The lowest known market price — shown as a reference marker on the gauge.')}
+                            </Typography>
+                        </Box>
+
+                        {/* Live min price preview */}
+                        {minPricePct !== null && (
+                            <Box sx={{ px: 2, py: 1.5, borderRadius: 2, border: '1px solid rgba(0,77,64,0.25)', bgcolor: 'rgba(0,77,64,0.04)' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#004D40' }} />
+                                        <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{t('Min Market Price')}</Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#111' }}>
+                                            {formatCurrencyRounded(minPriceValue)} AMD
+                                        </Typography>
+                                        <Box sx={{ px: 0.8, py: 0.2, borderRadius: 1, minWidth: 38, textAlign: 'center', bgcolor: 'rgba(0,77,64,0.10)' }}>
+                                            <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#004D40' }}>
+                                                {minPricePct}%
                                             </Typography>
                                         </Box>
                                     </Box>

@@ -9,16 +9,9 @@ import { RiskMonitorConfig } from './RiskMonitorBuilderDialog';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import * as Api from '@/api';
 
-// ─── Live prices hook ────────────────────────────────────────────────────────
-function usePrices(config: RiskMonitorConfig): { currentPrice: number; minPrice: number | null } {
+// ─── Live price hook ─────────────────────────────────────────────────────────
+function useCurrentPrice(config: RiskMonitorConfig): number {
     const [currentPrice, setCurrentPrice] = useState(config.baselinePrice);
-    const [minPrice, setMinPrice] = useState<number | null>(
-        // check if the stored item already has a min price field
-        config.selectedItem?.minAveragePrice
-        ?? config.selectedItem?.minPrice
-        ?? config.selectedItem?.minimumPrice
-        ?? null
-    );
 
     useEffect(() => {
         setCurrentPrice(config.baselinePrice);
@@ -32,8 +25,6 @@ function usePrices(config: RiskMonitorConfig): { currentPrice: number; minPrice:
                     });
                     const p = data?.price ?? data?.averagePrice;
                     if (p) setCurrentPrice(p);
-                    const m = data?.minAveragePrice ?? data?.minPrice ?? data?.minimumPrice ?? null;
-                    if (m && m > 0) setMinPrice(m);
                 } else {
                     const data = await Api.requestSession<any>({
                         command: 'estimate/get',
@@ -41,15 +32,13 @@ function usePrices(config: RiskMonitorConfig): { currentPrice: number; minPrice:
                     });
                     const p = data?.totalCostWithOtherExpenses ?? data?.totalCost;
                     if (p) setCurrentPrice(p);
-                    const m = data?.minCost ?? data?.minimumCost ?? null;
-                    if (m && m > 0) setMinPrice(m);
                 }
             } catch { }
         };
         run();
     }, [config]);
 
-    return { currentPrice, minPrice };
+    return currentPrice;
 }
 
 // ─── Constants & helpers ─────────────────────────────────────────────────────
@@ -212,8 +201,8 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
             {sep(angBase)}
             {ceilingPct > 100 && ceilingPct <= RANGE_MAX && sep(angCeiling)}
 
-            {/* Minimum market price marker (static, inside teal zone) */}
-            {minPct != null && minPct > 0 && minPct < 100 && (() => {
+            {/* Minimum market price marker */}
+            {minPct != null && minPct >= RANGE_MIN && minPct <= RANGE_MAX && (() => {
                 const ang    = pctToAngle(minPct);
                 const label  = polarToXY(CX, CY, outerR + 14, ang);
                 return (
@@ -271,12 +260,12 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
 interface Props { config: RiskMonitorConfig; onDelete?: () => void; }
 
 export default function RiskGaugeWidget({ config, onDelete }: Props) {
-    const { baselinePrice, budget, dataSourceLabel, selectedItem } = config;
-    const { currentPrice, minPrice } = usePrices(config);
+    const { baselinePrice, budget, minMarketPrice, dataSourceLabel, selectedItem } = config;
+    const currentPrice = useCurrentPrice(config);
 
     const currentPct = baselinePrice > 0 ? (currentPrice / baselinePrice) * 100 : 0;
-    const ceilingPct = baselinePrice > 0 ? (budget      / baselinePrice) * 100 : 110;
-    const minPct     = minPrice && baselinePrice > 0 ? (minPrice / baselinePrice) * 100 : null;
+    const ceilingPct = baselinePrice > 0 ? (budget       / baselinePrice) * 100 : 110;
+    const minPct     = minMarketPrice && baselinePrice > 0 ? (minMarketPrice / baselinePrice) * 100 : null;
     const isAlert    = currentPct > ceilingPct;
 
     const itemLabel = selectedItem?.name ?? selectedItem?.estimateNumber ?? selectedItem?.title ?? '—';
@@ -329,11 +318,11 @@ export default function RiskGaugeWidget({ config, onDelete }: Props) {
 
             {/* Legend */}
             <Stack direction='row' justifyContent='space-between' sx={{ pt: 1.5, borderTop: '1px solid #f0f0f0', mt: 0.5, flexWrap: 'wrap', gap: 1 }}>
-                {minPrice != null && (
+                {minMarketPrice != null && (
                     <Box>
                         <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Min Market Price</Typography>
                         <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#004D40' }}>
-                            {formatCurrencyRounded(minPrice)} AMD
+                            {formatCurrencyRounded(minMarketPrice)} AMD
                         </Typography>
                     </Box>
                 )}
