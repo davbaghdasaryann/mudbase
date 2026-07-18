@@ -626,7 +626,7 @@ export default function PerformanceActTable({
                                         const subLabel = k === 'up' ? t('Unit Price') : k === 'qty' ? t('Quantity') : t('Total');
                                         return (
                                             <th key={`${num}-${k}`} title={subLabel}
-                                                style={th({ textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: '#00818f', backgroundColor: HDR_BG, borderBottom: `1px solid #b2e8ed`, ...(ki === 0 ? actCellBorderLeft : {}), verticalAlign: 'middle' })}>
+                                                style={th({ textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: '#111', backgroundColor: HDR_BG, borderBottom: `1px solid #b2e8ed`, ...(ki === 0 ? actCellBorderLeft : {}), verticalAlign: 'middle' })}>
                                                 {subLabel}
                                                 <ResizeHandle onDragStart={e => startResize(base + ki, e)} />
                                             </th>
@@ -673,10 +673,10 @@ export default function PerformanceActTable({
                                     }
 
                                     <tr style={{ backgroundColor: SUB_TOTAL_BG }}>
-                                        <td colSpan={5} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
-                                        <td style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        <td colSpan={5} style={td({ fontWeight: 700, textAlign: 'right', color: '#111', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
+                                        <td style={td({ fontWeight: 700, textAlign: 'right', color: '#111', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
                                         <td style={td({ textAlign: 'center', fontWeight: 700, color: pctColor(secPct) })}>{acts.length > 0 ? `${secPct}%` : ''}</td>
-                                        <td style={td({ textAlign: 'right', fontWeight: 700, color: secContractQty - secTotalActQty < 0 ? '#c62828' : '#00818f' })}>
+                                        <td style={td({ textAlign: 'right', fontWeight: 700, color: secContractQty - secTotalActQty < 0 ? '#c62828' : '#111' })}>
                                             {acts.length > 0 ? (secContractQty - secTotalActQty).toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}
                                         </td>
                                         {acts.map((_, actIdx) => {
@@ -687,9 +687,9 @@ export default function PerformanceActTable({
                                             }, 0);
                                             return (
                                                 <>
-                                                    <td key={`sub-${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', color: '#00818f' })}></td>
-                                                    <td key={`sub-${actIdx}-qty`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{actQtySum > 0 ? actQtySum.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
-                                                    <td key={`sub-${actIdx}-tot`} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{actTotalSum > 0 ? `${formatCurrencyRounded(actTotalSum)} AMD` : ''}</td>
+                                                    <td key={`sub-${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', color: '#111' })}></td>
+                                                    <td key={`sub-${actIdx}-qty`} style={td({ fontWeight: 700, textAlign: 'right', color: '#111', whiteSpace: 'nowrap' })}>{actQtySum > 0 ? actQtySum.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                                                    <td key={`sub-${actIdx}-tot`} style={td({ fontWeight: 700, textAlign: 'right', color: '#111', whiteSpace: 'nowrap' })}>{actTotalSum > 0 ? `${formatCurrencyRounded(actTotalSum)} AMD` : ''}</td>
                                                 </>
                                             );
                                         })}
@@ -699,7 +699,7 @@ export default function PerformanceActTable({
                         })}
 
                         <tr style={{ backgroundColor: GRAND_BG }}>
-                            <td colSpan={totalCols} style={td({ fontWeight: 800, textAlign: 'left', color: mainPrimaryColor, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
+                            <td colSpan={totalCols} style={td({ fontWeight: 800, textAlign: 'left', color: '#111', fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
                         </tr>
                     </tbody>
                 </table>
