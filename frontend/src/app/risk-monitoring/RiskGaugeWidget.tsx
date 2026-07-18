@@ -7,166 +7,145 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { RiskMonitorConfig } from './RiskMonitorBuilderDialog';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 
-const TEAL = '#00ABBE';
-const GREEN = '#2e7d32';
-const YELLOW = '#f57c00';
-const RED = '#c62828';
-const TRACK_GRAY = '#e8e8e8';
+const TEAL  = '#00ABBE';
+const RED   = '#c62828';
+const AMBER = '#f57c00';
 
-// Gauge spans 210°: from 195° (bottom-left) to -15° (bottom-right)
-// 0% = 195°, RANGE_MAX% = -15°
-const RANGE_MAX = 130; // gauge shows 0–130%
-const START_DEG = 195;
-const SWEEP_DEG = 210;
+// Gauge: 210° arc from bottom-left (195°) over the top to bottom-right (-15°)
+// 0% = 195°, 130% = -15°
+const START_DEG  = 195;
+const SWEEP_DEG  = 210;
+const RANGE_MAX  = 130;
 
 function toRad(deg: number) { return (deg * Math.PI) / 180; }
 
 function pctToAngle(pct: number): number {
-    const clamped = Math.max(0, Math.min(pct, RANGE_MAX));
-    return START_DEG - (clamped / RANGE_MAX) * SWEEP_DEG;
+    return START_DEG - (Math.max(0, Math.min(pct, RANGE_MAX)) / RANGE_MAX) * SWEEP_DEG;
 }
 
-function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
+function polarToXY(cx: number, cy: number, r: number, deg: number) {
     return {
-        x: cx + r * Math.cos(toRad(angleDeg)),
-        y: cy - r * Math.sin(toRad(angleDeg)),
+        x: cx + r * Math.cos(toRad(deg)),
+        y: cy - r * Math.sin(toRad(deg)),
     };
 }
 
-function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number): string {
-    const s = polarToXY(cx, cy, r, startDeg);
-    const e = polarToXY(cx, cy, r, endDeg);
-    const sweep = endDeg < startDeg ? 0 : 1; // always sweep clockwise (decreasing angle)
-    const deltaAbs = Math.abs(startDeg - endDeg);
-    const large = deltaAbs > 180 ? 1 : 0;
-    return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} ${sweep} ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+// sweep=1 = clockwise on SVG screen = draws arc going OVER THE TOP (not underneath)
+function arcPath(cx: number, cy: number, r: number, fromDeg: number, toDeg: number): string {
+    const s = polarToXY(cx, cy, r, fromDeg);
+    const e = polarToXY(cx, cy, r, toDeg);
+    const large = Math.abs(fromDeg - toDeg) > 180 ? 1 : 0;
+    return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
 }
 
-interface GaugeProps {
-    currentPct: number;
-    ceilingPct: number;
-}
-
-function Gauge({ currentPct, ceilingPct }: GaugeProps) {
-    const W = 340, H = 220;
-    const CX = W / 2, CY = 165;
+// ─── SVG gauge ──────────────────────────────────────────────────────────────
+function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: number }) {
+    const W = 360, H = 220;
+    const CX = 180, CY = 165;
     const R = 130, SW = 22;
+    const trackR = R - SW / 2; // 119
 
-    const baselineAngle = pctToAngle(100);
-    const ceilingAngle  = pctToAngle(Math.min(ceilingPct, RANGE_MAX));
-    const currentAngle  = pctToAngle(Math.min(currentPct, RANGE_MAX));
-    const startAngle    = pctToAngle(0);
-    const endAngle      = pctToAngle(RANGE_MAX);
+    const angStart   = pctToAngle(0);           // 195° — left endpoint
+    const angEnd     = pctToAngle(RANGE_MAX);   // -15° — right endpoint
+    const angBase    = pctToAngle(100);          // baseline (100%) marker
+    const angCeiling = pctToAngle(Math.min(ceilingPct, RANGE_MAX));
+    const angCurrent = pctToAngle(Math.min(currentPct, RANGE_MAX));
 
-    const isAlert = currentPct > ceilingPct;
-    const fillColor = isAlert ? RED : currentPct > 100 ? YELLOW : TEAL;
+    const isAlert  = currentPct > ceilingPct;
+    const fillColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
 
-    // Needle tip and base
-    const needleTip  = polarToXY(CX, CY, R - 10, currentAngle);
-    const needleBase = polarToXY(CX, CY, 18, currentAngle);
+    const needleTip  = polarToXY(CX, CY, trackR - 8, angCurrent);
+    const needleBase = polarToXY(CX, CY, 16, angCurrent);
 
-    // Tick marks at 0%, 50%, 100%, 130%
-    const ticks = [0, 50, 100, 130];
+    // Fixed tick labels: "0%" at left end, "100%" above-right, "130%" at right end
+    const pos0   = polarToXY(CX, CY, R + 20, angStart);
+    const pos100 = polarToXY(CX, CY, R + 20, angBase);
+    const pos130 = polarToXY(CX, CY, R + 20, angEnd);
 
     return (
-        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-            {/* Background track */}
-            <path d={arcPath(CX, CY, R - SW/2, startAngle, endAngle)}
-                fill='none' stroke={TRACK_GRAY} strokeWidth={SW} strokeLinecap='round' />
+        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} overflow='visible'>
+            {/* Gray background track */}
+            <path d={arcPath(CX, CY, trackR, angStart, angEnd)}
+                fill='none' stroke='#e5e5e5' strokeWidth={SW} strokeLinecap='round' />
 
-            {/* Green zone: 0–100% */}
-            <path d={arcPath(CX, CY, R - SW/2, startAngle, baselineAngle)}
-                fill='none' stroke={`${GREEN}35`} strokeWidth={SW} />
-
-            {/* Yellow zone: 100–ceiling% */}
+            {/* Zone tints */}
+            <path d={arcPath(CX, CY, trackR, angStart, angBase)}
+                fill='none' stroke='#4caf5030' strokeWidth={SW} />
             {ceilingPct > 100 && ceilingPct <= RANGE_MAX && (
-                <path d={arcPath(CX, CY, R - SW/2, baselineAngle, ceilingAngle)}
-                    fill='none' stroke={`${YELLOW}50`} strokeWidth={SW} />
+                <path d={arcPath(CX, CY, trackR, angBase, angCeiling)}
+                    fill='none' stroke='#ff980030' strokeWidth={SW} />
             )}
+            <path d={arcPath(CX, CY, trackR, angCeiling, angEnd)}
+                fill='none' stroke='#f4433630' strokeWidth={SW} />
 
-            {/* Red zone: ceiling–max% */}
-            <path d={arcPath(CX, CY, R - SW/2, ceilingAngle, endAngle)}
-                fill='none' stroke={`${RED}30`} strokeWidth={SW} />
-
-            {/* Current fill */}
+            {/* Solid fill up to current position */}
             {currentPct > 0 && (
-                <path d={arcPath(CX, CY, R - SW/2, startAngle, currentAngle)}
+                <path d={arcPath(CX, CY, trackR, angStart, angCurrent)}
                     fill='none' stroke={fillColor} strokeWidth={SW} strokeLinecap='round' />
             )}
 
-            {/* Tick marks */}
-            {ticks.map(pct => {
-                const ang = pctToAngle(pct);
-                const outer = polarToXY(CX, CY, R + 6, ang);
-                const inner = polarToXY(CX, CY, R - SW - 4, ang);
-                const label = polarToXY(CX, CY, R + 18, ang);
-                return (
-                    <g key={pct}>
-                        <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y}
-                            stroke='#999' strokeWidth={1.5} strokeLinecap='round' />
-                        <text x={label.x} y={label.y} textAnchor='middle' dominantBaseline='middle'
-                            fontSize='10' fill='#888'>{pct}%</text>
-                    </g>
-                );
-            })}
-
-            {/* Baseline marker at 100% */}
+            {/* Baseline tick (100%) */}
             {(() => {
-                const outer = polarToXY(CX, CY, R + 4, baselineAngle);
-                const inner = polarToXY(CX, CY, R - SW - 2, baselineAngle);
-                return <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y}
+                const o = polarToXY(CX, CY, trackR + SW / 2 + 4, angBase);
+                const i = polarToXY(CX, CY, trackR - SW / 2 - 4, angBase);
+                return <line x1={i.x.toFixed(2)} y1={i.y.toFixed(2)} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
                     stroke='#333' strokeWidth={2.5} strokeLinecap='round' />;
             })()}
 
-            {/* Ceiling marker */}
+            {/* Ceiling tick */}
             {ceilingPct <= RANGE_MAX && (() => {
-                const outer = polarToXY(CX, CY, R + 4, ceilingAngle);
-                const inner = polarToXY(CX, CY, R - SW - 2, ceilingAngle);
-                return <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y}
+                const o = polarToXY(CX, CY, trackR + SW / 2 + 4, angCeiling);
+                const i = polarToXY(CX, CY, trackR - SW / 2 - 4, angCeiling);
+                return <line x1={i.x.toFixed(2)} y1={i.y.toFixed(2)} x2={o.x.toFixed(2)} y2={o.y.toFixed(2)}
                     stroke={RED} strokeWidth={2.5} strokeLinecap='round' />;
             })()}
 
             {/* Needle */}
-            <line x1={needleBase.x} y1={needleBase.y} x2={needleTip.x} y2={needleTip.y}
+            <line x1={needleBase.x.toFixed(2)} y1={needleBase.y.toFixed(2)}
+                x2={needleTip.x.toFixed(2)} y2={needleTip.y.toFixed(2)}
                 stroke={fillColor} strokeWidth={3} strokeLinecap='round' />
             <circle cx={CX} cy={CY} r={8} fill={fillColor} stroke='white' strokeWidth={2} />
 
-            {/* Center value */}
-            <text x={CX} y={CY + 30} textAnchor='middle' fontSize='28' fontWeight='700'
+            {/* Centre readout */}
+            <text x={CX} y={CY + 26} textAnchor='middle' fontSize='26' fontWeight='700'
                 fill={isAlert ? RED : '#111'}>{currentPct.toFixed(0)}%</text>
-            <text x={CX} y={CY + 48} textAnchor='middle' fontSize='10' fill='#aaa'>of baseline</text>
+            <text x={CX} y={CY + 44} textAnchor='middle' fontSize='10' fill='#aaa'>of baseline</text>
+
+            {/* Arc end labels */}
+            <text x={pos0.x.toFixed(2)} y={pos0.y.toFixed(2)} textAnchor='end'
+                fontSize='9' fill='#aaa'>0%</text>
+            <text x={pos100.x.toFixed(2)} y={pos100.y.toFixed(2)} textAnchor='middle'
+                fontSize='9' fill='#555'>100%</text>
+            <text x={pos130.x.toFixed(2)} y={pos130.y.toFixed(2)} textAnchor='start'
+                fontSize='9' fill='#aaa'>{RANGE_MAX}%</text>
         </svg>
     );
 }
 
-interface Props {
-    config: RiskMonitorConfig;
-    currentPrice: number;
-}
+// ─── Card wrapper ────────────────────────────────────────────────────────────
+interface Props { config: RiskMonitorConfig; currentPrice: number; }
 
 export default function RiskGaugeWidget({ config, currentPrice }: Props) {
     const { baselinePrice, budget, groupName, dataSourceLabel, selectedItem } = config;
 
     const currentPct = baselinePrice > 0 ? (currentPrice / baselinePrice) * 100 : 0;
-    const ceilingPct = baselinePrice > 0 ? (budget / baselinePrice) * 100 : 110;
-    const isAlert = currentPct > ceilingPct;
+    const ceilingPct = baselinePrice > 0 ? (budget   / baselinePrice) * 100 : 110;
+    const isAlert    = currentPct > ceilingPct;
 
     const itemLabel = selectedItem?.name ?? selectedItem?.estimateNumber ?? selectedItem?.title ?? '—';
 
     return (
         <Box sx={{
             background: isAlert
-                ? 'linear-gradient(135deg, rgba(198,40,40,0.06) 0%, rgba(255,255,255,0.9) 100%)'
+                ? 'linear-gradient(135deg,rgba(198,40,40,0.06) 0%,rgba(255,255,255,0.92) 100%)'
                 : 'rgba(255,255,255,0.88)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
             borderRadius: 3,
             border: isAlert ? '1px solid rgba(198,40,40,0.35)' : '1px solid rgba(0,171,190,0.18)',
-            boxShadow: isAlert
-                ? '0 4px 24px rgba(198,40,40,0.12)'
-                : '0 4px 24px rgba(0,171,190,0.08)',
+            boxShadow: isAlert ? '0 4px 24px rgba(198,40,40,0.12)' : '0 4px 24px rgba(0,171,190,0.08)',
             p: 3,
-            transition: 'border 0.4s, box-shadow 0.4s, background 0.4s',
+            transition: 'all 0.4s',
         }}>
             {/* Header */}
             <Stack direction='row' alignItems='flex-start' justifyContent='space-between' sx={{ mb: 1 }}>
@@ -174,8 +153,7 @@ export default function RiskGaugeWidget({ config, currentPrice }: Props) {
                     <Stack direction='row' alignItems='center' spacing={1} sx={{ mb: 0.3 }}>
                         {isAlert
                             ? <WarningAmberIcon sx={{ color: RED, fontSize: '1.1rem' }} />
-                            : <MonitorHeartOutlinedIcon sx={{ color: TEAL, fontSize: '1.1rem' }} />
-                        }
+                            : <MonitorHeartOutlinedIcon sx={{ color: TEAL, fontSize: '1.1rem' }} />}
                         <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: isAlert ? RED : '#111' }}>
                             {groupName}
                         </Typography>
@@ -190,15 +168,15 @@ export default function RiskGaugeWidget({ config, currentPrice }: Props) {
                 )}
             </Stack>
 
-            {/* Gauge SVG */}
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Gauge currentPct={parseFloat(currentPct.toFixed(1))} ceilingPct={parseFloat(ceilingPct.toFixed(1))} />
+            {/* Gauge */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'visible' }}>
+                <Gauge currentPct={currentPct} ceilingPct={ceilingPct} />
             </Box>
 
             {/* Legend */}
             <Stack direction='row' justifyContent='space-between' sx={{ pt: 1.5, borderTop: '1px solid #f0f0f0', mt: 0.5 }}>
                 <Box>
-                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Market Baseline (100%)</Typography>
+                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.3 }}>Baseline (100%)</Typography>
                     <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: TEAL }}>
                         {formatCurrencyRounded(baselinePrice)} AMD
                     </Typography>
