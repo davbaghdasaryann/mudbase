@@ -137,6 +137,9 @@ export default function PerformanceActTable({
     const [acts, setActs] = useState<number[]>(record.acts ?? []);
     const [actsData, setActsData] = useState<ActData[]>(record.actsData ?? []);
     const [actsDates, setActsDates] = useState<{ from: string; to: string }[]>(record.actsDates ?? []);
+    const [editableActIndices, setEditableActIndices] = useState<Set<number>>(
+        () => new Set(record.acts && record.acts.length > 0 ? [record.acts.length - 1] : [])
+    );
 
     const [dateRangeOpen, setDateRangeOpen] = useState(false);
     const [pendingFrom, setPendingFrom] = useState('');
@@ -214,6 +217,7 @@ export default function PerformanceActTable({
         setActs(newActs);
         setActsData(newActsData);
         setActsDates(newActsDates);
+        setEditableActIndices(new Set([newActs.length - 1]));
         setColWidths(prev => [...prev, ...ACT_COL_DEFAULTS]);
         saveToDb(newActs, newActsData, newActsDates);
     }, [acts, actsData, actsDates, saveToDb]);
@@ -225,6 +229,14 @@ export default function PerformanceActTable({
         setActs(newActs);
         setActsData(newActsData);
         setActsDates(newActsDates);
+        setEditableActIndices(prev => {
+            const next = new Set<number>();
+            for (const idx of prev) {
+                if (idx < actIdx) next.add(idx);
+                else if (idx > actIdx) next.add(idx - 1);
+            }
+            return next;
+        });
         setColWidths(prev => {
             const copy = [...prev];
             copy.splice(BASE_COLS.length + actIdx * 3, 3);
@@ -436,17 +448,26 @@ export default function PerformanceActTable({
                     const vals = actsData[actIdx]?.[String(row._id)];
                     const actTotal = parseNum(vals?.unitPrice ?? '0') * parseNum(vals?.quantity ?? '0');
                     const qtyVal = vals?.quantity ?? '';
+                    const isEditable = editableActIndices.has(actIdx);
                     return (
                         <>
-                            <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', padding: '3px 6px' })}>
-                                <InputBase value={vals?.unitPrice ?? ''} onChange={e => handleActValue(actIdx, String(row._id), 'unitPrice', e.target.value)} placeholder='0'
-                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
-                                    onMouseDown={e => e.stopPropagation()} />
+                            <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
+                                {isEditable ? (
+                                    <InputBase value={vals?.unitPrice ?? ''} onChange={e => handleActValue(actIdx, String(row._id), 'unitPrice', e.target.value)} placeholder='0'
+                                        sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
+                                        onMouseDown={e => e.stopPropagation()} />
+                                ) : (
+                                    <span style={{ fontSize: '0.8rem', color: '#666' }}>{vals?.unitPrice ?? ''}</span>
+                                )}
                             </td>
-                            <td key={`${actIdx}-qty`} style={td({ textAlign: 'right', padding: '3px 6px' })}>
-                                <InputBase value={qtyVal} onChange={e => handleActValue(actIdx, String(row._id), 'quantity', e.target.value)} placeholder='0'
-                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
-                                    onMouseDown={e => e.stopPropagation()} />
+                            <td key={`${actIdx}-qty`} style={td({ textAlign: 'right', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
+                                {isEditable ? (
+                                    <InputBase value={qtyVal} onChange={e => handleActValue(actIdx, String(row._id), 'quantity', e.target.value)} placeholder='0'
+                                        sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
+                                        onMouseDown={e => e.stopPropagation()} />
+                                ) : (
+                                    <span style={{ fontSize: '0.8rem', color: '#666' }}>{qtyVal}</span>
+                                )}
                             </td>
                             <td key={`${actIdx}-tot`} style={td({ textAlign: 'right', fontWeight: 600, color: mainPrimaryColor })}>{actTotal > 0 ? formatCurrencyRounded(actTotal) : ''}</td>
                         </>
@@ -506,47 +527,64 @@ export default function PerformanceActTable({
                     </colgroup>
                     <thead>
                         <tr>
-                            {BASE_COLS.map((col, i) => (
-                                <th key={col.key} rowSpan={acts.length > 0 ? 2 : 1}
-                                    style={th({ textAlign: i === 0 ? 'center' : i >= 3 ? 'right' : 'left', verticalAlign: 'middle' })}>
-                                    {i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : i === 5 ? t('Total') : i === 6 ? t('Complete') : t('Remaining')}
-                                    <ResizeHandle onDragStart={e => startResize(i, e)} />
-                                </th>
-                            ))}
-                            {acts.map((num, ai) => (
-                                <th key={num} colSpan={3}
-                                    style={th({ textAlign: 'center', backgroundColor: '#e6f7f9', borderLeft: '2px solid #b2e8ed', verticalAlign: 'middle' })}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                            {t('ACT').toUpperCase()}-{num}
-                                            <span
-                                                title={t('Delete ACT')}
-                                                onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
-                                                style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, marginLeft: 2, display: 'inline-flex', alignItems: 'center' }}
-                                                onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
-                                                onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
-                                            >×</span>
-                                        </span>
-                                        {actsDates[ai] && (
-                                            <span style={{ fontSize: '0.68rem', fontWeight: 400, color: '#555' }}>
-                                                {actsDates[ai].from} – {actsDates[ai].to}
+                            {BASE_COLS.map((col, i) => {
+                                const label = i === 0 ? t('No.') : i === 1 ? t('Description of Work') : i === 2 ? t('Unit') : i === 3 ? t('Quantity') : i === 4 ? t('Unit Price') : i === 5 ? t('Total') : i === 6 ? t('Complete') : t('Remaining');
+                                return (
+                                    <th key={col.key} rowSpan={acts.length > 0 ? 2 : 1} title={label}
+                                        style={th({ textAlign: i === 0 ? 'center' : i >= 3 ? 'right' : 'left', verticalAlign: 'middle' })}>
+                                        {label}
+                                        <ResizeHandle onDragStart={e => startResize(i, e)} />
+                                    </th>
+                                );
+                            })}
+                            {acts.map((num, ai) => {
+                                const isEditable = editableActIndices.has(ai);
+                                const actTitle = `${t('ACT').toUpperCase()}-${num}${actsDates[ai] ? ` (${actsDates[ai].from} – ${actsDates[ai].to})` : ''}`;
+                                return (
+                                    <th key={num} colSpan={3} title={actTitle}
+                                        style={th({ textAlign: 'center', backgroundColor: isEditable ? '#e6f7f9' : '#f0f0f0', borderLeft: '2px solid #b2e8ed', verticalAlign: 'middle', opacity: isEditable ? 1 : 0.7 })}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                                {t('ACT').toUpperCase()}-{num}
+                                                <span
+                                                    title={isEditable ? t('Lock ACT') : t('Edit ACT')}
+                                                    onMouseDown={e => { e.stopPropagation(); setEditableActIndices(prev => { const next = new Set(prev); if (next.has(ai)) next.delete(ai); else next.add(ai); return next; }); }}
+                                                    style={{ cursor: 'pointer', color: isEditable ? mainPrimaryColor : '#bbb', fontSize: '0.9rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = mainPrimaryColor; }}
+                                                    onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = isEditable ? mainPrimaryColor : '#bbb'; }}
+                                                >✎</span>
+                                                <span
+                                                    title={t('Delete ACT')}
+                                                    onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
+                                                    style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
+                                                    onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
+                                                >×</span>
                                             </span>
-                                        )}
-                                    </div>
-                                </th>
-                            ))}
+                                            {actsDates[ai] && (
+                                                <span style={{ fontSize: '0.68rem', fontWeight: 400, color: '#555' }}>
+                                                    {actsDates[ai].from} – {actsDates[ai].to}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </th>
+                                );
+                            })}
                         </tr>
                         {acts.length > 0 && (
                             <tr>
                                 {acts.map((num, ai) => {
                                     const base = BASE_COLS.length + ai * 3;
-                                    return ACT_COL_KEYS.map((k, ki) => (
-                                        <th key={`${num}-${k}`}
-                                            style={th({ textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: '#00818f', backgroundColor: HDR_BG, borderBottom: `1px solid #b2e8ed`, ...(ki === 0 ? actCellBorderLeft : {}), verticalAlign: 'middle' })}>
-                                            {k === 'up' ? t('Unit Price') : k === 'qty' ? t('Quantity') : t('Total')}
-                                            <ResizeHandle onDragStart={e => startResize(base + ki, e)} />
-                                        </th>
-                                    ));
+                                    return ACT_COL_KEYS.map((k, ki) => {
+                                        const subLabel = k === 'up' ? t('Unit Price') : k === 'qty' ? t('Quantity') : t('Total');
+                                        return (
+                                            <th key={`${num}-${k}`} title={subLabel}
+                                                style={th({ textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: '#00818f', backgroundColor: HDR_BG, borderBottom: `1px solid #b2e8ed`, ...(ki === 0 ? actCellBorderLeft : {}), verticalAlign: 'middle' })}>
+                                                {subLabel}
+                                                <ResizeHandle onDragStart={e => startResize(base + ki, e)} />
+                                            </th>
+                                        );
+                                    });
                                 })}
                             </tr>
                         )}
