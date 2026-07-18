@@ -274,7 +274,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
                     ...(!isSuperAdmin ? [
                         { labelKey: 'Packages', icon: <Inventory2OutlinedIcon /> },
-                        { labelKey: 'Risk Monitoring', icon: <MonitorHeartOutlinedIcon /> },
                     ] : []),
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
                     <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
@@ -434,6 +433,7 @@ function useMainNavigation() {
             });
             navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
             navigation.push({segment: 'costing', title: t('Costing'), icon: <RequestQuoteOutlinedIcon />});
+            navigation.push({segment: 'risk-monitoring', title: t('Risk Monitoring'), icon: <MonitorHeartOutlinedIcon />});
         }
 
         if (isSuperAdmin) {

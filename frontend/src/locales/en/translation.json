@@ -288,5 +288,16 @@
   "Remaining": "Remaining",
   "Complete": "Complete",
   "Select ACT": "Select ACT",
-  "Generate": "Generate"
+  "Generate": "Generate",
+  "Track cost variances and budget overruns against your approved ceiling.": "Track cost variances and budget overruns against your approved ceiling.",
+  "Set Up Risk Monitoring": "Set Up Risk Monitoring",
+  "Select an estimation and define your maximum approved budget": "Select an estimation and define your maximum approved budget",
+  "Maximum Approved Budget": "Maximum Approved Budget",
+  "This defines the ceiling — the system will alert you when costs exceed this amount.": "This defines the ceiling — the system will alert you when costs exceed this amount.",
+  "Generate Risk Monitor": "Generate Risk Monitor",
+  "Budget ceiling": "Budget ceiling",
+  "Change": "Change",
+  "Change setup": "Change setup",
+  "Risk gauge widget — coming next": "Risk gauge widget — coming next",
+  "Total Cost": "Total Cost"
 }
