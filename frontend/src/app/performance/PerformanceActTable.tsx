@@ -558,7 +558,7 @@ export default function PerformanceActTable({
             <Dialog open={exportPickerOpen} onClose={() => setExportPickerOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
                     <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
-                        <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
+                        <ImgElement src='/images/logo_square.svg' sx={{ height: 28, width: 28 }} />
                         <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
                             {t('Select ACT')}
                         </Typography>
@@ -600,7 +600,7 @@ export default function PerformanceActTable({
             <Dialog open={dateRangeOpen} onClose={closeDateDialog} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
                     <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
-                        <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
+                        <ImgElement src='/images/logo_square.svg' sx={{ height: 28, width: 28 }} />
                         <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
                             {t('Choose Date Range')}
                         </Typography>
