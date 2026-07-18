@@ -87,8 +87,6 @@ const th = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     border: `1px solid ${BORDER}`,
     padding: '6px 8px',
     whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
     position: 'relative',
     fontWeight: 700,
     fontSize: '0.8rem',
@@ -104,6 +102,7 @@ const td = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    maxWidth: 0,
     fontSize: '0.82rem',
     verticalAlign: 'middle',
     ...extra,
@@ -144,6 +143,7 @@ export default function PerformanceActTable({
     const [dateRangeOpen, setDateRangeOpen] = useState(false);
     const [pendingFrom, setPendingFrom] = useState('');
     const [pendingTo, setPendingTo] = useState('');
+    const [editingActDateIdx, setEditingActDateIdx] = useState<number | null>(null);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
@@ -200,7 +200,8 @@ export default function PerformanceActTable({
     const startResize = useCallback((colIdx: number, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        resizingCol.current = { colIdx, startX: e.clientX, startW: colWidths[colIdx] ?? 100 };
+        const startW = Math.round((e.currentTarget as HTMLDivElement).parentElement?.getBoundingClientRect().width ?? colWidths[colIdx] ?? 100);
+        resizingCol.current = { colIdx, startX: e.clientX, startW };
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
     }, [colWidths]);
@@ -245,12 +246,26 @@ export default function PerformanceActTable({
         saveToDb(newActs, newActsData, newActsDates);
     }, [acts, actsData, actsDates, saveToDb]);
 
-    const handleConfirmDate = useCallback(() => {
+    const closeDateDialog = useCallback(() => {
         setDateRangeOpen(false);
-        handleAddAct(rows, pendingFrom, pendingTo);
+        setEditingActDateIdx(null);
         setPendingFrom('');
         setPendingTo('');
-    }, [handleAddAct, rows, pendingFrom, pendingTo]);
+    }, []);
+
+    const handleConfirmDate = useCallback(() => {
+        setDateRangeOpen(false);
+        if (editingActDateIdx !== null) {
+            const newActsDates = actsDates.map((d, i) => i === editingActDateIdx ? { from: pendingFrom, to: pendingTo } : d);
+            setActsDates(newActsDates);
+            setEditingActDateIdx(null);
+            saveToDb(acts, actsData, newActsDates);
+        } else {
+            handleAddAct(rows, pendingFrom, pendingTo);
+        }
+        setPendingFrom('');
+        setPendingTo('');
+    }, [editingActDateIdx, pendingFrom, pendingTo, acts, actsData, actsDates, handleAddAct, rows, saveToDb]);
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -493,7 +508,7 @@ export default function PerformanceActTable({
             </Box>
 
             {/* Date range dialog */}
-            <Dialog open={dateRangeOpen} onClose={() => setDateRangeOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+            <Dialog open={dateRangeOpen} onClose={closeDateDialog} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
                     <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
                         <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
@@ -511,7 +526,7 @@ export default function PerformanceActTable({
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
-                    <Button onClick={() => setDateRangeOpen(false)} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>{t('Cancel')}</Button>
+                    <Button onClick={closeDateDialog} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>{t('Cancel')}</Button>
                     <Button variant='contained' disabled={!datesValid} onClick={handleConfirmDate}
                         sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor }}>
                         {t('Confirm')}
@@ -521,7 +536,7 @@ export default function PerformanceActTable({
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: acts.length > 0 ? 'grab' : 'default' }}>
-                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: colWidths.reduce((s, w) => s + w, 0) }}>
+                <table style={{ tableLayout: 'auto', borderCollapse: 'collapse', width: '100%', minWidth: colWidths.reduce((s, w) => s + w, 0) }}>
                     <colgroup>
                         {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                     </colgroup>
@@ -562,7 +577,12 @@ export default function PerformanceActTable({
                                                 >×</span>
                                             </span>
                                             {actsDates[ai] && (
-                                                <span style={{ fontSize: '0.68rem', fontWeight: 400, color: '#555' }}>
+                                                <span
+                                                    onMouseDown={e => { e.stopPropagation(); setEditingActDateIdx(ai); setPendingFrom(actsDates[ai].from); setPendingTo(actsDates[ai].to); setDateRangeOpen(true); }}
+                                                    style={{ fontSize: '0.68rem', fontWeight: 400, color: '#555', cursor: 'pointer', textDecoration: 'underline dotted', textUnderlineOffset: 2 }}
+                                                    onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = mainPrimaryColor; }}
+                                                    onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#555'; }}
+                                                >
                                                     {actsDates[ai].from} – {actsDates[ai].to}
                                                 </span>
                                             )}
