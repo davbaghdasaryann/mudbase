@@ -86,9 +86,9 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
         return () => clearTimeout(id);
     }, []);
 
-    const uid  = useId().replace(/:/g, '');
-    const gT   = `gT${uid}`, gA = `gA${uid}`, gR = `gR${uid}`;
-    const gHub = `gHub${uid}`;
+    const uid   = useId().replace(/:/g, '');
+    const gT    = `gT${uid}`, gA = `gA${uid}`, gR = `gR${uid}`, gGray = `gGray${uid}`;
+    const gHub  = `gHub${uid}`;
 
     const W = 360, H = 220;
     const CX = 180, CY = 165;
@@ -102,6 +102,10 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
     const angBase    = pctToAngle(100);   // exactly 90° = 12 o'clock
     const angCeiling = pctToAngle(Math.min(ceilingPct, RANGE_MAX));
     const angCurrent = pctToAngle(Math.min(Math.max(currentPct, RANGE_MIN), RANGE_MAX));
+
+    // Min price zone: gray from left edge up to min price, teal starts there
+    const hasMinZone = minPct != null && minPct >= RANGE_MIN && minPct <= 100;
+    const angMin     = hasMinZone ? pctToAngle(minPct!) : angStart;
 
     const isAlert     = currentPct > ceilingPct;
     const needleColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
@@ -149,6 +153,10 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
                     — unlike linear gradients which fail on small arcs.
                     Gradient: dark at inner edge → bright at outer edge (neon glow look).
                 */}
+                <radialGradient id={gGray} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
+                    <stop offset={innerPct}  stopColor='#78909C' />  {/* inner — blue-gray */}
+                    <stop offset='100%'      stopColor='#CFD8DC' />  {/* outer — light gray */}
+                </radialGradient>
                 <radialGradient id={gT} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
                     <stop offset={innerPct}  stopColor='#00695C' />  {/* inner — dark teal */}
                     <stop offset='100%'      stopColor='#80DEEA' />  {/* outer — bright cyan */}
@@ -173,8 +181,15 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
             {/* Soft dial plate */}
             <circle cx={CX} cy={CY} r={R + 2} fill='rgba(0,0,0,0.03)' />
 
-            {/* Zone 1 — Teal: 0% → 100% */}
-            <path d={arcPath(CX, CY, trackR, angStart, angBase)}
+            {/* Zone 0 — Gray: RANGE_MIN → min price (below cheapest market) */}
+            {hasMinZone && (
+                <path d={arcPath(CX, CY, trackR, angStart, angMin)}
+                    fill='none' stroke={`url(#${gGray})`} strokeWidth={SW} strokeLinecap='butt'
+                />
+            )}
+
+            {/* Zone 1 — Teal: min price (or RANGE_MIN) → 100% */}
+            <path d={arcPath(CX, CY, trackR, angMin, angBase)}
                 fill='none' stroke={`url(#${gT})`} strokeWidth={SW} strokeLinecap='butt'
                 />
 
@@ -194,25 +209,21 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
 
 
             {/* Rounded terminal caps */}
-            <circle cx={capLeft.x}  cy={capLeft.y}  r={SW / 2} fill='#00695C' />
+            <circle cx={capLeft.x}  cy={capLeft.y}  r={SW / 2} fill={hasMinZone ? '#78909C' : '#00695C'} />
             <circle cx={capRight.x} cy={capRight.y} r={SW / 2} fill='#C62828' />
 
             {/* Zone separators */}
+            {hasMinZone && sep(angMin)}
             {sep(angBase)}
             {ceilingPct > 100 && ceilingPct <= RANGE_MAX && sep(angCeiling)}
 
-            {/* Minimum market price marker */}
+            {/* Minimum market price label */}
             {minPct != null && minPct >= RANGE_MIN && minPct <= RANGE_MAX && (() => {
-                const ang    = pctToAngle(minPct);
-                const label  = polarToXY(CX, CY, outerR + 14, ang);
+                const label = polarToXY(CX, CY, outerR + 14, pctToAngle(minPct));
                 return (
-                    <>
-                        {tick(ang, 'white', 2)}
-                        {tick(ang, '#004D40')}
-                        <text x={label.x.toFixed(1)} y={label.y.toFixed(1)}
-                            textAnchor='middle' dominantBaseline='middle'
-                            fontSize='8' fontWeight='700' fill='#004D40'>MIN</text>
-                    </>
+                    <text x={label.x.toFixed(1)} y={label.y.toFixed(1)}
+                        textAnchor='middle' dominantBaseline='middle'
+                        fontSize='8' fontWeight='700' fill='#546E7A'>MIN</text>
                 );
             })()}
 
