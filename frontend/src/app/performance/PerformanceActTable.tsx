@@ -9,6 +9,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CloseIcon from '@mui/icons-material/Close';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import { useTranslation } from 'react-i18next';
@@ -599,17 +600,17 @@ export default function PerformanceActTable({
                                                 <span
                                                     title={isEditable ? t('Lock ACT') : t('Edit ACT')}
                                                     onMouseDown={e => { e.stopPropagation(); setLockedActIndices(prev => { const next = new Set(prev); if (next.has(ai)) next.delete(ai); else next.add(ai); return next; }); }}
-                                                    style={{ cursor: 'pointer', color: isEditable ? mainPrimaryColor : '#bbb', fontSize: '1rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    style={{ cursor: 'pointer', color: isEditable ? mainPrimaryColor : '#bbb', display: 'inline-flex', alignItems: 'center' }}
                                                     onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = mainPrimaryColor; }}
                                                     onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = isEditable ? mainPrimaryColor : '#bbb'; }}
-                                                >✎</span>
+                                                ><EditOutlinedIcon sx={{ fontSize: '0.95rem' }} /></span>
                                                 <span
                                                     title={t('Delete ACT')}
                                                     onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
-                                                    style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    style={{ cursor: 'pointer', color: '#bbb', display: 'inline-flex', alignItems: 'center' }}
                                                     onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
                                                     onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
-                                                >×</span>
+                                                ><CloseIcon sx={{ fontSize: '0.95rem' }} /></span>
                                             </span>
                                             {actsDates[ai] && (
                                                 <span
