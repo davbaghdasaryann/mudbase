@@ -40,6 +40,7 @@ export interface RiskMonitorConfig {
 interface Props {
     onClose: () => void;
     onConfirm: (config: RiskMonitorConfig) => void;
+    presetGroupName?: string; // if set, skip step 0 and use this as group name
 }
 
 function getBaselinePrice(item: any, dataSource: string): number {
@@ -49,10 +50,12 @@ function getBaselinePrice(item: any, dataSource: string): number {
     return item?.averagePrice ?? item?.changableAveragePrice ?? 0;
 }
 
-export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) {
+export default function RiskMonitorBuilderDialog({ onClose, onConfirm, presetGroupName }: Props) {
     const { t } = useTranslation();
-    const [step, setStep] = useState(0);
-    const [groupName, setGroupName] = useState('');
+    const firstStep = presetGroupName ? 1 : 0;
+    const STEP_COUNT = presetGroupName ? 3 : 4;
+    const [step, setStep] = useState(firstStep);
+    const [groupName, setGroupName] = useState(presetGroupName ?? '');
     const [dataSource, setDataSource] = useState('');
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [budgetInput, setBudgetInput] = useState('');
@@ -63,6 +66,10 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
         ? Math.round((budgetValue / baselinePrice) * 100)
         : null;
 
+    // Display step index (0-based from user's perspective)
+    const displayStep = step - firstStep;
+    const lastStep = firstStep + STEP_COUNT - 1;
+
     const canProceed = () => {
         if (step === 0) return !!groupName.trim();
         if (step === 1) return !!dataSource;
@@ -71,15 +78,13 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
         return false;
     };
 
-    const handleNext = () => { if (step < STEP_COUNT - 1) setStep(s => s + 1); };
-    const handleBack = () => {
-        if (step > 0) setStep(s => s - 1);
-    };
+    const handleNext = () => { if (step < lastStep) setStep(s => s + 1); };
+    const handleBack = () => { if (step > firstStep) setStep(s => s - 1); };
 
     const handleFinish = () => {
         const src = CATALOG_SOURCES.find(s => s.id === dataSource);
         onConfirm({
-            groupName,
+            groupName: presetGroupName ?? groupName,
             dataSource,
             dataSourceLabel: src ? t(src.labelKey) : dataSource,
             selectedItem,
@@ -88,9 +93,10 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
         });
     };
 
-    const STEP_LABELS = ['Group Name', 'Select Catalog', 'Preliminary View', 'Set Budget'];
-    const primaryLabel = step === STEP_COUNT - 1 ? t('Confirm') : t('Continue');
-    const secondaryLabel = step > 0 ? t('Previous') : t('Cancel');
+    const ALL_STEP_LABELS = ['Group Name', 'Select Catalog', 'Select Item', 'Set Budget'];
+    const STEP_LABELS = presetGroupName ? ALL_STEP_LABELS.slice(1) : ALL_STEP_LABELS;
+    const primaryLabel = step === lastStep ? t('Confirm') : t('Continue');
+    const secondaryLabel = step > firstStep ? t('Previous') : t('Cancel');
 
     return (
         <Dialog
@@ -110,11 +116,11 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
                     {t('Configuration')}
                 </Typography>
                 <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.25 }}>
-                    {t('Step {{current}} of {{total}}', { current: step + 1, total: STEP_COUNT })} — {t(STEP_LABELS[step])}
+                    {t('Step {{current}} of {{total}}', { current: displayStep + 1, total: STEP_COUNT })} — {t(STEP_LABELS[displayStep])}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
                     {Array.from({ length: STEP_COUNT }).map((_, i) => (
-                        <Box key={i} sx={{ flex: 1, height: 4, borderRadius: 1, bgcolor: i <= step ? TEAL : 'grey.300', transition: 'background-color 0.3s' }} />
+                        <Box key={i} sx={{ flex: 1, height: 4, borderRadius: 1, bgcolor: i <= displayStep ? TEAL : 'grey.300', transition: 'background-color 0.3s' }} />
                     ))}
                 </Box>
             </Box>
@@ -300,11 +306,11 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm }: Props) 
             </DialogContent>
 
             <DialogActions sx={{ px: 3, py: 2.5, borderTop: '1px solid', borderColor: 'divider', gap: 1 }}>
-                <Button onClick={step > 0 ? handleBack : onClose} sx={{ color: TEAL, textTransform: 'none', fontWeight: 600 }}>
+                <Button onClick={step > firstStep ? handleBack : onClose} sx={{ color: TEAL, textTransform: 'none', fontWeight: 600 }}>
                     {secondaryLabel}
                 </Button>
                 <Button variant='contained' disabled={!canProceed()}
-                    onClick={step === STEP_COUNT - 1 ? handleFinish : handleNext}
+                    onClick={step === lastStep ? handleFinish : handleNext}
                     sx={{ borderRadius: '20px', px: 3, bgcolor: TEAL, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#006f7a' } }}>
                     {primaryLabel}
                 </Button>

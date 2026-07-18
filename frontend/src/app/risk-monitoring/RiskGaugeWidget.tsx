@@ -1,11 +1,36 @@
 'use client';
 
-import React from 'react';
-import { Box, Typography, Stack } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Stack, IconButton, Tooltip } from '@mui/material';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { RiskMonitorConfig } from './RiskMonitorBuilderDialog';
 import { formatCurrencyRounded } from '@/lib/format_currency';
+import * as Api from '@/api';
+
+function useLivePrice(config: RiskMonitorConfig): number {
+    const [price, setPrice] = useState(config.baselinePrice);
+    useEffect(() => {
+        setPrice(config.baselinePrice);
+        const fetch = async () => {
+            try {
+                if (config.dataSource === 'labor' || config.dataSource === 'materials') {
+                    const type = config.dataSource === 'labor' ? 'labor' : 'material';
+                    const data = await Api.requestSession<any>({ command: `${type}/fetch_item_price`, args: { itemId: config.selectedItem._id } });
+                    const p = data?.price ?? data?.averagePrice;
+                    if (p) setPrice(p);
+                } else {
+                    const data = await Api.requestSession<any>({ command: 'estimate/get', args: { estimateId: config.selectedItem._id } });
+                    const p = data?.totalCostWithOtherExpenses ?? data?.totalCost;
+                    if (p) setPrice(p);
+                }
+            } catch { }
+        };
+        fetch();
+    }, [config]);
+    return price;
+}
 
 const TEAL  = '#00ABBE';
 const RED   = '#c62828';
@@ -123,10 +148,11 @@ function Gauge({ currentPct, ceilingPct }: { currentPct: number; ceilingPct: num
 }
 
 // ─── Card wrapper ────────────────────────────────────────────────────────────
-interface Props { config: RiskMonitorConfig; currentPrice: number; }
+interface Props { config: RiskMonitorConfig; onDelete?: () => void; }
 
-export default function RiskGaugeWidget({ config, currentPrice }: Props) {
+export default function RiskGaugeWidget({ config, onDelete }: Props) {
     const { baselinePrice, budget, groupName, dataSourceLabel, selectedItem } = config;
+    const currentPrice = useLivePrice(config);
 
     const currentPct = baselinePrice > 0 ? (currentPrice / baselinePrice) * 100 : 0;
     const ceilingPct = baselinePrice > 0 ? (budget   / baselinePrice) * 100 : 110;
@@ -161,11 +187,21 @@ export default function RiskGaugeWidget({ config, currentPrice }: Props) {
                     <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{dataSourceLabel}</Typography>
                     <Typography sx={{ fontSize: '0.78rem', color: '#555', mt: 0.2, fontWeight: 500 }}>{itemLabel}</Typography>
                 </Box>
-                {isAlert && (
-                    <Box sx={{ px: 1.5, py: 0.5, borderRadius: 2, bgcolor: 'rgba(198,40,40,0.1)', border: '1px solid rgba(198,40,40,0.3)' }}>
-                        <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: RED, letterSpacing: '0.05em' }}>OVERRUN</Typography>
-                    </Box>
-                )}
+                <Stack direction='row' spacing={0.5} alignItems='center'>
+                    {isAlert && (
+                        <Box sx={{ px: 1.5, py: 0.5, borderRadius: 2, bgcolor: 'rgba(198,40,40,0.1)', border: '1px solid rgba(198,40,40,0.3)' }}>
+                            <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: RED, letterSpacing: '0.05em' }}>OVERRUN</Typography>
+                        </Box>
+                    )}
+                    {onDelete && (
+                        <Tooltip title='Remove monitor'>
+                            <IconButton size='small' onClick={onDelete}
+                                sx={{ color: '#d0d0d0', '&:hover': { color: RED } }}>
+                                <DeleteOutlineIcon sx={{ fontSize: 17 }} />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                </Stack>
             </Stack>
 
             {/* Gauge */}
