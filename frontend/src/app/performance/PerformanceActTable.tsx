@@ -94,7 +94,7 @@ const th = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     position: 'relative',
     fontWeight: 700,
     fontSize: '0.8rem',
-    color: mainPrimaryColor,
+    color: '#111',
     backgroundColor: HDR_BG,
     borderBottom: `2px solid ${mainPrimaryColor}`,
     ...extra,
@@ -511,19 +511,21 @@ export default function PerformanceActTable({
 
     return (
         <Box sx={{ mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mb: 1.5 }}>
-                <Button variant='outlined' size='small' startIcon={<InfoOutlinedIcon />}
-                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                    Տեղեկատվություն
-                </Button>
-                <Button variant='outlined' size='small' startIcon={<CalculateOutlinedIcon />}
-                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                    Մնացորդային հաշվարկ
-                </Button>
-                <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
-                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                    {t('Performance Calculation')}
-                </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                    <Button variant='outlined' size='small' startIcon={<InfoOutlinedIcon />}
+                        sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                        Տեղեկատվություն
+                    </Button>
+                    <Button variant='outlined' size='small' startIcon={<CalculateOutlinedIcon />}
+                        sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                        Մնացորդային հաշվարկ
+                    </Button>
+                    <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
+                        sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                        {t('Performance Calculation')}
+                    </Button>
+                </Box>
                 <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={() => { setPendingFrom(''); setPendingTo(''); setDateRangeOpen(true); }}
                     sx={{ borderRadius: '20px', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}>
                     {t('Add Performance')}
