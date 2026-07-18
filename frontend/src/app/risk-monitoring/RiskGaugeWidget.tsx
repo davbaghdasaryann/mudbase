@@ -57,14 +57,18 @@ const TEAL  = '#00ABBE';
 const RED   = '#c62828';
 const AMBER = '#f57c00';
 
-const START_DEG = 195;   // 0%   = bottom-left
-const SWEEP_DEG = 210;   // 210° arc
-const RANGE_MAX = 130;   // 130% = bottom-right
+const START_DEG  = 195;  // left endpoint
+const SWEEP_DEG  = 210;  // total arc
+const RANGE_MIN  = 70;   // 70%  = far left  (below baseline = safe)
+const RANGE_MAX  = 130;  // 130% = far right (well above baseline)
+const RANGE_SPAN = RANGE_MAX - RANGE_MIN; // 60
 
+// 100% (baseline) lands exactly at 90° = 12 o'clock, giving teal and red equal visual weight
 function toRad(deg: number) { return (deg * Math.PI) / 180; }
 
 function pctToAngle(pct: number): number {
-    return START_DEG - (Math.max(0, Math.min(pct, RANGE_MAX)) / RANGE_MAX) * SWEEP_DEG;
+    const c = Math.max(RANGE_MIN, Math.min(pct, RANGE_MAX));
+    return START_DEG - ((c - RANGE_MIN) / RANGE_SPAN) * SWEEP_DEG;
 }
 
 function polarToXY(cx: number, cy: number, r: number, deg: number) {
@@ -95,7 +99,7 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
 
     const uid  = useId().replace(/:/g, '');
     const gT   = `gT${uid}`, gA = `gA${uid}`, gR = `gR${uid}`;
-    const gHub = `gHub${uid}`, gGlow = `gGl${uid}`;
+    const gHub = `gHub${uid}`;
 
     const W = 360, H = 220;
     const CX = 180, CY = 165;
@@ -104,11 +108,11 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
     const innerR  = trackR - SW / 2;  // 108 — inner edge
     const outerR  = trackR + SW / 2;  // 130 — outer edge
 
-    const angStart   = pctToAngle(0);
+    const angStart   = pctToAngle(RANGE_MIN);
     const angEnd     = pctToAngle(RANGE_MAX);
-    const angBase    = pctToAngle(100);
+    const angBase    = pctToAngle(100);   // exactly 90° = 12 o'clock
     const angCeiling = pctToAngle(Math.min(ceilingPct, RANGE_MAX));
-    const angCurrent = pctToAngle(Math.min(currentPct, RANGE_MAX));
+    const angCurrent = pctToAngle(Math.min(Math.max(currentPct, RANGE_MIN), RANGE_MAX));
 
     const isAlert     = currentPct > ceilingPct;
     const needleColor = isAlert ? RED : currentPct > 100 ? AMBER : TEAL;
@@ -161,12 +165,12 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
                     <stop offset='100%'      stopColor='#80DEEA' />  {/* outer — bright cyan */}
                 </radialGradient>
                 <radialGradient id={gA} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
-                    <stop offset={innerPct}  stopColor='#BF360C' />  {/* inner — burnt orange */}
+                    <stop offset={innerPct}  stopColor='#FF6D00' />  {/* inner — vivid orange */}
                     <stop offset='100%'      stopColor='#FFE082' />  {/* outer — warm gold */}
                 </radialGradient>
                 <radialGradient id={gR} cx={CX} cy={CY} r={outerR} gradientUnits='userSpaceOnUse'>
-                    <stop offset={innerPct}  stopColor='#7F0000' />  {/* inner — dark crimson */}
-                    <stop offset='100%'      stopColor='#EF9A9A' />  {/* outer — soft red */}
+                    <stop offset={innerPct}  stopColor='#C62828' />  {/* inner — clear red */}
+                    <stop offset='100%'      stopColor='#EF9A9A' />  {/* outer — soft pink-red */}
                 </radialGradient>
 
                 {/* Metallic hub */}
@@ -175,12 +179,6 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
                     <stop offset='50%'  stopColor='#e0e0e0' />
                     <stop offset='100%' stopColor='#9e9e9e' />
                 </radialGradient>
-
-                {/* Arc glow */}
-                <filter id={gGlow} x='-25%' y='-25%' width='150%' height='150%'>
-                    <feGaussianBlur stdDeviation='2' result='blur' />
-                    <feMerge><feMergeNode in='blur' /><feMergeNode in='SourceGraphic' /></feMerge>
-                </filter>
             </defs>
 
             {/* Soft dial plate */}
@@ -189,23 +187,26 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
             {/* Zone 1 — Teal: 0% → 100% */}
             <path d={arcPath(CX, CY, trackR, angStart, angBase)}
                 fill='none' stroke={`url(#${gT})`} strokeWidth={SW} strokeLinecap='butt'
-                filter={`url(#${gGlow})`} />
+                />
+
 
             {/* Zone 2 — Amber: 100% → ceiling% */}
             {ceilingPct > 100 && (
                 <path d={arcPath(CX, CY, trackR, angBase, angCeiling)}
                     fill='none' stroke={`url(#${gA})`} strokeWidth={SW} strokeLinecap='butt'
-                    filter={`url(#${gGlow})`} />
+                    />
+
             )}
 
             {/* Zone 3 — Red: ceiling% → 130% */}
             <path d={arcPath(CX, CY, trackR, angCeiling, angEnd)}
                 fill='none' stroke={`url(#${gR})`} strokeWidth={SW} strokeLinecap='butt'
-                filter={`url(#${gGlow})`} />
+                />
+
 
             {/* Rounded terminal caps */}
             <circle cx={capLeft.x}  cy={capLeft.y}  r={SW / 2} fill='#00695C' />
-            <circle cx={capRight.x} cy={capRight.y} r={SW / 2} fill='#7F0000' />
+            <circle cx={capRight.x} cy={capRight.y} r={SW / 2} fill='#C62828' />
 
             {/* Zone separators */}
             {sep(angBase)}
@@ -259,7 +260,7 @@ function Gauge({ currentPct, ceilingPct, minPct }: GaugeProps) {
             <text x={CX} y={CY + 44} textAnchor='middle' fontSize='10' fill='#aaa'>of baseline</text>
 
             {/* Arc end labels */}
-            <text x={pos0.x}   y={pos0.y}   textAnchor='end'    fontSize='9' fill='#aaa'>0%</text>
+            <text x={pos0.x}   y={pos0.y}   textAnchor='end'    fontSize='9' fill='#aaa'>{RANGE_MIN}%</text>
             <text x={pos100.x} y={pos100.y} textAnchor='middle' fontSize='9' fill='#777'>100%</text>
             <text x={pos130.x} y={pos130.y} textAnchor='start'  fontSize='9' fill='#aaa'>{RANGE_MAX}%</text>
         </svg>
