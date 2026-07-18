@@ -428,6 +428,14 @@ export default function PerformanceActTable({
     if (rows.length === 0) return <Typography variant='body2' color='text.secondary' sx={{ py: 4, textAlign: 'center' }}>{t('No data for selected period')}</Typography>;
 
     const grandTotal = rows.reduce((sum, r) => sum + (r.cost ?? 0), 0);
+    const grandTotalActAmounts = acts.map((_, ai) =>
+        rows.reduce((s, r) => {
+            const v = actsData[ai]?.[String(r._id)];
+            return s + parseNum(v?.unitPrice ?? '0') * parseNum(v?.quantity ?? '0');
+        }, 0)
+    );
+    const grandTotalAllActs = grandTotalActAmounts.reduce((s, v) => s + v, 0);
+    const grandPct = grandTotal > 0 ? Math.round((grandTotalAllActs / grandTotal) * 100) : 0;
 
     const subsectionsBySection = new Map<string, Subsection[]>();
     for (const sect of sections) {
@@ -598,7 +606,7 @@ export default function PerformanceActTable({
                                                 <span
                                                     title={t('Delete ACT')}
                                                     onMouseDown={e => { e.stopPropagation(); handleDeleteAct(ai); }}
-                                                    style={{ cursor: 'pointer', color: '#bbb', fontSize: '1rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
+                                                    style={{ cursor: 'pointer', color: '#bbb', fontSize: '0.9rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
                                                     onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = '#e53935'; }}
                                                     onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = '#bbb'; }}
                                                 >×</span>
@@ -699,7 +707,17 @@ export default function PerformanceActTable({
                         })}
 
                         <tr style={{ backgroundColor: GRAND_BG }}>
-                            <td colSpan={totalCols} style={td({ fontWeight: 800, textAlign: 'left', color: '#111', fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
+                            <td colSpan={5} style={td({ fontWeight: 800, textAlign: 'right', color: '#111', fontSize: '0.85rem', paddingRight: 12, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
+                            <td style={td({ fontWeight: 800, textAlign: 'right', color: '#111', whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(grandTotal)} AMD</td>
+                            <td style={td({ textAlign: 'center', fontWeight: 800, color: pctColor(grandPct), borderTop: `2px solid ${mainPrimaryColor}` })}>{acts.length > 0 ? `${grandPct}%` : ''}</td>
+                            <td style={td({ fontWeight: 800, textAlign: 'right', color: '#111', borderTop: `2px solid ${mainPrimaryColor}` })}></td>
+                            {grandTotalActAmounts.map((actTotal, actIdx) => (
+                                <>
+                                    <td key={`grand-${actIdx}-up`} style={td({ ...actCellBorderLeft, borderTop: `2px solid ${mainPrimaryColor}` })}></td>
+                                    <td key={`grand-${actIdx}-qty`} style={td({ fontWeight: 800, textAlign: 'right', color: '#111', whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}></td>
+                                    <td key={`grand-${actIdx}-tot`} style={td({ fontWeight: 800, textAlign: 'right', color: '#111', whiteSpace: 'nowrap', borderTop: `2px solid ${mainPrimaryColor}` })}>{actTotal > 0 ? `${formatCurrencyRounded(actTotal)} AMD` : ''}</td>
+                                </>
+                            ))}
                         </tr>
                     </tbody>
                 </table>
