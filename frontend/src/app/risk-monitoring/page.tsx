@@ -102,7 +102,7 @@ export default function RiskMonitoringPage() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
                     <MonitorHeartOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
                     <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
-                        {t('No Risk Monitor created yet')}
+                        {'Մոնիթորինգի ենթակա տվյալներ չկան'}
                     </Typography>
                     <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setEstimateDialogOpen(true)} />
                 </Box>
