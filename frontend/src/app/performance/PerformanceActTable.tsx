@@ -153,6 +153,8 @@ export default function PerformanceActTable({
     const [pendingFrom, setPendingFrom] = useState('');
     const [pendingTo, setPendingTo] = useState('');
     const [editingActDateIdx, setEditingActDateIdx] = useState<number | null>(null);
+    const [exportPickerOpen, setExportPickerOpen] = useState(false);
+    const [exportActIdx, setExportActIdx] = useState<number>(0);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [colWidths, setColWidths] = useState<number[]>(() => [
@@ -282,24 +284,22 @@ export default function PerformanceActTable({
         setPendingTo('');
     }, [editingActDateIdx, pendingFrom, pendingTo, acts, actsData, actsDates, handleAddAct, rows, saveToDb]);
 
-    const handleExport = useCallback(() => {
+    const handleExport = useCallback((selectedActIdx: number) => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const S = (css: string) => `style="${css}"`;
         const BASE_CSS = 'border:1px solid #ccc;padding:5px 8px;';
         const HDR_CSS = 'border:1px solid #ccc;padding:6px 8px;font-weight:bold;';
 
         const TOTAL_COLS = 12;
-        const lastActIdx = acts.length - 1;
-        const actNum = acts.length > 0 ? acts[lastActIdx] : 1;
+        const actNum = acts.length > 0 ? acts[selectedActIdx] : 1;
 
         const getFactQty = (rowId: string): number => {
-            if (acts.length <= 1) return 0;
             let q = 0;
-            for (let ai = 0; ai < acts.length - 1; ai++) q += parseNum(actsData[ai]?.[rowId]?.quantity ?? '0');
+            for (let ai = 0; ai < selectedActIdx; ai++) q += parseNum(actsData[ai]?.[rowId]?.quantity ?? '0');
             return q;
         };
         const getCurQty = (rowId: string): number =>
-            acts.length === 0 ? 0 : parseNum(actsData[lastActIdx]?.[rowId]?.quantity ?? '0');
+            acts.length === 0 ? 0 : parseNum(actsData[selectedActIdx]?.[rowId]?.quantity ?? '0');
 
         const G1 = '#F2F2F2';
         const G2 = '#E6F0FA';
@@ -541,7 +541,9 @@ export default function PerformanceActTable({
                         sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                         {t('Remaining Calculation')}
                     </Button>
-                    <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
+                    <Button variant='outlined' size='small' startIcon={<SaveAltIcon />}
+                        onClick={() => { if (acts.length === 0) return; setExportActIdx(acts.length - 1); setExportPickerOpen(true); }}
+                        disabled={acts.length === 0}
                         sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                         {t('Performance Calculation')}
                     </Button>
@@ -551,6 +553,48 @@ export default function PerformanceActTable({
                     {t('Add Performance')}
                 </Button>
             </Box>
+
+            {/* Export ACT picker dialog */}
+            <Dialog open={exportPickerOpen} onClose={() => setExportPickerOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+                <DialogTitle sx={{ pb: 1 }}>
+                    <Stack direction='row' alignItems='center' sx={{ position: 'relative' }}>
+                        <ImgElement src='/images/mudbase_header_title.svg' sx={{ height: 28 }} />
+                        <Typography variant='h6' sx={{ fontWeight: 600, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
+                            {t('Select ACT')}
+                        </Typography>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent sx={{ pt: 1, pb: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
+                        {acts.map((num, ai) => {
+                            const dateLabel = actsDates[ai] ? ` (${actsDates[ai].from} – ${actsDates[ai].to})` : '';
+                            const isSelected = exportActIdx === ai;
+                            return (
+                                <Box key={ai} onClick={() => setExportActIdx(ai)}
+                                    sx={{
+                                        px: 2, py: 1.2, borderRadius: 1.5, cursor: 'pointer',
+                                        border: `1px solid ${isSelected ? mainPrimaryColor : '#e0e0e0'}`,
+                                        backgroundColor: isSelected ? `rgba(0,171,190,0.08)` : '#fafafa',
+                                        display: 'flex', alignItems: 'center', gap: 1.5,
+                                        transition: 'all 0.15s',
+                                    }}>
+                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${mainPrimaryColor}`, backgroundColor: isSelected ? mainPrimaryColor : 'transparent', flexShrink: 0 }} />
+                                    <Typography sx={{ fontWeight: isSelected ? 600 : 400, fontSize: '0.9rem' }}>
+                                        {t('ACT').toUpperCase()}-{num}{dateLabel}
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+                    <Button onClick={() => setExportPickerOpen(false)} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>{t('Cancel')}</Button>
+                    <Button variant='contained' onClick={() => { setExportPickerOpen(false); handleExport(exportActIdx); }}
+                        sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor }}>
+                        {t('Generate')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Date range dialog */}
             <Dialog open={dateRangeOpen} onClose={closeDateDialog} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
