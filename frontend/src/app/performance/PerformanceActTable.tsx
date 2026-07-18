@@ -137,22 +137,19 @@ export default function PerformanceActTable({
     const [acts, setActs] = useState<number[]>(record.acts ?? []);
     const [actsData, setActsData] = useState<ActData[]>(record.actsData ?? []);
     const [actsDates, setActsDates] = useState<{ from: string; to: string }[]>(record.actsDates ?? []);
-    const [editableActIndices, setEditableActIndices] = useState<Set<number>>(
-        () => new Set(record.acts && record.acts.length > 0 ? [record.acts.length - 1] : [])
-    );
+    // Track which acts are locked (read-only). New/last act is editable by default (not locked).
+    const [lockedActIndices, setLockedActIndices] = useState<Set<number>>(() => {
+        const locked = new Set<number>();
+        if (record.acts && record.acts.length > 1) {
+            for (let i = 0; i < record.acts.length - 1; i++) locked.add(i);
+        }
+        return locked;
+    });
 
     const [dateRangeOpen, setDateRangeOpen] = useState(false);
     const [pendingFrom, setPendingFrom] = useState('');
     const [pendingTo, setPendingTo] = useState('');
     const [editingActDateIdx, setEditingActDateIdx] = useState<number | null>(null);
-
-    const prevActsLenRef = useRef(acts.length);
-    useEffect(() => {
-        if (acts.length > prevActsLenRef.current) {
-            setEditableActIndices(new Set([acts.length - 1]));
-        }
-        prevActsLenRef.current = acts.length;
-    }, [acts.length]);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
@@ -227,7 +224,10 @@ export default function PerformanceActTable({
         setActs(newActs);
         setActsData(newActsData);
         setActsDates(newActsDates);
-        setEditableActIndices(new Set([newActs.length - 1]));
+        // Lock all previous acts; new (last) act is unlocked (editable) by default
+        const newLocked = new Set<number>();
+        for (let i = 0; i < newActs.length - 1; i++) newLocked.add(i);
+        setLockedActIndices(newLocked);
         setColWidths(prev => [...prev, ...ACT_COL_DEFAULTS]);
         saveToDb(newActs, newActsData, newActsDates);
     }, [acts, actsData, actsDates, saveToDb]);
@@ -239,7 +239,7 @@ export default function PerformanceActTable({
         setActs(newActs);
         setActsData(newActsData);
         setActsDates(newActsDates);
-        setEditableActIndices(prev => {
+        setLockedActIndices(prev => {
             const next = new Set<number>();
             for (const idx of prev) {
                 if (idx < actIdx) next.add(idx);
@@ -433,8 +433,7 @@ export default function PerformanceActTable({
     const totalCols = BASE_COLS.length + acts.length * ACT_COL_KEYS.length;
     let itemCounter = 0;
     const actCellBorderLeft: React.CSSProperties = { borderLeft: `2px solid #b2e8ed` };
-    const isActEditable = (actIdx: number) =>
-        editableActIndices.size > 0 ? editableActIndices.has(actIdx) : actIdx === acts.length - 1;
+    const isActEditable = (actIdx: number) => !lockedActIndices.has(actIdx);
 
     const getTotalActQty = (rowId: string): number =>
         acts.reduce((s, _, ai) => s + parseNum(actsData[ai]?.[rowId]?.quantity ?? '0'), 0);
@@ -576,7 +575,7 @@ export default function PerformanceActTable({
                                                 {t('ACT').toUpperCase()}-{num}
                                                 <span
                                                     title={isEditable ? t('Lock ACT') : t('Edit ACT')}
-                                                    onMouseDown={e => { e.stopPropagation(); setEditableActIndices(prev => { const next = new Set(prev); if (next.has(ai)) next.delete(ai); else next.add(ai); return next; }); }}
+                                                    onMouseDown={e => { e.stopPropagation(); setLockedActIndices(prev => { const next = new Set(prev); if (next.has(ai)) next.delete(ai); else next.add(ai); return next; }); }}
                                                     style={{ cursor: 'pointer', color: isEditable ? mainPrimaryColor : '#bbb', fontSize: '0.9rem', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}
                                                     onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.color = mainPrimaryColor; }}
                                                     onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.color = isEditable ? mainPrimaryColor : '#bbb'; }}
