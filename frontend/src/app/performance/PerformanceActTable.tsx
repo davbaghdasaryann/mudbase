@@ -490,7 +490,7 @@ export default function PerformanceActTable({
                     const isEditable = isActEditable(actIdx);
                     return (
                         <>
-                            <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: 'right', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
+                            <td key={`${actIdx}-up`} style={td({ ...actCellBorderLeft, textAlign: isEditable ? 'right' : 'center', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
                                 {isEditable ? (
                                     <InputBase value={vals?.unitPrice ?? ''} onChange={e => handleActValue(actIdx, String(row._id), 'unitPrice', e.target.value)} placeholder='0'
                                         sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
@@ -499,7 +499,7 @@ export default function PerformanceActTable({
                                     <span style={{ fontSize: '0.8rem', color: '#666' }}>{vals?.unitPrice ?? ''}</span>
                                 )}
                             </td>
-                            <td key={`${actIdx}-qty`} style={td({ textAlign: 'right', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
+                            <td key={`${actIdx}-qty`} style={td({ textAlign: isEditable ? 'right' : 'center', padding: '3px 6px', backgroundColor: isEditable ? undefined : '#fafafa' })}>
                                 {isEditable ? (
                                     <InputBase value={qtyVal} onChange={e => handleActValue(actIdx, String(row._id), 'quantity', e.target.value)} placeholder='0'
                                         sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 1, py: 0.25, fontSize: '0.8rem', width: '100%', '& input': { textAlign: 'right', padding: 0 }, '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.18)' } }}
@@ -508,7 +508,7 @@ export default function PerformanceActTable({
                                     <span style={{ fontSize: '0.8rem', color: '#666' }}>{qtyVal}</span>
                                 )}
                             </td>
-                            <td key={`${actIdx}-tot`} style={td({ textAlign: 'right', fontWeight: 600, color: mainPrimaryColor })}>{actTotal > 0 ? formatCurrencyRounded(actTotal) : ''}</td>
+                            <td key={`${actIdx}-tot`} style={td({ textAlign: isEditable ? 'right' : 'center', fontWeight: 600, color: mainPrimaryColor })}>{actTotal > 0 ? formatCurrencyRounded(actTotal) : ''}</td>
                         </>
                     );
                 })}
