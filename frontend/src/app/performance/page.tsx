@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Box, Typography, Button, IconButton, CircularProgress } from '@mui/material';
 import SpeedIcon from '@mui/icons-material/Speed';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -40,11 +40,32 @@ export default function PerformancePage() {
     const [records, setRecords] = useState<PerformanceActRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<PerformanceActRecord | null>(null);
+    const didRestoreRef = useRef(false);
+
+    const selectRecord = useCallback((rec: PerformanceActRecord | null) => {
+        setSelected(rec);
+        if (typeof window !== 'undefined') {
+            const url = rec ? `/performance?id=${rec._id}` : '/performance';
+            window.history.pushState({}, '', url);
+        }
+    }, []);
 
     const loadRecords = useCallback(() => {
         setLoading(true);
         Api.requestSession<PerformanceActRecord[]>({ command: 'performance/fetch_all', args: {} })
-            .then(data => setRecords(data ?? []))
+            .then(data => {
+                const list = data ?? [];
+                setRecords(list);
+                // Restore selected record from URL on first load
+                if (!didRestoreRef.current && typeof window !== 'undefined') {
+                    didRestoreRef.current = true;
+                    const id = new URLSearchParams(window.location.search).get('id');
+                    if (id) {
+                        const found = list.find(r => r._id === id);
+                        if (found) setSelected(found);
+                    }
+                }
+            })
             .catch(() => setRecords([]))
             .finally(() => setLoading(false));
     }, []);
@@ -58,15 +79,15 @@ export default function PerformancePage() {
             args: { estimateId: String(estimate._id), estimateName: estimate.name },
         });
         setRecords(prev => [created, ...prev]);
-        setSelected(created);
-    }, []);
+        selectRecord(created);
+    }, [selectRecord]);
 
     const handleDelete = useCallback(async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         await Api.requestSession({ command: 'performance/delete', args: { id } });
         setRecords(prev => prev.filter(r => r._id !== id));
-        if (selected?._id === id) setSelected(null);
-    }, [selected]);
+        if (selected?._id === id) selectRecord(null);
+    }, [selected, selectRecord]);
 
     const handleRecordUpdate = useCallback((updated: PerformanceActRecord) => {
         setRecords(prev => prev.map(r => r._id === updated._id ? updated : r));
@@ -80,7 +101,7 @@ export default function PerformancePage() {
                     <Button
                         startIcon={<ArrowBackIcon fontSize='small' />}
                         size='small'
-                        onClick={() => setSelected(null)}
+                        onClick={() => selectRecord(null)}
                         sx={{ color: 'text.secondary', pl: 0, mb: 1.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
                     >
                         {t('Back')}
@@ -126,7 +147,7 @@ export default function PerformancePage() {
                             {records.map(rec => (
                                 <Box
                                     key={rec._id}
-                                    onClick={() => setSelected(rec)}
+                                    onClick={() => selectRecord(rec)}
                                     sx={{
                                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                         px: 2.5, py: 1.8, borderRadius: 2,
