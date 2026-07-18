@@ -589,7 +589,18 @@ export default function PerformanceActTable({
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
                     <Button onClick={() => setExportPickerOpen(false)} sx={{ color: mainPrimaryColor, fontWeight: 600 }}>{t('Cancel')}</Button>
-                    <Button variant='contained' onClick={() => { setExportPickerOpen(false); handleExport(exportActIdx); }}
+                    <Button variant='contained' onClick={() => {
+                        setExportPickerOpen(false);
+                        sessionStorage.setItem('perfPreviewData', JSON.stringify({
+                            estimateId: record.estimateId,
+                            estimateName: record.estimateName,
+                            acts,
+                            actsData,
+                            actsDates,
+                            selectedActIdx: exportActIdx,
+                        }));
+                        window.open('/performance/preview', '_blank');
+                    }}
                         sx={{ borderRadius: '20px', px: 3, backgroundColor: mainPrimaryColor }}>
                         {t('Generate')}
                     </Button>
