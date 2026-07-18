@@ -510,6 +510,14 @@ export default function PerformanceActTable({
     return (
         <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mb: 1.5 }}>
+                <Button variant='outlined' size='small'
+                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                    Տեղեկատվություն
+                </Button>
+                <Button variant='outlined' size='small'
+                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                    Մնացordаyin հашварk
+                </Button>
                 <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                     {t('Performance Calculation')}
