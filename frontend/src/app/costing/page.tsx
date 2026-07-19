@@ -219,32 +219,35 @@ export default function CostingPage() {
         <PageContents title='Costing'>
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
 
-                <TabContext value={tab}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                        <TabList onChange={(_, v) => setTab(v as TabValue)}>
-                            <Tab label={t('General')} value='general' />
-                            <Tab label={t('Main')} value='main' />
-                            <Tab label={t('Costs History')} value='history' />
-                        </TabList>
+                {/* Empty state — shown before any estimate is selected */}
+                {!selectedEstimate && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+                        <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
+                        <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Costings created yet')}</Typography>
+                        <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
                     </Box>
-                </TabContext>
-
-                {tab === 'general' && (
-                    <Box sx={{ flex: 1 }} />
                 )}
 
-                {tab === 'main' && (
+                {/* Tabs — only shown once an estimate is selected */}
+                {selectedEstimate && (
                     <>
-                        {!selectedEstimate && (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
-                                <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
-                                <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Costings created yet')}</Typography>
-                                <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
+                        <TabContext value={tab}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                                <TabList onChange={(_, v) => setTab(v as TabValue)}>
+                                    <Tab label={t('General')} value='general' />
+                                    <Tab label={t('Main')} value='main' />
+                                    <Tab label={t('Costs History')} value='history' />
+                                </TabList>
                             </Box>
+                        </TabContext>
+
+                        {tab === 'general' && (
+                            <Box sx={{ flex: 1 }} />
                         )}
-                        {selectedEstimate && (
+
+                        {tab === 'main' && (
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                                <Button startIcon={<ArrowBackIcon fontSize='small' />} size='small' onClick={() => setSelectedEstimate(null)}
+                                <Button startIcon={<ArrowBackIcon fontSize='small' />} size='small' onClick={() => { setSelectedEstimate(null); setTab('general'); }}
                                     sx={{ color: 'text.secondary', pl: 0, mb: 1.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}>
                                     {t('Back')}
                                 </Button>
@@ -252,11 +255,9 @@ export default function CostingPage() {
                                 <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} />
                             </Box>
                         )}
-                    </>
-                )}
 
-                {tab === 'history' && (
-                    <>
+                        {tab === 'history' && (
+                        <>
                         {costHistory.length === 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
                                 <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
@@ -306,6 +307,8 @@ export default function CostingPage() {
                                     </TableBody>
                                 </Table>
                             </Box>
+                        )}
+                        </>
                         )}
                     </>
                 )}
