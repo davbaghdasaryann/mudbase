@@ -268,6 +268,18 @@ export default function CostingPage() {
 
                         {tab === 'general' && (
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                                {/* Action buttons */}
+                                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
+                                    {[
+                                        'Պահեստ',
+                                        'Նյութերի ծախսագրում',
+                                        'Աշխատավարձի ծախսագրում',
+                                    ].map(label => (
+                                        <Button key={label} variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
+                                            {label}
+                                        </Button>
+                                    ))}
+                                </Box>
                                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                                     <Box sx={{ flex: 1, minHeight: 180 }}>
                                         <CostBreakdownChart estimate={selectedEstimate} height={220} />
