@@ -53,7 +53,7 @@ const outlinedCreateSx = {
     '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
 };
 
-type TabValue = 'main' | 'history';
+type TabValue = 'general' | 'main' | 'history';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
@@ -146,7 +146,7 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
 
 export default function CostingPage() {
     const { t } = useTranslation();
-    const [tab, setTab] = useState<TabValue>('main');
+    const [tab, setTab] = useState<TabValue>('general');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
@@ -222,11 +222,16 @@ export default function CostingPage() {
                 <TabContext value={tab}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
                         <TabList onChange={(_, v) => setTab(v as TabValue)}>
+                            <Tab label={t('General')} value='general' />
                             <Tab label={t('Main')} value='main' />
                             <Tab label={t('Costs History')} value='history' />
                         </TabList>
                     </Box>
                 </TabContext>
+
+                {tab === 'general' && (
+                    <Box sx={{ flex: 1 }} />
+                )}
 
                 {tab === 'main' && (
                     <>
