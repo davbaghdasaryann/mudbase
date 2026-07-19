@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 
 import { Box, Button, Dialog, IconButton, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-
+import AddIcon from '@mui/icons-material/Add';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import * as F from 'tsui/Form';
@@ -177,6 +177,19 @@ export function MaterialsRightPaneContent(props: Props) {
     }, [dataRequested]);
 
 
+    const handleAddBlankRow = useCallback(async () => {
+        try {
+            await Api.requestSession<any>({
+                command: 'estimate/add_custom_material_item',
+                args: { estimatedLaborId: props.estimatedLaborId },
+            });
+            props.onConfirm();
+            setDataRequested(false);
+        } catch (err) {
+            console.error('Failed to add blank material row', err);
+        }
+    }, [props.estimatedLaborId]);
+
     if (progIndicator || !estimatedMaterialsData) {
         return <ProgressIndicator show={progIndicator} background='backdrop' />
     }
@@ -271,7 +284,26 @@ export function MaterialsRightPaneContent(props: Props) {
             />
         </Box>
 
-        {(estimatedMaterialDetailsId && estimatedMaterialName) && 
+        {/* Add blank row — bottom right, same style as main estimates modal */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
+            <Button
+                variant='outlined'
+                size='small'
+                startIcon={<AddIcon />}
+                onClick={handleAddBlankRow}
+                sx={{
+                    borderRadius: '20px',
+                    textTransform: 'none',
+                    borderColor: '#00ABBE',
+                    color: '#00ABBE',
+                    '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)', borderColor: '#00ABBE' },
+                }}
+            >
+                {t('Add blank row')}
+            </Button>
+        </Box>
+
+        {(estimatedMaterialDetailsId && estimatedMaterialName) &&
             <EstimateMaterialEditDialog 
                 estimatedLaborId={props.estimatedLaborId} 
                 estimatedMaterialId={estimatedMaterialDetailsId} 
