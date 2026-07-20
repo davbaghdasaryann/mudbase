@@ -195,7 +195,6 @@ export default function CostingPage() {
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
     const [tempPaymentValue, setTempPaymentValue] = useState('');
 
-    const [pahestTab, setPahestTab] = useState<'main' | 'other'>('main');
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
@@ -371,22 +370,30 @@ export default function CostingPage() {
                         )}
 
                         {tab === 'pahest' && (
-                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                                <TabContext value={pahestTab}>
-                                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                                        <TabList onChange={(_, v) => setPahestTab(v as 'main' | 'other')}>
-                                            <Tab label='Հիմնական նյութեր' value='main' />
-                                            <Tab label='Այլ նյութեր' value='other' />
-                                        </TabList>
+                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pb: 4 }}>
+                                {/* Section 1 */}
+                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Հիմնական նյութեր</Typography>
+                                {selectedEstimate && (
+                                    <PahestMainMaterials
+                                        estimateId={selectedEstimate._id as string}
+                                        entries={pahestEntries}
+                                        onChange={setPahestEntries}
+                                    />
+                                )}
+
+                                {/* Section 2 */}
+                                <Box sx={{ mt: 4, mb: 2, borderTop: '1px solid #e0f5f7', pt: 3 }}>
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                                        <Button variant='outlined' size='small' startIcon={<AddCircleOutlineIcon />}
+                                            sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}>
+                                            {t('Add')}
+                                        </Button>
                                     </Box>
-                                    {pahestTab === 'main' && selectedEstimate && (
-                                        <PahestMainMaterials
-                                            estimateId={selectedEstimate._id as string}
-                                            entries={pahestEntries}
-                                            onChange={setPahestEntries}
-                                        />
-                                    )}
-                                </TabContext>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 5 }}>
+                                        <Typography variant='body2' color='text.secondary'>{t('No materials added yet.')}</Typography>
+                                    </Box>
+                                </Box>
                             </Box>
                         )}
                     </>
