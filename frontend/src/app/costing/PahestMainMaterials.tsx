@@ -2,23 +2,25 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-    Box, Typography, Table, TableHead, TableBody, TableRow, TableCell,
-    TextField, Button, CircularProgress, Chip,
+    Box, Button, Typography, CircularProgress,
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    InputBase, IconButton, Tooltip,
 } from '@mui/material';
-import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
 
-interface MaterialRow {
+interface MaterialOption {
     materialItemId: string;
     name: string;
     fullCode: string;
     unit: string;
-    estimateQuantity: number;
 }
 
-interface SavedEntry {
+export interface PahestEntry {
     materialItemId: string;
     name: string;
     unit: string;
@@ -27,9 +29,8 @@ interface SavedEntry {
 
 interface Props {
     estimateId: string;
-    // persist entries across re-opens
-    saved: SavedEntry[];
-    onSave: (entries: SavedEntry[]) => void;
+    entries: PahestEntry[];
+    onChange: (entries: PahestEntry[]) => void;
 }
 
 function toIdStr(id: unknown): string {
@@ -39,16 +40,16 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, saved, onSave }: Props) {
+export default function PahestMainMaterials({ estimateId, entries, onChange }: Props) {
     const { t } = useTranslation();
-    const [materials, setMaterials] = useState<MaterialRow[]>([]);
+    const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [loading, setLoading] = useState(true);
-    // qty inputs keyed by materialItemId
-    const [inputs, setInputs] = useState<Record<string, string>>(() => {
-        const m: Record<string, string> = {};
-        for (const e of saved) m[e.materialItemId] = String(e.quantity);
-        return m;
-    });
+
+    // sub-modal state
+    const [addOpen, setAddOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [selected, setSelected] = useState<MaterialOption | null>(null);
+    const [qtyInput, setQtyInput] = useState('');
 
     useEffect(() => {
         setLoading(true);
@@ -57,10 +58,10 @@ export default function PahestMainMaterials({ estimateId, saved, onSave }: Props
             args: { estimateId },
         }).then(items => {
             const seen = new Set<string>();
-            const rows: MaterialRow[] = [];
+            const rows: MaterialOption[] = [];
             for (const item of items) {
                 const id = toIdStr(item.materialItemId);
-                if (!id || seen.has(id)) { if (id) { /* accumulate quantity */ const r = rows.find(r => r.materialItemId === id); if (r) r.estimateQuantity += item.quantity ?? 0; } continue; }
+                if (!id || seen.has(id)) continue;
                 seen.add(id);
                 const md = item.estimateMaterialItemData?.[0];
                 rows.push({
@@ -68,108 +69,161 @@ export default function PahestMainMaterials({ estimateId, saved, onSave }: Props
                     name: md?.name || '—',
                     fullCode: md?.fullCode || '',
                     unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
-                    estimateQuantity: item.quantity ?? 0,
                 });
             }
             setMaterials(rows);
         }).catch(console.error).finally(() => setLoading(false));
     }, [estimateId]);
 
-    const handleSave = () => {
-        const entries: SavedEntry[] = materials
-            .filter(m => inputs[m.materialItemId] && parseFloat(inputs[m.materialItemId]) > 0)
-            .map(m => ({
-                materialItemId: m.materialItemId,
-                name: m.name,
-                unit: m.unit,
-                quantity: parseFloat(inputs[m.materialItemId]),
-            }));
-        onSave(entries);
+    const openAdd = () => {
+        setSearch('');
+        setSelected(null);
+        setQtyInput('');
+        setAddOpen(true);
     };
 
-    if (loading) return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
-        </Box>
-    );
+    const handleConfirm = () => {
+        if (!selected || !qtyInput) return;
+        const qty = parseFloat(qtyInput.replace(',', '.')) || 0;
+        if (qty <= 0) return;
+        // replace if already exists, otherwise append
+        const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId);
+        if (existing >= 0) {
+            const next = [...entries];
+            next[existing] = { ...next[existing], quantity: qty };
+            onChange(next);
+        } else {
+            onChange([...entries, { materialItemId: selected.materialItemId, name: selected.name, unit: selected.unit, quantity: qty }]);
+        }
+        setAddOpen(false);
+    };
 
-    if (materials.length === 0) return (
-        <Typography color='text.secondary' sx={{ py: 4, textAlign: 'center' }}>
-            {t('No materials found for this estimate.')}
-        </Typography>
+    const handleDelete = (materialItemId: string) => {
+        onChange(entries.filter(e => e.materialItemId !== materialItemId));
+    };
+
+    const filtered = materials.filter(m =>
+        (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase())
     );
 
     return (
         <Box>
-            <Table size='small' sx={{ mb: 2 }}>
-                <TableHead>
-                    <TableRow sx={{ backgroundColor: '#edf9fb' }}>
-                        <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Code')}</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Material')}</TableCell>
-                        <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Unit')}</TableCell>
-                        <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Est. Qty')}</TableCell>
-                        <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor, minWidth: 120 }}>
-                            {t('Warehouse Qty')}
-                        </TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {materials.map(mat => {
-                        const val = inputs[mat.materialItemId] ?? '';
-                        const saved_ = saved.find(s => s.materialItemId === mat.materialItemId);
-                        return (
-                            <TableRow key={mat.materialItemId} hover sx={{ '&:hover': { backgroundColor: '#f2fcfd' } }}>
-                                <TableCell>
-                                    <Typography variant='body2' sx={{ color: mainPrimaryColor, fontWeight: 600 }}>
-                                        {mat.fullCode}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        {mat.name}
-                                        {saved_ && (
-                                            <Chip label={t('Saved')} size='small'
-                                                sx={{ fontSize: '0.65rem', height: 18, bgcolor: 'rgba(0,171,190,0.1)', color: mainPrimaryColor, fontWeight: 700 }} />
-                                        )}
-                                    </Box>
-                                </TableCell>
-                                <TableCell align='right'>{mat.unit}</TableCell>
-                                <TableCell align='right' sx={{ color: '#888' }}>
-                                    {mat.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                                </TableCell>
-                                <TableCell align='right'>
-                                    <TextField
-                                        size='small'
-                                        value={val}
-                                        onChange={e => setInputs(prev => ({ ...prev, [mat.materialItemId]: e.target.value.replace(/[^0-9.]/g, '') }))}
-                                        placeholder='0'
-                                        inputProps={{ style: { textAlign: 'right', padding: '4px 8px', width: 90 } }}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                borderRadius: 1.5,
-                                                '& fieldset': { borderColor: '#d0f0f4' },
-                                                '&:hover fieldset': { borderColor: mainPrimaryColor },
-                                                '&.Mui-focused fieldset': { borderColor: mainPrimaryColor },
-                                            },
-                                        }}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
-
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {/* Add button */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                 <Button
-                    variant='contained'
-                    startIcon={<SaveOutlinedIcon />}
-                    onClick={handleSave}
-                    sx={{ borderRadius: '20px', bgcolor: mainPrimaryColor, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#009aab' } }}
+                    variant='outlined'
+                    size='small'
+                    startIcon={<AddIcon />}
+                    onClick={openAdd}
+                    disabled={loading}
+                    sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
                 >
-                    {t('Save')}
+                    {t('Add')}
                 </Button>
             </Box>
+
+            {/* Added items list */}
+            {entries.length === 0 ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, color: '#bbb' }}>
+                    <Typography variant='body2' color='text.secondary'>{t('No materials added yet.')}</Typography>
+                </Box>
+            ) : (
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
+                    {/* Header */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px 36px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
+                        {[t('Material'), t('Unit'), t('Quantity'), ''].map((h, i) => (
+                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center' }}>{h}</Typography>
+                        ))}
+                    </Box>
+                    {entries.map((e, idx) => (
+                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px 36px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
+                            <Typography sx={{ fontSize: '0.84rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
+                            <Typography sx={{ fontSize: '0.84rem', color: '#888', textAlign: 'right' }}>{e.unit}</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'right' }}>
+                                {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                <Tooltip title={t('Remove')}>
+                                    <IconButton size='small' onClick={() => handleDelete(e.materialItemId)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                        <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
+            )}
+
+            {/* Add material sub-modal */}
+            <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>Հիմնական նյութեր — {t('Add')}</DialogTitle>
+                <DialogContent sx={{ pt: 1 }}>
+                    {/* Search */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #e0f5f7', borderRadius: 2, px: 1.5, mb: 1.5, backgroundColor: '#fafeff' }}>
+                        <SearchIcon sx={{ color: '#aaa', mr: 1, fontSize: 18 }} />
+                        <InputBase
+                            placeholder={t('Search') + '...'}
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            sx={{ flex: 1, fontSize: '0.88rem', py: 0.5 }}
+                            autoFocus
+                        />
+                    </Box>
+
+                    {/* Materials list */}
+                    <Box sx={{ maxHeight: 240, overflowY: 'auto', border: '1px solid #e0f5f7', borderRadius: 2, mb: 2 }}>
+                        {loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                                <CircularProgress size={24} sx={{ color: mainPrimaryColor }} />
+                            </Box>
+                        ) : filtered.length === 0 ? (
+                            <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>{t('No results')}</Typography>
+                        ) : filtered.map(m => (
+                            <Box
+                                key={m.materialItemId}
+                                onClick={() => { setSelected(m); setQtyInput(''); }}
+                                sx={{
+                                    px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
+                                    borderBottom: '1px solid #f0fbfc',
+                                    backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                    color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
+                                    fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
+                                    '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
+                                    '&:last-child': { borderBottom: 'none' },
+                                }}
+                            >
+                                {m.name}
+                                <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    {/* Quantity input — appears after selection */}
+                    {selected && (
+                        <Box>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
+                            <InputBase
+                                value={qtyInput}
+                                onChange={e => setQtyInput(e.target.value.replace(/[^0-9.]/g, ''))}
+                                placeholder='0'
+                                autoFocus
+                                sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                            />
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                    <Button onClick={() => setAddOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                    <Button
+                        variant='contained'
+                        disabled={!selected || !qtyInput || parseFloat(qtyInput) <= 0}
+                        onClick={handleConfirm}
+                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
+                    >
+                        {t('Add')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

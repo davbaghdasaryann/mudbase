@@ -197,7 +197,7 @@ export default function CostingPage() {
 
     const [pahestModalOpen, setPahestModalOpen] = useState(false);
     const [pahestTab, setPahestTab] = useState<'main' | 'other'>('main');
-    const [pahestSaved, setPahestSaved] = useState<{ materialItemId: string; name: string; unit: string; quantity: number }[]>([]);
+    const [pahestEntries, setPahestEntries] = useState<{ materialItemId: string; name: string; unit: string; quantity: number }[]>([]);
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -406,8 +406,8 @@ export default function CostingPage() {
                             {pahestTab === 'main' && selectedEstimate && (
                                 <PahestMainMaterials
                                     estimateId={selectedEstimate._id as string}
-                                    saved={pahestSaved}
-                                    onSave={setPahestSaved}
+                                    entries={pahestEntries}
+                                    onChange={setPahestEntries}
                                 />
                             )}
                         </Box>
