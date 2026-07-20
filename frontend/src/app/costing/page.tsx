@@ -22,6 +22,7 @@ import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import CostingTable from './CostingTable';
+import PahestMainMaterials from './PahestMainMaterials';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
@@ -196,6 +197,7 @@ export default function CostingPage() {
 
     const [pahestModalOpen, setPahestModalOpen] = useState(false);
     const [pahestTab, setPahestTab] = useState<'main' | 'other'>('main');
+    const [pahestSaved, setPahestSaved] = useState<{ materialItemId: string; name: string; unit: string; quantity: number }[]>([]);
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -400,8 +402,14 @@ export default function CostingPage() {
                                 <Tab label='Այլ նյութեր' value='other' />
                             </TabList>
                         </Box>
-                        <Box sx={{ flex: 1, p: 3 }}>
-                            {/* Content will be added here */}
+                        <Box sx={{ flex: 1, p: 3, overflow: 'auto' }}>
+                            {pahestTab === 'main' && selectedEstimate && (
+                                <PahestMainMaterials
+                                    estimateId={selectedEstimate._id as string}
+                                    saved={pahestSaved}
+                                    onSave={setPahestSaved}
+                                />
+                            )}
                         </Box>
                     </TabContext>
                 </DialogContent>
