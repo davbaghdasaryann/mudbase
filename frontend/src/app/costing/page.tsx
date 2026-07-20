@@ -9,6 +9,7 @@ import {
 import { TabContext, TabList } from '@mui/lab';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -193,6 +194,9 @@ export default function CostingPage() {
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
     const [tempPaymentValue, setTempPaymentValue] = useState('');
 
+    const [pahestModalOpen, setPahestModalOpen] = useState(false);
+    const [pahestTab, setPahestTab] = useState<'main' | 'other'>('main');
+
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         setSelectedEstimate(estimate);
@@ -270,11 +274,11 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                                 {/* Action buttons */}
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-                                    {[
-                                        'Պահեստ',
-                                        'Նյութերի ծախսագրում',
-                                        'Աշխատավարձի ծախսագրում',
-                                    ].map(label => (
+                                    <Button variant='outlined' onClick={() => { setPahestTab('main'); setPahestModalOpen(true); }}
+                                        sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
+                                        Պահեստ
+                                    </Button>
+                                    {['Նյութերի ծախսագրում', 'Աշխատավարձի ծախսագրում'].map(label => (
                                         <Button key={label} variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
                                             {label}
                                         </Button>
@@ -372,6 +376,36 @@ export default function CostingPage() {
             </Box>
 
             <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleSelect} />
+
+            {/* Պահեստ modal */}
+            <Dialog
+                open={pahestModalOpen}
+                onClose={() => setPahestModalOpen(false)}
+                maxWidth='md'
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3, minHeight: 480 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    Պահեստ
+                    <IconButton size='small' onClick={() => setPahestModalOpen(false)} sx={{ color: 'grey.500' }}>
+                        <CloseIcon fontSize='small' />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+                    {/* Two-section tab bar */}
+                    <TabContext value={pahestTab}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 3 }}>
+                            <TabList onChange={(_, v) => setPahestTab(v as 'main' | 'other')}>
+                                <Tab label='Հիմնական նյութեր' value='main' />
+                                <Tab label='Այլ նյութեր' value='other' />
+                            </TabList>
+                        </Box>
+                        <Box sx={{ flex: 1, p: 3 }}>
+                            {/* Content will be added here */}
+                        </Box>
+                    </TabContext>
+                </DialogContent>
+            </Dialog>
 
             {/* Cost details modal — does not close on backdrop click */}
             <Dialog
