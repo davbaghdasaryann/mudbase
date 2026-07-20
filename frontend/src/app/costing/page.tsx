@@ -22,7 +22,7 @@ import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import CostingTable from './CostingTable';
-import PahestMainMaterials from './PahestMainMaterials';
+import PahestMainMaterials, { type PahestEntry } from './PahestMainMaterials';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
@@ -197,7 +197,7 @@ export default function CostingPage() {
 
     const [pahestModalOpen, setPahestModalOpen] = useState(false);
     const [pahestTab, setPahestTab] = useState<'main' | 'other'>('main');
-    const [pahestEntries, setPahestEntries] = useState<{ materialItemId: string; name: string; unit: string; quantity: number }[]>([]);
+    const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);

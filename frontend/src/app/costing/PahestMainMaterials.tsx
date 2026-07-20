@@ -18,6 +18,7 @@ interface MaterialOption {
     name: string;
     fullCode: string;
     unit: string;
+    estimateQuantity: number;
 }
 
 export interface PahestEntry {
@@ -25,6 +26,8 @@ export interface PahestEntry {
     name: string;
     unit: string;
     quantity: number;
+    estimateQuantity: number;
+    addedAt: Date;
 }
 
 interface Props {
@@ -69,6 +72,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                     name: md?.name || '—',
                     fullCode: md?.fullCode || '',
                     unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
+                    estimateQuantity: item.quantity ?? 0,
                 });
             }
             setMaterials(rows);
@@ -90,10 +94,17 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId);
         if (existing >= 0) {
             const next = [...entries];
-            next[existing] = { ...next[existing], quantity: qty };
+            next[existing] = { ...next[existing], quantity: qty, addedAt: new Date() };
             onChange(next);
         } else {
-            onChange([...entries, { materialItemId: selected.materialItemId, name: selected.name, unit: selected.unit, quantity: qty }]);
+            onChange([...entries, {
+                materialItemId: selected.materialItemId,
+                name: selected.name,
+                unit: selected.unit,
+                quantity: qty,
+                estimateQuantity: selected.estimateQuantity,
+                addedAt: new Date(),
+            }]);
         }
         setAddOpen(false);
     };
@@ -130,17 +141,23 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     {/* Header */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px 36px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
-                        {[t('Material'), t('Unit'), t('Quantity'), ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i === 0 ? 'left' : i < 3 ? 'right' : 'center' }}>{h}</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 60px 110px 110px 130px 36px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
+                        {[t('Material'), t('Unit'), t('Est. Qty'), t('Warehouse Qty'), t('Date Added'), ''].map((h, i) => (
+                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
-                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 120px 36px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
+                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 60px 110px 110px 130px 36px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
                             <Typography sx={{ fontSize: '0.84rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
                             <Typography sx={{ fontSize: '0.84rem', color: '#888', textAlign: 'right' }}>{e.unit}</Typography>
+                            <Typography sx={{ fontSize: '0.84rem', color: '#888', textAlign: 'right' }}>
+                                {e.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                            </Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'right' }}>
                                 {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#aaa', textAlign: 'right' }}>
+                                {e.addedAt.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                             </Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                 <Tooltip title={t('Remove')}>
