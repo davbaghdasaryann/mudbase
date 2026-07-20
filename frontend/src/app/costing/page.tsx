@@ -12,6 +12,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import BuildIcon from '@mui/icons-material/Build';
@@ -385,7 +386,7 @@ export default function CostingPage() {
                                 <Box sx={{ mt: 4, mb: 2, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                                        <Button variant='outlined' size='small' startIcon={<AddCircleOutlineIcon />}
+                                        <Button variant='outlined' size='small' startIcon={<AddIcon />}
                                             sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}>
                                             {t('Add')}
                                         </Button>
