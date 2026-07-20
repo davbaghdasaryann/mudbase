@@ -80,7 +80,7 @@ const outlinedCreateSx = {
     '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
 };
 
-type TabValue = 'general' | 'main' | 'history';
+type TabValue = 'general' | 'main' | 'history' | 'pahest';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
@@ -195,7 +195,6 @@ export default function CostingPage() {
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
     const [tempPaymentValue, setTempPaymentValue] = useState('');
 
-    const [pahestModalOpen, setPahestModalOpen] = useState(false);
     const [pahestTab, setPahestTab] = useState<'main' | 'other'>('main');
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
 
@@ -268,6 +267,7 @@ export default function CostingPage() {
                                     <Tab label={t('General')} value='general' />
                                     <Tab label={t('Main')} value='main' />
                                     <Tab label={t('Costs History')} value='history' />
+                                    <Tab label='Պահեստ' value='pahest' />
                                 </TabList>
                             </Box>
                         </TabContext>
@@ -276,10 +276,6 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                                 {/* Action buttons */}
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-                                    <Button variant='outlined' onClick={() => { setPahestTab('main'); setPahestModalOpen(true); }}
-                                        sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
-                                        Պահեստ
-                                    </Button>
                                     {['Նյութերի ծախսագրում', 'Աշխատավարձի ծախսագրում'].map(label => (
                                         <Button key={label} variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
                                             {label}
@@ -373,47 +369,32 @@ export default function CostingPage() {
                         )}
                         </>
                         )}
+
+                        {tab === 'pahest' && (
+                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                                <TabContext value={pahestTab}>
+                                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                                        <TabList onChange={(_, v) => setPahestTab(v as 'main' | 'other')}>
+                                            <Tab label='Հիմնական նյութեր' value='main' />
+                                            <Tab label='Այլ նյութեր' value='other' />
+                                        </TabList>
+                                    </Box>
+                                    {pahestTab === 'main' && selectedEstimate && (
+                                        <PahestMainMaterials
+                                            estimateId={selectedEstimate._id as string}
+                                            entries={pahestEntries}
+                                            onChange={setPahestEntries}
+                                        />
+                                    )}
+                                </TabContext>
+                            </Box>
+                        )}
                     </>
                 )}
             </Box>
 
             <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleSelect} />
 
-            {/* Պահեստ modal */}
-            <Dialog
-                open={pahestModalOpen}
-                onClose={() => setPahestModalOpen(false)}
-                maxWidth='md'
-                fullWidth
-                PaperProps={{ sx: { borderRadius: 3, minHeight: 480 } }}
-            >
-                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    Պահեստ
-                    <IconButton size='small' onClick={() => setPahestModalOpen(false)} sx={{ color: 'grey.500' }}>
-                        <CloseIcon fontSize='small' />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
-                    {/* Two-section tab bar */}
-                    <TabContext value={pahestTab}>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 3 }}>
-                            <TabList onChange={(_, v) => setPahestTab(v as 'main' | 'other')}>
-                                <Tab label='Հիմնական նյութեր' value='main' />
-                                <Tab label='Այլ նյութեր' value='other' />
-                            </TabList>
-                        </Box>
-                        <Box sx={{ flex: 1, p: 3, overflow: 'auto' }}>
-                            {pahestTab === 'main' && selectedEstimate && (
-                                <PahestMainMaterials
-                                    estimateId={selectedEstimate._id as string}
-                                    entries={pahestEntries}
-                                    onChange={setPahestEntries}
-                                />
-                            )}
-                        </Box>
-                    </TabContext>
-                </DialogContent>
-            </Dialog>
 
             {/* Cost details modal — does not close on backdrop click */}
             <Dialog
