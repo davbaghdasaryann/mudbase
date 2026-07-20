@@ -63,8 +63,9 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
     const [selected, setSelected] = useState<MaterialOption | null>(null);
     const [qtyInput, setQtyInput] = useState('');
 
-    // history dialog state
-    const [historyEntry, setHistoryEntry] = useState<PahestEntry | null>(null);
+    // history dialog — store id so it stays in sync when entries update
+    const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
+    const historyEntry = historyEntryId ? (entries.find(e => e.materialItemId === historyEntryId) ?? null) : null;
 
     // inline edit state
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -113,7 +114,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             const next = [...entries];
             next[existing] = {
                 ...next[existing],
-                quantity: qty,
+                quantity: next[existing].quantity + qty,
                 addedAt: now,
                 history: [...next[existing].history, newRecord],
             };
@@ -145,7 +146,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         const idx = entries.findIndex(e => e.materialItemId === entry.materialItemId);
         if (idx < 0) return;
         const next = [...entries];
-        next[idx] = { ...next[idx], quantity: qty, addedAt: now, history: [...next[idx].history, newRecord] };
+        next[idx] = { ...next[idx], quantity: next[idx].quantity + qty, addedAt: now, history: [...next[idx].history, newRecord] };
         onChange(next);
         setEditingId(null);
         setEditQtyInput('');
@@ -153,6 +154,22 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
 
     const handleDelete = (materialItemId: string) => {
         onChange(entries.filter(e => e.materialItemId !== materialItemId));
+    };
+
+    const deleteHistoryRecord = (materialItemId: string, recIdx: number) => {
+        const idx = entries.findIndex(e => e.materialItemId === materialItemId);
+        if (idx < 0) return;
+        const entry = entries[idx];
+        const rec = entry.history[recIdx];
+        const newHistory = entry.history.filter((_, i) => i !== recIdx);
+        if (newHistory.length === 0) {
+            onChange(entries.filter(e => e.materialItemId !== materialItemId));
+            setHistoryEntryId(null);
+        } else {
+            const next = [...entries];
+            next[idx] = { ...next[idx], quantity: Math.max(0, entry.quantity - rec.quantity), history: newHistory };
+            onChange(next);
+        }
     };
 
     const filtered = materials.filter(m =>
@@ -223,7 +240,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                             <Typography sx={{ fontSize: '0.9rem', color: '#aaa', textAlign: 'right' }}>—</Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                                 <Tooltip title={t('History')}>
-                                    <IconButton size='small' onClick={() => setHistoryEntry(e)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                    <IconButton size='small' onClick={() => setHistoryEntryId(e.materialItemId)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
                                         <HistoryIcon sx={{ fontSize: 16 }} />
                                     </IconButton>
                                 </Tooltip>
@@ -310,35 +327,41 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             </Dialog>
 
             {/* History dialog */}
-            <Dialog open={!!historyEntry} onClose={() => setHistoryEntry(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog open={!!historyEntry} onClose={() => setHistoryEntryId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <HistoryIcon sx={{ fontSize: 20 }} />
                     <Typography sx={{ fontSize: '1rem', fontWeight: 500, color: '#000' }}>{historyEntry?.name}</Typography>
                 </DialogTitle>
                 <DialogContent sx={{ pt: 0 }}>
-                    {historyEntry && historyEntry.history.length === 0 ? (
+                    {!historyEntry || historyEntry.history.length === 0 ? (
                         <Typography sx={{ color: '#aaa', fontSize: '0.85rem', py: 2 }}>{t('No history yet.')}</Typography>
                     ) : (
                         <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor }}>{t('Warehouse Qty')}</Typography>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'right' }}>{t('Date Added')}</Typography>
+                                <Box />
                             </Box>
-                            {historyEntry?.history.map((rec, i) => (
-                                <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 150px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                            {historyEntry.history.map((rec, i) => (
+                                <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
                                     <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
                                         {rec.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                                     </Typography>
                                     <Typography sx={{ fontSize: '0.78rem', color: '#aaa', textAlign: 'right' }}>
                                         {(rec.addedAt instanceof Date ? rec.addedAt : new Date(rec.addedAt)).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                                     </Typography>
+                                    <Tooltip title={t('Remove')}>
+                                        <IconButton size='small' onClick={() => deleteHistoryRecord(historyEntry.materialItemId, i)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3 }}>
+                                            <DeleteOutlineIcon sx={{ fontSize: 15 }} />
+                                        </IconButton>
+                                    </Tooltip>
                                 </Box>
                             ))}
                         </Box>
                     )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setHistoryEntry(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
+                    <Button onClick={() => setHistoryEntryId(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
                 </DialogActions>
             </Dialog>
         </Box>
