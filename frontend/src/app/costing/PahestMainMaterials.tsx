@@ -10,6 +10,8 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import HistoryIcon from '@mui/icons-material/History';
+import CheckIcon from '@mui/icons-material/Check';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
@@ -63,6 +65,10 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
 
     // history dialog state
     const [historyEntry, setHistoryEntry] = useState<PahestEntry | null>(null);
+
+    // inline edit state
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editQtyInput, setEditQtyInput] = useState('');
 
     useEffect(() => {
         setLoading(true);
@@ -126,6 +132,25 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         setAddOpen(false);
     };
 
+    const startInlineEdit = (entry: PahestEntry) => {
+        setEditingId(entry.materialItemId);
+        setEditQtyInput('');
+    };
+
+    const confirmInlineEdit = (entry: PahestEntry) => {
+        const qty = parseFloat(editQtyInput.replace(',', '.')) || 0;
+        if (qty <= 0) { setEditingId(null); return; }
+        const now = new Date();
+        const newRecord: PahestHistoryRecord = { quantity: qty, addedAt: now };
+        const idx = entries.findIndex(e => e.materialItemId === entry.materialItemId);
+        if (idx < 0) return;
+        const next = [...entries];
+        next[idx] = { ...next[idx], quantity: qty, addedAt: now, history: [...next[idx].history, newRecord] };
+        onChange(next);
+        setEditingId(null);
+        setEditQtyInput('');
+    };
+
     const handleDelete = (materialItemId: string) => {
         onChange(entries.filter(e => e.materialItemId !== materialItemId));
     };
@@ -170,9 +195,34 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                             <Typography sx={{ fontSize: '0.84rem', color: '#888', textAlign: 'right' }}>
                                 {e.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                             </Typography>
-                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'right' }}>
-                                {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.3 }}>
+                                {editingId === e.materialItemId ? (
+                                    <>
+                                        <InputBase
+                                            autoFocus
+                                            value={editQtyInput}
+                                            onChange={ev => setEditQtyInput(ev.target.value.replace(/[^0-9.]/g, ''))}
+                                            placeholder={e.quantity.toString()}
+                                            onKeyDown={ev => { if (ev.key === 'Enter') confirmInlineEdit(e); if (ev.key === 'Escape') setEditingId(null); }}
+                                            sx={{ width: 64, fontSize: '0.88rem', fontWeight: 700, color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 0.8, py: 0.2, textAlign: 'right', '& input': { textAlign: 'right' } }}
+                                        />
+                                        <IconButton size='small' onClick={() => confirmInlineEdit(e)} sx={{ color: mainPrimaryColor, p: 0.3 }}>
+                                            <CheckIcon sx={{ fontSize: 14 }} />
+                                        </IconButton>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
+                                            {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                        </Typography>
+                                        <Tooltip title={t('Add new quantity')}>
+                                            <IconButton size='small' onClick={() => startInlineEdit(e)} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                <AddCircleOutlineIcon sx={{ fontSize: 13 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </Box>
                             <Typography sx={{ fontSize: '0.78rem', color: '#aaa', textAlign: 'right' }}>
                                 {(e.addedAt instanceof Date ? e.addedAt : new Date(e.addedAt)).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                             </Typography>
