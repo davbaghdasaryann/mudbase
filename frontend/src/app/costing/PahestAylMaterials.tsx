@@ -3,23 +3,32 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Button, Typography, IconButton, Tooltip, InputBase,
-    Select, MenuItem,
+    Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import HistoryIcon from '@mui/icons-material/History';
+import CheckIcon from '@mui/icons-material/Check';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
 
 interface UnitOption { value: string; label: string; }
 
+export interface AylHistoryRecord {
+    quantity: number;
+    addedAt: Date;
+}
+
 export interface AylEntry {
     id: string;
     name: string;
     unit: string;
-    mutq: string;
+    mutq: number;
     tsakh: string;
     costPerUnit: string;
+    history: AylHistoryRecord[];
 }
 
 interface Props {
@@ -31,16 +40,21 @@ const newRow = (): AylEntry => ({
     id: String(Date.now() + Math.random()),
     name: '',
     unit: '',
-    mutq: '',
+    mutq: 0,
     tsakh: '',
     costPerUnit: '',
+    history: [],
 });
 
-const COLS = '1fr 90px 130px 110px 110px 36px';
+const COLS = '1fr 90px 130px 110px 110px 72px';
 
 export default function PahestAylMaterials({ entries, onChange }: Props) {
     const { t } = useTranslation();
     const [units, setUnits] = useState<UnitOption[]>([]);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editQtyInput, setEditQtyInput] = useState('');
+    const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
+    const historyEntry = historyEntryId ? (entries.find(e => e.id === historyEntryId) ?? null) : null;
 
     useEffect(() => {
         Api.requestSession<any[]>({ command: 'measurement_unit/fetch' })
@@ -54,6 +68,35 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
         onChange(entries.map(e => e.id === id ? { ...e, [field]: val } : e));
 
     const remove = (id: string) => onChange(entries.filter(e => e.id !== id));
+
+    const confirmInlineEdit = (entry: AylEntry) => {
+        const qty = parseFloat(editQtyInput.replace(',', '.')) || 0;
+        if (qty <= 0) { setEditingId(null); return; }
+        const now = new Date();
+        const newRecord: AylHistoryRecord = { quantity: qty, addedAt: now };
+        onChange(entries.map(e => e.id === entry.id
+            ? { ...e, mutq: e.mutq + qty, history: [...e.history, newRecord] }
+            : e
+        ));
+        setEditingId(null);
+        setEditQtyInput('');
+    };
+
+    const deleteHistoryRecord = (entryId: string, recIdx: number) => {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) return;
+        const rec = entry.history[recIdx];
+        const newHistory = entry.history.filter((_, i) => i !== recIdx);
+        if (newHistory.length === 0) {
+            onChange(entries.filter(e => e.id !== entryId));
+            setHistoryEntryId(null);
+        } else {
+            onChange(entries.map(e => e.id === entryId
+                ? { ...e, mutq: Math.max(0, e.mutq - rec.quantity), history: newHistory }
+                : e
+            ));
+        }
+    };
 
     return (
         <Box>
@@ -109,13 +152,34 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 inputProps={{ style: { textAlign: 'right', padding: 0 } }}
                                 sx={{ fontSize: '0.9rem', fontWeight: 500, color: '#555' }}
                             />
-                            <InputBase
-                                value={e.mutq}
-                                onChange={ev => update(e.id, 'mutq', ev.target.value.replace(/[^0-9.]/g, ''))}
-                                placeholder='0'
-                                inputProps={{ style: { textAlign: 'right', padding: 0 } }}
-                                sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}
-                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.3 }}>
+                                {editingId === e.id ? (
+                                    <>
+                                        <InputBase
+                                            autoFocus
+                                            value={editQtyInput}
+                                            onChange={ev => setEditQtyInput(ev.target.value.replace(/[^0-9.]/g, ''))}
+                                            placeholder={e.mutq.toString()}
+                                            onKeyDown={ev => { if (ev.key === 'Enter') confirmInlineEdit(e); if (ev.key === 'Escape') setEditingId(null); }}
+                                            sx={{ width: 64, fontSize: '0.88rem', fontWeight: 700, color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 0.8, py: 0.2, '& input': { textAlign: 'right' } }}
+                                        />
+                                        <IconButton size='small' onClick={() => confirmInlineEdit(e)} sx={{ color: mainPrimaryColor, p: 0.3 }}>
+                                            <CheckIcon sx={{ fontSize: 14 }} />
+                                        </IconButton>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
+                                            {e.mutq > 0 ? e.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                                        </Typography>
+                                        <Tooltip title={t('Add new quantity')}>
+                                            <IconButton size='small' onClick={() => { setEditingId(e.id); setEditQtyInput(''); }} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                <AddCircleOutlineIcon sx={{ fontSize: 13 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </Box>
                             <InputBase
                                 value={e.tsakh}
                                 onChange={ev => update(e.id, 'tsakh', ev.target.value.replace(/[^0-9.]/g, ''))}
@@ -123,7 +187,12 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 inputProps={{ style: { textAlign: 'right', padding: 0 } }}
                                 sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#555' }}
                             />
-                            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                                <Tooltip title={t('History')}>
+                                    <IconButton size='small' onClick={() => setHistoryEntryId(e.id)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                        <HistoryIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
                                 <Tooltip title={t('Remove')}>
                                     <IconButton size='small' onClick={() => remove(e.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon sx={{ fontSize: 16 }} />
@@ -134,6 +203,45 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                     ))}
                 </Box>
             )}
+
+            {/* History dialog */}
+            <Dialog open={!!historyEntry} onClose={() => setHistoryEntryId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                    <HistoryIcon sx={{ fontSize: 20, flexShrink: 0, mt: '2px' }} />
+                    <Typography sx={{ fontSize: '1rem', fontWeight: 500, color: '#000' }}>{historyEntry?.name || '—'}</Typography>
+                </DialogTitle>
+                <DialogContent sx={{ pt: 0 }}>
+                    {!historyEntry || historyEntry.history.length === 0 ? (
+                        <Typography sx={{ color: '#aaa', fontSize: '0.85rem', py: 2 }}>{t('No history yet.')}</Typography>
+                    ) : (
+                        <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 1 }}>
+                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
+                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>{t('Date Added')}</Typography>
+                                <Box />
+                            </Box>
+                            {historyEntry.history.map((rec, i) => (
+                                <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', px: 2, py: 0.8, columnGap: 1, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
+                                        {rec.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                    </Typography>
+                                    <Typography sx={{ fontSize: '0.78rem', color: '#aaa', textAlign: 'right' }}>
+                                        {(rec.addedAt instanceof Date ? rec.addedAt : new Date(rec.addedAt)).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                                    </Typography>
+                                    <Tooltip title={t('Remove')}>
+                                        <IconButton size='small' onClick={() => deleteHistoryRecord(historyEntry.id, i)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3 }}>
+                                            <DeleteOutlineIcon sx={{ fontSize: 15 }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setHistoryEntryId(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
