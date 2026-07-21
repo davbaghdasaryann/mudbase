@@ -332,37 +332,37 @@ export default function CostingPage() {
                                 <Table size='small' sx={{ minWidth: 700 }}>
                                     <TableHead>
                                         <TableRow sx={{ backgroundColor: '#f0fbfc' }}>
-                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Description of Work')}</TableCell>
-                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Unit')}</TableCell>
-                                            <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Quantity')}</TableCell>
-                                            <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Unit Price')}</TableCell>
-                                            <TableCell align='right' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Total')}</TableCell>
-                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Date of Creation')}</TableCell>
-                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Contractor')}</TableCell>
-                                            <TableCell sx={{ fontWeight: 700, color: mainPrimaryColor }}>{t('Note')}</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, color: '#222' }}>{t('Description of Work')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Quantity')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit Price')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Total')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Date of Creation')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Contractor')}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Note')}</TableCell>
                                             <TableCell sx={{ width: 40 }} />
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {costHistory.map(entry => (
-                                            <TableRow key={entry.id} hover onDoubleClick={() => openEditModal(entry)} sx={{ cursor: 'pointer' }}>
+                                            <TableRow key={entry.id} hover>
                                                 <TableCell>{entry.workName}</TableCell>
-                                                <TableCell>{entry.unit}</TableCell>
-                                                <TableCell align='right'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
-                                                <TableCell align='right'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
-                                                <TableCell align='right' sx={{ fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(entry.total)} AMD</TableCell>
-                                                <TableCell sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
-                                                <TableCell sx={{ fontSize: '0.82rem' }}>
+                                                <TableCell align='center'>{entry.unit}</TableCell>
+                                                <TableCell align='center'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                                                <TableCell align='center'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
+                                                <TableCell align='center' sx={{ fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(entry.total)} AMD</TableCell>
+                                                <TableCell align='center' sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
+                                                <TableCell align='center' sx={{ fontSize: '0.82rem' }}>
                                                     {entry.isSubcontractor
                                                         ? <Chip label={t('Subcontractor')} size='small' sx={{ fontSize: '0.72rem', height: 20, backgroundColor: '#fff3e0', color: '#e65100' }} />
                                                         : <span style={{ color: entry.contractor ? '#333' : '#ccc' }}>{entry.contractor || '—'}</span>
                                                     }
                                                 </TableCell>
-                                                <TableCell sx={{ color: entry.note ? '#333' : '#ccc', fontSize: '0.82rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.note || '—'}</TableCell>
+                                                <TableCell align='center' sx={{ color: entry.note ? '#333' : '#ccc', fontSize: '0.82rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.note || '—'}</TableCell>
                                                 <TableCell padding='none'>
-                                                    <Tooltip title={t('Edit')}>
-                                                        <IconButton size='small' onClick={() => openEditModal(entry)} sx={{ color: '#aaa', '&:hover': { color: mainPrimaryColor } }}>
-                                                            <EditOutlinedIcon fontSize='small' />
+                                                    <Tooltip title={t('Remove')}>
+                                                        <IconButton size='small' onClick={() => setCostHistory(prev => prev.filter(e => e.id !== entry.id))} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                                            <DeleteOutlineIcon fontSize='small' />
                                                         </IconButton>
                                                     </Tooltip>
                                                 </TableCell>

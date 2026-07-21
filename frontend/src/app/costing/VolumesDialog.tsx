@@ -97,7 +97,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: 
     };
 
     const COLS = '1fr 80px 90px 120px 40px';
-    const HEADERS = [t('Description'), t('Unit'), t('Quantity'), 'Ծախսագրցում', ''];
+    const HEADERS = [t('Description'), t('Unit'), t('Quantity'), 'Ծախսագրում', ''];
 
     return (
         <>
@@ -184,7 +184,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: 
         {/* Cost entry sub-modal */}
         <Dialog open={!!costModal} onClose={() => setCostModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
-                Ծախսագրցում
+                Ծախսագրում
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>
                 <Typography sx={{ fontSize: '0.88rem', color: '#555', mb: 2 }}>
