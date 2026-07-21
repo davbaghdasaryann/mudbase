@@ -85,7 +85,7 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                             <InputBase
                                 value={e.name}
                                 onChange={ev => update(e.id, 'name', ev.target.value)}
-                                placeholder={t('Material name') + '...' }
+                                placeholder={t('Material Name') + '...'}
                                 sx={{ fontSize: '0.84rem', color: '#222', '& input': { p: 0, pr: 1 } }}
                             />
                             <Select
