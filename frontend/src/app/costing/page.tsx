@@ -560,6 +560,7 @@ export default function CostingPage() {
                 </DialogActions>
             </Dialog>
         {selectedEstimate && (
+            <>
             <VolumesDialog
                 open={volumesOpen}
                 onClose={() => setVolumesOpen(false)}
@@ -574,6 +575,7 @@ export default function CostingPage() {
                 pahestEntries={pahestEntries}
                 onPahestUpdate={handlePahestCostedUpdate}
             />
+            </>
         )}
         </PageContents>
     );
