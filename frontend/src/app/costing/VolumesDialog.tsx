@@ -27,7 +27,7 @@ interface LaborRow {
 
 interface CostModalState {
     row: LaborRow;
-    unitPrice: string;
+    value: string;
 }
 
 interface Props {
@@ -80,20 +80,19 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: 
 
     const handleConfirmCost = () => {
         if (!costModal) return;
-        const { row, unitPrice } = costModal;
-        const up = parseFloat(unitPrice.replace(',', '.')) || 0;
-        if (up <= 0) return;
-        const total = row.quantity * up;
+        const { row, value } = costModal;
+        const qty = parseFloat(value.replace(',', '.')) || 0;
+        if (qty <= 0) return;
         const entry: CostHistoryEntry = {
             id: String(Date.now() + Math.random()),
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
-            quantity: row.quantity,
-            unitPrice: up,
-            total,
+            quantity: qty,
+            unitPrice: 0,
+            total: 0,
             addedAt: new Date(),
         };
-        setCosts(prev => ({ ...prev, [row._id]: up }));
+        setCosts(prev => ({ ...prev, [row._id]: qty }));
         onCostAdded(entry);
         setCostModal(null);
     };
@@ -156,11 +155,11 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: 
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                                                                     {costs[row._id] != null && (
                                                                         <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>
-                                                                            {costs[row._id].toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                                                            {costs[row._id].toLocaleString(undefined, { maximumFractionDigits: 3 })}
                                                                         </Typography>
                                                                     )}
                                                                     <Tooltip title={t('Add new quantity')}>
-                                                                        <IconButton size='small' onClick={() => setCostModal({ row, unitPrice: costs[row._id] != null ? String(costs[row._id]) : '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                                        <IconButton size='small' onClick={() => setCostModal({ row, value: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
                                                                             <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
                                                                         </IconButton>
                                                                     </Tooltip>
@@ -192,44 +191,25 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: 
                 <Typography sx={{ fontSize: '0.88rem', color: '#555', mb: 2 }}>
                     {costModal?.row.laborOfferItemName || costModal?.row.catalogName || '—'}
                 </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 1 }}>
-                    <Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
-                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{costModal?.row.unitSymbol || '—'}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
-                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: mainPrimaryColor }}>{costModal?.row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
-                    </Box>
-                </Box>
-                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1, mt: 1.5 }}>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit Price')}</Typography>
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
                     <InputBase
                         autoFocus
                         fullWidth
-                        value={costModal?.unitPrice ?? ''}
-                        onChange={ev => setCostModal(prev => prev ? { ...prev, unitPrice: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
+                        value={costModal?.value ?? ''}
+                        onChange={ev => setCostModal(prev => prev ? { ...prev, value: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
                         onKeyDown={ev => { if (ev.key === 'Enter') handleConfirmCost(); if (ev.key === 'Escape') setCostModal(null); }}
                         placeholder='0'
                         sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
                     />
                 </Box>
-                {costModal && parseFloat(costModal.unitPrice.replace(',', '.')) > 0 && (
-                    <Box sx={{ mt: 1.5, px: 1.5, py: 1, bgcolor: '#f0fbfc', borderRadius: 1.5 }}>
-                        <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
-                            {t('Total')}: <strong style={{ color: mainPrimaryColor }}>
-                                {(costModal.row.quantity * parseFloat(costModal.unitPrice.replace(',', '.'))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                            </strong>
-                        </Typography>
-                    </Box>
-                )}
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                 <Button onClick={() => setCostModal(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                 <Button
                     variant='contained'
                     onClick={handleConfirmCost}
-                    disabled={!costModal || !parseFloat(costModal.unitPrice.replace(',', '.'))}
+                    disabled={!costModal || !(parseFloat(costModal.value.replace(',', '.')) > 0)}
                     sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
                 >
                     {t('Add')}
