@@ -7,10 +7,10 @@ import {
 } from '@mui/material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import CheckIcon from '@mui/icons-material/Check';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
+import { type CostHistoryEntry } from './page';
 import { mainPrimaryColor } from '@/theme';
 
 interface Section { _id: string; name: string; displayIndex: number; }
@@ -25,10 +25,16 @@ interface LaborRow {
     sectionName: string;
 }
 
+interface CostModalState {
+    row: LaborRow;
+    unitPrice: string;
+}
+
 interface Props {
     open: boolean;
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
+    onCostAdded: (entry: CostHistoryEntry) => void;
 }
 
 function toId(v: unknown): string {
@@ -38,15 +44,14 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function VolumesDialog({ open, onClose, estimate }: Props) {
+export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [rows, setRows] = useState<LaborRow[]>([]);
-    const [costs, setCosts] = useState<Record<string, string>>({});
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editInput, setEditInput] = useState('');
+    const [costs, setCosts] = useState<Record<string, number>>({});
+    const [costModal, setCostModal] = useState<CostModalState | null>(null);
 
     const estimateId = toId(estimate._id);
 
@@ -73,13 +78,28 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
             .finally(() => setLoading(false));
     }, [open, estimateId]);
 
-    const confirmEdit = (rowId: string) => {
-        if (editInput.trim()) setCosts(prev => ({ ...prev, [rowId]: editInput.trim() }));
-        setEditingId(null);
-        setEditInput('');
+    const handleConfirmCost = () => {
+        if (!costModal) return;
+        const { row, unitPrice } = costModal;
+        const up = parseFloat(unitPrice.replace(',', '.')) || 0;
+        if (up <= 0) return;
+        const total = row.quantity * up;
+        const entry: CostHistoryEntry = {
+            id: String(Date.now() + Math.random()),
+            workName: row.laborOfferItemName || row.catalogName || '—',
+            unit: row.unitSymbol || '',
+            quantity: row.quantity,
+            unitPrice: up,
+            total,
+            addedAt: new Date(),
+        };
+        setCosts(prev => ({ ...prev, [row._id]: up }));
+        onCostAdded(entry);
+        setCostModal(null);
     };
 
     return (
+        <>
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh' } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>
                 <ListAltIcon sx={{ fontSize: 22 }} />
@@ -133,32 +153,17 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
                                                                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor, textAlign: 'center' }}>
                                                                     {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}
                                                                 </Typography>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3 }}>
-                                                                    {editingId === row._id ? (
-                                                                        <>
-                                                                            <InputBase
-                                                                                autoFocus
-                                                                                value={editInput}
-                                                                                onChange={ev => setEditInput(ev.target.value.replace(/[^0-9.]/g, ''))}
-                                                                                onKeyDown={ev => { if (ev.key === 'Enter') confirmEdit(row._id); if (ev.key === 'Escape') setEditingId(null); }}
-                                                                                sx={{ width: 60, fontSize: '0.84rem', fontWeight: 600, color: '#555', border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 0.8, py: 0.2, '& input': { textAlign: 'center' } }}
-                                                                            />
-                                                                            <IconButton size='small' onClick={() => confirmEdit(row._id)} sx={{ color: mainPrimaryColor, p: 0.3 }}>
-                                                                                <CheckIcon sx={{ fontSize: 13 }} />
-                                                                            </IconButton>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            {costs[row._id] && (
-                                                                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#555' }}>{costs[row._id]}</Typography>
-                                                                            )}
-                                                                            <Tooltip title={t('Add new quantity')}>
-                                                                                <IconButton size='small' onClick={() => { setEditingId(row._id); setEditInput(costs[row._id] ?? ''); }} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
-                                                                                    <AddCircleOutlineIcon sx={{ fontSize: 13 }} />
-                                                                                </IconButton>
-                                                                            </Tooltip>
-                                                                        </>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                                                    {costs[row._id] != null && (
+                                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>
+                                                                            {costs[row._id].toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                                                        </Typography>
                                                                     )}
+                                                                    <Tooltip title={t('Add new quantity')}>
+                                                                        <IconButton size='small' onClick={() => setCostModal({ row, unitPrice: costs[row._id] != null ? String(costs[row._id]) : '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                                            <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
+                                                                        </IconButton>
+                                                                    </Tooltip>
                                                                 </Box>
                                                             </Box>
                                                         ))}
@@ -177,5 +182,60 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
                 <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
             </DialogActions>
         </Dialog>
+
+        {/* Cost entry sub-modal */}
+        <Dialog open={!!costModal} onClose={() => setCostModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
+                Ծախսագրցում
+            </DialogTitle>
+            <DialogContent sx={{ pt: 1 }}>
+                <Typography sx={{ fontSize: '0.88rem', color: '#555', mb: 2 }}>
+                    {costModal?.row.laborOfferItemName || costModal?.row.catalogName || '—'}
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 1 }}>
+                    <Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{costModal?.row.unitSymbol || '—'}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: mainPrimaryColor }}>{costModal?.row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
+                    </Box>
+                </Box>
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1, mt: 1.5 }}>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit Price')}</Typography>
+                    <InputBase
+                        autoFocus
+                        fullWidth
+                        value={costModal?.unitPrice ?? ''}
+                        onChange={ev => setCostModal(prev => prev ? { ...prev, unitPrice: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
+                        onKeyDown={ev => { if (ev.key === 'Enter') handleConfirmCost(); if (ev.key === 'Escape') setCostModal(null); }}
+                        placeholder='0'
+                        sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
+                    />
+                </Box>
+                {costModal && parseFloat(costModal.unitPrice.replace(',', '.')) > 0 && (
+                    <Box sx={{ mt: 1.5, px: 1.5, py: 1, bgcolor: '#f0fbfc', borderRadius: 1.5 }}>
+                        <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
+                            {t('Total')}: <strong style={{ color: mainPrimaryColor }}>
+                                {(costModal.row.quantity * parseFloat(costModal.unitPrice.replace(',', '.'))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </strong>
+                        </Typography>
+                    </Box>
+                )}
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                <Button onClick={() => setCostModal(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                <Button
+                    variant='contained'
+                    onClick={handleConfirmCost}
+                    disabled={!costModal || !parseFloat(costModal.unitPrice.replace(',', '.'))}
+                    sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
+                >
+                    {t('Add')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+        </>
     );
 }

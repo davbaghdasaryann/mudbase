@@ -551,6 +551,7 @@ export default function CostingPage() {
                 open={volumesOpen}
                 onClose={() => setVolumesOpen(false)}
                 estimate={selectedEstimate}
+                onCostAdded={handleCostAdded}
             />
         )}
         </PageContents>
