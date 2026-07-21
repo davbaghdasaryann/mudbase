@@ -264,7 +264,7 @@ export default function CostingPage() {
                     <>
                         <TabContext value={tab}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                                <TabList onChange={(_, v) => setTab(v as TabValue)}>
+                                <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                     <Tab label={t('General')} value='general' />
                                     <Tab label={t('Main')} value='main' />
                                     <Tab label={t('Costs History')} value='history' />
