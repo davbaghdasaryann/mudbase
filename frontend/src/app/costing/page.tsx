@@ -28,6 +28,7 @@ import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDi
 import CostingTable from './CostingTable';
 import PahestMainMaterials, { type PahestEntry } from './PahestMainMaterials';
 import PahestAylMaterials, { type AylEntry } from './PahestAylMaterials';
+import VolumesDialog from './VolumesDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
@@ -179,6 +180,7 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
 export default function CostingPage() {
     const { t } = useTranslation();
     const [tab, setTab] = useState<TabValue>('general');
+    const [volumesOpen, setVolumesOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
@@ -281,11 +283,9 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                                 {/* Action buttons */}
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-                                    {['Նյութերի ծախսագրում', 'Աշխատավարձի ծախսագրում', 'Ծավալների գրանցում'].map(label => (
-                                        <Button key={label} variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
-                                            {label}
-                                        </Button>
-                                    ))}
+                                    <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
+                                    <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
+                                    <Button variant='outlined' onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ծավալների գրանցում</Button>
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                                     <Box sx={{ flex: 1, minHeight: 180 }}>
@@ -546,6 +546,13 @@ export default function CostingPage() {
                     </Button>
                 </DialogActions>
             </Dialog>
+        {selectedEstimate && (
+            <VolumesDialog
+                open={volumesOpen}
+                onClose={() => setVolumesOpen(false)}
+                estimate={selectedEstimate}
+            />
+        )}
         </PageContents>
     );
 }
