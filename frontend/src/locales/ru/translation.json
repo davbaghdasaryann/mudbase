@@ -161,7 +161,6 @@
   "Payment Date": "Дата платежа",
   "Package Duration": "Срок пакета",
   "Expiration Date": "Дата истечения",
-  "Price": "Цена",
   "No payments yet": "Платежей пока нет",
   "Payment history will appear here": "История платежей появится здесь",
   "Create Package": "Создать пакет",
@@ -190,5 +189,6 @@
   "Remaining Calculation": "Остаточный расчёт",
   "Remaining": "Остаток",
   "Complete": "Выполнено",
-  "Add blank row": "Добавить пустую строку"
+  "Add blank row": "Добавить пустую строку",
+  "No materials added yet.": "Материалы еще не добавлены"
 }
