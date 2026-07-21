@@ -44,6 +44,13 @@ interface Subsection {
     totalCost: number;
 }
 
+function toId(v: unknown): string {
+    if (!v) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object' && 'oid' in (v as any)) return (v as any).oid;
+    return String(v);
+}
+
 const BASE_COLS = [
     { key: 'no',    defaultW: 52  },
     { key: 'desc',  defaultW: 500 },
@@ -123,7 +130,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
     const scrollDragStart = useRef({ x: 0, scrollLeft: 0 });
     const resizingCol = useRef<{ colIdx: number; startX: number; startW: number } | null>(null);
 
-    const estimateId = String(estimate._id);
+    const estimateId = toId(estimate._id);
 
     useEffect(() => {
         setLoading(true);
@@ -198,11 +205,11 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
 
     const handleModalConfirm = useCallback(() => {
         if (!modalSelected) return;
-        updateActualData({ ...actualData, [String(modalSelected._id)]: { quantity: modalQty, unitPrice: modalPrice } });
+        updateActualData({ ...actualData, [toId(modalSelected._id)]: { quantity: modalQty, unitPrice: modalPrice } });
         const q = parseFloat(modalQty.replace(',', '.')) || 0;
         const p = parseFloat(modalPrice.replace(',', '.')) || 0;
         onCostAdded?.({
-            id: `${Date.now()}-${String(modalSelected._id)}`,
+            id: `${Date.now()}-${toId(modalSelected._id)}`,
             workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
             unit: modalSelected.unitSymbol,
             quantity: q,
@@ -294,7 +301,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
     let itemCounter = 0;
 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => (
-        <tr key={String(row._id)} style={{ backgroundColor: counter % 2 === 0 ? '#fafeff' : '#fff' }}
+        <tr key={toId(row._id)} style={{ backgroundColor: counter % 2 === 0 ? '#fafeff' : '#fff' }}
             onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = counter % 2 === 0 ? '#fafeff' : '#fff'; }}
         >
@@ -307,7 +314,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
             <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
             <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
             {(() => {
-                const a = actualData[String(row._id)];
+                const a = actualData[toId(row._id)];
                 const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
                 const p = parseFloat((a?.unitPrice ?? '').replace(',', '.')) || 0;
                 const tot = q * p;

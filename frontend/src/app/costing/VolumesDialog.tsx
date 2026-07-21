@@ -85,7 +85,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
         const qty = parseFloat(value.replace(',', '.')) || 0;
         if (qty <= 0) return;
         setCosts(prev => ({ ...prev, [row._id]: (prev[row._id] ?? 0) + qty }));
-        onActualUpdate?.(row._id, qty);
+        onActualUpdate?.(toId(row._id), qty);
         onCostAdded({
             id: String(Date.now() + Math.random()),
             workName: row.laborOfferItemName || row.catalogName || '—',
