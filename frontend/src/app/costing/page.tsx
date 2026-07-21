@@ -281,7 +281,7 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                                 {/* Action buttons */}
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-                                    {['Նյութերի ծախսագրում', 'Աշխատավարձի ծախսագրում', 'Ծավալաների գրանցում'].map(label => (
+                                    {['Նյութերի ծախսագրում', 'Աշխատավարձի ծախսագրում', 'Ծավալների գրանցում'].map(label => (
                                         <Button key={label} variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>
                                             {label}
                                         </Button>
