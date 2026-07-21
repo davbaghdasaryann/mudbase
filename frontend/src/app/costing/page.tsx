@@ -17,6 +17,10 @@ import EngineeringIcon from '@mui/icons-material/Engineering';
 import BuildIcon from '@mui/icons-material/Build';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import HistoryIcon from '@mui/icons-material/History';
+import WarehouseOutlinedIcon from '@mui/icons-material/WarehouseOutlined';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -265,10 +269,10 @@ export default function CostingPage() {
                         <TabContext value={tab}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
                                 <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
-                                    <Tab label={t('General')} value='general' />
-                                    <Tab label={t('Main')} value='main' />
-                                    <Tab label={t('Costs History')} value='history' />
-                                    <Tab label='Պահեստ' value='pahest' />
+                                    <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
+                                    <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
+                                    <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Costs History')} value='history' />
+                                    <Tab icon={<WarehouseOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Պահեստ' value='pahest' />
                                 </TabList>
                             </Box>
                         </TabContext>
