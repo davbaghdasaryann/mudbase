@@ -204,9 +204,9 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     {/* Header */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', bgcolor: '#edf9fb', px: 2, py: 1.5 }}>
                         {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
@@ -342,9 +342,9 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                         <Typography sx={{ color: '#aaa', fontSize: '0.85rem', py: 2 }}>{t('No history yet.')}</Typography>
                     ) : (
                         <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>{t('Date Added')}</Typography>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 1.5 }}>
+                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
+                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>{t('Date Added')}</Typography>
                                 <Box />
                             </Box>
                             {historyEntry.history.map((rec, i) => (

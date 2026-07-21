@@ -75,9 +75,9 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                 </Box>
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: COLS, bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: COLS, bgcolor: '#edf9fb', px: 2, py: 1.5 }}>
                         {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
