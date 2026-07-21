@@ -333,8 +333,8 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
 
             {/* History dialog */}
             <Dialog open={!!historyEntry} onClose={() => setHistoryEntryId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <HistoryIcon sx={{ fontSize: 20 }} />
+                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                    <HistoryIcon sx={{ fontSize: 20, flexShrink: 0, mt: '2px' }} />
                     <Typography sx={{ fontSize: '1rem', fontWeight: 500, color: '#000' }}>{historyEntry?.name}</Typography>
                 </DialogTitle>
                 <DialogContent sx={{ pt: 0 }}>

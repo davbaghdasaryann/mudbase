@@ -190,5 +190,7 @@
   "Remaining": "Остаток",
   "Complete": "Выполнено",
   "Add blank row": "Добавить пустую строку",
-  "No materials added yet.": "Материалы еще не добавлены"
+  "No materials added yet.": "Материалы еще не добавлены",
+  "History": "История",
+  "Date Added": "Дата добавления"
 }
