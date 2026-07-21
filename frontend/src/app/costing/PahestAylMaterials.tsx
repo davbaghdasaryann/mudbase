@@ -36,7 +36,7 @@ const newRow = (): AylEntry => ({
     costPerUnit: '',
 });
 
-const COLS = '1fr 80px 90px 110px 110px 36px';
+const COLS = '1fr 90px 130px 110px 110px 36px';
 
 export default function PahestAylMaterials({ entries, onChange }: Props) {
     const { t } = useTranslation();
