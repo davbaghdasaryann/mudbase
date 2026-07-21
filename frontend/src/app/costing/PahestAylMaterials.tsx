@@ -19,6 +19,7 @@ export interface AylEntry {
     unit: string;
     mutq: string;
     tsakh: string;
+    costPerUnit: string;
 }
 
 interface Props {
@@ -32,9 +33,10 @@ const newRow = (): AylEntry => ({
     unit: '',
     mutq: '',
     tsakh: '',
+    costPerUnit: '',
 });
 
-const COLS = '1fr 80px 110px 110px 36px';
+const COLS = '1fr 80px 110px 110px 90px 36px';
 
 export default function PahestAylMaterials({ entries, onChange }: Props) {
     const { t } = useTranslation();
@@ -74,8 +76,8 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: COLS, bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
-                        {[t('Material'), t('Unit'), 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i === 0 ? 'left' : i < 4 ? 'right' : 'center' }}>{h}</Typography>
+                        {[t('Material'), t('Unit'), 'Մուտքագրված', 'Ծախսագրված', t('Cost/unit'), ''].map((h, i) => (
+                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
@@ -113,6 +115,13 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 placeholder='0'
                                 inputProps={{ style: { textAlign: 'right', padding: 0 } }}
                                 sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#555' }}
+                            />
+                            <InputBase
+                                value={e.costPerUnit}
+                                onChange={ev => update(e.id, 'costPerUnit', ev.target.value.replace(/[^0-9.]/g, ''))}
+                                placeholder='0'
+                                inputProps={{ style: { textAlign: 'right', padding: 0 } }}
+                                sx={{ fontSize: '0.9rem', fontWeight: 500, color: '#555' }}
                             />
                             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                 <Tooltip title={t('Remove')}>
