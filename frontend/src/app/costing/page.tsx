@@ -29,6 +29,7 @@ import CostingTable from './CostingTable';
 import PahestMainMaterials, { type PahestEntry } from './PahestMainMaterials';
 import PahestAylMaterials, { type AylEntry } from './PahestAylMaterials';
 import VolumesDialog from './VolumesDialog';
+import MaterialsDialog from './MaterialsDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
@@ -181,6 +182,7 @@ export default function CostingPage() {
     const { t } = useTranslation();
     const [tab, setTab] = useState<TabValue>('general');
     const [volumesOpen, setVolumesOpen] = useState(false);
+    const [materialsOpen, setMaterialsOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
@@ -213,6 +215,16 @@ export default function CostingPage() {
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
+    };
+
+    const handlePahestCostedUpdate = (materialItemId: string, qty: number) => {
+        setPahestEntries(prev => prev.map(e =>
+            e.materialItemId === materialItemId
+                ? { ...e, costedQuantity: (e.costedQuantity ?? 0) + qty }
+                : e
+        ));
+        setMaterialsOpen(false);
+        setTab('pahest');
     };
 
     const openEditModal = (entry: CostHistoryEntry) => {
@@ -284,7 +296,7 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                                 {/* Action buttons */}
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-                                    <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
+                                    <Button variant='outlined' onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
                                     <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
                                     <Button variant='outlined' onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ծավալների գրանցում</Button>
                                 </Box>
@@ -554,6 +566,13 @@ export default function CostingPage() {
                 estimate={selectedEstimate}
                 onCostAdded={handleCostAdded}
                 onActualUpdate={(rowId, qty) => setActualData(prev => ({ ...prev, [rowId]: { quantity: String((parseFloat(prev[rowId]?.quantity || '0') || 0) + qty), unitPrice: prev[rowId]?.unitPrice || '' } }))}
+            />
+            <MaterialsDialog
+                open={materialsOpen}
+                onClose={() => setMaterialsOpen(false)}
+                estimate={selectedEstimate}
+                pahestEntries={pahestEntries}
+                onPahestUpdate={handlePahestCostedUpdate}
             />
         )}
         </PageContents>

@@ -35,6 +35,7 @@ export interface PahestEntry {
     name: string;
     unit: string;
     quantity: number;
+    costedQuantity?: number;
     estimateQuantity: number;
     costPerUnit: number;
     addedAt: Date;
@@ -242,7 +243,9 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                                     </>
                                 )}
                             </Box>
-                            <Typography sx={{ fontSize: '0.9rem', color: '#aaa', textAlign: 'center' }}>—</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: (e.costedQuantity ?? 0) > 0 ? 700 : 400, color: (e.costedQuantity ?? 0) > 0 ? mainPrimaryColor : '#aaa', textAlign: 'center' }}>
+                                {(e.costedQuantity ?? 0) > 0 ? (e.costedQuantity!).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                            </Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                                 <Tooltip title={t('History')}>
                                     <IconButton size='small' onClick={() => setHistoryEntryId(e.materialItemId)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
