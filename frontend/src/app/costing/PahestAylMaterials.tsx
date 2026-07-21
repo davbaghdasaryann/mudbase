@@ -138,7 +138,7 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 size='small'
                                 variant='standard'
                                 disableUnderline
-                                sx={{ fontSize: '0.84rem', color: e.unit ? '#888' : '#bbb', width: '100%', textAlign: 'right', '& .MuiSelect-select': { p: 0, pr: '18px !important', textAlign: 'right' } }}
+                                sx={{ fontSize: '0.84rem', color: e.unit ? '#888' : '#bbb', width: '100%', textAlign: 'center', '& .MuiSelect-select': { p: 0, pr: '18px !important', textAlign: 'center' } }}
                             >
                                 <MenuItem value='' disabled sx={{ fontSize: '0.84rem', color: '#bbb' }}>{t('Unit')}</MenuItem>
                                 {units.map(u => (
@@ -149,10 +149,10 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 value={e.costPerUnit}
                                 onChange={ev => update(e.id, 'costPerUnit', ev.target.value.replace(/[^0-9.]/g, ''))}
                                 placeholder='0'
-                                inputProps={{ style: { textAlign: 'right', padding: 0 } }}
+                                inputProps={{ style: { textAlign: 'center', padding: 0 } }}
                                 sx={{ fontSize: '0.9rem', fontWeight: 500, color: '#555' }}
                             />
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3 }}>
                                 {editingId === e.id ? (
                                     <>
                                         <InputBase
@@ -184,7 +184,7 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 value={e.tsakh}
                                 onChange={ev => update(e.id, 'tsakh', ev.target.value.replace(/[^0-9.]/g, ''))}
                                 placeholder='0'
-                                inputProps={{ style: { textAlign: 'right', padding: 0 } }}
+                                inputProps={{ style: { textAlign: 'center', padding: 0 } }}
                                 sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#555' }}
                             />
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
