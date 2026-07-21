@@ -204,6 +204,7 @@ export default function CostingPage() {
 
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
+    const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string }>>({});
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -316,7 +317,7 @@ export default function CostingPage() {
                                     {t('Back')}
                                 </Button>
                                 <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selectedEstimate.name}</Typography>
-                                <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} />
+                                <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} />
                             </Box>
                         )}
 
@@ -552,6 +553,7 @@ export default function CostingPage() {
                 onClose={() => setVolumesOpen(false)}
                 estimate={selectedEstimate}
                 onCostAdded={handleCostAdded}
+                onActualUpdate={(rowId, qty) => setActualData(prev => ({ ...prev, [rowId]: { quantity: String((parseFloat(prev[rowId]?.quantity || '0') || 0) + qty), unitPrice: prev[rowId]?.unitPrice || '' } }))}
             />
         )}
         </PageContents>

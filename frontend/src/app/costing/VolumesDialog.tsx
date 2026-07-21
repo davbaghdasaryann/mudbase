@@ -35,6 +35,7 @@ interface Props {
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
     onCostAdded: (entry: CostHistoryEntry) => void;
+    onActualUpdate?: (rowId: string, qty: number) => void;
 }
 
 function toId(v: unknown): string {
@@ -44,7 +45,7 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: Props) {
+export default function VolumesDialog({ open, onClose, estimate, onCostAdded, onActualUpdate }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -84,6 +85,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded }: 
         const qty = parseFloat(value.replace(',', '.')) || 0;
         if (qty <= 0) return;
         setCosts(prev => ({ ...prev, [row._id]: (prev[row._id] ?? 0) + qty }));
+        onActualUpdate?.(row._id, qty);
         onCostAdded({
             id: String(Date.now() + Math.random()),
             workName: row.laborOfferItemName || row.catalogName || '—',

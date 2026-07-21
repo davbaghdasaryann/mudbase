@@ -73,7 +73,7 @@ const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     position: 'relative',
     fontWeight: 700,
     fontSize: '0.8rem',
-    color: mainPrimaryColor,
+    color: '#222',
     backgroundColor: HDR_BG,
     borderBottom: `2px solid ${mainPrimaryColor}`,
     ...extra,
@@ -101,7 +101,7 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate, onCostAdded }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void }) {
+export default function CostingTable({ estimate, onCostAdded, actualData: externalActualData, onActualDataChange }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
@@ -109,7 +109,9 @@ export default function CostingTable({ estimate, onCostAdded }: { estimate: Esti
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
-    const [actualData, setActualData] = useState<ActualData>({});
+    const [localActualData, setLocalActualData] = useState<ActualData>({});
+    const actualData = externalActualData ?? localActualData;
+    const updateActualData = (data: ActualData) => { if (onActualDataChange) onActualDataChange(data); else setLocalActualData(data); };
     const [modalOpen, setModalOpen] = useState(false);
     const [modalSearch, setModalSearch] = useState('');
     const [modalSelected, setModalSelected] = useState<LaborRow | null>(null);
@@ -196,7 +198,7 @@ export default function CostingTable({ estimate, onCostAdded }: { estimate: Esti
 
     const handleModalConfirm = useCallback(() => {
         if (!modalSelected) return;
-        setActualData(prev => ({ ...prev, [String(modalSelected._id)]: { quantity: modalQty, unitPrice: modalPrice } }));
+        updateActualData({ ...actualData, [String(modalSelected._id)]: { quantity: modalQty, unitPrice: modalPrice } });
         const q = parseFloat(modalQty.replace(',', '.')) || 0;
         const p = parseFloat(modalPrice.replace(',', '.')) || 0;
         onCostAdded?.({
@@ -360,7 +362,7 @@ export default function CostingTable({ estimate, onCostAdded }: { estimate: Esti
                                     textAlign: 'right',
                                     fontSize: '0.75rem',
                                     fontWeight: 600,
-                                    color: '#00818f',
+                                    color: '#222',
                                     borderBottom: '1px solid #b2e8ed',
                                     ...(i === 6 ? { borderLeft: '2px solid #b2e8ed' } : {}),
                                 })}>
