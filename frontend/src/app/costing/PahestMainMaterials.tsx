@@ -204,13 +204,13 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     {/* Header */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', bgcolor: '#edf9fb', px: 2, py: 1.5 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 1 }}>
                         {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
-                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
+                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', px: 2, py: 0.8, columnGap: 1, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
                             <Typography sx={{ fontSize: '0.84rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
                             <Typography sx={{ fontSize: '0.84rem', color: '#888', textAlign: 'right' }}>{e.unit}</Typography>
                             <Typography sx={{ fontSize: '0.84rem', color: '#555', textAlign: 'right' }}>{e.costPerUnit > 0 ? e.costPerUnit.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</Typography>
@@ -342,13 +342,13 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                         <Typography sx={{ color: '#aaa', fontSize: '0.85rem', py: 2 }}>{t('No history yet.')}</Typography>
                     ) : (
                         <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 1.5 }}>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 1 }}>
                                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
                                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>{t('Date Added')}</Typography>
                                 <Box />
                             </Box>
                             {historyEntry.history.map((rec, i) => (
-                                <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', px: 2, py: 0.8, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                                <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', px: 2, py: 0.8, columnGap: 1, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
                                     <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
                                         {rec.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                                     </Typography>
