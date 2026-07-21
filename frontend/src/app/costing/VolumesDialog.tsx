@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, CircularProgress,
+    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase,
 } from '@mui/material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CheckIcon from '@mui/icons-material/Check';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
@@ -42,6 +44,9 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [rows, setRows] = useState<LaborRow[]>([]);
+    const [costs, setCosts] = useState<Record<string, string>>({});
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editInput, setEditInput] = useState('');
 
     const estimateId = toId(estimate._id);
 
@@ -68,11 +73,17 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
             .finally(() => setLoading(false));
     }, [open, estimateId]);
 
+    const confirmEdit = (rowId: string) => {
+        if (editInput.trim()) setCosts(prev => ({ ...prev, [rowId]: editInput.trim() }));
+        setEditingId(null);
+        setEditInput('');
+    };
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh' } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>
                 <ListAltIcon sx={{ fontSize: 22 }} />
-                'Ծավալների գրանցում'
+                Ծավալների գրանցում
             </DialogTitle>
             <DialogContent sx={{ pt: 0, pb: 1 }}>
                 {loading ? (
@@ -89,11 +100,8 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
                                 .sort((a, b) => a.displayIndex - b.displayIndex);
                             return (
                                 <Box key={toId(sec._id)} sx={{ mb: 2 }}>
-                                    {/* Section header */}
                                     <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderRadius: '8px 8px 0 0', borderLeft: `4px solid ${mainPrimaryColor}` }}>
-                                        <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: mainPrimaryColor }}>
-                                            {sec.name}
-                                        </Typography>
+                                        <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: mainPrimaryColor }}>{sec.name}</Typography>
                                     </Box>
                                     {secSubs.length === 0 ? (
                                         <Box sx={{ px: 2, py: 1, borderLeft: '2px solid #e0f5f7', ml: 1 }}>
@@ -103,23 +111,19 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
                                         const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
                                         return (
                                             <Box key={toId(sub._id)} sx={{ borderLeft: '2px solid #e0f5f7', ml: 1, mb: 0.5 }}>
-                                                {/* Subsection header */}
                                                 <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.8, bgcolor: '#f7fdfe' }}>
-                                                    <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: '#444', flex: 1 }}>
-                                                        {sub.name}
-                                                    </Typography>
+                                                    <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: '#444', flex: 1 }}>{sub.name}</Typography>
                                                 </Box>
-                                                {/* Items */}
                                                 {subRows.length > 0 && (
                                                     <Box>
-                                                        {/* Item header row */}
-                                                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', px: 2, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7' }}>
+                                                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 120px', px: 2, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7' }}>
                                                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888' }}>{t('Description')}</Typography>
                                                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: 'center' }}>{t('Unit')}</Typography>
                                                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: 'center' }}>{t('Quantity')}</Typography>
+                                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: 'center' }}>Ծախսագրցում</Typography>
                                                         </Box>
                                                         {subRows.map((row, i) => (
-                                                            <Box key={row._id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                                                            <Box key={row._id} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 120px', px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
                                                                 <Typography sx={{ fontSize: '0.82rem', color: '#333' }}>
                                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                                 </Typography>
@@ -129,6 +133,33 @@ export default function VolumesDialog({ open, onClose, estimate }: Props) {
                                                                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor, textAlign: 'center' }}>
                                                                     {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}
                                                                 </Typography>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3 }}>
+                                                                    {editingId === row._id ? (
+                                                                        <>
+                                                                            <InputBase
+                                                                                autoFocus
+                                                                                value={editInput}
+                                                                                onChange={ev => setEditInput(ev.target.value.replace(/[^0-9.]/g, ''))}
+                                                                                onKeyDown={ev => { if (ev.key === 'Enter') confirmEdit(row._id); if (ev.key === 'Escape') setEditingId(null); }}
+                                                                                sx={{ width: 60, fontSize: '0.84rem', fontWeight: 600, color: '#555', border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 0.8, py: 0.2, '& input': { textAlign: 'center' } }}
+                                                                            />
+                                                                            <IconButton size='small' onClick={() => confirmEdit(row._id)} sx={{ color: mainPrimaryColor, p: 0.3 }}>
+                                                                                <CheckIcon sx={{ fontSize: 13 }} />
+                                                                            </IconButton>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            {costs[row._id] && (
+                                                                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#555' }}>{costs[row._id]}</Typography>
+                                                                            )}
+                                                                            <Tooltip title={t('Add new quantity')}>
+                                                                                <IconButton size='small' onClick={() => { setEditingId(row._id); setEditInput(costs[row._id] ?? ''); }} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                                                    <AddCircleOutlineIcon sx={{ fontSize: 13 }} />
+                                                                                </IconButton>
+                                                                            </Tooltip>
+                                                                        </>
+                                                                    )}
+                                                                </Box>
                                                             </Box>
                                                         ))}
                                                     </Box>
