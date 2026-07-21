@@ -206,7 +206,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                     {/* Header */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 60px 110px 110px 110px 72px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
                         {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#222', textAlign: i === 0 ? 'left' : i < 5 ? 'right' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
@@ -344,7 +344,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                         <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 0.8 }}>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'right' }}>{t('Date Added')}</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#222', textAlign: 'right' }}>{t('Date Added')}</Typography>
                                 <Box />
                             </Box>
                             {historyEntry.history.map((rec, i) => (
