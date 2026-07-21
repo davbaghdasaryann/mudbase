@@ -1,13 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box, Button, Typography, IconButton, Tooltip, InputBase,
+    Select, MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTranslation } from 'react-i18next';
+import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
+
+interface UnitOption { value: string; label: string; }
 
 export interface AylEntry {
     id: string;
@@ -34,6 +38,13 @@ const COLS = '1fr 80px 110px 110px 36px';
 
 export default function PahestAylMaterials({ entries, onChange }: Props) {
     const { t } = useTranslation();
+    const [units, setUnits] = useState<UnitOption[]>([]);
+
+    useEffect(() => {
+        Api.requestSession<any[]>({ command: 'measurement_unit/fetch' })
+            .then(data => setUnits(data.map(u => ({ value: u.representationSymbol, label: u.representationSymbol }))))
+            .catch(console.error);
+    }, []);
 
     const addRow = () => onChange([...entries, newRow()]);
 
@@ -75,13 +86,20 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 placeholder={t('Material name') + '...' }
                                 sx={{ fontSize: '0.84rem', color: '#222', '& input': { p: 0, pr: 1 } }}
                             />
-                            <InputBase
+                            <Select
                                 value={e.unit}
                                 onChange={ev => update(e.id, 'unit', ev.target.value)}
-                                placeholder={t('Unit')}
-                                inputProps={{ style: { textAlign: 'right', padding: 0 } }}
-                                sx={{ fontSize: '0.84rem', color: '#888' }}
-                            />
+                                displayEmpty
+                                size='small'
+                                variant='standard'
+                                disableUnderline
+                                sx={{ fontSize: '0.84rem', color: e.unit ? '#888' : '#bbb', width: '100%', textAlign: 'right', '& .MuiSelect-select': { p: 0, pr: '18px !important', textAlign: 'right' } }}
+                            >
+                                <MenuItem value='' disabled sx={{ fontSize: '0.84rem', color: '#bbb' }}>{t('Unit')}</MenuItem>
+                                {units.map(u => (
+                                    <MenuItem key={u.value} value={u.value} sx={{ fontSize: '0.84rem' }}>{u.label}</MenuItem>
+                                ))}
+                            </Select>
                             <InputBase
                                 value={e.mutq}
                                 onChange={ev => update(e.id, 'mutq', ev.target.value.replace(/[^0-9.]/g, ''))}

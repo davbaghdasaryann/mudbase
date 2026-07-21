@@ -385,7 +385,7 @@ export default function CostingPage() {
 
                                 {/* Section 2 */}
                                 <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
-                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այlanuterer_PLACEHOLDER</Typography>
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
                                     <PahestAylMaterials entries={aylEntries} onChange={setAylEntries} />
                                 </Box>
                             </Box>
