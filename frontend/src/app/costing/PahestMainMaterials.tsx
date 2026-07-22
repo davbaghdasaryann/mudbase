@@ -26,6 +26,7 @@ interface MaterialOption {
 
 export interface PahestHistoryRecord {
     quantity: number;
+    costPerUnit: number;
     addedAt: Date;
 }
 
@@ -109,7 +110,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         const qty = parseFloat(qtyInput.replace(',', '.')) || 0;
         if (qty <= 0) return;
         const now = new Date();
-        const newRecord: PahestHistoryRecord = { quantity: qty, addedAt: now };
+        const newRecord: PahestHistoryRecord = { quantity: qty, costPerUnit: selected.costPerUnit, addedAt: now };
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId);
         if (existing >= 0) {
             const next = [...entries];
@@ -143,10 +144,11 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         const idx = entries.findIndex(e => e.materialItemId === plusEntry.materialItemId);
         if (idx < 0) return;
         const next = [...entries];
+        const newCostPerUnit = !isNaN(price) && plusPriceInput.trim() !== '' ? price : next[idx].costPerUnit;
         const patch: Partial<PahestEntry> & { history?: PahestHistoryRecord[]; addedAt?: Date } = {};
         if (qty > 0) {
             patch.quantity = next[idx].quantity + qty;
-            patch.history = [...next[idx].history, { quantity: qty, addedAt: now }];
+            patch.history = [...next[idx].history, { quantity: qty, costPerUnit: newCostPerUnit, addedAt: now }];
             patch.addedAt = now;
         }
         if (!isNaN(price) && plusPriceInput.trim() !== '') patch.costPerUnit = price;
@@ -352,7 +354,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             </Dialog>
 
             {/* History dialog */}
-            <Dialog open={!!historyEntry} onClose={() => setHistoryEntryId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog open={!!historyEntry} onClose={() => setHistoryEntryId(null)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                     <HistoryIcon sx={{ fontSize: 20, flexShrink: 0, mt: '2px' }} />
                     <Typography sx={{ fontSize: '1rem', fontWeight: 500, color: '#000' }}>{historyEntry?.name}</Typography>
@@ -361,27 +363,39 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                     {!historyEntry || historyEntry.history.length === 0 ? (
                         <Typography sx={{ color: '#aaa', fontSize: '0.85rem', py: 2 }}>{t('No history yet.')}</Typography>
                     ) : (
-                        <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 1 }}>
-                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: mainPrimaryColor }}>Մուտքագրված</Typography>
-                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'right' }}>{t('Date Added')}</Typography>
-                                <Box />
-                            </Box>
-                            {historyEntry.history.map((rec, i) => (
-                                <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 150px 36px', px: 2, py: 0.8, columnGap: 1, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
-                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
-                                        {rec.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                                    </Typography>
-                                    <Typography sx={{ fontSize: '0.78rem', color: '#aaa', textAlign: 'right' }}>
-                                        {(rec.addedAt instanceof Date ? rec.addedAt : new Date(rec.addedAt)).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
-                                    </Typography>
-                                    <Tooltip title={t('Remove')}>
-                                        <IconButton size='small' onClick={() => deleteHistoryRecord(historyEntry.materialItemId, i)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3 }}>
-                                            <DeleteOutlineIcon sx={{ fontSize: 15 }} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </Box>
-                            ))}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {historyEntry.history.map((rec, i) => {
+                                const cpu = rec.costPerUnit ?? historyEntry.costPerUnit;
+                                const total = rec.quantity * cpu;
+                                return (
+                                    <Box key={i} sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                    <Typography sx={{ fontSize: '0.72rem', color: '#999', width: 100 }}>Մուտքագրված</Typography>
+                                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>{rec.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                    <Typography sx={{ fontSize: '0.72rem', color: '#999', width: 100 }}>Միավորի արժեք</Typography>
+                                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, color: '#555' }}>{cpu > 0 ? cpu.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</Typography>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                    <Typography sx={{ fontSize: '0.72rem', color: '#999', width: 100 }}>{t('Total')}</Typography>
+                                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#333' }}>{total > 0 ? total.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}</Typography>
+                                                </Box>
+                                                <Typography sx={{ fontSize: '0.72rem', color: '#aaa', mt: 0.3 }}>
+                                                    {(rec.addedAt instanceof Date ? rec.addedAt : new Date(rec.addedAt)).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                                                </Typography>
+                                            </Box>
+                                            <Tooltip title={t('Remove')}>
+                                                <IconButton size='small' onClick={() => deleteHistoryRecord(historyEntry.materialItemId, i)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3, alignSelf: 'flex-start' }}>
+                                                    <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Box>
+                                    </Box>
+                                );
+                            })}
                         </Box>
                     )}
                 </DialogContent>
