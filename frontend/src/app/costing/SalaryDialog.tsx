@@ -30,6 +30,7 @@ function toId(v: unknown): string {
     if (!v) return '';
     if (typeof v === 'string') return v;
     if (typeof v === 'object' && 'oid' in (v as any)) return (v as any).oid;
+    if (typeof v === 'object' && '$oid' in (v as any)) return (v as any)['$oid'];
     return String(v);
 }
 
@@ -67,34 +68,29 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
     const [val1, setVal1] = useState('');
     const [val2, setVal2] = useState('');
 
-    const estimateId = toId(estimate._id);
-
     useEffect(() => {
-        if (!open) return;
+        if (!open) {
+            setSelectedRow(null);
+            return;
+        }
         setSelectedRow(null);
         setType('druqayin');
         setVal1('');
         setVal2('');
+        const estimateId = toId(estimate?._id);
+        if (!estimateId) return;
         setLoading(true);
         Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } })
             .then(data => setRows(data ?? []))
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, [open, estimateId]);
+    }, [open, estimate]);
 
     const handleClose = () => { setSelectedRow(null); onClose(); };
-    const onPage2 = !!selectedRow;
     const n1 = parseFloat(val1.replace(',', '.')) || 0;
     const n2 = parseFloat(val2.replace(',', '.')) || 0;
     const computedTotal = type === 'druqayin' ? n1 : n1 * n2;
     const canAdd = computedTotal > 0;
-
-    const handleSelectRow = (row: LaborRow) => {
-        setSelectedRow(row);
-        setType('druqayin');
-        setVal1('');
-        setVal2('');
-    };
 
     const handleAdd = () => {
         if (!canAdd || !selectedRow) return;
@@ -118,16 +114,16 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth
-            PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', overflow: 'hidden' } }}
+            PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh' } }}
         >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1, minHeight: 56, flexShrink: 0 }}>
-                {onPage2 ? (
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1, flexShrink: 0 }}>
+                {selectedRow ? (
                     <>
                         <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
                         <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: mainPrimaryColor, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {selectedRow?.laborOfferItemName || selectedRow?.catalogName}
+                            {selectedRow.laborOfferItemName || selectedRow.catalogName}
                         </Typography>
                     </>
                 ) : (
@@ -138,14 +134,10 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
                 )}
             </DialogTitle>
 
-            <DialogContent sx={{ p: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{
-                    display: 'flex', width: '200%', flex: 1, minHeight: 0,
-                    transform: onPage2 ? 'translateX(-50%)' : 'translateX(0)',
-                    transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
-                }}>
-                    {/* PAGE 1: flat labor row list grouped by section */}
-                    <Box sx={{ width: '50%', overflowY: 'auto', pt: 0.5, pb: 1 }}>
+            <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                {!selectedRow ? (
+                    /* STEP 1: pick a work */
+                    <Box sx={{ overflowY: 'auto', flex: 1 }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                                 <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
@@ -158,16 +150,14 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
                                     <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{secName}</Typography>
                                 </Box>
                                 {rows.filter(r => (r.sectionName || '—') === secName).map(row => (
-                                    <Box key={toId(row._id)} onClick={() => handleSelectRow(row)}
-                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
+                                    <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('druqayin'); setVal1(''); setVal2(''); }}
+                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                     >
                                         <Box sx={{ flex: 1 }}>
                                             <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
                                                 {row.laborOfferItemName || row.catalogName || '—'}
                                             </Typography>
-                                            <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>
-                                                {row.unitSymbol}
-                                            </Typography>
+                                            {row.unitSymbol ? <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>{row.unitSymbol}</Typography> : null}
                                         </Box>
                                         <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
                                     </Box>
@@ -175,29 +165,23 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
                             </Box>
                         ))}
                     </Box>
-
-                    {/* PAGE 2: Salary type + inputs */}
-                    <Box sx={{ width: '50%', overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                ) : (
+                    /* STEP 2: choose type and enter values */
+                    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, overflowY: 'auto' }}>
                         <RadioGroup row value={type} onChange={ev => { setType(ev.target.value as SalaryType); setVal1(''); setVal2(''); }}>
                             <FormControlLabel value='druqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Դրույքային</Typography>} />
                             <FormControlLabel value='gorcarqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Գործարքային</Typography>} />
                             <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Միավոր/ժամ</Typography>} />
                         </RadioGroup>
-                        {type === 'druqayin' && (
-                            <NumInput autoFocus label='Դրույքային' value={val1} onChange={setVal1} />
-                        )}
-                        {type === 'gorcarqayin' && (
-                            <>
-                                <NumInput autoFocus label='Քանակ' value={val1} onChange={setVal1} />
-                                <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
-                            </>
-                        )}
-                        {type === 'miavorzham' && (
-                            <>
-                                <NumInput autoFocus label='1 ժamvа дрuyqачафа' value={val1} onChange={setVal1} />
-                                <NumInput label='Жамери qаnaq' value={val2} onChange={setVal2} />
-                            </>
-                        )}
+                        {type === 'druqayin' && <NumInput autoFocus label='Դրույքային' value={val1} onChange={setVal1} />}
+                        {type === 'gorcarqayin' && <>
+                            <NumInput autoFocus label='Քանակ' value={val1} onChange={setVal1} />
+                            <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
+                        </>}
+                        {type === 'miavorzham' && <>
+                            <NumInput autoFocus label='1 ժamvа дрuyqачафа' value={val1} onChange={setVal1} />
+                            <NumInput label='Жамери qаnaq' value={val2} onChange={setVal2} />
+                        </>}
                         {canAdd && type !== 'druqayin' && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <Typography sx={{ fontSize: '0.82rem', color: '#777' }}>
@@ -206,12 +190,12 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
                             </Box>
                         )}
                     </Box>
-                </Box>
+                )}
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2, flexShrink: 0, gap: 1 }}>
                 <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>Չեղարկել</Button>
-                {onPage2 && (
+                {selectedRow && (
                     <Button variant='contained' onClick={handleAdd} disabled={!canAdd}
                         sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
                     >Պահպանել</Button>
