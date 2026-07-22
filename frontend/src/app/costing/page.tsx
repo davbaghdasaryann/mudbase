@@ -290,6 +290,10 @@ export default function CostingPage() {
 
     useEffect(() => {
         if (!selected) return;
+        setRecords(prev => prev.map(r => r._id === selected._id
+            ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
+            : r
+        ));
         saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData);
     }, [costHistory, pahestEntries, aylEntries, actualData, selected, saveToBackend]);
 
