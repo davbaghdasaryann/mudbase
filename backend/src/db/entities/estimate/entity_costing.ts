@@ -50,6 +50,12 @@ export interface CostingAylEntry {
     history: CostingAylHistoryRecord[];
 }
 
+export interface CostingSalaryData {
+    druqayin: number;
+    gorcarqayin: number;
+    miavorZham: number;
+}
+
 export interface EntityCosting {
     _id?: ObjectId;
     accountId?: ObjectId;
@@ -59,6 +65,7 @@ export interface EntityCosting {
     pahestEntries?: CostingPahestEntry[];
     aylEntries?: CostingAylEntry[];
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
+    salaryData?: CostingSalaryData;
     createdAt?: Date;
     updatedAt?: Date;
 }

@@ -31,6 +31,7 @@ import PahestMainMaterials, { type PahestEntry } from './PahestMainMaterials';
 import PahestAylMaterials, { type AylEntry } from './PahestAylMaterials';
 import VolumesDialog from './VolumesDialog';
 import MaterialsDialog from './MaterialsDialog';
+import SalaryDialog, { type SalaryData } from './SalaryDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
@@ -72,6 +73,7 @@ interface CostingRecord {
     pahestEntries: PahestEntry[];
     aylEntries: AylEntry[];
     actualData: Record<string, { quantity: string; unitPrice: string }>;
+    salaryData?: SalaryData;
     createdAt: string;
 }
 
@@ -196,7 +198,7 @@ const ACTUAL_SEGMENTS = [
     { key: 'other',     labelKey: 'Other Expenses',  inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
 ];
 
-function ActualCostsChart({ pahestEntries, height = 260 }: { pahestEntries: PahestEntry[]; height?: number }) {
+function ActualCostsChart({ pahestEntries, salaryData, height = 260 }: { pahestEntries: PahestEntry[]; salaryData?: SalaryData; height?: number }) {
     const { t } = useTranslation();
     const chartHeight = Math.max(100, height - 72);
 
@@ -205,8 +207,12 @@ function ActualCostsChart({ pahestEntries, height = 260 }: { pahestEntries: Pahe
         0
     );
 
+    const laborTotal = salaryData
+        ? (salaryData.druqayin || 0) + (salaryData.gorcarqayin || 0) + (salaryData.miavorZham || 0)
+        : 0;
+
     const data = [
-        { key: 'labor',     name: t('Labor'),         value: 0 },
+        { key: 'labor',     name: t('Labor'),         value: laborTotal },
         { key: 'materials', name: t('Materials'),      value: materialsTotal },
         { key: 'other',     name: t('Other Expenses'), value: 0 },
     ].filter(d => d.value > 0);
@@ -279,6 +285,7 @@ export default function CostingPage() {
     const [tab, setTab] = useState<TabValue>('general');
     const [volumesOpen, setVolumesOpen] = useState(false);
     const [materialsOpen, setMaterialsOpen] = useState(false);
+    const [salaryOpen, setSalaryOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [records, setRecords] = useState<CostingRecord[]>([]);
@@ -291,6 +298,7 @@ export default function CostingPage() {
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
     const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string }>>({});
+    const [salaryData, setSalaryData] = useState<SalaryData>({ druqayin: 0, gorcarqayin: 0, miavorZham: 0 });
 
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
     const [editUnit, setEditUnit] = useState('');
@@ -345,6 +353,7 @@ export default function CostingPage() {
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
         })));
         setActualData(rec.actualData ?? {});
+        setSalaryData(rec.salaryData ?? { druqayin: 0, gorcarqayin: 0, miavorZham: 0 });
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -364,23 +373,24 @@ export default function CostingPage() {
         ch: CostHistoryEntry[],
         pe: PahestEntry[],
         ae: AylEntry[],
-        ad: Record<string, { quantity: string; unitPrice: string }>
+        ad: Record<string, { quantity: string; unitPrice: string }>,
+        sd: SalaryData
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad } }).catch(console.error);
+            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, salaryData: sd } }).catch(console.error);
         }, 800);
     }, []);
 
     useEffect(() => {
         if (!selected) return;
         setRecords(prev => prev.map(r => r._id === selected._id
-            ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
+            ? { ...r, costHistory, pahestEntries, aylEntries, actualData, salaryData }
             : r
         ));
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selected, saveToBackend]);
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, salaryData);
+    }, [costHistory, pahestEntries, aylEntries, actualData, salaryData, selected, saveToBackend]);
 
     const handleCreate = useCallback(async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -532,7 +542,7 @@ export default function CostingPage() {
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
                             <Button variant='outlined' onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
-                            <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
+                            <Button variant='outlined' onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
                             <Button variant='outlined' onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ծավալների գրանցում</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
@@ -540,7 +550,7 @@ export default function CostingPage() {
                                 <CostBreakdownChart estimate={selectedEstimate} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
-                                <ActualCostsChart pahestEntries={pahestEntries} height={220} />
+                                <ActualCostsChart pahestEntries={pahestEntries} salaryData={salaryData} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} />
@@ -741,6 +751,12 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
+                />
+                <SalaryDialog
+                    open={salaryOpen}
+                    onClose={() => setSalaryOpen(false)}
+                    salaryData={salaryData}
+                    onSave={setSalaryData}
                 />
                 </>
             )}
