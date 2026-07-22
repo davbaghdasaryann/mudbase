@@ -17,15 +17,12 @@ import { type CostHistoryEntry } from './page';
 
 type SalaryType = 'druqayin' | 'gorcarqayin' | 'miavorzham';
 
-interface Section { _id: string; name: string; displayIndex: number; }
-interface Subsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
 interface LaborRow {
     _id: string;
     catalogName: string;
     laborOfferItemName: string;
     unitSymbol: string;
     quantity: number;
-    subsectionName: string;
     sectionName: string;
 }
 
@@ -50,9 +47,7 @@ function NumInput({ label, value, onChange, autoFocus }: { label: string; value:
         <Box sx={INPUT_SX}>
             <Typography sx={{ fontSize: '0.85rem', color: '#555', flex: 1 }}>{label}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <InputBase
-                    autoFocus={autoFocus}
-                    value={value}
+                <InputBase autoFocus={autoFocus} value={value}
                     onChange={ev => onChange(ev.target.value.replace(/[^0-9.]/g, ''))}
                     placeholder='0'
                     inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.92rem', fontWeight: 600, color: '#333' } }}
@@ -66,8 +61,6 @@ function NumInput({ label, value, onChange, autoFocus }: { label: string; value:
 export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
-    const [sections, setSections] = useState<Section[]>([]);
-    const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
     const [type, setType] = useState<SalaryType>('druqayin');
@@ -83,26 +76,13 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
         setVal1('');
         setVal2('');
         setLoading(true);
-        Promise.all([
-            Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
-            Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
-        ])
-            .then(async ([laborData, sectData]) => {
-                const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
-                setSections(sorted);
-                setRows(laborData ?? []);
-                const arrays = await Promise.all(
-                    sorted.map(s =>
-                        Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: toId(s._id) } })
-                            .catch(() => [] as Subsection[])
-                    )
-                );
-                setSubsections(arrays.flat());
-            })
+        Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } })
+            .then(data => setRows(data ?? []))
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [open, estimateId]);
 
+    const handleClose = () => { setSelectedRow(null); onClose(); };
     const onPage2 = !!selectedRow;
     const n1 = parseFloat(val1.replace(',', '.')) || 0;
     const n2 = parseFloat(val2.replace(',', '.')) || 0;
@@ -130,11 +110,14 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
             note: type === 'druqayin' ? 'Դրույքային' : type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ',
         };
         onEntryAdded(entry);
-        onClose();
+        handleClose();
     };
 
+    // Group rows by sectionName
+    const sections = Array.from(new Set(rows.map(r => r.sectionName || '—')));
+
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth
+        <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', overflow: 'hidden' } }}
         >
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1, minHeight: 56, flexShrink: 0 }}>
@@ -161,52 +144,36 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
                     transform: onPage2 ? 'translateX(-50%)' : 'translateX(0)',
                     transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
                 }}>
-                    {/* PAGE 1: Labor row list */}
+                    {/* PAGE 1: flat labor row list grouped by section */}
                     <Box sx={{ width: '50%', overflowY: 'auto', pt: 0.5, pb: 1 }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                                 <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
                             </Box>
-                        ) : sections.length === 0 ? (
+                        ) : rows.length === 0 ? (
                             <Typography sx={{ color: '#aaa', py: 4, textAlign: 'center', px: 2 }}>{t('No sections found')}</Typography>
-                        ) : sections.map(sec => {
-                            const secSubs = subsections
-                                .filter(sub => toId(sub.estimateSectionId) === toId(sec._id))
-                                .sort((a, b) => a.displayIndex - b.displayIndex);
-                            return (
-                                <Box key={toId(sec._id)} sx={{ mb: 1 }}>
-                                    <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
-                                        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{sec.name}</Typography>
-                                    </Box>
-                                    {secSubs.map(sub => {
-                                        const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
-                                        if (subRows.length === 0) return null;
-                                        return (
-                                            <Box key={toId(sub._id)}>
-                                                <Box sx={{ px: 2, py: 0.6, bgcolor: '#f7fdfe', borderTop: '1px solid #e8f9fb' }}>
-                                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#666', fontStyle: 'italic' }}>{sub.name}</Typography>
-                                                </Box>
-                                                {subRows.map(row => (
-                                                    <Box key={toId(row._id)} onClick={() => handleSelectRow(row)}
-                                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
-                                                    >
-                                                        <Box sx={{ flex: 1 }}>
-                                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
-                                                                {row.laborOfferItemName || row.catalogName || '—'}
-                                                            </Typography>
-                                                            <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>
-                                                                {row.unitSymbol}
-                                                            </Typography>
-                                                        </Box>
-                                                        <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        );
-                                    })}
+                        ) : sections.map(secName => (
+                            <Box key={secName} sx={{ mb: 1 }}>
+                                <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
+                                    <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{secName}</Typography>
                                 </Box>
-                            );
-                        })}
+                                {rows.filter(r => (r.sectionName || '—') === secName).map(row => (
+                                    <Box key={toId(row._id)} onClick={() => handleSelectRow(row)}
+                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
+                                    >
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
+                                                {row.laborOfferItemName || row.catalogName || '—'}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>
+                                                {row.unitSymbol}
+                                            </Typography>
+                                        </Box>
+                                        <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
+                                    </Box>
+                                ))}
+                            </Box>
+                        ))}
                     </Box>
 
                     {/* PAGE 2: Salary type + inputs */}
@@ -243,7 +210,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2, flexShrink: 0, gap: 1 }}>
-                <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>Չեղարկել</Button>
+                <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>Չեղարկել</Button>
                 {onPage2 && (
                     <Button variant='contained' onClick={handleAdd} disabled={!canAdd}
                         sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
