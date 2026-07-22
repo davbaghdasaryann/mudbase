@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
     Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
@@ -32,6 +32,7 @@ import VolumesDialog from './VolumesDialog';
 import MaterialsDialog from './MaterialsDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
+import * as Api from '@/api';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import CostBreakdownChart from '@/app/analysis/structural/CostBreakdownChart';
 import OtherExpensesChart from '@/app/analysis/structural/OtherExpensesChart';
@@ -208,10 +209,56 @@ export default function CostingPage() {
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
     const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string }>>({});
 
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isLoadingRef = useRef(false);
+
+    const saveToBackend = useCallback((
+        estimateId: string,
+        ch: CostHistoryEntry[],
+        pe: PahestEntry[],
+        ae: AylEntry[],
+        ad: Record<string, { quantity: string; unitPrice: string }>
+    ) => {
+        if (isLoadingRef.current) return;
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(() => {
+            Api.requestSession({ command: 'costing/save', args: { estimateId }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad } }).catch(console.error);
+        }, 800);
+    }, []);
+
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         setSelectedEstimate(estimate);
+        const estimateId = estimate._id as string;
+        isLoadingRef.current = true;
+        Api.requestSession<any>({ command: 'costing/fetch', args: { estimateId } })
+            .then(doc => {
+                if (doc) {
+                    setCostHistory((doc.costHistory ?? []).map((e: any) => ({ ...e, addedAt: new Date(e.addedAt) })));
+                    setPahestEntries((doc.pahestEntries ?? []).map((e: any) => ({
+                        ...e,
+                        history: (e.history ?? []).map((r: any) => ({ ...r, addedAt: new Date(r.addedAt) })),
+                    })));
+                    setAylEntries((doc.aylEntries ?? []).map((e: any) => ({
+                        ...e,
+                        history: (e.history ?? []).map((r: any) => ({ ...r, addedAt: new Date(r.addedAt) })),
+                    })));
+                    setActualData(doc.actualData ?? {});
+                } else {
+                    setCostHistory([]);
+                    setPahestEntries([]);
+                    setAylEntries([]);
+                    setActualData({});
+                }
+            })
+            .catch(console.error)
+            .finally(() => { isLoadingRef.current = false; });
     };
+
+    useEffect(() => {
+        if (!selectedEstimate) return;
+        saveToBackend(selectedEstimate._id as string, costHistory, pahestEntries, aylEntries, actualData);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selectedEstimate, saveToBackend]);
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
