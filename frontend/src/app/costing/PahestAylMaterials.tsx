@@ -8,7 +8,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import HistoryIcon from '@mui/icons-material/History';
-import CheckIcon from '@mui/icons-material/Check';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -46,15 +45,17 @@ const newRow = (): AylEntry => ({
     history: [],
 });
 
-const COLS = '1fr 90px 140px 120px 120px 72px';
+const COLS = '1fr 90px 140px 120px 120px 88px';
 
 export default function PahestAylMaterials({ entries, onChange }: Props) {
     const { t } = useTranslation();
     const [units, setUnits] = useState<UnitOption[]>([]);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editQtyInput, setEditQtyInput] = useState('');
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
     const historyEntry = historyEntryId ? (entries.find(e => e.id === historyEntryId) ?? null) : null;
+
+    const [plusEntry, setPlusEntry] = useState<AylEntry | null>(null);
+    const [plusQtyInput, setPlusQtyInput] = useState('');
+    const [plusPriceInput, setPlusPriceInput] = useState('');
 
     useEffect(() => {
         Api.requestSession<any[]>({ command: 'measurement_unit/fetch' })
@@ -69,17 +70,23 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
 
     const remove = (id: string) => onChange(entries.filter(e => e.id !== id));
 
-    const confirmInlineEdit = (entry: AylEntry) => {
-        const qty = parseFloat(editQtyInput.replace(',', '.')) || 0;
-        if (qty <= 0) { setEditingId(null); return; }
+    const handlePlusConfirm = () => {
+        if (!plusEntry) return;
+        const qty = parseFloat(plusQtyInput.replace(',', '.')) || 0;
         const now = new Date();
-        const newRecord: AylHistoryRecord = { quantity: qty, addedAt: now };
-        onChange(entries.map(e => e.id === entry.id
-            ? { ...e, mutq: e.mutq + qty, history: [...e.history, newRecord] }
-            : e
-        ));
-        setEditingId(null);
-        setEditQtyInput('');
+        onChange(entries.map(e => {
+            if (e.id !== plusEntry.id) return e;
+            const updates: Partial<AylEntry> & { history?: AylHistoryRecord[] } = {};
+            if (qty > 0) {
+                updates.mutq = e.mutq + qty;
+                updates.history = [...e.history, { quantity: qty, addedAt: now }];
+            }
+            if (plusPriceInput.trim() !== '') updates.costPerUnit = plusPriceInput.trim();
+            return { ...e, ...updates };
+        }));
+        setPlusEntry(null);
+        setPlusQtyInput('');
+        setPlusPriceInput('');
     };
 
     const deleteHistoryRecord = (entryId: string, recIdx: number) => {
@@ -144,41 +151,12 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                     <MenuItem key={u.value} value={u.value} sx={{ fontSize: '0.9rem' }}>{u.label}</MenuItem>
                                 ))}
                             </Select>
-                            <InputBase
-                                value={e.costPerUnit}
-                                onChange={ev => update(e.id, 'costPerUnit', ev.target.value.replace(/[^0-9.]/g, ''))}
-                                placeholder='0'
-                                inputProps={{ style: { textAlign: 'center', padding: 0 } }}
-                                sx={{ fontSize: '0.9rem', fontWeight: 500, color: '#555' }}
-                            />
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3 }}>
-                                {editingId === e.id ? (
-                                    <>
-                                        <InputBase
-                                            autoFocus
-                                            value={editQtyInput}
-                                            onChange={ev => setEditQtyInput(ev.target.value.replace(/[^0-9.]/g, ''))}
-                                            placeholder={e.mutq.toString()}
-                                            onKeyDown={ev => { if (ev.key === 'Enter') confirmInlineEdit(e); if (ev.key === 'Escape') setEditingId(null); }}
-                                            sx={{ width: 64, fontSize: '0.88rem', fontWeight: 700, color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, borderRadius: '4px', px: 0.8, py: 0.2, '& input': { textAlign: 'right' } }}
-                                        />
-                                        <IconButton size='small' onClick={() => confirmInlineEdit(e)} sx={{ color: mainPrimaryColor, p: 0.3 }}>
-                                            <CheckIcon sx={{ fontSize: 14 }} />
-                                        </IconButton>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor }}>
-                                            {e.mutq > 0 ? e.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
-                                        </Typography>
-                                        <Tooltip title={t('Add new quantity')}>
-                                            <IconButton size='small' onClick={() => { setEditingId(e.id); setEditQtyInput(''); }} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
-                                                <AddCircleOutlineIcon sx={{ fontSize: 13 }} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </>
-                                )}
-                            </Box>
+                            <Typography sx={{ fontSize: '0.9rem', color: e.costPerUnit ? '#555' : '#bbb', textAlign: 'center' }}>
+                                {e.costPerUnit || '—'}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: e.mutq > 0 ? mainPrimaryColor : '#bbb', textAlign: 'center' }}>
+                                {e.mutq > 0 ? e.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                            </Typography>
                             <InputBase
                                 value={e.tsakh}
                                 onChange={ev => update(e.id, 'tsakh', ev.target.value.replace(/[^0-9.]/g, ''))}
@@ -187,6 +165,11 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#555' }}
                             />
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                                <Tooltip title={t('Add')}>
+                                    <IconButton size='small' onClick={() => { setPlusEntry(e); setPlusQtyInput(''); setPlusPriceInput(''); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                        <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
                                 <Tooltip title={t('History')}>
                                     <IconButton size='small' onClick={() => setHistoryEntryId(e.id)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
                                         <HistoryIcon sx={{ fontSize: 16 }} />
@@ -202,6 +185,52 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                     ))}
                 </Box>
             )}
+
+            {/* Plus modal */}
+            <Dialog open={!!plusEntry} onClose={() => setPlusEntry(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: '#111', pb: 1, fontSize: '0.95rem' }}>{plusEntry?.name || '—'}</DialogTitle>
+                <DialogContent sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box>
+                        <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 0.5 }}>Մուտքագրված</Typography>
+                        <InputBase
+                            autoFocus
+                            fullWidth
+                            value={plusQtyInput}
+                            onChange={ev => setPlusQtyInput(ev.target.value.replace(/[^0-9.]/g, ''))}
+                            onKeyDown={ev => { if (ev.key === 'Enter') handlePlusConfirm(); }}
+                            placeholder='0'
+                            sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.6, fontSize: '0.9rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.12)' } }}
+                        />
+                        {plusEntry && plusEntry.mutq > 0 && (
+                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', mt: 0.4 }}>
+                                {t('Current')}: {plusEntry.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                            </Typography>
+                        )}
+                    </Box>
+                    <Box>
+                        <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 0.5 }}>Միավորի արժեք</Typography>
+                        <InputBase
+                            fullWidth
+                            value={plusPriceInput}
+                            onChange={ev => setPlusPriceInput(ev.target.value.replace(/[^0-9.]/g, ''))}
+                            onKeyDown={ev => { if (ev.key === 'Enter') handlePlusConfirm(); }}
+                            placeholder={plusEntry?.costPerUnit || '0'}
+                            sx={{ border: '1px solid #e0f5f7', borderRadius: '6px', px: 1.5, py: 0.6, fontSize: '0.9rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.12)' } }}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                    <Button onClick={() => setPlusEntry(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                    <Button
+                        variant='contained'
+                        onClick={handlePlusConfirm}
+                        disabled={!plusQtyInput && !plusPriceInput}
+                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
+                    >
+                        {t('Save')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* History dialog */}
             <Dialog open={!!historyEntry} onClose={() => setHistoryEntryId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
