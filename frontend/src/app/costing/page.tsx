@@ -403,7 +403,7 @@ export default function CostingPage() {
                                             <Box>
                                                 <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222' }}>{rec.estimateName}</Typography>
                                                 <Typography variant='caption' color='text.secondary'>
-                                                    {new Date(rec.createdAt).toLocaleDateString()}
+                                                    {rec.createdAt ? new Date(rec.createdAt).toLocaleDateString() : '—'}
                                                 </Typography>
                                             </Box>
                                         </Box>
