@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
     Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
-    InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip, Paper,
+    InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip, Paper, CircularProgress,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -63,6 +63,17 @@ export interface CostHistoryEntry {
     materialRows?: SectionRow[];
 }
 
+interface CostingRecord {
+    _id: string;
+    estimateId: string;
+    estimateName: string;
+    costHistory: CostHistoryEntry[];
+    pahestEntries: PahestEntry[];
+    aylEntries: AylEntry[];
+    actualData: Record<string, { quantity: string; unitPrice: string }>;
+    createdAt: string;
+}
+
 const MetricCard = ({ label, value }: { label: string; value: number }) => (
     <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s,border-color 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)', borderColor: mainPrimaryColor } }}>
         <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, mb: 1 }} />
@@ -92,7 +103,6 @@ type TabValue = 'general' | 'main' | 'history' | 'pahest';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
-// Informative detail row — label left, content right, with bottom border
 function DetailRow({ label, children, last }: { label: string; children: React.ReactNode; last?: boolean }) {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40, gap: 3, borderBottom: last ? 'none' : '1px solid #eef0f3' }}>
@@ -185,10 +195,17 @@ export default function CostingPage() {
     const [volumesOpen, setVolumesOpen] = useState(false);
     const [materialsOpen, setMaterialsOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
-    const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
 
-    // Details modal state
+    const [records, setRecords] = useState<CostingRecord[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState<CostingRecord | null>(null);
+    const didRestoreRef = useRef(false);
+
+    const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
+    const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
+    const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
+    const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string }>>({});
+
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
     const [editUnit, setEditUnit] = useState('');
     const [editQuantityStr, setEditQuantityStr] = useState('');
@@ -199,21 +216,61 @@ export default function CostingPage() {
     const [editLaborRows, setEditLaborRows] = useState<SectionRow[]>([]);
     const [editMechanismRows, setEditMechanismRows] = useState<SectionRow[]>([]);
     const [editMaterialRows, setEditMaterialRows] = useState<SectionRow[]>([]);
-
-    // Payment method modal
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
     const [tempPaymentValue, setTempPaymentValue] = useState('');
 
-    const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
-    const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
-    const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string }>>({});
-
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLoadingRef = useRef(false);
 
+    const loadRecords = useCallback(() => {
+        setLoading(true);
+        Api.requestSession<CostingRecord[]>({ command: 'costing/fetch_all', args: {} })
+            .then(data => {
+                const list = data ?? [];
+                setRecords(list);
+                if (!didRestoreRef.current && typeof window !== 'undefined') {
+                    didRestoreRef.current = true;
+                    const id = new URLSearchParams(window.location.search).get('id');
+                    if (id) {
+                        const found = list.find(r => r._id === id);
+                        if (found) openRecord(found);
+                    }
+                }
+            })
+            .catch(() => setRecords([]))
+            .finally(() => setLoading(false));
+    }, []); // eslint-disable-line
+
+    useEffect(() => { loadRecords(); }, [loadRecords]);
+
+    const openRecord = (rec: CostingRecord) => {
+        isLoadingRef.current = true;
+        setSelected(rec);
+        setTab('general');
+        setCostHistory((rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
+        setPahestEntries((rec.pahestEntries ?? []).map(e => ({
+            ...e,
+            history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
+        })));
+        setAylEntries((rec.aylEntries ?? []).map(e => ({
+            ...e,
+            history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
+        })));
+        setActualData(rec.actualData ?? {});
+        if (typeof window !== 'undefined') {
+            window.history.pushState({}, '', `/costing?id=${rec._id}`);
+        }
+        setTimeout(() => { isLoadingRef.current = false; }, 50);
+    };
+
+    const closeRecord = () => {
+        setSelected(null);
+        if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
+    };
+
     const saveToBackend = useCallback((
-        estimateId: string,
+        id: string,
         ch: CostHistoryEntry[],
         pe: PahestEntry[],
         ae: AylEntry[],
@@ -222,43 +279,31 @@ export default function CostingPage() {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-            Api.requestSession({ command: 'costing/save', args: { estimateId }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad } }).catch(console.error);
+            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad } }).catch(console.error);
         }, 800);
     }, []);
 
-    const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
-        setDialogOpen(false);
-        setSelectedEstimate(estimate);
-        const estimateId = estimate._id as string;
-        isLoadingRef.current = true;
-        Api.requestSession<any>({ command: 'costing/fetch', args: { estimateId } })
-            .then(doc => {
-                if (doc) {
-                    setCostHistory((doc.costHistory ?? []).map((e: any) => ({ ...e, addedAt: new Date(e.addedAt) })));
-                    setPahestEntries((doc.pahestEntries ?? []).map((e: any) => ({
-                        ...e,
-                        history: (e.history ?? []).map((r: any) => ({ ...r, addedAt: new Date(r.addedAt) })),
-                    })));
-                    setAylEntries((doc.aylEntries ?? []).map((e: any) => ({
-                        ...e,
-                        history: (e.history ?? []).map((r: any) => ({ ...r, addedAt: new Date(r.addedAt) })),
-                    })));
-                    setActualData(doc.actualData ?? {});
-                } else {
-                    setCostHistory([]);
-                    setPahestEntries([]);
-                    setAylEntries([]);
-                    setActualData({});
-                }
-            })
-            .catch(console.error)
-            .finally(() => { isLoadingRef.current = false; });
-    };
-
     useEffect(() => {
-        if (!selectedEstimate) return;
-        saveToBackend(selectedEstimate._id as string, costHistory, pahestEntries, aylEntries, actualData);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selectedEstimate, saveToBackend]);
+        if (!selected) return;
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selected, saveToBackend]);
+
+    const handleCreate = useCallback(async (estimate: EstimatesApi.ApiEstimate) => {
+        setDialogOpen(false);
+        const created = await Api.requestSession<CostingRecord>({
+            command: 'costing/create',
+            args: { estimateId: String(estimate._id), estimateName: estimate.name },
+        });
+        setRecords(prev => [created, ...prev]);
+        openRecord(created);
+    }, []); // eslint-disable-line
+
+    const handleDelete = useCallback(async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        await Api.requestSession({ command: 'costing/delete', args: { id } });
+        setRecords(prev => prev.filter(r => r._id !== id));
+        if (selected?._id === id) closeRecord();
+    }, [selected]); // eslint-disable-line
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
@@ -312,156 +357,191 @@ export default function CostingPage() {
         setPaymentModalOpen(false);
     };
 
+    // ── LIST VIEW ─────────────────────────────────────────────────────────────
+    if (!selected) {
+        return (
+            <PageContents title='Costing'>
+                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+
+                    {loading && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                            <CircularProgress size={28} sx={{ color: mainPrimaryColor }} />
+                        </Box>
+                    )}
+
+                    {!loading && records.length === 0 && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+                            <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
+                            <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Costings created yet')}</Typography>
+                            <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
+                        </Box>
+                    )}
+
+                    {!loading && records.length > 0 && (
+                        <Box sx={{ flex: 1, minHeight: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                                <PageButton variant='outlined' label='Create' size='medium' sx={{ ...outlinedCreateSx, mt: 0 }} onClick={() => setDialogOpen(true)} />
+                            </Box>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                {records.map(rec => (
+                                    <Box
+                                        key={rec._id}
+                                        onClick={() => openRecord(rec)}
+                                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.8, borderRadius: 2, border: '1px solid #e0f5f7', backgroundColor: '#fafeff', cursor: 'pointer', transition: 'box-shadow 0.15s, border-color 0.15s', '&:hover': { boxShadow: '0 2px 12px rgba(0,171,190,0.12)', borderColor: mainPrimaryColor } }}
+                                    >
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                            <RequestQuoteOutlinedIcon sx={{ color: mainPrimaryColor, opacity: 0.7, fontSize: 22 }} />
+                                            <Box>
+                                                <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222' }}>{rec.estimateName}</Typography>
+                                                <Typography variant='caption' color='text.secondary'>
+                                                    {new Date(rec.createdAt).toLocaleDateString()}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        <IconButton size='small' onClick={e => handleDelete(rec._id, e)} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                            <DeleteOutlineIcon fontSize='small' />
+                                        </IconButton>
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
+                <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleCreate} />
+            </PageContents>
+        );
+    }
+
+    // ── DETAIL VIEW ───────────────────────────────────────────────────────────
+    const selectedEstimate = { _id: selected.estimateId, name: selected.estimateName } as unknown as EstimatesApi.ApiEstimate;
+
     return (
         <PageContents title='Costing'>
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                <TabContext value={tab}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
+                                <ArrowBackIcon fontSize='small' />
+                            </IconButton>
+                            <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                                <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
+                                <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
+                                <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Costs History')} value='history' />
+                                <Tab icon={<WarehouseOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Պահեստ' value='pahest' />
+                            </TabList>
+                        </Box>
+                    </Box>
+                </TabContext>
 
-                {/* Empty state — shown before any estimate is selected */}
-                {!selectedEstimate && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
-                        <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
-                        <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Costings created yet')}</Typography>
-                        <PageButton variant='outlined' label='Create' size='large' sx={outlinedCreateSx} onClick={() => setDialogOpen(true)} />
+                {tab === 'general' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
+                            <Button variant='outlined' onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
+                            <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
+                            <Button variant='outlined' onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ծավալների գրանցում</Button>
+                        </Box>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                            <Box sx={{ flex: 1, minHeight: 180 }}>
+                                <CostBreakdownChart estimate={selectedEstimate} height={220} />
+                            </Box>
+                            <Box sx={{ flex: 1, minHeight: 180 }}>
+                                <OtherExpensesChart estimate={selectedEstimate} height={220} />
+                            </Box>
+                            <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
+                                <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.laborItemCount ?? 0} />
+                                <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.materialItemCount ?? 0} />
+                                <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.unitTime ?? 0} />
+                            </Box>
+                        </Box>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
+                            <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} />
+                            <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} />
+                            <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} />
+                        </Box>
+                        <BreakdownTable estimate={selectedEstimate} />
                     </Box>
                 )}
 
-                {/* Tabs — only shown once an estimate is selected */}
-                {selectedEstimate && (
+                {tab === 'main' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
+                        <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} />
+                    </Box>
+                )}
+
+                {tab === 'history' && (
                     <>
-                        <TabContext value={tab}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                                <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
-                                    <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
-                                    <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
-                                    <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Costs History')} value='history' />
-                                    <Tab icon={<WarehouseOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Պահեստ' value='pahest' />
-                                </TabList>
-                            </Box>
-                        </TabContext>
-
-                        {tab === 'general' && (
-                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                                {/* Action buttons */}
-                                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
-                                    <Button variant='outlined' onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
-                                    <Button variant='outlined' sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
-                                    <Button variant='outlined' onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ծավալների գրանցում</Button>
-                                </Box>
-                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                    <Box sx={{ flex: 1, minHeight: 180 }}>
-                                        <CostBreakdownChart estimate={selectedEstimate} height={220} />
-                                    </Box>
-                                    <Box sx={{ flex: 1, minHeight: 180 }}>
-                                        <OtherExpensesChart estimate={selectedEstimate} height={220} />
-                                    </Box>
-                                    <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
-                                        <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.laborItemCount ?? 0} />
-                                        <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.materialItemCount ?? 0} />
-                                        <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.unitTime ?? 0} />
-                                    </Box>
-                                </Box>
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
-                                    <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} />
-                                    <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} />
-                                    <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} />
-                                </Box>
-                                <BreakdownTable estimate={selectedEstimate} />
-                            </Box>
-                        )}
-
-                        {tab === 'main' && (
-                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                                <Button startIcon={<ArrowBackIcon fontSize='small' />} size='small' onClick={() => { setSelectedEstimate(null); setTab('general'); }}
-                                    sx={{ color: 'text.secondary', pl: 0, mb: 1.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}>
-                                    {t('Back')}
-                                </Button>
-                                <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selectedEstimate.name}</Typography>
-                                <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} />
-                            </Box>
-                        )}
-
-                        {tab === 'history' && (
-                        <>
-                        {costHistory.length === 0 ? (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
-                                <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
-                                <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No costs added yet')}</Typography>
-                            </Box>
-                        ) : (
-                            <Box sx={{ overflow: 'auto' }}>
-                                <Table size='small' sx={{ minWidth: 700 }}>
-                                    <TableHead>
-                                        <TableRow sx={{ backgroundColor: '#f0fbfc' }}>
-                                            <TableCell sx={{ fontWeight: 700, color: '#222' }}>{t('Description of Work')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Quantity')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit Price')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Total')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Date of Creation')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Contractor')}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Note')}</TableCell>
-                                            <TableCell sx={{ width: 40 }} />
+                    {costHistory.length === 0 ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+                            <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
+                            <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No costs added yet')}</Typography>
+                        </Box>
+                    ) : (
+                        <Box sx={{ overflow: 'auto' }}>
+                            <Table size='small' sx={{ minWidth: 700 }}>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: '#f0fbfc' }}>
+                                        <TableCell sx={{ fontWeight: 700, color: '#222' }}>{t('Description of Work')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Quantity')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit Price')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Total')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Date of Creation')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Contractor')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Note')}</TableCell>
+                                        <TableCell sx={{ width: 40 }} />
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {costHistory.map(entry => (
+                                        <TableRow key={entry.id} hover>
+                                            <TableCell>{entry.workName}</TableCell>
+                                            <TableCell align='center'>{entry.unit}</TableCell>
+                                            <TableCell align='center'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell align='center'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(entry.total)} AMD</TableCell>
+                                            <TableCell align='center' sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
+                                            <TableCell align='center' sx={{ fontSize: '0.82rem' }}>
+                                                {entry.isSubcontractor
+                                                    ? <Chip label={t('Subcontractor')} size='small' sx={{ fontSize: '0.72rem', height: 20, backgroundColor: '#fff3e0', color: '#e65100' }} />
+                                                    : <span style={{ color: entry.contractor ? '#333' : '#ccc' }}>{entry.contractor || '—'}</span>
+                                                }
+                                            </TableCell>
+                                            <TableCell align='center' sx={{ color: entry.note ? '#333' : '#ccc', fontSize: '0.82rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.note || '—'}</TableCell>
+                                            <TableCell padding='none'>
+                                                <Tooltip title={t('Remove')}>
+                                                    <IconButton size='small' onClick={() => setCostHistory(prev => prev.filter(e => e.id !== entry.id))} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                                        <DeleteOutlineIcon fontSize='small' />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {costHistory.map(entry => (
-                                            <TableRow key={entry.id} hover>
-                                                <TableCell>{entry.workName}</TableCell>
-                                                <TableCell align='center'>{entry.unit}</TableCell>
-                                                <TableCell align='center'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
-                                                <TableCell align='center'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
-                                                <TableCell align='center' sx={{ fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(entry.total)} AMD</TableCell>
-                                                <TableCell align='center' sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
-                                                <TableCell align='center' sx={{ fontSize: '0.82rem' }}>
-                                                    {entry.isSubcontractor
-                                                        ? <Chip label={t('Subcontractor')} size='small' sx={{ fontSize: '0.72rem', height: 20, backgroundColor: '#fff3e0', color: '#e65100' }} />
-                                                        : <span style={{ color: entry.contractor ? '#333' : '#ccc' }}>{entry.contractor || '—'}</span>
-                                                    }
-                                                </TableCell>
-                                                <TableCell align='center' sx={{ color: entry.note ? '#333' : '#ccc', fontSize: '0.82rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.note || '—'}</TableCell>
-                                                <TableCell padding='none'>
-                                                    <Tooltip title={t('Remove')}>
-                                                        <IconButton size='small' onClick={() => setCostHistory(prev => prev.filter(e => e.id !== entry.id))} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
-                                                            <DeleteOutlineIcon fontSize='small' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </Box>
-                        )}
-                        </>
-                        )}
-
-                        {tab === 'pahest' && (
-                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pb: 4 }}>
-                                {/* Section 1 */}
-                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Հիմնական նյութեր</Typography>
-                                {selectedEstimate && (
-                                    <PahestMainMaterials
-                                        estimateId={selectedEstimate._id as string}
-                                        entries={pahestEntries}
-                                        onChange={setPahestEntries}
-                                    />
-                                )}
-
-                                {/* Section 2 */}
-                                <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
-                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
-                                    <PahestAylMaterials entries={aylEntries} onChange={setAylEntries} />
-                                </Box>
-                            </Box>
-                        )}
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    )}
                     </>
+                )}
+
+                {tab === 'pahest' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pb: 4 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Հիմնական նյութեր</Typography>
+                        <PahestMainMaterials
+                            estimateId={selected.estimateId}
+                            entries={pahestEntries}
+                            onChange={setPahestEntries}
+                        />
+                        <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
+                            <PahestAylMaterials entries={aylEntries} onChange={setAylEntries} />
+                        </Box>
+                    </Box>
                 )}
             </Box>
 
-            <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleSelect} />
-
-
-            {/* Cost details modal — does not close on backdrop click */}
+            {/* Cost details modal */}
             <Dialog
                 open={!!editEntry}
                 onClose={(_, reason) => { if (reason !== 'backdropClick') setEditEntry(null); }}
@@ -471,8 +551,6 @@ export default function CostingPage() {
             >
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Cost Details')}</DialogTitle>
                 <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-
-                    {/* Info rows */}
                     <Box sx={{ border: '1px solid #eaedf0', borderRadius: 2, px: 2, backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                         <DetailRow label={t('Description of Work')}>
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#222' }}>{editEntry?.workName}</Typography>
@@ -491,18 +569,9 @@ export default function CostingPage() {
                                 label={editIsSubcontractor ? t('Active') : t('Inactive')}
                                 size='small'
                                 onClick={() => setEditIsSubcontractor(v => !v)}
-                                sx={{
-                                    fontSize: '0.72rem',
-                                    cursor: 'pointer',
-                                    backgroundColor: editIsSubcontractor ? '#e65100' : '#f4f6f8',
-                                    color: editIsSubcontractor ? '#fff' : '#666',
-                                    border: `1px solid ${editIsSubcontractor ? '#e65100' : '#dde0e4'}`,
-                                    fontWeight: editIsSubcontractor ? 700 : 400,
-                                    '&:hover': { opacity: 0.85 },
-                                }}
+                                sx={{ fontSize: '0.72rem', cursor: 'pointer', backgroundColor: editIsSubcontractor ? '#e65100' : '#f4f6f8', color: editIsSubcontractor ? '#fff' : '#666', border: `1px solid ${editIsSubcontractor ? '#e65100' : '#dde0e4'}`, fontWeight: editIsSubcontractor ? 700 : 400, '&:hover': { opacity: 0.85 } }}
                             />
                         </DetailRow>
-                        {/* Section totals — live from second block */}
                         {(() => {
                             const lTotal = calcTotal(editLaborRows);
                             const mTotal = calcTotal(editMechanismRows);
@@ -517,23 +586,11 @@ export default function CostingPage() {
                             );
                         })()}
                     </Box>
-
-                    {/* 3 cost sections */}
                     <Box sx={{ border: '1px solid #eaedf0', borderRadius: 2, px: 2, backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                        <SectionBlock
-                            num={1}
-                            title={t('Labor / Wages')}
-                            rows={editLaborRows}
-                            onChange={setEditLaborRows}
-                            descLabel={t('Payment Method')}
-                            onPlusClick={editPaymentMethod ? () => setEditLaborRows(prev => [...prev, { id: String(Date.now() + Math.random()), description: t(editPaymentMethod), quantity: '', unitPrice: '' }]) : openPaymentModal}
-                            disabled={editIsSubcontractor}
-                        />
+                        <SectionBlock num={1} title={t('Labor / Wages')} rows={editLaborRows} onChange={setEditLaborRows} descLabel={t('Payment Method')} onPlusClick={editPaymentMethod ? () => setEditLaborRows(prev => [...prev, { id: String(Date.now() + Math.random()), description: t(editPaymentMethod), quantity: '', unitPrice: '' }]) : openPaymentModal} disabled={editIsSubcontractor} />
                         <SectionBlock num={2} title={t('Operation of Mechanisms')} rows={editMechanismRows} onChange={setEditMechanismRows} descLabel={t('Mechanism Name')} disabled={editIsSubcontractor} />
                         <SectionBlock num={3} title={t('Materials')} rows={editMaterialRows} onChange={setEditMaterialRows} descLabel={t('Material Name')} disabled={editIsSubcontractor} last />
                     </Box>
-
-                    {/* Note — soft border matching the boxes above */}
                     <TextField
                         label={t('Note')}
                         value={editNote}
@@ -543,87 +600,52 @@ export default function CostingPage() {
                         multiline
                         rows={2}
                         placeholder={t('Additional notes') + '...'}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                fontSize: '0.88rem',
-                                '& fieldset': { borderColor: '#e8f7f9' },
-                                '&:hover fieldset': { borderColor: '#b2e8ed' },
-                                '&.Mui-focused fieldset': { borderColor: mainPrimaryColor, borderWidth: 1 },
-                            },
-                            '& .MuiInputLabel-root': { fontSize: '0.85rem', color: '#999' },
-                            '& .MuiInputLabel-root.Mui-focused': { color: mainPrimaryColor },
-                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: '0.88rem', '& fieldset': { borderColor: '#e8f7f9' }, '&:hover fieldset': { borderColor: '#b2e8ed' }, '&.Mui-focused fieldset': { borderColor: mainPrimaryColor, borderWidth: 1 } }, '& .MuiInputLabel-root': { fontSize: '0.85rem', color: '#999' }, '& .MuiInputLabel-root.Mui-focused': { color: mainPrimaryColor } }}
                     />
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={() => setEditEntry(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
-                    <Button variant='contained' onClick={handleEditSave}
-                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
-                        {t('Save')}
-                    </Button>
+                    <Button variant='contained' onClick={handleEditSave} sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>{t('Save')}</Button>
                 </DialogActions>
             </Dialog>
 
             {/* Payment Method modal */}
-            <Dialog
-                open={paymentModalOpen}
-                onClose={(_, reason) => { if (reason !== 'backdropClick') setPaymentModalOpen(false); }}
-                maxWidth='xs'
-                fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
-            >
+            <Dialog open={paymentModalOpen} onClose={(_, reason) => { if (reason !== 'backdropClick') setPaymentModalOpen(false); }} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 0.5 }}>{t('Payment Method')}</DialogTitle>
                 <DialogContent sx={{ pt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <RadioGroup value={tempPaymentMethod} onChange={e => setTempPaymentMethod(e.target.value)}>
                         {(['Hourly', 'Piece-rate', 'Rate-based'] as const).map(method => (
-                            <FormControlLabel
-                                key={method}
-                                value={method}
-                                control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />}
-                                label={<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t(method)}</Typography>}
-                            />
+                            <FormControlLabel key={method} value={method} control={<Radio sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{t(method)}</Typography>} />
                         ))}
                     </RadioGroup>
                     {tempPaymentMethod && (
-                        <TextField
-                            label={t('Value')}
-                            value={tempPaymentValue}
-                            onChange={e => setTempPaymentValue(e.target.value)}
-                            size='small'
-                            fullWidth
-                            placeholder='0'
-                            type='number'
-                            inputProps={{ min: 0 }}
-                        />
+                        <TextField label={t('Value')} value={tempPaymentValue} onChange={e => setTempPaymentValue(e.target.value)} size='small' fullWidth placeholder='0' type='number' inputProps={{ min: 0 }} />
                     )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={() => setPaymentModalOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
-                    <Button variant='contained' onClick={handlePaymentSave} disabled={!tempPaymentMethod}
-                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
-                        {t('Save')}
-                    </Button>
+                    <Button variant='contained' onClick={handlePaymentSave} disabled={!tempPaymentMethod} sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>{t('Save')}</Button>
                 </DialogActions>
             </Dialog>
-        {selectedEstimate && (
-            <>
-            <VolumesDialog
-                open={volumesOpen}
-                onClose={() => setVolumesOpen(false)}
-                estimate={selectedEstimate}
-                onCostAdded={handleCostAdded}
-                onActualUpdate={(rowId, qty) => setActualData(prev => ({ ...prev, [rowId]: { quantity: String((parseFloat(prev[rowId]?.quantity || '0') || 0) + qty), unitPrice: prev[rowId]?.unitPrice || '' } }))}
-            />
-            <MaterialsDialog
-                open={materialsOpen}
-                onClose={() => setMaterialsOpen(false)}
-                estimate={selectedEstimate}
-                pahestEntries={pahestEntries}
-                onPahestUpdate={handlePahestCostedUpdate}
-            />
-            </>
-        )}
+
+            {selected && (
+                <>
+                <VolumesDialog
+                    open={volumesOpen}
+                    onClose={() => setVolumesOpen(false)}
+                    estimate={selectedEstimate}
+                    onCostAdded={handleCostAdded}
+                    onActualUpdate={(rowId, qty) => setActualData(prev => ({ ...prev, [rowId]: { quantity: String((parseFloat(prev[rowId]?.quantity || '0') || 0) + qty), unitPrice: prev[rowId]?.unitPrice || '' } }))}
+                />
+                <MaterialsDialog
+                    open={materialsOpen}
+                    onClose={() => setMaterialsOpen(false)}
+                    estimate={selectedEstimate}
+                    pahestEntries={pahestEntries}
+                    onPahestUpdate={handlePahestCostedUpdate}
+                />
+                </>
+            )}
         </PageContents>
     );
 }

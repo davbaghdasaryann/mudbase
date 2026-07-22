@@ -54,10 +54,12 @@ export interface EntityCosting {
     _id?: ObjectId;
     accountId?: ObjectId;
     estimateId?: ObjectId;
+    estimateName?: string;
     costHistory?: CostingHistoryRecord[];
     pahestEntries?: CostingPahestEntry[];
     aylEntries?: CostingAylEntry[];
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
+    createdAt?: Date;
     updatedAt?: Date;
 }
 

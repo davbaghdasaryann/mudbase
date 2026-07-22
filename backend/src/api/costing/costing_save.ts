@@ -5,7 +5,7 @@ import { respondJsonData } from '@tsback/req/req_response';
 import { requireQueryParam } from '@/tsback/req/req_params';
 
 registerApiSession('costing/save', async (req, res, session) => {
-    const estimateId = requireQueryParam(req, 'estimateId');
+    const id = requireQueryParam(req, 'id');
     const { costHistory, pahestEntries, aylEntries, actualData } = req.body as {
         costHistory: Db.CostingHistoryRecord[];
         pahestEntries: Db.CostingPahestEntry[];
@@ -15,7 +15,7 @@ registerApiSession('costing/save', async (req, res, session) => {
 
     const col = Db.getCostingsCollection();
     await col.updateOne(
-        { accountId: session.mongoAccountId, estimateId: new ObjectId(estimateId) },
+        { _id: new ObjectId(id), accountId: session.mongoAccountId },
         {
             $set: {
                 costHistory: costHistory ?? [],
@@ -24,12 +24,7 @@ registerApiSession('costing/save', async (req, res, session) => {
                 actualData: actualData ?? {},
                 updatedAt: new Date(),
             },
-            $setOnInsert: {
-                accountId: session.mongoAccountId,
-                estimateId: new ObjectId(estimateId),
-            },
-        },
-        { upsert: true }
+        }
     );
     respondJsonData(res, { ok: true });
 });
