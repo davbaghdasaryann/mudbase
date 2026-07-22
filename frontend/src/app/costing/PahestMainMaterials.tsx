@@ -264,7 +264,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
 
             {/* Add material sub-modal */}
             <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, minHeight: 480 } }}>
-                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>Հիմնական նյութեր — {t('Add')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 700, color: '#111', pb: 1 }}><Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: mainPrimaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>M</Typography></Box>Ավելացնել</DialogTitle>
                 <DialogContent sx={{ pt: 1 }}>
                     {/* Search */}
                     <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #e0f5f7', borderRadius: 2, px: 1.5, mb: 1.5, backgroundColor: '#fafeff' }}>
