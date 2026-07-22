@@ -732,6 +732,7 @@ export default function CostingPage() {
                     onClose={() => setVolumesOpen(false)}
                     estimate={selectedEstimate}
                     onCostAdded={handleCostAdded}
+                    actualData={actualData}
                     onActualUpdate={(rowId, qty) => setActualData(prev => ({ ...prev, [rowId]: { quantity: String((parseFloat(prev[rowId]?.quantity || '0') || 0) + qty), unitPrice: prev[rowId]?.unitPrice || '' } }))}
                 />
                 <MaterialsDialog

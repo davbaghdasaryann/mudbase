@@ -36,6 +36,7 @@ interface Props {
     estimate: EstimatesApi.ApiEstimate;
     onCostAdded: (entry: CostHistoryEntry) => void;
     onActualUpdate?: (rowId: string, qty: number) => void;
+    actualData?: Record<string, { quantity: string; unitPrice: string }>;
 }
 
 function toId(v: unknown): string {
@@ -45,14 +46,15 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function VolumesDialog({ open, onClose, estimate, onCostAdded, onActualUpdate }: Props) {
+export default function VolumesDialog({ open, onClose, estimate, onCostAdded, onActualUpdate, actualData }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [rows, setRows] = useState<LaborRow[]>([]);
-    const [costs, setCosts] = useState<Record<string, number>>({});
     const [costModal, setCostModal] = useState<CostModalState | null>(null);
+
+    const getActualQty = (rowId: string) => parseFloat(actualData?.[rowId]?.quantity || '0') || 0;
 
     const estimateId = toId(estimate._id);
 
@@ -84,7 +86,6 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
         const { row, value } = costModal;
         const qty = parseFloat(value.replace(',', '.')) || 0;
         if (qty <= 0) return;
-        setCosts(prev => ({ ...prev, [row._id]: (prev[row._id] ?? 0) + qty }));
         onActualUpdate?.(toId(row._id), qty);
         onCostAdded({
             id: String(Date.now() + Math.random()),
@@ -156,7 +157,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                                                                     {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}
                                                                 </Typography>
                                                                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>
-                                                                    {costs[row._id] != null ? costs[row._id].toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                                                                    {getActualQty(toId(row._id)) > 0 ? getActualQty(toId(row._id)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                                                                 </Typography>
                                                                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                                     <Tooltip title={t('Add new quantity')}>
@@ -204,9 +205,9 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                         sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
                     />
                 </Box>
-                {costModal && (costs[costModal.row._id] ?? 0) > 0 && (
+                {costModal && getActualQty(toId(costModal.row._id)) > 0 && (
                     <Typography sx={{ fontSize: '0.78rem', color: '#999', mt: 1, px: 0.5 }}>
-                        {t('Current total')}: <strong style={{ color: '#555' }}>{costs[costModal.row._id].toLocaleString(undefined, { maximumFractionDigits: 3 })}</strong>
+                        {t('Current total')}: <strong style={{ color: '#555' }}>{getActualQty(toId(costModal.row._id)).toLocaleString(undefined, { maximumFractionDigits: 3 })}</strong>
                     </Typography>
                 )}
             </DialogContent>
