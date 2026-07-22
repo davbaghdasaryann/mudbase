@@ -187,11 +187,10 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                 <Button
                     variant='outlined'
-                    size='small'
                     startIcon={<AddIcon />}
                     onClick={openAdd}
                     disabled={loading}
-                    sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
+                    sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
                 >
                     {t('Add')}
                 </Button>
