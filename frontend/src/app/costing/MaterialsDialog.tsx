@@ -126,6 +126,7 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
                     display: 'flex',
                     width: '200%',
                     flex: 1,
+                    minHeight: 0,
                     transform: onPage2 ? 'translateX(-50%)' : 'translateX(0)',
                     transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
                 }}>

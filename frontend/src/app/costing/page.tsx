@@ -751,6 +751,7 @@ export default function CostingPage() {
                 <SalaryDialog
                     open={salaryOpen}
                     onClose={() => setSalaryOpen(false)}
+                    estimate={selectedEstimate}
                     onEntryAdded={entry => setCostHistory(prev => [entry, ...prev])}
                 />
                 </>
