@@ -207,14 +207,14 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                     {/* Header */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 1 }}>
                         {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
                         <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px 110px 110px 72px', px: 2, py: 0.8, columnGap: 1, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
-                            <Typography sx={{ fontSize: '0.84rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
-                            <Typography sx={{ fontSize: '0.84rem', color: '#888', textAlign: 'center' }}>{e.unit}</Typography>
-                            <Typography sx={{ fontSize: '0.84rem', color: '#555', textAlign: 'center' }}>{e.costPerUnit > 0 ? e.costPerUnit.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>{e.unit}</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', color: '#555', textAlign: 'center' }}>{e.costPerUnit > 0 ? e.costPerUnit.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3 }}>
                                 {editingId === e.materialItemId ? (
                                     <>

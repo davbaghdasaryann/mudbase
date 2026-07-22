@@ -120,7 +120,7 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: COLS, bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 1 }}>
                         {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
-                            <Typography key={i} sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
+                            <Typography key={i} sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
                     {entries.map((e, idx) => (
@@ -129,7 +129,7 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 value={e.name}
                                 onChange={ev => update(e.id, 'name', ev.target.value)}
                                 placeholder={t('Material Name') + '...'}
-                                sx={{ fontSize: '0.84rem', color: '#222', '& input': { p: 0, pr: 1 } }}
+                                sx={{ fontSize: '0.9rem', color: '#222', '& input': { p: 0, pr: 1 } }}
                             />
                             <Select
                                 value={e.unit}
@@ -138,11 +138,11 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
                                 size='small'
                                 variant='standard'
                                 disableUnderline
-                                sx={{ fontSize: '0.84rem', color: e.unit ? '#888' : '#bbb', width: '100%', textAlign: 'center', '& .MuiSelect-select': { p: 0, pr: '18px !important', textAlign: 'center' } }}
+                                sx={{ fontSize: '0.9rem', color: e.unit ? '#888' : '#bbb', width: '100%', textAlign: 'center', '& .MuiSelect-select': { p: 0, pr: '18px !important', textAlign: 'center' } }}
                             >
-                                <MenuItem value='' disabled sx={{ fontSize: '0.84rem', color: '#bbb' }}>{t('Unit')}</MenuItem>
+                                <MenuItem value='' disabled sx={{ fontSize: '0.9rem', color: '#bbb' }}>{t('Unit')}</MenuItem>
                                 {units.map(u => (
-                                    <MenuItem key={u.value} value={u.value} sx={{ fontSize: '0.84rem' }}>{u.label}</MenuItem>
+                                    <MenuItem key={u.value} value={u.value} sx={{ fontSize: '0.9rem' }}>{u.label}</MenuItem>
                                 ))}
                             </Select>
                             <InputBase
