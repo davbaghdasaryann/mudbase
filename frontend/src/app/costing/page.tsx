@@ -7,6 +7,7 @@ import {
     InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip, Paper, CircularProgress,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
@@ -186,6 +187,68 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
                 </Box>
             )}
         </Box>
+    );
+}
+
+const ACTUAL_COLORS = ['#00ABBE','#1CA461','#5CB8B0','#F5A623','#9B59B6','#E74C3C','#3498DB','#27AE60'];
+
+function ActualCostsChart({ costHistory, height = 260 }: { costHistory: CostHistoryEntry[]; height?: number }) {
+    const { t } = useTranslation();
+    const chartHeight = Math.max(100, height - 72);
+
+    const data = costHistory
+        .filter(e => e.total > 0)
+        .slice(0, 8)
+        .map(e => ({ name: e.workName, value: e.total }));
+
+    const total = data.reduce((s, d) => s + d.value, 0);
+
+    return (
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>{t('Actual')}</Typography>
+            {data.length === 0 ? (
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant='body2' color='text.secondary'>—</Typography>
+                </Box>
+            ) : (
+                <>
+                    <Box sx={{ flex: 1, minHeight: chartHeight }}>
+                        <ResponsiveContainer width='100%' height='100%'>
+                            <PieChart>
+                                <Pie data={data} cx='50%' cy='50%' innerRadius={42} outerRadius={70} paddingAngle={2} dataKey='value' strokeWidth={0}>
+                                    {data.map((_, i) => (
+                                        <Cell key={i} fill={ACTUAL_COLORS[i % ACTUAL_COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip
+                                    content={({ active, payload }: any) => {
+                                        if (!active || !payload?.length) return null;
+                                        const e = payload[0];
+                                        return (
+                                            <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 140 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{e.name}</Typography>
+                                                <Typography variant='body2' sx={{ color: '#00ABBE' }}>{Number(e.value).toLocaleString()} AMD</Typography>
+                                                <Typography variant='caption' sx={{ color: 'text.secondary' }}>{total > 0 ? ((e.value / total) * 100).toFixed(1) : 0}%</Typography>
+                                            </Paper>
+                                        );
+                                    }}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mt: 1 }}>
+                        {data.map((d, i) => (
+                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: ACTUAL_COLORS[i % ACTUAL_COLORS.length], flexShrink: 0 }} />
+                                <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                                    {d.name.length > 20 ? d.name.slice(0, 18) + '…' : d.name} {total > 0 ? ((d.value / total) * 100).toFixed(1) : 0}%
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                </>
+            )}
+        </Paper>
     );
 }
 
@@ -453,6 +516,9 @@ export default function CostingPage() {
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
                                 <CostBreakdownChart estimate={selectedEstimate} height={220} />
+                            </Box>
+                            <Box sx={{ flex: 1, minHeight: 180 }}>
+                                <ActualCostsChart costHistory={costHistory} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} />
