@@ -263,7 +263,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             )}
 
             {/* Add material sub-modal */}
-            <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, minHeight: 480 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>Հիմնական նյութեր — {t('Add')}</DialogTitle>
                 <DialogContent sx={{ pt: 1 }}>
                     {/* Search */}
@@ -279,7 +279,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                     </Box>
 
                     {/* Materials list */}
-                    <Box sx={{ maxHeight: 240, overflowY: 'auto', border: '1px solid #e0f5f7', borderRadius: 2, mb: 2 }}>
+                    <Box sx={{ maxHeight: 320, overflowY: 'auto', border: '1px solid #e0f5f7', borderRadius: 2, mb: 2 }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
                                 <CircularProgress size={24} sx={{ color: mainPrimaryColor }} />
