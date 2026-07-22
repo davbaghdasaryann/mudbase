@@ -220,17 +220,17 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                                 <Tooltip title={t('Add')}>
                                     <IconButton size='small' onClick={() => { setPlusEntry(e); setPlusQtyInput(''); setPlusPriceInput(''); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
-                                        <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                        <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={t('History')}>
                                     <IconButton size='small' onClick={() => setHistoryEntryId(e.materialItemId)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
-                                        <HistoryIcon sx={{ fontSize: 16 }} />
+                                        <HistoryIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={t('Remove')}>
                                     <IconButton size='small' onClick={() => handleDelete(e.materialItemId)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
-                                        <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                        <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
                             </Box>
