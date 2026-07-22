@@ -64,6 +64,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MaterialOption | null>(null);
     const [qtyInput, setQtyInput] = useState('');
+    const [addPriceInput, setAddPriceInput] = useState('');
 
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
     const historyEntry = historyEntryId ? (entries.find(e => e.materialItemId === historyEntryId) ?? null) : null;
@@ -102,6 +103,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         setSearch('');
         setSelected(null);
         setQtyInput('');
+        setAddPriceInput('');
         setAddOpen(true);
     };
 
@@ -110,7 +112,9 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         const qty = parseFloat(qtyInput.replace(',', '.')) || 0;
         if (qty <= 0) return;
         const now = new Date();
-        const newRecord: PahestHistoryRecord = { quantity: qty, costPerUnit: selected.costPerUnit, addedAt: now };
+        const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
+        const unitPrice = !isNaN(enteredPrice) && addPriceInput.trim() !== '' ? enteredPrice : selected.costPerUnit;
+        const newRecord: PahestHistoryRecord = { quantity: qty, costPerUnit: unitPrice, addedAt: now };
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId);
         if (existing >= 0) {
             const next = [...entries];
@@ -128,7 +132,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                 unit: selected.unit,
                 quantity: qty,
                 estimateQuantity: selected.estimateQuantity,
-                costPerUnit: selected.costPerUnit,
+                costPerUnit: unitPrice,
                 addedAt: now,
                 history: [newRecord],
             }]);
@@ -204,7 +208,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 88px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 2 }}>
-                        {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
+                        {[t('Material'), t('Unit'), t('Total'), 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
@@ -212,7 +216,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                         <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
                             <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>{e.unit}</Typography>
-                            <Typography sx={{ fontSize: '0.9rem', color: '#555', textAlign: 'center' }}>{e.costPerUnit > 0 ? e.costPerUnit.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', color: '#555', textAlign: 'center', fontWeight: (e.costPerUnit * e.quantity) > 0 ? 600 : 400 }}>{(e.costPerUnit * e.quantity) > 0 ? (e.costPerUnit * e.quantity).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'center' }}>
                                 {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                             </Typography>
@@ -282,15 +286,26 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                         ))}
                     </Box>
                     {selected && (
-                        <Box>
-                            <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
-                            <InputBase
-                                value={qtyInput}
-                                onChange={e => setQtyInput(e.target.value.replace(/[^0-9.]/g, ''))}
-                                placeholder='0'
-                                autoFocus
-                                sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
-                            />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Box>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
+                                <InputBase
+                                    value={qtyInput}
+                                    onChange={e => setQtyInput(e.target.value.replace(/[^0-9.]/g, ''))}
+                                    placeholder='0'
+                                    autoFocus
+                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                                />
+                            </Box>
+                            <Box>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>Միավորի արժեք</Typography>
+                                <InputBase
+                                    value={addPriceInput}
+                                    onChange={e => setAddPriceInput(e.target.value.replace(/[^0-9.]/g, ''))}
+                                    placeholder={selected.costPerUnit > 0 ? String(selected.costPerUnit) : '0'}
+                                    sx={{ border: '1px solid #e0f5f7', borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                                />
+                            </Box>
                         </Box>
                     )}
                 </DialogContent>
