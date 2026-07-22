@@ -190,16 +190,26 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
     );
 }
 
-const ACTUAL_COLORS = ['#00ABBE','#1CA461','#5CB8B0','#F5A623','#9B59B6','#E74C3C','#3498DB','#27AE60'];
+const ACTUAL_SEGMENTS = [
+    { key: 'labor',     labelKey: 'Labor',          inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
+    { key: 'materials', labelKey: 'Materials',       inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
+    { key: 'other',     labelKey: 'Other Expenses',  inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
+];
 
-function ActualCostsChart({ costHistory, height = 260 }: { costHistory: CostHistoryEntry[]; height?: number }) {
+function ActualCostsChart({ pahestEntries, height = 260 }: { pahestEntries: PahestEntry[]; height?: number }) {
     const { t } = useTranslation();
     const chartHeight = Math.max(100, height - 72);
 
-    const data = costHistory
-        .filter(e => e.total > 0)
-        .slice(0, 8)
-        .map(e => ({ name: e.workName, value: e.total }));
+    const materialsTotal = pahestEntries.reduce(
+        (sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0),
+        0
+    );
+
+    const data = [
+        { key: 'labor',     name: t('Labor'),         value: 0 },
+        { key: 'materials', name: t('Materials'),      value: materialsTotal },
+        { key: 'other',     name: t('Other Expenses'), value: 0 },
+    ].filter(d => d.value > 0);
 
     const total = data.reduce((s, d) => s + d.value, 0);
 
@@ -215,10 +225,19 @@ function ActualCostsChart({ costHistory, height = 260 }: { costHistory: CostHist
                     <Box sx={{ flex: 1, minHeight: chartHeight }}>
                         <ResponsiveContainer width='100%' height='100%'>
                             <PieChart>
-                                <Pie data={data} cx='50%' cy='50%' innerRadius={42} outerRadius={70} paddingAngle={2} dataKey='value' strokeWidth={0}>
-                                    {data.map((_, i) => (
-                                        <Cell key={i} fill={ACTUAL_COLORS[i % ACTUAL_COLORS.length]} />
+                                <defs>
+                                    {ACTUAL_SEGMENTS.map(s => (
+                                        <radialGradient key={s.key} id={`actual-grad-${s.key}`} cx='50%' cy='50%' r='50%'>
+                                            <stop offset='0%' stopColor={s.inner} />
+                                            <stop offset='100%' stopColor={s.outer} />
+                                        </radialGradient>
                                     ))}
+                                </defs>
+                                <Pie data={data} cx='50%' cy='50%' innerRadius={42} outerRadius={70} paddingAngle={2} dataKey='value' strokeWidth={0}>
+                                    {data.map(entry => {
+                                        const seg = ACTUAL_SEGMENTS.find(s => s.key === entry.key);
+                                        return <Cell key={entry.key} fill={seg ? `url(#actual-grad-${seg.key})` : '#ccc'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
+                                    })}
                                 </Pie>
                                 <RechartsTooltip
                                     content={({ active, payload }: any) => {
@@ -237,14 +256,17 @@ function ActualCostsChart({ costHistory, height = 260 }: { costHistory: CostHist
                         </ResponsiveContainer>
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mt: 1 }}>
-                        {data.map((d, i) => (
-                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: ACTUAL_COLORS[i % ACTUAL_COLORS.length], flexShrink: 0 }} />
-                                <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                                    {d.name.length > 20 ? d.name.slice(0, 18) + '…' : d.name} {total > 0 ? ((d.value / total) * 100).toFixed(1) : 0}%
-                                </Typography>
-                            </Box>
-                        ))}
+                        {data.map(d => {
+                            const seg = ACTUAL_SEGMENTS.find(s => s.key === d.key);
+                            return (
+                                <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: seg?.dot ?? '#ccc', flexShrink: 0 }} />
+                                    <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                                        {d.name} {total > 0 ? ((d.value / total) * 100).toFixed(1) : 0}%
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
                     </Box>
                 </>
             )}
@@ -518,7 +540,7 @@ export default function CostingPage() {
                                 <CostBreakdownChart estimate={selectedEstimate} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
-                                <ActualCostsChart costHistory={costHistory} height={220} />
+                                <ActualCostsChart pahestEntries={pahestEntries} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} />
