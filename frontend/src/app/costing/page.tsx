@@ -199,6 +199,7 @@ export default function CostingPage() {
     const [records, setRecords] = useState<CostingRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<CostingRecord | null>(null);
+    const [fullEstimate, setFullEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const didRestoreRef = useRef(false);
 
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
@@ -247,6 +248,7 @@ export default function CostingPage() {
     const openRecord = (rec: CostingRecord) => {
         isLoadingRef.current = true;
         setSelected(rec);
+        setFullEstimate(null);
         setTab('general');
         setCostHistory((rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
@@ -258,6 +260,9 @@ export default function CostingPage() {
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
         })));
         setActualData(rec.actualData ?? {});
+        Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
+            .then(est => setFullEstimate(est))
+            .catch(console.error);
         if (typeof window !== 'undefined') {
             window.history.pushState({}, '', `/costing?id=${rec._id}`);
         }
@@ -413,7 +418,7 @@ export default function CostingPage() {
     }
 
     // ── DETAIL VIEW ───────────────────────────────────────────────────────────
-    const selectedEstimate = { _id: selected.estimateId, name: selected.estimateName } as unknown as EstimatesApi.ApiEstimate;
+    const selectedEstimate = fullEstimate ?? ({ _id: selected.estimateId, name: selected.estimateName } as unknown as EstimatesApi.ApiEstimate);
 
     return (
         <PageContents title='Costing'>
