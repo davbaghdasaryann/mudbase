@@ -133,8 +133,8 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                             </Typography>
                             {(selectedCovered > 0 || selectedPlanned > 0) && (
                                 <Box sx={{ display: 'flex', gap: 2, mt: 0.3 }}>
-                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {selectedCovered.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
-                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {selectedRemaining.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
+                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {selectedCovered.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
+                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {selectedRemaining.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
                                     {selectedPlanned > 0 && selectedRemaining <= 0 && <Typography sx={{ fontSize: '0.72rem', color: '#43a047' }}>✓ {t('Completed')}</Typography>}
                                 </Box>
                             )}
@@ -143,7 +143,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                 ) : (
                     <>
                         <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 22, flexShrink: 0 }} />
-                        Աշխատավարդզի ծախսագրում
+                        Աշխատավարձի ծախսագրում
                     </>
                 )}
             </DialogTitle>
@@ -176,9 +176,9 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                 </Typography>
                                                 <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Ծախ: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                 </Box>
                                             </Box>
                                             <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
