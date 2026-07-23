@@ -63,6 +63,7 @@ export interface CostHistoryEntry {
     laborRows?: SectionRow[];
     mechanismRows?: SectionRow[];
     materialRows?: SectionRow[];
+    laborItemId?: string;
 }
 
 interface CostingRecord {
@@ -757,8 +758,11 @@ export default function CostingPage() {
                     open={salaryOpen}
                     onClose={() => setSalaryOpen(false)}
                     estimate={selectedEstimate}
-                    onEntryAdded={entry => setCostHistory(prev => [entry, ...prev])}
+                    onEntrySaved={(entry, replaceId) => setCostHistory(prev =>
+                        replaceId ? prev.map(e => e.id === replaceId ? entry : e) : [entry, ...prev]
+                    )}
                     actualData={actualData}
+                    costHistory={costHistory}
                 />
                 </>
             )}

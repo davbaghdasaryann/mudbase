@@ -38,8 +38,9 @@ interface Props {
     open: boolean;
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
-    onEntryAdded: (entry: CostHistoryEntry) => void;
+    onEntrySaved: (entry: CostHistoryEntry, replaceId?: string) => void;
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
+    costHistory?: CostHistoryEntry[];
 }
 
 const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 };
@@ -59,8 +60,7 @@ function NumInput({ label, value, onChange, autoFocus }: { label: string; value:
         </Box>
     );
 }
-
-export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, actualData }: Props) {
+export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, actualData, costHistory }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState<LaborRow[]>([]);
@@ -70,14 +70,8 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, ac
     const [val2, setVal2] = useState('');
 
     useEffect(() => {
-        if (!open) {
-            setSelectedRow(null);
-            return;
-        }
-        setSelectedRow(null);
-        setType('druqayin');
-        setVal1('');
-        setVal2('');
+        if (!open) { setSelectedRow(null); return; }
+        setSelectedRow(null); setType('druqayin'); setVal1(''); setVal2('');
         const estimateId = toId(estimate?._id);
         if (!estimateId) return;
         setLoading(true);
@@ -93,31 +87,37 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, ac
     const computedTotal = type === 'druqayin' ? n1 : n1 * n2;
     const canAdd = computedTotal > 0;
 
+    const getSalaryCovered = (rowId: string) =>
+        (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod?.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
+
     const handleAdd = () => {
         if (!canAdd || !selectedRow) return;
+        const existing = (costHistory ?? []).find(e => e.laborItemId === selectedRow._id && e.paymentMethod?.startsWith('salary_'));
+        const newTotal = (existing?.total ?? 0) + computedTotal;
         const entry: CostHistoryEntry = {
-            id: String(Date.now() + Math.random()),
+            id: existing?.id ?? String(Date.now() + Math.random()),
             workName: selectedRow.laborOfferItemName || selectedRow.catalogName || '—',
+            laborItemId: selectedRow._id,
             unit: type === 'druqayin' ? 'AMD' : type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժամ',
             quantity: type === 'druqayin' ? 1 : n1,
             unitPrice: type === 'druqayin' ? n1 : n2,
-            total: computedTotal,
+            total: newTotal,
             addedAt: new Date(),
             paymentMethod: 'salary_' + type,
             note: type === 'druqayin' ? 'Դրույքային' : type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ',
         };
-        onEntryAdded(entry);
+        onEntrySaved(entry, existing?.id);
         handleClose();
     };
 
-    // Only show rows that have a value in Ծavalneri grancum (actualData)
     const filteredRows = actualData
-        ? rows.filter(r => {
-            const entry = actualData[r._id];
-            return entry && (parseFloat(entry.quantity) > 0 || parseFloat(entry.unitPrice) > 0);
-        })
+        ? rows.filter(r => { const e = actualData[r._id]; return e && parseFloat(e.quantity) > 0; })
         : rows;
     const sections = Array.from(new Set(filteredRows.map(r => r.sectionName || '—')));
+
+    const selectedCovered = selectedRow ? getSalaryCovered(selectedRow._id) : 0;
+    const selectedPlanned = selectedRow ? parseFloat(actualData?.[selectedRow._id]?.quantity || '0') || 0 : 0;
+    const selectedRemaining = Math.max(0, selectedPlanned - selectedCovered);
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth
@@ -129,21 +129,29 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, ac
                         <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: mainPrimaryColor, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {selectedRow.laborOfferItemName || selectedRow.catalogName}
-                        </Typography>
+                        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: mainPrimaryColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {selectedRow.laborOfferItemName || selectedRow.catalogName}
+                            </Typography>
+                            {(selectedCovered > 0 || selectedPlanned > 0) && (
+                                <Box sx={{ display: 'flex', gap: 2, mt: 0.3 }}>
+                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {selectedCovered.toLocaleString()} AMD</Typography>}
+                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {selectedRemaining.toLocaleString()} AMD</Typography>}
+                                    {selectedPlanned > 0 && selectedRemaining <= 0 && <Typography sx={{ fontSize: '0.72rem', color: '#43a047' }}>✓ {t('Completed')}</Typography>}
+                                </Box>
+                            )}
+                        </Box>
                     </>
                 ) : (
                     <>
                         <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 22, flexShrink: 0 }} />
-                        Աշխատավարձի ծախսագրում
+                        Աշխատավարդզի ծախսագրում
                     </>
                 )}
             </DialogTitle>
 
             <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {!selectedRow ? (
-                    /* STEP 1: pick a work */
                     <Box sx={{ overflowY: 'auto', flex: 1 }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -156,24 +164,33 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, ac
                                 <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
                                     <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{secName}</Typography>
                                 </Box>
-                                {filteredRows.filter(r => (r.sectionName || '—') === secName).map(row => (
-                                    <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('druqayin'); setVal1(''); setVal2(''); }}
-                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
-                                    >
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
-                                                {row.laborOfferItemName || row.catalogName || '—'}
-                                            </Typography>
-                                            {row.unitSymbol ? <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>{row.unitSymbol}</Typography> : null}
+                                {filteredRows.filter(r => (r.sectionName || '—') === secName).map(row => {
+                                    const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
+                                    const covered = getSalaryCovered(row._id);
+                                    const remaining = Math.max(0, planned - covered);
+                                    const done = planned > 0 && remaining <= 0;
+                                    return (
+                                        <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('druqayin'); setVal1(''); setVal2(''); }}
+                                            sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
+                                        >
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography sx={{ fontSize: '0.83rem', color: done ? '#43a047' : '#222', fontWeight: 500 }}>
+                                                    {row.laborOfferItemName || row.catalogName || '—'}
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
+                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Ծախ: {planned.toLocaleString()}</Typography>}
+                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {covered.toLocaleString()} AMD</Typography>}
+                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {remaining.toLocaleString()} AMD</Typography>}
+                                                </Box>
+                                            </Box>
+                                            <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
                                         </Box>
-                                        <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
-                                    </Box>
-                                ))}
+                                    );
+                                })}
                             </Box>
                         ))}
                     </Box>
                 ) : (
-                    /* STEP 2: choose type and enter values */
                     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, overflowY: 'auto' }}>
                         <RadioGroup row value={type} onChange={ev => { setType(ev.target.value as SalaryType); setVal1(''); setVal2(''); }}>
                             <FormControlLabel value='druqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Դրույքային</Typography>} />
@@ -186,13 +203,13 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, ac
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
-                            <NumInput autoFocus label='1 ժamvа дрuyqачафа' value={val1} onChange={setVal1} />
-                            <NumInput label='Жамери qаnaq' value={val2} onChange={setVal2} />
+                            <NumInput autoFocus label='1 ժամva драйqачафа' value={val1} onChange={setVal1} />
+                            <NumInput label='ժամери qаnaq' value={val2} onChange={setVal2} />
                         </>}
                         {canAdd && type !== 'druqayin' && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <Typography sx={{ fontSize: '0.82rem', color: '#777' }}>
-                                    Ընդհանուր: <strong style={{ color: mainPrimaryColor }}>{(n1 * n2).toLocaleString()} AMD</strong>
+                                    {t('Total')}: <strong style={{ color: mainPrimaryColor }}>{(n1 * n2).toLocaleString()} AMD</strong>
                                 </Typography>
                             </Box>
                         )}
@@ -201,11 +218,10 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, ac
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2, flexShrink: 0, gap: 1 }}>
-                <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>Չեղարկել</Button>
+                <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                 {selectedRow && (
                     <Button variant='contained' onClick={handleAdd} disabled={!canAdd}
-                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
-                    >Պահպանել</Button>
+                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>{t('Save')}</Button>
                 )}
             </DialogActions>
         </Dialog>
