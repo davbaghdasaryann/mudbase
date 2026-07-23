@@ -527,7 +527,7 @@ export default function CostingPage() {
                             <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                 <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
                                 <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
-                                <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Costs History')} value='history' />
+                                <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Գործողությունների պատմություն' value='history' />
                                 <Tab icon={<WarehouseOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Պահեստ' value='pahest' />
                             </TabList>
                         </Box>
@@ -585,6 +585,7 @@ export default function CostingPage() {
                             <Table size='small' sx={{ minWidth: 700 }}>
                                 <TableHead>
                                     <TableRow sx={{ backgroundColor: '#f0fbfc' }}>
+                                        <TableCell sx={{ fontWeight: 700, color: '#222' }}>Գործողության տեսակ</TableCell>
                                         <TableCell sx={{ fontWeight: 700, color: '#222' }}>{t('Description of Work')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Quantity')}</TableCell>
@@ -597,8 +598,16 @@ export default function CostingPage() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {costHistory.map(entry => (
+                                    {costHistory.map(entry => {
+                                        const pm = entry.paymentMethod ?? '';
+                                        const actionType = pm === 'salary_druqayin' ? 'Դրույքային'
+                                            : pm === 'salary_gorcarqayin' ? 'Գործ. վճար'
+                                            : pm === 'salary_miavorzham' ? 'Ժամ/Միավոր'
+                                            : entry.isSubcontractor ? 'Ենթակապ.'
+                                            : 'Ծախսագրում';
+                                        return (
                                         <TableRow key={entry.id} hover>
+                                            <TableCell sx={{ fontSize: '0.82rem', color: '#555' }}>{actionType}</TableCell>
                                             <TableCell>{entry.workName}</TableCell>
                                             <TableCell align='center'>{entry.unit}</TableCell>
                                             <TableCell align='center'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
@@ -620,7 +629,8 @@ export default function CostingPage() {
                                                 </Tooltip>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         </Box>
