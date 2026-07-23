@@ -87,26 +87,24 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
     const computedTotal = type === 'druqayin' ? n1 : n1 * n2;
     const canAdd = computedTotal > 0;
 
-    const getSalaryCovered = (rowId: string) =>
-        (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod?.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
+    const getSalaryCoveredQty = (rowId: string) =>
+        (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + e.quantity, 0);
 
     const handleAdd = () => {
         if (!canAdd || !selectedRow) return;
-        const existing = (costHistory ?? []).find(e => e.laborItemId === selectedRow._id && e.paymentMethod?.startsWith('salary_'));
-        const newTotal = (existing?.total ?? 0) + computedTotal;
         const entry: CostHistoryEntry = {
-            id: existing?.id ?? String(Date.now() + Math.random()),
+            id: String(Date.now() + Math.random()),
             workName: selectedRow.laborOfferItemName || selectedRow.catalogName || '—',
             laborItemId: selectedRow._id,
             unit: type === 'druqayin' ? 'AMD' : type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժամ',
             quantity: type === 'druqayin' ? 1 : n1,
             unitPrice: type === 'druqayin' ? n1 : n2,
-            total: newTotal,
+            total: computedTotal,
             addedAt: new Date(),
             paymentMethod: 'salary_' + type,
             note: type === 'druqayin' ? 'Դրույքային' : type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ',
         };
-        onEntrySaved(entry, existing?.id);
+        onEntrySaved(entry);
         handleClose();
     };
 
@@ -115,7 +113,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
         : rows;
     const sections = Array.from(new Set(filteredRows.map(r => r.sectionName || '—')));
 
-    const selectedCovered = selectedRow ? getSalaryCovered(selectedRow._id) : 0;
+    const selectedCovered = selectedRow ? getSalaryCoveredQty(selectedRow._id) : 0;
     const selectedPlanned = selectedRow ? parseFloat(actualData?.[selectedRow._id]?.quantity || '0') || 0 : 0;
     const selectedRemaining = Math.max(0, selectedPlanned - selectedCovered);
 
@@ -135,8 +133,8 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                             </Typography>
                             {(selectedCovered > 0 || selectedPlanned > 0) && (
                                 <Box sx={{ display: 'flex', gap: 2, mt: 0.3 }}>
-                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {selectedCovered.toLocaleString()} AMD</Typography>}
-                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {selectedRemaining.toLocaleString()} AMD</Typography>}
+                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {selectedCovered.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
+                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {selectedRemaining.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
                                     {selectedPlanned > 0 && selectedRemaining <= 0 && <Typography sx={{ fontSize: '0.72rem', color: '#43a047' }}>✓ {t('Completed')}</Typography>}
                                 </Box>
                             )}
@@ -166,7 +164,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                                 </Box>
                                 {filteredRows.filter(r => (r.sectionName || '—') === secName).map(row => {
                                     const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
-                                    const covered = getSalaryCovered(row._id);
+                                    const covered = getSalaryCoveredQty(row._id);
                                     const remaining = Math.max(0, planned - covered);
                                     const done = planned > 0 && remaining <= 0;
                                     return (
@@ -178,9 +176,9 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                 </Typography>
                                                 <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Ծախ: {planned.toLocaleString()}</Typography>}
-                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {covered.toLocaleString()} AMD</Typography>}
-                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {remaining.toLocaleString()} AMD</Typography>}
+                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Ծախ: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Արդեն: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացում: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                 </Box>
                                             </Box>
                                             <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
