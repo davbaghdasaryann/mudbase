@@ -15,7 +15,7 @@ import * as EstimatesApi from '@/api/estimate';
 import { mainPrimaryColor } from '@/theme';
 import { type CostHistoryEntry } from './page';
 
-type SalaryType = 'druqayin' | 'gorcarqayin' | 'miavorzham';
+type SalaryType = 'gorcarqayin' | 'miavorzham';
 
 interface LaborRow {
     _id: string;
@@ -65,13 +65,13 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
-    const [type, setType] = useState<SalaryType>('druqayin');
+    const [type, setType] = useState<SalaryType>('gorcarqayin');
     const [val1, setVal1] = useState('');
     const [val2, setVal2] = useState('');
 
     useEffect(() => {
         if (!open) { setSelectedRow(null); return; }
-        setSelectedRow(null); setType('druqayin'); setVal1(''); setVal2('');
+        setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2('');
         const estimateId = toId(estimate?._id);
         if (!estimateId) return;
         setLoading(true);
@@ -84,7 +84,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
     const handleClose = () => { setSelectedRow(null); onClose(); };
     const n1 = parseFloat(val1.replace(',', '.')) || 0;
     const n2 = parseFloat(val2.replace(',', '.')) || 0;
-    const computedTotal = type === 'druqayin' ? n1 : n1 * n2;
+    const computedTotal = n1 * n2;
     const canAdd = computedTotal > 0;
 
     const getSalaryCoveredQty = (rowId: string) =>
@@ -96,13 +96,13 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
             id: String(Date.now() + Math.random()),
             workName: selectedRow.laborOfferItemName || selectedRow.catalogName || '—',
             laborItemId: selectedRow._id,
-            unit: type === 'druqayin' ? 'AMD' : type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժամ',
-            quantity: type === 'druqayin' ? 1 : n1,
-            unitPrice: type === 'druqayin' ? n1 : n2,
+            unit: type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժամ',
+            quantity: n1,
+            unitPrice: n2,
             total: computedTotal,
             addedAt: new Date(),
             paymentMethod: 'salary_' + type,
-            note: type === 'druqayin' ? 'Դրույքային' : type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ',
+            note: type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ',
         };
         onEntrySaved(entry);
         handleClose();
@@ -168,7 +168,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                                     const remaining = Math.max(0, planned - covered);
                                     const done = planned > 0 && remaining <= 0;
                                     return (
-                                        <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('druqayin'); setVal1(''); setVal2(''); }}
+                                        <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); }}
                                             sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                         >
                                             <Box sx={{ flex: 1 }}>
@@ -191,20 +191,18 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                 ) : (
                     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, overflowY: 'auto' }}>
                         <RadioGroup row value={type} onChange={ev => { setType(ev.target.value as SalaryType); setVal1(''); setVal2(''); }}>
-                            <FormControlLabel value='druqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Դրույքային</Typography>} />
                             <FormControlLabel value='gorcarqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Գործարքային</Typography>} />
                             <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Միավոր/ժամ</Typography>} />
                         </RadioGroup>
-                        {type === 'druqayin' && <NumInput autoFocus label='Դրույքային' value={val1} onChange={setVal1} />}
                         {type === 'gorcarqayin' && <>
-                            <NumInput autoFocus label='Քանակ' value={val1} onChange={setVal1} />
+                            <NumInput autoFocus label='Ժամաքանաք' value={val1} onChange={setVal1} />
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
                             <NumInput autoFocus label='1 ժամva драйqачафа' value={val1} onChange={setVal1} />
                             <NumInput label='ժամери qаnaq' value={val2} onChange={setVal2} />
                         </>}
-                        {canAdd && type !== 'druqayin' && (
+                        {canAdd && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <Typography sx={{ fontSize: '0.82rem', color: '#777' }}>
                                     {t('Total')}: <strong style={{ color: mainPrimaryColor }}>{(n1 * n2).toLocaleString()} AMD</strong>
