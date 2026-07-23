@@ -520,8 +520,8 @@ export default function CostingPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <TabContext value={tab}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                            <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, mb: '4px', '&:hover': { color: mainPrimaryColor } }}>
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
                             <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
