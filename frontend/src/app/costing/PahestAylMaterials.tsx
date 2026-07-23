@@ -31,9 +31,12 @@ export interface AylEntry {
     history: AylHistoryRecord[];
 }
 
+interface HistoryEntryInput { workName: string; unit: string; quantity: number; unitPrice: number; total: number; }
+
 interface Props {
     entries: AylEntry[];
     onChange: (entries: AylEntry[]) => void;
+    onHistoryEntry?: (e: HistoryEntryInput) => void;
 }
 
 const newRow = (): AylEntry => ({
@@ -48,7 +51,7 @@ const newRow = (): AylEntry => ({
 
 const COLS = '1fr 90px 140px 120px 120px 88px';
 
-export default function PahestAylMaterials({ entries, onChange }: Props) {
+export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }: Props) {
     const { t } = useTranslation();
     const [units, setUnits] = useState<UnitOption[]>([]);
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
@@ -86,6 +89,10 @@ export default function PahestAylMaterials({ entries, onChange }: Props) {
             if (plusPriceInput.trim() !== '') updates.costPerUnit = plusPriceInput.trim();
             return { ...e, ...updates };
         }));
+        if (qty > 0) {
+            const price = parseFloat(priceForRecord) || 0;
+            onHistoryEntry?.({ workName: plusEntry.name || '—', unit: plusEntry.unit, quantity: qty, unitPrice: price, total: qty * price });
+        }
         setPlusEntry(null);
         setPlusQtyInput('');
         setPlusPriceInput('');

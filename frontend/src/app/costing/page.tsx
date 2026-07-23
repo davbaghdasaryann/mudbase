@@ -601,6 +601,7 @@ export default function CostingPage() {
                                         const actionType = pm === 'salary_druqayin' ? t('Rate-based')
                                             : pm === 'salary_gorcarqayin' ? t('Piece-rate')
                                             : pm === 'salary_miavorzham' ? t('Hourly')
+                                            : pm === 'pahest_main' || pm === 'pahest_ayl' ? t('Warehouse')
                                             : entry.isSubcontractor ? t('Subcontractor')
                                             : t('Costing');
                                         return (
@@ -636,10 +637,13 @@ export default function CostingPage() {
                             estimateId={selected.estimateId}
                             entries={pahestEntries}
                             onChange={setPahestEntries}
+                            onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main' }, ...prev])}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
-                            <PahestAylMaterials entries={aylEntries} onChange={setAylEntries} />
+                            <PahestAylMaterials entries={aylEntries} onChange={setAylEntries}
+                                onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_ayl' }, ...prev])}
+                            />
                         </Box>
                     </Box>
                 )}

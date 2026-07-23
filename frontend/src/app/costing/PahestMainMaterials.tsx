@@ -42,10 +42,13 @@ export interface PahestEntry {
     history: PahestHistoryRecord[];
 }
 
+interface HistoryEntryInput { workName: string; unit: string; quantity: number; unitPrice: number; total: number; }
+
 interface Props {
     estimateId: string;
     entries: PahestEntry[];
     onChange: (entries: PahestEntry[]) => void;
+    onHistoryEntry?: (e: HistoryEntryInput) => void;
 }
 
 function toIdStr(id: unknown): string {
@@ -55,7 +58,7 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, entries, onChange }: Props) {
+export default function PahestMainMaterials({ estimateId, entries, onChange, onHistoryEntry }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [loading, setLoading] = useState(true);
@@ -137,6 +140,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
                 history: [newRecord],
             }]);
         }
+        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice });
         setAddOpen(false);
     };
 
@@ -158,6 +162,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange }: P
         if (!isNaN(price) && plusPriceInput.trim() !== '') patch.costPerUnit = price;
         next[idx] = { ...next[idx], ...patch };
         onChange(next);
+        if (qty > 0) onHistoryEntry?.({ workName: plusEntry.name, unit: plusEntry.unit, quantity: qty, unitPrice: newCostPerUnit, total: qty * newCostPerUnit });
         setPlusEntry(null);
         setPlusQtyInput('');
         setPlusPriceInput('');
