@@ -336,10 +336,6 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                     sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                     {t('Export')}
                 </Button>
-                <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={openModal}
-                    sx={{ borderRadius: '20px', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}>
-                    {t('Add Cost')}
-                </Button>
             </Box>
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
