@@ -520,15 +520,15 @@ export default function CostingPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <TabContext value={tab}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                            <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, mb: '4px', '&:hover': { color: mainPrimaryColor } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
-                            <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' }, '& .MuiTab-root': { paddingBottom: '4px' } }}>
-                                <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
-                                <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
-                                <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('History')} value='history' />
-                                <Tab icon={<WarehouseOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Պահեստ' value='pahest' />
+                            <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TuneOutlinedIcon sx={{ fontSize: 18 }} />{t('General')}</Box>} value='general' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><FormatListBulletedIcon sx={{ fontSize: 18 }} />{t('Main')}</Box>} value='main' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><HistoryIcon sx={{ fontSize: 18 }} />{t('History')}</Box>} value='history' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><WarehouseOutlinedIcon sx={{ fontSize: 18 }} />Պահեստ</Box>} value='pahest' />
                             </TabList>
                         </Box>
                     </Box>
