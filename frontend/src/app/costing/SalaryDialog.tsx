@@ -97,7 +97,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
         const entry: CostHistoryEntry = {
             id: String(Date.now() + Math.random()),
             workName: selectedRow.laborOfferItemName || selectedRow.catalogName || '—',
-            unit: type === 'druqayin' ? 'AMD' : type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժam',
+            unit: type === 'druqayin' ? 'AMD' : type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժամ',
             quantity: type === 'druqayin' ? 1 : n1,
             unitPrice: type === 'druqayin' ? n1 : n2,
             total: computedTotal,
