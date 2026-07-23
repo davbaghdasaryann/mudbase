@@ -527,7 +527,7 @@ export default function CostingPage() {
                             <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                 <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
                                 <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
-                                <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Actions History')} value='history' />
+                                <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('History')} value='history' />
                                 <Tab icon={<WarehouseOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label='Պահեստ' value='pahest' />
                             </TabList>
                         </Box>
@@ -592,8 +592,6 @@ export default function CostingPage() {
                                         <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Unit Price')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Total')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Date of Creation')}</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Contractor')}</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 700, color: '#222' }}>{t('Note')}</TableCell>
                                         <TableCell sx={{ width: 40 }} />
                                     </TableRow>
                                 </TableHead>
@@ -614,13 +612,6 @@ export default function CostingPage() {
                                             <TableCell align='center'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
                                             <TableCell align='center' sx={{ fontWeight: 600, color: mainPrimaryColor }}>{formatCurrencyRounded(entry.total)} AMD</TableCell>
                                             <TableCell align='center' sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
-                                            <TableCell align='center' sx={{ fontSize: '0.82rem' }}>
-                                                {entry.isSubcontractor
-                                                    ? <Chip label={t('Subcontractor')} size='small' sx={{ fontSize: '0.72rem', height: 20, backgroundColor: '#fff3e0', color: '#e65100' }} />
-                                                    : <span style={{ color: entry.contractor ? '#333' : '#ccc' }}>{entry.contractor || '—'}</span>
-                                                }
-                                            </TableCell>
-                                            <TableCell align='center' sx={{ color: entry.note ? '#333' : '#ccc', fontSize: '0.82rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.note || '—'}</TableCell>
                                             <TableCell padding='none'>
                                                 <Tooltip title={t('Remove')}>
                                                     <IconButton size='small' onClick={() => setCostHistory(prev => prev.filter(e => e.id !== entry.id))} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
