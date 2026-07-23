@@ -39,6 +39,7 @@ interface Props {
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
     onEntryAdded: (entry: CostHistoryEntry) => void;
+    actualData?: Record<string, { quantity: string; unitPrice: string }>;
 }
 
 const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 };
@@ -59,7 +60,7 @@ function NumInput({ label, value, onChange, autoFocus }: { label: string; value:
     );
 }
 
-export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: Props) {
+export default function SalaryDialog({ open, onClose, estimate, onEntryAdded, actualData }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState<LaborRow[]>([]);
@@ -109,8 +110,14 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
         handleClose();
     };
 
-    // Group rows by sectionName
-    const sections = Array.from(new Set(rows.map(r => r.sectionName || '—')));
+    // Only show rows that have a value in Ծavalneri grancum (actualData)
+    const filteredRows = actualData
+        ? rows.filter(r => {
+            const entry = actualData[r._id];
+            return entry && (parseFloat(entry.quantity) > 0 || parseFloat(entry.unitPrice) > 0);
+        })
+        : rows;
+    const sections = Array.from(new Set(filteredRows.map(r => r.sectionName || '—')));
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth
@@ -142,14 +149,14 @@ export default function SalaryDialog({ open, onClose, estimate, onEntryAdded }: 
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                                 <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
                             </Box>
-                        ) : rows.length === 0 ? (
+                        ) : filteredRows.length === 0 ? (
                             <Typography sx={{ color: '#aaa', py: 4, textAlign: 'center', px: 2 }}>{t('No sections found')}</Typography>
                         ) : sections.map(secName => (
                             <Box key={secName} sx={{ mb: 1 }}>
                                 <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
                                     <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{secName}</Typography>
                                 </Box>
-                                {rows.filter(r => (r.sectionName || '—') === secName).map(row => (
+                                {filteredRows.filter(r => (r.sectionName || '—') === secName).map(row => (
                                     <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('druqayin'); setVal1(''); setVal2(''); }}
                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                     >

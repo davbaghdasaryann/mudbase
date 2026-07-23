@@ -758,6 +758,7 @@ export default function CostingPage() {
                     onClose={() => setSalaryOpen(false)}
                     estimate={selectedEstimate}
                     onEntryAdded={entry => setCostHistory(prev => [entry, ...prev])}
+                    actualData={actualData}
                 />
                 </>
             )}
