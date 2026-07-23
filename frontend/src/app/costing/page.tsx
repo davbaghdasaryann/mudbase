@@ -524,7 +524,7 @@ export default function CostingPage() {
                             <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, mb: '4px', '&:hover': { color: mainPrimaryColor } }}>
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
-                            <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                            <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' }, '& .MuiTab-root': { paddingBottom: '4px' } }}>
                                 <Tab icon={<TuneOutlinedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('General')} value='general' />
                                 <Tab icon={<FormatListBulletedIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('Main')} value='main' />
                                 <Tab icon={<HistoryIcon sx={{ fontSize: 18 }} />} iconPosition='start' label={t('History')} value='history' />
