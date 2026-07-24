@@ -30,6 +30,7 @@ import * as EstimateSectionsApi from '@/api/estimate';
 import { EstimateSectionsDisplayData } from '../../data/estimate_sections_display_data';
 import ProgressIndicator from '../../tsui/ProgressIndicator';
 import EstimateSectionButtonDialog from './EstimateAddSectionDialog';
+import EstimateAddGroupDialog from './EstimateAddGroupDialog';
 import { EstimateRenameDialog } from './EstimateRenameDIalog';
 import EstimatedItemPresentViewDialog from './EstimatedItemPresentViewDialog';
 import { validateDoubleInteger } from '@/tslib/validate';
@@ -163,6 +164,7 @@ interface EstimateThreeLevelNestedAccordionProps {
 
 export interface EstimateThreeLevelNestedAccordionRef {
     openAddSectionDialog: () => void;
+    openAddGroupDialog: () => void;
     calcMarketPrices: (estimatedLaborIds?: string[]) => void;
     importMyPrices: (estimatedLaborIds?: string[]) => void;
     refreshEverything: (showProgIndic?: boolean) => Promise<void>;
@@ -183,6 +185,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [openAddSubsectionDialog, setOpenAddSubsectionDialog] = useState(false);
     const [openAddSubsectionDialogCurrentSectionId, setOpenAddSubsectionDialogCurrentSectionId] = useState<string | null>(null);
     const [openAddSectionDialog, setOpenAddSectionDialog] = useState(false);
+    const [openAddGroupDialog, setOpenAddGroupDialog] = useState(false);
 
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
     const [estimateRenameDialogLabel, setEstimateRenameDialogLabel] = useState<string | null>(null);
@@ -1055,6 +1058,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
         openAddSectionDialog: () => setOpenAddSectionDialog(true),
+        openAddGroupDialog: () => setOpenAddGroupDialog(true),
         calcMarketPrices: handleCalcMarketPrices,
         importMyPrices: handleImportMyPrices,
         refreshEverything,
@@ -2056,6 +2060,17 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                     onClose={() => {
                         setOpenAddSectionDialog(false);
                     }}
+                />
+            )}
+
+            {openAddGroupDialog && (
+                <EstimateAddGroupDialog
+                    estimateId={props.estimateId}
+                    onConfirm={() => {
+                        refreshEverything(true);
+                        setOpenAddGroupDialog(false);
+                    }}
+                    onClose={() => setOpenAddGroupDialog(false)}
                 />
             )}
 

@@ -99,6 +99,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         accordionRef.current?.openAddSectionDialog();
     };
 
+    const handleCreateGroup = () => {
+        accordionRef.current?.openAddGroupDialog();
+    };
+
 
     // Handler for Works List button
     const handleWorksListClick = () => {
@@ -434,6 +438,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {/* Tool buttons */}
                             {[
                                 { labelKey: 'Create Section', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateSection },
+                                { labelKey: 'Create Group', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateGroup },
                                 {
                                     labelKey: selectedLaborIds.length > 0 ? 'Add to Favorites' : 'Import from Favorites',
                                     icon: `${TOOLBAR_ICON}/favourites.svg`,

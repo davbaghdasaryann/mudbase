@@ -458,7 +458,7 @@
   "Previous": "Նախորդ",
   "Configuration": "Կարգավորում",
   "Step {{current}} of {{total}}": "Քայլ {{current}}-ը {{total}}-ից",
-  "Group Name": "Խմբի անվանում",
+  "Group Name": "Խումբ անվանում",
   "Enter name for new group or select existing below": "Մուտքագրեք նոր խմբի անվանումը կամ ընտրեք առկան ստորև",
   "Select Existing Group": "Ընտրել առկա խումբը",
   "Select Visualization Type": "Ընտրել վիզուալիզացիայի տեսակը",
@@ -631,5 +631,7 @@
   "Add new quantity": "Ավելացնել նոր քանակ",
   "Actions History": "Գործողությունների պատմություն",
   "Action Type": "Գործողության տեսակ",
-  "Warehouse": "Պահեստ"
+  "Warehouse": "Պահեստ",
+  "Create Group": "Ավելացնել խումբ",
+  "Enter group name": "Մուտքագրել խմբի անվանումը"
 }
