@@ -9,7 +9,7 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-import { Box, DialogContent, DialogTitle, InputBase } from "@mui/material";
+import { Box, DialogContent, DialogTitle, InputBase, ListItem, Typography } from "@mui/material";
 import { LaborItemDisplayData } from "../../data/labor_display_data";
 import { MaterialItemDisplayData } from "../../data/material_display_data";
 
@@ -145,7 +145,20 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
 
 
+    const [groupSelectedWorks, setGroupSelectedWorks] = React.useState<LaborItemDisplayData[]>([]);
+    const [groupShowLibrary, setGroupShowLibrary] = React.useState(false);
+
     if (props.isGroupRow) {
+        const handleAddWorkClick = () => {
+            setGroupShowLibrary(true);
+            setDataRequested(false);
+        };
+
+        const handleSelectWork = (row: LaborItemDisplayData) => {
+            setGroupSelectedWorks(prev => prev.find(w => w._id === row._id) ? prev : [...prev, row]);
+            setGroupShowLibrary(false);
+        };
+
         return <Dialog
             fullScreen
             open={open}
@@ -158,17 +171,60 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 <CloseIcon />
             </IconButton>
             <DialogContent>
-                <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', backgroundColor: '#242c37', width: 300, m: 1 }}>
-                    <InputBase
-                        sx={{ ml: 1, flex: 1 }}
-                        placeholder='Search'
-                        onChange={searchTextChange}
-                        value={searchVal}
-                    />
-                    <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
-                    <Button onClick={searchTextSubmit}><DirectionsIcon /></Button>
+                {/* Search bar — right-aligned */}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                    <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}>
+                        <InputBase
+                            sx={{ ml: 1, flex: 1 }}
+                            placeholder={t('Search')}
+                            onChange={searchTextChange}
+                            value={searchVal}
+                        />
+                        <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
+                        <Button onClick={searchTextSubmit}><DirectionsIcon /></Button>
+                    </Box>
                 </Box>
-                <Button variant='contained' sx={{ mt: 2, ml: 1 }}>{t('Add work')}</Button>
+
+                {/* Add work button */}
+                <Button variant='contained' onClick={handleAddWorkClick}>{t('Add work')}</Button>
+
+                {/* Library results */}
+                {groupShowLibrary && offerList && (
+                    <DataTableComponent
+                        sx={{ width: '100%', mt: 2 }}
+                        columns={[
+                            { field: 'fullCode', headerName: t('ID'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
+                            { field: 'name', headerName: t('Label'), headerAlign: 'left', flex: 0.5, disableColumnMenu: true },
+                            { field: 'measurementUnitRepresentationSymbol', headerName: t('Measurement Unit'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true },
+                            { field: 'averagePrice', headerName: t('Average Price'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                            {
+                                field: 'select', type: 'actions', headerName: '', flex: 0.1,
+                                renderCell: (cell: any) => (
+                                    <IconButton onClick={() => handleSelectWork(cell.row as LaborItemDisplayData)}>
+                                        <AddToPhotosIcon />
+                                    </IconButton>
+                                ),
+                            },
+                        ]}
+                        rows={offerList}
+                        disableRowSelectionOnClick
+                        getRowId={(row: any) => row._id}
+                    />
+                )}
+
+                {/* Selected works list */}
+                {groupSelectedWorks.length > 0 && (
+                    <Box sx={{ mt: 3 }}>
+                        <Typography variant='subtitle2' sx={{ mb: 1 }}>{t('Added works')}</Typography>
+                        <List dense>
+                            {groupSelectedWorks.map(w => (
+                                <ListItem key={w._id as string}>
+                                    <ListItemText primary={w.name} secondary={w.measurementUnitRepresentationSymbol} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Box>
+                )}
             </DialogContent>
         </Dialog>;
     }
