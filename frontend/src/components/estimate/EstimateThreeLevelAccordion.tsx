@@ -232,7 +232,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const expandedAccordionsRef = useRef<string[]>([]);
 
     const [anchorEl, setAnchorEl] = useState(null);
-    const [groupIconAnchorEl, setGroupIconAnchorEl] = useState<HTMLElement | null>(null);
 
     const mounted = useRef(false);
     const [dataRequested, setDataRequested] = useState(false);
@@ -1781,7 +1780,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                             return (
                                                                                 <>
                                                                                     {groupRowIds.has(cell.row._id as string) ? (
-                                                                                        <IconButton onClick={e => setGroupIconAnchorEl(e.currentTarget)}>
+                                                                                        <IconButton
+                                                                                            onClick={() => {
+                                                                                                setSelectedChildId(child._id);
+                                                                                                setEstimatedLaborItemId(cell.row._id as string);
+                                                                                                setCurrentSubsectionId(child._id);
+                                                                                                setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                                                setOpenAddOfferDialogType('labor');
+                                                                                            }}
+                                                                                        >
                                                                                             <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
                                                                                         </IconButton>
                                                                                     ) : (
@@ -1887,11 +1894,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     </MenuItem>
                                                                 </Menu>
                                                             )}
-                                                            <Menu anchorEl={groupIconAnchorEl} open={Boolean(groupIconAnchorEl)} onClose={() => setGroupIconAnchorEl(null)}>
-                                                                <MenuItem onClick={() => setGroupIconAnchorEl(null)}>
-                                                                    {t('Add work')}
-                                                                </MenuItem>
-                                                            </Menu>
                                                         </>
                                                     )}
                                                 </AccordionDetails>
