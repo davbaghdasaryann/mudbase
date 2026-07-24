@@ -27,7 +27,6 @@ import DataTableComponent from "@/components/DataTableComponent";
 import { t } from "i18next";
 import { formatCurrency } from "@/lib/format_currency";
 import MaterialsLeftPaneContent from "@/app/offers/MaterialsLeftPaneContent";
-import EstimateGroupLibraryDialog from '@/components/estimate/EstimateGroupLibraryDialog';
 
 
 interface Props {
@@ -149,6 +148,25 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
     const [groupSelectedWorks, setGroupSelectedWorks] = React.useState<LaborItemDisplayData[]>([]);
     const [groupShowLibrary, setGroupShowLibrary] = React.useState(false);
     const [groupMainSearch, setGroupMainSearch] = React.useState('');
+    const [groupLibraryResults, setGroupLibraryResults] = React.useState<LaborItemDisplayData[] | null>(null);
+    const [groupLibrarySearch, setGroupLibrarySearch] = React.useState('');
+    const [groupLibraryLoading, setGroupLibraryLoading] = React.useState(false);
+
+    const fetchGroupLibrary = React.useCallback((val: string) => {
+        setGroupLibraryLoading(true);
+        Api.requestSession<LaborsApi.ApiLaborItems[]>({
+            command: 'labor/fetch_items_with_average_price',
+            args: { searchVal: val.trim() || 'empty', isSorting: true },
+        }).then(data => {
+            setGroupLibraryResults((data ?? []).map((d: LaborsApi.ApiLaborItems) => new LaborItemDisplayData(d)));
+        }).finally(() => setGroupLibraryLoading(false));
+    }, []);
+
+    React.useEffect(() => {
+        if (groupShowLibrary && groupLibraryResults === null) {
+            fetchGroupLibrary('');
+        }
+    }, [groupShowLibrary]);
 
     if (props.isGroupRow) {
         const filteredWorks = groupSelectedWorks.filter(w =>
@@ -162,50 +180,77 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             slotProps={{ paper: { style: { padding: 5, borderRadius: '12px' } } }}
             sx={{ '& .MuiDialog-container': { alignItems: 'center', justifyContent: 'center', padding: 5 } }}
         >
-            <DialogTitle sx={{ m: 0, p: 2 }}>{t('Add work')}</DialogTitle>
-            <IconButton aria-label="close" onClick={handleClose} sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
-                <CloseIcon />
-            </IconButton>
-            <DialogContent>
-                {/* Search bar (right-aligned) — filters the added works list */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                    <Box sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}>
-                        <InputBase
-                            sx={{ ml: 1, flex: 1 }}
-                            placeholder={t('Search')}
-                            value={groupMainSearch}
-                            onChange={e => setGroupMainSearch(e.target.value)}
+            {/* ── Library view ── */}
+            {groupShowLibrary ? <>
+                <DialogTitle sx={{ m: 0, p: 2 }}>{t('Work Library')}</DialogTitle>
+                <IconButton aria-label="back" onClick={() => setGroupShowLibrary(false)} sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
+                    <CloseIcon />
+                </IconButton>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <Box
+                            component="form"
+                            onSubmit={e => { e.preventDefault(); fetchGroupLibrary(groupLibrarySearch); }}
+                            sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}
+                        >
+                            <InputBase sx={{ ml: 1, flex: 1 }} placeholder={t('Search')} value={groupLibrarySearch} onChange={e => setGroupLibrarySearch(e.target.value)} />
+                            <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
+                            <Button onClick={() => fetchGroupLibrary(groupLibrarySearch)}><DirectionsIcon /></Button>
+                        </Box>
+                    </Box>
+                    {groupLibraryLoading && <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><DirectionsIcon /></Box>}
+                    {!groupLibraryLoading && groupLibraryResults && (
+                        <DataTableComponent
+                            sx={{ width: '100%' }}
+                            columns={[
+                                { field: 'fullCode', headerName: t('ID'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
+                                { field: 'name', headerName: t('Label'), headerAlign: 'left', flex: 0.5, disableColumnMenu: true },
+                                { field: 'measurementUnitRepresentationSymbol', headerName: t('Measurement Unit'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true },
+                                { field: 'averagePrice', headerName: t('Average Price'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                {
+                                    field: 'select', type: 'actions', headerName: '', flex: 0.1,
+                                    renderCell: (cell: any) => (
+                                        <IconButton onClick={() => {
+                                            setGroupSelectedWorks(prev => prev.find(w => w._id === cell.row._id) ? prev : [...prev, cell.row as LaborItemDisplayData]);
+                                            setGroupShowLibrary(false);
+                                        }}>
+                                            <AddToPhotosIcon />
+                                        </IconButton>
+                                    ),
+                                },
+                            ]}
+                            rows={groupLibraryResults}
+                            disableRowSelectionOnClick
+                            getRowId={(row: any) => row._id}
                         />
+                    )}
+                </DialogContent>
+            </> : <>
+                {/* ── Group main view ── */}
+                <DialogTitle sx={{ m: 0, p: 2 }}>{t('Add work')}</DialogTitle>
+                <IconButton aria-label="close" onClick={handleClose} sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
+                    <CloseIcon />
+                </IconButton>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <Box sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}>
+                            <InputBase sx={{ ml: 1, flex: 1 }} placeholder={t('Search')} value={groupMainSearch} onChange={e => setGroupMainSearch(e.target.value)} />
+                        </Box>
                     </Box>
-                </Box>
-
-                {/* Add work button — opens the library */}
-                <Button variant='contained' onClick={() => setGroupShowLibrary(true)}>{t('Add work')}</Button>
-
-                {/* Added works list below the button */}
-                {filteredWorks.length > 0 && (
-                    <Box sx={{ mt: 3 }}>
-                        <List dense>
-                            {filteredWorks.map(w => (
-                                <ListItem key={w._id as string}>
-                                    <ListItemText primary={w.name} secondary={w.measurementUnitRepresentationSymbol} />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Box>
-                )}
-            </DialogContent>
-
-            {/* Library dialog opens on top */}
-            {groupShowLibrary && (
-                <EstimateGroupLibraryDialog
-                    onClose={() => setGroupShowLibrary(false)}
-                    onSelect={work => {
-                        setGroupSelectedWorks(prev => prev.find(w => w._id === work._id) ? prev : [...prev, work]);
-                        setGroupShowLibrary(false);
-                    }}
-                />
-            )}
+                    <Button variant='contained' onClick={() => setGroupShowLibrary(true)}>{t('Add work')}</Button>
+                    {filteredWorks.length > 0 && (
+                        <Box sx={{ mt: 3 }}>
+                            <List dense>
+                                {filteredWorks.map(w => (
+                                    <ListItem key={w._id as string}>
+                                        <ListItemText primary={w.name} secondary={w.measurementUnitRepresentationSymbol} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                    )}
+                </DialogContent>
+            </>}
         </Dialog>;
     }
 
