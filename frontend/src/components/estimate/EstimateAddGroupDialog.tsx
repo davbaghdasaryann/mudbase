@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, FormControl, InputLabel, Select, MenuItem,
-    Stack, TextField, CircularProgress,
+    Stack, CircularProgress, OutlinedInput,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -73,7 +73,7 @@ export default function EstimateAddGroupDialog({ estimateId, onClose, onConfirm 
                         <InputLabel>{t('Section')}</InputLabel>
                         <Select
                             value={selectedSectionId}
-                            onChange={e => setSelectedSectionId(e.target.value)}
+                            onChange={e => { setSelectedSectionId(e.target.value); setGroupName(''); }}
                             label={t('Section')}
                         >
                             {sections.map(s => (
@@ -84,18 +84,17 @@ export default function EstimateAddGroupDialog({ estimateId, onClose, onConfirm 
                         </Select>
                     </FormControl>
 
-                    {selectedSectionId && (
-                        <TextField
-                            fullWidth
+                    <FormControl fullWidth disabled={!selectedSectionId || submitting}>
+                        <InputLabel shrink={!!groupName}>{t('Group Name')}</InputLabel>
+                        <OutlinedInput
                             label={t('Group Name')}
-                            placeholder={t('Enter group name')}
                             value={groupName}
                             onChange={e => setGroupName(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
-                            autoFocus
-                            disabled={submitting}
+                            placeholder={selectedSectionId ? t('Enter group name') : ''}
+                            autoFocus={!!selectedSectionId}
                         />
-                    )}
+                    </FormControl>
                 </Stack>
             </DialogContent>
             <DialogActions>

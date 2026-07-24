@@ -75,3 +75,4 @@ required:
   widgetType: required.widgetType
   dataSource: required.dataSource
   widgetId: required.widgetId
+smallScaleConstructionMaterials: smallScaleConstructionMaterials
