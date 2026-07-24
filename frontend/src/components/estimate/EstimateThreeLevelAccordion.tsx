@@ -188,6 +188,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [openAddSectionDialog, setOpenAddSectionDialog] = useState(false);
     const [openAddGroupDialog, setOpenAddGroupDialog] = useState(false);
     const [groupRowIds, setGroupRowIds] = useState<Set<string>>(new Set());
+    const [openAsGroupRow, setOpenAsGroupRow] = useState(false);
 
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
     const [estimateRenameDialogLabel, setEstimateRenameDialogLabel] = useState<string | null>(null);
@@ -1786,6 +1787,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                                 setEstimatedLaborItemId(cell.row._id as string);
                                                                                                 setCurrentSubsectionId(child._id);
                                                                                                 setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                                                setOpenAsGroupRow(true);
                                                                                                 setOpenAddOfferDialogType('labor');
                                                                                             }}
                                                                                         >
@@ -1866,6 +1868,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     <Button
                                                                         variant='contained'
                                                                         onClick={() => {
+                                                                            setOpenAsGroupRow(false);
                                                                             setOpenAddOfferDialogType('labor');
                                                                             setSelectedChildId(child._id);
                                                                             setCurrentSubsectionId(child._id);
@@ -1984,12 +1987,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             isEstimation={true}
                             estimateSubsectionId={currentSubsectionId}
                             estimatedLaborId={estimatedLaborItemId}
-                            isGroupRow={estimatedLaborItemId ? groupRowIds.has(estimatedLaborItemId) : false}
+                            isGroupRow={openAsGroupRow}
                             onConfirm={() => {
                                 refreshEverything(false);
                             }}
                             onClose={() => {
                                 setOpenAddOfferDialogType(null);
+                                setOpenAsGroupRow(false);
                                 setSelectedChildId(null);
                                 setCurrentSubsectionId(null);
                                 setCurrentSectionId(null);
