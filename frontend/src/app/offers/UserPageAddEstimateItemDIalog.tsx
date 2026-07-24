@@ -27,6 +27,7 @@ import DataTableComponent from "@/components/DataTableComponent";
 import { t } from "i18next";
 import { formatCurrency } from "@/lib/format_currency";
 import MaterialsLeftPaneContent from "@/app/offers/MaterialsLeftPaneContent";
+import EstimateGroupLibraryDialog from '@/components/estimate/EstimateGroupLibraryDialog';
 
 
 interface Props {
@@ -147,16 +148,12 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
     const [groupSelectedWorks, setGroupSelectedWorks] = React.useState<LaborItemDisplayData[]>([]);
     const [groupShowLibrary, setGroupShowLibrary] = React.useState(false);
+    const [groupMainSearch, setGroupMainSearch] = React.useState('');
 
     if (props.isGroupRow) {
-        const handleAddWorkClick = () => {
-            setGroupShowLibrary(true);
-        };
-
-        const handleSelectWork = (row: LaborItemDisplayData) => {
-            setGroupSelectedWorks(prev => prev.find(w => w._id === row._id) ? prev : [...prev, row]);
-            setGroupShowLibrary(false);
-        };
+        const filteredWorks = groupSelectedWorks.filter(w =>
+            !groupMainSearch || (w.name ?? '').toLowerCase().includes(groupMainSearch.toLowerCase())
+        );
 
         return <Dialog
             fullScreen
@@ -170,53 +167,26 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 <CloseIcon />
             </IconButton>
             <DialogContent>
-                {/* Search bar — right-aligned */}
+                {/* Search bar (right-aligned) — filters the added works list */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                    <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}>
+                    <Box sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}>
                         <InputBase
                             sx={{ ml: 1, flex: 1 }}
                             placeholder={t('Search')}
-                            onChange={searchTextChange}
-                            value={searchVal}
+                            value={groupMainSearch}
+                            onChange={e => setGroupMainSearch(e.target.value)}
                         />
-                        <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
-                        <Button onClick={searchTextSubmit}><DirectionsIcon /></Button>
                     </Box>
                 </Box>
 
-                {/* Add work button */}
-                <Button variant='contained' onClick={handleAddWorkClick}>{t('Add work')}</Button>
+                {/* Add work button — opens the library */}
+                <Button variant='contained' onClick={() => setGroupShowLibrary(true)}>{t('Add work')}</Button>
 
-                {/* Library results */}
-                {groupShowLibrary && (
-                    <DataTableComponent
-                        sx={{ width: '100%', mt: 2 }}
-                        columns={[
-                            { field: 'fullCode', headerName: t('ID'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
-                            { field: 'name', headerName: t('Label'), headerAlign: 'left', flex: 0.5, disableColumnMenu: true },
-                            { field: 'measurementUnitRepresentationSymbol', headerName: t('Measurement Unit'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true },
-                            { field: 'averagePrice', headerName: t('Average Price'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
-                            {
-                                field: 'select', type: 'actions', headerName: '', flex: 0.1,
-                                renderCell: (cell: any) => (
-                                    <IconButton onClick={() => handleSelectWork(cell.row as LaborItemDisplayData)}>
-                                        <AddToPhotosIcon />
-                                    </IconButton>
-                                ),
-                            },
-                        ]}
-                        rows={offerList ?? []}
-                        disableRowSelectionOnClick
-                        getRowId={(row: any) => row._id}
-                    />
-                )}
-
-                {/* Selected works list */}
-                {groupSelectedWorks.length > 0 && (
+                {/* Added works list below the button */}
+                {filteredWorks.length > 0 && (
                     <Box sx={{ mt: 3 }}>
-                        <Typography variant='subtitle2' sx={{ mb: 1 }}>{t('Added works')}</Typography>
                         <List dense>
-                            {groupSelectedWorks.map(w => (
+                            {filteredWorks.map(w => (
                                 <ListItem key={w._id as string}>
                                     <ListItemText primary={w.name} secondary={w.measurementUnitRepresentationSymbol} />
                                 </ListItem>
@@ -225,6 +195,17 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     </Box>
                 )}
             </DialogContent>
+
+            {/* Library dialog opens on top */}
+            {groupShowLibrary && (
+                <EstimateGroupLibraryDialog
+                    onClose={() => setGroupShowLibrary(false)}
+                    onSelect={work => {
+                        setGroupSelectedWorks(prev => prev.find(w => w._id === work._id) ? prev : [...prev, work]);
+                        setGroupShowLibrary(false);
+                    }}
+                />
+            )}
         </Dialog>;
     }
 
