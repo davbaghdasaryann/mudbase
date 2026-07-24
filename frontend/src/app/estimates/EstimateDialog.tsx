@@ -20,7 +20,6 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
-import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -99,11 +98,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const handleCreateSection = () => {
         accordionRef.current?.openAddSectionDialog();
     };
-
-    const handleCreateGroup = () => {
-        accordionRef.current?.openAddGroupDialog();
-    };
-
 
     // Handler for Works List button
     const handleWorksListClick = () => {
@@ -439,7 +433,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             {/* Tool buttons */}
                             {[
                                 { labelKey: 'Create Section', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateSection },
-                                { labelKey: 'Create Group', iconNode: <CreateNewFolderOutlinedIcon sx={{ fontSize: 22, color: '#0077cc' }} />, onClick: handleCreateGroup },
                                 {
                                     labelKey: selectedLaborIds.length > 0 ? 'Add to Favorites' : 'Import from Favorites',
                                     icon: `${TOOLBAR_ICON}/favourites.svg`,

@@ -1842,6 +1842,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         {t('Add Empty Row')}
                                                                     </Button>
                                                                     <Button
+                                                                        variant='outlined'
+                                                                        onClick={() => handleAddEmptyRow(child._id, true)}
+                                                                    >
+                                                                        {t('Create Group')}
+                                                                    </Button>
+                                                                    <Button
                                                                         variant='contained'
                                                                         onClick={() => {
                                                                             setOpenAddOfferDialogType('labor');
@@ -1889,6 +1895,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 onClick={() => handleAddEmptyRow(item._id)}
                                             >
                                                 {t('Add Empty Row')}
+                                            </Button>
+                                            <Button
+                                                variant='outlined'
+                                                sx={{ height: 40 }}
+                                                onClick={() => handleAddEmptyRow(item._id)}
+                                            >
+                                                {t('Create Group')}
                                             </Button>
                                             <Button
                                                 fullWidth
