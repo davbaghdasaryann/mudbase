@@ -1984,6 +1984,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             isEstimation={true}
                             estimateSubsectionId={currentSubsectionId}
                             estimatedLaborId={estimatedLaborItemId}
+                            isGroupRow={estimatedLaborItemId ? groupRowIds.has(estimatedLaborItemId) : false}
                             onConfirm={() => {
                                 refreshEverything(false);
                             }}

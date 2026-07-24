@@ -35,11 +35,9 @@ interface Props {
     isEstimation: boolean;
     estimateSubsectionId?: string | null;
     estimateSectionId?: string | null;
-
     estimatedLaborId?: string | null;
-
+    isGroupRow?: boolean;
     onConfirm: () => void;
-
 }
 
 
@@ -146,6 +144,34 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
 
 
+
+    if (props.isGroupRow) {
+        return <Dialog
+            fullScreen
+            open={open}
+            onClose={handleClose}
+            slotProps={{ paper: { style: { padding: 5, borderRadius: '12px' } } }}
+            sx={{ '& .MuiDialog-container': { alignItems: 'center', justifyContent: 'center', padding: 5 } }}
+        >
+            <DialogTitle sx={{ m: 0, p: 2 }}>{t('Add work')}</DialogTitle>
+            <IconButton aria-label="close" onClick={handleClose} sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
+                <CloseIcon />
+            </IconButton>
+            <DialogContent>
+                <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', backgroundColor: '#242c37', width: 300, m: 1 }}>
+                    <InputBase
+                        sx={{ ml: 1, flex: 1 }}
+                        placeholder='Search'
+                        onChange={searchTextChange}
+                        value={searchVal}
+                    />
+                    <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
+                    <Button onClick={searchTextSubmit}><DirectionsIcon /></Button>
+                </Box>
+                <Button variant='contained' sx={{ mt: 2, ml: 1 }}>{t('Add work')}</Button>
+            </DialogContent>
+        </Dialog>;
+    }
 
     if (offerList) {
         return <Dialog
