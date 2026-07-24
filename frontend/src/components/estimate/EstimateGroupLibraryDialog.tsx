@@ -26,15 +26,18 @@ export default function EstimateGroupLibraryDialog({ onClose, onSelect }: Props)
     const [results, setResults] = useState<LaborItemDisplayData[] | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleSearch = useCallback(() => {
+    const handleSearch = useCallback((val?: string) => {
+        const query = (val ?? searchVal).trim() || 'empty';
         setLoading(true);
         Api.requestSession<LaborsApi.ApiLaborItems[]>({
             command: 'labor/fetch_items_with_average_price',
-            args: { searchVal: searchVal.trim() || 'empty', isSorting: true },
+            args: { searchVal: query, isSorting: true },
         }).then(data => {
             setResults((data ?? []).map(d => new LaborItemDisplayData(d)));
         }).finally(() => setLoading(false));
     }, [searchVal]);
+
+    React.useEffect(() => { handleSearch('empty'); }, []);
 
     return (
         <Dialog
@@ -62,7 +65,7 @@ export default function EstimateGroupLibraryDialog({ onClose, onSelect }: Props)
                             onChange={e => setSearchVal(e.target.value)}
                         />
                         <Divider sx={{ height: 28, m: 0.5 }} orientation='vertical' />
-                        <Button onClick={handleSearch}><DirectionsIcon /></Button>
+                        <Button onClick={() => handleSearch()}><DirectionsIcon /></Button>
                     </Box>
                 </Box>
 
