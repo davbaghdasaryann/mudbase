@@ -232,6 +232,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const expandedAccordionsRef = useRef<string[]>([]);
 
     const [anchorEl, setAnchorEl] = useState(null);
+    const [groupIconAnchorEl, setGroupIconAnchorEl] = useState<HTMLElement | null>(null);
 
     const mounted = useRef(false);
     const [dataRequested, setDataRequested] = useState(false);
@@ -1779,18 +1780,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         renderCell: (cell) => {
                                                                             return (
                                                                                 <>
-                                                                                    <IconButton
-                                                                                        onClick={() => {
-                                                                                            setSelectedChildId(child._id);
-                                                                                            setEstimatedLaborItemId(cell.row._id as string);
-                                                                                            setOpenAddOfferDialogType('material');
-                                                                                            setEstimatedLaborItemName(cell.row.itemChangableName as string);
-                                                                                        }}
-                                                                                    >
-                                                                                        {groupRowIds.has(cell.row._id as string)
-                                                                                            ? <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
-                                                                                            : <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />}
-                                                                                    </IconButton>
+                                                                                    {groupRowIds.has(cell.row._id as string) ? (
+                                                                                        <IconButton onClick={e => setGroupIconAnchorEl(e.currentTarget)}>
+                                                                                            <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
+                                                                                        </IconButton>
+                                                                                    ) : (
+                                                                                        <IconButton
+                                                                                            onClick={() => {
+                                                                                                setSelectedChildId(child._id);
+                                                                                                setEstimatedLaborItemId(cell.row._id as string);
+                                                                                                setOpenAddOfferDialogType('material');
+                                                                                                setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                                            }}
+                                                                                        >
+                                                                                            <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
+                                                                                        </IconButton>
+                                                                                    )}
                                                                                 </>
                                                                             );
                                                                         },
@@ -1882,6 +1887,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     </MenuItem>
                                                                 </Menu>
                                                             )}
+                                                            <Menu anchorEl={groupIconAnchorEl} open={Boolean(groupIconAnchorEl)} onClose={() => setGroupIconAnchorEl(null)}>
+                                                                <MenuItem onClick={() => setGroupIconAnchorEl(null)}>
+                                                                    {t('Add work')}
+                                                                </MenuItem>
+                                                            </Menu>
                                                         </>
                                                     )}
                                                 </AccordionDetails>
