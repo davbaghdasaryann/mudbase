@@ -12,6 +12,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 
 import * as Api from '@/api';
 import * as EstimateApi from '@/api/estimate';
@@ -1782,11 +1783,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                             setEstimatedLaborItemName(cell.row.itemChangableName as string);
                                                                                         }}
                                                                                     >
-                                                                                        {/* <ScienceIcon sx={{ color: mainIconColor }} /> */}
-                                                                                        <ImgElement
-                                                                                            src='/images/icons/material.svg'
-                                                                                            sx={{ height: materialIconHeight }}
-                                                                                        />
+                                                                                        <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
                                                                                     </IconButton>
                                                                                 </>
                                                                             );
@@ -1843,6 +1840,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     </Button>
                                                                     <Button
                                                                         variant='outlined'
+                                                                        sx={{ color: '#FF9D00', borderColor: '#FF9D00', '&:hover': { borderColor: '#FF9D00', background: 'rgba(255,157,0,0.06)' } }}
                                                                         onClick={() => handleAddEmptyRow(child._id, true)}
                                                                     >
                                                                         {t('Create Group')}
@@ -1898,7 +1896,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             </Button>
                                             <Button
                                                 variant='outlined'
-                                                sx={{ height: 40 }}
+                                                sx={{ height: 40, color: '#FF9D00', borderColor: '#FF9D00', '&:hover': { borderColor: '#FF9D00', background: 'rgba(255,157,0,0.06)' } }}
                                                 onClick={() => handleAddEmptyRow(item._id)}
                                             >
                                                 {t('Create Group')}
