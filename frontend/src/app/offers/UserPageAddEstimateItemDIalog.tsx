@@ -156,7 +156,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
         setGroupLibraryLoading(true);
         Api.requestSession<LaborsApi.ApiLaborItems[]>({
             command: 'labor/fetch_items_with_average_price',
-            args: { searchVal: val.trim() || 'empty', isSorting: true },
+            args: { searchVal: val.trim(), isSorting: true },
         }).then(data => {
             setGroupLibraryResults((data ?? []).map((d: LaborsApi.ApiLaborItems) => new LaborItemDisplayData(d)));
         }).finally(() => setGroupLibraryLoading(false));
