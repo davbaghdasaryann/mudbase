@@ -198,6 +198,7 @@ interface EstimateCatalogAccordionProps {
     estimatedLaborId?: string | null;
     hideToolbar?: boolean;
     onSearchRef?: React.MutableRefObject<((val: string) => void) | null>;
+    onItemSelect?: (item: any) => void;
 }
 
 // ✅ Nested Accordion Component
@@ -857,29 +858,24 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
                                                                             field: 'info', type: 'actions', headerName: t('Add'), flex: 0.2, renderCell: (cell) => {
                                                                                 return <>
                                                                                     <IconButton onClick={() => {
-                                                                                        console.log('cell', cell)
-
-                                                                                        //🔴 TODO: this will need us in version 2 🔴
+                                                                                        if (props.onItemSelect) {
+                                                                                            props.onItemSelect(cell.row);
+                                                                                            return;
+                                                                                        }
                                                                                         if (props.catalogType === 'labor') {
                                                                                             let laborHours = (cell.row as LaborItemDisplayData).laborHours
                                                                                             if (laborHours !== undefined) {
                                                                                                 setLaborHours(laborHours)
                                                                                             }
-
                                                                                         }
                                                                                         setAveragePrice(cell.row.averagePrice ? parseInt(cell.row.averagePrice) : null);
                                                                                         setOfferItemMeasurementUnitMongoId(cell.row.measurementUnitMongoId)
                                                                                         setOfferItemName(cell.row.label)
                                                                                         setOfferItemId(cell.row._id)
-
-                                                                                    }
-                                                                                    }
-
-                                                                                    >
+                                                                                    }}>
                                                                                         <AddToPhotosIcon sx={{ color: '#00ABBE' }} />
                                                                                     </IconButton>
                                                                                 </>;
-
                                                                             }
                                                                         }
                                                                     ]}
@@ -934,7 +930,7 @@ export default function EstimateCatalogAccordion(props: EstimateCatalogAccordion
 
 
             {/* //🔴 TODO: this will need us in version 2 🔴 */}
-            {(offerItemId && offerItemName && offerItemMeasurementUnitMongoId && props.catalogType === 'labor') && <EstimateAddItemFromOffersDialog onConfirm={props.onConfirm} estimateSectionId={props.estimateSectionId} laborHours={laborHours ?? 0} averagePrice={averagePrice} onClose={() => { setOfferItemId(null) }} offerItemMeasurementUnitMongoId={offerItemMeasurementUnitMongoId} estimateItemId={offerItemId} estimateOfferId={null} estimatedLaborId={props.estimatedLaborId} estimateSubsectionId={props.estimateSubsectionId} offerItemNameForEstimation={offerItemName} estimateOfferItemType={props.catalogType} />}
+            {(offerItemId && offerItemName && offerItemMeasurementUnitMongoId && props.catalogType === 'labor' && !props.onItemSelect) && <EstimateAddItemFromOffersDialog onConfirm={props.onConfirm} estimateSectionId={props.estimateSectionId} laborHours={laborHours ?? 0} averagePrice={averagePrice} onClose={() => { setOfferItemId(null) }} offerItemMeasurementUnitMongoId={offerItemMeasurementUnitMongoId} estimateItemId={offerItemId} estimateOfferId={null} estimatedLaborId={props.estimatedLaborId} estimateSubsectionId={props.estimateSubsectionId} offerItemNameForEstimation={offerItemName} estimateOfferItemType={props.catalogType} />}
             {/* {(offerItemId && offerItemName && offerItemMeasurementUnitMongoId && props.catalogType === 'labor') && <EstimateAddItemFromOffersDialog onConfirm={props.onConfirm} estimateSectionId={props.estimateSectionId} averagePrice={averagePrice} onClose={() => { setOfferItemId(null) }} offerItemMeasurementUnitMongoId={offerItemMeasurementUnitMongoId} estimateItemId={offerItemId} estimateOfferId={null} estimatedLaborId={props.estimatedLaborId} estimateSubsectionId={props.estimateSubsectionId} offerItemNameForEstimation={offerItemName} estimateOfferItemType={props.catalogType} />} */}
 
         </>
