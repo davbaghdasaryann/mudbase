@@ -151,7 +151,6 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
     if (props.isGroupRow) {
         const handleAddWorkClick = () => {
             setGroupShowLibrary(true);
-            setDataRequested(false);
         };
 
         const handleSelectWork = (row: LaborItemDisplayData) => {
@@ -189,7 +188,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 <Button variant='contained' onClick={handleAddWorkClick}>{t('Add work')}</Button>
 
                 {/* Library results */}
-                {groupShowLibrary && offerList && (
+                {groupShowLibrary && (
                     <DataTableComponent
                         sx={{ width: '100%', mt: 2 }}
                         columns={[
@@ -206,7 +205,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                 ),
                             },
                         ]}
-                        rows={offerList}
+                        rows={offerList ?? []}
                         disableRowSelectionOnClick
                         getRowId={(row: any) => row._id}
                     />
