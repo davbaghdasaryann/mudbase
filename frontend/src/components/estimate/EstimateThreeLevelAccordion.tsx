@@ -187,6 +187,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [openAddSubsectionDialogCurrentSectionId, setOpenAddSubsectionDialogCurrentSectionId] = useState<string | null>(null);
     const [openAddSectionDialog, setOpenAddSectionDialog] = useState(false);
     const [openAddGroupDialog, setOpenAddGroupDialog] = useState(false);
+    const [groupRowIds, setGroupRowIds] = useState<Set<string>>(new Set());
 
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
     const [estimateRenameDialogLabel, setEstimateRenameDialogLabel] = useState<string | null>(null);
@@ -456,7 +457,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         });
     };
 
-    const handleAddEmptyRow = async (targetId: string, isSubsection: boolean = false) => {
+    const handleAddEmptyRow = async (targetId: string, isSubsection: boolean = false, isGroup: boolean = false) => {
         // Determine the subsection ID for the API call
         let subsectionIdForApi: string;
         let sectionHadNoChildren = false;
@@ -485,6 +486,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             });
 
             if (response && response.insertedId) {
+                if (isGroup) {
+                    setGroupRowIds(prev => new Set([...prev, response.insertedId]));
+                }
                 // If the section had no children yet, the backend created a new subsection.
                 // Local state has no subsection to patch into, so re-fetch from backend.
                 if (sectionHadNoChildren) {
@@ -1783,7 +1787,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                             setEstimatedLaborItemName(cell.row.itemChangableName as string);
                                                                                         }}
                                                                                     >
-                                                                                        <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
+                                                                                        {groupRowIds.has(cell.row._id as string)
+                                                                                            ? <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
+                                                                                            : <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />}
                                                                                     </IconButton>
                                                                                 </>
                                                                             );
@@ -1841,7 +1847,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     <Button
                                                                         variant='outlined'
                                                                         sx={{ color: '#FF9D00', borderColor: '#FF9D00', '&:hover': { borderColor: '#FF9D00', background: 'rgba(255,157,0,0.06)' } }}
-                                                                        onClick={() => handleAddEmptyRow(child._id, true)}
+                                                                        onClick={() => handleAddEmptyRow(child._id, true, true)}
                                                                     >
                                                                         {t('Create Group')}
                                                                     </Button>
@@ -1897,7 +1903,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                             <Button
                                                 variant='outlined'
                                                 sx={{ height: 40, color: '#FF9D00', borderColor: '#FF9D00', '&:hover': { borderColor: '#FF9D00', background: 'rgba(255,157,0,0.06)' } }}
-                                                onClick={() => handleAddEmptyRow(item._id)}
+                                                onClick={() => handleAddEmptyRow(item._id, false, true)}
                                             >
                                                 {t('Create Group')}
                                             </Button>
