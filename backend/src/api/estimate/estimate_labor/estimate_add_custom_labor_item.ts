@@ -76,6 +76,8 @@ registerApiSession('estimate/add_custom_labor_item', async (req, res, session) =
     const defaultMeasurementUnit = await measurementUnitsCollection.findOne({});
     const measurementUnitId = defaultMeasurementUnit?._id || new ObjectId('000000000000000000000001');
 
+    const isGroupRowParam = getReqParam(req, 'isGroupRow');
+
     let estimateLaborItem: Db.EntityEstimateLaborItem = {} as Db.EntityEstimateLaborItem;
 
     if (estimateSubsectionId) {
@@ -89,6 +91,9 @@ registerApiSession('estimate/add_custom_labor_item', async (req, res, session) =
     estimateLaborItem.changableAveragePrice = 0;
     estimateLaborItem.laborHours = 0;
     estimateLaborItem.laborOfferItemName = '';
+    if (isGroupRowParam === 'true') {
+        estimateLaborItem.isGroupRow = true;
+    }
 
     let newEstimateLaborItem = await estimateLaborItems.insertOne(estimateLaborItem);
 

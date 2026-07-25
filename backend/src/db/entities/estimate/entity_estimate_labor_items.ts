@@ -16,6 +16,9 @@ export interface EntityEstimateLaborItem {
 
     laborOfferItemName: string;
 
+    /** When true, this row was created via "Create Group" button. */
+    isGroupRow?: boolean;
+
     /** Order within subsection (for drag reorder). */
     displayIndex?: number;
 

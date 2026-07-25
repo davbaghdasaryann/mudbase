@@ -88,6 +88,9 @@ interface AccordionItem {
 
     /** When true, not counted in estimation; row shown as inactive. */
     isHidden?: boolean;
+
+    /** When true, row was created via "Create Group" button. */
+    isGroupRow?: boolean;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -187,7 +190,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
     const [openAddSubsectionDialogCurrentSectionId, setOpenAddSubsectionDialogCurrentSectionId] = useState<string | null>(null);
     const [openAddSectionDialog, setOpenAddSectionDialog] = useState(false);
     const [openAddGroupDialog, setOpenAddGroupDialog] = useState(false);
-    const [groupRowIds, setGroupRowIds] = useState<Set<string>>(new Set());
     const [openAsGroupRow, setOpenAsGroupRow] = useState(false);
 
     const [estimateRenameId, setEstimateRenameId] = useState<string | null>(null);
@@ -482,14 +484,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             const response = await Api.requestSession<{insertedId: string}>({
                 command: 'estimate/add_custom_labor_item',
                 args: isSubsection
-                    ? { estimateSubsectionId: subsectionIdForApi }
-                    : { estimateSectionId: targetId },
+                    ? { estimateSubsectionId: subsectionIdForApi, ...(isGroup ? { isGroupRow: 'true' } : {}) }
+                    : { estimateSectionId: targetId, ...(isGroup ? { isGroupRow: 'true' } : {}) },
             });
 
             if (response && response.insertedId) {
-                if (isGroup) {
-                    setGroupRowIds(prev => new Set([...prev, response.insertedId]));
-                }
                 // If the section had no children yet, the backend created a new subsection.
                 // Local state has no subsection to patch into, so re-fetch from backend.
                 if (sectionHadNoChildren) {
@@ -514,6 +513,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                     priceWithMaterial: 0,
                     unitPrice: 0,
                     itemLaborHours: 0,
+                    isGroupRow: isGroup,
                 };
 
                 setSections((prev) => {
@@ -618,6 +618,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
         itemArr.priceSource = item.priceSource;
         itemArr.isHidden = item.isHidden === true;
+        itemArr.isGroupRow = item.isGroupRow === true;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -1780,7 +1781,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         renderCell: (cell) => {
                                                                             return (
                                                                                 <>
-                                                                                    {groupRowIds.has(cell.row._id as string) ? (
+                                                                                    {(cell.row as AccordionItem).isGroupRow ? (
                                                                                         <IconButton
                                                                                             onClick={() => {
                                                                                                 setSelectedChildId(child._id);
