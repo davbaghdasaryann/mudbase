@@ -24,6 +24,7 @@ export class EstimateLaborItemDisplayData {
     presentItemOfferAveragePrice?: number;
     priceSource?: 'market' | 'my_offer';
     isHidden?: boolean;
+    isGroupRow?: boolean;
 
     itemLaborHours?: number; //🔴 TODO: this will need us in version 2 🔴
 
@@ -54,6 +55,7 @@ export class EstimateLaborItemDisplayData {
         this.presentItemOfferAveragePrice = roundToThree(estimateLaborItem.presentLaborOfferAveragePrice);
         this.priceSource = estimateLaborItem.priceSource;
         this.isHidden = estimateLaborItem.isHidden === true;
+        this.isGroupRow = estimateLaborItem.isGroupRow === true;
 
         if (estimateLaborItem.estimateLaborItemData) {
             if (estimateLaborItem.estimateLaborItemData.length > 0) {

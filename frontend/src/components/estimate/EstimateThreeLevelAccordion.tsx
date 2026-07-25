@@ -692,6 +692,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             itemAveragePrice: roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0)),
                             priceSource: item.priceSource,
                             isHidden: item.isHidden === true,
+                            isGroupRow: item.isGroupRow === true,
                             materialUnitPrice: roundToThree(item.materialUnitPrice),
                             materialQuantity: item.materialQuantity,
                         };
@@ -761,6 +762,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
             itemArr.priceSource = item.priceSource;
             itemArr.isHidden = item.isHidden === true;
+            itemArr.isGroupRow = item.isGroupRow === true;
 
             if (item.itemUnitPrice) {
                 console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
