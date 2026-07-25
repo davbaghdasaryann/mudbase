@@ -33,6 +33,7 @@ interface GroupWorkRow {
     itemFullCode: string;
     itemChangableName: string;
     itemMeasurementUnit: string;
+    measurementUnitMongoId: string;
     itemChangableAveragePrice: number | null;
     itemLaborHours: number | null;
     quantity: number | null;
@@ -40,6 +41,7 @@ interface GroupWorkRow {
     materialTotalCost: number;
     priceWithMaterial: number | null;
     unitPrice: number | null;
+    savedEstimateId?: string;
 }
 
 interface Props {
@@ -169,6 +171,32 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             !groupMainSearch || (w.itemChangableName ?? '').toLowerCase().includes(groupMainSearch.toLowerCase())
         );
 
+        const handleGroupMaterialClick = async (row: GroupWorkRow) => {
+            let laborId = row.savedEstimateId;
+            if (!laborId) {
+                const result = await Api.requestSession<any>({
+                    command: 'estimate/add_labor_item',
+                    args: {
+                        estimateSubsectionId: props.estimateSubsectionId,
+                        laborItemQuantity: row.quantity ?? 0,
+                        laborOffersAveragePrice: row.itemChangableAveragePrice ?? 0,
+                        laborItemId: row._id,
+                        laborOfferItemLaborHours: row.itemLaborHours ?? 0,
+                        laborItemMeasurementUnitMongoId: row.measurementUnitMongoId,
+                        laborOfferItemName: row.itemChangableName,
+                    },
+                });
+                laborId = result?.newEstimateLaborItem?.insertedId;
+                if (laborId) {
+                    setGroupSelectedWorks(prev => prev.map(w => w._id === row._id ? { ...w, savedEstimateId: laborId } : w));
+                }
+            }
+            if (laborId) {
+                setGroupMaterialRowId(laborId);
+                setGroupMaterialRowName(row.itemChangableName);
+            }
+        };
+
         const handleGroupRowUpdate = (newRow: GroupWorkRow): GroupWorkRow => {
             const qty = newRow.quantity != null ? parseFloat(String(newRow.quantity)) : null;
             const price = newRow.itemChangableAveragePrice;
@@ -211,8 +239,9 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                             const newRow: GroupWorkRow = {
                                 _id: item._id,
                                 itemFullCode: item.fullCode ?? '',
-                                itemChangableName: item.label ?? '',
+                                itemChangableName: item.label ?? item.name ?? '',
                                 itemMeasurementUnit: item.measurementUnitRepresentationSymbol ?? '',
+                                measurementUnitMongoId: item.measurementUnitMongoId ?? '',
                                 itemChangableAveragePrice: price,
                                 itemLaborHours: null,
                                 quantity: null,
@@ -263,10 +292,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                     {
                                         field: 'addMaterial', type: 'actions', headerName: t('Materials'), width: 100, disableColumnMenu: true,
                                         renderCell: (cell: any) => (
-                                            <IconButton onClick={() => {
-                                                setGroupMaterialRowId(cell.row._id);
-                                                setGroupMaterialRowName(cell.row.itemChangableName);
-                                            }}>
+                                            <IconButton onClick={() => handleGroupMaterialClick(cell.row)}>
                                                 <ImgElement src='/images/icons/material.svg' sx={{ height: 20 }} />
                                             </IconButton>
                                         ),
