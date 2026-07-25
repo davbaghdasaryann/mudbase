@@ -20,6 +20,7 @@ export interface ApiEstimateLaborItem{
     /** When true, not counted in estimation; can be unhidden. */
     isHidden?: boolean;
     isGroupRow?: boolean;
+    groupTotalCost?: number | null;
 
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;
