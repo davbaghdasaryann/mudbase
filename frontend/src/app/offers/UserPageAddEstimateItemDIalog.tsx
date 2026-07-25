@@ -79,6 +79,9 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
     const handleClose = () => {
         setOpen(false);
+        if (props.isGroupRow) {
+            props.onConfirm();
+        }
         props.onClose();
     };
 
@@ -303,7 +306,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                         catalogType='labor'
                         onConfirm={() => {}}
                         hideToolbar
-                        onItemSelect={(item) => {
+                        onItemSelect={async (item) => {
                             if (groupSelectedWorks.find(w => w._id === String(item._id))) {
                                 setGroupShowLibrary(false);
                                 return;
@@ -323,31 +326,31 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                 priceWithMaterial: null,
                                 unitPrice: null,
                             };
+                            // Await save before showing the row — ensures savedEstimateId is always
+                            // set when the row appears, so quantity/price edits persist immediately.
+                            if (props.estimateSubsectionId && props.estimatedLaborId && item.measurementUnitMongoId) {
+                                try {
+                                    const result = await Api.requestSession<any>({
+                                        command: 'estimate/add_labor_item',
+                                        args: {
+                                            estimateSubsectionId: props.estimateSubsectionId,
+                                            laborItemQuantity: 0,
+                                            laborOffersAveragePrice: price ?? 0,
+                                            laborItemId: String(item._id),
+                                            laborOfferItemLaborHours: 0,
+                                            laborItemMeasurementUnitMongoId: String(item.measurementUnitMongoId),
+                                            laborOfferItemName: newRow.itemChangableName,
+                                            parentGroupRowId: props.estimatedLaborId,
+                                        },
+                                    });
+                                    const savedId = result?.newEstimateLaborItem?.insertedId;
+                                    if (savedId) newRow.savedEstimateId = String(savedId);
+                                } catch (e) {
+                                    console.error(e);
+                                }
+                            }
                             setGroupSelectedWorks(prev => [...prev, newRow]);
                             setGroupShowLibrary(false);
-                            // Auto-save to backend so it persists on refresh and is counted in group totals
-                            if (props.estimateSubsectionId && props.estimatedLaborId && item.measurementUnitMongoId) {
-                                Api.requestSession<any>({
-                                    command: 'estimate/add_labor_item',
-                                    args: {
-                                        estimateSubsectionId: props.estimateSubsectionId,
-                                        laborItemQuantity: 0,
-                                        laborOffersAveragePrice: price ?? 0,
-                                        laborItemId: String(item._id),
-                                        laborOfferItemLaborHours: 0,
-                                        laborItemMeasurementUnitMongoId: String(item.measurementUnitMongoId),
-                                        laborOfferItemName: newRow.itemChangableName,
-                                        parentGroupRowId: props.estimatedLaborId,
-                                    },
-                                }).then(result => {
-                                    const savedId = result?.newEstimateLaborItem?.insertedId;
-                                    if (savedId) {
-                                        setGroupSelectedWorks(prev => prev.map(w =>
-                                            w._id === newRow._id ? { ...w, savedEstimateId: String(savedId) } : w
-                                        ));
-                                    }
-                                }).catch(console.error);
-                            }
                         }}
                     />
                 </DialogContent>
