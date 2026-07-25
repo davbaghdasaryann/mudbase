@@ -201,7 +201,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                             },
                         },
                     },
-                    { $group: { _id: null, groupTotalCost: { $sum: '$childTotal' }, childCount: { $sum: 1 } } },
+                    { $group: { _id: null, groupTotalCost: { $sum: '$childTotal' }, groupMaterialCost: { $sum: { $ifNull: ['$matAgg.matCost', 0] } }, childCount: { $sum: 1 } } },
                 ],
                 as: 'groupChildAgg',
             },
@@ -210,6 +210,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         {
             $addFields: {
                 groupTotalCost: { $ifNull: ['$groupChildAgg.groupTotalCost', null] },
+                groupMaterialCost: { $ifNull: ['$groupChildAgg.groupMaterialCost', null] },
                 groupChildCount: { $ifNull: ['$groupChildAgg.childCount', 0] },
             },
         },

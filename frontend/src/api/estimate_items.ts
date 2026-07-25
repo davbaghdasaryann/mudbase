@@ -21,6 +21,7 @@ export interface ApiEstimateLaborItem{
     isHidden?: boolean;
     isGroupRow?: boolean;
     groupTotalCost?: number | null;
+    groupMaterialCost?: number | null;
 
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;

@@ -94,6 +94,8 @@ interface AccordionItem {
 
     /** For group rows: sum of all child works' (labor + material) costs. */
     groupTotalCost?: number | null;
+    /** For group rows: sum of all child works' material costs. */
+    groupMaterialCost?: number | null;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -623,6 +625,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.isHidden = item.isHidden === true;
         itemArr.isGroupRow = item.isGroupRow === true;
         if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
+        if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -724,6 +727,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             }
                         }
                         if (item.groupTotalCost != null) newItem.groupTotalCost = item.groupTotalCost;
+                        if (item.groupMaterialCost != null) newItem.groupMaterialCost = item.groupMaterialCost;
                         // }
 
                         return newItem;
@@ -795,6 +799,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                 }
             }
             if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
+            if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
             // }
 
             newData.push(itemArr);
@@ -1315,7 +1320,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Material Cost'),
                                                     align: 'center',
                                                     width: 160,
-                                                    valueFormatter: (value) => formatCurrency(value),
+                                                    renderCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        const val = row.isGroupRow && row.groupMaterialCost != null ? row.groupMaterialCost : params.value;
+                                                        return <>{formatCurrency(val)}</>;
+                                                    },
                                                 },
                                                 {
                                                     field: 'priceWithMaterial',
@@ -1757,7 +1766,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         align: 'center',
                                                                         width: 160,
                                                                         disableColumnMenu: true,
-                                                                        valueFormatter: (value) => formatCurrency(value),
+                                                                        renderCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            const val = row.isGroupRow && row.groupMaterialCost != null ? row.groupMaterialCost : params.value;
+                                                                            return <>{formatCurrency(val)}</>;
+                                                                        },
                                                                     },
                                                                     {
                                                                         field: 'priceWithMaterial',

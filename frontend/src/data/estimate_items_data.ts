@@ -26,6 +26,7 @@ export class EstimateLaborItemDisplayData {
     isHidden?: boolean;
     isGroupRow?: boolean;
     groupTotalCost?: number | null;
+    groupMaterialCost?: number | null;
 
     itemLaborHours?: number; //🔴 TODO: this will need us in version 2 🔴
 
@@ -58,6 +59,7 @@ export class EstimateLaborItemDisplayData {
         this.isHidden = estimateLaborItem.isHidden === true;
         this.isGroupRow = estimateLaborItem.isGroupRow === true;
         this.groupTotalCost = estimateLaborItem.groupTotalCost ?? null;
+        this.groupMaterialCost = estimateLaborItem.groupMaterialCost ?? null;
 
         if (estimateLaborItem.estimateLaborItemData) {
             if (estimateLaborItem.estimateLaborItemData.length > 0) {
