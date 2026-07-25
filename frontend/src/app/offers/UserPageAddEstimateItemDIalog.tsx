@@ -21,6 +21,7 @@ import EstimateAddItemFromOffersDialog from "../../components/estimate/EstimateA
 import ProgressIndicator from "../../tsui/ProgressIndicator";
 import EstimateCatalogAccordion from "../../components/pages/EstimateCatalogAccordion";
 import ImgElement from '@/tsui/DomElements/ImgElement';
+import MaterialsTwoPartDialog from '@/app/offers/MaterialsTwoPartDialog';
 import DataTableComponent from "@/components/DataTableComponent";
 import { t } from "i18next";
 import { formatCurrency } from "@/lib/format_currency";
@@ -241,21 +242,20 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     {filteredWorks.length > 0 && (
                         <Box sx={{
                             mt: 3, width: '100%', backgroundColor: '#FFFFFF',
-                            '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF', overflow: 'visible' },
+                            '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
                             '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
-                            '& .MuiDataGrid-cell': { overflow: 'visible' },
-                            '& .editableCell': { border: '1px solid #00BFFF', borderRadius: '5px' },
+                            '& .editableCell': { boxShadow: '0 0 0 1px #00BFFF', borderRadius: '5px' },
                         }}>
                             <DataTableComponent
-                                sx={{ width: '100%', overflow: 'visible' }}
+                                sx={{ width: '100%' }}
                                 processRowUpdate={handleGroupRowUpdate}
                                 columns={[
                                     { field: 'itemFullCode', headerName: t('ID'), align: 'center', width: 90, disableColumnMenu: true },
-                                    { field: 'itemChangableName', headerName: t('Labor'), headerAlign: 'center', flex: 1, disableColumnMenu: true },
+                                    { field: 'itemChangableName', headerName: t('Labor'), headerAlign: 'center', flex: 1, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
                                     { field: 'itemLaborHours', headerName: t('Work per hour'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
                                     { field: 'itemMeasurementUnit', headerName: t('Unit'), align: 'center', width: 80, disableColumnMenu: true },
                                     { field: 'quantity', headerName: t('Quantity'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value: any) => value != null ? formatCurrency(value) : '' },
-                                    { field: 'itemChangableAveragePrice', headerName: t('Price'), align: 'center', width: 120, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'itemChangableAveragePrice', headerName: t('Price'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'itemWithoutMaterial', headerName: t('Without material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'materialTotalCost', headerName: t('Material Cost'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'priceWithMaterial', headerName: t('Price with material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
@@ -279,12 +279,13 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                         </Box>
                     )}
                     {groupMaterialRowId && (
-                        <UserPageAddEstimateItemDialog
+                        <MaterialsTwoPartDialog
                             offerType='material'
                             isEstimation
                             estimatedLaborId={groupMaterialRowId}
+                            estimatedLaborName={groupMaterialRowName}
                             onClose={() => setGroupMaterialRowId(null)}
-                            onConfirm={() => setGroupMaterialRowId(null)}
+                            onConfirm={() => {}}
                         />
                     )}
                 </DialogContent>
