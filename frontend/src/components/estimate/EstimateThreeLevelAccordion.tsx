@@ -1297,7 +1297,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         if (row && isMarketPriceRow(row)) return 'editableCell marketPriceCell';
                                                         return 'editableCell';
                                                     },
-                                                    valueFormatter: (value) => formatCurrency(value),
+                                                    renderCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
+                                                        return <>{formatCurrency(val)}</>;
+                                                    },
                                                 },
                                                 {
                                                     field: 'itemWithoutMaterial',
@@ -1706,7 +1710,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                             return 'editableCell';
                                                                         },
                                                                         disableColumnMenu: true,
-                                                                        valueFormatter: (value) => formatCurrency(value),
+                                                                        renderCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
+                                                                            return <>{formatCurrency(val)}</>;
+                                                                        },
                                                                     },
                                                                     {
                                                                         field: 'itemWithoutMaterial',

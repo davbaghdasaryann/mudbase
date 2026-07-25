@@ -409,8 +409,12 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                             isEstimation
                             estimatedLaborId={groupMaterialRowId}
                             estimatedLaborName={groupMaterialRowName}
-                            onClose={() => setGroupMaterialRowId(null)}
-                            onConfirm={() => { refreshGroupMaterialRow(groupMaterialRowId); }}
+                            onClose={() => {
+                                const id = groupMaterialRowId;
+                                setGroupMaterialRowId(null);
+                                if (id) refreshGroupMaterialRow(id);
+                            }}
+                            onConfirm={() => {}}
                         />
                     )}
                 </DialogContent>
