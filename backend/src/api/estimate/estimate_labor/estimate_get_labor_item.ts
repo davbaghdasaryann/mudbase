@@ -19,6 +19,7 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         {
             $match: {
                 estimateSubsectionId: estimateSubsectionId,
+                parentGroupRowId: { $exists: false },
             },
         },
         {
@@ -162,6 +163,48 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                 filteredOffers: 0, // 🔹 Hide filtered offers if not needed
             },
         },
+        // For group rows: aggregate totals of child works
+        {
+            $lookup: {
+                from: 'estimate_labor_items',
+                let: { groupId: '$_id' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$parentGroupRowId', '$$groupId'] } } },
+                    {
+                        $lookup: {
+                            from: 'estimate_material_items',
+                            let: { laborId: '$_id' },
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$estimatedLaborId', '$$laborId'] } } },
+                                { $group: { _id: null, matCost: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } } } },
+                            ],
+                            as: 'matAgg',
+                        },
+                    },
+                    { $unwind: { path: '$matAgg', preserveNullAndEmptyArrays: true } },
+                    {
+                        $addFields: {
+                            childTotal: {
+                                $add: [
+                                    { $multiply: [{ $ifNull: ['$quantity', 0] }, { $ifNull: ['$changableAveragePrice', 0] }] },
+                                    { $ifNull: ['$matAgg.matCost', 0] },
+                                ],
+                            },
+                        },
+                    },
+                    { $group: { _id: null, groupTotalCost: { $sum: '$childTotal' }, childCount: { $sum: 1 } } },
+                ],
+                as: 'groupChildAgg',
+            },
+        },
+        { $unwind: { path: '$groupChildAgg', preserveNullAndEmptyArrays: true } },
+        {
+            $addFields: {
+                groupTotalCost: { $ifNull: ['$groupChildAgg.groupTotalCost', null] },
+                groupChildCount: { $ifNull: ['$groupChildAgg.childCount', 0] },
+            },
+        },
+        { $project: { groupChildAgg: 0 } },
         { $addFields: { _sortIndex: { $ifNull: ['$displayIndex', 0] } } },
         { $sort: { _sortIndex: 1, _id: 1 } },
         { $project: { _sortIndex: 0 } },
@@ -287,6 +330,61 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
         */
 
     respondJsonData(res, data);
+});
+
+/** Returns child labor items belonging to a group row, with material cost aggregated. */
+registerApiSession('estimate/fetch_group_works', async (req, res, session) => {
+    const parentGroupRowId = requireMongoIdParam(req, 'parentGroupRowId');
+    const col = Db.getEstimateLaborItemsCollection();
+    const items = await col.aggregate([
+        { $match: { parentGroupRowId } },
+        {
+            $lookup: {
+                from: 'labor_items',
+                localField: 'laborItemId',
+                foreignField: '_id',
+                as: 'laborItemData',
+            },
+        },
+        { $unwind: { path: '$laborItemData', preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: 'measurement_unit',
+                localField: 'measurementUnitMongoId',
+                foreignField: '_id',
+                as: 'unitData',
+            },
+        },
+        { $unwind: { path: '$unitData', preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: 'estimate_material_items',
+                let: { laborId: '$_id' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$estimatedLaborId', '$$laborId'] } } },
+                    { $group: { _id: null, matCost: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } } } },
+                ],
+                as: 'matAgg',
+            },
+        },
+        { $unwind: { path: '$matAgg', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                _id: 1,
+                laborItemId: 1,
+                quantity: 1,
+                changableAveragePrice: 1,
+                laborOfferItemName: 1,
+                laborHours: 1,
+                measurementUnitMongoId: 1,
+                fullCode: '$laborItemData.fullCode',
+                itemMeasurementUnit: '$unitData.representationSymbol',
+                materialTotalCost: { $ifNull: ['$matAgg.matCost', 0] },
+            },
+        },
+        { $sort: { _id: 1 } },
+    ]).toArray();
+    respondJsonData(res, items);
 });
 
 /** Single-call endpoint for Works List dialog: all labor items for an estimate with minimal lookups. */

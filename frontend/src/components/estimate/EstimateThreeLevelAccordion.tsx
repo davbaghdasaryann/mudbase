@@ -91,6 +91,9 @@ interface AccordionItem {
 
     /** When true, row was created via "Create Group" button. */
     isGroupRow?: boolean;
+
+    /** For group rows: sum of all child works' (labor + material) costs. */
+    groupTotalCost?: number | null;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -619,6 +622,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.priceSource = item.priceSource;
         itemArr.isHidden = item.isHidden === true;
         itemArr.isGroupRow = item.isGroupRow === true;
+        if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -719,6 +723,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 newItem.unitPrice = roundNumber(newItem.priceWithMaterial / item.quantity);
                             }
                         }
+                        if (item.groupTotalCost != null) newItem.groupTotalCost = item.groupTotalCost;
                         // }
 
                         return newItem;
@@ -789,6 +794,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                     }
                 }
             }
+            if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
             // }
 
             newData.push(itemArr);
@@ -1312,14 +1318,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Price with material'),
                                                     align: 'center',
                                                     width: 160,
-                                                    valueFormatter: (value) => formatCurrency(value),
+                                                    renderCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
+                                                        return <>{formatCurrency(val)}</>;
+                                                    },
                                                 },
                                                 {
                                                     field: 'unitPrice',
                                                     headerName: t('Unit Price'),
                                                     align: 'center',
                                                     width: 160,
-                                                    valueFormatter: (value) => formatCurrency(value),
+                                                    renderCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
+                                                        return <>{formatCurrency(val)}</>;
+                                                    },
                                                 },
 
                                                 //🔴 TODO: this will need us in version 2 🔴
@@ -1719,7 +1733,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         align: 'center',
                                                                         width: 160,
                                                                         disableColumnMenu: true,
-                                                                        valueFormatter: (value) => formatCurrency(value),
+                                                                        renderCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
+                                                                            return <>{formatCurrency(val)}</>;
+                                                                        },
                                                                     },
                                                                     {
                                                                         field: 'unitPrice',
@@ -1728,7 +1746,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         align: 'center',
                                                                         width: 160,
                                                                         disableColumnMenu: true,
-                                                                        valueFormatter: (value) => formatCurrency(value),
+                                                                        renderCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
+                                                                            return <>{formatCurrency(val)}</>;
+                                                                        },
                                                                     },
 
                                                                     //🔴 TODO: this will need us in version 2 🔴

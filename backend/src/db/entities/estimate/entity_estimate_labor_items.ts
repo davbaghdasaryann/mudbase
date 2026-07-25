@@ -19,6 +19,9 @@ export interface EntityEstimateLaborItem {
     /** When true, this row was created via "Create Group" button. */
     isGroupRow?: boolean;
 
+    /** If set, this row is a child work inside the group row with this ID. Excluded from top-level estimate table. */
+    parentGroupRowId?: ObjectId;
+
     /** Order within subsection (for drag reorder). */
     displayIndex?: number;
 

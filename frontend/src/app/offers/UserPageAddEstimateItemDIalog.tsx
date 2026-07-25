@@ -166,6 +166,31 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
     const [groupMaterialRowId, setGroupMaterialRowId] = React.useState<string | null>(null);
     const [groupMaterialRowName, setGroupMaterialRowName] = React.useState<string>('');
 
+    React.useEffect(() => {
+        if (!props.isGroupRow || !props.estimatedLaborId) return;
+        Api.requestSession<any[]>({
+            command: 'estimate/fetch_group_works',
+            args: { parentGroupRowId: props.estimatedLaborId },
+        }).then(items => {
+            if (!items?.length) return;
+            setGroupSelectedWorks(items.map(item => ({
+                _id: item.laborItemId ?? item._id,
+                itemFullCode: item.fullCode ?? '',
+                itemChangableName: item.laborOfferItemName ?? '',
+                itemMeasurementUnit: item.itemMeasurementUnit ?? '',
+                measurementUnitMongoId: item.measurementUnitMongoId ?? '',
+                itemChangableAveragePrice: item.changableAveragePrice ?? null,
+                itemLaborHours: item.laborHours ?? null,
+                quantity: item.quantity ?? null,
+                itemWithoutMaterial: item.quantity && item.changableAveragePrice ? Math.round(item.quantity * item.changableAveragePrice * 1000) / 1000 : null,
+                materialTotalCost: item.materialTotalCost ?? 0,
+                priceWithMaterial: item.quantity && item.changableAveragePrice ? Math.round((item.quantity * item.changableAveragePrice + (item.materialTotalCost ?? 0)) * 1000) / 1000 : null,
+                unitPrice: null,
+                savedEstimateId: item._id,
+            })));
+        });
+    }, [props.isGroupRow, props.estimatedLaborId]);
+
     if (props.isGroupRow) {
         const filteredWorks = groupSelectedWorks.filter(w =>
             !groupMainSearch || (w.itemChangableName ?? '').toLowerCase().includes(groupMainSearch.toLowerCase())
@@ -213,6 +238,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                         laborOfferItemLaborHours: row.itemLaborHours ?? 0,
                         laborItemMeasurementUnitMongoId: row.measurementUnitMongoId,
                         laborOfferItemName: row.itemChangableName,
+                        parentGroupRowId: props.estimatedLaborId,
                     },
                 });
                 laborId = result?.newEstimateLaborItem?.insertedId;

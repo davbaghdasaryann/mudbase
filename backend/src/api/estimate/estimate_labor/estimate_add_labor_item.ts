@@ -184,6 +184,11 @@ registerApiSession('estimate/add_labor_item', async (req, res, session) => {
 
     estimateLaborItem.laborOfferItemName = laborOfferItemName;
 
+    const parentGroupRowIdReq = getReqParam(req, 'parentGroupRowId') as string;
+    if (validateMongoObjectId(parentGroupRowIdReq)) {
+        estimateLaborItem.parentGroupRowId = new ObjectId(parentGroupRowIdReq);
+    }
+
     let newEstimateLaborItem = await estimateLaborItems.insertOne(estimateLaborItem);
 
     await updateEstimateCostById(subsection.estimateId);
