@@ -26,6 +26,20 @@ import { formatCurrency } from "@/lib/format_currency";
 import MaterialsLeftPaneContent from "@/app/offers/MaterialsLeftPaneContent";
 
 
+interface GroupWorkRow {
+    _id: string;
+    itemFullCode: string;
+    itemChangableName: string;
+    itemMeasurementUnit: string;
+    itemChangableAveragePrice: number | null;
+    itemLaborHours: number | null;
+    quantity: number | null;
+    itemWithoutMaterial: number | null;
+    materialTotalCost: number;
+    priceWithMaterial: number | null;
+    unitPrice: number | null;
+}
+
 interface Props {
     onClose: () => void;
     offerType: 'labor' | 'material';
@@ -142,14 +156,29 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
 
 
-    const [groupSelectedWorks, setGroupSelectedWorks] = React.useState<LaborItemDisplayData[]>([]);
+    const [groupSelectedWorks, setGroupSelectedWorks] = React.useState<GroupWorkRow[]>([]);
     const [groupShowLibrary, setGroupShowLibrary] = React.useState(false);
     const [groupMainSearch, setGroupMainSearch] = React.useState('');
 
     if (props.isGroupRow) {
         const filteredWorks = groupSelectedWorks.filter(w =>
-            !groupMainSearch || (w.name ?? '').toLowerCase().includes(groupMainSearch.toLowerCase())
+            !groupMainSearch || (w.itemChangableName ?? '').toLowerCase().includes(groupMainSearch.toLowerCase())
         );
+
+        const handleGroupRowUpdate = (newRow: GroupWorkRow): GroupWorkRow => {
+            const qty = newRow.quantity != null ? parseFloat(String(newRow.quantity)) : null;
+            const price = newRow.itemChangableAveragePrice;
+            const itemWithoutMaterial = qty != null && price != null ? Math.round(qty * price * 1000) / 1000 : null;
+            const updated: GroupWorkRow = {
+                ...newRow,
+                quantity: qty,
+                itemWithoutMaterial,
+                priceWithMaterial: itemWithoutMaterial,
+                unitPrice: qty && itemWithoutMaterial ? Math.round((itemWithoutMaterial / qty) * 1000) / 1000 : null,
+            };
+            setGroupSelectedWorks(prev => prev.map(w => w._id === updated._id ? updated : w));
+            return updated;
+        };
 
         return <Dialog
             fullScreen
@@ -170,7 +199,25 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                         onConfirm={() => {}}
                         hideToolbar
                         onItemSelect={(item) => {
-                            setGroupSelectedWorks(prev => prev.find(w => w._id === item._id) ? prev : [...prev, item]);
+                            if (groupSelectedWorks.find(w => w._id === item._id)) {
+                                setGroupShowLibrary(false);
+                                return;
+                            }
+                            const price = item.averagePrice != null ? parseFloat(String(item.averagePrice)) : null;
+                            const newRow: GroupWorkRow = {
+                                _id: item._id,
+                                itemFullCode: item.fullCode ?? '',
+                                itemChangableName: item.label ?? '',
+                                itemMeasurementUnit: item.measurementUnitRepresentationSymbol ?? '',
+                                itemChangableAveragePrice: price,
+                                itemLaborHours: null,
+                                quantity: null,
+                                itemWithoutMaterial: null,
+                                materialTotalCost: 0,
+                                priceWithMaterial: null,
+                                unitPrice: null,
+                            };
+                            setGroupSelectedWorks(prev => [...prev, newRow]);
                             setGroupShowLibrary(false);
                         }}
                     />
@@ -189,14 +236,26 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     </Box>
                     <Button variant='contained' onClick={() => setGroupShowLibrary(true)}>{t('Add work')}</Button>
                     {filteredWorks.length > 0 && (
-                        <Box sx={{ mt: 3 }}>
+                        <Box sx={{
+                            mt: 3, width: '100%', backgroundColor: '#FFFFFF',
+                            '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
+                            '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
+                            '& .editableCell': { border: '1px solid #00BFFF', borderRadius: '5px' },
+                        }}>
                             <DataTableComponent
                                 sx={{ width: '100%' }}
+                                processRowUpdate={handleGroupRowUpdate}
                                 columns={[
-                                    { field: 'fullCode', headerName: t('ID'), headerAlign: 'left', flex: 0.2, disableColumnMenu: true },
-                                    { field: 'label', headerName: t('Label'), headerAlign: 'left', flex: 0.5, disableColumnMenu: true },
-                                    { field: 'measurementUnitRepresentationSymbol', headerName: t('Measurement Unit'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true },
-                                    { field: 'averagePrice', headerName: t('Average Price'), headerAlign: 'left', flex: 0.3, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'itemFullCode', headerName: t('ID'), align: 'center', width: 90, disableColumnMenu: true },
+                                    { field: 'itemChangableName', headerName: t('Labor'), headerAlign: 'center', flex: 1, disableColumnMenu: true },
+                                    { field: 'itemLaborHours', headerName: t('Work per hour'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
+                                    { field: 'itemMeasurementUnit', headerName: t('Unit'), align: 'center', width: 80, disableColumnMenu: true },
+                                    { field: 'quantity', headerName: t('Quantity'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value: any) => value != null ? formatCurrency(value) : '' },
+                                    { field: 'itemChangableAveragePrice', headerName: t('Price'), align: 'center', width: 120, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'itemWithoutMaterial', headerName: t('Without material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'materialTotalCost', headerName: t('Material Cost'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'priceWithMaterial', headerName: t('Price with material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'unitPrice', headerName: t('Unit Price'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                 ]}
                                 rows={filteredWorks}
                                 disableRowSelectionOnClick
