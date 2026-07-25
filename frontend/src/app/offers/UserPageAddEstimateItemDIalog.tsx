@@ -171,6 +171,35 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             !groupMainSearch || (w.itemChangableName ?? '').toLowerCase().includes(groupMainSearch.toLowerCase())
         );
 
+        const refreshGroupMaterialRow = async (savedEstimateId: string) => {
+            if (!props.estimateSubsectionId) return;
+            const items = await Api.requestSession<any[]>({
+                command: 'estimate/fetch_labor_items',
+                args: { estimateSubsectionId: props.estimateSubsectionId },
+            });
+            const updated = items?.find((item: any) => item._id?.toString() === savedEstimateId);
+            if (!updated) return;
+            let materialTotalCost = 0;
+            if (updated.estimateMaterialItemData?.length > 0) {
+                for (const mat of updated.estimateMaterialItemData) {
+                    materialTotalCost += (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0);
+                }
+            }
+            setGroupSelectedWorks(prev => prev.map(w => {
+                if (w.savedEstimateId !== savedEstimateId) return w;
+                const itemWithoutMaterial = w.quantity != null && w.itemChangableAveragePrice != null
+                    ? Math.round(w.quantity * w.itemChangableAveragePrice * 1000) / 1000
+                    : null;
+                const priceWithMaterial = itemWithoutMaterial != null
+                    ? Math.round((itemWithoutMaterial + materialTotalCost) * 1000) / 1000
+                    : null;
+                const unitPrice = w.quantity && priceWithMaterial
+                    ? Math.round((priceWithMaterial / w.quantity) * 1000) / 1000
+                    : null;
+                return { ...w, materialTotalCost, priceWithMaterial, unitPrice };
+            }));
+        };
+
         const handleGroupMaterialClick = async (row: GroupWorkRow) => {
             let laborId = row.savedEstimateId;
             if (!laborId) {
@@ -311,7 +340,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                             estimatedLaborId={groupMaterialRowId}
                             estimatedLaborName={groupMaterialRowName}
                             onClose={() => setGroupMaterialRowId(null)}
-                            onConfirm={() => {}}
+                            onConfirm={() => { refreshGroupMaterialRow(groupMaterialRowId); }}
                         />
                     )}
                 </DialogContent>
