@@ -20,6 +20,7 @@ import UserPageAddEstimationItemDetailsDialog from "./UserPageAddEstimationItemD
 import EstimateAddItemFromOffersDialog from "../../components/estimate/EstimateAddItemFromOffersDialog";
 import ProgressIndicator from "../../tsui/ProgressIndicator";
 import EstimateCatalogAccordion from "../../components/pages/EstimateCatalogAccordion";
+import ImgElement from '@/tsui/DomElements/ImgElement';
 import DataTableComponent from "@/components/DataTableComponent";
 import { t } from "i18next";
 import { formatCurrency } from "@/lib/format_currency";
@@ -159,6 +160,8 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
     const [groupSelectedWorks, setGroupSelectedWorks] = React.useState<GroupWorkRow[]>([]);
     const [groupShowLibrary, setGroupShowLibrary] = React.useState(false);
     const [groupMainSearch, setGroupMainSearch] = React.useState('');
+    const [groupMaterialRowId, setGroupMaterialRowId] = React.useState<string | null>(null);
+    const [groupMaterialRowName, setGroupMaterialRowName] = React.useState<string>('');
 
     if (props.isGroupRow) {
         const filteredWorks = groupSelectedWorks.filter(w =>
@@ -238,12 +241,13 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     {filteredWorks.length > 0 && (
                         <Box sx={{
                             mt: 3, width: '100%', backgroundColor: '#FFFFFF',
-                            '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
+                            '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF', overflow: 'visible' },
                             '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
+                            '& .MuiDataGrid-cell': { overflow: 'visible' },
                             '& .editableCell': { border: '1px solid #00BFFF', borderRadius: '5px' },
                         }}>
                             <DataTableComponent
-                                sx={{ width: '100%' }}
+                                sx={{ width: '100%', overflow: 'visible' }}
                                 processRowUpdate={handleGroupRowUpdate}
                                 columns={[
                                     { field: 'itemFullCode', headerName: t('ID'), align: 'center', width: 90, disableColumnMenu: true },
@@ -256,12 +260,32 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                     { field: 'materialTotalCost', headerName: t('Material Cost'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'priceWithMaterial', headerName: t('Price with material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'unitPrice', headerName: t('Unit Price'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    {
+                                        field: 'addMaterial', type: 'actions', headerName: t('Materials'), width: 100, disableColumnMenu: true,
+                                        renderCell: (cell: any) => (
+                                            <IconButton onClick={() => {
+                                                setGroupMaterialRowId(cell.row._id);
+                                                setGroupMaterialRowName(cell.row.itemChangableName);
+                                            }}>
+                                                <ImgElement src='/images/icons/material.svg' sx={{ height: 20 }} />
+                                            </IconButton>
+                                        ),
+                                    },
                                 ]}
                                 rows={filteredWorks}
                                 disableRowSelectionOnClick
                                 getRowId={(row: any) => row._id}
                             />
                         </Box>
+                    )}
+                    {groupMaterialRowId && (
+                        <UserPageAddEstimateItemDialog
+                            offerType='material'
+                            isEstimation
+                            estimatedLaborId={groupMaterialRowId}
+                            onClose={() => setGroupMaterialRowId(null)}
+                            onConfirm={() => setGroupMaterialRowId(null)}
+                        />
                     )}
                 </DialogContent>
             </>}
