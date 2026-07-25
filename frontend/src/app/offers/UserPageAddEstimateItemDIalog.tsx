@@ -273,7 +273,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                             mt: 3, width: '100%', backgroundColor: '#FFFFFF',
                             '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
                             '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
-                            '& .editableCell': { boxShadow: '0 0 0 1px #00BFFF', borderRadius: '5px' },
+                            '& .editableCell': { boxShadow: 'inset 0 0 0 1px #00BFFF', borderRadius: '5px' },
                         }}>
                             <DataTableComponent
                                 sx={{ width: '100%' }}
