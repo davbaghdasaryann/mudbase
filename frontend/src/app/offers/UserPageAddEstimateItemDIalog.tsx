@@ -173,21 +173,28 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             args: { parentGroupRowId: props.estimatedLaborId },
         }).then(items => {
             if (!items?.length) return;
-            setGroupSelectedWorks(items.map(item => ({
-                _id: item.laborItemId ?? item._id,
-                itemFullCode: item.fullCode ?? '',
-                itemChangableName: item.laborOfferItemName ?? '',
-                itemMeasurementUnit: item.itemMeasurementUnit ?? '',
-                measurementUnitMongoId: item.measurementUnitMongoId ?? '',
-                itemChangableAveragePrice: item.changableAveragePrice ?? null,
-                itemLaborHours: item.laborHours ?? null,
-                quantity: item.quantity ?? null,
-                itemWithoutMaterial: item.quantity && item.changableAveragePrice ? Math.round(item.quantity * item.changableAveragePrice * 1000) / 1000 : null,
-                materialTotalCost: item.materialTotalCost ?? 0,
-                priceWithMaterial: item.quantity && item.changableAveragePrice ? Math.round((item.quantity * item.changableAveragePrice + (item.materialTotalCost ?? 0)) * 1000) / 1000 : null,
-                unitPrice: null,
-                savedEstimateId: item._id,
-            })));
+            setGroupSelectedWorks(items.map(item => {
+                const qty = item.quantity ?? null;
+                const price = item.changableAveragePrice ?? null;
+                const matCost = item.materialTotalCost ?? 0;
+                const itemWithoutMaterial = qty && price ? Math.round(qty * price * 1000) / 1000 : null;
+                const priceWithMaterial = itemWithoutMaterial != null ? Math.round((itemWithoutMaterial + matCost) * 1000) / 1000 : null;
+                return {
+                    _id: String(item.laborItemId ?? item._id),
+                    itemFullCode: item.fullCode ?? '',
+                    itemChangableName: item.laborOfferItemName ?? '',
+                    itemMeasurementUnit: item.itemMeasurementUnit ?? '',
+                    measurementUnitMongoId: String(item.measurementUnitMongoId ?? ''),
+                    itemChangableAveragePrice: price,
+                    itemLaborHours: item.laborHours ?? null,
+                    quantity: qty,
+                    itemWithoutMaterial,
+                    materialTotalCost: matCost,
+                    priceWithMaterial,
+                    unitPrice: qty && priceWithMaterial ? Math.round((priceWithMaterial / qty) * 1000) / 1000 : null,
+                    savedEstimateId: String(item._id),
+                };
+            }));
         });
     }, [props.isGroupRow, props.estimatedLaborId]);
 
@@ -197,19 +204,14 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
         );
 
         const refreshGroupMaterialRow = async (savedEstimateId: string) => {
-            if (!props.estimateSubsectionId) return;
+            if (!props.estimatedLaborId) return;
             const items = await Api.requestSession<any[]>({
-                command: 'estimate/fetch_labor_items',
-                args: { estimateSubsectionId: props.estimateSubsectionId },
+                command: 'estimate/fetch_group_works',
+                args: { parentGroupRowId: props.estimatedLaborId },
             });
-            const updated = items?.find((item: any) => item._id?.toString() === savedEstimateId);
+            const updated = items?.find((item: any) => String(item._id) === savedEstimateId);
             if (!updated) return;
-            let materialTotalCost = 0;
-            if (updated.estimateMaterialItemData?.length > 0) {
-                for (const mat of updated.estimateMaterialItemData) {
-                    materialTotalCost += (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0);
-                }
-            }
+            const materialTotalCost = updated.materialTotalCost ?? 0;
             setGroupSelectedWorks(prev => prev.map(w => {
                 if (w.savedEstimateId !== savedEstimateId) return w;
                 const itemWithoutMaterial = w.quantity != null && w.itemChangableAveragePrice != null
@@ -254,16 +256,32 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
         const handleGroupRowUpdate = (newRow: GroupWorkRow): GroupWorkRow => {
             const qty = newRow.quantity != null ? parseFloat(String(newRow.quantity)) : null;
-            const price = newRow.itemChangableAveragePrice;
+            const price = newRow.itemChangableAveragePrice != null ? parseFloat(String(newRow.itemChangableAveragePrice)) : null;
             const itemWithoutMaterial = qty != null && price != null ? Math.round(qty * price * 1000) / 1000 : null;
+            const priceWithMaterial = itemWithoutMaterial != null
+                ? Math.round((itemWithoutMaterial + (newRow.materialTotalCost ?? 0)) * 1000) / 1000
+                : null;
             const updated: GroupWorkRow = {
                 ...newRow,
                 quantity: qty,
+                itemChangableAveragePrice: price,
                 itemWithoutMaterial,
-                priceWithMaterial: itemWithoutMaterial,
-                unitPrice: qty && itemWithoutMaterial ? Math.round((itemWithoutMaterial / qty) * 1000) / 1000 : null,
+                priceWithMaterial,
+                unitPrice: qty && priceWithMaterial ? Math.round((priceWithMaterial / qty) * 1000) / 1000 : null,
             };
             setGroupSelectedWorks(prev => prev.map(w => w._id === updated._id ? updated : w));
+            if (updated.savedEstimateId) {
+                Api.requestSession({
+                    command: 'estimate/update_labor_item',
+                    args: { estimatedLaborId: updated.savedEstimateId },
+                    json: {
+                        itemChangableName: updated.itemChangableName,
+                        itemChangableAveragePrice: price ?? 0,
+                        itemLaborHours: updated.itemLaborHours ?? 0,
+                        quantity: qty ?? 0,
+                    },
+                }).catch(console.error);
+            }
             return updated;
         };
 
@@ -286,17 +304,17 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                         onConfirm={() => {}}
                         hideToolbar
                         onItemSelect={(item) => {
-                            if (groupSelectedWorks.find(w => w._id === item._id)) {
+                            if (groupSelectedWorks.find(w => w._id === String(item._id))) {
                                 setGroupShowLibrary(false);
                                 return;
                             }
                             const price = item.averagePrice != null ? parseFloat(String(item.averagePrice)) : null;
                             const newRow: GroupWorkRow = {
-                                _id: item._id,
+                                _id: String(item._id),
                                 itemFullCode: item.fullCode ?? '',
                                 itemChangableName: item.label ?? item.name ?? '',
                                 itemMeasurementUnit: item.measurementUnitRepresentationSymbol ?? '',
-                                measurementUnitMongoId: item.measurementUnitMongoId ?? '',
+                                measurementUnitMongoId: String(item.measurementUnitMongoId ?? ''),
                                 itemChangableAveragePrice: price,
                                 itemLaborHours: null,
                                 quantity: null,
@@ -307,6 +325,29 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                             };
                             setGroupSelectedWorks(prev => [...prev, newRow]);
                             setGroupShowLibrary(false);
+                            // Auto-save to backend so it persists on refresh and is counted in group totals
+                            if (props.estimateSubsectionId && props.estimatedLaborId && item.measurementUnitMongoId) {
+                                Api.requestSession<any>({
+                                    command: 'estimate/add_labor_item',
+                                    args: {
+                                        estimateSubsectionId: props.estimateSubsectionId,
+                                        laborItemQuantity: 0,
+                                        laborOffersAveragePrice: price ?? 0,
+                                        laborItemId: String(item._id),
+                                        laborOfferItemLaborHours: 0,
+                                        laborItemMeasurementUnitMongoId: String(item.measurementUnitMongoId),
+                                        laborOfferItemName: newRow.itemChangableName,
+                                        parentGroupRowId: props.estimatedLaborId,
+                                    },
+                                }).then(result => {
+                                    const savedId = result?.newEstimateLaborItem?.insertedId;
+                                    if (savedId) {
+                                        setGroupSelectedWorks(prev => prev.map(w =>
+                                            w._id === newRow._id ? { ...w, savedEstimateId: String(savedId) } : w
+                                        ));
+                                    }
+                                }).catch(console.error);
+                            }
                         }}
                     />
                 </DialogContent>
