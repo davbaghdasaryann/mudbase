@@ -1324,8 +1324,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 160,
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
-                                                        return <>{formatCurrency(val)}</>;
+                                                        if (row.isGroupRow && row.groupTotalCost != null) {
+                                                            return <>{formatCurrency((row.quantity ?? 0) * row.groupTotalCost)}</>;
+                                                        }
+                                                        return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
                                                 {
@@ -1390,18 +1392,33 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Materials'),
                                                     width: 140,
                                                     renderCell: (cell) => {
+                                                        const isGroup = (cell.row as AccordionItem).isGroupRow;
                                                         return (
                                                             <>
-                                                                <IconButton
-                                                                    onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                                                        setEstimatedLaborItemId(cell.row._id);
-                                                                        setOpenAddOfferDialogTypeWithouSubsection('material');
-                                                                        setEstimatedLaborItemName(cell.row.itemChangableName);
-                                                                    }}
-                                                                >
-                                                                    {/* <ScienceIcon sx={{ color: mainIconColor }} /> */}
-                                                                    <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
-                                                                </IconButton>
+                                                                {isGroup ? (
+                                                                    <IconButton
+                                                                        onClick={() => {
+                                                                            setEstimatedLaborItemId(cell.row._id as string);
+                                                                            setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                            setOpenAsGroupRow(true);
+                                                                            setCurrentSectionId(item._id);
+                                                                            setCurrentSubsectionId(item.children?.[0]?._id ?? null);
+                                                                            setOpenAddOfferDialogTypeWithouSubsection('labor');
+                                                                        }}
+                                                                    >
+                                                                        <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
+                                                                    </IconButton>
+                                                                ) : (
+                                                                    <IconButton
+                                                                        onClick={(event: React.MouseEvent<HTMLElement>) => {
+                                                                            setEstimatedLaborItemId(cell.row._id);
+                                                                            setOpenAddOfferDialogTypeWithouSubsection('material');
+                                                                            setEstimatedLaborItemName(cell.row.itemChangableName);
+                                                                        }}
+                                                                    >
+                                                                        <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
+                                                                    </IconButton>
+                                                                )}
                                                             </>
                                                         );
                                                     },
@@ -1461,8 +1478,16 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     {t('Add Empty Row')}
                                                 </Button>
                                                 <Button
+                                                    variant='outlined'
+                                                    sx={{ color: '#FF9D00', borderColor: '#FF9D00', '&:hover': { borderColor: '#FF9D00', background: 'rgba(255,157,0,0.06)' } }}
+                                                    onClick={() => handleAddEmptyRow(item.children?.[0]?._id ?? item._id, true, true)}
+                                                >
+                                                    {t('Create Group')}
+                                                </Button>
+                                                <Button
                                                     variant='contained'
                                                     onClick={() => {
+                                                        setOpenAsGroupRow(false);
                                                         setOpenAddOfferDialogTypeWithouSubsection('labor');
                                                         setCurrentSectionId(item._id);
                                                     }}
@@ -1743,8 +1768,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
-                                                                            return <>{formatCurrency(val)}</>;
+                                                                            if (row.isGroupRow && row.groupTotalCost != null) {
+                                                                                return <>{formatCurrency((row.quantity ?? 0) * row.groupTotalCost)}</>;
+                                                                            }
+                                                                            return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
                                                                     {
@@ -2061,7 +2088,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             isEstimation={true}
                             // estimateSectionId={item._id}
                             estimateSectionId={currentSectionId}
+                            estimateSubsectionId={currentSubsectionId}
                             estimatedLaborId={estimatedLaborItemId}
+                            isGroupRow={openAsGroupRow}
                             onConfirm={() => {
                                 refreshEverything(false);
                             }}
@@ -2069,6 +2098,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 setOpenAddOfferDialogTypeWithouSubsection(null);
                                 setCurrentSectionId(null);
                                 setCurrentSubsectionId(null);
+                                setOpenAsGroupRow(false);
                             }}
                         />
                     )}
