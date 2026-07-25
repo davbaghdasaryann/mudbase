@@ -185,10 +185,19 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                     {
                         $addFields: {
                             childTotal: {
-                                $add: [
-                                    { $multiply: [{ $ifNull: ['$quantity', 0] }, { $ifNull: ['$changableAveragePrice', 0] }] },
-                                    { $ifNull: ['$matAgg.matCost', 0] },
-                                ],
+                                $cond: {
+                                    if: { $gt: [{ $ifNull: ['$quantity', 0] }, 0] },
+                                    then: {
+                                        $divide: [
+                                            { $add: [
+                                                { $multiply: [{ $ifNull: ['$quantity', 0] }, { $ifNull: ['$changableAveragePrice', 0] }] },
+                                                { $ifNull: ['$matAgg.matCost', 0] },
+                                            ]},
+                                            '$quantity',
+                                        ],
+                                    },
+                                    else: { $ifNull: ['$changableAveragePrice', 0] },
+                                },
                             },
                         },
                     },
