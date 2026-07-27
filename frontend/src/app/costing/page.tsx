@@ -745,11 +745,11 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     onCostAdded={handleCostAdded}
                     actualData={actualData}
-                    onActualUpdate={(rowId, qty, spent) => setActualData(prev => {
+                    onActualUpdate={(rowId, qty, arzhek) => setActualData(prev => {
                         const prevQty = parseFloat(prev[rowId]?.quantity || '0') || 0;
                         const prevSpent = parseFloat(prev[rowId]?.spent || '0') || 0;
                         const newQty = prevQty + qty;
-                        const newSpent = prevSpent + spent;
+                        const newSpent = prevSpent + qty * arzhek;
                         const unitPrice = newQty > 0 && newSpent > 0 ? String(newSpent / newQty) : prev[rowId]?.unitPrice || '';
                         return { ...prev, [rowId]: { quantity: String(newQty), unitPrice, spent: String(newSpent) } };
                     })}

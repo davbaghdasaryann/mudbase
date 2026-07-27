@@ -86,16 +86,16 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
         if (!costModal) return;
         const { row, value, spent } = costModal;
         const qty = parseFloat(value.replace(',', '.')) || 0;
-        const spentAmt = parseFloat(spent.replace(',', '.')) || 0;
+        const arzhek = parseFloat(spent.replace(',', '.')) || 0;
         if (qty <= 0) return;
-        onActualUpdate?.(toId(row._id), qty, spentAmt);
+        onActualUpdate?.(toId(row._id), qty, arzhek);
         onCostAdded({
             id: String(Date.now() + Math.random()),
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
             quantity: qty,
-            unitPrice: qty > 0 && spentAmt > 0 ? spentAmt / qty : 0,
-            total: spentAmt,
+            unitPrice: arzhek,
+            total: qty * arzhek,
             addedAt: new Date(),
         });
         setCostModal(null);
@@ -220,8 +220,8 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                         />
                     </Box>
                     {costModal && parseFloat(costModal.value) > 0 && parseFloat(costModal.spent) > 0 && (
-                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>Միավորի արժեք: <strong style={{ color: mainPrimaryColor }}>
-                                {(parseFloat(costModal.spent) / parseFloat(costModal.value)).toLocaleString(undefined, { maximumFractionDigits: 2 })} AMD
+                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>Yndhanuр arzhek: <strong style={{ color: mainPrimaryColor }}>
+                                {(parseFloat(costModal.spent) * parseFloat(costModal.value)).toLocaleString(undefined, { maximumFractionDigits: 2 })} AMD
                             </strong>
                         </Typography>
                     )}
