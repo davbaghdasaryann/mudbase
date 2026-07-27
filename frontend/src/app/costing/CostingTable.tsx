@@ -108,7 +108,7 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate, onCostAdded, actualData: externalActualData, onActualDataChange }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void }) {
+export default function CostingTable({ estimate, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[] }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
@@ -316,15 +316,19 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
             <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
             <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
             {(() => {
-                const a = actualData[toId(row._id)];
+                const rowId = toId(row._id);
+                const a = actualData[rowId];
                 const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
-                const p = parseFloat((a?.unitPrice ?? '').replace(',', '.')) || 0;
-                const tot = q * p;
+                const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
+                const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
+                const tot = volumeTotal + salaryTotal;
+                const p = q > 0 && tot > 0 ? tot / q : 0;
+                const hasData = a || salaryTotal > 0;
                 return (
                     <>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: '2px solid #b2e8ed', color: a ? '#222' : '#ccc' })}>{a ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                        <td style={tdStyle({ textAlign: 'right', color: a ? '#555' : '#ccc' })}>{a ? formatCurrencyRounded(p) : '—'}</td>
-                        <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: a ? mainPrimaryColor : '#ccc' })}>{a ? formatCurrencyRounded(tot) : '—'}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: '2px solid #b2e8ed', color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                        <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>{hasData ? formatCurrencyRounded(p) : '—'}</td>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>{hasData ? formatCurrencyRounded(tot) : '—'}</td>
                     </>
                 );
             })()}
