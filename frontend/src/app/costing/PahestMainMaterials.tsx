@@ -212,13 +212,15 @@ export default function PahestMainMaterials({ estimateId, entries, onChange, onH
                 </Box>
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 88px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 2 }}>
-                        {[t('Material'), t('Unit'), 'Մուտքագրված', t('Total'), 'Ծախսագրված', ''].map((h, i) => (
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 120px 88px', bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 2 }}>
+                        {[t('Material'), t('Unit'), 'Մուտքագրված', t('Total'), 'Ծախսագրված', 'Մնացորդ', ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
-                    {entries.map((e, idx) => (
-                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
+                    {entries.map((e, idx) => {
+                        const remaining = e.quantity - (e.costedQuantity ?? 0);
+                        return (
+                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
                             <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>{e.unit}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'center' }}>
@@ -227,6 +229,9 @@ export default function PahestMainMaterials({ estimateId, entries, onChange, onH
                             <Typography sx={{ fontSize: '0.9rem', color: '#555', textAlign: 'center', fontWeight: e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) > 0 ? 600 : 400 }}>{e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) > 0 ? e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: (e.costedQuantity ?? 0) > 0 ? 700 : 400, color: (e.costedQuantity ?? 0) > 0 ? mainPrimaryColor : '#aaa', textAlign: 'center' }}>
                                 {(e.costedQuantity ?? 0) > 0 ? (e.costedQuantity!).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: remaining !== 0 ? 700 : 400, color: remaining < 0 ? '#e53935' : remaining > 0 ? '#555' : '#aaa', textAlign: 'center' }}>
+                                {remaining !== 0 ? remaining.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                             </Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                                 <Tooltip title={t('Add')}>
@@ -246,7 +251,8 @@ export default function PahestMainMaterials({ estimateId, entries, onChange, onH
                                 </Tooltip>
                             </Box>
                         </Box>
-                    ))}
+                        );
+                    })}
                 </Box>
             )}
 
