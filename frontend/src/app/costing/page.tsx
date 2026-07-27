@@ -73,7 +73,7 @@ interface CostingRecord {
     costHistory: CostHistoryEntry[];
     pahestEntries: PahestEntry[];
     aylEntries: AylEntry[];
-    actualData: Record<string, { quantity: string; unitPrice: string }>;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     createdAt: string;
 }
 
@@ -297,7 +297,7 @@ export default function CostingPage() {
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
-    const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string }>>({});
+    const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string; spent?: string }>>({});
 
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
     const [editUnit, setEditUnit] = useState('');
@@ -745,7 +745,14 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     onCostAdded={handleCostAdded}
                     actualData={actualData}
-                    onActualUpdate={(rowId, qty) => setActualData(prev => ({ ...prev, [rowId]: { quantity: String((parseFloat(prev[rowId]?.quantity || '0') || 0) + qty), unitPrice: prev[rowId]?.unitPrice || '' } }))}
+                    onActualUpdate={(rowId, qty, spent) => setActualData(prev => {
+                        const prevQty = parseFloat(prev[rowId]?.quantity || '0') || 0;
+                        const prevSpent = parseFloat(prev[rowId]?.spent || '0') || 0;
+                        const newQty = prevQty + qty;
+                        const newSpent = prevSpent + spent;
+                        const unitPrice = newQty > 0 && newSpent > 0 ? String(newSpent / newQty) : prev[rowId]?.unitPrice || '';
+                        return { ...prev, [rowId]: { quantity: String(newQty), unitPrice, spent: String(newSpent) } };
+                    })}
                 />
                 <MaterialsDialog
                     open={materialsOpen}

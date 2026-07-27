@@ -28,6 +28,7 @@ interface LaborRow {
 interface CostModalState {
     row: LaborRow;
     value: string;
+    spent: string;
 }
 
 interface Props {
@@ -35,8 +36,8 @@ interface Props {
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
     onCostAdded: (entry: CostHistoryEntry) => void;
-    onActualUpdate?: (rowId: string, qty: number) => void;
-    actualData?: Record<string, { quantity: string; unitPrice: string }>;
+    onActualUpdate?: (rowId: string, qty: number, spent: number) => void;
+    actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
 }
 
 function toId(v: unknown): string {
@@ -83,17 +84,18 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
 
     const handleConfirmCost = () => {
         if (!costModal) return;
-        const { row, value } = costModal;
+        const { row, value, spent } = costModal;
         const qty = parseFloat(value.replace(',', '.')) || 0;
+        const spentAmt = parseFloat(spent.replace(',', '.')) || 0;
         if (qty <= 0) return;
-        onActualUpdate?.(toId(row._id), qty);
+        onActualUpdate?.(toId(row._id), qty, spentAmt);
         onCostAdded({
             id: String(Date.now() + Math.random()),
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
             quantity: qty,
-            unitPrice: 0,
-            total: 0,
+            unitPrice: qty > 0 && spentAmt > 0 ? spentAmt / qty : 0,
+            total: spentAmt,
             addedAt: new Date(),
         });
         setCostModal(null);
@@ -161,7 +163,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                                                                 </Typography>
                                                                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                                     <Tooltip title={t('Add new quantity')}>
-                                                                        <IconButton size='small' onClick={() => setCostModal({ row, value: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                                        <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
                                                                             <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
                                                                         </IconButton>
                                                                     </Tooltip>
@@ -187,29 +189,44 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
         {/* Cost entry sub-modal */}
         <Dialog open={!!costModal} onClose={() => setCostModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
-                Ծախսագրում
+                Ծախsagrum
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>
                 <Typography sx={{ fontSize: '0.88rem', color: '#555', mb: 2 }}>
                     {costModal?.row.laborOfferItemName || costModal?.row.catalogName || '—'}
                 </Typography>
-                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
-                    <InputBase
-                        autoFocus
-                        fullWidth
-                        value={costModal?.value ?? ''}
-                        onChange={ev => setCostModal(prev => prev ? { ...prev, value: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
-                        onKeyDown={ev => { if (ev.key === 'Enter') handleConfirmCost(); if (ev.key === 'Escape') setCostModal(null); }}
-                        placeholder='0'
-                        sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
-                    />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Ծavali</Typography>
+                        <InputBase
+                            autoFocus
+                            fullWidth
+                            value={costModal?.value ?? ''}
+                            onChange={ev => setCostModal(prev => prev ? { ...prev, value: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
+                            onKeyDown={ev => { if (ev.key === 'Escape') setCostModal(null); }}
+                            placeholder='0'
+                            sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
+                        />
+                    </Box>
+                    <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Ծakhsvats nyuthi qanaky</Typography>
+                        <InputBase
+                            fullWidth
+                            value={costModal?.spent ?? ''}
+                            onChange={ev => setCostModal(prev => prev ? { ...prev, spent: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
+                            onKeyDown={ev => { if (ev.key === 'Enter') handleConfirmCost(); if (ev.key === 'Escape') setCostModal(null); }}
+                            placeholder='0'
+                            sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
+                        />
+                    </Box>
+                    {costModal && parseFloat(costModal.value) > 0 && parseFloat(costModal.spent) > 0 && (
+                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>
+                            Miavori arzhek: <strong style={{ color: mainPrimaryColor }}>
+                                {(parseFloat(costModal.spent) / parseFloat(costModal.value)).toLocaleString(undefined, { maximumFractionDigits: 2 })} AMD
+                            </strong>
+                        </Typography>
+                    )}
                 </Box>
-                {costModal && getActualQty(toId(costModal.row._id)) > 0 && (
-                    <Typography sx={{ fontSize: '0.78rem', color: '#999', mt: 1, px: 0.5 }}>
-                        {t('Current total')}: <strong style={{ color: '#555' }}>{getActualQty(toId(costModal.row._id)).toLocaleString(undefined, { maximumFractionDigits: 3 })}</strong>
-                    </Typography>
-                )}
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                 <Button onClick={() => setCostModal(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
