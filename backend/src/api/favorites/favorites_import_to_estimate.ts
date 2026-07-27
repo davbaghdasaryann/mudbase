@@ -116,14 +116,15 @@ registerApiSession('favorites/import_to_estimate', async (req, res, session) => 
             averagePrice: favItem.changableAveragePrice,
             changableAveragePrice: favItem.changableAveragePrice,
             laborOfferItemName: favItem.laborOfferItemName,
+            ...(favItem.isGroupRow ? { isGroupRow: true } : {}),
         };
 
         const laborResult = await estimateLaborItemsColl.insertOne(newLaborItem);
         const newLaborId = laborResult.insertedId;
         importedLaborIds.push(newLaborId);
 
-        // Import all materials attached to this favorite labor item
-        if (favItem.materials && favItem.materials.length > 0) {
+        // Import all materials attached to this favorite labor item (non-group rows)
+        if (!favItem.isGroupRow && favItem.materials && favItem.materials.length > 0) {
             for (const favMaterial of favItem.materials) {
                 const newMaterialItem: Db.EntityEstimateMaterialItem = {
                     _id: undefined as any,
@@ -138,8 +139,48 @@ registerApiSession('favorites/import_to_estimate', async (req, res, session) => 
                     changableAveragePrice: favMaterial.changableAveragePrice,
                     materialOfferItemName: favMaterial.materialOfferItemName,
                 };
-
                 await estimateMaterialItemsColl.insertOne(newMaterialItem);
+            }
+        }
+
+        // For group rows: import child works with parentGroupRowId linking them to the group
+        if (favItem.isGroupRow && favItem.childWorks && favItem.childWorks.length > 0) {
+            for (const child of favItem.childWorks) {
+                const newChildItem: Db.EntityEstimateLaborItem = {
+                    _id: undefined as any,
+                    estimateSubsectionId: estimateSubsectionId!,
+                    estimateId: estimateId,
+                    laborItemId: child.laborItemId || new ObjectId('000000000000000000000000'),
+                    laborOfferId: child.laborOfferId || new ObjectId('000000000000000000000000'),
+                    measurementUnitMongoId: child.measurementUnitMongoId,
+                    quantity: child.quantity,
+                    laborHours: child.laborHours || 0,
+                    averagePrice: child.changableAveragePrice,
+                    changableAveragePrice: child.changableAveragePrice,
+                    laborOfferItemName: child.laborOfferItemName,
+                    parentGroupRowId: newLaborId,
+                };
+                const childResult = await estimateLaborItemsColl.insertOne(newChildItem);
+                const newChildId = childResult.insertedId;
+
+                if (child.materials && child.materials.length > 0) {
+                    for (const favMaterial of child.materials) {
+                        const newMaterialItem: Db.EntityEstimateMaterialItem = {
+                            _id: undefined as any,
+                            estimateSubsectionId: estimateSubsectionId!,
+                            estimatedLaborId: newChildId,
+                            materialItemId: favMaterial.materialItemId || new ObjectId('000000000000000000000000'),
+                            materialOfferId: favMaterial.materialOfferId || new ObjectId('000000000000000000000000'),
+                            measurementUnitMongoId: favMaterial.measurementUnitMongoId,
+                            quantity: favMaterial.quantity,
+                            materialConsumptionNorm: favMaterial.materialConsumptionNorm,
+                            averagePrice: favMaterial.changableAveragePrice,
+                            changableAveragePrice: favMaterial.changableAveragePrice,
+                            materialOfferItemName: favMaterial.materialOfferItemName,
+                        };
+                        await estimateMaterialItemsColl.insertOne(newMaterialItem);
+                    }
+                }
             }
         }
     }

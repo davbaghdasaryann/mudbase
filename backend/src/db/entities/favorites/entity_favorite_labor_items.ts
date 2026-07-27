@@ -1,6 +1,6 @@
 import { Collection, ObjectId } from 'mongodb';
 
-interface FavoriteMaterialItem {
+export interface FavoriteMaterialItem {
     materialItemId?: ObjectId;
     materialOfferId?: ObjectId;
     materialOfferItemName: string;
@@ -8,6 +8,17 @@ interface FavoriteMaterialItem {
     quantity: number;
     materialConsumptionNorm: number;
     changableAveragePrice: number;
+}
+
+export interface FavoriteChildWork {
+    laborItemId?: ObjectId;
+    laborOfferId?: ObjectId;
+    laborOfferItemName: string;
+    measurementUnitMongoId: ObjectId;
+    quantity: number;
+    changableAveragePrice: number;
+    laborHours?: number;
+    materials: FavoriteMaterialItem[];
 }
 
 export interface EntityFavoriteLaborItem {
@@ -26,6 +37,10 @@ export interface EntityFavoriteLaborItem {
 
     // Materials attached to this labor item
     materials: FavoriteMaterialItem[];
+
+    // Group row support
+    isGroupRow?: boolean;
+    childWorks?: FavoriteChildWork[];
 
     createdAt: Date;
 }
