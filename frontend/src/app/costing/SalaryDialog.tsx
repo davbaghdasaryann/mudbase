@@ -200,7 +200,7 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
-                            <NumInput autoFocus label='1 ժամվա դրոյքաչափ' value={val1} onChange={setVal1} />
+                            <NumInput autoFocus label='1 ժամվա դրույքաչափ' value={val1} onChange={setVal1} />
                             <NumInput label='ժամերի քանակը' value={val2} onChange={setVal2} />
                         </>}
                         {canAdd && (
