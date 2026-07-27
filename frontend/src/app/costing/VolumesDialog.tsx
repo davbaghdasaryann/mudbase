@@ -189,7 +189,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
         {/* Cost entry sub-modal */}
         <Dialog open={!!costModal} onClose={() => setCostModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
-                Ծախsagrum
+                Ծախսագրում
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>
                 <Typography sx={{ fontSize: '0.88rem', color: '#555', mb: 2 }}>
@@ -197,7 +197,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Ծavali</Typography>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Քanaky</Typography>
                         <InputBase
                             autoFocus
                             fullWidth
@@ -209,7 +209,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                         />
                     </Box>
                     <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Ծakhsvats nyuthi qanaky</Typography>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Արzhek</Typography>
                         <InputBase
                             fullWidth
                             value={costModal?.spent ?? ''}
