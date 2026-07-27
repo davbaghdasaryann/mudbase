@@ -43,14 +43,15 @@ interface Props {
     costHistory?: CostHistoryEntry[];
 }
 
-const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 };
+const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, cursor: 'text' };
 
 function NumInput({ label, value, onChange, autoFocus }: { label: string; value: string; onChange: (v: string) => void; autoFocus?: boolean }) {
+    const inputRef = React.useRef<HTMLInputElement>(null);
     return (
-        <Box sx={INPUT_SX}>
+        <Box sx={INPUT_SX} onClick={() => inputRef.current?.focus()}>
             <Typography sx={{ fontSize: '0.85rem', color: '#555', flex: 1 }}>{label}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <InputBase autoFocus={autoFocus} value={value}
+                <InputBase autoFocus={autoFocus} value={value} inputRef={inputRef}
                     onChange={ev => onChange(ev.target.value.replace(/[^0-9.]/g, ''))}
                     placeholder='0'
                     inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.92rem', fontWeight: 600, color: '#333' } }}
@@ -195,12 +196,12 @@ export default function SalaryDialog({ open, onClose, estimate, onEntrySaved, ac
                             <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Միավոր/ժամ</Typography>} />
                         </RadioGroup>
                         {type === 'gorcarqayin' && <>
-                            <NumInput autoFocus label='Ժամաքանակ' value={val1} onChange={setVal1} />
+                            <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} />
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
-                            <NumInput autoFocus label='1 ժամva драйqачафа' value={val1} onChange={setVal1} />
-                            <NumInput label='ժամери qаnaq' value={val2} onChange={setVal2} />
+                            <NumInput autoFocus label='1 ժամվա դրոյքաչափ' value={val1} onChange={setVal1} />
+                            <NumInput label='ժամերի քանակը' value={val2} onChange={setVal2} />
                         </>}
                         {canAdd && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
