@@ -220,7 +220,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                         />
                     </Box>
                     {costModal && parseFloat(costModal.value) > 0 && parseFloat(costModal.spent) > 0 && (
-                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>Ենդհանուր արժեք: <strong style={{ color: mainPrimaryColor }}>
+                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>Ընդհանուր արժեք: <strong style={{ color: mainPrimaryColor }}>
                                 {(parseFloat(costModal.spent) * parseFloat(costModal.value)).toLocaleString(undefined, { maximumFractionDigits: 2 })} AMD
                             </strong>
                         </Typography>
