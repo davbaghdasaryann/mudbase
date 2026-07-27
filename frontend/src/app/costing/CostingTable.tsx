@@ -12,7 +12,7 @@ import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
 import type { CostHistoryEntry } from './page';
 
-interface ActualEntry { quantity: string; unitPrice: string; }
+interface ActualEntry { quantity: string; unitPrice: string; spent?: string; }
 type ActualData = Record<string, ActualEntry>;
 
 interface LaborRow {
@@ -123,7 +123,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
     const [modalSearch, setModalSearch] = useState('');
     const [modalSelected, setModalSelected] = useState<LaborRow | null>(null);
     const [modalQty, setModalQty] = useState('');
-    const [modalPrice, setModalPrice] = useState('');
+    const [modalSpent, setModalSpent] = useState('');
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const isScrollDragging = useRef(false);
@@ -193,21 +193,23 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
         setModalSearch('');
         setModalSelected(null);
         setModalQty('');
-        setModalPrice('');
+        setModalSpent('');
         setModalOpen(true);
     }, []);
 
     const handleModalSelect = useCallback((row: LaborRow) => {
         setModalSelected(row);
-        setModalQty('');
-        setModalPrice(String(row.changableAveragePrice ?? ''));
-    }, []);
+        const existing = actualData[toId(row._id)];
+        setModalQty(existing?.quantity ?? '');
+        setModalSpent(existing?.spent ?? '');
+    }, [actualData]);
 
     const handleModalConfirm = useCallback(() => {
         if (!modalSelected) return;
-        updateActualData({ ...actualData, [toId(modalSelected._id)]: { quantity: modalQty, unitPrice: modalPrice } });
         const q = parseFloat(modalQty.replace(',', '.')) || 0;
-        const p = parseFloat(modalPrice.replace(',', '.')) || 0;
+        const s = parseFloat(modalSpent.replace(',', '.')) || 0;
+        const p = q > 0 ? s / q : 0;
+        updateActualData({ ...actualData, [toId(modalSelected._id)]: { quantity: modalQty, unitPrice: String(p), spent: modalSpent } });
         onCostAdded?.({
             id: `${Date.now()}-${toId(modalSelected._id)}`,
             workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
@@ -218,7 +220,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
             addedAt: new Date(),
         });
         setModalOpen(false);
-    }, [modalSelected, modalQty, modalPrice, onCostAdded]);
+    }, [modalSelected, modalQty, modalSpent, onCostAdded]);
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -470,27 +472,34 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                         }
                     </Box>
 
-                    {/* Quantity + Unit Price inputs */}
+                    {/* Volume + Spent material inputs */}
                     {modalSelected && (
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Box sx={{ flex: 1 }}>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
-                                <InputBase
-                                    value={modalQty}
-                                    onChange={e => setModalQty(e.target.value)}
-                                    placeholder='0'
-                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
-                                />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>Ծavali</Typography>
+                                    <InputBase
+                                        value={modalQty}
+                                        onChange={e => setModalQty(e.target.value)}
+                                        placeholder='0'
+                                        sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                                    />
+                                </Box>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>Ծakhsvats nyuthi qanaky</Typography>
+                                    <InputBase
+                                        value={modalSpent}
+                                        onChange={e => setModalSpent(e.target.value)}
+                                        placeholder='0'
+                                        sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                                    />
+                                </Box>
                             </Box>
-                            <Box sx={{ flex: 1 }}>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Unit Price')}</Typography>
-                                <InputBase
-                                    value={modalPrice}
-                                    onChange={e => setModalPrice(e.target.value)}
-                                    placeholder='0'
-                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
-                                />
-                            </Box>
+                            {modalQty && modalSpent && parseFloat(modalQty) > 0 && (
+                                <Typography sx={{ fontSize: '0.78rem', color: mainPrimaryColor, fontWeight: 600 }}>
+                                    Miavori arzhek: {(parseFloat(modalSpent.replace(',', '.')) / parseFloat(modalQty.replace(',', '.'))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                </Typography>
+                            )}
                         </Box>
                     )}
                 </DialogContent>
@@ -498,7 +507,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                     <Button onClick={() => setModalOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                     <Button
                         variant='contained'
-                        disabled={!modalSelected || !modalQty}
+                        disabled={!modalSelected || !modalQty || !modalSpent}
                         onClick={handleModalConfirm}
                         sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
                     >
