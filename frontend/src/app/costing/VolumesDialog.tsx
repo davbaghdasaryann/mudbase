@@ -197,7 +197,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Քanaky</Typography>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Քանակը</Typography>
                         <InputBase
                             autoFocus
                             fullWidth
@@ -209,7 +209,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                         />
                     </Box>
                     <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Արzhek</Typography>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Արժեկ</Typography>
                         <InputBase
                             fullWidth
                             value={costModal?.spent ?? ''}
@@ -220,8 +220,7 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                         />
                     </Box>
                     {costModal && parseFloat(costModal.value) > 0 && parseFloat(costModal.spent) > 0 && (
-                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>
-                            Miavori arzhek: <strong style={{ color: mainPrimaryColor }}>
+                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>Միավորի արժեկ: <strong style={{ color: mainPrimaryColor }}>
                                 {(parseFloat(costModal.spent) / parseFloat(costModal.value)).toLocaleString(undefined, { maximumFractionDigits: 2 })} AMD
                             </strong>
                         </Typography>
