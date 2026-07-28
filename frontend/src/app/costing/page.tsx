@@ -617,7 +617,7 @@ export default function CostingPage() {
                                             : pm === 'salary_miavorzham' ? t('Hourly')
                                             : pm === 'pahest_main' || pm === 'pahest_ayl' ? t('Warehouse')
                                             : entry.isSubcontractor ? t('Subcontractor')
-                                            : t('Costing');
+                                            : 'Ծավալի հաշվառում';
                                         return (
                                         <TableRow key={entry.id} hover>
                                             <TableCell sx={{ fontSize: '0.82rem', color: '#555' }}>{actionType}</TableCell>
