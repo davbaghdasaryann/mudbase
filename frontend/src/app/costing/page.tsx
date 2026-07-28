@@ -615,7 +615,7 @@ export default function CostingPage() {
                                         const actionType = pm === 'salary_druqayin' ? t('Rate-based')
                                             : pm === 'salary_gorcarqayin' ? t('Piece-rate')
                                             : pm === 'salary_miavorzham' ? t('Hourly')
-                                            : pm === 'pahest_main' || pm === 'pahest_ayl' ? t('Warehouse')
+                                            : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
                                             : entry.isSubcontractor ? t('Subcontractor')
                                             : 'Ծավալի հաշվառում';
                                         return (
