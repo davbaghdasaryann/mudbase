@@ -1405,18 +1405,20 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         return (
                                                             <>
                                                                 {isGroup ? (
-                                                                    <IconButton
-                                                                        onClick={() => {
-                                                                            setEstimatedLaborItemId(cell.row._id as string);
-                                                                            setEstimatedLaborItemName(cell.row.itemChangableName as string);
-                                                                            setOpenAsGroupRow(true);
-                                                                            setCurrentSectionId(item._id);
-                                                                            setCurrentSubsectionId(item.children?.[0]?._id ?? null);
-                                                                            setOpenAddOfferDialogTypeWithouSubsection('labor');
-                                                                        }}
-                                                                    >
-                                                                        <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
-                                                                    </IconButton>
+                                                                    <Tooltip title="Ավելացնել խմբի մեջ" arrow placement='top'>
+                                                                        <IconButton
+                                                                            onClick={() => {
+                                                                                setEstimatedLaborItemId(cell.row._id as string);
+                                                                                setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                                setOpenAsGroupRow(true);
+                                                                                setCurrentSectionId(item._id);
+                                                                                setCurrentSubsectionId(item.children?.[0]?._id ?? null);
+                                                                                setOpenAddOfferDialogTypeWithouSubsection('labor');
+                                                                            }}
+                                                                        >
+                                                                            <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
+                                                                        </IconButton>
+                                                                    </Tooltip>
                                                                 ) : (
                                                                     <IconButton
                                                                         onClick={(event: React.MouseEvent<HTMLElement>) => {
@@ -1854,18 +1856,20 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                             return (
                                                                                 <>
                                                                                     {(cell.row as AccordionItem).isGroupRow ? (
-                                                                                        <IconButton
-                                                                                            onClick={() => {
-                                                                                                setSelectedChildId(child._id);
-                                                                                                setEstimatedLaborItemId(cell.row._id as string);
-                                                                                                setCurrentSubsectionId(child._id);
-                                                                                                setEstimatedLaborItemName(cell.row.itemChangableName as string);
-                                                                                                setOpenAsGroupRow(true);
-                                                                                                setOpenAddOfferDialogType('labor');
-                                                                                            }}
-                                                                                        >
-                                                                                            <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
-                                                                                        </IconButton>
+                                                                                        <Tooltip title="Ավելացնել խմբի մեջ" arrow placement='top'>
+                                                                                            <IconButton
+                                                                                                onClick={() => {
+                                                                                                    setSelectedChildId(child._id);
+                                                                                                    setEstimatedLaborItemId(cell.row._id as string);
+                                                                                                    setCurrentSubsectionId(child._id);
+                                                                                                    setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                                                    setOpenAsGroupRow(true);
+                                                                                                    setOpenAddOfferDialogType('labor');
+                                                                                                }}
+                                                                                            >
+                                                                                                <WorkspacesOutlinedIcon sx={{ color: '#FF9D00', fontSize: materialIconHeight }} />
+                                                                                            </IconButton>
+                                                                                        </Tooltip>
                                                                                     ) : (
                                                                                         <IconButton
                                                                                             onClick={() => {
