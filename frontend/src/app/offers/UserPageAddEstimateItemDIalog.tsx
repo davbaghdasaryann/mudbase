@@ -382,11 +382,11 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 </DialogContent>
             </> : <>
                 {/* ── Group main view ── */}
+                <DialogTitle sx={{ m: 0, px: 2, pt: 2, pb: 1, fontSize: '1.25rem', fontWeight: 700 }}>Ավելացնել խմբի մեջ</DialogTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, borderBottom: '1px solid #e0e0e0', flexShrink: 0 }}>
                     <Button startIcon={<ArrowBackIcon />} onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
                         {t('Back')}
                     </Button>
-                    <Typography sx={{ fontWeight: 600, fontSize: '1rem', color: 'text.primary' }}>Ավելացնել խմբի մեջ</Typography>
                     <TextField
                         size="small"
                         placeholder={t('Search') + '...'}
