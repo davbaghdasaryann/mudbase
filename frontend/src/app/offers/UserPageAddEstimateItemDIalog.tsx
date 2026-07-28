@@ -305,7 +305,6 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     <EstimateCatalogAccordion
                         catalogType='labor'
                         onConfirm={() => {}}
-                        hideToolbar
                         onItemSelect={async (item) => {
                             if (groupSelectedWorks.find(w => w._id === String(item._id))) {
                                 setGroupShowLibrary(false);
