@@ -33,6 +33,7 @@ import MaterialsLeftPaneContent from "@/app/offers/MaterialsLeftPaneContent";
 
 interface GroupWorkRow {
     _id: string;
+    localId: string;
     itemFullCode: string;
     itemChangableName: string;
     itemMeasurementUnit: string;
@@ -201,6 +202,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     priceWithMaterial,
                     unitPrice: qty && priceWithMaterial ? Math.round((priceWithMaterial / qty) * 1000) / 1000 : null,
                     savedEstimateId: String(item._id),
+                    localId: String(item._id),
                 };
             }));
         });
@@ -253,7 +255,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 });
                 laborId = result?.newEstimateLaborItem?.insertedId;
                 if (laborId) {
-                    setGroupSelectedWorks(prev => prev.map(w => w._id === row._id ? { ...w, savedEstimateId: laborId } : w));
+                    setGroupSelectedWorks(prev => prev.map(w => w.localId === row.localId ? { ...w, savedEstimateId: laborId } : w));
                 }
             }
             if (laborId) {
@@ -277,7 +279,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 priceWithMaterial,
                 unitPrice: qty && priceWithMaterial ? Math.round((priceWithMaterial / qty) * 1000) / 1000 : null,
             };
-            setGroupSelectedWorks(prev => prev.map(w => w._id === updated._id ? updated : w));
+            setGroupSelectedWorks(prev => prev.map(w => w.localId === updated.localId ? updated : w));
             if (updated.savedEstimateId) {
                 Api.requestSession({
                     command: 'estimate/update_labor_item',
@@ -294,7 +296,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
         };
 
         const handleGroupDeleteRow = async (row: GroupWorkRow) => {
-            setGroupSelectedWorks(prev => prev.filter(w => w._id !== row._id));
+            setGroupSelectedWorks(prev => prev.filter(w => w.localId !== row.localId));
             if (row.savedEstimateId) {
                 await Api.requestSession({ command: 'estimate/delete_labor_item', args: { laborItemId: row.savedEstimateId } }).catch(console.error);
             }
@@ -334,13 +336,10 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                         hideToolbar
                         onSearchRef={catalogSearchRef}
                         onItemSelect={async (item) => {
-                            if (groupSelectedWorks.find(w => w._id === String(item._id))) {
-                                setGroupShowLibrary(false);
-                                return;
-                            }
                             const price = item.averagePrice != null ? parseFloat(String(item.averagePrice)) : null;
                             const newRow: GroupWorkRow = {
                                 _id: String(item._id),
+                                localId: 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2),
                                 itemFullCode: item.fullCode ?? '',
                                 itemChangableName: item.label ?? item.name ?? '',
                                 itemMeasurementUnit: item.measurementUnitRepresentationSymbol ?? '',
@@ -384,8 +383,8 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             </> : <>
                 {/* ── Group main view ── */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, borderBottom: '1px solid #e0e0e0', flexShrink: 0 }}>
-                    <Button startIcon={<CloseIcon />} onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
-                        {t('Close')}
+                    <Button startIcon={<ArrowBackIcon />} onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
+                        {t('Back')}
                     </Button>
                     <TextField
                         size="small"
@@ -444,7 +443,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                 ]}
                                 rows={filteredWorks}
                                 disableRowSelectionOnClick
-                                getRowId={(row: any) => row._id}
+                                getRowId={(row: any) => row.localId}
                             />
                         </Box>
                     )}
@@ -469,7 +468,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
 
     if (offerList) {
         const handleGroupDeleteRow = async (row: GroupWorkRow) => {
-            setGroupSelectedWorks(prev => prev.filter(w => w._id !== row._id));
+            setGroupSelectedWorks(prev => prev.filter(w => w.localId !== row.localId));
             if (row.savedEstimateId) {
                 await Api.requestSession({ command: 'estimate/delete_labor_item', args: { laborItemId: row.savedEstimateId } }).catch(console.error);
             }
