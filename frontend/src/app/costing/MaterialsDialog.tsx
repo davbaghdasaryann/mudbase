@@ -38,6 +38,7 @@ interface Props {
     estimate: EstimatesApi.ApiEstimate;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number) => void;
+    actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
 }
 
 function toId(v: unknown): string {
@@ -47,7 +48,7 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate, actualData }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -148,7 +149,8 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
                                         <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{sec.name}</Typography>
                                     </Box>
                                     {secSubs.map(sub => {
-                                        const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
+                                        const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name
+                                            && (!actualData || parseFloat(actualData[toId(r._id)]?.quantity || '0') > 0));
                                         if (subRows.length === 0) return null;
                                         return (
                                             <Box key={toId(sub._id)}>

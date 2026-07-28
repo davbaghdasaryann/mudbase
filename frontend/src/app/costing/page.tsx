@@ -760,6 +760,7 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
+                    actualData={actualData}
                 />
                 <SalaryDialog
                     open={salaryOpen}
