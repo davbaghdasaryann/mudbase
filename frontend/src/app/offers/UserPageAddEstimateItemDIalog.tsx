@@ -5,10 +5,11 @@ import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { Box, DialogContent, DialogTitle, InputBase, Typography } from "@mui/material";
+import { Box, DialogContent, DialogTitle, InputAdornment, InputBase, TextField, Typography } from "@mui/material";
 import { LaborItemDisplayData } from "../../data/labor_display_data";
 import { MaterialItemDisplayData } from "../../data/material_display_data";
 
@@ -292,6 +293,13 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
             return updated;
         };
 
+        const handleGroupDeleteRow = async (row: GroupWorkRow) => {
+            setGroupSelectedWorks(prev => prev.filter(w => w._id !== row._id));
+            if (row.savedEstimateId) {
+                await Api.requestSession({ command: 'estimate/delete_labor_item', args: { laborItemId: row.savedEstimateId } }).catch(console.error);
+            }
+        };
+
         return <Dialog
             fullScreen
             open={open}
@@ -305,16 +313,19 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     <Button startIcon={<ArrowBackIcon />} onClick={() => { setGroupShowLibrary(false); setLibrarySearch(''); }} sx={{ color: 'text.secondary', textTransform: 'none' }}>
                         {t('Back')}
                     </Button>
-                    <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #ccc', borderRadius: 1, width: 280, backgroundColor: '#fff', px: 1 }}>
-                        <SearchIcon sx={{ color: '#aaa', fontSize: 18, mr: 0.5 }} />
-                        <InputBase
-                            placeholder={t('Search') + '...'}
-                            value={librarySearch}
-                            onChange={e => { setLibrarySearch(e.target.value); catalogSearchRef.current?.(e.target.value); }}
-                            sx={{ flex: 1, fontSize: '0.88rem', py: 0.4 }}
-                            autoFocus
-                        />
-                    </Box>
+                    <TextField
+                        size="small"
+                        placeholder={t('Search') + '...'}
+                        value={librarySearch}
+                        onChange={e => { setLibrarySearch(e.target.value); catalogSearchRef.current?.(e.target.value); }}
+                        autoFocus
+                        InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18, color: '#aaa' }} /></InputAdornment> }}
+                        sx={{
+                            width: 280,
+                            '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
+                        }}
+                    />
                 </Box>
                 <DialogContent sx={{ p: 0 }}>
                     <EstimateCatalogAccordion
@@ -372,17 +383,27 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 </DialogContent>
             </> : <>
                 {/* ── Group main view ── */}
-                <DialogTitle sx={{ m: 0, p: 2 }}>{t('Add work')}</DialogTitle>
-                <IconButton aria-label="close" onClick={handleClose} sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
-                    <CloseIcon />
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, borderBottom: '1px solid #e0e0e0', flexShrink: 0 }}>
+                    <Button startIcon={<CloseIcon />} onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
+                        {t('Close')}
+                    </Button>
+                    <TextField
+                        size="small"
+                        placeholder={t('Search') + '...'}
+                        value={groupMainSearch}
+                        onChange={e => setGroupMainSearch(e.target.value)}
+                        InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18, color: '#aaa' }} /></InputAdornment> }}
+                        sx={{
+                            width: 280,
+                            '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
+                        }}
+                    />
+                </Box>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                        <Box sx={{ display: 'flex', border: '1px solid #ccc', borderRadius: 1, width: 300, backgroundColor: '#fff' }}>
-                            <InputBase sx={{ ml: 1, flex: 1 }} placeholder={t('Search')} value={groupMainSearch} onChange={e => setGroupMainSearch(e.target.value)} />
-                        </Box>
+                    <Box sx={{ mb: 2 }}>
+                        <Button variant='contained' onClick={() => setGroupShowLibrary(true)}>{t('Add work')}</Button>
                     </Box>
-                    <Button variant='contained' onClick={() => setGroupShowLibrary(true)}>{t('Add work')}</Button>
                     {filteredWorks.length > 0 && (
                         <Box sx={{
                             mt: 3, width: '100%', backgroundColor: '#FFFFFF',
@@ -409,6 +430,14 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                         renderCell: (cell: any) => (
                                             <IconButton onClick={() => handleGroupMaterialClick(cell.row)}>
                                                 <ImgElement src='/images/icons/material.svg' sx={{ height: 20 }} />
+                                            </IconButton>
+                                        ),
+                                    },
+                                    {
+                                        field: 'deleteRow', type: 'actions', headerName: '', width: 50, disableColumnMenu: true,
+                                        renderCell: (cell: any) => (
+                                            <IconButton size="small" onClick={() => handleGroupDeleteRow(cell.row)} sx={{ color: '#e57373' }}>
+                                                <DeleteOutlineIcon fontSize="small" />
                                             </IconButton>
                                         ),
                                     },
@@ -439,6 +468,13 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
     }
 
     if (offerList) {
+        const handleGroupDeleteRow = async (row: GroupWorkRow) => {
+            setGroupSelectedWorks(prev => prev.filter(w => w._id !== row._id));
+            if (row.savedEstimateId) {
+                await Api.requestSession({ command: 'estimate/delete_labor_item', args: { laborItemId: row.savedEstimateId } }).catch(console.error);
+            }
+        };
+
         return <Dialog
             fullScreen
             open={open}
