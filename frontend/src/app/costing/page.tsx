@@ -34,6 +34,7 @@ import VolumesDialog from './VolumesDialog';
 import MaterialsDialog from './MaterialsDialog';
 import SalaryDialog from './SalaryDialog';
 import SubcontractorDialog from './SubcontractorDialog';
+import AnalysisTab from './AnalysisTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
@@ -676,9 +677,9 @@ export default function CostingPage() {
                     </Box>
                 )}
 
-                {tab === 'analysis' && (
-                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Typography sx={{ color: '#bbb', fontSize: '0.95rem' }}>Վերլուծություն</Typography>
+                 {tab === 'analysis' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        <AnalysisTab estimate={selectedEstimate} actualData={actualData} costHistory={costHistory} />
                     </Box>
                 )}
             </Box>
