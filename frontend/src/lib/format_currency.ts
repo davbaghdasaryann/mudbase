@@ -5,7 +5,7 @@ export function formatCurrency(value: string | number | null | undefined): strin
     if (value === '') return '';
     if (typeof value === 'number' && isNaN(value)) return '0';
 
-    let sval = typeof value === 'number' ? value.toString() : value;
+    let sval = typeof value === 'number' ? (Math.round(value * 100) / 100).toString() : value;
 
   return sval.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
 }
