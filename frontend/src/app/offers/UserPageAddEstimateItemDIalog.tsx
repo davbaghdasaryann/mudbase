@@ -5,6 +5,8 @@ import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SearchIcon from '@mui/icons-material/Search';
 
 import { Box, DialogContent, DialogTitle, InputBase, Typography } from "@mui/material";
 import { LaborItemDisplayData } from "../../data/labor_display_data";
@@ -168,6 +170,8 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
     const [groupMainSearch, setGroupMainSearch] = React.useState('');
     const [groupMaterialRowId, setGroupMaterialRowId] = React.useState<string | null>(null);
     const [groupMaterialRowName, setGroupMaterialRowName] = React.useState<string>('');
+    const catalogSearchRef = React.useRef<((val: string) => void) | null>(null);
+    const [librarySearch, setLibrarySearch] = React.useState('');
 
     React.useEffect(() => {
         if (!props.isGroupRow || !props.estimatedLaborId) return;
@@ -297,14 +301,27 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
         >
             {/* ── Library view ── */}
             {groupShowLibrary ? <>
-                <DialogTitle sx={{ m: 0, p: 2 }}>{t('Work Library')}</DialogTitle>
-                <IconButton aria-label="back" onClick={() => setGroupShowLibrary(false)} sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
-                    <CloseIcon />
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, borderBottom: '1px solid #e0e0e0', flexShrink: 0 }}>
+                    <Button startIcon={<ArrowBackIcon />} onClick={() => { setGroupShowLibrary(false); setLibrarySearch(''); }} sx={{ color: 'text.secondary', textTransform: 'none' }}>
+                        {t('Back')}
+                    </Button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #ccc', borderRadius: 1, width: 280, backgroundColor: '#fff', px: 1 }}>
+                        <SearchIcon sx={{ color: '#aaa', fontSize: 18, mr: 0.5 }} />
+                        <InputBase
+                            placeholder={t('Search') + '...'}
+                            value={librarySearch}
+                            onChange={e => { setLibrarySearch(e.target.value); catalogSearchRef.current?.(e.target.value); }}
+                            sx={{ flex: 1, fontSize: '0.88rem', py: 0.4 }}
+                            autoFocus
+                        />
+                    </Box>
+                </Box>
                 <DialogContent sx={{ p: 0 }}>
                     <EstimateCatalogAccordion
                         catalogType='labor'
                         onConfirm={() => {}}
+                        hideToolbar
+                        onSearchRef={catalogSearchRef}
                         onItemSelect={async (item) => {
                             if (groupSelectedWorks.find(w => w._id === String(item._id))) {
                                 setGroupShowLibrary(false);
