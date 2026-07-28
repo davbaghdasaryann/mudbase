@@ -32,6 +32,7 @@ import PahestAylMaterials, { type AylEntry } from './PahestAylMaterials';
 import VolumesDialog from './VolumesDialog';
 import MaterialsDialog from './MaterialsDialog';
 import SalaryDialog from './SalaryDialog';
+import SubcontractorDialog from './SubcontractorDialog';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
@@ -292,6 +293,7 @@ export default function CostingPage() {
     const [volumesOpen, setVolumesOpen] = useState(false);
     const [materialsOpen, setMaterialsOpen] = useState(false);
     const [salaryOpen, setSalaryOpen] = useState(false);
+    const [subcontractorOpen, setSubcontractorOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [records, setRecords] = useState<CostingRecord[]>([]);
@@ -547,6 +549,7 @@ export default function CostingPage() {
                             <Button variant='outlined' onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Նյութերի ծախսագրում</Button>
                             <Button variant='outlined' onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Աշխատավարձի ծախսագրում</Button>
                             <Button variant='outlined' onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ծավալների գրանցում</Button>
+                            <Button variant='outlined' onClick={() => setSubcontractorOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ենթակապալ</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1, minHeight: 180 }}>
@@ -617,6 +620,7 @@ export default function CostingPage() {
                                             : pm === 'salary_miavorzham' ? 'Աշխատավարձ «Դրույքային»'
                                             : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
                                             : pm === 'nyuth_tsakhsagrum' ? 'Նյութի Ծախսագրում'
+                                            : pm === 'subcontractor' ? 'Ենթակապալ'
                                             : entry.isSubcontractor ? t('Subcontractor')
                                             : 'Ծավալի հաշվառում';
                                         return (
@@ -785,6 +789,11 @@ export default function CostingPage() {
                     )}
                     actualData={actualData}
                     costHistory={costHistory}
+                />
+                <SubcontractorDialog
+                    open={subcontractorOpen}
+                    onClose={() => setSubcontractorOpen(false)}
+                    onCostAdded={handleCostAdded}
                 />
                 </>
             )}
