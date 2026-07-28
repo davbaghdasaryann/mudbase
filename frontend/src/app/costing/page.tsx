@@ -77,11 +77,17 @@ interface CostingRecord {
     createdAt: string;
 }
 
-const MetricCard = ({ label, value }: { label: string; value: number }) => (
+const MetricCard = ({ label, value, actualValue }: { label: string; value: number; actualValue?: number }) => (
     <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s,border-color 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)', borderColor: mainPrimaryColor } }}>
         <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, mb: 1 }} />
         <Typography variant='body2' sx={{ color: 'text.secondary', mb: 0.5 }}>{label}</Typography>
         <Typography variant='h6' sx={{ fontWeight: 700 }}>{formatCurrencyRoundedSymbol(value)}</Typography>
+        {actualValue !== undefined && (
+            <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid #d0f0f4' }}>
+                <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mb: 0.3 }}>Փաստացի</Typography>
+                <Typography variant='body1' sx={{ fontWeight: 700, color: actualValue > value ? '#e53935' : mainPrimaryColor }}>{formatCurrencyRoundedSymbol(actualValue)}</Typography>
+            </Box>
+        )}
     </Paper>
 );
 
@@ -558,11 +564,18 @@ export default function CostingPage() {
                                 <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.unitTime ?? 0} />
                             </Box>
                         </Box>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
-                            <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} />
-                            <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} />
-                            <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} />
-                        </Box>
+                        {(() => {
+                            const actualMaterials = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
+                            const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
+                            const actualTotal = actualMaterials + actualLabor;
+                            return (
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
+                                    <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} actualValue={actualTotal > 0 ? actualTotal : undefined} />
+                                    <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} actualValue={actualMaterials > 0 ? actualMaterials : undefined} />
+                                    <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} actualValue={actualLabor > 0 ? actualLabor : undefined} />
+                                </Box>
+                            );
+                        })()}
                         <BreakdownTable estimate={selectedEstimate} />
                     </Box>
                 )}
