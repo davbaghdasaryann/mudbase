@@ -613,8 +613,8 @@ export default function CostingPage() {
                                     {costHistory.map(entry => {
                                         const pm = entry.paymentMethod ?? '';
                                         const actionType = pm === 'salary_druqayin' ? t('Rate-based')
-                                            : pm === 'salary_gorcarqayin' ? t('Piece-rate')
-                                            : pm === 'salary_miavorzham' ? t('Hourly')
+                                            : pm === 'salary_gorcarqayin' ? 'Աշխատավարձ «Գործարքային»'
+                                            : pm === 'salary_miavorzham' ? 'Աշխատավարձ «Դրույքային»'
                                             : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
                                             : pm === 'nyuth_tsakhsagrum' ? 'Նյութի Ծախսագրում'
                                             : entry.isSubcontractor ? t('Subcontractor')
