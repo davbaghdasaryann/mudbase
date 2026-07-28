@@ -127,6 +127,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
             >
                 <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{idx}</td>
                 <td style={td({ paddingLeft: pl, whiteSpace: 'normal' })}>{row.laborOfferItemName || row.catalogName}</td>
+                <td style={td({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
                 <td style={td({ textAlign: 'right', fontWeight: 600, color: '#333' })}>{formatCurrencyRounded(estimated)} AMD</td>
                 <td style={td({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>
                     {hasData ? `${formatCurrencyRounded(actualTotal)} AMD` : '—'}
@@ -152,6 +153,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         </Box>
                     ) : <span style={{ color: '#ccc' }}>{'—'}</span>}
                 </td>
+                <td style={td({ textAlign: 'right', color: '#ccc' })}>{'—'}</td>
             </tr>
         );
     };
@@ -164,23 +166,27 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
 
     return (
         <Box sx={{ overflow: 'auto', pb: 4 }}>
-            <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 740 }}>
+            <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 900 }}>
                 <colgroup>
                     <col style={{ width: 44 }} />
                     <col />
-                    <col style={{ width: 140 }} />
-                    <col style={{ width: 140 }} />
-                    <col style={{ width: 150 }} />
+                    <col style={{ width: 110 }} />
                     <col style={{ width: 130 }} />
+                    <col style={{ width: 130 }} />
+                    <col style={{ width: 140 }} />
+                    <col style={{ width: 110 }} />
+                    <col style={{ width: 100 }} />
                 </colgroup>
                 <thead>
                     <tr>
                         <th style={th({ textAlign: 'center' })}>{'№'}</th>
                         <th style={th({ textAlign: 'left' })}>Աշխատանքի անվանումը</th>
+                        <th style={th({ textAlign: 'right' })}>Միավորի առժեք</th>
                         <th style={th({ textAlign: 'right' })}>Նախահաշիվ</th>
                         <th style={th({ textAlign: 'right' })}>Փաստացի</th>
                         <th style={th({ textAlign: 'right' })}>Տառբեռություն</th>
                         <th style={th({ textAlign: 'right' })}>Շահութաբերություն</th>
+                        <th style={th({ textAlign: 'right' })}>Լրացուցիչ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,16 +194,11 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         const sectionItems = rows.filter(r => r.sectionName === section.name);
                         if (sectionItems.length === 0) return null;
                         const subs = subsMap.get(toId(section._id)) ?? [];
-                        const secEst = sectionItems.reduce((s, r) => s + (r.cost ?? 0), 0);
-                        const secAct = sectionItems.reduce((s, r) => { const { actualTotal, hasData } = getActuals(r); return hasData ? s + actualTotal : s; }, 0);
-                        const secHas = sectionItems.some(r => getActuals(r).hasData);
-                        const secDiff = secHas ? secEst - secAct : null;
-                        const secPct = secDiff !== null && secEst > 0 ? (secDiff / secEst) * 100 : null;
 
                         return (
                             <>
                                 <tr key={`sec-${section._id}`} style={{ backgroundColor: SEC_BG }}>
-                                    <td colSpan={6} style={td({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, borderTop: si > 0 ? '2px solid #b2e8ed' : undefined })}>
+                                    <td colSpan={8} style={td({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, borderTop: si > 0 ? '2px solid #b2e8ed' : undefined })}>
                                         {si + 1}. {section.name.toUpperCase()}
                                     </td>
                                 </tr>
@@ -208,7 +209,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                         return (
                                             <>
                                                 <tr key={`sub-${sub._id}`} style={{ backgroundColor: SUB_BG }}>
-                                                    <td colSpan={6} style={td({ paddingLeft: 28, color: '#666', fontStyle: 'italic', fontSize: '0.8rem' })}>
+                                                    <td colSpan={8} style={td({ paddingLeft: 28, color: '#666', fontStyle: 'italic', fontSize: '0.8rem' })}>
                                                         {si + 1}.{subI + 1}. {sub.name}
                                                     </td>
                                                 </tr>
@@ -218,31 +219,15 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                     })
                                     : sectionItems.map(row => renderRow(row, ++counter, 20))
                                 }
-                                <tr style={{ backgroundColor: '#eaf8fa' }}>
-                                    <td colSpan={2} style={td({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>
-                                        Ենթագումար
-                                    </td>
-                                    <td style={td({ textAlign: 'right', fontWeight: 700, color: '#333' })}>{formatCurrencyRounded(secEst)} AMD</td>
-                                    <td style={td({ textAlign: 'right', fontWeight: 700, color: secHas ? mainPrimaryColor : '#ccc' })}>
-                                        {secHas ? `${formatCurrencyRounded(secAct)} AMD` : '—'}
-                                    </td>
-                                    <td style={td({ textAlign: 'right' })}>
-                                        {secDiff !== null
-                                            ? <span style={{ fontWeight: 700, color: secDiff >= 0 ? '#2e7d32' : '#c62828' }}>{secDiff >= 0 ? '+' : ''}{formatCurrencyRounded(secDiff)} AMD</span>
-                                            : '—'}
-                                    </td>
-                                    <td style={td({ textAlign: 'right' })}>
-                                        {secPct !== null
-                                            ? <span style={{ fontWeight: 700, color: secPct >= 0 ? '#2e7d32' : '#c62828' }}>{secPct >= 0 ? '+' : ''}{secPct.toFixed(1)}%</span>
-                                            : '—'}
-                                    </td>
-                                </tr>
                             </>
                         );
                     })}
                     <tr style={{ backgroundColor: '#d6f4f7' }}>
                         <td colSpan={2} style={td({ fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             Ընդամենը
+                        </td>
+                        <td style={td({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                            {'—'}
                         </td>
                         <td style={td({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {formatCurrencyRounded(grandEstimated)} AMD
@@ -260,6 +245,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                 ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '—'}
                         </td>
+                        <td style={td({ borderTop: `2px solid ${mainPrimaryColor}` })}>{'—'}</td>
                     </tr>
                 </tbody>
             </table>

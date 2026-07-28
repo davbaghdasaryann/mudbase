@@ -61,6 +61,7 @@ const BASE_COLS = [
     { key: 'qty2',  defaultW: 90  },
     { key: 'up2',   defaultW: 100 },
     { key: 'total2',defaultW: 110 },
+    { key: 'remain', defaultW: 110 },
 ];
 const MIN_COL_W = 50;
 
@@ -329,6 +330,12 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                         <td style={tdStyle({ textAlign: 'right', borderLeft: '2px solid #b2e8ed', color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                         <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>{hasData ? formatCurrencyRounded(p) : '—'}</td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>{hasData ? formatCurrencyRounded(tot) : '—'}</td>
+                        {(() => {
+                            const estQty = Number(row.quantity ?? 0);
+                            const remainQty = hasData ? estQty - q : null;
+                            const remainColor = remainQty === null ? '#ccc' : remainQty >= 0 ? '#2e7d32' : '#c62828';
+                            return <td style={tdStyle({ textAlign: 'right', borderLeft: '2px solid #b2e8ed', color: remainColor, fontWeight: remainQty !== null ? 600 : 400 })}>{remainQty !== null ? remainQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>;
+                        })()}
                     </>
                 );
             })()}
@@ -362,6 +369,10 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                             </th>
                             <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: '2px solid #b2e8ed' })}>
                                 {t('Actual')}
+                            </th>
+                            <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: '2px solid #b2e8ed' })}>
+                                Մնացորդային
+                                <ResizeHandle onDragStart={e => startResize(9, e)} />
                             </th>
                         </tr>
                         {/* Row 2: sub-column labels */}
@@ -420,6 +431,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                         <td style={tdStyle({ borderLeft: '2px solid #b2e8ed' })}></td>
                                         <td style={tdStyle({})}></td>
                                         <td style={tdStyle({})}></td>
+                                        <td style={tdStyle({ borderLeft: '2px solid #b2e8ed' })}></td>
                                     </tr>
                                 </>
                             );
