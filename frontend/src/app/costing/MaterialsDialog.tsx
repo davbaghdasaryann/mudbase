@@ -14,6 +14,7 @@ import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { mainPrimaryColor } from '@/theme';
 import { type PahestEntry } from './PahestMainMaterials';
+import { type CostHistoryEntry } from './page';
 
 interface Section { _id: string; name: string; displayIndex: number; }
 interface Subsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
@@ -38,6 +39,7 @@ interface Props {
     estimate: EstimatesApi.ApiEstimate;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number) => void;
+    onCostAdded?: (entry: CostHistoryEntry) => void;
 }
 
 function toId(v: unknown): string {
@@ -47,7 +49,7 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate, onCostAdded }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -86,7 +88,18 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
         if (!materialModal) return;
         const qty = parseFloat(materialModal.value.replace(',', '.')) || 0;
         if (qty <= 0) return;
-        onPahestUpdate(materialModal.material.materialItemId, qty);
+        const mat = materialModal.material;
+        onPahestUpdate(mat.materialItemId, qty);
+        onCostAdded?.({
+            id: String(Date.now() + Math.random()),
+            workName: mat.name,
+            unit: mat.unit,
+            quantity: qty,
+            unitPrice: mat.costPerUnit,
+            total: qty * mat.costPerUnit,
+            addedAt: new Date(),
+            paymentMethod: 'nyuth_tsakhsagrum',
+        });
         setMaterialModal(null);
     };
 

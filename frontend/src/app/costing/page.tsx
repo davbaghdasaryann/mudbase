@@ -616,6 +616,7 @@ export default function CostingPage() {
                                             : pm === 'salary_gorcarqayin' ? t('Piece-rate')
                                             : pm === 'salary_miavorzham' ? t('Hourly')
                                             : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
+                                            : pm === 'nyuth_tsakhsagrum' ? 'Նյութի Ծախսագրում'
                                             : entry.isSubcontractor ? t('Subcontractor')
                                             : 'Ծավալի հաշվառում';
                                         return (
@@ -773,6 +774,7 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
+                    onCostAdded={handleCostAdded}
                 />
                 <SalaryDialog
                     open={salaryOpen}
