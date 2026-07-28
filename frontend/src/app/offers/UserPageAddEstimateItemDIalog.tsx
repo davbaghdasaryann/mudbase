@@ -386,6 +386,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                     <Button startIcon={<ArrowBackIcon />} onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
                         {t('Back')}
                     </Button>
+                    <Typography sx={{ fontWeight: 600, fontSize: '1rem', color: 'text.primary' }}>Ավելացնել խմբի մեջ</Typography>
                     <TextField
                         size="small"
                         placeholder={t('Search') + '...'}

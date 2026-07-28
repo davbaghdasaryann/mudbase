@@ -1420,15 +1420,17 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         </IconButton>
                                                                     </Tooltip>
                                                                 ) : (
-                                                                    <IconButton
-                                                                        onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                                                            setEstimatedLaborItemId(cell.row._id);
-                                                                            setOpenAddOfferDialogTypeWithouSubsection('material');
-                                                                            setEstimatedLaborItemName(cell.row.itemChangableName);
-                                                                        }}
-                                                                    >
-                                                                        <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
-                                                                    </IconButton>
+                                                                    <Tooltip title="Ավելացնել նյութ" arrow placement='top'>
+                                                                        <IconButton
+                                                                            onClick={(event: React.MouseEvent<HTMLElement>) => {
+                                                                                setEstimatedLaborItemId(cell.row._id);
+                                                                                setOpenAddOfferDialogTypeWithouSubsection('material');
+                                                                                setEstimatedLaborItemName(cell.row.itemChangableName);
+                                                                            }}
+                                                                        >
+                                                                            <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
+                                                                        </IconButton>
+                                                                    </Tooltip>
                                                                 )}
                                                             </>
                                                         );
@@ -1871,16 +1873,18 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                             </IconButton>
                                                                                         </Tooltip>
                                                                                     ) : (
-                                                                                        <IconButton
-                                                                                            onClick={() => {
-                                                                                                setSelectedChildId(child._id);
-                                                                                                setEstimatedLaborItemId(cell.row._id as string);
-                                                                                                setOpenAddOfferDialogType('material');
-                                                                                                setEstimatedLaborItemName(cell.row.itemChangableName as string);
-                                                                                            }}
-                                                                                        >
-                                                                                            <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
-                                                                                        </IconButton>
+                                                                                        <Tooltip title="Ավելացնել նյութ" arrow placement='top'>
+                                                                                            <IconButton
+                                                                                                onClick={() => {
+                                                                                                    setSelectedChildId(child._id);
+                                                                                                    setEstimatedLaborItemId(cell.row._id as string);
+                                                                                                    setOpenAddOfferDialogType('material');
+                                                                                                    setEstimatedLaborItemName(cell.row.itemChangableName as string);
+                                                                                                }}
+                                                                                            >
+                                                                                                <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
+                                                                                            </IconButton>
+                                                                                        </Tooltip>
                                                                                     )}
                                                                                 </>
                                                                             );
