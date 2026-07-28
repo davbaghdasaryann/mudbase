@@ -22,6 +22,7 @@ import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import HistoryIcon from '@mui/icons-material/History';
 import WarehouseOutlinedIcon from '@mui/icons-material/WarehouseOutlined';
+import InsightsIcon from '@mui/icons-material/Insights';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -116,7 +117,7 @@ const outlinedCreateSx = {
     '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
 };
 
-type TabValue = 'general' | 'main' | 'history' | 'pahest';
+type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
@@ -545,6 +546,7 @@ export default function CostingPage() {
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><FormatListBulletedIcon sx={{ fontSize: 18 }} />{t('Main')}</Box>} value='main' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><HistoryIcon sx={{ fontSize: 18 }} />{t('History')}</Box>} value='history' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><WarehouseOutlinedIcon sx={{ fontSize: 18 }} />Պահեստ</Box>} value='pahest' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><InsightsIcon sx={{ fontSize: 18 }} />Վերլուծություն</Box>} value='analysis' />
                             </TabList>
                         </Box>
                     </Box>
@@ -671,6 +673,12 @@ export default function CostingPage() {
                                 onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_ayl' }, ...prev])}
                             />
                         </Box>
+                    </Box>
+                )}
+
+                {tab === 'analysis' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Typography sx={{ color: '#bbb', fontSize: '0.95rem' }}>Վերլուծություն</Typography>
                     </Box>
                 )}
             </Box>
