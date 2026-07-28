@@ -38,7 +38,6 @@ interface Props {
     estimate: EstimatesApi.ApiEstimate;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number) => void;
-    actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
 }
 
 function toId(v: unknown): string {
@@ -48,7 +47,7 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate, actualData }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -149,8 +148,7 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
                                         <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{sec.name}</Typography>
                                     </Box>
                                     {secSubs.map(sub => {
-                                        const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name
-                                            && (!actualData || parseFloat(actualData[toId(r._id)]?.quantity || '0') > 0));
+                                        const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
                                         if (subRows.length === 0) return null;
                                         return (
                                             <Box key={toId(sub._id)}>
@@ -184,14 +182,14 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
 
                     {/* PAGE 2: Materials for selected work */}
                     <Box sx={{ width: '50%', overflowY: 'auto', p: 2 }}>
-                        {pahestEntries.length === 0 ? (
+                        {pahestEntries.filter(e => e.quantity > 0).length === 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
                                 <ShoppingCartOutlinedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.3 }} />
                                 <Typography sx={{ fontSize: '0.88rem' }}>Պահեստում նյութերի չկան</Typography>
                             </Box>
                         ) : (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
-                                {pahestEntries.map(mat => (
+                                {pahestEntries.filter(e => e.quantity > 0).map(mat => (
                                     <Box
                                         key={mat.materialItemId}
                                         sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}
