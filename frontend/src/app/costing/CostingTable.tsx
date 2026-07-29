@@ -67,36 +67,30 @@ const BASE_COLS = [
 ];
 const MIN_COL_W = 50;
 
-const BORDER = '#e8f7f9';
-const SEC_BG = '#e6f7f9';
-const SUB_BG = '#f7fdfe';
-const SUB_TOTAL_BG = '#eaf8fa';
-const GRAND_BG = '#d6f4f7';
-const HDR_BG = '#f0fbfc';
+const ROW_LINE = '1px solid #f0f2f4';
+const GSEP = '1px solid #e8f4f6';
 
 const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`,
-    padding: '6px 8px',
+    padding: '8px 10px',
     whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
     position: 'relative',
-    fontWeight: 700,
-    fontSize: '0.8rem',
-    color: '#222',
-    backgroundColor: HDR_BG,
-    borderBottom: `2px solid ${mainPrimaryColor}`,
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    color: '#6b7280',
+    backgroundColor: '#fff',
+    letterSpacing: '0.03em',
+    textTransform: 'uppercase',
+    border: 'none',
+    borderBottom: '2px solid #e8f7f9',
     ...extra,
 });
 
 const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`,
-    padding: '5px 8px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    padding: '7px 10px',
     fontSize: '0.82rem',
     verticalAlign: 'middle',
+    border: 'none',
+    borderBottom: ROW_LINE,
     ...extra,
 });
 
@@ -189,7 +183,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
     const onMouseUp = useCallback(() => {
         if (!scrollRef.current) return;
         isScrollDragging.current = false;
-        scrollRef.current.style.cursor = 'default';
+        scrollRef.current.style.cursor = 'grab';
     }, []);
 
     const openModal = useCallback(() => {
@@ -306,9 +300,9 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
     let itemCounter = 0;
 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => (
-        <tr key={toId(row._id)} style={{ backgroundColor: counter % 2 === 0 ? '#fafeff' : '#fff' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = counter % 2 === 0 ? '#fafeff' : '#fff'; }}
+        <tr key={toId(row._id)} style={{ backgroundColor: '#fff' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
         >
             <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
             <td style={tdStyle({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
@@ -329,7 +323,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                 const hasData = a || salaryTotal > 0;
                 return (
                     <>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: '2px solid #b2e8ed', color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                         <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>{hasData ? formatCurrencyRounded(p) : '—'}</td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>{hasData ? formatCurrencyRounded(tot) : '—'}</td>
                         {(() => {
@@ -344,7 +338,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                             const fmt3 = (v: number | null, decimals = 2) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: decimals }) : '—';
                             return (
                                 <>
-                                    <td style={tdStyle({ textAlign: 'right', borderLeft: '2px solid #b2e8ed', color: col(rQty), fontWeight: fw(rQty) })}>{fmt3(rQty)}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{fmt3(rQty)}</td>
                                     <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
                                     <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
                                 </>
@@ -366,7 +360,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
             </Box>
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
-                sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'auto', cursor: 'default' }}>
+                sx={{ overflow: 'auto', cursor: 'grab' }}>
                 <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: colWidths.reduce((s, w) => s + w, 0) }}>
                     <colgroup>{colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
                     <thead>
@@ -381,10 +375,10 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                             <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>
                                 {t('As per Estimate')}
                             </th>
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: '2px solid #b2e8ed' })}>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>
                                 {t('Actual')}
                             </th>
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: '2px solid #b2e8ed' })}>Մնացորդային</th>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>Մնացորդային</th>
                         </tr>
                         {/* Row 2: sub-column labels */}
                         <tr>
@@ -393,9 +387,9 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                     textAlign: 'right',
                                     fontSize: '0.75rem',
                                     fontWeight: 600,
-                                    color: '#222',
-                                    borderBottom: '1px solid #b2e8ed',
-                                    ...(i === 6 || i === 9 ? { borderLeft: '2px solid #b2e8ed' } : {}),
+                                    color: '#6b7280',
+                                    borderBottom: GSEP,
+                                    ...(i === 6 || i === 9 ? { borderLeft: GSEP } : {}),
                                 })}>
                                     {i === 3 || i === 6 || i === 9 ? t('Quantity') : i === 4 || i === 7 || i === 10 ? t('Unit Price') : t('Total')}
                                     <ResizeHandle onDragStart={e => startResize(i, e)} />
@@ -412,8 +406,8 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
 
                             return (
                                 <>
-                                    <tr key={`section-${section._id}`} style={{ backgroundColor: SEC_BG }}>
-                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? '2px solid #b2e8ed' : undefined })}>
+                                    <tr key={`section-${section._id}`} style={{ backgroundColor: '#f9feff' }}>
+                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
                                             {sectionIdx + 1}. {section.name.toUpperCase()}
                                         </td>
                                     </tr>
@@ -424,8 +418,8 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                             if (subItems.length === 0) return null;
                                             return (
                                                 <>
-                                                    <tr key={`sub-${sub._id}`} style={{ backgroundColor: SUB_BG }}>
-                                                        <td colSpan={totalCols} style={tdStyle({ paddingLeft: 28, color: '#666', fontStyle: 'italic', fontSize: '0.8rem' })}>
+                                                    <tr key={`sub-${sub._id}`}>
+                                                        <td colSpan={totalCols} style={tdStyle({ paddingLeft: 28, color: '#9ca3af', fontStyle: 'italic', fontSize: '0.78rem' })}>
                                                             {sectionIdx + 1}.{subIdx + 1}. {sub.name}
                                                         </td>
                                                     </tr>
@@ -436,13 +430,13 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                         : sectionItems.map(row => renderItemRow(row, ++itemCounter, 20))
                                     }
 
-                                    <tr style={{ backgroundColor: SUB_TOTAL_BG }}>
-                                        <td colSpan={5} style={tdStyle({ fontWeight: 700, textAlign: 'right', color: '#00818f', fontSize: '0.8rem', paddingRight: 12 })}>{t('Subtotal')}</td>
+                                    <tr style={{ backgroundColor: '#f9feff' }}>
+                                        <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
                                         <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
-                                        <td style={tdStyle({ borderLeft: '2px solid #b2e8ed' })}></td>
+                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
                                         <td style={tdStyle({})}></td>
                                         <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({ borderLeft: '2px solid #b2e8ed' })}></td>
+                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
                                         <td style={tdStyle({})}></td>
                                         <td style={tdStyle({})}></td>
                                     </tr>
@@ -450,8 +444,8 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                             );
                         })}
 
-                        <tr style={{ backgroundColor: GRAND_BG }}>
-                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 800, textAlign: 'left', color: mainPrimaryColor, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}` })}>{t('Total')}</td>
+                        <tr style={{ backgroundColor: '#f0fbfc' }}>
+                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: mainPrimaryColor, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}`, borderBottom: 'none' })}>{t('Total')}</td>
                         </tr>
                     </tbody>
                 </table>
