@@ -26,16 +26,19 @@ function toId(v: unknown): string {
 }
 
 const MIN_COL_W = 50;
-const NCOLS = 11;
+const NCOLS = 14;
 
 const BASE_COLS = [
     { key: 'no',       defaultW: 44  },
     { key: 'name',     defaultW: 400 },
     { key: 'estQty',   defaultW: 80  },
+    { key: 'estUnit',  defaultW: 110 },
     { key: 'estAmt',   defaultW: 130 },
     { key: 'actQty',   defaultW: 80  },
+    { key: 'actUnit',  defaultW: 110 },
     { key: 'actAmt',   defaultW: 130 },
     { key: 'remQty',   defaultW: 80  },
+    { key: 'remUnit',  defaultW: 110 },
     { key: 'remAmt',   defaultW: 140 },
     { key: 'pct',      defaultW: 120 },
     { key: 'extraQty', defaultW: 80  },
@@ -53,28 +56,21 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-// Minimalistic styles — horizontal lines only, no cell borders
 const ROW_LINE = '1px solid #f0f2f4';
-const GROUP_LINE = '1px solid #d6eef1';
+const GSEP = '1px solid #e8f4f6';
 const ACCENT = mainPrimaryColor;
 
 const thBase: React.CSSProperties = {
-    padding: '8px 10px',
-    whiteSpace: 'nowrap',
-    position: 'relative',
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    color: '#6b7280',
-    backgroundColor: '#fff',
-    borderBottom: '2px solid #e8f7f9',
-    letterSpacing: '0.03em',
-    textTransform: 'uppercase',
-    border: 'none',
+    padding: '8px 10px', whiteSpace: 'nowrap', position: 'relative',
+    fontWeight: 600, fontSize: '0.75rem', color: '#6b7280',
+    backgroundColor: '#fff', borderBottom: '2px solid #e8f7f9',
+    letterSpacing: '0.03em', textTransform: 'uppercase', border: 'none',
 };
 const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...thBase, ...extra, borderBottom: '2px solid #e8f7f9' });
 const tdBase: React.CSSProperties = { padding: '7px 10px', fontSize: '0.82rem', verticalAlign: 'middle', border: 'none', borderBottom: ROW_LINE };
 const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...tdBase, ...extra });
-const fmtQty = (v: number | null) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '\u2014';
+const fmtQty  = (v: number | null) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '\u2014';
+const fmtUnit = (v: number | null) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014';
 
 interface Props {
     estimate: EstimatesApi.ApiEstimate;
@@ -177,14 +173,16 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
         const { actQty, actTotal, hasData } = getActuals(row);
         const estQty   = Number(row.quantity ?? 0);
         const estTotal = row.cost ?? 0;
+        const estUnit  = row.changableAveragePrice ?? (estQty > 0 ? estTotal / estQty : null);
+        const actUnit  = hasData && actQty > 0 ? actTotal / actQty : null;
         const remQty   = hasData ? estQty - actQty : null;
         const remTotal = hasData ? estTotal - actTotal : null;
+        const remUnit  = remQty !== null && remQty > 0 && remTotal !== null ? remTotal / remQty : null;
         const pct      = remTotal !== null && estTotal > 0 ? (remTotal / estTotal) * 100 : null;
         const cheaper  = remTotal !== null ? remTotal >= 0 : null;
         const exQty    = hasData && actQty > estQty  ? actQty  - estQty  : null;
         const exAmt    = hasData && actTotal > estTotal ? actTotal - estTotal : null;
         const itemName = row.laborOfferItemName || row.catalogName;
-        const GSEP = '1px solid #e8f4f6';
 
         return (
             <tr key={toId(row._id)}
@@ -195,13 +193,18 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                 <td style={tdStyle({ textAlign: 'center', color: '#bbb', fontSize: '0.74rem' })}>{idx}</td>
                 <td style={tdStyle({ paddingLeft: pl, whiteSpace: 'normal', color: '#111' })}>{itemName}</td>
                 <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{fmtQty(estQty)}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{estUnit !== null ? fmtUnit(estUnit) : '\u2014'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: '#333', fontWeight: 500 })}>{formatCurrencyRounded(estTotal)}</td>
                 <td style={tdStyle({ textAlign: 'right', color: hasData ? '#777' : '#ddd', borderLeft: GSEP })}>{hasData ? fmtQty(actQty) : '\u2014'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData && actUnit !== null ? '#555' : '#ddd' })}>{hasData && actUnit !== null ? fmtUnit(actUnit) : '\u2014'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: hasData ? ACCENT : '#ddd', fontWeight: hasData ? 600 : 400 })}>
                     {hasData ? formatCurrencyRounded(actTotal) : '\u2014'}
                 </td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: remQty === null ? '#ddd' : remQty >= 0 ? '#2e7d32' : '#c62828' })}>
                     {fmtQty(remQty)}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', color: remUnit === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828' })}>
+                    {remUnit !== null ? fmtUnit(remUnit) : '\u2014'}
                 </td>
                 <td style={tdStyle({ textAlign: 'right', color: remTotal === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828', fontWeight: remTotal !== null ? 600 : 400 })}>
                     {remTotal !== null ? `${remTotal >= 0 ? '+' : ''}${formatCurrencyRounded(remTotal)}` : '\u2014'}
@@ -228,18 +231,35 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
 
     const grandEstQty   = rows.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
     const grandEstTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
+    const grandEstUnit  = grandEstQty > 0 ? grandEstTotal / grandEstQty : null;
     const grandActQty   = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); return hasData ? s + actQty : s; }, 0);
     const grandActTotal = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
+    const grandActUnit  = grandActQty > 0 ? grandActTotal / grandActQty : null;
     const grandHasAct   = rows.some(r => getActuals(r).hasData);
     const grandRemQty   = grandHasAct ? grandEstQty - grandActQty : null;
     const grandRemTotal = grandHasAct ? grandEstTotal - grandActTotal : null;
+    const grandRemUnit  = grandRemQty !== null && grandRemQty > 0 && grandRemTotal !== null ? grandRemTotal / grandRemQty : null;
     const grandPct      = grandRemTotal !== null && grandEstTotal > 0 ? (grandRemTotal / grandEstTotal) * 100 : null;
     const grandExQty    = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); const eq = Number(r.quantity ?? 0); return hasData && actQty > eq ? s + (actQty - eq) : s; }, 0);
     const grandExAmt    = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); const et = r.cost ?? 0; return hasData && actTotal > et ? s + (actTotal - et) : s; }, 0);
     const grandHasEx    = rows.some(r => { const { actQty, actTotal, hasData } = getActuals(r); return hasData && (actQty > Number(r.quantity ?? 0) || actTotal > (r.cost ?? 0)); });
 
     const totalW = colWidths.reduce((s, w) => s + w, 0);
-    const GSEP = '1px solid #e8f4f6';
+
+    // sub-header mapping: visual col index → label + borderLeft
+    const SUB_COLS: Array<{ idx: number; label: string; bl: boolean }> = [
+        { idx: 2,  label: 'քանակ', bl: true  },
+        { idx: 3,  label: 'Միավոր', bl: false },
+        { idx: 4,  label: 'Արժեք', bl: false },
+        { idx: 5,  label: 'քանակ', bl: true  },
+        { idx: 6,  label: 'Միավոր', bl: false },
+        { idx: 7,  label: 'Արժեք', bl: false },
+        { idx: 8,  label: 'քանակ', bl: true  },
+        { idx: 9,  label: 'Միավոր', bl: false },
+        { idx: 10, label: 'Արժեք', bl: false },
+        { idx: 12, label: 'քանակ', bl: true  },
+        { idx: 13, label: 'Արժեք', bl: false },
+    ];
 
     return (
         <Box ref={scrollRef}
@@ -256,22 +276,22 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>
                             Աշխատանքի անվանումը<ResizeHandle onDragStart={e => startResize(1, e)} />
                         </th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Նախահաշիվ</th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Փաստացի</th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Մնացորդային</th>
+                        <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Նախահաշիվ</th>
+                        <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Փաստացի</th>
+                        <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Մնացորդային</th>
                         <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>
-                            Շահութաբերություն<ResizeHandle onDragStart={e => startResize(8, e)} />
+                            Շահութաբերություն<ResizeHandle onDragStart={e => startResize(11, e)} />
                         </th>
                         <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#c62828' })}>Լրացուցիչ</th>
                     </tr>
                     <tr>
-                        {[2, 3, 4, 5, 6, 7, 9, 10].map(i => (
-                            <th key={i} style={thStyle({
+                        {SUB_COLS.map(({ idx, label, bl }) => (
+                            <th key={idx} style={thStyle({
                                 textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af',
-                                ...([2, 4, 6, 9].includes(i) ? { borderLeft: GSEP } : {}),
+                                ...(bl ? { borderLeft: GSEP } : {}),
                             })}>
-                                {[2, 4, 6, 9].includes(i) ? 'քանակ' : 'Արժեքը'}
-                                <ResizeHandle onDragStart={e => startResize(i > 7 ? i - 1 : i, e)} />
+                                {label}
+                                <ResizeHandle onDragStart={e => startResize(idx, e)} />
                             </th>
                         ))}
                     </tr>
@@ -318,17 +338,17 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         );
                     })}
                     <tr style={{ backgroundColor: '#f0fbfc' }}>
-                        <td colSpan={2} style={tdStyle({
-                            fontWeight: 700, color: ACCENT, fontSize: '0.82rem',
-                            borderTop: `2px solid ${ACCENT}`, borderBottom: 'none',
-                        })}>
+                        <td colSpan={2} style={tdStyle({ fontWeight: 700, color: ACCENT, fontSize: '0.82rem', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             Ընդամենը
                         </td>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{fmtQty(grandEstQty)}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{grandEstUnit !== null ? fmtUnit(grandEstUnit) : '\u2014'}</td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#222', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{formatCurrencyRounded(grandEstTotal)}</td>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{grandHasAct ? fmtQty(grandActQty) : '\u2014'}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{grandHasAct && grandActUnit !== null ? fmtUnit(grandActUnit) : '\u2014'}</td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: ACCENT, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{grandHasAct ? formatCurrencyRounded(grandActTotal) : '\u2014'}</td>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemQty === null ? '#ccc' : grandRemQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: 600 })}>{fmtQty(grandRemQty)}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemUnit === null ? '#ccc' : grandRemTotal !== null && grandRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>{grandRemUnit !== null ? fmtUnit(grandRemUnit) : '\u2014'}</td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemTotal === null ? '#ccc' : grandRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>
                             {grandRemTotal !== null ? `${grandRemTotal >= 0 ? '+' : ''}${formatCurrencyRounded(grandRemTotal)}` : '\u2014'}
                         </td>
