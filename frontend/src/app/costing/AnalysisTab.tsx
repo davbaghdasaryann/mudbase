@@ -152,10 +152,24 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         </Box>
                     ) : <span style={{ color: '#ccc' }}>{'—'}</span>}
                 </td>
-                <td style={td({ textAlign: 'right', color: '#ccc' })}>{'—'}</td>
+                <td style={td({ textAlign: 'right' })}>
+                    {hasData && actualTotal > estimated
+                        ? <span style={{ fontWeight: 700, color: '#c62828' }}>{formatCurrencyRounded(actualTotal - estimated)} AMD</span>
+                        : <span style={{ color: '#ccc' }}>{'—'}</span>}
+                </td>
             </tr>
         );
     };
+
+    const grandExcess = rows.reduce((s, r) => {
+        const { actualTotal, hasData } = getActuals(r);
+        const est = r.cost ?? 0;
+        return hasData && actualTotal > est ? s + (actualTotal - est) : s;
+    }, 0);
+    const grandHasExcess = rows.some(r => {
+        const { actualTotal, hasData } = getActuals(r);
+        return hasData && actualTotal > (r.cost ?? 0);
+    });
 
     const grandEstimated = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
     const grandActual = rows.reduce((s, r) => { const { actualTotal, hasData } = getActuals(r); return hasData ? s + actualTotal : s; }, 0);
@@ -164,16 +178,16 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
     const grandPct = grandDiff !== null && grandEstimated > 0 ? (grandDiff / grandEstimated) * 100 : null;
 
     return (
-        <Box sx={{ overflow: 'auto', pb: 4 }}>
+        <Box sx={{ overflow: 'auto', pb: 4, width: '100%' }}>
             <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 900 }}>
                 <colgroup>
                     <col style={{ width: 44 }} />
                     <col />
                     <col style={{ width: 130 }} />
                     <col style={{ width: 130 }} />
-                    <col style={{ width: 140 }} />
-                    <col style={{ width: 110 }} />
-                    <col style={{ width: 100 }} />
+                    <col style={{ width: 150 }} />
+                    <col style={{ width: 135 }} />
+                    <col style={{ width: 135 }} />
                 </colgroup>
                 <thead>
                     <tr>
@@ -181,7 +195,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         <th style={th({ textAlign: 'left' })}>Աշխատանքի անվանումը</th>
                         <th style={th({ textAlign: 'right' })}>Նախահաշիվ</th>
                         <th style={th({ textAlign: 'right' })}>Փաստացի</th>
-                        <th style={th({ textAlign: 'right' })}>Տառբեռություն</th>
+                        <th style={th({ textAlign: 'right' })}>Մնացորդային</th>
                         <th style={th({ textAlign: 'right' })}>Շահութաբերություն</th>
                         <th style={th({ textAlign: 'right' })}>Լրացուցիչ</th>
                     </tr>
@@ -239,7 +253,11 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                 ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '—'}
                         </td>
-                        <td style={td({ borderTop: `2px solid ${mainPrimaryColor}` })}>{'—'}</td>
+                        <td style={td({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                            {grandHasExcess
+                                ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#c62828' }}>{formatCurrencyRounded(grandExcess)} AMD</span>
+                                : '—'}
+                        </td>
                     </tr>
                 </tbody>
             </table>
