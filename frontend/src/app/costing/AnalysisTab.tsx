@@ -127,7 +127,6 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
             >
                 <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{idx}</td>
                 <td style={td({ paddingLeft: pl, whiteSpace: 'normal' })}>{row.laborOfferItemName || row.catalogName}</td>
-                <td style={td({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
                 <td style={td({ textAlign: 'right', fontWeight: 600, color: '#333' })}>{formatCurrencyRounded(estimated)} AMD</td>
                 <td style={td({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>
                     {hasData ? `${formatCurrencyRounded(actualTotal)} AMD` : '—'}
@@ -170,7 +169,6 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                 <colgroup>
                     <col style={{ width: 44 }} />
                     <col />
-                    <col style={{ width: 110 }} />
                     <col style={{ width: 130 }} />
                     <col style={{ width: 130 }} />
                     <col style={{ width: 140 }} />
@@ -181,7 +179,6 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                     <tr>
                         <th style={th({ textAlign: 'center' })}>{'№'}</th>
                         <th style={th({ textAlign: 'left' })}>Աշխատանքի անվանումը</th>
-                        <th style={th({ textAlign: 'right' })}>Միավորի առժեք</th>
                         <th style={th({ textAlign: 'right' })}>Նախահաշիվ</th>
                         <th style={th({ textAlign: 'right' })}>Փաստացի</th>
                         <th style={th({ textAlign: 'right' })}>Տառբեռություն</th>
@@ -225,9 +222,6 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                     <tr style={{ backgroundColor: '#d6f4f7' }}>
                         <td colSpan={2} style={td({ fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             Ընդամենը
-                        </td>
-                        <td style={td({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
-                            {'—'}
                         </td>
                         <td style={td({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {formatCurrencyRounded(grandEstimated)} AMD
