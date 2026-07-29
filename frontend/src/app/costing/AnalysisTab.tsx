@@ -33,7 +33,7 @@ const NCOLS = 11;
 
 const BASE_COLS = [
     { key: 'no',       defaultW: 44  },
-    { key: 'name',     defaultW: 280 },
+    { key: 'name',     defaultW: 340 },
     { key: 'estQty',   defaultW: 80  },
     { key: 'estAmt',   defaultW: 130 },
     { key: 'actQty',   defaultW: 80  },
@@ -263,7 +263,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                             <th key={i} style={thStyle({ textAlign: 'right', fontSize: '0.73rem', fontWeight: 600, color: '#444',
                                 ...([2, 4, 6, 9].includes(i) ? { borderLeft: BL } : {}),
                             })}>
-                                {[2, 4, 6, 9].includes(i) ? 'քանակ' : 'Անուն'}
+                                {[2, 4, 6, 9].includes(i) ? 'քանակ' : 'Արժեքը'}
                                 <ResizeHandle onDragStart={e => startResize(i > 7 ? i - 1 : i, e)} />
                             </th>
                         ))}
