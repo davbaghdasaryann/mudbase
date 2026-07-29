@@ -84,18 +84,17 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
 
     const handleConfirmCost = () => {
         if (!costModal) return;
-        const { row, value, spent } = costModal;
+        const { row, value } = costModal;
         const qty = parseFloat(value.replace(',', '.')) || 0;
-        const arzhek = parseFloat(spent.replace(',', '.')) || 0;
         if (qty <= 0) return;
-        onActualUpdate?.(toId(row._id), qty, arzhek);
+        onActualUpdate?.(toId(row._id), qty, 0);
         onCostAdded({
             id: String(Date.now() + Math.random()),
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
             quantity: qty,
-            unitPrice: arzhek,
-            total: qty * arzhek,
+            unitPrice: 0,
+            total: 0,
             addedAt: new Date(),
         });
         setCostModal(null);
@@ -208,23 +207,6 @@ export default function VolumesDialog({ open, onClose, estimate, onCostAdded, on
                             sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
                         />
                     </Box>
-                    <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Արժեք</Typography>
-                        <InputBase
-                            fullWidth
-                            value={costModal?.spent ?? ''}
-                            onChange={ev => setCostModal(prev => prev ? { ...prev, spent: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
-                            onKeyDown={ev => { if (ev.key === 'Enter') handleConfirmCost(); if (ev.key === 'Escape') setCostModal(null); }}
-                            placeholder='0'
-                            sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
-                        />
-                    </Box>
-                    {costModal && parseFloat(costModal.value) > 0 && parseFloat(costModal.spent) > 0 && (
-                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>Ընդհանուր արժեք: <strong style={{ color: mainPrimaryColor }}>
-                                {(parseFloat(costModal.spent) * parseFloat(costModal.value)).toLocaleString(undefined, { maximumFractionDigits: 2 })} AMD
-                            </strong>
-                        </Typography>
-                    )}
                 </Box>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
