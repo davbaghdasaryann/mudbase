@@ -56,13 +56,13 @@ const BASE_COLS = [
     { key: 'desc',  defaultW: 500 },
     { key: 'unit',  defaultW: 72  },
     { key: 'qty',   defaultW: 90  },
-    { key: 'up',    defaultW: 100 },
+    { key: 'up',    defaultW: 140 },
     { key: 'total', defaultW: 110 },
     { key: 'qty2',  defaultW: 90  },
-    { key: 'up2',   defaultW: 100 },
+    { key: 'up2',   defaultW: 140 },
     { key: 'total2',defaultW: 110 },
     { key: 'rqty',   defaultW: 90  },
-    { key: 'rup',    defaultW: 100 },
+    { key: 'rup',    defaultW: 140 },
     { key: 'rtot',   defaultW: 110 },
 ];
 const MIN_COL_W = 50;
@@ -372,13 +372,13 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                     <ResizeHandle onDragStart={e => startResize(i, e)} />
                                 </th>
                             ))}
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', color: mainPrimaryColor })}>
                                 {t('As per Estimate')}
                             </th>
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>
                                 {t('Actual')}
                             </th>
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>Մնացորդային</th>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>Մնացորդային</th>
                         </tr>
                         {/* Row 2: sub-column labels */}
                         <tr>
@@ -407,7 +407,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                             return (
                                 <>
                                     <tr key={`section-${section._id}`} style={{ backgroundColor: '#f9feff' }}>
-                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
+                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: mainPrimaryColor, paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
                                             {sectionIdx + 1}. {section.name.toUpperCase()}
                                         </td>
                                     </tr>
@@ -432,7 +432,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
 
                                     <tr style={{ backgroundColor: '#f9feff' }}>
                                         <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
-                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: '#00818f', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
                                         <td style={tdStyle({ borderLeft: GSEP })}></td>
                                         <td style={tdStyle({})}></td>
                                         <td style={tdStyle({})}></td>
