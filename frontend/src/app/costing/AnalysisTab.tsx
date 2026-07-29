@@ -31,7 +31,7 @@ const NCOLS = 15;
 const BASE_COLS = [
     { key: 'no',       defaultW: 44  },
     { key: 'name',     defaultW: 500 },
-    { key: 'unit',     defaultW: 60  },
+    { key: 'unit',     defaultW: 90  },
     { key: 'estQty',   defaultW: 80  },
     { key: 'estUnit',  defaultW: 165 },
     { key: 'estAmt',   defaultW: 140 },
