@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -35,14 +35,36 @@ function toId(v: unknown): string {
 const BORDER = '#e8f7f9';
 const SEC_BG = '#e6f7f9';
 const SUB_BG = '#f7fdfe';
+const MIN_COL_W = 60;
 
-const th = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`, padding: '7px 10px', whiteSpace: 'nowrap',
+const BASE_COLS = [
+    { key: 'no',    defaultW: 44  },
+    { key: 'name',  defaultW: 320 },
+    { key: 'est',   defaultW: 140 },
+    { key: 'act',   defaultW: 140 },
+    { key: 'rem',   defaultW: 155 },
+    { key: 'pct',   defaultW: 140 },
+    { key: 'extra', defaultW: 140 },
+];
+
+function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => void }) {
+    return (
+        <div
+            onMouseDown={onDragStart}
+            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', zIndex: 10, backgroundColor: 'transparent', transition: 'background-color 0.15s' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(0,171,190,0.35)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent'; }}
+        />
+    );
+}
+
+const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
+    border: `1px solid ${BORDER}`, padding: '7px 10px', whiteSpace: 'nowrap', position: 'relative',
     fontWeight: 700, fontSize: '0.8rem', color: '#222',
     backgroundColor: '#f0fbfc', borderBottom: `2px solid ${mainPrimaryColor}`, ...extra,
 });
 
-const td = (extra: React.CSSProperties = {}): React.CSSProperties => ({
+const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
     border: `1px solid ${BORDER}`, padding: '6px 10px',
     fontSize: '0.82rem', verticalAlign: 'middle', ...extra,
 });
@@ -58,6 +80,9 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [loading, setLoading] = useState(true);
+    const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
+
+    const resizingCol = useRef<{ colIdx: number; startX: number; startW: number } | null>(null);
 
     const estimateId = toId(estimate._id);
 
@@ -82,6 +107,25 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [estimateId]);
+
+    useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            if (!resizingCol.current) return;
+            const { colIdx, startX, startW } = resizingCol.current;
+            setColWidths(prev => { const c = [...prev]; c[colIdx] = Math.max(MIN_COL_W, startW + e.clientX - startX); return c; });
+        };
+        const onUp = () => { resizingCol.current = null; document.body.style.cursor = ''; document.body.style.userSelect = ''; };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+    }, []);
+
+    const startResize = useCallback((colIdx: number, e: React.MouseEvent) => {
+        e.preventDefault(); e.stopPropagation();
+        resizingCol.current = { colIdx, startX: e.clientX, startW: colWidths[colIdx] ?? 100 };
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    }, [colWidths]);
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -119,19 +163,20 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
         const diff = hasData ? estimated - actualTotal : null;
         const pct = diff !== null && estimated > 0 ? (diff / estimated) * 100 : null;
         const cheaper = diff !== null ? diff >= 0 : null;
+        const excess = hasData && actualTotal > estimated ? actualTotal - estimated : null;
 
         return (
             <tr key={toId(row._id)} style={{ backgroundColor: idx % 2 === 0 ? '#fafeff' : '#fff' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? '#fafeff' : '#fff'; }}
             >
-                <td style={td({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{idx}</td>
-                <td style={td({ paddingLeft: pl, whiteSpace: 'normal' })}>{row.laborOfferItemName || row.catalogName}</td>
-                <td style={td({ textAlign: 'right', fontWeight: 600, color: '#333' })}>{formatCurrencyRounded(estimated)} AMD</td>
-                <td style={td({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>
+                <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{idx}</td>
+                <td style={tdStyle({ paddingLeft: pl, whiteSpace: 'normal' })}>{row.laborOfferItemName || row.catalogName}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: '#333' })}>{formatCurrencyRounded(estimated)} AMD</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })} >
                     {hasData ? `${formatCurrencyRounded(actualTotal)} AMD` : '—'}
                 </td>
-                <td style={td({ textAlign: 'right' })}>
+                <td style={tdStyle({ textAlign: 'right' })}>
                     {diff !== null
                         ? <span style={{ fontWeight: 700, color: cheaper! ? '#2e7d32' : '#c62828' }}>
                             {diff >= 0 ? '+' : ''}{formatCurrencyRounded(diff)} AMD
@@ -139,7 +184,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         : <span style={{ color: '#ccc' }}>{'—'}</span>
                     }
                 </td>
-                <td style={td({ textAlign: 'right' })}>
+                <td style={tdStyle({ textAlign: 'right' })}>
                     {pct !== null ? (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                             {cheaper
@@ -152,15 +197,20 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         </Box>
                     ) : <span style={{ color: '#ccc' }}>{'—'}</span>}
                 </td>
-                <td style={td({ textAlign: 'right' })}>
-                    {hasData && actualTotal > estimated
-                        ? <span style={{ fontWeight: 700, color: '#c62828' }}>{formatCurrencyRounded(actualTotal - estimated)} AMD</span>
+                <td style={tdStyle({ textAlign: 'right' })}>
+                    {excess !== null
+                        ? <span style={{ fontWeight: 700, color: '#c62828' }}>{formatCurrencyRounded(excess)} AMD</span>
                         : <span style={{ color: '#ccc' }}>{'—'}</span>}
                 </td>
             </tr>
         );
     };
 
+    const grandEstimated = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
+    const grandActual = rows.reduce((s, r) => { const { actualTotal, hasData } = getActuals(r); return hasData ? s + actualTotal : s; }, 0);
+    const grandHasActual = rows.some(r => getActuals(r).hasData);
+    const grandDiff = grandHasActual ? grandEstimated - grandActual : null;
+    const grandPct = grandDiff !== null && grandEstimated > 0 ? (grandDiff / grandEstimated) * 100 : null;
     const grandExcess = rows.reduce((s, r) => {
         const { actualTotal, hasData } = getActuals(r);
         const est = r.cost ?? 0;
@@ -171,33 +221,44 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
         return hasData && actualTotal > (r.cost ?? 0);
     });
 
-    const grandEstimated = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
-    const grandActual = rows.reduce((s, r) => { const { actualTotal, hasData } = getActuals(r); return hasData ? s + actualTotal : s; }, 0);
-    const grandHasActual = rows.some(r => getActuals(r).hasData);
-    const grandDiff = grandHasActual ? grandEstimated - grandActual : null;
-    const grandPct = grandDiff !== null && grandEstimated > 0 ? (grandDiff / grandEstimated) * 100 : null;
+    const totalW = colWidths.reduce((s, w) => s + w, 0);
 
     return (
-        <Box sx={{ overflow: 'auto', pb: 4, width: '100%' }}>
-            <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 900 }}>
+        <Box sx={{ pb: 4, width: '100%', overflowX: 'auto' }}>
+            <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: totalW }}>
                 <colgroup>
-                    <col style={{ width: 44 }} />
-                    <col />
-                    <col style={{ width: 130 }} />
-                    <col style={{ width: 130 }} />
-                    <col style={{ width: 150 }} />
-                    <col style={{ width: 135 }} />
-                    <col style={{ width: 135 }} />
+                    {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                 </colgroup>
                 <thead>
                     <tr>
-                        <th style={th({ textAlign: 'center' })}>{'№'}</th>
-                        <th style={th({ textAlign: 'left' })}>Աշխատանքի անվանումը</th>
-                        <th style={th({ textAlign: 'right' })}>Նախահաշիվ</th>
-                        <th style={th({ textAlign: 'right' })}>Փաստացի</th>
-                        <th style={th({ textAlign: 'right' })}>Մնացորդային</th>
-                        <th style={th({ textAlign: 'right' })}>Շահութաբերություն</th>
-                        <th style={th({ textAlign: 'right' })}>Լրացուցիչ</th>
+                        <th style={thStyle({ textAlign: 'center' })}>
+                            {'№'}
+                            <ResizeHandle onDragStart={e => startResize(0, e)} />
+                        </th>
+                        <th style={thStyle({ textAlign: 'left' })}>
+                            Աշխատանքի անվանումը
+                            <ResizeHandle onDragStart={e => startResize(1, e)} />
+                        </th>
+                        <th style={thStyle({ textAlign: 'right' })}>
+                            Նախահաշիվ
+                            <ResizeHandle onDragStart={e => startResize(2, e)} />
+                        </th>
+                        <th style={thStyle({ textAlign: 'right' })}>
+                            Փաստացի
+                            <ResizeHandle onDragStart={e => startResize(3, e)} />
+                        </th>
+                        <th style={thStyle({ textAlign: 'right' })}>
+                            Մնացորդային
+                            <ResizeHandle onDragStart={e => startResize(4, e)} />
+                        </th>
+                        <th style={thStyle({ textAlign: 'right' })}>
+                            Շահութաբերություն
+                            <ResizeHandle onDragStart={e => startResize(5, e)} />
+                        </th>
+                        <th style={thStyle({ textAlign: 'right' })}>
+                            Լրացուցիչ
+                            <ResizeHandle onDragStart={e => startResize(6, e)} />
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -209,7 +270,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         return (
                             <>
                                 <tr key={`sec-${section._id}`} style={{ backgroundColor: SEC_BG }}>
-                                    <td colSpan={8} style={td({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, borderTop: si > 0 ? '2px solid #b2e8ed' : undefined })}>
+                                    <td colSpan={7} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, borderTop: si > 0 ? '2px solid #b2e8ed' : undefined })}>
                                         {si + 1}. {section.name.toUpperCase()}
                                     </td>
                                 </tr>
@@ -220,7 +281,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                         return (
                                             <>
                                                 <tr key={`sub-${sub._id}`} style={{ backgroundColor: SUB_BG }}>
-                                                    <td colSpan={8} style={td({ paddingLeft: 28, color: '#666', fontStyle: 'italic', fontSize: '0.8rem' })}>
+                                                    <td colSpan={7} style={tdStyle({ paddingLeft: 28, color: '#666', fontStyle: 'italic', fontSize: '0.8rem' })}>
                                                         {si + 1}.{subI + 1}. {sub.name}
                                                     </td>
                                                 </tr>
@@ -234,26 +295,26 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         );
                     })}
                     <tr style={{ backgroundColor: '#d6f4f7' }}>
-                        <td colSpan={2} style={td({ fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td colSpan={2} style={tdStyle({ fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             Ընդամենը
                         </td>
-                        <td style={td({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {formatCurrencyRounded(grandEstimated)} AMD
                         </td>
-                        <td style={td({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {grandHasActual ? `${formatCurrencyRounded(grandActual)} AMD` : '—'}
                         </td>
-                        <td style={td({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {grandDiff !== null
                                 ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: grandDiff >= 0 ? '#2e7d32' : '#c62828' }}>{grandDiff >= 0 ? '+' : ''}{formatCurrencyRounded(grandDiff)} AMD</span>
                                 : '—'}
                         </td>
-                        <td style={td({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {grandPct !== null
                                 ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '—'}
                         </td>
-                        <td style={td({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
                             {grandHasExcess
                                 ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#c62828' }}>{formatCurrencyRounded(grandExcess)} AMD</span>
                                 : '—'}
