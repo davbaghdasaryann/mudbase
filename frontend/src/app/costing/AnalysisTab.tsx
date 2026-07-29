@@ -41,7 +41,7 @@ const BASE_COLS = [
     { key: 'remQty',   defaultW: 80  },
     { key: 'remUnit',  defaultW: 110 },
     { key: 'remAmt',   defaultW: 140 },
-    { key: 'pct',      defaultW: 120 },
+    { key: 'pct',      defaultW: 160 },
     { key: 'extraQty', defaultW: 80  },
     { key: 'extraAmt', defaultW: 130 },
 ];
@@ -250,13 +250,13 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
 
     const SUB_COLS: Array<{ idx: number; label: string; bl: boolean }> = [
         { idx: 3,  label: 'քանակ', bl: true  },
-        { idx: 4,  label: 'Միավոր', bl: false },
+        { idx: 4,  label: 'Միավորի Արժեքը', bl: false },
         { idx: 5,  label: 'Ընդհանուր', bl: false },
         { idx: 6,  label: 'քանակ', bl: true  },
-        { idx: 7,  label: 'Միավոր', bl: false },
+        { idx: 7,  label: 'Միավորի Արժեքը', bl: false },
         { idx: 8,  label: 'Ընդհանուր', bl: false },
         { idx: 9,  label: 'քանակ', bl: true  },
-        { idx: 10, label: 'Միավոր', bl: false },
+        { idx: 10, label: 'Միավորի Արժեքը', bl: false },
         { idx: 11, label: 'Ընդհանուր', bl: false },
         { idx: 13, label: 'քանակ', bl: true  },
         { idx: 14, label: 'Ընդհանուր', bl: false },
@@ -278,12 +278,12 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                             Աշխատանքի անվանումը<ResizeHandle onDragStart={e => startResize(1, e)} />
                         </th>
                         <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>
-                            Չափ<ResizeHandle onDragStart={e => startResize(2, e)} />
+                            Միավոր<ResizeHandle onDragStart={e => startResize(2, e)} />
                         </th>
                         <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Նախահաշիվ</th>
                         <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Փաստացի</th>
                         <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Մնացորդային</th>
-                        <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>
+                        <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, whiteSpace: 'normal', lineHeight: 1.3 })}>
                             Շահութաբերություն<ResizeHandle onDragStart={e => startResize(12, e)} />
                         </th>
                         <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#c62828' })}>Լրացուցիչ</th>
