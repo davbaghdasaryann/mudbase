@@ -25,46 +25,55 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-const BORDER = '#e8f7f9';
-const SEC_BG = '#e6f7f9';
-const SUB_BG = '#f7fdfe';
 const MIN_COL_W = 50;
 const NCOLS = 11;
 
 const BASE_COLS = [
     { key: 'no',       defaultW: 44  },
-    { key: 'name',     defaultW: 340 },
+    { key: 'name',     defaultW: 400 },
     { key: 'estQty',   defaultW: 80  },
     { key: 'estAmt',   defaultW: 130 },
     { key: 'actQty',   defaultW: 80  },
     { key: 'actAmt',   defaultW: 130 },
     { key: 'remQty',   defaultW: 80  },
     { key: 'remAmt',   defaultW: 140 },
-    { key: 'pct',      defaultW: 140 },
+    { key: 'pct',      defaultW: 120 },
     { key: 'extraQty', defaultW: 80  },
-    { key: 'extraAmt', defaultW: 135 },
+    { key: 'extraAmt', defaultW: 130 },
 ];
 
 function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => void }) {
     return (
         <div
             onMouseDown={onDragStart}
-            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', zIndex: 10, backgroundColor: 'transparent', transition: 'background-color 0.15s' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(0,171,190,0.35)'; }}
+            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 4, cursor: 'col-resize', zIndex: 10, backgroundColor: 'transparent' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(0,171,190,0.3)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent'; }}
         />
     );
 }
 
-const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`, padding: '6px 8px', whiteSpace: 'nowrap', position: 'relative',
-    fontWeight: 700, fontSize: '0.78rem', color: '#222',
-    backgroundColor: '#f0fbfc', borderBottom: `2px solid ${mainPrimaryColor}`, ...extra,
-});
-const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    border: `1px solid ${BORDER}`, padding: '5px 8px',
-    fontSize: '0.82rem', verticalAlign: 'middle', ...extra,
-});
+// Minimalistic styles — horizontal lines only, no cell borders
+const ROW_LINE = '1px solid #f0f2f4';
+const GROUP_LINE = '1px solid #d6eef1';
+const ACCENT = mainPrimaryColor;
+
+const thBase: React.CSSProperties = {
+    padding: '8px 10px',
+    whiteSpace: 'nowrap',
+    position: 'relative',
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    color: '#6b7280',
+    backgroundColor: '#fff',
+    borderBottom: '2px solid #e8f7f9',
+    letterSpacing: '0.03em',
+    textTransform: 'uppercase',
+    border: 'none',
+};
+const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...thBase, ...extra, borderBottom: '2px solid #e8f7f9' });
+const tdBase: React.CSSProperties = { padding: '7px 10px', fontSize: '0.82rem', verticalAlign: 'middle', border: 'none', borderBottom: ROW_LINE };
+const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...tdBase, ...extra });
 const fmtQty = (v: number | null) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '\u2014';
 
 interface Props {
@@ -174,47 +183,44 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
         const cheaper  = remTotal !== null ? remTotal >= 0 : null;
         const exQty    = hasData && actQty > estQty  ? actQty  - estQty  : null;
         const exAmt    = hasData && actTotal > estTotal ? actTotal - estTotal : null;
-        const BL = '2px solid #b2e8ed';
         const itemName = row.laborOfferItemName || row.catalogName;
+        const GSEP = '1px solid #e8f4f6';
 
         return (
-            <tr key={toId(row._id)} style={{ backgroundColor: idx % 2 === 0 ? '#fafeff' : '#fff' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5fdfe'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? '#fafeff' : '#fff'; }}
+            <tr key={toId(row._id)}
+                style={{ backgroundColor: '#fff' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
             >
-                <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{idx}</td>
-                <td style={tdStyle({ paddingLeft: pl, whiteSpace: 'normal' })}>{itemName}</td>
-                <td style={tdStyle({ textAlign: 'right', color: '#555', borderLeft: BL })}>{fmtQty(estQty)}</td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: '#333' })}>{formatCurrencyRounded(estTotal)} AMD</td>
-                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc', borderLeft: BL })}>{hasData ? fmtQty(actQty) : '\u2014'}</td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>
-                    {hasData ? `${formatCurrencyRounded(actTotal)} AMD` : '\u2014'}
+                <td style={tdStyle({ textAlign: 'center', color: '#bbb', fontSize: '0.74rem' })}>{idx}</td>
+                <td style={tdStyle({ paddingLeft: pl, whiteSpace: 'normal', color: '#111' })}>{itemName}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{fmtQty(estQty)}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#333', fontWeight: 500 })}>{formatCurrencyRounded(estTotal)}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#777' : '#ddd', borderLeft: GSEP })}>{hasData ? fmtQty(actQty) : '\u2014'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? ACCENT : '#ddd', fontWeight: hasData ? 600 : 400 })}>
+                    {hasData ? formatCurrencyRounded(actTotal) : '\u2014'}
                 </td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: BL, color: remQty === null ? '#ccc' : remQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: remQty !== null ? 600 : 400 })}>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: remQty === null ? '#ddd' : remQty >= 0 ? '#2e7d32' : '#c62828' })}>
                     {fmtQty(remQty)}
                 </td>
-                <td style={tdStyle({ textAlign: 'right' })}>
-                    {remTotal !== null
-                        ? <span style={{ fontWeight: 700, color: cheaper! ? '#2e7d32' : '#c62828' }}>{remTotal >= 0 ? '+' : ''}{formatCurrencyRounded(remTotal)} AMD</span>
-                        : <span style={{ color: '#ccc' }}>{'\u2014'}</span>}
+                <td style={tdStyle({ textAlign: 'right', color: remTotal === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828', fontWeight: remTotal !== null ? 600 : 400 })}>
+                    {remTotal !== null ? `${remTotal >= 0 ? '+' : ''}${formatCurrencyRounded(remTotal)}` : '\u2014'}
                 </td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: BL })}>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                     {pct !== null ? (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                            {cheaper ? <TrendingDownIcon sx={{ fontSize: 14, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 14, color: '#c62828' }} />}
-                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: cheaper ? '#2e7d32' : '#c62828' }}>
+                            {cheaper ? <TrendingDownIcon sx={{ fontSize: 13, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 13, color: '#c62828' }} />}
+                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: cheaper ? '#2e7d32' : '#c62828' }}>
                                 {Math.abs(pct).toFixed(1)}%
-                            </Typography>
+                            </span>
                         </Box>
-                    ) : <span style={{ color: '#ccc' }}>{'\u2014'}</span>}
+                    ) : <span style={{ color: '#ddd' }}>{'\u2014'}</span>}
                 </td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: BL, color: exQty !== null ? '#c62828' : '#ccc', fontWeight: exQty !== null ? 600 : 400 })}>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: exQty !== null ? '#c62828' : '#ddd', fontWeight: exQty !== null ? 600 : 400 })}>
                     {exQty !== null ? fmtQty(exQty) : '\u2014'}
                 </td>
-                <td style={tdStyle({ textAlign: 'right' })}>
-                    {exAmt !== null
-                        ? <span style={{ fontWeight: 700, color: '#c62828' }}>{formatCurrencyRounded(exAmt)} AMD</span>
-                        : <span style={{ color: '#ccc' }}>{'\u2014'}</span>}
+                <td style={tdStyle({ textAlign: 'right', color: exAmt !== null ? '#c62828' : '#ddd', fontWeight: exAmt !== null ? 700 : 400 })}>
+                    {exAmt !== null ? formatCurrencyRounded(exAmt) : '\u2014'}
                 </td>
             </tr>
         );
@@ -233,7 +239,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
     const grandHasEx    = rows.some(r => { const { actQty, actTotal, hasData } = getActuals(r); return hasData && (actQty > Number(r.quantity ?? 0) || actTotal > (r.cost ?? 0)); });
 
     const totalW = colWidths.reduce((s, w) => s + w, 0);
-    const BL = '2px solid #b2e8ed';
+    const GSEP = '1px solid #e8f4f6';
 
     return (
         <Box ref={scrollRef}
@@ -250,18 +256,19 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>
                             Աշխատանքի անվանումը<ResizeHandle onDragStart={e => startResize(1, e)} />
                         </th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: BL })}>Նախահաշիվ</th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: BL })}>Փաստացի</th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: BL })}>Մնացորդային</th>
-                        <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: BL })}>
+                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Նախահաշիվ</th>
+                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Փաստացի</th>
+                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Մնացորդային</th>
+                        <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>
                             Շահութաբերություն<ResizeHandle onDragStart={e => startResize(8, e)} />
                         </th>
-                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: BL })}>Լրացուցիչ</th>
+                        <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#c62828' })}>Լրացուցիչ</th>
                     </tr>
                     <tr>
                         {[2, 3, 4, 5, 6, 7, 9, 10].map(i => (
-                            <th key={i} style={thStyle({ textAlign: 'right', fontSize: '0.73rem', fontWeight: 600, color: '#444',
-                                ...([2, 4, 6, 9].includes(i) ? { borderLeft: BL } : {}),
+                            <th key={i} style={thStyle({
+                                textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af',
+                                ...([2, 4, 6, 9].includes(i) ? { borderLeft: GSEP } : {}),
                             })}>
                                 {[2, 4, 6, 9].includes(i) ? 'քանակ' : 'Արժեքը'}
                                 <ResizeHandle onDragStart={e => startResize(i > 7 ? i - 1 : i, e)} />
@@ -276,9 +283,14 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         const subs = subsMap.get(toId(section._id)) ?? [];
                         return (
                             <>
-                                <tr key={`sec-${section._id}`} style={{ backgroundColor: SEC_BG }}>
-                                    <td colSpan={NCOLS} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: '#00818f', paddingLeft: 16, borderTop: si > 0 ? '2px solid #b2e8ed' : undefined })}>
-                                        {si + 1}. {section.name.toUpperCase()}
+                                <tr key={`sec-${section._id}`}>
+                                    <td colSpan={NCOLS} style={tdStyle({
+                                        fontWeight: 700, fontSize: '0.78rem', color: '#00818f',
+                                        paddingLeft: 12, paddingTop: si > 0 ? 18 : 10, paddingBottom: 4,
+                                        letterSpacing: '0.05em', textTransform: 'uppercase',
+                                        borderBottom: '1px solid #d6eef1', backgroundColor: '#f9feff',
+                                    })}>
+                                        {si + 1}. {section.name}
                                     </td>
                                 </tr>
                                 {subs.length > 0
@@ -287,46 +299,49 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                         if (subItems.length === 0) return null;
                                         return (
                                             <>
-                                                <tr key={`sub-${sub._id}`} style={{ backgroundColor: SUB_BG }}>
-                                                    <td colSpan={NCOLS} style={tdStyle({ paddingLeft: 28, color: '#666', fontStyle: 'italic', fontSize: '0.8rem' })}>
+                                                <tr key={`sub-${sub._id}`}>
+                                                    <td colSpan={NCOLS} style={tdStyle({
+                                                        paddingLeft: 24, paddingTop: 8, paddingBottom: 4,
+                                                        color: '#6b7280', fontSize: '0.77rem', fontWeight: 500,
+                                                        borderBottom: '1px solid #f0f2f4',
+                                                    })}>
                                                         {si + 1}.{subI + 1}. {sub.name}
                                                     </td>
                                                 </tr>
-                                                {subItems.map(row => renderRow(row, ++counter, 36))}
+                                                {subItems.map(row => renderRow(row, ++counter, 32))}
                                             </>
                                         );
                                     })
-                                    : sectionItems.map(row => renderRow(row, ++counter, 20))
+                                    : sectionItems.map(row => renderRow(row, ++counter, 16))
                                 }
                             </>
                         );
                     })}
-                    <tr style={{ backgroundColor: '#d6f4f7' }}>
-                        <td colSpan={2} style={tdStyle({ fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>
+                    <tr style={{ backgroundColor: '#f0fbfc' }}>
+                        <td colSpan={2} style={tdStyle({
+                            fontWeight: 700, color: ACCENT, fontSize: '0.82rem',
+                            borderTop: `2px solid ${ACCENT}`, borderBottom: 'none',
+                        })}>
                             Ընդամենը
                         </td>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: BL, borderTop: `2px solid ${mainPrimaryColor}` })}>{fmtQty(grandEstQty)}</td>
-                        <td style={tdStyle({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>{formatCurrencyRounded(grandEstTotal)} AMD</td>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: BL, borderTop: `2px solid ${mainPrimaryColor}` })}>{grandHasAct ? fmtQty(grandActQty) : '\u2014'}</td>
-                        <td style={tdStyle({ textAlign: 'right', fontWeight: 800, color: mainPrimaryColor, fontSize: '0.88rem', borderTop: `2px solid ${mainPrimaryColor}` })}>{grandHasAct ? `${formatCurrencyRounded(grandActTotal)} AMD` : '\u2014'}</td>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: BL, color: grandRemQty === null ? '#ccc' : grandRemQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: 700, borderTop: `2px solid ${mainPrimaryColor}` })}>{fmtQty(grandRemQty)}</td>
-                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
-                            {grandRemTotal !== null
-                                ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: grandRemTotal >= 0 ? '#2e7d32' : '#c62828' }}>{grandRemTotal >= 0 ? '+' : ''}{formatCurrencyRounded(grandRemTotal)} AMD</span>
-                                : '\u2014'}
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{fmtQty(grandEstQty)}</td>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#222', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{formatCurrencyRounded(grandEstTotal)}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{grandHasAct ? fmtQty(grandActQty) : '\u2014'}</td>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: ACCENT, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{grandHasAct ? formatCurrencyRounded(grandActTotal) : '\u2014'}</td>
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemQty === null ? '#ccc' : grandRemQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: 600 })}>{fmtQty(grandRemQty)}</td>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 700, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemTotal === null ? '#ccc' : grandRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>
+                            {grandRemTotal !== null ? `${grandRemTotal >= 0 ? '+' : ''}${formatCurrencyRounded(grandRemTotal)}` : '\u2014'}
                         </td>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: BL, borderTop: `2px solid ${mainPrimaryColor}` })}>
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             {grandPct !== null
-                                ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
+                                ? <span style={{ fontWeight: 700, fontSize: '0.82rem', color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '\u2014'}
                         </td>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: BL, borderTop: `2px solid ${mainPrimaryColor}`, color: grandHasEx ? '#c62828' : '#ccc', fontWeight: grandHasEx ? 700 : 400 })}>
+                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandHasEx ? '#c62828' : '#ccc', fontWeight: grandHasEx ? 600 : 400 })}>
                             {grandHasEx ? fmtQty(grandExQty) : '\u2014'}
                         </td>
-                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${mainPrimaryColor}` })}>
-                            {grandHasEx
-                                ? <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#c62828' }}>{formatCurrencyRounded(grandExAmt)} AMD</span>
-                                : '\u2014'}
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: grandHasEx ? '#c62828' : '#ccc', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
+                            {grandHasEx ? formatCurrencyRounded(grandExAmt) : '\u2014'}
                         </td>
                     </tr>
                 </tbody>
