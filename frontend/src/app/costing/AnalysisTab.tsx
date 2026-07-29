@@ -30,16 +30,16 @@ const NCOLS = 15;
 
 const BASE_COLS = [
     { key: 'no',       defaultW: 44  },
-    { key: 'name',     defaultW: 400 },
+    { key: 'name',     defaultW: 460 },
     { key: 'unit',     defaultW: 60  },
     { key: 'estQty',   defaultW: 80  },
-    { key: 'estUnit',  defaultW: 110 },
+    { key: 'estUnit',  defaultW: 135 },
     { key: 'estAmt',   defaultW: 130 },
     { key: 'actQty',   defaultW: 80  },
-    { key: 'actUnit',  defaultW: 110 },
+    { key: 'actUnit',  defaultW: 135 },
     { key: 'actAmt',   defaultW: 130 },
     { key: 'remQty',   defaultW: 80  },
-    { key: 'remUnit',  defaultW: 110 },
+    { key: 'remUnit',  defaultW: 135 },
     { key: 'remAmt',   defaultW: 140 },
     { key: 'pct',      defaultW: 160 },
     { key: 'extraQty', defaultW: 80  },
@@ -62,7 +62,7 @@ const GSEP = '1px solid #e8f4f6';
 const ACCENT = mainPrimaryColor;
 
 const thBase: React.CSSProperties = {
-    padding: '8px 10px', whiteSpace: 'nowrap', position: 'relative',
+    padding: '8px 10px', whiteSpace: 'normal', lineHeight: '1.3', position: 'relative',
     fontWeight: 600, fontSize: '0.75rem', color: '#6b7280',
     backgroundColor: '#fff', letterSpacing: '0.03em',
     textTransform: 'uppercase', border: 'none',
