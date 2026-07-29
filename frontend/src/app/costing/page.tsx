@@ -298,7 +298,12 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
 
 export default function CostingPage() {
     const { t } = useTranslation();
+    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis'];
     const [tab, setTab] = useState<TabValue>('general');
+    useEffect(() => {
+        const saved = localStorage.getItem('costingTab') as TabValue | null;
+        if (saved && VALID_TABS.includes(saved)) setTab(saved);
+    }, []);
     const [volumesOpen, setVolumesOpen] = useState(false);
     const [materialsOpen, setMaterialsOpen] = useState(false);
     const [salaryOpen, setSalaryOpen] = useState(false);
@@ -359,6 +364,7 @@ export default function CostingPage() {
         setSelected(rec);
         setFullEstimate(null);
         setTab('general');
+        localStorage.setItem('costingTab', 'general');
         setCostHistory((rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
             ...e,
@@ -542,7 +548,7 @@ export default function CostingPage() {
                             <IconButton size='small' onClick={closeRecord} sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
-                            <TabList onChange={(_, v) => setTab(v as TabValue)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                            <TabList onChange={(_, v) => { const t = v as TabValue; setTab(t); localStorage.setItem('costingTab', t); }} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TuneOutlinedIcon sx={{ fontSize: 18 }} />{t('General')}</Box>} value='general' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><FormatListBulletedIcon sx={{ fontSize: 18 }} />{t('Main')}</Box>} value='main' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><HistoryIcon sx={{ fontSize: 18 }} />{t('History')}</Box>} value='history' />
