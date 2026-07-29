@@ -524,11 +524,6 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                     />
                                 </Box>
                             </Box>
-                            {modalQty && modalSpent && parseFloat(modalQty) > 0 && (
-                                <Typography sx={{ fontSize: '0.78rem', color: mainPrimaryColor, fontWeight: 600 }}>
-                                    Miavori arzhek: {(parseFloat(modalSpent.replace(',', '.')) / parseFloat(modalQty.replace(',', '.'))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                </Typography>
-                            )}
                         </Box>
                     )}
                 </DialogContent>
