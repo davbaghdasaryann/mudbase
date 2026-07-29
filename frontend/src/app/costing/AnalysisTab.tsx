@@ -30,20 +30,20 @@ const NCOLS = 15;
 
 const BASE_COLS = [
     { key: 'no',       defaultW: 44  },
-    { key: 'name',     defaultW: 460 },
+    { key: 'name',     defaultW: 500 },
     { key: 'unit',     defaultW: 60  },
     { key: 'estQty',   defaultW: 80  },
-    { key: 'estUnit',  defaultW: 135 },
-    { key: 'estAmt',   defaultW: 130 },
+    { key: 'estUnit',  defaultW: 165 },
+    { key: 'estAmt',   defaultW: 140 },
     { key: 'actQty',   defaultW: 80  },
-    { key: 'actUnit',  defaultW: 135 },
-    { key: 'actAmt',   defaultW: 130 },
+    { key: 'actUnit',  defaultW: 165 },
+    { key: 'actAmt',   defaultW: 140 },
     { key: 'remQty',   defaultW: 80  },
-    { key: 'remUnit',  defaultW: 135 },
+    { key: 'remUnit',  defaultW: 165 },
     { key: 'remAmt',   defaultW: 140 },
-    { key: 'pct',      defaultW: 160 },
+    { key: 'pct',      defaultW: 185 },
     { key: 'extraQty', defaultW: 80  },
-    { key: 'extraAmt', defaultW: 130 },
+    { key: 'extraAmt', defaultW: 140 },
 ];
 
 function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => void }) {
@@ -62,7 +62,7 @@ const GSEP = '1px solid #e8f4f6';
 const ACCENT = mainPrimaryColor;
 
 const thBase: React.CSSProperties = {
-    padding: '8px 10px', whiteSpace: 'normal', lineHeight: '1.3', position: 'relative',
+    padding: '8px 10px', whiteSpace: 'nowrap', position: 'relative',
     fontWeight: 600, fontSize: '0.75rem', color: '#6b7280',
     backgroundColor: '#fff', letterSpacing: '0.03em',
     textTransform: 'uppercase', border: 'none',
@@ -283,7 +283,7 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                         <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Նախահաշիվ</th>
                         <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Փաստացի</th>
                         <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#00818f' })}>Մնացորդային</th>
-                        <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, whiteSpace: 'normal', lineHeight: 1.3 })}>
+                        <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>
                             Շահութաբերություն<ResizeHandle onDragStart={e => startResize(12, e)} />
                         </th>
                         <th colSpan={2} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: '#c62828' })}>Լրացուցիչ</th>
