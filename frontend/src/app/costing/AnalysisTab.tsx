@@ -320,18 +320,20 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                                 {subs.length > 0
                                     ? subs.map((sub, subI) => {
                                         const subItems = sectionItems.filter(r => r.subsectionName === sub.name);
-                                        if (subItems.length === 0 || !sub.name?.trim()) return null;
+                                        if (subItems.length === 0) return null;
                                         return (
                                             <>
-                                                <tr key={`sub-${sub._id}`}>
-                                                    <td colSpan={NCOLS} style={tdStyle({
-                                                        paddingLeft: 24, paddingTop: 8, paddingBottom: 4,
-                                                        color: '#6b7280', fontSize: '0.77rem', fontWeight: 500,
-                                                        borderBottom: '1px solid #f0f2f4',
-                                                    })}>
-                                                        {si + 1}.{subI + 1}. {sub.name}
-                                                    </td>
-                                                </tr>
+                                                {sub.name?.trim() && (
+                                                    <tr key={`sub-${sub._id}`}>
+                                                        <td colSpan={NCOLS} style={tdStyle({
+                                                            paddingLeft: 24, paddingTop: 8, paddingBottom: 4,
+                                                            color: '#6b7280', fontSize: '0.77rem', fontWeight: 500,
+                                                            borderBottom: '1px solid #f0f2f4',
+                                                        })}>
+                                                            {si + 1}.{subI + 1}. {sub.name}
+                                                        </td>
+                                                    </tr>
+                                                )}
                                                 {subItems.map(row => renderRow(row, ++counter, 32))}
                                             </>
                                         );
