@@ -363,8 +363,6 @@ export default function CostingPage() {
         isLoadingRef.current = true;
         setSelected(rec);
         setFullEstimate(null);
-        setTab('general');
-        localStorage.setItem('costingTab', 'general');
         setCostHistory((rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
             ...e,

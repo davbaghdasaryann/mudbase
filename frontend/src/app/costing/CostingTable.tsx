@@ -9,8 +9,9 @@ import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
-import { mainPrimaryColor } from '@/theme';
 import type { CostHistoryEntry } from './page';
+
+const ACCENT = '#00A390';
 
 interface ActualEntry { quantity: string; unitPrice: string; spent?: string; }
 type ActualData = Record<string, ActualEntry>;
@@ -285,7 +286,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
         URL.revokeObjectURL(url);
     }, [rows, sections, subsections, estimate, t]);
 
-    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={28} sx={{ color: mainPrimaryColor }} /></Box>;
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={28} sx={{ color: ACCENT }} /></Box>;
     if (error) return <Typography variant='body2' color='error' sx={{ py: 2 }}>Error: {error}</Typography>;
     if (rows.length === 0) return <Typography variant='body2' color='text.secondary' sx={{ py: 4, textAlign: 'center' }}>{t('No data for selected period')}</Typography>;
 
@@ -325,7 +326,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                     <>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                         <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>{hasData ? formatCurrencyRounded(p) : '—'}</td>
-                        <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? mainPrimaryColor : '#ccc' })}>{hasData ? formatCurrencyRounded(tot) : '—'}</td>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(tot) : '—'}</td>
                         {(() => {
                             const estQty = Number(row.quantity ?? 0);
                             const estUp = row.changableAveragePrice ?? 0;
@@ -372,13 +373,13 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                     <ResizeHandle onDragStart={e => startResize(i, e)} />
                                 </th>
                             ))}
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', color: mainPrimaryColor })}>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', color: ACCENT })}>
                                 {t('As per Estimate')}
                             </th>
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, color: ACCENT })}>
                                 {t('Actual')}
                             </th>
-                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>Մնացորդային</th>
+                            <th colSpan={3} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, color: ACCENT })}>Մնացորդային</th>
                         </tr>
                         {/* Row 2: sub-column labels */}
                         <tr>
@@ -407,7 +408,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                             return (
                                 <>
                                     <tr key={`section-${section._id}`} style={{ backgroundColor: '#f9feff' }}>
-                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: mainPrimaryColor, paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
+                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: ACCENT, paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
                                             {sectionIdx + 1}. {section.name.toUpperCase()}
                                         </td>
                                     </tr>
@@ -432,7 +433,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
 
                                     <tr style={{ backgroundColor: '#f9feff' }}>
                                         <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
-                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: mainPrimaryColor, whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: ACCENT, whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
                                         <td style={tdStyle({ borderLeft: GSEP })}></td>
                                         <td style={tdStyle({})}></td>
                                         <td style={tdStyle({})}></td>
@@ -445,7 +446,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                         })}
 
                         <tr style={{ backgroundColor: '#f0fbfc' }}>
-                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: mainPrimaryColor, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${mainPrimaryColor}`, borderBottom: 'none' })}>{t('Total')}</td>
+                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: ACCENT, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{t('Total')}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -453,7 +454,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
 
             {/* Add Cost Modal */}
             <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>{t('Add Cost')}</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 700, color: ACCENT, pb: 1 }}>{t('Add Cost')}</DialogTitle>
                 <DialogContent sx={{ pt: 1 }}>
                     {/* Search */}
                     <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid #e0f5f7`, borderRadius: 2, px: 1.5, mb: 1.5, backgroundColor: '#fafeff' }}>
@@ -482,7 +483,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                         px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
                                         borderBottom: '1px solid #f0fbfc',
                                         backgroundColor: modalSelected?._id === r._id ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                        color: modalSelected?._id === r._id ? mainPrimaryColor : '#333',
+                                        color: modalSelected?._id === r._id ? ACCENT : '#333',
                                         fontWeight: modalSelected?._id === r._id ? 600 : 400,
                                         '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
                                         '&:last-child': { borderBottom: 'none' },
@@ -505,7 +506,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                         value={modalQty}
                                         onChange={e => setModalQty(e.target.value)}
                                         placeholder='0'
-                                        sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                                        sx={{ border: `1px solid ${ACCENT}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
                                     />
                                 </Box>
                                 <Box sx={{ flex: 1 }}>
@@ -514,7 +515,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                         value={modalSpent}
                                         onChange={e => setModalSpent(e.target.value)}
                                         placeholder='0'
-                                        sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                                        sx={{ border: `1px solid ${ACCENT}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
                                     />
                                 </Box>
                             </Box>
@@ -527,7 +528,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                         variant='contained'
                         disabled={!modalSelected || !modalQty || !modalSpent}
                         onClick={handleModalConfirm}
-                        sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
+                        sx={{ borderRadius: '20px', backgroundColor: ACCENT, '&:hover': { backgroundColor: '#009aab' } }}
                     >
                         {t('Add')}
                     </Button>
