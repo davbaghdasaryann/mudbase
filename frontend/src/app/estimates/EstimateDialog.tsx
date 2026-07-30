@@ -327,6 +327,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             setActiveTab(newValue);
                             if (!toolbarOpen) setToolbarOpen(true);
                         }}
+                        variant="scrollable"
+                        scrollButtons={false}
                         sx={{
                             flex: 1,
                             minHeight: 43,
