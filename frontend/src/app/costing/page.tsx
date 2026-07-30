@@ -208,11 +208,13 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
     );
 }
 
-const ACTUAL_SEGMENTS = [
-    { key: 'labor',     labelKey: 'Labor',          inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
-    { key: 'materials', labelKey: 'Materials',       inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
-    { key: 'other',     labelKey: 'Other Expenses',  inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
+const COST_SEGMENTS = [
+    { key: 'labor',     inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
+    { key: 'materials', inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
+    { key: 'other',     inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
 ];
+
+const ACTUAL_SEGMENTS = COST_SEGMENTS;
 
 function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
     const { t } = useTranslation();
@@ -292,6 +294,109 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
                     </Box>
                 </>
             )}
+        </Paper>
+    );
+}
+
+function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240 }: { estimate: EstimatesApi.ApiEstimate; pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
+    const { t } = useTranslation();
+    const chartH = Math.max(80, height - 80);
+
+    const estData = (() => {
+        const labor = estimate.laborTotalCost ?? 0;
+        const materials = estimate.materialTotalCost ?? 0;
+        const base = estimate.totalCost ?? 0;
+        const withOther = estimate.totalCostWithOtherExpenses ?? base;
+        const other = Math.max(0, withOther - base);
+        const total = labor + materials + other;
+        if (total === 0) return [];
+        return [
+            { key: 'labor',     name: t('Labor'),         value: labor,     pct: ((labor / total) * 100).toFixed(1) },
+            { key: 'materials', name: t('Materials'),      value: materials, pct: ((materials / total) * 100).toFixed(1) },
+            { key: 'other',     name: t('Other Expenses'), value: other,     pct: ((other / total) * 100).toFixed(1) },
+        ].filter(d => d.value > 0);
+    })();
+
+    const actData = (() => {
+        const materialsTotal = pahestEntries.reduce((s, e) => s + e.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0), 0);
+        const laborTotal = costHistory.filter(e => e.paymentMethod?.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
+        const total = materialsTotal + laborTotal;
+        if (total === 0) return [];
+        return [
+            { key: 'labor',     name: t('Labor'),    value: laborTotal,     pct: ((laborTotal / total) * 100).toFixed(1) },
+            { key: 'materials', name: t('Materials'), value: materialsTotal, pct: ((materialsTotal / total) * 100).toFixed(1) },
+        ].filter(d => d.value > 0);
+    })();
+
+    const donut = (data: typeof estData, gradPrefix: string) => (
+        <Box sx={{ flex: 1, minHeight: chartH }}>
+            <ResponsiveContainer width='100%' height='100%'>
+                <PieChart>
+                    <defs>
+                        {COST_SEGMENTS.map(s => (
+                            <radialGradient key={s.key} id={`${gradPrefix}-${s.key}`} cx='50%' cy='50%' r='50%'>
+                                <stop offset='0%' stopColor={s.inner} />
+                                <stop offset='100%' stopColor={s.outer} />
+                            </radialGradient>
+                        ))}
+                    </defs>
+                    <Pie data={data} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={2} dataKey='value' strokeWidth={0}>
+                        {data.map(entry => {
+                            const seg = COST_SEGMENTS.find(s => s.key === entry.key);
+                            return <Cell key={entry.key} fill={seg ? `url(#${gradPrefix}-${seg.key})` : '#ccc'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
+                        })}
+                    </Pie>
+                    <RechartsTooltip content={({ active, payload }: any) => {
+                        if (!active || !payload?.length) return null;
+                        const e = payload[0];
+                        return (
+                            <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
+                                <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{e.name}</Typography>
+                                <Typography variant='body2' sx={{ color: '#00A390' }}>{Number(e.value).toLocaleString()} AMD</Typography>
+                                <Typography variant='caption' sx={{ color: 'text.secondary' }}>{e.payload.pct}%</Typography>
+                            </Paper>
+                        );
+                    }} />
+                </PieChart>
+            </ResponsiveContainer>
+        </Box>
+    );
+
+    const legend = (data: typeof estData) => (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 0.5 }}>
+            {data.map(d => {
+                const seg = COST_SEGMENTS.find(s => s.key === d.key);
+                return (
+                    <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: seg?.dot ?? '#ccc', flexShrink: 0 }} />
+                        <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>{d.name} {d.pct}%</Typography>
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+
+    return (
+        <Paper elevation={0} sx={{ flex: 2, border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
+                    {estData.length === 0
+                        ? <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>—</Typography></Box>
+                        : donut(estData, 'est')
+                    }
+                    {estData.length > 0 && legend(estData)}
+                </Box>
+                <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
+                    {actData.length === 0
+                        ? <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>—</Typography></Box>
+                        : donut(actData, 'act')
+                    }
+                    {actData.length > 0 && legend(actData)}
+                </Box>
+            </Box>
         </Paper>
     );
 }
@@ -566,13 +671,10 @@ export default function CostingPage() {
                             <Button variant='outlined' onClick={() => setSubcontractorOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Ենթակապալ</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                            <Box sx={{ flex: 1, minHeight: 180 }}>
-                                <CostBreakdownChart estimate={selectedEstimate} height={220} />
+                            <Box sx={{ flex: 2, minHeight: 220 }}>
+                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} height={220} />
                             </Box>
-                            <Box sx={{ flex: 1, minHeight: 180 }}>
-                                <ActualCostsChart pahestEntries={pahestEntries} costHistory={costHistory} height={220} />
-                            </Box>
-                            <Box sx={{ flex: 1, minHeight: 180 }}>
+                            <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} />
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
