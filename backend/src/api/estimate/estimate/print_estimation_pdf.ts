@@ -9,7 +9,7 @@ import htmlPdf from 'html-pdf-node';
 import HTMLtoDOCX from 'html-to-docx';
 import {requireQueryParam} from '@src/tsback/req/req_params';
 import {verifyObject} from '@src/tslib/verify';
-import {generateEstimateHTML, generateBoQHTML} from '@/lib/estimate_pdf';
+import {generateEstimateHTML, generateBoQHTML, generateEstimateExcel} from '@/lib/estimate_pdf';
 import { assertObject } from '@/tslib/assert';
 
 function getExportOpts(req: any) {
@@ -93,6 +93,23 @@ registerApiSession('estimate/generate_word', async (req, res, session) => {
     } catch (error) {
         console.error('Word generation error (Estimation):', error);
         res.status(500).json({ error: 'Word generation failed', message: String(error) });
+    }
+});
+
+registerApiSession('estimate/generate_excel', async (req, res, session) => {
+    try {
+        const estimateId = requireQueryParam(req, 'estimateId');
+        const estimateData = await genEstimateDataWithPipeline(estimateId);
+        const buffer = await generateEstimateExcel(estimateData, req.t, getExportOpts(req));
+        res.status(200)
+            .set({
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition': `attachment; filename="estimate_${estimateId}.xlsx"`,
+            })
+            .send(buffer);
+    } catch (error) {
+        console.error('Excel generation error (Estimation):', error);
+        res.status(500).json({ error: 'Excel generation failed', message: String(error) });
     }
 });
 

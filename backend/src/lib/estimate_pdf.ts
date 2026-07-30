@@ -1,6 +1,6 @@
 import { style, getStyles, cssRule, createTypeStyle } from 'typestyle';
 import beautify from "js-beautify";
-
+import ExcelJS from 'exceljs';
 
 import { TFunction } from 'i18next';
 
@@ -926,4 +926,205 @@ ${styles}
 `;
 
     return html;
+}
+
+export async function generateEstimateExcel(data: any, t: TFunction, opts: ExportOptions = {}): Promise<Buffer> {
+    const groupMode = opts.groupMode ?? 'closed';
+    const otherCostsMode = opts.otherCostsMode ?? 'separated';
+    const estimate = data.estimate;
+
+    const totalOtherPct = (data.expences as any[]).reduce((sum: number, e: any) => {
+        if (e.name === 'typeOfCost') return sum;
+        return sum + (Number(e.value) || 0);
+    }, 0);
+    const otherMultiplier = 1 + totalOtherPct / 100;
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Mudbase';
+    const ws = wb.addWorksheet('Նախահաշիվ', { views: [{ state: 'frozen', ySplit: 3 }] });
+
+    // Column widths
+    ws.columns = [
+        { width: 6 },   // #
+        { width: 12 },  // Code
+        { width: 40 },  // Name
+        { width: 8 },   // Unit
+        { width: 10 },  // Qty
+        { width: 14 },  // Labor cost
+        { width: 10 },  // Hours
+        { width: 12 },  // Mat code
+        { width: 30 },  // Mat name
+        { width: 8 },   // Mat unit
+        { width: 10 },  // Mat norm
+        { width: 10 },  // Mat qty
+        { width: 14 },  // Mat price
+        { width: 14 },  // Mat total
+        { width: 14 },  // Unit cost
+        { width: 14 },  // Total cost
+    ];
+
+    const BLUE  = 'FFB4CCD6';
+    const GREEN = 'FFE2EFD9';
+    const GRAY  = 'FFD9D9D9';
+    const WHITE = 'FFFFFFFF';
+
+    function headerCell(ws: ExcelJS.Worksheet, row: number, col: number, value: string, bg: string) {
+        const cell = ws.getCell(row, col);
+        cell.value = value;
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+        cell.font = { bold: true, size: 9 };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.border = {
+            top: { style: 'thin' }, bottom: { style: 'thin' },
+            left: { style: 'thin' }, right: { style: 'thin' },
+        };
+    }
+
+    // Row 1: header info
+    ws.mergeCells('A1:P1');
+    const titleCell = ws.getCell('A1');
+    titleCell.value = `${estimate.name || ''} — Նախահաշիվ — ${new Date().toLocaleDateString('hy-AM')}`;
+    titleCell.font = { bold: true, size: 11 };
+    titleCell.alignment = { horizontal: 'center' };
+
+    // Row 2-3: column headers
+    const h = (col: number, val: string, bg = BLUE) => headerCell(ws, 2, col, val, bg);
+    h(1,  'Հ/հ');       h(2, 'Կոդ');         h(3, 'Անվ.');
+    h(4,  'Չ.Մ.');      h(5, 'Քանակ');       h(6, 'Արժ.');
+    h(7,  'Ժ/Ա');
+    h(8,  'Կոդ',   GREEN); h(9, 'Նյութ', GREEN); h(10, 'Չ.Մ.', GREEN);
+    h(11, 'Նորմ',  GREEN); h(12, 'Քան.',  GREEN); h(13, 'Արժ.', GREEN);
+    h(14, 'Ընդ.',  GREEN);
+    h(15, 'Մ/Արժ', GRAY);  h(16, 'Ընդ.Արժ', GRAY);
+
+    // merge rows 2-3 for single-row headers
+    for (let c = 1; c <= 16; c++) {
+        ws.mergeCells(2, c, 3, c);
+    }
+
+    function dataCell(ws: ExcelJS.Worksheet, row: number, col: number, value: any, opts: { bold?: boolean; bg?: string; align?: ExcelJS.Alignment['horizontal']; num?: boolean } = {}) {
+        const cell = ws.getCell(row, col);
+        cell.value = value ?? '';
+        if (opts.bold) cell.font = { bold: true, size: 9 };
+        else cell.font = { size: 9 };
+        if (opts.bg) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: opts.bg } };
+        cell.alignment = { horizontal: opts.align ?? 'center', vertical: 'middle', wrapText: true };
+        cell.border = {
+            top: { style: 'thin' }, bottom: { style: 'thin' },
+            left: { style: 'thin' }, right: { style: 'thin' },
+        };
+        if (opts.num && typeof value === 'number') {
+            cell.numFmt = '#,##0';
+        }
+    }
+
+    let rowIdx = 4;
+    let laborIndex = 0;
+    let sectionIndex = 0;
+
+    for (const sectionData of data.sections) {
+        ++sectionIndex;
+        // Section header row
+        ws.mergeCells(rowIdx, 1, rowIdx, 14);
+        dataCell(ws, rowIdx, 1, `${sectionIndex}. ${sectionData.section.name || ''}`, { bold: true, bg: BLUE, align: 'center' });
+        dataCell(ws, rowIdx, 15, '', { bg: BLUE });
+        dataCell(ws, rowIdx, 16, Math.round(sectionData.section.totalCost || 0), { bold: true, bg: BLUE, num: true });
+        rowIdx++;
+
+        let subSectIndex = 0;
+        for (const subsectionData of sectionData.subsections) {
+            ++subSectIndex;
+            if (subsectionData.subsection.name) {
+                ws.mergeCells(rowIdx, 1, rowIdx, 14);
+                dataCell(ws, rowIdx, 1, `${sectionIndex}.${subSectIndex} ${subsectionData.subsection.name}`, { bold: true, bg: BLUE, align: 'left' });
+                dataCell(ws, rowIdx, 15, '', { bg: BLUE });
+                dataCell(ws, rowIdx, 16, Math.round(subsectionData.subsection.totalCost || 0), { bold: true, bg: BLUE, num: true });
+                rowIdx++;
+            }
+
+            for (const laborData of subsectionData.labors) {
+                const labor = laborData.labor;
+                if (groupMode === 'closed' && labor.parentGroupRowId) continue;
+                if (groupMode === 'open' && labor.isGroupRow) continue;
+
+                ++laborIndex;
+                const materialsTotal = (laborData.materials || []).reduce(
+                    (s: number, m: any) => s + (m.changableAveragePrice * m.quantity), 0
+                );
+                const totalRaw = labor.changableAveragePrice * labor.quantity + materialsTotal;
+                const unitRaw  = labor.quantity > 0 ? totalRaw / labor.quantity : 0;
+                const unitCost  = otherCostsMode === 'included' ? unitRaw  * otherMultiplier : unitRaw;
+                const totalCost = otherCostsMode === 'included' ? totalRaw * otherMultiplier : totalRaw;
+
+                const mats = laborData.materials || [];
+                const rowspan = mats.length || 1;
+                const startRow = rowIdx;
+
+                if (mats.length > 0) {
+                    let mi = 0;
+                    for (const mat of mats) {
+                        dataCell(ws, rowIdx, 8,  mat.materialItemId || '', {});
+                        dataCell(ws, rowIdx, 9,  mat.materialOfferItemName || '', { align: 'left' });
+                        dataCell(ws, rowIdx, 10, mat.measurementUnitMongoId || '', {});
+                        dataCell(ws, rowIdx, 11, mat.materialConsumptionNorm ?? 0, { num: true });
+                        dataCell(ws, rowIdx, 12, mat.quantity, { num: true });
+                        dataCell(ws, rowIdx, 13, Math.round(mat.changableAveragePrice), { num: true });
+                        dataCell(ws, rowIdx, 14, Math.round(mat.changableAveragePrice * mat.quantity), { num: true });
+                        rowIdx++;
+                        mi++;
+                    }
+                } else {
+                    for (let c = 8; c <= 14; c++) dataCell(ws, rowIdx, c, '');
+                    rowIdx++;
+                }
+
+                // Merge labor columns across material rows
+                const endRow = rowIdx - 1;
+                if (endRow > startRow) {
+                    for (const c of [1,2,3,4,5,6,7,15,16]) {
+                        ws.mergeCells(startRow, c, endRow, c);
+                    }
+                }
+                dataCell(ws, startRow, 1,  laborIndex, {});
+                dataCell(ws, startRow, 2,  labor.laborItemId || '', {});
+                dataCell(ws, startRow, 3,  labor.laborOfferItemName || '', { align: 'left' });
+                dataCell(ws, startRow, 4,  labor.measurementUnitMongoId || '', {});
+                dataCell(ws, startRow, 5,  labor.quantity, { num: true });
+                dataCell(ws, startRow, 6,  Math.round(labor.changableAveragePrice), { num: true });
+                dataCell(ws, startRow, 7,  labor.laborHours || '', {});
+                dataCell(ws, startRow, 15, Math.round(unitCost),  { num: true });
+                dataCell(ws, startRow, 16, Math.round(totalCost), { num: true, bold: true });
+            }
+        }
+    }
+
+    // Other costs section
+    if (otherCostsMode === 'separated') {
+        ws.mergeCells(rowIdx, 1, rowIdx, 14);
+        dataCell(ws, rowIdx, 1, 'ԱՅԼ ԾԱԽSЕР', { bold: true, bg: BLUE, align: 'center' });
+        dataCell(ws, rowIdx, 15, '', { bg: BLUE });
+        dataCell(ws, rowIdx, 16, Math.round(estimate.totalCostWithOtherExpenses - estimate.totalCost), { bold: true, bg: BLUE, num: true });
+        rowIdx++;
+
+        for (const expence of data.expences) {
+            if (expence.name === 'typeOfCost') continue;
+            ws.mergeCells(rowIdx, 1, rowIdx, 14);
+            dataCell(ws, rowIdx, 1, t(expence.name), { align: 'left' });
+            dataCell(ws, rowIdx, 15, `${expence.value}%`, {});
+            dataCell(ws, rowIdx, 16, Math.round((estimate.totalCost * expence.value) / 100), { num: true, bold: true });
+            rowIdx++;
+        }
+    }
+
+    // Total row
+    ws.mergeCells(rowIdx, 1, rowIdx, 14);
+    dataCell(ws, rowIdx, 1, 'ԸՆԴԱՄԵՆԸ՝', { bold: true, bg: GRAY, align: 'right' });
+    const grandTotal = otherCostsMode === 'included'
+        ? Math.round(estimate.totalCost * otherMultiplier)
+        : Math.round(estimate.totalCostWithOtherExpenses);
+    dataCell(ws, rowIdx, 15, '', { bg: GRAY });
+    dataCell(ws, rowIdx, 16, grandTotal, { bold: true, bg: GRAY, num: true });
+
+    const arrayBuffer = await wb.xlsx.writeBuffer();
+    return Buffer.from(arrayBuffer);
 }

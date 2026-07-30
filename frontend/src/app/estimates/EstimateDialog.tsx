@@ -73,7 +73,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [chronologicalDialogOpen, setChronologicalDialogOpen] = useState(false);
     const [exportConfigOpen, setExportConfigOpen] = useState(false);
     const [exportConfigTarget, setExportConfigTarget] = useState<'estimation' | 'boq'>('estimation');
-    const [exportConfigFormat, setExportConfigFormat] = useState<'html' | 'word' | 'pdf'>('html');
+    const [exportConfigFormat, setExportConfigFormat] = useState<'html' | 'word' | 'pdf' | 'excel'>('html');
     const [exportGroupMode, setExportGroupMode] = useState<'closed' | 'open'>('closed');
     const [exportOtherCostsMode, setExportOtherCostsMode] = useState<'separated' | 'included'>('separated');
 
@@ -214,7 +214,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const handleRedo = () => accordionRef.current?.redo();
 
     // Download handlers
-    const handleDownloadEstimation = (format: 'html' | 'word' | 'pdf') => {
+    const handleDownloadEstimation = (format: 'html' | 'word' | 'pdf' | 'excel') => {
         setExportConfigTarget('estimation');
         setExportConfigFormat(format);
         setExportConfigOpen(true);
@@ -229,13 +229,15 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const handleExportConfirm = () => {
         setExportConfigOpen(false);
         const commandMap = exportConfigTarget === 'estimation' ? {
-            html: 'estimate/generate_html',
-            word: 'estimate/generate_word',
-            pdf: 'estimate/generate_pdf',
+            html:  'estimate/generate_html',
+            word:  'estimate/generate_word',
+            pdf:   'estimate/generate_pdf',
+            excel: 'estimate/generate_excel',
         } : {
-            html: 'estimate/generate_boq_html',
-            word: 'estimate/generate_boq_word',
-            pdf: 'estimate/generate_boq_pdf',
+            html:  'estimate/generate_boq_html',
+            word:  'estimate/generate_boq_word',
+            pdf:   'estimate/generate_boq_pdf',
+            excel: 'estimate/generate_boq_excel',
         };
         window.open(
             Api.makeApiUrl({
@@ -586,9 +588,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             flexWrap: 'nowrap'
                         }}>
                             {[
-                                { category: 'Estimation', format: 'HTML', icon: `${TOOLBAR_ICON}/html.svg`, onClick: () => handleDownloadEstimation('html') },
-                                { category: 'Estimation', format: 'Word', icon: `${TOOLBAR_ICON}/word.svg`, onClick: () => handleDownloadEstimation('word') },
-                                { category: 'Estimation', format: 'PDF', icon: `${TOOLBAR_ICON}/pdf.svg`, onClick: () => handleDownloadEstimation('pdf') },
+                                { category: 'Estimation', format: 'HTML',  icon: `${TOOLBAR_ICON}/html.svg`,  onClick: () => handleDownloadEstimation('html') },
+                                { category: 'Estimation', format: 'Word',  icon: `${TOOLBAR_ICON}/word.svg`,  onClick: () => handleDownloadEstimation('word') },
+                                { category: 'Estimation', format: 'PDF',   icon: `${TOOLBAR_ICON}/pdf.svg`,   onClick: () => handleDownloadEstimation('pdf') },
+                                { category: 'Estimation', format: 'Excel', icon: `${TOOLBAR_ICON}/excel.svg`, onClick: () => handleDownloadEstimation('excel') },
                             ].map((item, index) => (
                                 <Box
                                     key={index}
