@@ -409,7 +409,7 @@ html += `
             }
 
             let laborIndex = 0;
-            const groupTotalsMap = buildGroupTotalsMap(subsectionData.labors);
+            const groupSummaryMap = buildGroupSummaryMap(subsectionData.labors);
 
             //     for (const laborData of subsectionData.labors) {
 
@@ -478,7 +478,7 @@ html += `
             //     }
 
             for (const laborData of subsectionData.labors) {
-                const labor = laborData.labor;
+                const labor = laborData.labor ?? laborData;
 
                 // Apply groupMode filter
                 if (groupMode === 'closed' && labor.parentGroupRowId) continue; // hide children of groups
@@ -493,11 +493,12 @@ html += `
                     0
                 );
                 const totalLaborCost = labor.changableAveragePrice * labor.quantity;
-                // Group rows store their total as the sum of child rows
+                const groupSummary = isGroupRow ? groupSummaryMap.get(labor._id?.toString() ?? '') : undefined;
                 const totalCostRaw = isGroupRow
-                    ? (groupTotalsMap.get(labor._id?.toString() ?? '') ?? 0)
+                    ? (groupSummary?.total ?? 0)
                     : totalLaborCost + materialsTotal;
-                const unitCostRaw = labor.quantity > 0 ? totalCostRaw / labor.quantity : totalCostRaw;
+                const effectiveQty = isGroupRow ? (groupSummary?.quantity ?? 0) : labor.quantity;
+                const unitCostRaw = effectiveQty > 0 ? totalCostRaw / effectiveQty : totalCostRaw;
 
                 // Apply otherCostsMode multiplier
                 const unitCost = otherCostsMode === 'included' ? unitCostRaw * otherMultiplier : unitCostRaw;
@@ -513,8 +514,8 @@ html += `
                         <td rowspan="${rowspan}">${labor.laborItemId}</td>
                         <td rowspan="${rowspan}" style="text-align:left;">${labor.laborOfferItemName}</td>
                         <td rowspan="${rowspan}">${labor.measurementUnitMongoId}</td>
-                        <td rowspan="${rowspan}">${fmt(labor.quantity)}</td>
-                        <td rowspan="${rowspan}">${formatEstimateCurrency(labor.changableAveragePrice)}</td>
+                        <td rowspan="${rowspan}">${fmt(effectiveQty)}</td>
+                        <td rowspan="${rowspan}">${isGroupRow ? formatEstimateCurrency(unitCost) : formatEstimateCurrency(labor.changableAveragePrice)}</td>
                         <td rowspan="${rowspan}">${labor.laborHours}</td>
                         `;
 
@@ -577,7 +578,7 @@ html += `
     if (otherCostsMode === 'separated') {
         html += `
             <tr class="lightBlue">
-                <td class="subsection" colspan="14">ԱՅԼ ԾԱԽSЕР</td>
+                <td class="subsection" colspan="14">ԱՅԼ ԾԱԽՍԵՌ</td>
                 <td class="subsection" colspan="2">${formatEstimateCurrency(data.estimate.totalCostWithOtherExpenses - data.estimate.totalCost)}</td>
             </tr>
         `;
@@ -620,17 +621,23 @@ function formatEstimateDate(date: Date) {
 
 
 
-function buildGroupTotalsMap(labors: any[]): Map<string, number> {
-    const map = new Map<string, number>();
+interface GroupSummary { total: number; quantity: number; }
+
+function buildGroupSummaryMap(labors: any[]): Map<string, GroupSummary> {
+    const map = new Map<string, GroupSummary>();
     for (const ld of labors) {
-        const parentId = ld.labor.parentGroupRowId;
+        const parentId = ld.labor?.parentGroupRowId ?? ld.parentGroupRowId;
         if (!parentId) continue;
         const key = parentId.toString();
+        const l = ld.labor ?? ld;
         const matTotal = (ld.materials || []).reduce(
             (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
         );
-        const rowTotal = (ld.labor.changableAveragePrice || 0) * (ld.labor.quantity || 0) + matTotal;
-        map.set(key, (map.get(key) ?? 0) + rowTotal);
+        const rowTotal = (l.changableAveragePrice || 0) * (l.quantity || 0) + matTotal;
+        const existing = map.get(key) ?? { total: 0, quantity: 0 };
+        existing.total += rowTotal;
+        existing.quantity += (l.quantity || 0);
+        map.set(key, existing);
     }
     return map;
 }
@@ -1061,7 +1068,7 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 rowIdx++;
             }
 
-            const groupTotalsMapXl = buildGroupTotalsMap(subsectionData.labors);
+            const groupSummaryMapXl = buildGroupSummaryMap(subsectionData.labors);
 
             for (const laborData of subsectionData.labors) {
                 const labor = laborData.labor;
@@ -1073,10 +1080,12 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 const materialsTotal = (laborData.materials || []).reduce(
                     (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
                 );
+                const groupSummaryXl = isGroupRowXl ? groupSummaryMapXl.get(labor._id?.toString() ?? '') : undefined;
                 const totalRaw = isGroupRowXl
-                    ? (groupTotalsMapXl.get(labor._id?.toString() ?? '') ?? 0)
+                    ? (groupSummaryXl?.total ?? 0)
                     : (labor.changableAveragePrice || 0) * (labor.quantity || 0) + materialsTotal;
-                const unitRaw  = labor.quantity > 0 ? totalRaw / labor.quantity : totalRaw;
+                const effectiveQtyXl = isGroupRowXl ? (groupSummaryXl?.quantity ?? 0) : labor.quantity;
+                const unitRaw  = effectiveQtyXl > 0 ? totalRaw / effectiveQtyXl : totalRaw;
                 const unitCost  = otherCostsMode === 'included' ? unitRaw  * otherMultiplier : unitRaw;
                 const totalCost = otherCostsMode === 'included' ? totalRaw * otherMultiplier : totalRaw;
 
@@ -1113,8 +1122,8 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 dataCell(ws, startRow, 2,  labor.laborItemId || '', {});
                 dataCell(ws, startRow, 3,  labor.laborOfferItemName || '', { align: 'left' });
                 dataCell(ws, startRow, 4,  labor.measurementUnitMongoId || '', {});
-                dataCell(ws, startRow, 5,  labor.quantity, { num: true });
-                dataCell(ws, startRow, 6,  Math.round(labor.changableAveragePrice), { num: true });
+                dataCell(ws, startRow, 5,  effectiveQtyXl, { num: true });
+                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(unitCost) : Math.round(labor.changableAveragePrice), { num: true });
                 dataCell(ws, startRow, 7,  labor.laborHours || '', {});
                 dataCell(ws, startRow, 15, Math.round(unitCost),  { num: true });
                 dataCell(ws, startRow, 16, Math.round(totalCost), { num: true, bold: true });
@@ -1125,7 +1134,7 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
     // Other costs section
     if (otherCostsMode === 'separated') {
         ws.mergeCells(rowIdx, 1, rowIdx, 14);
-        dataCell(ws, rowIdx, 1, 'ԱՅԼ ԾԱԽSЕР', { bold: true, bg: BLUE, align: 'center' });
+        dataCell(ws, rowIdx, 1, 'ԱՅԼ ԾԱԽՍԵՌ', { bold: true, bg: BLUE, align: 'center' });
         dataCell(ws, rowIdx, 15, '', { bg: BLUE });
         dataCell(ws, rowIdx, 16, Math.round(estimate.totalCostWithOtherExpenses - estimate.totalCost), { bold: true, bg: BLUE, num: true });
         rowIdx++;
