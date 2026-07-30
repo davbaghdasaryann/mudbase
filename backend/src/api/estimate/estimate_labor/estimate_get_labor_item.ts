@@ -504,6 +504,15 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
             },
             { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
             {
+                $lookup: {
+                    from: 'measurement_unit',
+                    localField: 'measurementUnitMongoId',
+                    foreignField: '_id',
+                    as: 'directUnit',
+                },
+            },
+            { $unwind: { path: '$directUnit', preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     laborItemId: 1,
                     estimateSubsectionId: 1,
@@ -512,7 +521,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                     fullCode: '$catalogItem.fullCode',
                     catalogName: '$catalogItem.name',
                     laborOfferItemName: 1,
-                    unitSymbol: '$catalogItem.unitSymbol',
+                    unitSymbol: { $ifNull: ['$catalogItem.unitSymbol', '$directUnit.representationSymbol'] },
                     displayIndex: 1,
                 },
             },
