@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Radio, RadioGroup, FormControl, FormLabel, FormControlLabel, Button } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, ToggleButton, ToggleButtonGroup, Button } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -20,6 +20,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -825,36 +827,47 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
-                <DialogContent sx={{ pt: 1 }}>
-                    <FormControl component='fieldset'>
-                        <FormLabel component='legend' sx={{ mb: 1, fontWeight: 600, fontSize: '0.85rem', color: 'text.primary' }}>
-                            {t('Group rows')}
-                        </FormLabel>
-                        <RadioGroup value={exportGroupMode} onChange={(e) => setExportGroupMode(e.target.value as 'closed' | 'open')}>
-                            <FormControlLabel
-                                value='closed'
-                                control={<Radio size='small' sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' } }} />}
-                                label={
-                                    <Box>
-                                        <Typography variant='body2' fontWeight={500}>{t('Closed')}</Typography>
-                                        <Typography variant='caption' color='text.secondary'>{t('Show group row as collapsed with total')}</Typography>
-                                    </Box>
-                                }
-                                sx={{ mb: 1, alignItems: 'flex-start', '& .MuiRadio-root': { mt: 0.25 } }}
-                            />
-                            <FormControlLabel
-                                value='open'
-                                control={<Radio size='small' sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' } }} />}
-                                label={
-                                    <Box>
-                                        <Typography variant='body2' fontWeight={500}>{t('Open')}</Typography>
-                                        <Typography variant='caption' color='text.secondary'>{t('Expand groups to show individual rows inside')}</Typography>
-                                    </Box>
-                                }
-                                sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { mt: 0.25 } }}
-                            />
-                        </RadioGroup>
-                    </FormControl>
+                <DialogContent sx={{ pt: 1, pb: 2 }}>
+                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
+                        {t('Group rows')}
+                    </Typography>
+                    <ToggleButtonGroup
+                        value={exportGroupMode}
+                        exclusive
+                        onChange={(_, v) => v && setExportGroupMode(v as 'closed' | 'open')}
+                        sx={{ display: 'flex', gap: 1.5 }}
+                    >
+                        {[
+                            { value: 'closed', Icon: UnfoldLessIcon, label: t('Closed'), desc: t('Group row collapsed with total') },
+                            { value: 'open',   Icon: UnfoldMoreIcon,  label: t('Open'),   desc: t('Expand group rows individually') },
+                        ].map(({ value, Icon, label, desc }) => (
+                            <ToggleButton
+                                key={value}
+                                value={value}
+                                sx={{
+                                    flex: 1,
+                                    flexDirection: 'column',
+                                    gap: 0.5,
+                                    py: 2,
+                                    border: '1.5px solid #e0e0e0 !important',
+                                    borderRadius: '10px !important',
+                                    textTransform: 'none',
+                                    color: 'text.secondary',
+                                    transition: 'all 0.18s',
+                                    '&.Mui-selected': {
+                                        border: '1.5px solid #00A390 !important',
+                                        backgroundColor: 'rgba(0,163,144,0.07)',
+                                        color: '#00A390',
+                                    },
+                                    '&:hover': { backgroundColor: 'rgba(0,163,144,0.04)' },
+                                }}
+                            >
+                                <Icon sx={{ fontSize: 28 }} />
+                                <Typography variant='body2' fontWeight={600} lineHeight={1.2}>{label}</Typography>
+                                <Typography variant='caption' sx={{ fontSize: '0.68rem', lineHeight: 1.3, whiteSpace: 'normal', textAlign: 'center' }}>{desc}</Typography>
+                            </ToggleButton>
+                        ))}
+                    </ToggleButtonGroup>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={() => setExportConfigOpen(false)} size='small'>{t('Cancel')}</Button>
