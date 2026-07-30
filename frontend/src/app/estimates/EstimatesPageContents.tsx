@@ -60,7 +60,7 @@ export default function EstimatesPageContents() {
         <>
             <TabContext value={value}>
                 <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
-                    <TabList onChange={handleChange}>
+                    <TabList onChange={handleChange} variant="scrollable" scrollButtons={false}>
                         {permEstUse && <Tab label={<TabLabel icon="works.svg" label={t('My Estimates')} />} value='estimates' />}
                         {hasSharedEstimatesByMe && <Tab label={<TabLabel icon="share.svg" label={t('Shared Estimates')} />} value='sharedEstimates' />}
                         {hasSharedEstimatesWithMe && <Tab label={<TabLabel icon="favourites.svg" label={t('Estimate Offers')} />} value='estimateOffers' />}
