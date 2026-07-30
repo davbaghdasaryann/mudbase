@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -75,6 +75,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [exportConfigTarget, setExportConfigTarget] = useState<'estimation' | 'boq'>('estimation');
     const [exportConfigFormat, setExportConfigFormat] = useState<'html' | 'word' | 'pdf'>('html');
     const [exportGroupMode, setExportGroupMode] = useState<'closed' | 'open'>('closed');
+    const [exportOtherCostsMode, setExportOtherCostsMode] = useState<'separated' | 'included'>('separated');
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -239,7 +240,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         window.open(
             Api.makeApiUrl({
                 command: commandMap[exportConfigFormat],
-                args: { estimateId: props.estimateId, groupMode: exportGroupMode },
+                args: { estimateId: props.estimateId, groupMode: exportGroupMode, otherCostsMode: exportOtherCostsMode },
             }),
             '_blank'
         );
@@ -825,8 +826,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
-                <DialogContent sx={{ pt: 1, pb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5 }}>
+                <DialogContent sx={{ pt: 1, pb: 2, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {/* Setting: Group rows */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 0.5 }}>
                         <Box>
                             <Typography variant='body2' fontWeight={500}>{t('Expand group rows')}</Typography>
                             <Typography variant='caption' color='text.secondary'>
@@ -836,6 +838,28 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         <Switch
                             checked={exportGroupMode === 'open'}
                             onChange={(e) => setExportGroupMode(e.target.checked ? 'open' : 'closed')}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                            }}
+                        />
+                    </Box>
+
+                    <Divider sx={{ borderColor: '#f0f2f4' }} />
+
+                    {/* Setting: Other costs */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 0.5 }}>
+                        <Box>
+                            <Typography variant='body2' fontWeight={500}>{t('Separate other costs')}</Typography>
+                            <Typography variant='caption' color='text.secondary'>
+                                {exportOtherCostsMode === 'separated'
+                                    ? t('Other costs shown as separate line items')
+                                    : t('Other costs included in unit cost by percentage')}
+                            </Typography>
+                        </Box>
+                        <Switch
+                            checked={exportOtherCostsMode === 'separated'}
+                            onChange={(e) => setExportOtherCostsMode(e.target.checked ? 'separated' : 'included')}
                             sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
