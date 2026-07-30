@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, ToggleButton, ToggleButtonGroup, Button } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -20,8 +20,6 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -828,46 +826,22 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     </IconButton>
                 </DialogTitle>
                 <DialogContent sx={{ pt: 1, pb: 2 }}>
-                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
-                        {t('Group rows')}
-                    </Typography>
-                    <ToggleButtonGroup
-                        value={exportGroupMode}
-                        exclusive
-                        onChange={(_, v) => v && setExportGroupMode(v as 'closed' | 'open')}
-                        sx={{ display: 'flex', gap: 1.5 }}
-                    >
-                        {[
-                            { value: 'closed', Icon: UnfoldLessIcon, label: t('Closed'), desc: t('Group row collapsed with total') },
-                            { value: 'open',   Icon: UnfoldMoreIcon,  label: t('Open'),   desc: t('Expand group rows individually') },
-                        ].map(({ value, Icon, label, desc }) => (
-                            <ToggleButton
-                                key={value}
-                                value={value}
-                                sx={{
-                                    flex: 1,
-                                    flexDirection: 'column',
-                                    gap: 0.5,
-                                    py: 2,
-                                    border: '1.5px solid #e0e0e0 !important',
-                                    borderRadius: '10px !important',
-                                    textTransform: 'none',
-                                    color: 'text.secondary',
-                                    transition: 'all 0.18s',
-                                    '&.Mui-selected': {
-                                        border: '1.5px solid #00A390 !important',
-                                        backgroundColor: 'rgba(0,163,144,0.07)',
-                                        color: '#00A390',
-                                    },
-                                    '&:hover': { backgroundColor: 'rgba(0,163,144,0.04)' },
-                                }}
-                            >
-                                <Icon sx={{ fontSize: 28 }} />
-                                <Typography variant='body2' fontWeight={600} lineHeight={1.2}>{label}</Typography>
-                                <Typography variant='caption' sx={{ fontSize: '0.68rem', lineHeight: 1.3, whiteSpace: 'normal', textAlign: 'center' }}>{desc}</Typography>
-                            </ToggleButton>
-                        ))}
-                    </ToggleButtonGroup>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5 }}>
+                        <Box>
+                            <Typography variant='body2' fontWeight={500}>{t('Expand group rows')}</Typography>
+                            <Typography variant='caption' color='text.secondary'>
+                                {exportGroupMode === 'open' ? t('Groups shown with individual rows') : t('Groups shown collapsed with total')}
+                            </Typography>
+                        </Box>
+                        <Switch
+                            checked={exportGroupMode === 'open'}
+                            onChange={(e) => setExportGroupMode(e.target.checked ? 'open' : 'closed')}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                            }}
+                        />
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={() => setExportConfigOpen(false)} size='small'>{t('Cancel')}</Button>
