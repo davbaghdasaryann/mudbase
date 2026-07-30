@@ -486,6 +486,15 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
             },
             { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
             {
+                $lookup: {
+                    from: 'measurement_unit',
+                    localField: 'measurementUnitMongoId',
+                    foreignField: '_id',
+                    as: 'directUnit',
+                },
+            },
+            { $unwind: { path: '$directUnit', preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     materialItemId: 1,
                     estimateSubsectionId: 1,
@@ -495,7 +504,7 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
                     materialCatalogFullCode: '$catalogItem.fullCode',
                     materialCatalogName: '$catalogItem.name',
                     materialOfferItemName: 1,
-                    unitSymbol: '$catalogItem.unitSymbol',
+                    unitSymbol: { $ifNull: ['$catalogItem.unitSymbol', '$directUnit.representationSymbol'] },
                     displayIndex: 1,
                 },
             },
