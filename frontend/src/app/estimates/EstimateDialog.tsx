@@ -828,7 +828,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 </DialogTitle>
                 <DialogContent sx={{ pt: 1, pb: 2, display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {/* Setting: Group rows */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
                         <Box>
                             <Typography variant='body2' fontWeight={500}>{t('Expand group rows')}</Typography>
                             <Typography variant='caption' color='text.secondary'>
@@ -848,7 +848,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     <Divider sx={{ borderColor: '#f0f2f4' }} />
 
                     {/* Setting: Other costs */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
                         <Box>
                             <Typography variant='body2' fontWeight={500}>{t('Separate other costs')}</Typography>
                             <Typography variant='caption' color='text.secondary'>
@@ -868,7 +868,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setExportConfigOpen(false)} size='small'>{t('Cancel')}</Button>
+                    <Button onClick={() => setExportConfigOpen(false)} size='small' sx={{ color: '#00A390' }}>{t('Cancel')}</Button>
                     <Button
                         variant='contained'
                         size='small'

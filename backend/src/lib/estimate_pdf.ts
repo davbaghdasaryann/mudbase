@@ -8,7 +8,20 @@ import { formatCurrency } from '@/lib/format_currency';
 import { fixedToThree, roundToThree } from '@/tslib/parse';
 
 
-export function generateEstimateHTML(data: any, t: TFunction) {
+interface ExportOptions {
+    groupMode?: 'closed' | 'open';
+    otherCostsMode?: 'separated' | 'included';
+}
+
+export function generateEstimateHTML(data: any, t: TFunction, opts: ExportOptions = {}) {
+    const groupMode = opts.groupMode ?? 'closed';
+    const otherCostsMode = opts.otherCostsMode ?? 'separated';
+
+    const totalOtherPct = (data.expences as any[]).reduce((sum: number, e: any) => {
+        if (e.name === 'typeOfCost') return sum;
+        return sum + (Number(e.value) || 0);
+    }, 0);
+    const otherMultiplier = 1 + totalOtherPct / 100;
 
     const estimate = data.estimate;
     // Common styles
@@ -464,6 +477,12 @@ html += `
             //     }
 
             for (const laborData of subsectionData.labors) {
+                const labor = laborData.labor;
+
+                // Apply groupMode filter
+                if (groupMode === 'closed' && labor.parentGroupRowId) continue; // hide children of groups
+                if (groupMode === 'open' && labor.isGroupRow) continue;         // hide group header, show children
+
                 ++laborIndex;
 
                 // 1) Compute all totals up‐front, even if there are no materials:
@@ -471,10 +490,15 @@ html += `
                     (sum: any, m: any) => sum + (m.changableAveragePrice * m.quantity),
                     0
                 );
-                const totalLaborCost = laborData.labor.changableAveragePrice * laborData.labor.quantity;
+                const totalLaborCost = labor.changableAveragePrice * labor.quantity;
                 const totalCost = totalLaborCost + materialsTotal;
-                const unitCost =
-                    laborData.labor.quantity > 0 ? totalCost / laborData.labor.quantity : 0;
+                const unitCostRaw = labor.quantity > 0 ? totalCost / labor.quantity : 0;
+                const totalCostRaw = totalCost;
+
+                // Apply otherCostsMode multiplier
+                const unitCost = otherCostsMode === 'included' ? unitCostRaw * otherMultiplier : unitCostRaw;
+                const totalCostDisplay = otherCostsMode === 'included' ? totalCostRaw * otherMultiplier : totalCostRaw;
+
                 // If materials.length is zero, we'll treat rowspan as 1
                 const rowspan = laborData.materials.length || 1;
 
@@ -482,12 +506,12 @@ html += `
                 html += `
                         <tr>
                         <td rowspan="${rowspan}">${laborIndex}</td>
-                        <td rowspan="${rowspan}">${laborData.labor.laborItemId}</td>
-                        <td rowspan="${rowspan}" style="text-align:left;">${laborData.labor.laborOfferItemName}</td>
-                        <td rowspan="${rowspan}">${laborData.labor.measurementUnitMongoId}</td>
-                        <td rowspan="${rowspan}">${fmt(laborData.labor.quantity)}</td>
-                        <td rowspan="${rowspan}">${formatEstimateCurrency(laborData.labor.changableAveragePrice)}</td>
-                        <td rowspan="${rowspan}">${laborData.labor.laborHours}</td>
+                        <td rowspan="${rowspan}">${labor.laborItemId}</td>
+                        <td rowspan="${rowspan}" style="text-align:left;">${labor.laborOfferItemName}</td>
+                        <td rowspan="${rowspan}">${labor.measurementUnitMongoId}</td>
+                        <td rowspan="${rowspan}">${fmt(labor.quantity)}</td>
+                        <td rowspan="${rowspan}">${formatEstimateCurrency(labor.changableAveragePrice)}</td>
+                        <td rowspan="${rowspan}">${labor.laborHours}</td>
                         `;
 
                 // 3a) If there *are* materials:
@@ -511,7 +535,7 @@ html += `
                             // On the first material row, emit the two cost‐cells with rowspan
                             materialId === 1
                                 ? `<td rowspan="${rowspan}">${formatEstimateCurrency(unitCost)}</td>
-                                <td rowspan="${rowspan}">${formatEstimateCurrency(totalCost)}</td>`
+                                <td rowspan="${rowspan}">${formatEstimateCurrency(totalCostDisplay)}</td>`
                                 : ''
                             }
                         </tr>
@@ -529,7 +553,7 @@ html += `
                         <td></td>
                         <td></td>
                         <td>${formatEstimateCurrency(unitCost)}</td>
-                        <td>${formatEstimateCurrency(totalCost)}</td>
+                        <td>${formatEstimateCurrency(totalCostDisplay)}</td>
                         </tr>
                             `;
                 }
@@ -546,24 +570,23 @@ html += `
 
     `;
 
-    html += `
-        <tr class="lightBlue">
-            <td class="subsection" colspan="14">ԱՅԼ ԾԱԽՍԵՐ</td>
-            <td class="subsection" colspan="2">${formatEstimateCurrency(data.estimate.totalCostWithOtherExpenses - data.estimate.totalCost)}</td>
-        </tr>
-    `;
-
-    for (const expence of data.expences) {
-        if (expence.name === 'typeOfCost')
-            continue
-
+    if (otherCostsMode === 'separated') {
         html += `
-            <tr>
-            <td class="importantInfo" colspan="14">${t(expence.name)}</td>
-            <td class='bold'>${expence.value}%</td>
-            <td class="bold">${formatEstimateCurrency((estimate.totalCost * expence.value) / 100)}</td>
+            <tr class="lightBlue">
+                <td class="subsection" colspan="14">ԱՅԼ ԾԱԽSЕР</td>
+                <td class="subsection" colspan="2">${formatEstimateCurrency(data.estimate.totalCostWithOtherExpenses - data.estimate.totalCost)}</td>
             </tr>
         `;
+        for (const expence of data.expences) {
+            if (expence.name === 'typeOfCost') continue;
+            html += `
+                <tr>
+                <td class="importantInfo" colspan="14">${t(expence.name)}</td>
+                <td class='bold'>${expence.value}%</td>
+                <td class="bold">${formatEstimateCurrency((estimate.totalCost * expence.value) / 100)}</td>
+                </tr>
+            `;
+        }
     }
 
     html += `

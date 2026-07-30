@@ -12,16 +12,18 @@ import {verifyObject} from '@src/tslib/verify';
 import {generateEstimateHTML, generateBoQHTML} from '@/lib/estimate_pdf';
 import { assertObject } from '@/tslib/assert';
 
+function getExportOpts(req: any) {
+    return {
+        groupMode: req.query.groupMode === 'open' ? 'open' : 'closed',
+        otherCostsMode: req.query.otherCostsMode === 'included' ? 'included' : 'separated',
+    } as const;
+}
+
 registerApiSession('estimate/generate_html', async (req, res, session) => {
     const estimateId = requireQueryParam(req, 'estimateId');
 
-    // let data = await genEstimateData(estimateId);
-    // let data = await genEstimateDataOptimized(estimateId);
     const estimateData = await genEstimateDataWithPipeline(estimateId);
-
-    // log_.info(estimateData);
-
-    const html = generateEstimateHTML(estimateData, req.t);
+    const html = generateEstimateHTML(estimateData, req.t, getExportOpts(req));
 
     respondHtml(res, html);
 });
@@ -30,7 +32,7 @@ registerApiSession('estimate/generate_pdf', async (req, res, session) => {
     const estimateId = requireQueryParam(req, 'estimateId');
 
     const data = await genEstimateDataWithPipeline(estimateId);
-    const html = generateEstimateHTML(data, req.t);
+    const html = generateEstimateHTML(data, req.t, getExportOpts(req));
 
     const margins = 30;
     const options: htmlPdf.Options = {
@@ -69,7 +71,7 @@ registerApiSession('estimate/generate_word', async (req, res, session) => {
         const estimateId = requireQueryParam(req, 'estimateId');
 
         const estimateData = await genEstimateDataWithPipeline(estimateId);
-        const html = generateEstimateHTML(estimateData, req.t);
+        const html = generateEstimateHTML(estimateData, req.t, getExportOpts(req));
 
         // @ts-ignore - html-to-docx doesn't have type definitions
         const buffer = await HTMLtoDOCX(html, null, {
