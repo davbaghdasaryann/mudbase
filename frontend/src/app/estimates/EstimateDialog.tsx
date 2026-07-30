@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Radio, RadioGroup, FormControl, FormLabel, FormControlLabel, Button } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -71,6 +71,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
     const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
     const [chronologicalDialogOpen, setChronologicalDialogOpen] = useState(false);
+    const [exportConfigOpen, setExportConfigOpen] = useState(false);
+    const [exportConfigTarget, setExportConfigTarget] = useState<'estimation' | 'boq'>('estimation');
+    const [exportConfigFormat, setExportConfigFormat] = useState<'html' | 'word' | 'pdf'>('html');
+    const [exportGroupMode, setExportGroupMode] = useState<'closed' | 'open'>('closed');
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -210,32 +214,32 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
     // Download handlers
     const handleDownloadEstimation = (format: 'html' | 'word' | 'pdf') => {
-        const commandMap = {
-            html: 'estimate/generate_html',
-            word: 'estimate/generate_word',
-            pdf: 'estimate/generate_pdf'
-        };
-
-        window.open(
-            Api.makeApiUrl({
-                command: commandMap[format],
-                args: { estimateId: props.estimateId },
-            }),
-            '_blank'
-        );
+        setExportConfigTarget('estimation');
+        setExportConfigFormat(format);
+        setExportConfigOpen(true);
     };
 
     const handleDownloadBoQ = (format: 'html' | 'word' | 'pdf') => {
-        const commandMap = {
+        setExportConfigTarget('boq');
+        setExportConfigFormat(format);
+        setExportConfigOpen(true);
+    };
+
+    const handleExportConfirm = () => {
+        setExportConfigOpen(false);
+        const commandMap = exportConfigTarget === 'estimation' ? {
+            html: 'estimate/generate_html',
+            word: 'estimate/generate_word',
+            pdf: 'estimate/generate_pdf',
+        } : {
             html: 'estimate/generate_boq_html',
             word: 'estimate/generate_boq_word',
-            pdf: 'estimate/generate_boq_pdf'
+            pdf: 'estimate/generate_boq_pdf',
         };
-
         window.open(
             Api.makeApiUrl({
-                command: commandMap[format],
-                args: { estimateId: props.estimateId },
+                command: commandMap[exportConfigFormat],
+                args: { estimateId: props.estimateId, groupMode: exportGroupMode },
             }),
             '_blank'
         );
@@ -812,6 +816,58 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     window.open(`/analysis/comparative?${params.toString()}`, '_blank');
                 }}
             />
+
+            {/* Export Config Modal */}
+            <Dialog open={exportConfigOpen} onClose={() => setExportConfigOpen(false)} maxWidth='xs' fullWidth>
+                <DialogTitle sx={{ pb: 1 }}>
+                    {t('Export Settings')}
+                    <IconButton onClick={() => setExportConfigOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}>
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent sx={{ pt: 1 }}>
+                    <FormControl component='fieldset'>
+                        <FormLabel component='legend' sx={{ mb: 1, fontWeight: 600, fontSize: '0.85rem', color: 'text.primary' }}>
+                            {t('Group rows')}
+                        </FormLabel>
+                        <RadioGroup value={exportGroupMode} onChange={(e) => setExportGroupMode(e.target.value as 'closed' | 'open')}>
+                            <FormControlLabel
+                                value='closed'
+                                control={<Radio size='small' sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' } }} />}
+                                label={
+                                    <Box>
+                                        <Typography variant='body2' fontWeight={500}>{t('Closed')}</Typography>
+                                        <Typography variant='caption' color='text.secondary'>{t('Show group row as collapsed with total')}</Typography>
+                                    </Box>
+                                }
+                                sx={{ mb: 1, alignItems: 'flex-start', '& .MuiRadio-root': { mt: 0.25 } }}
+                            />
+                            <FormControlLabel
+                                value='open'
+                                control={<Radio size='small' sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' } }} />}
+                                label={
+                                    <Box>
+                                        <Typography variant='body2' fontWeight={500}>{t('Open')}</Typography>
+                                        <Typography variant='caption' color='text.secondary'>{t('Expand groups to show individual rows inside')}</Typography>
+                                    </Box>
+                                }
+                                sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { mt: 0.25 } }}
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setExportConfigOpen(false)} size='small'>{t('Cancel')}</Button>
+                    <Button
+                        variant='contained'
+                        size='small'
+                        onClick={handleExportConfirm}
+                        sx={{ backgroundColor: '#00A390', '&:hover': { backgroundColor: '#008f7e' } }}
+                    >
+                        {t('Export')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Comparative Analysis Modal */}
             <Dialog open={comparativeModalOpen} onClose={() => setComparativeModalOpen(false)} maxWidth='xs' fullWidth>
