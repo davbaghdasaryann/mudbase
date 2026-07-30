@@ -409,6 +409,7 @@ html += `
             }
 
             let laborIndex = 0;
+            const groupTotalsMap = buildGroupTotalsMap(subsectionData.labors);
 
             //     for (const laborData of subsectionData.labors) {
 
@@ -486,14 +487,17 @@ html += `
                 ++laborIndex;
 
                 // 1) Compute all totals up‐front, even if there are no materials:
+                const isGroupRow = labor.isGroupRow === true;
                 const materialsTotal = (laborData.materials || []).reduce(
                     (sum: any, m: any) => sum + (m.changableAveragePrice * m.quantity),
                     0
                 );
                 const totalLaborCost = labor.changableAveragePrice * labor.quantity;
-                const totalCost = totalLaborCost + materialsTotal;
-                const unitCostRaw = labor.quantity > 0 ? totalCost / labor.quantity : 0;
-                const totalCostRaw = totalCost;
+                // Group rows store their total as the sum of child rows
+                const totalCostRaw = isGroupRow
+                    ? (groupTotalsMap.get(labor._id?.toString() ?? '') ?? 0)
+                    : totalLaborCost + materialsTotal;
+                const unitCostRaw = labor.quantity > 0 ? totalCostRaw / labor.quantity : totalCostRaw;
 
                 // Apply otherCostsMode multiplier
                 const unitCost = otherCostsMode === 'included' ? unitCostRaw * otherMultiplier : unitCostRaw;
@@ -615,6 +619,21 @@ function formatEstimateDate(date: Date) {
 }
 
 
+
+function buildGroupTotalsMap(labors: any[]): Map<string, number> {
+    const map = new Map<string, number>();
+    for (const ld of labors) {
+        const parentId = ld.labor.parentGroupRowId;
+        if (!parentId) continue;
+        const key = parentId.toString();
+        const matTotal = (ld.materials || []).reduce(
+            (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
+        );
+        const rowTotal = (ld.labor.changableAveragePrice || 0) * (ld.labor.quantity || 0) + matTotal;
+        map.set(key, (map.get(key) ?? 0) + rowTotal);
+    }
+    return map;
+}
 
 function fmt(x?: number): string {
     if (x == null) return '';
@@ -1042,17 +1061,22 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 rowIdx++;
             }
 
+            const groupTotalsMapXl = buildGroupTotalsMap(subsectionData.labors);
+
             for (const laborData of subsectionData.labors) {
                 const labor = laborData.labor;
                 if (groupMode === 'closed' && labor.parentGroupRowId) continue;
                 if (groupMode === 'open' && labor.isGroupRow) continue;
 
                 ++laborIndex;
+                const isGroupRowXl = labor.isGroupRow === true;
                 const materialsTotal = (laborData.materials || []).reduce(
-                    (s: number, m: any) => s + (m.changableAveragePrice * m.quantity), 0
+                    (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
                 );
-                const totalRaw = labor.changableAveragePrice * labor.quantity + materialsTotal;
-                const unitRaw  = labor.quantity > 0 ? totalRaw / labor.quantity : 0;
+                const totalRaw = isGroupRowXl
+                    ? (groupTotalsMapXl.get(labor._id?.toString() ?? '') ?? 0)
+                    : (labor.changableAveragePrice || 0) * (labor.quantity || 0) + materialsTotal;
+                const unitRaw  = labor.quantity > 0 ? totalRaw / labor.quantity : totalRaw;
                 const unitCost  = otherCostsMode === 'included' ? unitRaw  * otherMultiplier : unitRaw;
                 const totalCost = otherCostsMode === 'included' ? totalRaw * otherMultiplier : totalRaw;
 
