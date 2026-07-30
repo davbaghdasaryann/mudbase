@@ -679,7 +679,24 @@ async function genEstimateDataOptimized(estimateId: string) {
         });
     });
 
-    // 6) Compute totals
+    // 6a) Compute groupTotalCost for group rows (same formula as estimate_get_labor_item.ts)
+    for (const [groupId, groupEntry] of laborsMap.entries()) {
+        if (!groupEntry.labor.isGroupRow) continue;
+        let groupTotal = 0;
+        for (const childEntry of laborsMap.values()) {
+            const parentId = childEntry.labor.parentGroupRowId;
+            if (!parentId || parentId.toString() !== groupId) continue;
+            const qty = childEntry.labor.quantity || 0;
+            const price = childEntry.labor.changableAveragePrice || 0;
+            const matCost = childEntry.materials.reduce(
+                (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
+            );
+            groupTotal += qty > 0 ? (qty * price + matCost) / qty : price;
+        }
+        groupEntry.labor.groupTotalCost = groupTotal;
+    }
+
+    // 6b) Compute totals
     const laborTotals: number[] = [];
     for (const {labor, materials} of laborsMap.values()) {
         let total = labor.changableAveragePrice;

@@ -409,7 +409,6 @@ html += `
             }
 
             let laborIndex = 0;
-            const groupSummaryMap = buildGroupSummaryMap(subsectionData.labors);
 
             //     for (const laborData of subsectionData.labors) {
 
@@ -493,12 +492,13 @@ html += `
                     0
                 );
                 const totalLaborCost = labor.changableAveragePrice * labor.quantity;
-                const groupSummary = isGroupRow ? groupSummaryMap.get(labor._id?.toString() ?? '') : undefined;
+                const groupUnitCost = isGroupRow ? (labor.groupTotalCost || 0) : 0;
                 const totalCostRaw = isGroupRow
-                    ? (groupSummary?.total ?? 0)
+                    ? labor.quantity * groupUnitCost
                     : totalLaborCost + materialsTotal;
-                const effectiveQty = isGroupRow ? (groupSummary?.quantity ?? 0) : labor.quantity;
-                const unitCostRaw = effectiveQty > 0 ? totalCostRaw / effectiveQty : totalCostRaw;
+                const unitCostRaw = isGroupRow
+                    ? groupUnitCost
+                    : (labor.quantity > 0 ? totalCostRaw / labor.quantity : totalCostRaw);
 
                 // Apply otherCostsMode multiplier
                 const unitCost = otherCostsMode === 'included' ? unitCostRaw * otherMultiplier : unitCostRaw;
@@ -514,8 +514,8 @@ html += `
                         <td rowspan="${rowspan}">${labor.laborItemId}</td>
                         <td rowspan="${rowspan}" style="text-align:left;">${labor.laborOfferItemName}</td>
                         <td rowspan="${rowspan}">${labor.measurementUnitMongoId}</td>
-                        <td rowspan="${rowspan}">${fmt(effectiveQty)}</td>
-                        <td rowspan="${rowspan}">${isGroupRow ? formatEstimateCurrency(unitCost) : formatEstimateCurrency(labor.changableAveragePrice)}</td>
+                        <td rowspan="${rowspan}">${fmt(labor.quantity)}</td>
+                        <td rowspan="${rowspan}">${isGroupRow ? formatEstimateCurrency(groupUnitCost) : formatEstimateCurrency(labor.changableAveragePrice)}</td>
                         <td rowspan="${rowspan}">${labor.laborHours}</td>
                         `;
 
@@ -621,26 +621,6 @@ function formatEstimateDate(date: Date) {
 
 
 
-interface GroupSummary { total: number; quantity: number; }
-
-function buildGroupSummaryMap(labors: any[]): Map<string, GroupSummary> {
-    const map = new Map<string, GroupSummary>();
-    for (const ld of labors) {
-        const parentId = ld.labor?.parentGroupRowId ?? ld.parentGroupRowId;
-        if (!parentId) continue;
-        const key = parentId.toString();
-        const l = ld.labor ?? ld;
-        const matTotal = (ld.materials || []).reduce(
-            (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
-        );
-        const rowTotal = (l.changableAveragePrice || 0) * (l.quantity || 0) + matTotal;
-        const existing = map.get(key) ?? { total: 0, quantity: 0 };
-        existing.total += rowTotal;
-        existing.quantity += (l.quantity || 0);
-        map.set(key, existing);
-    }
-    return map;
-}
 
 function fmt(x?: number): string {
     if (x == null) return '';
@@ -1068,8 +1048,6 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 rowIdx++;
             }
 
-            const groupSummaryMapXl = buildGroupSummaryMap(subsectionData.labors);
-
             for (const laborData of subsectionData.labors) {
                 const labor = laborData.labor;
                 if (groupMode === 'closed' && labor.parentGroupRowId) continue;
@@ -1080,12 +1058,13 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 const materialsTotal = (laborData.materials || []).reduce(
                     (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
                 );
-                const groupSummaryXl = isGroupRowXl ? groupSummaryMapXl.get(labor._id?.toString() ?? '') : undefined;
+                const groupUnitCostXl = isGroupRowXl ? (labor.groupTotalCost || 0) : 0;
                 const totalRaw = isGroupRowXl
-                    ? (groupSummaryXl?.total ?? 0)
+                    ? labor.quantity * groupUnitCostXl
                     : (labor.changableAveragePrice || 0) * (labor.quantity || 0) + materialsTotal;
-                const effectiveQtyXl = isGroupRowXl ? (groupSummaryXl?.quantity ?? 0) : labor.quantity;
-                const unitRaw  = effectiveQtyXl > 0 ? totalRaw / effectiveQtyXl : totalRaw;
+                const unitRaw = isGroupRowXl
+                    ? groupUnitCostXl
+                    : (labor.quantity > 0 ? totalRaw / labor.quantity : totalRaw);
                 const unitCost  = otherCostsMode === 'included' ? unitRaw  * otherMultiplier : unitRaw;
                 const totalCost = otherCostsMode === 'included' ? totalRaw * otherMultiplier : totalRaw;
 
@@ -1122,8 +1101,8 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 dataCell(ws, startRow, 2,  labor.laborItemId || '', {});
                 dataCell(ws, startRow, 3,  labor.laborOfferItemName || '', { align: 'left' });
                 dataCell(ws, startRow, 4,  labor.measurementUnitMongoId || '', {});
-                dataCell(ws, startRow, 5,  effectiveQtyXl, { num: true });
-                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(unitCost) : Math.round(labor.changableAveragePrice), { num: true });
+                dataCell(ws, startRow, 5,  labor.quantity, { num: true });
+                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(groupUnitCostXl) : Math.round(labor.changableAveragePrice), { num: true });
                 dataCell(ws, startRow, 7,  labor.laborHours || '', {});
                 dataCell(ws, startRow, 15, Math.round(unitCost),  { num: true });
                 dataCell(ws, startRow, 16, Math.round(totalCost), { num: true, bold: true });
