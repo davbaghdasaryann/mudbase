@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -455,42 +455,43 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             ].map((tool, index) => {
                                 const isSelectActive = tool.labelKey === 'Select' && isSelectMode;
                                 return (
-                                    <Box
-                                        key={index}
-                                        onClick={(e) => {
-                                            if (tool.disabled) return;
-                                            e.stopPropagation(); // Prevent event from bubbling to DialogContent
-                                            tool.onClick();
-                                        }}
-                                        sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            p: 1,
-                                            backgroundColor: isSelectActive ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
-                                            borderRadius: 2,
-                                            cursor: tool.disabled ? 'not-allowed' : 'pointer',
-                                            boxShadow: isSelectActive ? '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)' : '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                            transition: 'all 0.2s',
-                                            opacity: tool.disabled ? 0.5 : 1,
-                                            pointerEvents: tool.disabled ? 'none' : 'auto',
-                                            transform: isSelectActive ? 'translateY(-2px)' : undefined,
-                                            '&:hover': tool.disabled ? {} : {
-                                                boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
-                                                transform: 'translateY(-2px)',
-                                            },
-                                            width: { xs: 85, md: 100, lg: 115 },
-                                            minHeight: { xs: 65, md: 75, lg: 85 },
-                                        }}
-                                    >
-                                        <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            {'iconNode' in tool ? tool.iconNode : <ImgElement src={tool.icon} sx={{ height: 22 }} />}
+                                    <Tooltip key={index} title={t(tool.labelKey)} placement="bottom" enterTouchDelay={0} arrow>
+                                        <Box
+                                            onClick={(e) => {
+                                                if (tool.disabled) return;
+                                                e.stopPropagation(); // Prevent event from bubbling to DialogContent
+                                                tool.onClick();
+                                            }}
+                                            sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                p: 1,
+                                                backgroundColor: isSelectActive ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
+                                                borderRadius: 2,
+                                                cursor: tool.disabled ? 'not-allowed' : 'pointer',
+                                                boxShadow: isSelectActive ? '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)' : '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                                transition: 'all 0.2s',
+                                                opacity: tool.disabled ? 0.5 : 1,
+                                                pointerEvents: tool.disabled ? 'none' : 'auto',
+                                                transform: isSelectActive ? 'translateY(-2px)' : undefined,
+                                                '&:hover': tool.disabled ? {} : {
+                                                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
+                                                    transform: 'translateY(-2px)',
+                                                },
+                                                width: { xs: 44, md: 50, lg: 115 },
+                                                minHeight: { xs: 44, md: 50, lg: 85 },
+                                            }}
+                                        >
+                                            <Box sx={{ height: 28, mb: { xs: 0, lg: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                {'iconNode' in tool ? tool.iconNode : <ImgElement src={tool.icon} sx={{ height: 22 }} />}
+                                            </Box>
+                                            <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: { xs: 'none', lg: 'flex' }, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                                {t(tool.labelKey)}
+                                            </Typography>
                                         </Box>
-                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-                                            {t(tool.labelKey)}
-                                        </Typography>
-                                    </Box>
+                                    </Tooltip>
                                 );
                             })}
 
@@ -509,41 +510,42 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 22 }} /> : <VisibilityIcon sx={{ fontSize: 22 }} />, onClick: handleHideUnhide },
                                 { labelKey: 'Copy', iconPath: `${TOOLBAR_ICON}/duplicate.svg`, onClick: handleDuplicateSelected },
                             ].map((tool, index) => (
-                                <Box
-                                    key={index}
-                                    onClick={(e) => {
-                                        if (lastThreeDisabled) return;
-                                        e.stopPropagation(); // Prevent event from bubbling to DialogContent
-                                        tool.onClick();
-                                    }}
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        p: 1,
-                                        backgroundColor: 'transparent',
-                                        borderRadius: 2,
-                                        cursor: lastThreeDisabled ? 'not-allowed' : 'pointer',
-                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                        transition: 'all 0.2s',
-                                        opacity: lastThreeDisabled ? 0.5 : 1,
-                                        pointerEvents: lastThreeDisabled ? 'none' : 'auto',
-                                        '&:hover': lastThreeDisabled ? {} : {
-                                            boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
-                                            transform: 'translateY(-2px)',
-                                        },
-                                        width: { xs: 85, md: 100, lg: 115 },
-                                        minHeight: { xs: 65, md: 75, lg: 85 },
-                                    }}
-                                >
-                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                        {'iconPath' in tool && tool.iconPath ? <ImgElement src={tool.iconPath} sx={{ height: 22 }} /> : 'iconNode' in tool ? tool.iconNode : null}
+                                <Tooltip key={index} title={t(tool.labelKey)} placement="bottom" enterTouchDelay={0} arrow>
+                                    <Box
+                                        onClick={(e) => {
+                                            if (lastThreeDisabled) return;
+                                            e.stopPropagation(); // Prevent event from bubbling to DialogContent
+                                            tool.onClick();
+                                        }}
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            p: 1,
+                                            backgroundColor: 'transparent',
+                                            borderRadius: 2,
+                                            cursor: lastThreeDisabled ? 'not-allowed' : 'pointer',
+                                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                            transition: 'all 0.2s',
+                                            opacity: lastThreeDisabled ? 0.5 : 1,
+                                            pointerEvents: lastThreeDisabled ? 'none' : 'auto',
+                                            '&:hover': lastThreeDisabled ? {} : {
+                                                boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2), 3px 0 6px rgba(0, 0, 0, 0.08), -3px 0 6px rgba(0, 0, 0, 0.08)',
+                                                transform: 'translateY(-2px)',
+                                            },
+                                            width: { xs: 44, md: 50, lg: 115 },
+                                            minHeight: { xs: 44, md: 50, lg: 85 },
+                                        }}
+                                    >
+                                        <Box sx={{ height: 28, mb: { xs: 0, lg: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            {'iconPath' in tool && tool.iconPath ? <ImgElement src={tool.iconPath} sx={{ height: 22 }} /> : 'iconNode' in tool ? tool.iconNode : null}
+                                        </Box>
+                                        <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', minHeight: '36px', display: { xs: 'none', lg: 'flex' }, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                            {t(tool.labelKey)}
+                                        </Typography>
                                     </Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-                                        {t(tool.labelKey)}
-                                    </Typography>
-                                </Box>
+                                </Tooltip>
                             ))}
                         </Box>
                     </Box>
