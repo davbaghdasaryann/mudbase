@@ -432,7 +432,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         <Box data-toolbar="true" sx={{
                             display: 'flex',
                             gap: 1.5,
-                            flexWrap: 'nowrap',
+                            flexWrap: { xs: 'wrap', lg: 'nowrap' },
                             justifyContent: 'center',
                             alignItems: 'center',
                             height: '100%',
