@@ -635,5 +635,9 @@
   "Action Type": "Գործողության տեսակ",
   "Warehouse": "Պահեստ",
   "Create Group": "Ավելացնել խումբ",
-  "Enter group name": "Մուտքագրել խմբի անվանումը"
+  "Enter group name": "Մուտքագրել խմբի անվանումը",
+  "Export Settings": "Բեռնման կարգաբերումներ",
+  "Expand group rows": "Բացել խմբի տողերը",
+  "Groups shown with individual rows": "Խմբերը ցուցադրվում են առանձին տողերով",
+  "Groups shown collapsed with total": "Խմբերը ցուցադրվում են ծալված ընդհանուրով"
 }
