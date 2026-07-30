@@ -578,7 +578,7 @@ html += `
     if (otherCostsMode === 'separated') {
         html += `
             <tr class="lightBlue">
-                <td class="subsection" colspan="14">ԱՅԼ ԾԱԽՍԵՌ</td>
+                <td class="subsection" colspan="14">ԱՅԼ ԾԱԽՍԵՐ</td>
                 <td class="subsection" colspan="2">${formatEstimateCurrency(data.estimate.totalCostWithOtherExpenses - data.estimate.totalCost)}</td>
             </tr>
         `;
@@ -1113,7 +1113,7 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
     // Other costs section
     if (otherCostsMode === 'separated') {
         ws.mergeCells(rowIdx, 1, rowIdx, 14);
-        dataCell(ws, rowIdx, 1, 'ԱՅԼ ԾԱԽՍԵՌ', { bold: true, bg: BLUE, align: 'center' });
+        dataCell(ws, rowIdx, 1, 'ԱՅԼ ԾԱԽՍԵՐ', { bold: true, bg: BLUE, align: 'center' });
         dataCell(ws, rowIdx, 15, '', { bg: BLUE });
         dataCell(ws, rowIdx, 16, Math.round(estimate.totalCostWithOtherExpenses - estimate.totalCost), { bold: true, bg: BLUE, num: true });
         rowIdx++;
