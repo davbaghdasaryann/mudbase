@@ -638,13 +638,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             if (item.groupLaborTotalCost) {
                 itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
             }
+            const groupTotal = (item.groupLaborTotalCost || 0) + (item.groupMaterialCost || 0);
+            if (groupTotal) itemArr.priceWithMaterial = roundNumber(groupTotal);
         } else if (item.quantity && item.itemChangableAveragePrice) {
             itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
         }
 
         // if (item.materialTotalCost) {
         itemArr.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
-        if (itemArr.itemWithoutMaterial) {
+        if (!itemArr.isGroupRow && itemArr.itemWithoutMaterial) {
             itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
             if (itemArr.itemLaborHours) {
                 if (itemArr.itemLaborHours === 0) {
@@ -722,6 +724,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             if (item.groupLaborTotalCost) {
                                 newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
                             }
+                            const groupTotal = (item.groupLaborTotalCost || 0) + (item.groupMaterialCost || 0);
+                            if (groupTotal) newItem.priceWithMaterial = roundNumber(groupTotal);
                         } else if (item.quantity && item.itemChangableAveragePrice) {
                             newItem.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
                         }
@@ -729,7 +733,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         // if (item.materialTotalCost) {
                         newItem.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
                         // Make sure itemWithoutMaterial is defined before adding
-                        newItem.priceWithMaterial = roundNumber((newItem.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
+                        if (!item.isGroupRow) newItem.priceWithMaterial = roundNumber((newItem.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
                         if (newItem.itemLaborHours) {
                             if (newItem.itemLaborHours === 0) {
                                 newItem.unitPrice = 0;
@@ -798,13 +802,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                 if (item.groupLaborTotalCost) {
                     itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
                 }
+                const groupTotal = (item.groupLaborTotalCost || 0) + (item.groupMaterialCost || 0);
+                if (groupTotal) itemArr.priceWithMaterial = roundNumber(groupTotal);
             } else if (item.quantity && item.itemChangableAveragePrice) {
                 itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
             }
             // if (item.materialTotalCost) {
             itemArr.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
 
-            if (itemArr.itemWithoutMaterial) {
+            if (!itemArr.isGroupRow && itemArr.itemWithoutMaterial) {
                 itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
                 if (itemArr.itemLaborHours) {
                     if (itemArr.itemLaborHours === 0) {
@@ -1354,8 +1360,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 160,
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow && row.groupTotalCost != null) {
-                                                            return <>{formatCurrency((row.quantity ?? 0) * row.groupTotalCost)}</>;
+                                                        if (row.isGroupRow) {
+                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                            return <>{total ? formatCurrency(total) : null}</>;
                                                         }
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
@@ -1810,8 +1817,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            if (row.isGroupRow && row.groupTotalCost != null) {
-                                                                                return <>{formatCurrency((row.quantity ?? 0) * row.groupTotalCost)}</>;
+                                                                            if (row.isGroupRow) {
+                                                                                const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                                                return <>{total ? formatCurrency(total) : null}</>;
                                                                             }
                                                                             return <>{formatCurrency(params.value)}</>;
                                                                         },
