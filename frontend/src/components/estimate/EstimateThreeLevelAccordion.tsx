@@ -1787,8 +1787,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow ? (row.groupTotalQuantity ?? undefined) : params.value;
-                                                                            return <>{formatCurrency(val)}</>;
+                                                                            return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
                                                                     {
