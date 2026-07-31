@@ -76,3 +76,5 @@ required:
   dataSource: required.dataSource
   widgetId: required.widgetId
 smallScaleConstructionMaterials: smallScaleConstructionMaterials
+climaticImpactCosts: climaticImpactCosts
+smallScaleConstructionWork: smallScaleConstructionWork

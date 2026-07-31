@@ -186,7 +186,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                 const qty = item.quantity ?? null;
                 const price = item.changableAveragePrice ?? null;
                 const matCost = item.materialTotalCost ?? 0;
-                const itemWithoutMaterial = qty && price ? Math.round(qty * price * 1000) / 1000 : null;
+                const itemWithoutMaterial = qty != null && price != null ? Math.round(qty * price * 1000) / 1000 : null;
                 const priceWithMaterial = itemWithoutMaterial != null ? Math.round((itemWithoutMaterial + matCost) * 1000) / 1000 : null;
                 return {
                     _id: String(item.laborItemId ?? item._id),
@@ -420,7 +420,7 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                                     { field: 'itemLaborHours', headerName: t('Work per hour'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
                                     { field: 'itemMeasurementUnit', headerName: t('Unit'), align: 'center', width: 80, disableColumnMenu: true },
                                     { field: 'quantity', headerName: t('Quantity'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value: any) => value != null ? formatCurrency(value) : '' },
-                                    { field: 'itemChangableAveragePrice', headerName: t('Price'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
+                                    { field: 'itemChangableAveragePrice', headerName: t('Price'), align: 'center', width: 120, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value), renderCell: (params: any) => <>{params.value != null ? formatCurrency(params.value) : ''}</> },
                                     { field: 'itemWithoutMaterial', headerName: t('Without material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'materialTotalCost', headerName: t('Material Cost'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },
                                     { field: 'priceWithMaterial', headerName: t('Price with material'), align: 'center', width: 160, disableColumnMenu: true, valueFormatter: (value: any) => formatCurrency(value) },

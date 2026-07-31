@@ -402,8 +402,8 @@ registerApiSession('estimate/fetch_group_works', async (req, res, session) => {
             $project: {
                 _id: 1,
                 laborItemId: 1,
-                quantity: 1,
-                changableAveragePrice: 1,
+                quantity: { $ifNull: ['$quantity', 0] },
+                changableAveragePrice: { $ifNull: ['$changableAveragePrice', 0] },
                 laborOfferItemName: 1,
                 laborHours: 1,
                 measurementUnitMongoId: 1,
