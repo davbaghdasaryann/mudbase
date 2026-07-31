@@ -481,12 +481,17 @@ html += `
 
                 // Apply groupMode filter
                 if (groupMode === 'closed' && labor.parentGroupRowId) continue; // hide children of groups
-                if (groupMode === 'open' && labor.isGroupRow) continue;         // hide group header, show children
+                if (groupMode === 'open' && labor.isGroupRow) {
+                    // Show group name as a full-width header label row
+                    html += `\n                        <tr style="background-color:#dbedf0;"><td colspan="16" style="text-align:left;font-weight:700;padding:4px 8px;">${labor.laborOfferItemName}</td></tr>`;
+                    continue;
+                }
 
                 ++laborIndex;
 
                 // 1) Compute all totals up‐front, even if there are no materials:
                 const isGroupRow = labor.isGroupRow === true;
+                const isChildRow = groupMode === 'open' && !!labor.parentGroupRowId;
                 const materialsTotal = (laborData.materials || []).reduce(
                     (sum: any, m: any) => sum + (m.changableAveragePrice * m.quantity),
                     0
@@ -509,7 +514,7 @@ html += `
 
                 // 2) Start the <tr> for the labor fields:
                 html += `
-                        <tr>
+                        <tr${isChildRow ? ' style="background-color:#f0f9fa;"' : ''}>
                         <td rowspan="${rowspan}">${laborIndex}</td>
                         <td rowspan="${rowspan}">${labor.laborItemId}</td>
                         <td rowspan="${rowspan}" style="text-align:left;">${labor.laborOfferItemName}</td>
@@ -526,7 +531,7 @@ html += `
                         ++materialId;
 
                         // For all but the first material, open a new <tr>
-                        html += materialId !== 1 ? '<tr>' : '';
+                        html += materialId !== 1 ? `<tr${isChildRow ? ' style="background-color:#f0f9fa;"' : ''}>` : '';
 
                         html += `
                         <td>${ensureNotUndefined(material.materialItemId)}</td>
@@ -1051,10 +1056,16 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
             for (const laborData of subsectionData.labors) {
                 const labor = laborData.labor;
                 if (groupMode === 'closed' && labor.parentGroupRowId) continue;
-                if (groupMode === 'open' && labor.isGroupRow) continue;
+                if (groupMode === 'open' && labor.isGroupRow) {
+                    ws.mergeCells(rowIdx, 1, rowIdx, 16);
+                    dataCell(ws, rowIdx, 1, labor.laborOfferItemName || '', { bold: true, bg: 'FFDBEDF0', align: 'left' });
+                    rowIdx++;
+                    continue;
+                }
 
                 ++laborIndex;
                 const isGroupRowXl = labor.isGroupRow === true;
+                const isChildRowXl = groupMode === 'open' && !!labor.parentGroupRowId;
                 const materialsTotal = (laborData.materials || []).reduce(
                     (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
                 );
@@ -1106,6 +1117,14 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 dataCell(ws, startRow, 7,  labor.laborHours || '', {});
                 dataCell(ws, startRow, 15, Math.round(unitCost),  { num: true });
                 dataCell(ws, startRow, 16, Math.round(totalCost), { num: true, bold: true });
+
+                if (isChildRowXl) {
+                    for (let r = startRow; r < rowIdx; r++) {
+                        for (let c = 1; c <= 16; c++) {
+                            ws.getCell(r, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F9FA' } };
+                        }
+                    }
+                }
             }
         }
     }
