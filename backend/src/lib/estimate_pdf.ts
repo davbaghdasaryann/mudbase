@@ -493,12 +493,13 @@ html += `
                     0
                 );
                 const totalLaborCost = labor.changableAveragePrice * labor.quantity;
-                const groupUnitCost = isGroupRow ? (labor.groupTotalCost || 0) : 0;
+                const groupUnitCost  = isGroupRow ? (labor.groupTotalCost         || 0) : 0; // all-in unit cost → col 15
+                const groupLaborPrice = isGroupRow ? (labor.groupLaborUnitCost    || 0) : 0; // labor-only → col 6
                 const totalCostRaw = isGroupRow
-                    ? labor.quantity * groupUnitCost
+                    ? (labor.groupAbsoluteTotalCost || 0)  // actual sum of children's totals → col 16
                     : totalLaborCost + materialsTotal;
                 const unitCostRaw = isGroupRow
-                    ? groupUnitCost
+                    ? groupUnitCost  // all-in unit cost → col 15
                     : (labor.quantity > 0 ? totalCostRaw / labor.quantity : totalCostRaw);
 
                 // Apply otherCostsMode multiplier
@@ -517,7 +518,7 @@ html += `
                         <td rowspan="${rowspan}" style="text-align:left;">${labor.laborOfferItemName}</td>
                         <td rowspan="${rowspan}">${labor.measurementUnitMongoId}</td>
                         <td rowspan="${rowspan}">${fmt(labor.quantity)}</td>
-                        <td rowspan="${rowspan}">${isGroupRow ? formatEstimateCurrency(groupUnitCost) : formatEstimateCurrency(labor.changableAveragePrice)}</td>
+                        <td rowspan="${rowspan}">${isGroupRow ? formatEstimateCurrency(groupLaborPrice) : formatEstimateCurrency(labor.changableAveragePrice)}</td>
                         <td rowspan="${rowspan}">${labor.laborHours}</td>
                         `;
 
@@ -1062,12 +1063,13 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 const materialsTotal = (laborData.materials || []).reduce(
                     (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
                 );
-                const groupUnitCostXl = isGroupRowXl ? (labor.groupTotalCost || 0) : 0;
+                const groupUnitCostXl    = isGroupRowXl ? (labor.groupTotalCost         || 0) : 0; // all-in unit cost → col 15
+                const groupLaborPriceXl  = isGroupRowXl ? (labor.groupLaborUnitCost      || 0) : 0; // labor-only → col 6
                 const totalRaw = isGroupRowXl
-                    ? labor.quantity * groupUnitCostXl
+                    ? (labor.groupAbsoluteTotalCost || 0)  // actual sum of children's totals → col 16
                     : (labor.changableAveragePrice || 0) * (labor.quantity || 0) + materialsTotal;
                 const unitRaw = isGroupRowXl
-                    ? groupUnitCostXl
+                    ? groupUnitCostXl  // all-in unit cost → col 15
                     : (labor.quantity > 0 ? totalRaw / labor.quantity : totalRaw);
                 const unitCost  = otherCostsMode === 'included' ? unitRaw  * otherMultiplier : unitRaw;
                 const totalCost = otherCostsMode === 'included' ? totalRaw * otherMultiplier : totalRaw;
@@ -1106,7 +1108,7 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 dataCell(ws, startRow, 3,  labor.laborOfferItemName || '', { align: 'left' });
                 dataCell(ws, startRow, 4,  labor.measurementUnitMongoId || '', {});
                 dataCell(ws, startRow, 5,  labor.quantity, { num: true });
-                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(groupUnitCostXl) : Math.round(labor.changableAveragePrice), { num: true });
+                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(groupLaborPriceXl) : Math.round(labor.changableAveragePrice), { num: true });
                 dataCell(ws, startRow, 7,  labor.laborHours || '', {});
                 dataCell(ws, startRow, 15, Math.round(unitCost),  { num: true });
                 dataCell(ws, startRow, 16, Math.round(totalCost), { num: true, bold: true });

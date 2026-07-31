@@ -682,7 +682,9 @@ async function genEstimateDataOptimized(estimateId: string) {
     // 6a) Compute groupTotalCost for group rows (same formula as estimate_get_labor_item.ts)
     for (const [groupId, groupEntry] of laborsMap.entries()) {
         if (!groupEntry.labor.isGroupRow) continue;
-        let groupTotal = 0;
+        let groupTotal = 0;         // sum of children's all-in unit costs  → col 15 (unit cost)
+        let groupLaborTotal = 0;    // sum of children's labor-only prices   → col 6  (price)
+        let groupAbsTotal = 0;      // sum of children's actual total costs  → col 16 (total cost)
         for (const childEntry of laborsMap.values()) {
             const parentId = childEntry.labor.parentGroupRowId;
             if (!parentId || parentId.toString() !== groupId) continue;
@@ -691,9 +693,13 @@ async function genEstimateDataOptimized(estimateId: string) {
             const matCost = childEntry.materials.reduce(
                 (s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0
             );
-            groupTotal += qty > 0 ? (qty * price + matCost) / qty : price;
+            groupTotal     += qty > 0 ? (qty * price + matCost) / qty : price;
+            groupLaborTotal += price;
+            groupAbsTotal   += qty * price + matCost;
         }
-        groupEntry.labor.groupTotalCost = groupTotal;
+        groupEntry.labor.groupTotalCost          = groupTotal;
+        groupEntry.labor.groupLaborUnitCost       = groupLaborTotal;
+        groupEntry.labor.groupAbsoluteTotalCost   = groupAbsTotal;
     }
 
     // 6b) Compute totals
