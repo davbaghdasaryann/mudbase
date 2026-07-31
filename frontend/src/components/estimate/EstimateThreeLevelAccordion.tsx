@@ -100,6 +100,10 @@ interface AccordionItem {
     groupLaborTotalCost?: number | null;
     /** For group rows: sum of all child works' quantities. */
     groupTotalQuantity?: number | null;
+    /** For group rows: sum of all child works' unit prices (changableAveragePrice). */
+    groupSumPrice?: number | null;
+    /** For group rows: sum of all child works' unit prices including materials (when qty > 0). */
+    groupSumUnitPrice?: number | null;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -632,6 +636,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
         if (item.groupLaborTotalCost != null) itemArr.groupLaborTotalCost = item.groupLaborTotalCost;
         if (item.groupTotalQuantity != null) itemArr.groupTotalQuantity = item.groupTotalQuantity;
+        if (item.groupSumPrice != null) itemArr.groupSumPrice = item.groupSumPrice;
+        if (item.groupSumUnitPrice != null) itemArr.groupSumUnitPrice = item.groupSumUnitPrice;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -748,6 +754,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         if (item.groupMaterialCost != null) newItem.groupMaterialCost = item.groupMaterialCost;
                         if (item.groupLaborTotalCost != null) newItem.groupLaborTotalCost = item.groupLaborTotalCost;
                         if (item.groupTotalQuantity != null) newItem.groupTotalQuantity = item.groupTotalQuantity;
+                        if (item.groupSumPrice != null) newItem.groupSumPrice = item.groupSumPrice;
+                        if (item.groupSumUnitPrice != null) newItem.groupSumUnitPrice = item.groupSumUnitPrice;
                         // }
 
                         return newItem;
@@ -828,6 +836,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
             if (item.groupLaborTotalCost != null) itemArr.groupLaborTotalCost = item.groupLaborTotalCost;
             if (item.groupTotalQuantity != null) itemArr.groupTotalQuantity = item.groupTotalQuantity;
+            if (item.groupSumPrice != null) itemArr.groupSumPrice = item.groupSumPrice;
+            if (item.groupSumUnitPrice != null) itemArr.groupSumUnitPrice = item.groupSumUnitPrice;
             // }
 
             newData.push(itemArr);
@@ -1336,7 +1346,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     },
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow) return <></>;
+                                                        if (row.isGroupRow) return <>{formatCurrency(row.groupSumPrice ?? undefined)}</>;
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
@@ -1383,12 +1393,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 160,
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow) {
-                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
-                                                            const qty = row.groupTotalQuantity || 0;
-                                                            const val = qty > 0 ? roundNumber(total / qty) : undefined;
-                                                            return <>{formatCurrency(val)}</>;
-                                                        }
+                                                        if (row.isGroupRow) return <>{formatCurrency(row.groupSumUnitPrice ?? undefined)}</>;
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
@@ -1852,10 +1857,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
                                                                             if (row.isGroupRow) {
-                                                                                const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
-                                                                                const qty = row.groupTotalQuantity || 0;
-                                                                                const val = qty > 0 ? roundNumber(total / qty) : undefined;
-                                                                                return <>{formatCurrency(val)}</>;
+                                                                                return <>{formatCurrency(row.groupSumUnitPrice ?? undefined)}</>;
                                                                             }
                                                                             return <>{formatCurrency(params.value)}</>;
                                                                         },

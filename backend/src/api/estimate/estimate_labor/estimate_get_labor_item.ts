@@ -199,9 +199,25 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                                     else: { $ifNull: ['$changableAveragePrice', 0] },
                                 },
                             },
+                            // unit cost only when qty > 0 (matches what UI shows per child)
+                            childUnitCost: {
+                                $cond: {
+                                    if: { $gt: [{ $ifNull: ['$quantity', 0] }, 0] },
+                                    then: {
+                                        $divide: [
+                                            { $add: [
+                                                { $multiply: [{ $ifNull: ['$quantity', 0] }, { $ifNull: ['$changableAveragePrice', 0] }] },
+                                                { $ifNull: ['$matAgg.matCost', 0] },
+                                            ]},
+                                            '$quantity',
+                                        ],
+                                    },
+                                    else: 0,
+                                },
+                            },
                         },
                     },
-                    { $group: { _id: null, groupTotalCost: { $sum: '$childTotal' }, groupMaterialCost: { $sum: { $ifNull: ['$matAgg.matCost', 0] } }, groupLaborTotalCost: { $sum: { $multiply: [{ $ifNull: ['$quantity', 0] }, { $ifNull: ['$changableAveragePrice', 0] }] } }, groupTotalQuantity: { $sum: { $ifNull: ['$quantity', 0] } }, childCount: { $sum: 1 } } },
+                    { $group: { _id: null, groupTotalCost: { $sum: '$childTotal' }, groupMaterialCost: { $sum: { $ifNull: ['$matAgg.matCost', 0] } }, groupLaborTotalCost: { $sum: { $multiply: [{ $ifNull: ['$quantity', 0] }, { $ifNull: ['$changableAveragePrice', 0] }] } }, groupTotalQuantity: { $sum: { $ifNull: ['$quantity', 0] } }, groupSumPrice: { $sum: { $ifNull: ['$changableAveragePrice', 0] } }, groupSumUnitPrice: { $sum: '$childUnitCost' }, childCount: { $sum: 1 } } },
                 ],
                 as: 'groupChildAgg',
             },
@@ -213,6 +229,8 @@ registerApiSession('estimate/fetch_labor_items', async (req, res, session) => {
                 groupMaterialCost: { $ifNull: ['$groupChildAgg.groupMaterialCost', null] },
                 groupLaborTotalCost: { $ifNull: ['$groupChildAgg.groupLaborTotalCost', null] },
                 groupTotalQuantity: { $ifNull: ['$groupChildAgg.groupTotalQuantity', null] },
+                groupSumPrice: { $ifNull: ['$groupChildAgg.groupSumPrice', null] },
+                groupSumUnitPrice: { $ifNull: ['$groupChildAgg.groupSumUnitPrice', null] },
                 groupChildCount: { $ifNull: ['$groupChildAgg.childCount', 0] },
             },
         },

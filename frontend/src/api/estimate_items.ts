@@ -24,6 +24,8 @@ export interface ApiEstimateLaborItem{
     groupMaterialCost?: number | null;
     groupLaborTotalCost?: number | null;
     groupTotalQuantity?: number | null;
+    groupSumPrice?: number | null;
+    groupSumUnitPrice?: number | null;
 
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;
