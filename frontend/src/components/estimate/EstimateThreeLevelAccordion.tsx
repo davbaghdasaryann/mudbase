@@ -635,9 +635,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.itemTotalCost = roundNumber(item.quantity * item.itemUnitPrice);
         }
         if (itemArr.isGroupRow) {
-            itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
-        } else {
-            itemArr.itemWithoutMaterial = roundNumber((item.quantity || 0) * (item.itemChangableAveragePrice || 0));
+            if (item.groupLaborTotalCost) {
+                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
+            }
+        } else if (item.quantity && item.itemChangableAveragePrice) {
+            itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
         }
 
         // if (item.materialTotalCost) {
@@ -717,9 +719,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         }
 
                         if (item.isGroupRow) {
-                            newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
-                        } else {
-                            newItem.itemWithoutMaterial = roundNumber((item.quantity || 0) * (item.itemChangableAveragePrice || 0));
+                            if (item.groupLaborTotalCost) {
+                                newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
+                            }
+                        } else if (item.quantity && item.itemChangableAveragePrice) {
+                            newItem.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
                         }
 
                         // if (item.materialTotalCost) {
@@ -791,9 +795,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             //     itemArr.materialTotalCost = item.materialQuantity * item.materialUnitPrice;
             // }
             if (itemArr.isGroupRow) {
-                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
-            } else {
-                itemArr.itemWithoutMaterial = roundNumber((item.quantity || 0) * (item.itemChangableAveragePrice || 0));
+                if (item.groupLaborTotalCost) {
+                    itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
+                }
+            } else if (item.quantity && item.itemChangableAveragePrice) {
+                itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
             }
             // if (item.materialTotalCost) {
             itemArr.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
@@ -1326,7 +1332,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 160,
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        const val = row.isGroupRow && row.groupLaborTotalCost != null ? row.groupLaborTotalCost : params.value;
+                                                        const val = row.isGroupRow ? (row.groupLaborTotalCost || undefined) : params.value;
                                                         return <>{formatCurrency(val)}</>;
                                                     },
                                                 },
@@ -1778,7 +1784,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow && row.groupLaborTotalCost != null ? row.groupLaborTotalCost : params.value;
+                                                                            const val = row.isGroupRow ? (row.groupLaborTotalCost || undefined) : params.value;
                                                                             return <>{formatCurrency(val)}</>;
                                                                         },
                                                                     },
