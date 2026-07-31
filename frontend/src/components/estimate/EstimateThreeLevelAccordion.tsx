@@ -442,6 +442,26 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         // console.log(' Successfully updated row:', response);
         setUndoStack(prev => [...prev.slice(-19), { id: oldRow._id, oldRow: { ...oldRow }, newRow: { ...newRow } }]);
         setRedoStack([]);
+
+        // For group rows: immediately persist the new quantity in local state so it doesn't
+        // revert before refreshEverything completes.
+        if ((oldRow as AccordionItem).isGroupRow) {
+            const newQty = parseFloat(String(newRow.quantity));
+            if (!isNaN(newQty)) {
+                const updated = sectionsRef.current.map((section) => ({
+                    ...section,
+                    children: section.children?.map((sub) => ({
+                        ...sub,
+                        children: sub.children?.map((item) =>
+                            item._id === (oldRow as AccordionItem)._id ? { ...item, quantity: newQty } : item
+                        ) ?? [],
+                    })) ?? [],
+                }));
+                sectionsRef.current = updated;
+                setSections(updated);
+            }
+        }
+
         refreshEverything(true);
 
         return { ...newRow }; //  Ensure a new object is returned
