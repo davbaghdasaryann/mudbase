@@ -1346,7 +1346,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     },
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow) return <>{formatCurrency(row.groupSumPrice ?? undefined)}</>;
+                                                        if (row.isGroupRow) {
+                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                            return <>{total ? formatCurrency(total) : null}</>;
+                                                        }
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
@@ -1393,7 +1396,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 160,
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow) return <>{formatCurrency(row.groupSumUnitPrice ?? undefined)}</>;
+                                                        if (row.isGroupRow) {
+                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                            return <>{total ? formatCurrency(total) : null}</>;
+                                                        }
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
