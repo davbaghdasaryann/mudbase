@@ -38,6 +38,7 @@ import { validateDoubleInteger } from '@/tslib/validate';
 import { usePermissions } from '@/api/auth';
 import { confirmDialog } from '../ConfirmationDialog';
 import DataTableComponent from '../DataTableComponent';
+import { GridEditInputCell } from '@mui/x-data-grid-pro';
 import { mainIconColor, materialIconHeight } from '../../theme';
 import ImgElement from '../../tsui/DomElements/ImgElement';
 
@@ -423,6 +424,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             (newRow.itemChangableAveragePrice && !isPositiveIntegerPrice) ||
             (newRow.itemLaborHours && !isPositiveIntegerLaborHours)
         ) {
+            return oldRow;
+        }
+        // For group rows: if the user left quantity empty (started from blank), treat as no change
+        if ((oldRow as AccordionItem).isGroupRow && newRow.quantity === '') {
             return oldRow;
         }
         newRow.quantity = normalizeArmenianDecimalPoint(newRow.quantity);
@@ -1348,7 +1353,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     cellClassName: 'editableCell',
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
+                                                        if (row.isGroupRow && (!params.value || params.value === 0)) return <></>;
                                                         return <>{formatCurrency(params.value)}</>;
+                                                    },
+                                                    renderEditCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        if (row.isGroupRow && (!params.value || params.value === 0)) {
+                                                            return <GridEditInputCell {...params} value="" />;
+                                                        }
+                                                        return <GridEditInputCell {...params} />;
                                                     },
                                                 },
                                                 {
@@ -1807,7 +1820,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
+                                                                            if (row.isGroupRow && (!params.value || params.value === 0)) return <></>;
                                                                             return <>{formatCurrency(params.value)}</>;
+                                                                        },
+                                                                        renderEditCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            if (row.isGroupRow && (!params.value || params.value === 0)) {
+                                                                                return <GridEditInputCell {...params} value="" />;
+                                                                            }
+                                                                            return <GridEditInputCell {...params} />;
                                                                         },
                                                                     },
                                                                     {
