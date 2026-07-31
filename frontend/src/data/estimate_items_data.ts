@@ -28,6 +28,7 @@ export class EstimateLaborItemDisplayData {
     groupTotalCost?: number | null;
     groupMaterialCost?: number | null;
     groupLaborTotalCost?: number | null;
+    groupTotalQuantity?: number | null;
 
     itemLaborHours?: number; //🔴 TODO: this will need us in version 2 🔴
 
@@ -62,6 +63,7 @@ export class EstimateLaborItemDisplayData {
         this.groupTotalCost = estimateLaborItem.groupTotalCost ?? null;
         this.groupMaterialCost = estimateLaborItem.groupMaterialCost ?? null;
         this.groupLaborTotalCost = estimateLaborItem.groupLaborTotalCost ?? null;
+        this.groupTotalQuantity = estimateLaborItem.groupTotalQuantity ?? null;
 
         if (estimateLaborItem.estimateLaborItemData) {
             if (estimateLaborItem.estimateLaborItemData.length > 0) {

@@ -98,6 +98,8 @@ interface AccordionItem {
     groupMaterialCost?: number | null;
     /** For group rows: sum of all child works' labor costs (qty × price, without materials). */
     groupLaborTotalCost?: number | null;
+    /** For group rows: sum of all child works' quantities. */
+    groupTotalQuantity?: number | null;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -629,6 +631,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
         if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
         if (item.groupLaborTotalCost != null) itemArr.groupLaborTotalCost = item.groupLaborTotalCost;
+        if (item.groupTotalQuantity != null) itemArr.groupTotalQuantity = item.groupTotalQuantity;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
@@ -744,6 +747,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         if (item.groupTotalCost != null) newItem.groupTotalCost = item.groupTotalCost;
                         if (item.groupMaterialCost != null) newItem.groupMaterialCost = item.groupMaterialCost;
                         if (item.groupLaborTotalCost != null) newItem.groupLaborTotalCost = item.groupLaborTotalCost;
+                        if (item.groupTotalQuantity != null) newItem.groupTotalQuantity = item.groupTotalQuantity;
                         // }
 
                         return newItem;
@@ -823,6 +827,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
             if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
             if (item.groupLaborTotalCost != null) itemArr.groupLaborTotalCost = item.groupLaborTotalCost;
+            if (item.groupTotalQuantity != null) itemArr.groupTotalQuantity = item.groupTotalQuantity;
             // }
 
             newData.push(itemArr);
@@ -1311,7 +1316,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 120,
                                                     editable: true,
                                                     cellClassName: 'editableCell',
-                                                    valueFormatter: (value) => formatCurrency(value),
+                                                    renderCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        const val = row.isGroupRow ? (row.groupTotalQuantity ?? undefined) : params.value;
+                                                        return <>{formatCurrency(val)}</>;
+                                                    },
                                                 },
                                                 {
                                                     field: 'itemChangableAveragePrice',
@@ -1327,8 +1336,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     },
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
-                                                        return <>{formatCurrency(val)}</>;
+                                                        if (row.isGroupRow) return <></>;
+                                                        return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
                                                 {
@@ -1374,8 +1383,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     width: 160,
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
-                                                        const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
-                                                        return <>{formatCurrency(val)}</>;
+                                                        if (row.isGroupRow) {
+                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                            const qty = row.groupTotalQuantity || 0;
+                                                            const val = qty > 0 ? roundNumber(total / qty) : undefined;
+                                                            return <>{formatCurrency(val)}</>;
+                                                        }
+                                                        return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
 
@@ -1761,7 +1775,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         editable: true,
                                                                         cellClassName: 'editableCell',
                                                                         disableColumnMenu: true,
-                                                                        valueFormatter: (value) => formatCurrency(value),
+                                                                        renderCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            const val = row.isGroupRow ? (row.groupTotalQuantity ?? undefined) : params.value;
+                                                                            return <>{formatCurrency(val)}</>;
+                                                                        },
                                                                     },
                                                                     {
                                                                         field: 'itemChangableAveragePrice',
@@ -1778,8 +1796,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
-                                                                            return <>{formatCurrency(val)}</>;
+                                                                            if (row.isGroupRow) return <></>;
+                                                                            return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
                                                                     {
@@ -1833,8 +1851,13 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow && row.groupTotalCost != null ? row.groupTotalCost : params.value;
-                                                                            return <>{formatCurrency(val)}</>;
+                                                                            if (row.isGroupRow) {
+                                                                                const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                                                const qty = row.groupTotalQuantity || 0;
+                                                                                const val = qty > 0 ? roundNumber(total / qty) : undefined;
+                                                                                return <>{formatCurrency(val)}</>;
+                                                                            }
+                                                                            return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
 
