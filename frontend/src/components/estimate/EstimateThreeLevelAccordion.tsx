@@ -96,6 +96,8 @@ interface AccordionItem {
     groupTotalCost?: number | null;
     /** For group rows: sum of all child works' material costs. */
     groupMaterialCost?: number | null;
+    /** For group rows: sum of all child works' labor costs (qty × price, without materials). */
+    groupLaborTotalCost?: number | null;
 }
 
 const MARKET_PRICE_EPS = 0.01; /* allow small rounding differences */
@@ -626,12 +628,15 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.isGroupRow = item.isGroupRow === true;
         if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
         if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
+        if (item.groupLaborTotalCost != null) itemArr.groupLaborTotalCost = item.groupLaborTotalCost;
         if (item.itemUnitPrice) {
             console.log('item.itemUnitPrice: ', item.itemUnitPrice, 'item.quantity: ', item.quantity);
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
             itemArr.itemTotalCost = roundNumber(item.quantity * item.itemUnitPrice);
         }
-        if (item.quantity && item.itemChangableAveragePrice) {
+        if (itemArr.isGroupRow && item.groupLaborTotalCost != null) {
+            itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
+        } else if (item.quantity && item.itemChangableAveragePrice) {
             itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
         }
 
@@ -711,7 +716,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             newItem.itemTotalCost = roundNumber(item.quantity * item.itemUnitCost);
                         }
 
-                        if (item.quantity && item.itemChangableAveragePrice) {
+                        if (item.isGroupRow && item.groupLaborTotalCost != null) {
+                            newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
+                        } else if (item.quantity && item.itemChangableAveragePrice) {
                             newItem.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
                         }
 
@@ -728,6 +735,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         }
                         if (item.groupTotalCost != null) newItem.groupTotalCost = item.groupTotalCost;
                         if (item.groupMaterialCost != null) newItem.groupMaterialCost = item.groupMaterialCost;
+                        if (item.groupLaborTotalCost != null) newItem.groupLaborTotalCost = item.groupLaborTotalCost;
                         // }
 
                         return newItem;
@@ -782,7 +790,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             //     itemArr.materialUnitPrice = item.materialUnitPrice;
             //     itemArr.materialTotalCost = item.materialQuantity * item.materialUnitPrice;
             // }
-            if (item.quantity && item.itemChangableAveragePrice) {
+            if (itemArr.isGroupRow && item.groupLaborTotalCost != null) {
+                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
+            } else if (item.quantity && item.itemChangableAveragePrice) {
                 itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
             }
             // if (item.materialTotalCost) {
@@ -800,6 +810,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             }
             if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
             if (item.groupMaterialCost != null) itemArr.groupMaterialCost = item.groupMaterialCost;
+            if (item.groupLaborTotalCost != null) itemArr.groupLaborTotalCost = item.groupLaborTotalCost;
             // }
 
             newData.push(itemArr);
