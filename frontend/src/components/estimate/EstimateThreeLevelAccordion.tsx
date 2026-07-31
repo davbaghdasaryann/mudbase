@@ -634,10 +634,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
             itemArr.itemTotalCost = roundNumber(item.quantity * item.itemUnitPrice);
         }
-        if (itemArr.isGroupRow && item.groupLaborTotalCost != null) {
-            itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
-        } else if (item.quantity && item.itemChangableAveragePrice) {
-            itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
+        if (itemArr.isGroupRow) {
+            itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
+        } else {
+            itemArr.itemWithoutMaterial = roundNumber((item.quantity || 0) * (item.itemChangableAveragePrice || 0));
         }
 
         // if (item.materialTotalCost) {
@@ -716,10 +716,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             newItem.itemTotalCost = roundNumber(item.quantity * item.itemUnitCost);
                         }
 
-                        if (item.isGroupRow && item.groupLaborTotalCost != null) {
-                            newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
-                        } else if (item.quantity && item.itemChangableAveragePrice) {
-                            newItem.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
+                        if (item.isGroupRow) {
+                            newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
+                        } else {
+                            newItem.itemWithoutMaterial = roundNumber((item.quantity || 0) * (item.itemChangableAveragePrice || 0));
                         }
 
                         // if (item.materialTotalCost) {
@@ -790,10 +790,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             //     itemArr.materialUnitPrice = item.materialUnitPrice;
             //     itemArr.materialTotalCost = item.materialQuantity * item.materialUnitPrice;
             // }
-            if (itemArr.isGroupRow && item.groupLaborTotalCost != null) {
-                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
-            } else if (item.quantity && item.itemChangableAveragePrice) {
-                itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
+            if (itemArr.isGroupRow) {
+                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
+            } else {
+                itemArr.itemWithoutMaterial = roundNumber((item.quantity || 0) * (item.itemChangableAveragePrice || 0));
             }
             // if (item.materialTotalCost) {
             itemArr.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
