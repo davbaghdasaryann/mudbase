@@ -1324,7 +1324,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Without material'),
                                                     align: 'center',
                                                     width: 160,
-                                                    valueFormatter: (value) => formatCurrency(value),
+                                                    renderCell: (params) => {
+                                                        const row = params.row as AccordionItem;
+                                                        const val = row.isGroupRow && row.groupLaborTotalCost != null ? row.groupLaborTotalCost : params.value;
+                                                        return <>{formatCurrency(val)}</>;
+                                                    },
                                                 },
                                                 {
                                                     field: 'materialTotalCost',
@@ -1772,7 +1776,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         align: 'center',
                                                                         width: 160,
                                                                         disableColumnMenu: true,
-                                                                        valueFormatter: (value) => formatCurrency(value),
+                                                                        renderCell: (params) => {
+                                                                            const row = params.row as AccordionItem;
+                                                                            const val = row.isGroupRow && row.groupLaborTotalCost != null ? row.groupLaborTotalCost : params.value;
+                                                                            return <>{formatCurrency(val)}</>;
+                                                                        },
                                                                     },
                                                                     {
                                                                         field: 'materialTotalCost',
