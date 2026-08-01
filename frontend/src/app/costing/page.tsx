@@ -533,6 +533,14 @@ export default function CostingPage() {
         saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData);
     }, [costHistory, pahestEntries, aylEntries, actualData, selected, saveToBackend]);
 
+    useEffect(() => {
+        if (!unforeseenEstimate || tab !== 'main') return;
+        const timer = setTimeout(() => {
+            unforeseenSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [unforeseenEstimate, tab]);
+
     const handleCreate = useCallback(async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         const created = await Api.requestSession<CostingRecord>({
@@ -953,12 +961,12 @@ export default function CostingPage() {
                 <UnforeseenDialog
                     open={unforeseenOpen}
                     onClose={() => setUnforeseenOpen(false)}
+                    activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={(est) => {
                         setUnforeseenEstimate(est);
                         if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
                         setTab('main');
                         localStorage.setItem('costingTab', 'main');
-                        setTimeout(() => unforeseenSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
                     }}
                 />
                 </>

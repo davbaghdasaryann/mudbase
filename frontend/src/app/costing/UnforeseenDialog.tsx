@@ -17,9 +17,10 @@ interface Props {
     open: boolean;
     onClose: () => void;
     onEstimateSelected: (est: EstimatesApi.ApiEstimate) => void;
+    activeEstimateId?: string;
 }
 
-export default function UnforeseenDialog({ open, onClose, onEstimateSelected }: Props) {
+export default function UnforeseenDialog({ open, onClose, onEstimateSelected, activeEstimateId }: Props) {
     const { t } = useTranslation();
     const [estimates, setEstimates] = useState<EstimatesApi.ApiEstimate[]>([]);
     const [loading, setLoading] = useState(false);
@@ -74,31 +75,39 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected }: 
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {estimates.map((est, index) => (
+                            {estimates.map((est, index) => {
+                                const isActive = activeEstimateId && String(est._id) === activeEstimateId;
+                                return (
                                 <TableRow
                                     key={est._id}
-                                    onClick={() => setSelectedEstimate(est)}
-                                    hover
+                                    onClick={() => !isActive && setSelectedEstimate(est)}
+                                    hover={!isActive}
                                     sx={{
-                                        cursor: 'pointer',
+                                        cursor: isActive ? 'default' : 'pointer',
+                                        opacity: isActive ? 0.45 : 1,
+                                        pointerEvents: isActive ? 'none' : 'auto',
                                         backgroundColor: selectedEstimate?._id === est._id ? `${mainPrimaryColor}22` : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
                                         '&.MuiTableRow-hover:hover': { backgroundColor: `${mainPrimaryColor}15 !important` },
                                     }}
                                 >
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{est.name}</TableCell>
+                                    <TableCell>
+                                        {est.name}
+                                        {isActive && <Typography component='span' sx={{ ml: 1, fontSize: '0.75rem', color: '#e65100', fontWeight: 600 }}>({t('Active')})</Typography>}
+                                    </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(est.createdAt)}</TableCell>
                                     <TableCell align='right' sx={{ pr: 1 }}>
                                         <Radio
                                             checked={selectedEstimate?._id === est._id}
-                                            onChange={() => setSelectedEstimate(est)}
+                                            disabled={!!isActive}
                                             size='small'
                                             sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
                                             onClick={e => e.stopPropagation()}
                                         />
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 )}
