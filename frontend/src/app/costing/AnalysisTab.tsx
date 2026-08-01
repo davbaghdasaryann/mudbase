@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -76,6 +78,7 @@ const fmtUnit = (v: number | null) => v !== null ? v.toLocaleString(undefined, {
 interface Props {
     estimate: EstimatesApi.ApiEstimate;
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
+    onDeleteUnforeseen?: () => void;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     costHistory: CostHistoryEntry[];
 }
@@ -92,7 +95,7 @@ async function fetchAnalysisData(estimateId: string) {
     return { rows: laborData ?? [], sections: sorted, subsections: arrays.flat() };
 }
 
-export default function AnalysisTab({ estimate, unforeseenEstimate, actualData, costHistory }: Props) {
+export default function AnalysisTab({ estimate, unforeseenEstimate, onDeleteUnforeseen, actualData, costHistory }: Props) {
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
@@ -400,8 +403,19 @@ export default function AnalysisTab({ estimate, unforeseenEstimate, actualData, 
                         return (
                             <>
                                 <tr>
-                                    <td colSpan={NCOLS} style={{ padding: '10px 12px 4px', fontWeight: 700, fontSize: '0.78rem', color: '#e65100', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '1px solid #ffe0cc', borderTop: '2px solid #ffe0cc', backgroundColor: '#fff8f4' }}>
-                                        Չնախատեսված աշխատանքներ
+                                    <td colSpan={NCOLS} style={{ padding: '8px 12px 4px', borderBottom: '1px solid #ffe0cc', borderTop: '2px solid #ffe0cc', backgroundColor: '#fff8f4' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <ReportProblemOutlinedIcon sx={{ fontSize: 16, color: '#e65100' }} />
+                                            <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#e65100', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Չնախատեսված աշխատանքներ</span>
+                                            {unforeseenEstimate?.name && (
+                                                <span style={{ fontSize: '0.75rem', color: '#999' }}>({unforeseenEstimate.name})</span>
+                                            )}
+                                            {onDeleteUnforeseen && (
+                                                <IconButton size='small' onClick={onDeleteUnforeseen} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' }, p: 0.5 }}>
+                                                    <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                                </IconButton>
+                                            )}
+                                        </Box>
                                     </td>
                                 </tr>
                                 {ufSections.map((section, si) => {

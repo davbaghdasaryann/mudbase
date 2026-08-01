@@ -574,6 +574,18 @@ export default function CostingPage() {
         if (selected?._id === id) closeRecord();
     }, [selected]); // eslint-disable-line
 
+    const handleDeleteUnforeseen = useCallback(() => {
+        const childId = unforeseenCostingIdRef.current;
+        setUnforeseenEstimate(null);
+        unforeseenCostingIdRef.current = '';
+        setUnforeseenCostingId('');
+        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, '');
+        if (childId) {
+            Api.requestSession({ command: 'costing/delete', args: { id: childId } }).catch(console.error);
+            setRecords(prev => prev.filter(r => r._id !== childId));
+        }
+    }, [selected, costHistory, pahestEntries, aylEntries, actualData, saveToBackend]); // eslint-disable-line
+
     const handleUnforeseenEstimateSelected = useCallback(async (est: EstimatesApi.ApiEstimate) => {
         scrollToUnforeseenRef.current = true;
         setUnforeseenEstimate(est);
@@ -773,17 +785,7 @@ export default function CostingPage() {
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
-                                    <IconButton size='small' onClick={() => {
-                                        const childId = unforeseenCostingIdRef.current;
-                                        setUnforeseenEstimate(null);
-                                        unforeseenCostingIdRef.current = '';
-                                        setUnforeseenCostingId('');
-                                        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, '');
-                                        if (childId) {
-                                            Api.requestSession({ command: 'costing/delete', args: { id: childId } }).catch(console.error);
-                                            setRecords(prev => prev.filter(r => r._id !== childId));
-                                        }
-                                    }} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                    <IconButton size='small' onClick={handleDeleteUnforeseen} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
@@ -874,7 +876,7 @@ export default function CostingPage() {
 
                  {tab === 'analysis' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <AnalysisTab estimate={selectedEstimate} unforeseenEstimate={unforeseenEstimate} actualData={actualData} costHistory={costHistory} />
+                        <AnalysisTab estimate={selectedEstimate} unforeseenEstimate={unforeseenEstimate} onDeleteUnforeseen={handleDeleteUnforeseen} actualData={actualData} costHistory={costHistory} />
                     </Box>
                 )}
             </Box>
