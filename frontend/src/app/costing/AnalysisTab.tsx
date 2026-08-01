@@ -75,14 +75,30 @@ const fmtUnit = (v: number | null) => v !== null ? v.toLocaleString(undefined, {
 
 interface Props {
     estimate: EstimatesApi.ApiEstimate;
+    unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     costHistory: CostHistoryEntry[];
 }
 
-export default function AnalysisTab({ estimate, actualData, costHistory }: Props) {
+async function fetchAnalysisData(estimateId: string) {
+    const [laborData, sectData] = await Promise.all([
+        Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
+        Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
+    ]);
+    const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
+    const arrays = await Promise.all(
+        sorted.map(s => Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: toId(s._id) } }).catch(() => [] as Subsection[]))
+    );
+    return { rows: laborData ?? [], sections: sorted, subsections: arrays.flat() };
+}
+
+export default function AnalysisTab({ estimate, unforeseenEstimate, actualData, costHistory }: Props) {
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
+    const [ufRows, setUfRows] = useState<LaborRow[]>([]);
+    const [ufSections, setUfSections] = useState<Section[]>([]);
+    const [ufSubsections, setUfSubsections] = useState<Subsection[]>([]);
     const [loading, setLoading] = useState(true);
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
     const resizingCol = useRef<{ colIdx: number; startX: number; startW: number } | null>(null);
@@ -90,23 +106,20 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
     const isScrollDragging = useRef(false);
     const scrollDragStart = useRef({ x: 0, scrollLeft: 0 });
     const estimateId = toId(estimate._id);
+    const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([
-            Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
-            Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
-        ])
-            .then(async ([laborData, sectData]) => {
-                const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
-                setSections(sorted); setRows(laborData ?? []);
-                const arrays = await Promise.all(
-                    sorted.map(s => Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: toId(s._id) } }).catch(() => [] as Subsection[]))
-                );
-                setSubsections(arrays.flat());
-            })
-            .catch(console.error).finally(() => setLoading(false));
-    }, [estimateId]);
+        const fetches: Promise<void>[] = [
+            fetchAnalysisData(estimateId).then(d => { setRows(d.rows); setSections(d.sections); setSubsections(d.subsections); }),
+        ];
+        if (ufEstimateId) {
+            fetches.push(fetchAnalysisData(ufEstimateId).then(d => { setUfRows(d.rows); setUfSections(d.sections); setUfSubsections(d.subsections); }));
+        } else {
+            setUfRows([]); setUfSections([]); setUfSubsections([]);
+        }
+        Promise.all(fetches).catch(console.error).finally(() => setLoading(false));
+    }, [estimateId, ufEstimateId]);
 
     useEffect(() => {
         const onMove = (e: MouseEvent) => {
@@ -155,6 +168,11 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
     for (const sect of sections) {
         subsMap.set(toId(sect._id),
             subsections.filter(s => toId(s.estimateSectionId) === toId(sect._id)).sort((a, b) => a.displayIndex - b.displayIndex));
+    }
+    const ufSubsMap = new Map<string, Subsection[]>();
+    for (const sect of ufSections) {
+        ufSubsMap.set(toId(sect._id),
+            ufSubsections.filter(s => toId(s.estimateSectionId) === toId(sect._id)).sort((a, b) => a.displayIndex - b.displayIndex));
     }
 
     const getActuals = (row: LaborRow) => {
@@ -370,6 +388,73 @@ export default function AnalysisTab({ estimate, actualData, costHistory }: Props
                             {grandHasEx ? formatCurrencyRounded(grandExAmt) : '\u2014'}
                         </td>
                     </tr>
+                    {ufSections.length > 0 && (() => {
+                        let ufCounter = 0;
+                        const ufEstTotal = ufRows.reduce((s, r) => s + (r.cost ?? 0), 0);
+                        const ufEstQty   = ufRows.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
+                        const ufActQty   = ufRows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); return hasData ? s + actQty : s; }, 0);
+                        const ufActTotal = ufRows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
+                        const ufHasAct   = ufRows.some(r => getActuals(r).hasData);
+                        const ufRemQty   = ufHasAct ? ufEstQty - ufActQty : null;
+                        const ufRemTotal = ufHasAct ? ufEstTotal - ufActTotal : null;
+                        return (
+                            <>
+                                <tr>
+                                    <td colSpan={NCOLS} style={{ padding: '10px 12px 4px', fontWeight: 700, fontSize: '0.78rem', color: '#e65100', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '1px solid #ffe0cc', borderTop: '2px solid #ffe0cc', backgroundColor: '#fff8f4' }}>
+                                        Չնախատեսված աշխատանքներ
+                                    </td>
+                                </tr>
+                                {ufSections.map((section, si) => {
+                                    const sectionItems = ufRows.filter(r => r.sectionName === section.name);
+                                    if (sectionItems.length === 0) return null;
+                                    const subs = ufSubsMap.get(toId(section._id)) ?? [];
+                                    return (
+                                        <>
+                                            <tr key={`ufsec-${section._id}`}>
+                                                <td colSpan={NCOLS} style={tdStyle({ fontWeight: 700, fontSize: '0.78rem', color: '#e65100', paddingLeft: 12, paddingTop: si > 0 ? 18 : 10, paddingBottom: 4, letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '1px solid #ffe8d9', backgroundColor: '#fff8f4' })}>
+                                                    {si + 1}. {section.name}
+                                                </td>
+                                            </tr>
+                                            {subs.length > 0
+                                                ? subs.map((sub, subI) => {
+                                                    const subItems = sectionItems.filter(r => r.subsectionName === sub.name);
+                                                    if (subItems.length === 0) return null;
+                                                    return (
+                                                        <>
+                                                            {sub.name?.trim() && (
+                                                                <tr key={`ufsub-${sub._id}`}>
+                                                                    <td colSpan={NCOLS} style={tdStyle({ paddingLeft: 24, paddingTop: 8, paddingBottom: 4, color: '#6b7280', fontSize: '0.77rem', fontWeight: 500, borderBottom: '1px solid #f0f2f4' })}>
+                                                                        {si + 1}.{subI + 1}. {sub.name}
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                            {subItems.map(row => renderRow(row, ++ufCounter, 32))}
+                                                        </>
+                                                    );
+                                                })
+                                                : sectionItems.map(row => renderRow(row, ++ufCounter, 16))
+                                            }
+                                        </>
+                                    );
+                                })}
+                                <tr style={{ backgroundColor: '#fff3ee' }}>
+                                    <td colSpan={3} style={tdStyle({ fontWeight: 700, color: '#e65100', fontSize: '0.82rem', borderTop: '2px solid #e65100', borderBottom: 'none' })}>
+                                        Ընդամենը (չնախ.)
+                                    </td>
+                                    <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{fmtQty(ufEstQty)}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{'—'}</td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#222', borderTop: '2px solid #e65100', borderBottom: 'none' })}>{formatCurrencyRounded(ufEstTotal)}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{ufHasAct ? fmtQty(ufActQty) : '—'}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{'—'}</td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#e65100', borderTop: '2px solid #e65100', borderBottom: 'none' })}>{ufHasAct ? formatCurrencyRounded(ufActTotal) : '—'}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: '2px solid #e65100', borderBottom: 'none', color: ufRemQty === null ? '#ccc' : ufRemQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: 600 })}>{fmtQty(ufRemQty)}</td>
+                                    <td colSpan={6} style={tdStyle({ borderTop: '2px solid #e65100', borderBottom: 'none', color: ufRemTotal === null ? '#ccc' : ufRemTotal >= 0 ? '#2e7d32' : '#c62828', textAlign: 'right', fontWeight: 700 })}>
+                                        {ufRemTotal !== null ? `${ufRemTotal >= 0 ? '+' : ''}${formatCurrencyRounded(ufRemTotal)}` : '—'}
+                                    </td>
+                                </tr>
+                            </>
+                        );
+                    })()}
                 </tbody>
             </table>
         </Box>
