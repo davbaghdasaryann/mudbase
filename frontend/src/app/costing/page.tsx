@@ -452,6 +452,7 @@ export default function CostingPage() {
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLoadingRef = useRef(false);
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
+    const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
 
     const loadRecords = useCallback(() => {
@@ -538,7 +539,11 @@ export default function CostingPage() {
         if (!unforeseenEstimate || tab !== 'main' || !scrollToUnforeseenRef.current) return;
         scrollToUnforeseenRef.current = false;
         const timer = setTimeout(() => {
-            unforeseenSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const container = mainScrollContainerRef.current;
+            const section = unforeseenSectionRef.current;
+            if (container && section) {
+                container.scrollTop = section.offsetTop - 16;
+            }
         }, 400);
         return () => clearTimeout(timer);
     }, [unforeseenEstimate, tab]);
@@ -729,7 +734,7 @@ export default function CostingPage() {
                 )}
 
                 {tab === 'main' && (
-                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                    <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
                         <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                         {unforeseenEstimate && (
