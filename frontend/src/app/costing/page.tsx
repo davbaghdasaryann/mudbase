@@ -451,6 +451,7 @@ export default function CostingPage() {
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLoadingRef = useRef(false);
+    const unforeseenSectionRef = useRef<HTMLDivElement>(null);
 
     const loadRecords = useCallback(() => {
         setLoading(true);
@@ -722,7 +723,7 @@ export default function CostingPage() {
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
                         <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                         {unforeseenEstimate && (
-                            <Box sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
+                            <Box ref={unforeseenSectionRef} sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
@@ -957,6 +958,7 @@ export default function CostingPage() {
                         if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
                         setTab('main');
                         localStorage.setItem('costingTab', 'main');
+                        setTimeout(() => unforeseenSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
                     }}
                 />
                 </>
