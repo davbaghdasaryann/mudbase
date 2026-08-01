@@ -106,14 +106,13 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory, unforeseenEstimate }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[]; unforeseenEstimate?: EstimatesApi.ApiEstimate }) {
+export default function CostingTable({ estimate, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[] }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [unforeseenRows, setUnforeseenRows] = useState<LaborRow[]>([]);
     const [colWidths, setColWidths] = useState<number[]>(BASE_COLS.map(c => c.defaultW));
     const [localActualData, setLocalActualData] = useState<ActualData>({});
     const actualData = externalActualData ?? localActualData;
@@ -152,14 +151,6 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
             .catch(e => setError(String(e)))
             .finally(() => setLoading(false));
     }, [estimateId]);
-
-    useEffect(() => {
-        if (!unforeseenEstimate) { setUnforeseenRows([]); return; }
-        const uid = toId(unforeseenEstimate._id);
-        Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId: uid } })
-            .then(data => setUnforeseenRows(data ?? []))
-            .catch(() => setUnforeseenRows([]));
-    }, [unforeseenEstimate]);
 
     useEffect(() => {
         const onMove = (e: MouseEvent) => {
@@ -453,33 +444,6 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
                                 </>
                             );
                         })}
-
-                        {unforeseenRows.length > 0 && (() => {
-                            const unfTotal = unforeseenRows.reduce((s, r) => s + (r.cost ?? 0), 0);
-                            return (
-                                <>
-                                    <tr style={{ backgroundColor: '#fff8f0' }}>
-                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: '#e65100', paddingLeft: 16, letterSpacing: '0.03em', borderTop: GSEP })}>
-                                            Չնախատեսված աշխատանքներ
-                                            {unforeseenEstimate && (
-                                                <span style={{ fontWeight: 400, fontSize: '0.78rem', color: '#999', marginLeft: 8 }}>({unforeseenEstimate.name})</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                    {unforeseenRows.map(row => renderItemRow(row, ++itemCounter, 20))}
-                                    <tr style={{ backgroundColor: '#fff8f0' }}>
-                                        <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
-                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: '#e65100', whiteSpace: 'nowrap' })}>{formatCurrencyRounded(unfTotal)} AMD</td>
-                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
-                                        <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
-                                        <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({})}></td>
-                                    </tr>
-                                </>
-                            );
-                        })()}
 
                         <tr style={{ backgroundColor: '#f0fbfc' }}>
                             <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: ACCENT, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{t('Total')}</td>

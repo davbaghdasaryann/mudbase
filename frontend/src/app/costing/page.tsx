@@ -711,7 +711,17 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
-                        <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} unforeseenEstimate={unforeseenEstimate ?? undefined} />
+                        <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
+                        {unforeseenEstimate && (
+                            <Box sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                    <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
+                                </Box>
+                                <CostingTable estimate={unforeseenEstimate} costHistory={costHistory} />
+                            </Box>
+                        )}
                     </Box>
                 )}
 
