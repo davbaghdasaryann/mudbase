@@ -83,6 +83,7 @@ interface CostingRecord {
     pahestEntries: PahestEntry[];
     aylEntries: AylEntry[];
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    unforeseenEstimateId?: string;
     createdAt: string;
 }
 
@@ -490,9 +491,8 @@ export default function CostingPage() {
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
-        const unforeseenId = typeof window !== 'undefined' ? localStorage.getItem(`costing-unforeseen-${rec._id}`) : null;
-        if (unforeseenId) {
-            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: unforeseenId } })
+        if (rec.unforeseenEstimateId) {
+            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.unforeseenEstimateId } })
                 .then(est => setUnforeseenEstimate(est))
                 .catch(() => {});
         }
@@ -513,12 +513,13 @@ export default function CostingPage() {
         ch: CostHistoryEntry[],
         pe: PahestEntry[],
         ae: AylEntry[],
-        ad: Record<string, { quantity: string; unitPrice: string }>
+        ad: Record<string, { quantity: string; unitPrice: string }>,
+        unforeseenId?: string | null
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad } }).catch(console.error);
+            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, unforeseenEstimateId: unforeseenId ?? '' } }).catch(console.error);
         }, 800);
     }, []);
 
@@ -726,7 +727,7 @@ export default function CostingPage() {
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
-                                    <IconButton size='small' onClick={() => { setUnforeseenEstimate(null); if (selected) localStorage.removeItem(`costing-unforeseen-${selected._id}`); }} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                    <IconButton size='small' onClick={() => { setUnforeseenEstimate(null); if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, ''); }} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
@@ -953,7 +954,7 @@ export default function CostingPage() {
                     onClose={() => setUnforeseenOpen(false)}
                     onEstimateSelected={(est) => {
                         setUnforeseenEstimate(est);
-                        if (selected) localStorage.setItem(`costing-unforeseen-${selected._id}`, String(est._id));
+                        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
                         setTab('main');
                         localStorage.setItem('costingTab', 'main');
                     }}

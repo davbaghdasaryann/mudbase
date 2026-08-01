@@ -66,6 +66,7 @@ export interface EntityCosting {
     aylEntries?: CostingAylEntry[];
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
     salaryData?: CostingSalaryData;
+    unforeseenEstimateId?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
