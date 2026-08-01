@@ -37,6 +37,7 @@ interface Props {
     open: boolean;
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
+    unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number) => void;
     onCostAdded?: (entry: CostHistoryEntry) => void;
@@ -49,40 +50,47 @@ function toId(v: unknown): string {
     return String(v);
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, pahestEntries, onPahestUpdate, onCostAdded }: Props) {
+async function fetchEstimateRows(estimateId: string) {
+    const [laborData, sectData] = await Promise.all([
+        Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
+        Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
+    ]);
+    const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
+    const arrays = await Promise.all(
+        sorted.map(s => Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: toId(s._id) } }).catch(() => [] as Subsection[]))
+    );
+    return { sections: sorted, subsections: arrays.flat(), rows: laborData ?? [] };
+}
+
+export default function MaterialsDialog({ open, onClose, estimate, unforeseenEstimate, pahestEntries, onPahestUpdate, onCostAdded }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [rows, setRows] = useState<LaborRow[]>([]);
+    const [ufSections, setUfSections] = useState<Section[]>([]);
+    const [ufSubsections, setUfSubsections] = useState<Subsection[]>([]);
+    const [ufRows, setUfRows] = useState<LaborRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
 
     const estimateId = toId(estimate._id);
+    const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
 
     useEffect(() => {
         if (!open) return;
         setLoading(true);
         setSelectedRow(null);
-        Promise.all([
-            Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
-            Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
-        ])
-            .then(async ([laborData, sectData]) => {
-                const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
-                setSections(sorted);
-                setRows(laborData ?? []);
-                const arrays = await Promise.all(
-                    sorted.map(s =>
-                        Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: toId(s._id) } })
-                            .catch(() => [] as Subsection[])
-                    )
-                );
-                setSubsections(arrays.flat());
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, [open, estimateId]);
+        const fetches: Promise<void>[] = [
+            fetchEstimateRows(estimateId).then(d => { setSections(d.sections); setSubsections(d.subsections); setRows(d.rows); }),
+        ];
+        if (ufEstimateId) {
+            fetches.push(fetchEstimateRows(ufEstimateId).then(d => { setUfSections(d.sections); setUfSubsections(d.subsections); setUfRows(d.rows); }));
+        } else {
+            setUfSections([]); setUfSubsections([]); setUfRows([]);
+        }
+        Promise.all(fetches).catch(console.error).finally(() => setLoading(false));
+    }, [open, estimateId, ufEstimateId]);
 
     const handleConfirm = () => {
         if (!materialModal) return;
@@ -104,6 +112,41 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
     };
 
     const onPage2 = !!selectedRow;
+
+    const renderWorkSections = (secs: Section[], subs: Subsection[], rws: LaborRow[], accentColor = mainPrimaryColor, subBg = '#f7fdfe') => (
+        <>
+        {secs.map(sec => {
+            const secSubs = subs.filter(sub => toId(sub.estimateSectionId) === toId(sec._id)).sort((a, b) => a.displayIndex - b.displayIndex);
+            return (
+                <Box key={toId(sec._id)} sx={{ mb: 1 }}>
+                    <Box sx={{ bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 2, py: 1, borderLeft: `4px solid ${accentColor}` }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: accentColor }}>{sec.name}</Typography>
+                    </Box>
+                    {secSubs.map(sub => {
+                        const subRows = rws.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
+                        if (subRows.length === 0) return null;
+                        return (
+                            <Box key={toId(sub._id)}>
+                                <Box sx={{ px: 2, py: 0.6, bgcolor: subBg, borderTop: '1px solid #e8f9fb' }}>
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#666', fontStyle: 'italic' }}>{sub.name}</Typography>
+                                </Box>
+                                {subRows.map(row => (
+                                    <Box key={toId(row._id)} onClick={() => setSelectedRow(row)} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: accentColor === mainPrimaryColor ? '#f2fcfd' : '#fff8f4' } }}>
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>{row.laborOfferItemName || row.catalogName || '—'}</Typography>
+                                            <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>{row.unitSymbol} · {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
+                                        </Box>
+                                        <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
+                                    </Box>
+                                ))}
+                            </Box>
+                        );
+                    })}
+                </Box>
+            );
+        })}
+        </>
+    );
 
     return (
         <>
@@ -151,46 +194,21 @@ export default function MaterialsDialog({ open, onClose, estimate, pahestEntries
                             </Box>
                         ) : sections.length === 0 ? (
                             <Typography sx={{ color: '#aaa', py: 4, textAlign: 'center', px: 2 }}>{t('No sections found')}</Typography>
-                        ) : sections.map(sec => {
-                            const secSubs = subsections
-                                .filter(sub => toId(sub.estimateSectionId) === toId(sec._id))
-                                .sort((a, b) => a.displayIndex - b.displayIndex);
-                            return (
-                                <Box key={toId(sec._id)} sx={{ mb: 1 }}>
-                                    <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
-                                        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{sec.name}</Typography>
-                                    </Box>
-                                    {secSubs.map(sub => {
-                                        const subRows = rows.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
-                                        if (subRows.length === 0) return null;
-                                        return (
-                                            <Box key={toId(sub._id)}>
-                                                <Box sx={{ px: 2, py: 0.6, bgcolor: '#f7fdfe', borderTop: '1px solid #e8f9fb' }}>
-                                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#666', fontStyle: 'italic' }}>{sub.name}</Typography>
-                                                </Box>
-                                                {subRows.map(row => (
-                                                    <Box
-                                                        key={toId(row._id)}
-                                                        onClick={() => setSelectedRow(row)}
-                                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
-                                                    >
-                                                        <Box sx={{ flex: 1 }}>
-                                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
-                                                                {row.laborOfferItemName || row.catalogName || '—'}
-                                                            </Typography>
-                                                            <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>
-                                                                {row.unitSymbol} · {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                                                            </Typography>
-                                                        </Box>
-                                                        <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        );
-                                    })}
-                                </Box>
-                            );
-                        })}
+                        ) : (
+                            <Box>
+                                {renderWorkSections(sections, subsections, rows)}
+                                {ufSections.length > 0 && (
+                                    <>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 1 }}>
+                                            <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
+                                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
+                                            <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
+                                        </Box>
+                                        {renderWorkSections(ufSections, ufSubsections, ufRows, '#e65100', '#fff8f4')}
+                                    </>
+                                )}
+                            </Box>
+                        )}
                     </Box>
 
                     {/* PAGE 2: Materials for selected work */}

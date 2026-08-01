@@ -983,6 +983,7 @@ export default function CostingPage() {
                     open={volumesOpen}
                     onClose={() => setVolumesOpen(false)}
                     estimate={selectedEstimate}
+                    unforeseenEstimate={unforeseenEstimate}
                     onCostAdded={handleCostAdded}
                     actualData={actualData}
                     onActualUpdate={(rowId, qty, arzhek) => setActualData(prev => {
@@ -998,6 +999,7 @@ export default function CostingPage() {
                     open={materialsOpen}
                     onClose={() => setMaterialsOpen(false)}
                     estimate={selectedEstimate}
+                    unforeseenEstimate={unforeseenEstimate}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
                     onCostAdded={handleCostAdded}
@@ -1006,6 +1008,7 @@ export default function CostingPage() {
                     open={salaryOpen}
                     onClose={() => setSalaryOpen(false)}
                     estimate={selectedEstimate}
+                    unforeseenEstimate={unforeseenEstimate}
                     onEntrySaved={(entry, replaceId) => setCostHistory(prev =>
                         replaceId ? prev.map(e => e.id === replaceId ? entry : e) : [entry, ...prev]
                     )}
