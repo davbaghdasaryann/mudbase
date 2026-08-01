@@ -420,6 +420,7 @@ export default function CostingPage() {
     const [salaryOpen, setSalaryOpen] = useState(false);
     const [subcontractorOpen, setSubcontractorOpen] = useState(false);
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
+    const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [records, setRecords] = useState<CostingRecord[]>([]);
@@ -710,7 +711,7 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
-                        <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
+                        <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} unforeseenEstimate={unforeseenEstimate ?? undefined} />
                     </Box>
                 )}
 
@@ -929,7 +930,11 @@ export default function CostingPage() {
                 <UnforeseenDialog
                     open={unforeseenOpen}
                     onClose={() => setUnforeseenOpen(false)}
-                    onCostAdded={handleCostAdded}
+                    onEstimateSelected={(est) => {
+                        setUnforeseenEstimate(est);
+                        setTab('main');
+                        localStorage.setItem('costingTab', 'main');
+                    }}
                 />
                 </>
             )}
