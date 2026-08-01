@@ -84,6 +84,9 @@ interface CostingRecord {
     aylEntries: AylEntry[];
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     unforeseenEstimateId?: string;
+    unforeseenCostingId?: string;
+    isUnforeseen?: boolean;
+    parentCostingId?: string;
     createdAt: string;
 }
 
@@ -422,6 +425,7 @@ export default function CostingPage() {
     const [subcontractorOpen, setSubcontractorOpen] = useState(false);
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+    const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [records, setRecords] = useState<CostingRecord[]>([]);
@@ -451,6 +455,7 @@ export default function CostingPage() {
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLoadingRef = useRef(false);
+    const unforeseenCostingIdRef = useRef<string>('');
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
     const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
@@ -491,6 +496,8 @@ export default function CostingPage() {
         })));
         setActualData(rec.actualData ?? {});
         setUnforeseenEstimate(null);
+        unforeseenCostingIdRef.current = rec.unforeseenCostingId ?? '';
+        setUnforeseenCostingId(rec.unforeseenCostingId ?? '');
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -508,6 +515,8 @@ export default function CostingPage() {
     const closeRecord = () => {
         setSelected(null);
         setUnforeseenEstimate(null);
+        unforeseenCostingIdRef.current = '';
+        setUnforeseenCostingId('');
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -522,7 +531,7 @@ export default function CostingPage() {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, unforeseenEstimateId: unforeseenId ?? '' } }).catch(console.error);
+            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, unforeseenEstimateId: unforeseenId ?? '', unforeseenCostingId: unforeseenCostingIdRef.current ?? '' } }).catch(console.error);
         }, 800);
     }, []);
 
@@ -564,6 +573,26 @@ export default function CostingPage() {
         setRecords(prev => prev.filter(r => r._id !== id));
         if (selected?._id === id) closeRecord();
     }, [selected]); // eslint-disable-line
+
+    const handleUnforeseenEstimateSelected = useCallback(async (est: EstimatesApi.ApiEstimate) => {
+        scrollToUnforeseenRef.current = true;
+        setUnforeseenEstimate(est);
+        setTab('main');
+        localStorage.setItem('costingTab', 'main');
+        if (!selected) return;
+        let newId = unforeseenCostingIdRef.current;
+        if (!newId) {
+            const created = await Api.requestSession<CostingRecord>({
+                command: 'costing/create',
+                args: { estimateId: String(est._id), estimateName: est.name, isUnforeseen: 'true', parentCostingId: selected._id },
+            });
+            setRecords(prev => [created, ...prev]);
+            newId = created._id;
+            unforeseenCostingIdRef.current = newId;
+            setUnforeseenCostingId(newId);
+        }
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
+    }, [selected, costHistory, pahestEntries, aylEntries, actualData, saveToBackend]); // eslint-disable-line
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
@@ -629,7 +658,7 @@ export default function CostingPage() {
                         </Box>
                     )}
 
-                    {!loading && records.length === 0 && (
+                    {!loading && records.filter(r => !r.isUnforeseen).length === 0 && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
                             <RequestQuoteOutlinedIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
                             <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Costings created yet')}</Typography>
@@ -637,13 +666,13 @@ export default function CostingPage() {
                         </Box>
                     )}
 
-                    {!loading && records.length > 0 && (
+                    {!loading && records.filter(r => !r.isUnforeseen).length > 0 && (
                         <Box sx={{ flex: 1, minHeight: 0 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                                 <PageButton variant='outlined' label='Create' size='medium' sx={{ ...outlinedCreateSx, mt: 0 }} onClick={() => setDialogOpen(true)} />
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                {records.map(rec => (
+                                {records.filter(r => !r.isUnforeseen).map(rec => (
                                     <Box
                                         key={rec._id}
                                         onClick={() => openRecord(rec)}
@@ -737,19 +766,42 @@ export default function CostingPage() {
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
                         <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
-                        {unforeseenEstimate && (
+                        {unforeseenEstimate && (() => {
+                            const unforeseenCostingRecord = unforeseenCostingId ? records.find(r => r._id === unforeseenCostingId) ?? null : null;
+                            return (
                             <Box ref={unforeseenSectionRef} sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
-                                    <IconButton size='small' onClick={() => { setUnforeseenEstimate(null); if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, ''); }} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                    {unforeseenCostingRecord && (
+                                        <Button
+                                            size='small'
+                                            variant='outlined'
+                                            onClick={() => openRecord(unforeseenCostingRecord)}
+                                            sx={{ ml: 1, borderRadius: '16px', textTransform: 'none', borderColor: '#e65100', color: '#e65100', fontSize: '0.75rem', px: 1.5, py: 0.25, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)', borderColor: '#e65100' } }}
+                                        >
+                                            {t('Open full costing')}
+                                        </Button>
+                                    )}
+                                    <IconButton size='small' onClick={() => {
+                                        const childId = unforeseenCostingIdRef.current;
+                                        setUnforeseenEstimate(null);
+                                        unforeseenCostingIdRef.current = '';
+                                        setUnforeseenCostingId('');
+                                        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, '');
+                                        if (childId) {
+                                            Api.requestSession({ command: 'costing/delete', args: { id: childId } }).catch(console.error);
+                                            setRecords(prev => prev.filter(r => r._id !== childId));
+                                        }
+                                    }} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
                                 <CostingTable estimate={unforeseenEstimate} costHistory={costHistory} />
                             </Box>
-                        )}
+                            );
+                        })()}
                     </Box>
                 )}
 
@@ -969,13 +1021,7 @@ export default function CostingPage() {
                     open={unforeseenOpen}
                     onClose={() => setUnforeseenOpen(false)}
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
-                    onEstimateSelected={(est) => {
-                        scrollToUnforeseenRef.current = true;
-                        setUnforeseenEstimate(est);
-                        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
-                        setTab('main');
-                        localStorage.setItem('costingTab', 'main');
-                    }}
+                    onEstimateSelected={handleUnforeseenEstimateSelected}
                 />
                 </>
             )}

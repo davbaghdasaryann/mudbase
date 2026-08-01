@@ -6,13 +6,14 @@ import { requireQueryParam } from '@/tsback/req/req_params';
 
 registerApiSession('costing/save', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
-    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId } = req.body as {
+    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId } = req.body as {
         costHistory: Db.CostingHistoryRecord[];
         pahestEntries: Db.CostingPahestEntry[];
         aylEntries: Db.CostingAylEntry[];
         actualData: Record<string, { quantity: string; unitPrice: string }>;
         salaryData: Db.CostingSalaryData;
         unforeseenEstimateId?: string;
+        unforeseenCostingId?: string;
     };
 
     const col = Db.getCostingsCollection();
@@ -24,9 +25,8 @@ registerApiSession('costing/save', async (req, res, session) => {
         salaryData: salaryData ?? { druqayin: 0, gorcarqayin: 0, miavorZham: 0 },
         updatedAt: new Date(),
     };
-    if (unforeseenEstimateId !== undefined) {
-        updateFields.unforeseenEstimateId = unforeseenEstimateId || undefined;
-    }
+    if (unforeseenEstimateId !== undefined) updateFields.unforeseenEstimateId = unforeseenEstimateId || undefined;
+    if (unforeseenCostingId !== undefined) updateFields.unforeseenCostingId = unforeseenCostingId || undefined;
     await col.updateOne(
         { _id: new ObjectId(id), accountId: session.mongoAccountId },
         { $set: updateFields }

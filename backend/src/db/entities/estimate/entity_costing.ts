@@ -67,6 +67,9 @@ export interface EntityCosting {
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
     salaryData?: CostingSalaryData;
     unforeseenEstimateId?: string;
+    unforeseenCostingId?: string;
+    isUnforeseen?: boolean;
+    parentCostingId?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }

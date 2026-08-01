@@ -7,6 +7,8 @@ import { requireQueryParam } from '@/tsback/req/req_params';
 registerApiSession('costing/create', async (req, res, session) => {
     const estimateId = requireQueryParam(req, 'estimateId');
     const estimateName = requireQueryParam(req, 'estimateName');
+    const isUnforeseen = req.query.isUnforeseen === 'true';
+    const parentCostingId = req.query.parentCostingId as string | undefined;
 
     const col = Db.getCostingsCollection();
     const doc: Db.EntityCosting = {
@@ -17,6 +19,8 @@ registerApiSession('costing/create', async (req, res, session) => {
         pahestEntries: [],
         aylEntries: [],
         actualData: {},
+        ...(isUnforeseen ? { isUnforeseen: true } : {}),
+        ...(parentCostingId ? { parentCostingId } : {}),
         createdAt: new Date(),
         updatedAt: new Date(),
     };
