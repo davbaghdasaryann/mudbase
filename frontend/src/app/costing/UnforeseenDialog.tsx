@@ -1,12 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, InputBase,
+    Button, Box, Typography, InputBase, Table, TableHead, TableBody,
+    TableRow, TableCell, Radio, CircularProgress,
 } from '@mui/material';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
+import * as Api from '@/api';
+import * as EstimatesApi from '@/api/estimate';
+import { formatDate } from '@/lib/format_date';
 import { type CostHistoryEntry } from './page';
 
 interface Props {
@@ -49,9 +55,33 @@ function NumField({ label, value, onChange, suffix }: { label: string; value: st
 }
 
 export default function UnforeseenDialog({ open, onClose, onCostAdded }: Props) {
+    const { t } = useTranslation();
+    const [step, setStep] = useState<'choose' | 'form'>('choose');
+    const [estimates, setEstimates] = useState<EstimatesApi.ApiEstimate[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+
     const [workName, setWorkName] = useState('');
     const [qty, setQty] = useState('');
     const [unitPrice, setUnitPrice] = useState('');
+
+    useEffect(() => {
+        if (!open) return;
+        setStep('choose');
+        setSelectedEstimate(null);
+        setWorkName(''); setQty(''); setUnitPrice('');
+        setLoading(true);
+        Api.requestSession<EstimatesApi.ApiEstimate[]>({
+            command: 'estimates/fetch',
+            args: { searchVal: 'empty' },
+        }).then(data => {
+            const filtered = (data ?? []).filter(e =>
+                Array.isArray(e.otherExpenses) &&
+                e.otherExpenses.some(exp => 'unforeseenWorks' in exp && (exp as any).unforeseenWorks > 0)
+            );
+            setEstimates(filtered);
+        }).catch(() => setEstimates([])).finally(() => setLoading(false));
+    }, [open]);
 
     const n_qty = parseFloat(qty.replace(',', '.')) || 0;
     const n_price = parseFloat(unitPrice.replace(',', '.')) || 0;
@@ -59,6 +89,7 @@ export default function UnforeseenDialog({ open, onClose, onCostAdded }: Props) 
     const canAdd = workName.trim().length > 0 && total > 0;
 
     const handleClose = () => {
+        setStep('choose'); setSelectedEstimate(null);
         setWorkName(''); setQty(''); setUnitPrice('');
         onClose();
     };
@@ -74,35 +105,113 @@ export default function UnforeseenDialog({ open, onClose, onCostAdded }: Props) 
             total,
             addedAt: new Date(),
             paymentMethod: 'unforeseen',
+            note: selectedEstimate ? selectedEstimate.name : undefined,
         });
         handleClose();
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog open={open} onClose={handleClose} maxWidth={step === 'choose' ? 'md' : 'xs'} fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>
+                {step === 'form' && (
+                    <Box component='span' onClick={() => setStep('choose')} sx={{ cursor: 'pointer', display: 'flex', mr: 0.5 }}>
+                        <ArrowBackIcon sx={{ fontSize: 20, color: '#888' }} />
+                    </Box>
+                )}
                 <ReportProblemOutlinedIcon sx={{ fontSize: 22 }} />
-                Չնախատեսված աշխատանքներ
+                {t('Unforeseen Works')}
             </DialogTitle>
-            <DialogContent sx={{ pt: 1 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
-                    <Field autoFocus label='Աշխատանքի անվանումը' value={workName} onChange={setWorkName} />
-                    <NumField label='Քանակը' value={qty} onChange={setQty} />
-                    <NumField label='Միավորի արժեք' value={unitPrice} onChange={setUnitPrice} suffix='AMD' />
-                    {total > 0 && (
-                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>
-                            Ընդհանուր արժեք: <strong style={{ color: mainPrimaryColor }}>{total.toLocaleString(undefined, { maximumFractionDigits: 0 })} AMD</strong>
-                        </Typography>
-                    )}
-                </Box>
-            </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-                <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>Կնքել</Button>
-                <Button variant='contained' onClick={handleAdd} disabled={!canAdd}
-                    sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
-                    Ավելացնել
-                </Button>
-            </DialogActions>
+
+            {step === 'choose' && (
+                <>
+                    <DialogContent sx={{ p: 0, pt: 1, pl: 3 }}>
+                        {loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                                <CircularProgress size={28} sx={{ color: mainPrimaryColor }} />
+                            </Box>
+                        ) : estimates.length === 0 ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
+                                <Typography variant='body2' color='text.secondary'>{t('No estimations with unforeseen works')}</Typography>
+                            </Box>
+                        ) : (
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 600, width: 60 }}>{t('No.')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>{t('Name')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Date of Creation')}</TableCell>
+                                        <TableCell sx={{ width: 48 }} />
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {estimates.map((est, index) => (
+                                        <TableRow
+                                            key={est._id}
+                                            onClick={() => setSelectedEstimate(est)}
+                                            hover
+                                            sx={{
+                                                cursor: 'pointer',
+                                                backgroundColor: selectedEstimate?._id === est._id ? `${mainPrimaryColor}22` : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
+                                                '&.MuiTableRow-hover:hover': { backgroundColor: `${mainPrimaryColor}15 !important` },
+                                            }}
+                                        >
+                                            <TableCell>{index + 1}</TableCell>
+                                            <TableCell>{est.name}</TableCell>
+                                            <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(est.createdAt)}</TableCell>
+                                            <TableCell align='right' sx={{ pr: 1 }}>
+                                                <Radio
+                                                    checked={selectedEstimate?._id === est._id}
+                                                    onChange={() => setSelectedEstimate(est)}
+                                                    size='small'
+                                                    sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
+                                                    onClick={e => e.stopPropagation()}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                        <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                        <Button variant='contained' disabled={!selectedEstimate}
+                            onClick={() => setStep('form')}
+                            sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
+                            {t('Select')}
+                        </Button>
+                    </DialogActions>
+                </>
+            )}
+
+            {step === 'form' && (
+                <>
+                    <DialogContent sx={{ pt: 1 }}>
+                        {selectedEstimate && (
+                            <Typography sx={{ fontSize: '0.8rem', color: '#888', mb: 1.5, px: 0.5 }}>
+                                {selectedEstimate.name}
+                            </Typography>
+                        )}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                            <Field autoFocus label='Աշխատանքի անվանումը' value={workName} onChange={setWorkName} />
+                            <NumField label='Քանակը' value={qty} onChange={setQty} />
+                            <NumField label='Միավորի արժեք' value={unitPrice} onChange={setUnitPrice} suffix='AMD' />
+                            {total > 0 && (
+                                <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>
+                                    Ընդհանուր արժեք: <strong style={{ color: mainPrimaryColor }}>{total.toLocaleString(undefined, { maximumFractionDigits: 0 })} AMD</strong>
+                                </Typography>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                        <Button onClick={handleClose} sx={{ borderRadius: '20px', color: '#888' }}>Կնքել</Button>
+                        <Button variant='contained' onClick={handleAdd} disabled={!canAdd}
+                            sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
+                            Ավելացնել
+                        </Button>
+                    </DialogActions>
+                </>
+            )}
         </Dialog>
     );
 }
