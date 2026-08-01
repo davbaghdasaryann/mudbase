@@ -2,6 +2,11 @@
 export const setupHtmlMetadata_ = {
     title: 'Mudbase - Construction cost estimating system',
     description: 'Construction cost estimating system',
+    icons: {
+        icon: '/favicon.ico',
+        shortcut: '/favicon-32x32.png',
+        apple: '/apple-touch-icon.png',
+    },
 };
 
 export const setupGA_ID_ = 'G-EXPVW90DGH';
