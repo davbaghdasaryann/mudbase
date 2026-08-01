@@ -874,7 +874,7 @@ export default function CostingPage() {
 
                  {tab === 'analysis' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <AnalysisTab estimate={selectedEstimate} actualData={actualData} costHistory={costHistory} />
+                        <AnalysisTab estimate={selectedEstimate} unforeseenEstimate={unforeseenEstimate} actualData={actualData} costHistory={costHistory} />
                     </Box>
                 )}
             </Box>
