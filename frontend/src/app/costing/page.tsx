@@ -452,6 +452,7 @@ export default function CostingPage() {
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLoadingRef = useRef(false);
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
+    const scrollToUnforeseenRef = useRef(false);
 
     const loadRecords = useCallback(() => {
         setLoading(true);
@@ -534,7 +535,8 @@ export default function CostingPage() {
     }, [costHistory, pahestEntries, aylEntries, actualData, selected, saveToBackend]);
 
     useEffect(() => {
-        if (!unforeseenEstimate || tab !== 'main') return;
+        if (!unforeseenEstimate || tab !== 'main' || !scrollToUnforeseenRef.current) return;
+        scrollToUnforeseenRef.current = false;
         const timer = setTimeout(() => {
             unforeseenSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 400);
@@ -963,6 +965,7 @@ export default function CostingPage() {
                     onClose={() => setUnforeseenOpen(false)}
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={(est) => {
+                        scrollToUnforeseenRef.current = true;
                         setUnforeseenEstimate(est);
                         if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
                         setTab('main');
