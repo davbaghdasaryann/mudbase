@@ -718,6 +718,9 @@ export default function CostingPage() {
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
+                                    <IconButton size='small' onClick={() => setUnforeseenEstimate(null)} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                        <DeleteOutlineIcon fontSize='small' />
+                                    </IconButton>
                                 </Box>
                                 <CostingTable estimate={unforeseenEstimate} costHistory={costHistory} />
                             </Box>
