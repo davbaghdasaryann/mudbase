@@ -767,23 +767,12 @@ export default function CostingPage() {
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
                         <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                         {unforeseenEstimate && (() => {
-                            const unforeseenCostingRecord = unforeseenCostingId ? records.find(r => r._id === unforeseenCostingId) ?? null : null;
                             return (
                             <Box ref={unforeseenSectionRef} sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
-                                    {unforeseenCostingRecord && (
-                                        <Button
-                                            size='small'
-                                            variant='outlined'
-                                            onClick={() => openRecord(unforeseenCostingRecord)}
-                                            sx={{ ml: 1, borderRadius: '16px', textTransform: 'none', borderColor: '#e65100', color: '#e65100', fontSize: '0.75rem', px: 1.5, py: 0.25, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)', borderColor: '#e65100' } }}
-                                        >
-                                            {t('Open full costing')}
-                                        </Button>
-                                    )}
                                     <IconButton size='small' onClick={() => {
                                         const childId = unforeseenCostingIdRef.current;
                                         setUnforeseenEstimate(null);
@@ -798,7 +787,7 @@ export default function CostingPage() {
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
-                                <CostingTable estimate={unforeseenEstimate} costHistory={costHistory} />
+                                <CostingTable estimate={unforeseenEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                             </Box>
                             );
                         })()}
