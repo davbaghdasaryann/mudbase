@@ -486,9 +486,16 @@ export default function CostingPage() {
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
         })));
         setActualData(rec.actualData ?? {});
+        setUnforeseenEstimate(null);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
+        const unforeseenId = typeof window !== 'undefined' ? localStorage.getItem(`costing-unforeseen-${rec._id}`) : null;
+        if (unforeseenId) {
+            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: unforeseenId } })
+                .then(est => setUnforeseenEstimate(est))
+                .catch(() => {});
+        }
         if (typeof window !== 'undefined') {
             window.history.pushState({}, '', `/costing?id=${rec._id}`);
         }
@@ -497,6 +504,7 @@ export default function CostingPage() {
 
     const closeRecord = () => {
         setSelected(null);
+        setUnforeseenEstimate(null);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -718,7 +726,7 @@ export default function CostingPage() {
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
-                                    <IconButton size='small' onClick={() => setUnforeseenEstimate(null)} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                    <IconButton size='small' onClick={() => { setUnforeseenEstimate(null); if (selected) localStorage.removeItem(`costing-unforeseen-${selected._id}`); }} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
@@ -945,6 +953,7 @@ export default function CostingPage() {
                     onClose={() => setUnforeseenOpen(false)}
                     onEstimateSelected={(est) => {
                         setUnforeseenEstimate(est);
+                        if (selected) localStorage.setItem(`costing-unforeseen-${selected._id}`, String(est._id));
                         setTab('main');
                         localStorage.setItem('costingTab', 'main');
                     }}
