@@ -7,6 +7,7 @@ import {
     TableRow, TableCell, Radio, CircularProgress,
 } from '@mui/material';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
@@ -114,6 +115,13 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                <Button
+                    startIcon={<AddCircleOutlineIcon sx={{ fontSize: 18 }} />}
+                    onClick={() => {/* TODO: open create estimation modal */}}
+                    sx={{ borderRadius: '20px', textTransform: 'none', color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, mr: 'auto', px: 2, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
+                >
+                    {t('Create Estimate')}
+                </Button>
                 <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                 <Button variant='contained' disabled={!selectedEstimate} onClick={handleConfirm}
                     sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>

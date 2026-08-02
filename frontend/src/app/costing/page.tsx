@@ -813,15 +813,7 @@ export default function CostingPage() {
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
-                                    <Button
-                                        size='small'
-                                        startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
-                                        onClick={() => {/* TODO: open create estimation modal */}}
-                                        sx={{ ml: 'auto', borderRadius: '20px', textTransform: 'none', color: '#e65100', borderColor: '#e65100', border: '1px solid', fontSize: '0.78rem', px: 1.5, py: 0.4, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)' } }}
-                                    >
-                                        Ստեղծել նախահաշիվ
-                                    </Button>
-                                    <IconButton size='small' onClick={handleDeleteUnforeseen} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                    <IconButton size='small' onClick={handleDeleteUnforeseen} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
