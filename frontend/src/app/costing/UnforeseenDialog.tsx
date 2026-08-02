@@ -35,11 +35,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
             command: 'estimates/fetch',
             args: { searchVal: 'empty' },
         }).then(data => {
-            const filtered = (data ?? []).filter(e =>
-                Array.isArray(e.otherExpenses) &&
-                e.otherExpenses.some(exp => 'unforeseenWorks' in exp && (exp as any).unforeseenWorks > 0)
-            );
-            setEstimates(filtered);
+            setEstimates(data ?? []);
         }).catch(() => setEstimates([])).finally(() => setLoading(false));
     };
 
@@ -78,7 +74,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                     </Box>
                 ) : estimates.length === 0 ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
-                        <Typography variant='body2' color='text.secondary'>{t('No estimations with unforeseen works')}</Typography>
+                        <Typography variant='body2' color='text.secondary'>{t('No estimations found')}</Typography>
                     </Box>
                 ) : (
                     <Table>
