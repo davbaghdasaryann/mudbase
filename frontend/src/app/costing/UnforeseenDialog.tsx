@@ -134,7 +134,6 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                                 checked={selectedEstimate?._id === est._id}
                                                 size='small'
                                                 sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
-                                                onClick={e => e.stopPropagation()}
                                             />
                                         </Box>
                                     </TableCell>
