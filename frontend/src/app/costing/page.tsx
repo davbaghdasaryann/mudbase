@@ -142,6 +142,23 @@ const ParamCard = ({ label, icon, value }: { label: string; icon: React.ReactNod
     </Paper>
 );
 
+const TripleParamCard = ({ label, icon, estimate, current, completed, subLabel }: { label: string; icon: React.ReactNode; estimate: number; current: number; completed: number; subLabel: string }) => (
+    <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s,border-color 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)', borderColor: mainPrimaryColor } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Box sx={{ color: mainPrimaryColor }}>{icon}</Box>
+            <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600 }}>{label}</Typography>
+        </Box>
+        <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{subLabel}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+            <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{estimate}</Typography>
+            <Typography sx={{ color: '#bbb', fontWeight: 400 }}>/</Typography>
+            <Typography variant='body1' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{current}</Typography>
+            <Typography sx={{ color: '#bbb', fontWeight: 400 }}>/</Typography>
+            <Typography variant='body1' sx={{ fontWeight: 700, color: '#4caf50' }}>{completed}</Typography>
+        </Box>
+    </Paper>
+);
+
 const outlinedCreateSx = {
     borderRadius: '25px',
     height: '40px',
@@ -780,22 +797,30 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} />
                             </Box>
-                            <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
-                                <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.laborItemCount ?? 0} />
-                                <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.materialItemCount ?? 0} />
-                                <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate.unitTime ?? 0} />
-                            </Box>
                         </Box>
                         {(() => {
                             const actualMaterials = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
                             const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
                             const actualTotal = actualMaterials + actualLabor;
+                            const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_')).map(e => e.laborItemId)).size;
+                            const laborCompleted = estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
+                                const spent = parseFloat(actualData[row._id]?.spent || '0') || 0;
+                                return row.cost > 0 && spent >= row.cost;
+                            }).length : 0;
+                            const materialCurrent = pahestEntries.length;
+                            const materialCompleted = pahestEntries.filter(e => (e.costedQuantity ?? 0) >= e.estimateQuantity && e.estimateQuantity > 0).length;
                             return (
+                                <>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 2 }}>
+                                    <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
+                                    <TripleParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.materialItemCount ?? 0} current={materialCurrent} completed={materialCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
+                                </Box>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 2 }}>
                                     <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} actualValue={actualTotal > 0 ? actualTotal : undefined} />
                                     <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} actualValue={actualMaterials > 0 ? actualMaterials : undefined} />
                                     <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} actualValue={actualLabor > 0 ? actualLabor : undefined} />
                                 </Box>
+                                </>
                             );
                         })()}
                         <BreakdownTable estimate={selectedEstimate} />
