@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
     Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
-    InputBase, Radio, RadioGroup, FormControlLabel, TextField, Chip, Paper, CircularProgress,
+    InputBase, Radio, RadioGroup, FormControlLabel, Checkbox, TextField, Chip, Paper, CircularProgress,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -156,6 +157,22 @@ const TripleParamCard = ({ label, icon, estimate, current, completed, subLabel }
         </Box>
     </Paper>
 );
+
+const HISTORY_TYPE_GROUPS: { key: string; label: string; match: (pm: string, isSub?: boolean) => boolean }[] = [
+    { key: 'pahest',            label: 'Մուտք Պահեստ', match: pm => pm === 'pahest_main' || pm === 'pahest_ayl' },
+    { key: 'nyuth',             label: 'Նյութի Ծախսագրում', match: pm => pm === 'nyuth_tsakhsagrum' },
+    { key: 'salary_gorcarqayin',label: 'Աշխատավարձ «Գործարքային»', match: pm => pm === 'salary_gorcarqayin' },
+    { key: 'salary_miavorzham', label: 'Աշխատավարձ «Դրույքային»', match: pm => pm === 'salary_miavorzham' },
+    { key: 'subcontractor',     label: 'Ենթակապալ', match: (pm, isSub) => pm === 'subcontractor' || !!isSub },
+    { key: 'unforeseen',        label: 'Չնախատեսված աշխատանքներ', match: pm => pm === 'unforeseen' },
+    { key: 'volume',            label: 'Ծավալի հաշվառում', match: pm => !pm || pm === '' || pm === 'salary_druqayin' },
+];
+
+const getHistoryTypeKey = (pm: string, isSub?: boolean): string => {
+    for (const g of HISTORY_TYPE_GROUPS) { if (g.match(pm, isSub)) return g.key; }
+    return 'volume';
+};
+
 
 const outlinedCreateSx = {
     borderRadius: '25px',
@@ -460,6 +477,8 @@ export default function CostingPage() {
     const [salaryOpen, setSalaryOpen] = useState(false);
     const [subcontractorOpen, setSubcontractorOpen] = useState(false);
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
+    const [exportOpen, setExportOpen] = useState(false);
+    const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
     const [estimateSnapshot, setEstimateSnapshot] = useState<EstimateSnapshot | null>(null);
@@ -856,6 +875,13 @@ export default function CostingPage() {
                         </Box>
                     ) : (
                         <Box sx={{ overflow: 'auto' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+                                <Button variant='outlined' size='small' startIcon={<SaveAltIcon />}
+                                    onClick={() => { setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); }}
+                                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                                    {t('Export')}
+                                </Button>
+                            </Box>
                             <Table size='small' sx={{ minWidth: 700 }}>
                                 <TableHead>
                                     <TableRow sx={{ backgroundColor: '#f0fbfc' }}>
@@ -931,6 +957,65 @@ export default function CostingPage() {
                     </Box>
                 )}
             </Box>
+
+
+            {/* History export modal */}
+            <Dialog open={exportOpen} onClose={() => setExportOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, display: 'flex', alignItems: 'center', gap: 1, pb: 1 }}>
+                    <SaveAltIcon sx={{ fontSize: 22 }} />
+                    {t('Export')}
+                </DialogTitle>
+                <DialogContent sx={{ pt: 1 }}>
+                    <Typography variant='caption' sx={{ color: '#999', display: 'block', mb: 1.5 }}>Select data types to include:</Typography>
+                    {HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => (
+                        <Box key={g.key}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={exportTypes.has(g.key)}
+                                        onChange={ev => setExportTypes(prev => { const s = new Set(prev); ev.target.checked ? s.add(g.key) : s.delete(g.key); return s; })}
+                                        size='small'
+                                        sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
+                                    />
+                                }
+                                label={<Typography sx={{ fontSize: '0.9rem' }}>{g.label}</Typography>}
+                            />
+                        </Box>
+                    ))}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                    <Button onClick={() => setExportOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                    <Button variant='contained' disabled={exportTypes.size === 0} onClick={() => {
+                        const filtered = costHistory.filter(e => exportTypes.has(getHistoryTypeKey(e.paymentMethod ?? '', e.isSubcontractor)));
+                        const esc = (s: string | number | undefined) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const hdr = (label: string) => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#e0f7fa;">${esc(label)}</th>`;
+                        let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">`;
+                        html += `<tr>${hdr(t('Action Type'))}${hdr(t('Description of Work'))}${hdr(t('Unit'))}${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}${hdr(t('Date of Creation'))}</tr>`;
+                        for (const e of filtered) {
+                            const g = HISTORY_TYPE_GROUPS.find(g => g.match(e.paymentMethod ?? '', e.isSubcontractor));
+                            const label = g?.label ?? '';
+                            html += `<tr>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(label)}</td>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(e.workName)}</td>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(e.unit)}</td>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${Number(e.quantity).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${esc(e.unitPrice.toLocaleString(undefined, { maximumFractionDigits: 0 }))}</td>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${esc(e.total.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
+                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(new Date(e.addedAt).toLocaleDateString())}</td>` +
+                            `</tr>`;
+                        }
+                        html += '</table>';
+                        const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+                        const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url; a.download = 'history.xls'; a.click();
+                        URL.revokeObjectURL(url);
+                        setExportOpen(false);
+                    }} sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
+                        {t('Export')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Cost details modal */}
             <Dialog
