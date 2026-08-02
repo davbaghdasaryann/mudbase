@@ -48,7 +48,7 @@ interface Props {
     costHistory?: CostHistoryEntry[];
 }
 
-const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, cursor: 'text' };
+const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, cursor: 'text', transition: 'border-color 0.15s', '&:focus-within': { borderColor: '#00ABBE' } };
 
 function NumInput({ label, value, onChange, autoFocus }: { label: string; value: string; onChange: (v: string) => void; autoFocus?: boolean }) {
     const inputRef = React.useRef<HTMLInputElement>(null);
@@ -258,17 +258,18 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <NumInput autoFocus label='1 ժամվա դրույքաչափ' value={val1} onChange={setVal1} />
                             <NumInput label='ժամերի քանակը' value={val2} onChange={setVal2} />
                         </>}
-                        <Box sx={{ ...INPUT_SX, alignItems: 'flex-start' }} onClick={() => document.getElementById('salary-notes-input')?.focus()}>
-                            <Typography sx={{ fontSize: '0.85rem', color: '#555', flexShrink: 0, pt: 0.3 }}>Նշումներ</Typography>
+                        <Box sx={{ ...INPUT_SX, alignItems: 'flex-start', flexDirection: 'column', gap: 0.5 }} onClick={() => document.getElementById('salary-notes-input')?.focus()}>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#999', fontWeight: 600 }}>Նշումներ</Typography>
                             <InputBase
                                 id='salary-notes-input'
                                 value={notes}
                                 onChange={ev => setNotes(ev.target.value)}
                                 placeholder='...'
                                 multiline
-                                maxRows={3}
-                                inputProps={{ style: { textAlign: 'right', fontSize: '0.88rem', color: '#333', padding: 0 } }}
-                                sx={{ flex: 1 }}
+                                minRows={2}
+                                maxRows={5}
+                                fullWidth
+                                inputProps={{ style: { fontSize: '0.88rem', color: '#333', padding: 0, lineHeight: 1.5 } }}
                             />
                         </Box>
         {canAdd && (
