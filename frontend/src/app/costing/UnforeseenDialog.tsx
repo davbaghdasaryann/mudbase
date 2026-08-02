@@ -17,6 +17,7 @@ import * as EstimatesApi from '@/api/estimate';
 import { formatDate } from '@/lib/format_date';
 import CreateEstimateDialog from '../estimates/CreateEstimateDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
+import { confirmDialog } from '@/components/ConfirmationDialog';
 
 interface Props {
     open: boolean;
@@ -63,7 +64,8 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
 
     const handleDelete = async (est: EstimatesApi.ApiEstimate, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(t('Delete this estimate?'))) return;
+        const confirmed = await confirmDialog(t('confirm_delete'), undefined, { noTitle: true, confirmText: t('Delete'), cancelText: t('Cancel'), confirmColor: '#DC3741' });
+        if (!confirmed) return;
         await Api.requestSession({ command: 'estimate/delete', args: { estimateId: String(est._id) } });
         setEstimates(prev => prev.filter(e => String(e._id) !== String(est._id)));
         if (selectedEstimate?._id === est._id) setSelectedEstimate(null);
