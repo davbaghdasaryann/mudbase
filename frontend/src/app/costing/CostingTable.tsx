@@ -18,8 +18,8 @@ type ActualData = Record<string, ActualEntry>;
 
 interface LaborRow {
     _id: string;
-    laborItemId: string;
-    fullCode: string;
+    laborItemId?: string;
+    fullCode?: string;
     catalogName: string;
     laborOfferItemName: string;
     unitSymbol: string;
@@ -34,7 +34,7 @@ interface Section {
     _id: string;
     name: string;
     displayIndex: number;
-    totalCost: number;
+    totalCost?: number;
 }
 
 interface Subsection {
@@ -42,8 +42,10 @@ interface Subsection {
     estimateSectionId: string;
     name: string;
     displayIndex: number;
-    totalCost: number;
+    totalCost?: number;
 }
+
+type SnapshotData = { laborRows: LaborRow[]; sections: Section[]; subsections: Subsection[] };
 
 function toId(v: unknown): string {
     if (!v) return '';
@@ -106,7 +108,7 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory }: { estimate: EstimatesApi.ApiEstimate; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[] }) {
+export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory }: { estimate: EstimatesApi.ApiEstimate; estimateSnapshot?: SnapshotData | null; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[] }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
@@ -131,6 +133,13 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
     const estimateId = toId(estimate._id);
 
     useEffect(() => {
+        if (estimateSnapshot) {
+            setRows(estimateSnapshot.laborRows);
+            setSections(estimateSnapshot.sections);
+            setSubsections(estimateSnapshot.subsections);
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         Promise.all([
             Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
@@ -150,7 +159,7 @@ export default function CostingTable({ estimate, onCostAdded, actualData: extern
             })
             .catch(e => setError(String(e)))
             .finally(() => setLoading(false));
-    }, [estimateId]);
+    }, [estimateId, estimateSnapshot]);
 
     useEffect(() => {
         const onMove = (e: MouseEvent) => {

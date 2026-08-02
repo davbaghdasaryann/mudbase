@@ -805,7 +805,7 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
-                        <CostingTable estimate={selectedEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
+                        <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                         {unforeseenEstimate && (() => {
                             return (
                             <Box ref={unforeseenSectionRef} sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
@@ -817,7 +817,7 @@ export default function CostingPage() {
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
-                                <CostingTable estimate={unforeseenEstimate} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
+                                <CostingTable estimate={unforeseenEstimate} estimateSnapshot={unforeseenSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                             </Box>
                             );
                         })()}
