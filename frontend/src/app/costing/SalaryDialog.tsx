@@ -75,10 +75,11 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const [type, setType] = useState<SalaryType>('gorcarqayin');
     const [val1, setVal1] = useState('');
     const [val2, setVal2] = useState('');
+    const [notes, setNotes] = useState('');
 
     useEffect(() => {
         if (!open) { setSelectedRow(null); return; }
-        setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2('');
+        setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes('');
         if (estimateSnapshot) {
             setRows(estimateSnapshot.laborRows);
             setUfRows(unforeseenSnapshot?.laborRows ?? []);
@@ -124,7 +125,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             total: computedTotal,
             addedAt: new Date(),
             paymentMethod: 'salary_' + type,
-            note: type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ',
+            note: notes.trim() || (type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ'),
         };
         onEntrySaved(entry);
         handleClose();
@@ -192,7 +193,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                             const remaining = Math.max(0, planned - covered);
                                             const done = planned > 0 && remaining <= 0;
                                             return (
-                                                <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); }}
+                                                <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); }}
                                                     sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                                 >
                                                     <Box sx={{ flex: 1 }}>
@@ -224,7 +225,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#e65100' }}>{secName}</Typography>
                                                 </Box>
                                                 {ufRows.filter(r => (r.sectionName || '—') === secName).map(row => (
-                                                    <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); }}
+                                                    <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); }}
                                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#fff8f4' } }}
                                                     >
                                                         <Box sx={{ flex: 1 }}>
@@ -257,7 +258,20 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <NumInput autoFocus label='1 ժամվա դրույքաչափ' value={val1} onChange={setVal1} />
                             <NumInput label='ժամերի քանակը' value={val2} onChange={setVal2} />
                         </>}
-                        {canAdd && (
+                        <Box sx={{ ...INPUT_SX, alignItems: 'flex-start' }} onClick={() => document.getElementById('salary-notes-input')?.focus()}>
+                            <Typography sx={{ fontSize: '0.85rem', color: '#555', flexShrink: 0, pt: 0.3 }}>Նշումներ</Typography>
+                            <InputBase
+                                id='salary-notes-input'
+                                value={notes}
+                                onChange={ev => setNotes(ev.target.value)}
+                                placeholder='...'
+                                multiline
+                                maxRows={3}
+                                inputProps={{ style: { textAlign: 'right', fontSize: '0.88rem', color: '#333', padding: 0 } }}
+                                sx={{ flex: 1 }}
+                            />
+                        </Box>
+        {canAdd && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <Typography sx={{ fontSize: '0.82rem', color: '#777' }}>
                                     {t('Total')}: <strong style={{ color: mainPrimaryColor }}>{(n1 * n2).toLocaleString()} AMD</strong>
