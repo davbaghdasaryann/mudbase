@@ -41,7 +41,7 @@ const constrData=  [  //ConstructionType, BuildingType
 
 interface Props {
     onClose: () => void;
-    onConfirm: () => void;
+    onConfirm: (est?: Api.ApiEstimate) => void;
 }
 
 export default function CreateEstimateDialog(props: Props) {
@@ -59,12 +59,12 @@ export default function CreateEstimateDialog(props: Props) {
         }
 
 
-        await Api.requestSession<Api.ApiEstimate>({
+        const created = await Api.requestSession<Api.ApiEstimate>({
             command: 'estimate/create',
             json: evt.data
         })
-        
-        props.onConfirm();
+
+        props.onConfirm(created ?? undefined);
         props.onClose();
 
     }, []);

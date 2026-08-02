@@ -28,19 +28,30 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
     const [loading, setLoading] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
+    const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
 
-    const fetchEstimates = () => {
+    const fetchEstimates = (newId?: string) => {
         setLoading(true);
         Api.requestSession<EstimatesApi.ApiEstimate[]>({
             command: 'estimates/fetch',
             args: { searchVal: 'empty' },
         }).then(data => {
-            setEstimates(data ?? []);
+            const all = data ?? [];
+            setCreatedIds(prev => {
+                const ids = newId ? new Set([...prev, newId]) : prev;
+                const filtered = all.filter(e =>
+                    ids.has(String(e._id)) ||
+                    (Array.isArray(e.otherExpenses) &&
+                        e.otherExpenses.some(exp => 'unforeseenWorks' in exp && (exp as any).unforeseenWorks > 0))
+                );
+                setEstimates(filtered);
+                return ids;
+            });
         }).catch(() => setEstimates([])).finally(() => setLoading(false));
     };
 
     useEffect(() => {
-        if (!open) return;
+        if (!open) { setCreatedIds(new Set()); return; }
         setSelectedEstimate(null);
         fetchEstimates();
     }, [open]);
@@ -74,7 +85,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                     </Box>
                 ) : estimates.length === 0 ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
-                        <Typography variant='body2' color='text.secondary'>{t('No estimations found')}</Typography>
+                        <Typography variant='body2' color='text.secondary'>{t('No estimations with unforeseen works')}</Typography>
                     </Box>
                 ) : (
                     <Table>
@@ -137,7 +148,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
         {createOpen && (
             <CreateEstimateDialog
                 onClose={() => setCreateOpen(false)}
-                onConfirm={() => { setCreateOpen(false); fetchEstimates(); }}
+                onConfirm={(est) => { setCreateOpen(false); fetchEstimates(est ? String(est._id) : undefined); }}
             />
         )}
         </>
