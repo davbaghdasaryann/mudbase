@@ -4,16 +4,18 @@ import { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, Table, TableHead, TableBody,
-    TableRow, TableCell, Radio, CircularProgress,
+    TableRow, TableCell, Radio, CircularProgress, IconButton,
 } from '@mui/material';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatDate } from '@/lib/format_date';
 import CreateEstimateDialog from '../estimates/CreateEstimateDialog';
+import EstimatePageDialog from '../estimates/EstimateDialog';
 
 interface Props {
     open: boolean;
@@ -28,6 +30,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
     const [loading, setLoading] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
+    const [editingEstimate, setEditingEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
 
     const fetchEstimates = () => {
         setLoading(true);
@@ -95,7 +98,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                 <TableCell sx={{ fontWeight: 600, width: 60 }}>{t('No.')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('Name')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Date of Creation')}</TableCell>
-                                <TableCell sx={{ width: 48 }} />
+                                <TableCell sx={{ width: 80 }} />
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -121,13 +124,22 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                     </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(est.createdAt)}</TableCell>
                                     <TableCell align='right' sx={{ pr: 1 }}>
-                                        <Radio
-                                            checked={selectedEstimate?._id === est._id}
-                                            disabled={!!isActive}
-                                            size='small'
-                                            sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
-                                            onClick={e => e.stopPropagation()}
-                                        />
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                            <IconButton
+                                                size='small'
+                                                onClick={e => { e.stopPropagation(); setEditingEstimate(est); }}
+                                                sx={{ color: '#aaa', '&:hover': { color: mainPrimaryColor } }}
+                                            >
+                                                <EditOutlinedIcon fontSize='small' />
+                                            </IconButton>
+                                            <Radio
+                                                checked={selectedEstimate?._id === est._id}
+                                                disabled={!!isActive}
+                                                size='small'
+                                                sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
+                                                onClick={e => e.stopPropagation()}
+                                            />
+                                        </Box>
                                     </TableCell>
                                 </TableRow>
                                 );
@@ -154,6 +166,14 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                     setCreateOpen(false);
                     if (est) setEstimates(prev => [...prev, est as EstimatesApi.ApiEstimate]);
                 }}
+            />
+        )}
+
+        {editingEstimate && (
+            <EstimatePageDialog
+                estimateId={String(editingEstimate._id)}
+                estimateTitle={editingEstimate.name ?? ''}
+                onClose={() => setEditingEstimate(null)}
             />
         )}
         </>
