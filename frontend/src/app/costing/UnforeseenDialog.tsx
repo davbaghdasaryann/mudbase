@@ -107,12 +107,10 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                 return (
                                 <TableRow
                                     key={est._id}
-                                    onClick={() => !isActive && setSelectedEstimate(est)}
-                                    hover={!isActive}
+                                    onClick={() => setSelectedEstimate(est)}
+                                    hover
                                     sx={{
-                                        cursor: isActive ? 'default' : 'pointer',
-                                        opacity: isActive ? 0.45 : 1,
-                                        pointerEvents: isActive ? 'none' : 'auto',
+                                        cursor: 'pointer',
                                         backgroundColor: selectedEstimate?._id === est._id ? `${mainPrimaryColor}22` : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
                                         '&.MuiTableRow-hover:hover': { backgroundColor: `${mainPrimaryColor}15 !important` },
                                     }}
@@ -134,7 +132,6 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                             </IconButton>
                                             <Radio
                                                 checked={selectedEstimate?._id === est._id}
-                                                disabled={!!isActive}
                                                 size='small'
                                                 sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }}
                                                 onClick={e => e.stopPropagation()}
