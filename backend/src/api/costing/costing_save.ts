@@ -3,6 +3,7 @@ import { registerApiSession } from '@src/server/register';
 import * as Db from '@/db';
 import { respondJsonData } from '@tsback/req/req_response';
 import { requireQueryParam } from '@/tsback/req/req_params';
+import { buildEstimateSnapshot } from './costing_snapshot';
 
 registerApiSession('costing/save', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
@@ -27,6 +28,20 @@ registerApiSession('costing/save', async (req, res, session) => {
     };
     if (unforeseenEstimateId !== undefined) updateFields.unforeseenEstimateId = unforeseenEstimateId || undefined;
     if (unforeseenCostingId !== undefined) updateFields.unforeseenCostingId = unforeseenCostingId || undefined;
+
+    // Build and store unforeseen snapshot when a new unforeseen estimate is linked
+    if (unforeseenEstimateId) {
+        const existing = await col.findOne(
+            { _id: new ObjectId(id), accountId: session.mongoAccountId },
+            { projection: { unforeseenEstimateId: 1 } }
+        );
+        if (!existing?.unforeseenEstimateId || existing.unforeseenEstimateId !== unforeseenEstimateId) {
+            updateFields.unforeseenEstimateSnapshot = await buildEstimateSnapshot(unforeseenEstimateId);
+        }
+    } else if (unforeseenEstimateId === '') {
+        updateFields.unforeseenEstimateSnapshot = undefined;
+    }
+
     await col.updateOne(
         { _id: new ObjectId(id), accountId: session.mongoAccountId },
         { $set: updateFields }

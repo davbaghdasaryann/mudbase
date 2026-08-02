@@ -75,6 +75,25 @@ export interface CostHistoryEntry {
     laborItemId?: string;
 }
 
+interface SnapshotLaborRow {
+    _id: string;
+    laborOfferItemName: string;
+    catalogName: string;
+    unitSymbol: string;
+    quantity: number;
+    changableAveragePrice: number;
+    cost: number;
+    subsectionName: string;
+    sectionName: string;
+}
+interface SnapshotSection { _id: string; name: string; displayIndex: number; totalCost?: number; }
+interface SnapshotSubsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
+interface EstimateSnapshot {
+    laborRows: SnapshotLaborRow[];
+    sections: SnapshotSection[];
+    subsections: SnapshotSubsection[];
+}
+
 interface CostingRecord {
     _id: string;
     estimateId: string;
@@ -83,6 +102,8 @@ interface CostingRecord {
     pahestEntries: PahestEntry[];
     aylEntries: AylEntry[];
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    estimateSnapshot?: EstimateSnapshot;
+    unforeseenEstimateSnapshot?: EstimateSnapshot;
     unforeseenEstimateId?: string;
     unforeseenCostingId?: string;
     isUnforeseen?: boolean;
@@ -426,6 +447,8 @@ export default function CostingPage() {
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
+    const [estimateSnapshot, setEstimateSnapshot] = useState<EstimateSnapshot | null>(null);
+    const [unforeseenSnapshot, setUnforeseenSnapshot] = useState<EstimateSnapshot | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [records, setRecords] = useState<CostingRecord[]>([]);
@@ -498,6 +521,8 @@ export default function CostingPage() {
         setUnforeseenEstimate(null);
         unforeseenCostingIdRef.current = rec.unforeseenCostingId ?? '';
         setUnforeseenCostingId(rec.unforeseenCostingId ?? '');
+        setEstimateSnapshot(rec.estimateSnapshot ?? null);
+        setUnforeseenSnapshot(rec.unforeseenEstimateSnapshot ?? null);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -517,6 +542,8 @@ export default function CostingPage() {
         setUnforeseenEstimate(null);
         unforeseenCostingIdRef.current = '';
         setUnforeseenCostingId('');
+        setEstimateSnapshot(null);
+        setUnforeseenSnapshot(null);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -602,6 +629,7 @@ export default function CostingPage() {
             newId = created._id;
             unforeseenCostingIdRef.current = newId;
             setUnforeseenCostingId(newId);
+            if (created.estimateSnapshot) setUnforeseenSnapshot(created.estimateSnapshot);
         }
         saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
     }, [selected, costHistory, pahestEntries, aylEntries, actualData, saveToBackend]); // eslint-disable-line
@@ -876,7 +904,7 @@ export default function CostingPage() {
 
                  {tab === 'analysis' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <AnalysisTab estimate={selectedEstimate} unforeseenEstimate={unforeseenEstimate} onDeleteUnforeseen={handleDeleteUnforeseen} actualData={actualData} costHistory={costHistory} />
+                        <AnalysisTab estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} unforeseenEstimate={unforeseenEstimate} unforeseenSnapshot={unforeseenSnapshot} onDeleteUnforeseen={handleDeleteUnforeseen} actualData={actualData} costHistory={costHistory} />
                     </Box>
                 )}
             </Box>
@@ -974,7 +1002,9 @@ export default function CostingPage() {
                     open={volumesOpen}
                     onClose={() => setVolumesOpen(false)}
                     estimate={selectedEstimate}
+                    estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
+                    unforeseenSnapshot={unforeseenSnapshot}
                     onCostAdded={handleCostAdded}
                     actualData={actualData}
                     onActualUpdate={(rowId, qty, arzhek) => setActualData(prev => {
@@ -990,7 +1020,9 @@ export default function CostingPage() {
                     open={materialsOpen}
                     onClose={() => setMaterialsOpen(false)}
                     estimate={selectedEstimate}
+                    estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
+                    unforeseenSnapshot={unforeseenSnapshot}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
                     onCostAdded={handleCostAdded}
@@ -999,7 +1031,9 @@ export default function CostingPage() {
                     open={salaryOpen}
                     onClose={() => setSalaryOpen(false)}
                     estimate={selectedEstimate}
+                    estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
+                    unforeseenSnapshot={unforeseenSnapshot}
                     onEntrySaved={(entry, replaceId) => setCostHistory(prev =>
                         replaceId ? prev.map(e => e.id === replaceId ? entry : e) : [entry, ...prev]
                     )}

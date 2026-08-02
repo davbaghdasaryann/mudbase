@@ -33,11 +33,15 @@ interface MaterialModalState {
     value: string;
 }
 
+type SnapshotData = { laborRows: LaborRow[]; sections: Section[]; subsections: Subsection[] };
+
 interface Props {
     open: boolean;
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
+    estimateSnapshot?: SnapshotData | null;
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
+    unforeseenSnapshot?: SnapshotData | null;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number) => void;
     onCostAdded?: (entry: CostHistoryEntry) => void;
@@ -62,7 +66,7 @@ async function fetchEstimateRows(estimateId: string) {
     return { sections: sorted, subsections: arrays.flat(), rows: laborData ?? [] };
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, unforeseenEstimate, pahestEntries, onPahestUpdate, onCostAdded }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, onCostAdded }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -79,8 +83,17 @@ export default function MaterialsDialog({ open, onClose, estimate, unforeseenEst
 
     useEffect(() => {
         if (!open) return;
-        setLoading(true);
         setSelectedRow(null);
+        if (estimateSnapshot) {
+            setSections(estimateSnapshot.sections);
+            setSubsections(estimateSnapshot.subsections);
+            setRows(estimateSnapshot.laborRows);
+            setUfSections(unforeseenSnapshot?.sections ?? []);
+            setUfSubsections(unforeseenSnapshot?.subsections ?? []);
+            setUfRows(unforeseenSnapshot?.laborRows ?? []);
+            return;
+        }
+        setLoading(true);
         const fetches: Promise<void>[] = [
             fetchEstimateRows(estimateId).then(d => { setSections(d.sections); setSubsections(d.subsections); setRows(d.rows); }),
         ];
@@ -90,7 +103,7 @@ export default function MaterialsDialog({ open, onClose, estimate, unforeseenEst
             setUfSections([]); setUfSubsections([]); setUfRows([]);
         }
         Promise.all(fetches).catch(console.error).finally(() => setLoading(false));
-    }, [open, estimateId, ufEstimateId]);
+    }, [open, estimateId, ufEstimateId, estimateSnapshot, unforeseenSnapshot]);
 
     const handleConfirm = () => {
         if (!materialModal) return;

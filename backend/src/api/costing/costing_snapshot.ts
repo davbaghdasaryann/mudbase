@@ -1,0 +1,101 @@
+import { ObjectId } from 'mongodb';
+import * as Db from '@/db';
+
+export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.EstimateSnapshot> {
+    const estimateId = new ObjectId(estimateIdStr);
+
+    const rawSections = await Db.getEstimateSectionsCollection()
+        .find({ estimateId })
+        .sort({ displayIndex: 1 })
+        .toArray();
+
+    if (rawSections.length === 0) return { laborRows: [], sections: [], subsections: [] };
+
+    const sectionIds = rawSections.map(s => s._id);
+    const sectionMap = new Map(rawSections.map(s => [s._id.toString(), s.name as string]));
+
+    const rawSubsections = await Db.getEstimateSubsectionsCollection()
+        .find({ estimateSectionId: { $in: sectionIds } })
+        .sort({ displayIndex: 1 })
+        .toArray();
+
+    const subsectionMap = new Map(rawSubsections.map(s => [
+        s._id.toString(),
+        { name: s.name as string, sectionName: sectionMap.get(s.estimateSectionId.toString()) ?? '' },
+    ]));
+
+    const laborItems = await Db.getEstimateLaborItemsCollection()
+        .aggregate([
+            { $match: { estimateSubsectionId: { $in: rawSubsections.map(s => s._id) }, isHidden: { $ne: true } } },
+            {
+                $lookup: {
+                    from: 'labor_items',
+                    let: { itemIdVar: '$laborItemId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$itemIdVar'] } } },
+                        {
+                            $lookup: {
+                                from: 'measurement_unit',
+                                localField: 'measurementUnitMongoId',
+                                foreignField: '_id',
+                                as: 'measurementUnitData',
+                            },
+                        },
+                        { $unwind: { path: '$measurementUnitData', preserveNullAndEmptyArrays: true } },
+                        { $project: { name: 1, _id: 0, unitSymbol: '$measurementUnitData.representationSymbol' } },
+                    ],
+                    as: 'catalogItem',
+                },
+            },
+            { $unwind: { path: '$catalogItem', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'measurement_unit',
+                    localField: 'measurementUnitMongoId',
+                    foreignField: '_id',
+                    as: 'directUnit',
+                },
+            },
+            { $unwind: { path: '$directUnit', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    estimateSubsectionId: 1,
+                    quantity: 1,
+                    changableAveragePrice: 1,
+                    catalogName: '$catalogItem.name',
+                    laborOfferItemName: 1,
+                    unitSymbol: { $ifNull: ['$catalogItem.unitSymbol', '$directUnit.representationSymbol'] },
+                    displayIndex: 1,
+                },
+            },
+            { $sort: { displayIndex: 1, _id: 1 } },
+        ])
+        .toArray();
+
+    const laborRows: Db.SnapshotLaborRow[] = laborItems.map((item: any) => ({
+        _id: item._id.toString(),
+        catalogName: item.catalogName ?? '',
+        laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+        unitSymbol: item.unitSymbol ?? '',
+        quantity: item.quantity ?? 0,
+        changableAveragePrice: item.changableAveragePrice ?? 0,
+        cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+        subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+        sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+    }));
+
+    const sections: Db.SnapshotSection[] = rawSections.map(s => ({
+        _id: s._id.toString(),
+        name: s.name as string,
+        displayIndex: s.displayIndex as number ?? 0,
+    }));
+
+    const subsections: Db.SnapshotSubsection[] = rawSubsections.map(s => ({
+        _id: s._id.toString(),
+        estimateSectionId: s.estimateSectionId.toString(),
+        name: s.name as string,
+        displayIndex: s.displayIndex as number ?? 0,
+    }));
+
+    return { laborRows, sections, subsections };
+}

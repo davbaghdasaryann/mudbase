@@ -31,11 +31,15 @@ interface CostModalState {
     spent: string;
 }
 
+type SnapshotData = { laborRows: LaborRow[]; sections: Section[]; subsections: Subsection[] };
+
 interface Props {
     open: boolean;
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
+    estimateSnapshot?: SnapshotData | null;
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
+    unforeseenSnapshot?: SnapshotData | null;
     onCostAdded: (entry: CostHistoryEntry) => void;
     onActualUpdate?: (rowId: string, qty: number, spent: number) => void;
     actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
@@ -63,7 +67,7 @@ async function fetchEstimateData(estimateId: string) {
     return { sections: sorted, subsections: arrays.flat(), rows: laborData ?? [] };
 }
 
-export default function VolumesDialog({ open, onClose, estimate, unforeseenEstimate, onCostAdded, onActualUpdate, actualData }: Props) {
+export default function VolumesDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, onCostAdded, onActualUpdate, actualData }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -81,6 +85,19 @@ export default function VolumesDialog({ open, onClose, estimate, unforeseenEstim
 
     useEffect(() => {
         if (!open) return;
+        if (estimateSnapshot) {
+            setSections(estimateSnapshot.sections);
+            setSubsections(estimateSnapshot.subsections);
+            setRows(estimateSnapshot.laborRows);
+            if (unforeseenSnapshot) {
+                setUfSections(unforeseenSnapshot.sections);
+                setUfSubsections(unforeseenSnapshot.subsections);
+                setUfRows(unforeseenSnapshot.laborRows);
+            } else {
+                setUfSections([]); setUfSubsections([]); setUfRows([]);
+            }
+            return;
+        }
         setLoading(true);
         const fetches: Promise<void>[] = [
             fetchEstimateData(estimateId).then(d => { setSections(d.sections); setSubsections(d.subsections); setRows(d.rows); }),
@@ -91,7 +108,7 @@ export default function VolumesDialog({ open, onClose, estimate, unforeseenEstim
             setUfSections([]); setUfSubsections([]); setUfRows([]);
         }
         Promise.all(fetches).catch(console.error).finally(() => setLoading(false));
-    }, [open, estimateId, ufEstimateId]);
+    }, [open, estimateId, ufEstimateId, estimateSnapshot, unforeseenSnapshot]);
 
     const handleConfirmCost = () => {
         if (!costModal) return;

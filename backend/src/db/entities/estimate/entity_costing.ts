@@ -56,6 +56,37 @@ export interface CostingSalaryData {
     miavorZham: number;
 }
 
+export interface SnapshotLaborRow {
+    _id: string;
+    laborOfferItemName: string;
+    catalogName: string;
+    unitSymbol: string;
+    quantity: number;
+    changableAveragePrice: number;
+    cost: number;
+    subsectionName: string;
+    sectionName: string;
+}
+
+export interface SnapshotSection {
+    _id: string;
+    name: string;
+    displayIndex: number;
+}
+
+export interface SnapshotSubsection {
+    _id: string;
+    estimateSectionId: string;
+    name: string;
+    displayIndex: number;
+}
+
+export interface EstimateSnapshot {
+    laborRows: SnapshotLaborRow[];
+    sections: SnapshotSection[];
+    subsections: SnapshotSubsection[];
+}
+
 export interface EntityCosting {
     _id?: ObjectId;
     accountId?: ObjectId;
@@ -66,6 +97,8 @@ export interface EntityCosting {
     aylEntries?: CostingAylEntry[];
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
     salaryData?: CostingSalaryData;
+    estimateSnapshot?: EstimateSnapshot;
+    unforeseenEstimateSnapshot?: EstimateSnapshot;
     unforeseenEstimateId?: string;
     unforeseenCostingId?: string;
     isUnforeseen?: boolean;

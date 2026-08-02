@@ -34,11 +34,15 @@ function toId(v: unknown): string {
     return String(v);
 }
 
+type SnapshotData = { laborRows: LaborRow[] };
+
 interface Props {
     open: boolean;
     onClose: () => void;
     estimate: EstimatesApi.ApiEstimate;
+    estimateSnapshot?: SnapshotData | null;
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
+    unforeseenSnapshot?: SnapshotData | null;
     onEntrySaved: (entry: CostHistoryEntry, replaceId?: string) => void;
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
     costHistory?: CostHistoryEntry[];
@@ -62,7 +66,7 @@ function NumInput({ label, value, onChange, autoFocus }: { label: string; value:
         </Box>
     );
 }
-export default function SalaryDialog({ open, onClose, estimate, unforeseenEstimate, onEntrySaved, actualData, costHistory }: Props) {
+export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, onEntrySaved, actualData, costHistory }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState<LaborRow[]>([]);
@@ -75,6 +79,11 @@ export default function SalaryDialog({ open, onClose, estimate, unforeseenEstima
     useEffect(() => {
         if (!open) { setSelectedRow(null); return; }
         setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2('');
+        if (estimateSnapshot) {
+            setRows(estimateSnapshot.laborRows);
+            setUfRows(unforeseenSnapshot?.laborRows ?? []);
+            return;
+        }
         const estimateId = toId(estimate?._id);
         if (!estimateId) return;
         setLoading(true);
@@ -92,7 +101,7 @@ export default function SalaryDialog({ open, onClose, estimate, unforeseenEstima
             setUfRows([]);
         }
         Promise.all(fetches).finally(() => setLoading(false));
-    }, [open, estimate, unforeseenEstimate]);
+    }, [open, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot]);
 
     const handleClose = () => { setSelectedRow(null); onClose(); };
     const n1 = parseFloat(val1.replace(',', '.')) || 0;

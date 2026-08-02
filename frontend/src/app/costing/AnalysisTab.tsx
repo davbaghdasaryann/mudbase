@@ -17,7 +17,7 @@ interface LaborRow {
     unitSymbol: string; quantity: number; changableAveragePrice: number;
     cost: number; subsectionName: string; sectionName: string;
 }
-interface Section { _id: string; name: string; displayIndex: number; totalCost: number; }
+interface Section { _id: string; name: string; displayIndex: number; totalCost?: number; }
 interface Subsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
 
 function toId(v: unknown): string {
@@ -75,9 +75,17 @@ const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...
 const fmtQty  = (v: number | null) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '\u2014';
 const fmtUnit = (v: number | null) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014';
 
+interface SnapshotData {
+    laborRows: LaborRow[];
+    sections: Section[];
+    subsections: Subsection[];
+}
+
 interface Props {
     estimate: EstimatesApi.ApiEstimate;
+    estimateSnapshot?: SnapshotData | null;
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
+    unforeseenSnapshot?: SnapshotData | null;
     onDeleteUnforeseen?: () => void;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     costHistory: CostHistoryEntry[];
@@ -95,7 +103,7 @@ async function fetchAnalysisData(estimateId: string) {
     return { rows: laborData ?? [], sections: sorted, subsections: arrays.flat() };
 }
 
-export default function AnalysisTab({ estimate, unforeseenEstimate, onDeleteUnforeseen, actualData, costHistory }: Props) {
+export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, onDeleteUnforeseen, actualData, costHistory }: Props) {
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
@@ -112,6 +120,16 @@ export default function AnalysisTab({ estimate, unforeseenEstimate, onDeleteUnfo
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
 
     useEffect(() => {
+        if (estimateSnapshot) {
+            setRows(estimateSnapshot.laborRows);
+            setSections(estimateSnapshot.sections);
+            setSubsections(estimateSnapshot.subsections);
+            setUfRows(unforeseenSnapshot?.laborRows ?? []);
+            setUfSections(unforeseenSnapshot?.sections ?? []);
+            setUfSubsections(unforeseenSnapshot?.subsections ?? []);
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         const fetches: Promise<void>[] = [
             fetchAnalysisData(estimateId).then(d => { setRows(d.rows); setSections(d.sections); setSubsections(d.subsections); }),
@@ -122,7 +140,7 @@ export default function AnalysisTab({ estimate, unforeseenEstimate, onDeleteUnfo
             setUfRows([]); setUfSections([]); setUfSubsections([]);
         }
         Promise.all(fetches).catch(console.error).finally(() => setLoading(false));
-    }, [estimateId, ufEstimateId]);
+    }, [estimateId, ufEstimateId, estimateSnapshot, unforeseenSnapshot]);
 
     useEffect(() => {
         const onMove = (e: MouseEvent) => {
