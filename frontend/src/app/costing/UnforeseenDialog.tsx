@@ -28,30 +28,24 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
     const [loading, setLoading] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
-    const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
 
-    const fetchEstimates = (newId?: string) => {
+    const fetchEstimates = () => {
         setLoading(true);
         Api.requestSession<EstimatesApi.ApiEstimate[]>({
             command: 'estimates/fetch',
             args: { searchVal: 'empty' },
         }).then(data => {
             const all = data ?? [];
-            setCreatedIds(prev => {
-                const ids = newId ? new Set([...prev, newId]) : prev;
-                const filtered = all.filter(e =>
-                    ids.has(String(e._id)) ||
-                    (Array.isArray(e.otherExpenses) &&
-                        e.otherExpenses.some(exp => 'unforeseenWorks' in exp && (exp as any).unforeseenWorks > 0))
-                );
-                setEstimates(filtered);
-                return ids;
-            });
+            const filtered = all.filter(e =>
+                Array.isArray(e.otherExpenses) &&
+                e.otherExpenses.some(exp => 'unforeseenWorks' in exp && (exp as any).unforeseenWorks > 0)
+            );
+            setEstimates(filtered);
         }).catch(() => setEstimates([])).finally(() => setLoading(false));
     };
 
     useEffect(() => {
-        if (!open) { setCreatedIds(new Set()); return; }
+        if (!open) return;
         setSelectedEstimate(null);
         fetchEstimates();
     }, [open]);
@@ -148,7 +142,10 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
         {createOpen && (
             <CreateEstimateDialog
                 onClose={() => setCreateOpen(false)}
-                onConfirm={(est) => { setCreateOpen(false); fetchEstimates(est ? String(est._id) : undefined); }}
+                onConfirm={(est) => {
+                    setCreateOpen(false);
+                    if (est) setEstimates(prev => [...prev, est as EstimatesApi.ApiEstimate]);
+                }}
             />
         )}
         </>
