@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Box, Button, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -75,6 +76,39 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
     const toggle = (key: string) => setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
     const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
 
+    const handleExport = useCallback(() => {
+        const esc = (s: string | number) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const th = (label: string) => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#e0f7fa;">${esc(label)}</th>`;
+        let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">`;
+        html += `<tr>${th(t('Name'))}${th(t('Code'))}${th(t('Unit'))}${th(t('Quantity'))}${th(t('Cost'))}${th('%')}</tr>`;
+        for (const g of groups) {
+            html += `<tr style="background:#e0f7fa;font-weight:bold;">` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(g.name)}</td>` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(g.fullCode)}</td>` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(g.unitSymbol)}</td>` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${g.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${esc(g.totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${pct(g.totalCost)}</td>` +
+            `</tr>`;
+            for (const item of g.items) {
+                html += `<tr>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px 4px 24px;color:#555;">${esc(item.laborOfferItemName || item.catalogName)}</td>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px;"></td>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px;text-align:center;">${esc(item.unitSymbol)}</td>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px;text-align:right;">${Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px;text-align:right;">${esc(item.cost.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px;text-align:right;">${pct(item.cost)}</td>` +
+                `</tr>`;
+            }
+        }
+        html += '</table>';
+        const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+        const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'labor_analysis.xls'; a.click();
+        URL.revokeObjectURL(url);
+    }, [groups, t]);
+
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={28} />
@@ -88,7 +122,14 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
     if (groups.length === 0) return null;
 
     return (
-        <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
+        <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+            <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
+                sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
+                {t('Export')}
+            </Button>
+        </Box>
+        <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                     <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
@@ -160,5 +201,6 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                 })}
             </TableBody>
         </Table>
+        </Box>
     );
 }
