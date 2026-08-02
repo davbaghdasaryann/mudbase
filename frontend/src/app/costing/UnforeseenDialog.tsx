@@ -31,16 +31,23 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
 
     const fetchEstimates = () => {
         setLoading(true);
-        Api.requestSession<EstimatesApi.ApiEstimate[]>({
-            command: 'estimates/fetch',
-            args: { searchVal: 'empty' },
-        }).then(data => {
-            const all = data ?? [];
-            const filtered = all.filter(e =>
+        Promise.all([
+            Api.requestSession<EstimatesApi.ApiEstimate[]>({ command: 'estimates/fetch', args: { searchVal: 'empty' } }),
+            Api.requestSession<EstimatesApi.ApiEstimate[]>({ command: 'estimates/fetch', args: { searchVal: 'empty', includeUnforeseenOnly: 'true' } }),
+        ]).then(([regular, all]) => {
+            const regularWithUnforeseen = (regular ?? []).filter(e =>
                 Array.isArray(e.otherExpenses) &&
                 e.otherExpenses.some(exp => 'unforeseenWorks' in exp && (exp as any).unforeseenWorks > 0)
             );
-            setEstimates(filtered);
+            const unforeseenOnly = (all ?? []).filter(e => (e as any).isUnforeseenOnly === true);
+            const seen = new Set<string>();
+            const combined = [...regularWithUnforeseen, ...unforeseenOnly].filter(e => {
+                const id = String(e._id);
+                if (seen.has(id)) return false;
+                seen.add(id);
+                return true;
+            });
+            setEstimates(combined);
         }).catch(() => setEstimates([])).finally(() => setLoading(false));
     };
 
@@ -141,6 +148,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
 
         {createOpen && (
             <CreateEstimateDialog
+                isUnforeseenOnly={true}
                 onClose={() => setCreateOpen(false)}
                 onConfirm={(est) => {
                     setCreateOpen(false);

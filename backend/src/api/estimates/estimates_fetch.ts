@@ -8,22 +8,30 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
     let searchVal = requireQueryParam(req, 'searchVal');
     searchVal = searchVal.trim();
 
+    const includeUnforeseenOnly = req.query.includeUnforeseenOnly === 'true';
+
     let estimates = Db.getEstimatesCollection();
 
     const notDeletedFilter = {deleted: {$ne: true}};
     const notArchivedFilter = {archived: {$ne: true}};
+    const notUnforeseenOnlyFilter = {isUnforeseenOnly: {$ne: true}};
 
     let cursor;
 
     const isInteger = /^\d+$/.test(searchVal);
 
+    const baseFilters: object[] = [
+        {isOriginal: true},
+        {accountId: session.mongoAccountId},
+        notDeletedFilter,
+        notArchivedFilter,
+        ...(includeUnforeseenOnly ? [] : [notUnforeseenOnlyFilter]),
+    ];
+
     if (searchVal !== 'empty') {
         cursor = estimates.find({
             $and: [
-                {isOriginal: true},
-                {accountId: session.mongoAccountId},
-                notDeletedFilter,
-                notArchivedFilter,
+                ...baseFilters,
                 {
                     $or: [
                         isInteger
@@ -34,9 +42,7 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
             ],
         });
     } else {
-        cursor = estimates.find({
-            $and: [{isOriginal: true}, {accountId: session.mongoAccountId}, notDeletedFilter, notArchivedFilter],
-        });
+        cursor = estimates.find({ $and: baseFilters });
     }
 
     const data = await cursor.toArray();

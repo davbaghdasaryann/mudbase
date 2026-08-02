@@ -19,7 +19,7 @@ registerApiSession('estimate/create', async (req, res, session) => {
         }
     }
 
-    const allowedFields = ["name", "address", "constructionType", "buildingType", "constructionSurface", "builtUpArea"];
+    const allowedFields = ["name", "address", "constructionType", "buildingType", "constructionSurface", "builtUpArea", "isUnforeseenOnly"];
 
     const filteredCreateEstimateData: Partial<Db.EntityEstimate> = Object.fromEntries(
         Object.entries(createEstimateData).filter(([key]) => allowedFields.includes(key))
@@ -47,8 +47,5 @@ registerApiSession('estimate/create', async (req, res, session) => {
 
     await estimates.insertOne(filteredCreateEstimateData);
 
-
-    respondJsonData(res, {
-        estimateNumber: filteredCreateEstimateData.estimateNumber,
-    });
+    respondJsonData(res, filteredCreateEstimateData);
 });

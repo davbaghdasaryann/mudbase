@@ -42,6 +42,7 @@ const constrData=  [  //ConstructionType, BuildingType
 interface Props {
     onClose: () => void;
     onConfirm: (est?: Api.ApiEstimate) => void;
+    isUnforeseenOnly?: boolean;
 }
 
 export default function CreateEstimateDialog(props: Props) {
@@ -58,16 +59,17 @@ export default function CreateEstimateDialog(props: Props) {
             return;
         }
 
+        const payload = props.isUnforeseenOnly ? { ...evt.data, isUnforeseenOnly: true } : evt.data;
 
         const created = await Api.requestSession<Api.ApiEstimate>({
             command: 'estimate/create',
-            json: evt.data
+            json: payload
         })
 
         props.onConfirm(created ?? undefined);
         props.onClose();
 
-    }, []);
+    }, [props.isUnforeseenOnly]);
 
 
     return <F.PageFormDialog title={t('Create Estimate')} form={form} size='md' onSubmit={onSubmit} onClose={props.onClose}>
