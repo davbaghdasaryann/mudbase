@@ -117,18 +117,16 @@ const MetricCard = ({ label, value, actualValue }: { label: string; value: numbe
             <ChatBubbleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor, flexShrink: 0 }} />
             <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600 }}>{label}</Typography>
         </Box>
-        {actualValue !== undefined ? (
-            <>
-                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>Նախահաշիվ / Փաստացի</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
-                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{formatCurrencyRoundedSymbol(value)}</Typography>
-                    <Typography sx={{ color: '#bbb', fontWeight: 400 }}>/</Typography>
-                    <Typography variant='body1' sx={{ fontWeight: 700, color: actualValue > value ? '#e53935' : mainPrimaryColor }}>{formatCurrencyRoundedSymbol(actualValue)}</Typography>
-                </Box>
-            </>
-        ) : (
-            <Typography variant='h6' sx={{ fontWeight: 700 }}>{formatCurrencyRoundedSymbol(value)}</Typography>
-        )}
+        <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>Նախահաշիվ / Փաստացի</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
+            <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{formatCurrencyRoundedSymbol(value)}</Typography>
+            <Typography sx={{ color: '#bbb', fontWeight: 400 }}>/</Typography>
+            {actualValue !== undefined ? (
+                <Typography variant='body1' sx={{ fontWeight: 700, color: actualValue > value ? '#e53935' : mainPrimaryColor }}>{formatCurrencyRoundedSymbol(actualValue)}</Typography>
+            ) : (
+                <Typography variant='body1' sx={{ fontWeight: 400, color: '#bbb' }}>—</Typography>
+            )}
+        </Box>
     </Paper>
 );
 
