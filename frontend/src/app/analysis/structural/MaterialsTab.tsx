@@ -165,19 +165,19 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                             ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
                                             : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
                                         }
-                                        <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                                        <Typography variant='body2' sx={{ fontWeight: 500 }}>
                                             {group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}
                                             {group.materialName}
                                         </Typography>
                                     </Box>
                                 </TableCell>
-                                <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>
+                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>
                                     {group.unitSymbol}
                                 </TableCell>
-                                <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
+                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
                                     {group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                                 </TableCell>
-                                <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', py: 1.5 }}>
+                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
                                     {formatCurrencyRounded(group.totalCost)} AMD
                                 </TableCell>
                                 <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
