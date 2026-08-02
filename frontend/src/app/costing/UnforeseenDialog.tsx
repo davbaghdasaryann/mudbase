@@ -13,6 +13,7 @@ import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatDate } from '@/lib/format_date';
+import CreateEstimateDialog from '../estimates/CreateEstimateDialog';
 
 interface Props {
     open: boolean;
@@ -26,10 +27,9 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
     const [estimates, setEstimates] = useState<EstimatesApi.ApiEstimate[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+    const [createOpen, setCreateOpen] = useState(false);
 
-    useEffect(() => {
-        if (!open) return;
-        setSelectedEstimate(null);
+    const fetchEstimates = () => {
         setLoading(true);
         Api.requestSession<EstimatesApi.ApiEstimate[]>({
             command: 'estimates/fetch',
@@ -41,6 +41,12 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
             );
             setEstimates(filtered);
         }).catch(() => setEstimates([])).finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        if (!open) return;
+        setSelectedEstimate(null);
+        fetchEstimates();
     }, [open]);
 
     const handleConfirm = () => {
@@ -50,10 +56,19 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
     };
 
     return (
+        <>
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>
                 <ReportProblemOutlinedIcon sx={{ fontSize: 22 }} />
                 {t('Unforeseen Works')}
+                <Button
+                    size='small'
+                    startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => setCreateOpen(true)}
+                    sx={{ ml: 'auto', borderRadius: '20px', textTransform: 'none', color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
+                >
+                    {t('Create Estimate')}
+                </Button>
             </DialogTitle>
 
             <DialogContent sx={{ p: 0, pt: 1, pl: 3 }}>
@@ -115,13 +130,6 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-                <Button
-                    startIcon={<AddCircleOutlineIcon sx={{ fontSize: 18 }} />}
-                    onClick={() => {/* TODO: open create estimation modal */}}
-                    sx={{ borderRadius: '20px', textTransform: 'none', color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, mr: 'auto', px: 2, '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
-                >
-                    {t('Create Estimate')}
-                </Button>
                 <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                 <Button variant='contained' disabled={!selectedEstimate} onClick={handleConfirm}
                     sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
@@ -129,5 +137,13 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                 </Button>
             </DialogActions>
         </Dialog>
+
+        {createOpen && (
+            <CreateEstimateDialog
+                onClose={() => setCreateOpen(false)}
+                onConfirm={() => { setCreateOpen(false); fetchEstimates(); }}
+            />
+        )}
+        </>
     );
 }
