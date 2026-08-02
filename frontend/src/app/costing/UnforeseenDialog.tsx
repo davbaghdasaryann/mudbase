@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, Table, TableHead, TableBody,
@@ -9,6 +9,7 @@ import {
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
@@ -59,6 +60,14 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
         setSelectedEstimate(null);
         fetchEstimates();
     }, [open]);
+
+    const handleDelete = async (est: EstimatesApi.ApiEstimate, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm(t('Delete this estimate?'))) return;
+        await Api.requestSession({ command: 'estimate/delete', args: { estimateId: String(est._id) } });
+        setEstimates(prev => prev.filter(e => String(e._id) !== String(est._id)));
+        if (selectedEstimate?._id === est._id) setSelectedEstimate(null);
+    };
 
     const handleConfirm = () => {
         if (!selectedEstimate) return;
@@ -129,6 +138,14 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                                 sx={{ color: '#aaa', '&:hover': { color: mainPrimaryColor } }}
                                             >
                                                 <EditOutlinedIcon fontSize='small' />
+                                            </IconButton>
+                                            <IconButton
+                                                size='small'
+                                                disabled={!(est as any).isUnforeseenOnly}
+                                                onClick={e => handleDelete(est, e)}
+                                                sx={{ color: '#aaa', '&:hover': { color: '#e53935' }, '&.Mui-disabled': { opacity: 0.25 } }}
+                                            >
+                                                <DeleteOutlineIcon fontSize='small' />
                                             </IconButton>
                                             <Radio
                                                 checked={selectedEstimate?._id === est._id}
