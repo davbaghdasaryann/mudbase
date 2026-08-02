@@ -193,7 +193,7 @@ async function processFetch<T>(params: ProcessFetchParams) {
 
         let json = await res.json();
 
-        if (json.error) {
+        if (json != null && json.error) {
             throw new Error(json.error.message ?? 'Unknown Error');
         }
 
