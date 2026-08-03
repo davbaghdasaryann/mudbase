@@ -63,8 +63,6 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [loading, setLoading] = useState(true);
-    const [ufHasNoMaterials, setUfHasNoMaterials] = useState(false);
-    const [catalogResults, setCatalogResults] = useState<MaterialOption[]>([]);
 
     const [addOpen, setAddOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -107,42 +105,17 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         Promise.all(fetches).then(([main, uf]) => {
             const mainRows = parseItems(main ?? []);
             const ufRows = parseItems(uf ?? []);
-            setUfHasNoMaterials(!!unforeseenEstimateId && ufRows.length === 0);
             const seen = new Set(mainRows.map(r => r.materialItemId));
             const combined = [...mainRows, ...ufRows.filter(r => !seen.has(r.materialItemId))];
             setMaterials(combined);
         }).catch(console.error).finally(() => setLoading(false));
     }, [estimateId, unforeseenEstimateId]);
 
-    useEffect(() => {
-        if (!ufHasNoMaterials || !addOpen || search.length < 2) {
-            setCatalogResults([]);
-            return;
-        }
-        const timer = setTimeout(async () => {
-            try {
-                const results = await Api.requestSession<any[]>({ command: 'material/fetch_items', args: { searchVal: search } });
-                const existingIds = new Set(materials.map(m => m.materialItemId));
-                const parsed: MaterialOption[] = (results ?? []).slice(0, 30).map((item: any) => ({
-                    materialItemId: String(item._id),
-                    name: item.name || '—',
-                    fullCode: item.fullCode || '',
-                    unit: item.measurementUnitData?.[0]?.representationSymbol || '',
-                    estimateQuantity: 0,
-                    costPerUnit: 0,
-                })).filter((p: MaterialOption) => !existingIds.has(p.materialItemId));
-                setCatalogResults(parsed);
-            } catch { setCatalogResults([]); }
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [search, ufHasNoMaterials, addOpen, materials]);
-
     const openAdd = () => {
         setSearch('');
         setSelected(null);
         setQtyInput('');
         setAddPriceInput('');
-        setCatalogResults([]);
         setAddOpen(true);
     };
 
@@ -311,58 +284,26 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
                                 <CircularProgress size={24} sx={{ color: mainPrimaryColor }} />
                             </Box>
-                        ) : filtered.length === 0 && catalogResults.length === 0 ? (
-                            <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>
-                                {ufHasNoMaterials && search.length < 2 ? 'Type to search catalog materials...' : t('No results')}
-                            </Typography>
-                        ) : (
-                            <>
-                            {filtered.map(m => (
-                                <Box
-                                    key={m.materialItemId}
-                                    onClick={() => { setSelected(m); setQtyInput(''); }}
-                                    sx={{
-                                        px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
-                                        borderBottom: '1px solid #f0fbfc',
-                                        backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                        color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
-                                        fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
-                                        '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
-                                        '&:last-child': { borderBottom: catalogResults.length > 0 ? '1px solid #f0fbfc' : 'none' },
-                                    }}
-                                >
-                                    {m.name}
-                                    <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
-                                </Box>
-                            ))}
-                            {catalogResults.length > 0 && (
-                                <>
-                                {filtered.length > 0 && (
-                                    <Typography sx={{ px: 2, py: 0.5, fontSize: '0.72rem', color: '#aaa', bgcolor: '#f8fdfe', borderBottom: '1px solid #f0fbfc', borderTop: '1px solid #f0fbfc' }}>Catalog</Typography>
-                                )}
-                                {catalogResults.map(m => (
-                                    <Box
-                                        key={m.materialItemId}
-                                        onClick={() => { setSelected(m); setQtyInput(''); }}
-                                        sx={{
-                                            px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
-                                            borderBottom: '1px solid #f0fbfc',
-                                            backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                            color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
-                                            fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
-                                            '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
-                                            '&:last-child': { borderBottom: 'none' },
-                                        }}
-                                    >
-                                        {m.name}
-                                        <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
-                                        {m.fullCode && <Typography component='span' sx={{ ml: 1, fontSize: '0.72rem', color: '#bbb' }}>{m.fullCode}</Typography>}
-                                    </Box>
-                                ))}
-                                </>
-                            )}
-                            </>
-                        )}
+                        ) : filtered.length === 0 ? (
+                            <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>{t('No results')}</Typography>
+                        ) : filtered.map(m => (
+                            <Box
+                                key={m.materialItemId}
+                                onClick={() => { setSelected(m); setQtyInput(''); }}
+                                sx={{
+                                    px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
+                                    borderBottom: '1px solid #f0fbfc',
+                                    backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                    color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
+                                    fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
+                                    '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
+                                    '&:last-child': { borderBottom: 'none' },
+                                }}
+                            >
+                                {m.name}
+                                <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
+                            </Box>
+                        ))}
                     </Box>
                     {selected && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
