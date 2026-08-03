@@ -218,18 +218,30 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const actQty   = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volTotal = parseFloat((a?.spent    ?? '').replace(',', '.')) || 0;
         const salTotal = costHistory.filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
-        const actTotal = volTotal + salTotal;
-        const hasData  = !!(a || salTotal > 0);
+        const mats     = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+        const matActTotal = mats.reduce((s, m) => {
+            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId));
+            return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
+        }, 0);
+        const actTotal = volTotal + salTotal + matActTotal;
+        const hasData  = !!(a || salTotal > 0 || matActTotal > 0);
         return { actQty, actTotal, hasData };
+    };
+
+    const getEstimate = (row: LaborRow) => {
+        const mats = materialRows.filter(m => toId(m.estimatedLaborId) === toId(row._id));
+        const matEstTotal = mats.reduce((s, m) => s + m.cost, 0);
+        const estQty = Number(row.quantity ?? 0);
+        const estTotal = (row.cost ?? 0) + matEstTotal;
+        const estUnitP = estQty > 0 ? estTotal / estQty : (row.changableAveragePrice ?? null);
+        return { estQty, estTotal, estUnitP };
     };
 
     let counter = 0;
 
     const renderRow = (row: LaborRow, idx: number, pl: number) => {
         const { actQty, actTotal, hasData } = getActuals(row);
-        const estQty   = Number(row.quantity ?? 0);
-        const estTotal = row.cost ?? 0;
-        const estUnitP = row.changableAveragePrice ?? (estQty > 0 ? estTotal / estQty : null);
+        const { estQty, estTotal, estUnitP } = getEstimate(row);
         const actUnitP = hasData && actQty > 0 ? actTotal / actQty : null;
         const remQty   = hasData ? estQty - actQty : null;
         const remTotal = hasData ? estTotal - actTotal : null;
@@ -286,90 +298,20 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         );
     };
 
-    const getMaterialActuals = (mRow: MaterialRow) => {
-        const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(mRow.materialItemId));
-        const actQty = pe?.costedQuantity ?? 0;
-        const actTotal = pe ? pe.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) : 0;
-        const hasData = !!pe && actQty > 0;
-        return { actQty, actTotal, hasData };
-    };
-
-    const renderMaterialRow = (mRow: MaterialRow, idx: number) => {
-        const { actQty, actTotal, hasData } = getMaterialActuals(mRow);
-        const actUnitP = actQty > 0 && actTotal > 0 ? actTotal / actQty : null;
-        const estQty = mRow.quantity;
-        const estUnitP = mRow.changableAveragePrice;
-        const estTotal = mRow.cost;
-        const remQty = hasData ? estQty - actQty : null;
-        const remTotal = hasData ? estTotal - actTotal : null;
-        const remUnitP = remQty !== null && remQty > 0 && remTotal !== null ? remTotal / remQty : null;
-        const pct = remTotal !== null && estTotal > 0 ? (remTotal / estTotal) * 100 : null;
-        const cheaper = remTotal !== null ? remTotal >= 0 : null;
-        const exQty = hasData && actQty > estQty ? actQty - estQty : null;
-        const exAmt = hasData && actTotal > estTotal ? actTotal - estTotal : null;
-        return (
-            <tr key={toId(mRow._id)} style={{ backgroundColor: '#fdfaf5' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#faf5e8'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fdfaf5'; }}
-            >
-                <td style={tdStyle({ textAlign: 'center', color: '#ccc', fontSize: '0.74rem' })}>{idx}</td>
-                <td style={tdStyle({ paddingLeft: 32, whiteSpace: 'normal', color: '#777', fontSize: '0.8rem' })}>{mRow.materialOfferItemName || mRow.materialCatalogName}</td>
-                <td style={tdStyle({ textAlign: 'center', color: '#aaa', fontSize: '0.78rem' })}>{mRow.unitSymbol || '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: '#888', borderLeft: GSEP })}>{fmtQty(estQty)}</td>
-                <td style={tdStyle({ textAlign: 'right', color: '#777' })}>{estUnitP > 0 ? fmtUnit(estUnitP) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: '#555', fontWeight: 500 })}>{formatCurrencyRounded(estTotal)}</td>
-                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#777' : '#ddd', borderLeft: GSEP })}>{hasData ? fmtQty(actQty) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: hasData && actUnitP !== null ? '#555' : '#ddd' })}>{hasData && actUnitP !== null ? fmtUnit(actUnitP) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: hasData ? ACCENT : '#ddd', fontWeight: hasData ? 600 : 400 })}>
-                    {hasData ? formatCurrencyRounded(actTotal) : '—'}
-                </td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: remQty === null ? '#ddd' : remQty >= 0 ? '#2e7d32' : '#c62828' })}>
-                    {fmtQty(remQty)}
-                </td>
-                <td style={tdStyle({ textAlign: 'right', color: remUnitP === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828' })}>
-                    {remUnitP !== null ? fmtUnit(remUnitP) : '—'}
-                </td>
-                <td style={tdStyle({ textAlign: 'right', color: remTotal === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828', fontWeight: remTotal !== null ? 600 : 400 })}>
-                    {remTotal !== null ? `${remTotal >= 0 ? '+' : ''}${formatCurrencyRounded(remTotal)}` : '—'}
-                </td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
-                    {pct !== null ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                            {cheaper ? <TrendingDownIcon sx={{ fontSize: 13, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 13, color: '#c62828' }} />}
-                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: cheaper ? '#2e7d32' : '#c62828' }}>
-                                {Math.abs(pct).toFixed(1)}%
-                            </span>
-                        </Box>
-                    ) : <span style={{ color: '#ddd' }}>{'—'}</span>}
-                </td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: exQty !== null ? '#c62828' : '#ddd', fontWeight: exQty !== null ? 600 : 400 })}>
-                    {exQty !== null ? fmtQty(exQty) : '—'}
-                </td>
-                <td style={tdStyle({ textAlign: 'right', color: exAmt !== null ? '#c62828' : '#ddd', fontWeight: exAmt !== null ? 700 : 400 })}>
-                    {exAmt !== null ? formatCurrencyRounded(exAmt) : '—'}
-                </td>
-            </tr>
-        );
-    };
-
-    const matGrandEstTotal = materialRows.reduce((s, m) => s + m.cost, 0);
-    const matGrandActTotal = materialRows.reduce((s, m) => { const { actTotal } = getMaterialActuals(m); return s + actTotal; }, 0);
-    const matGrandHasAct   = materialRows.some(m => getMaterialActuals(m).hasData);
-
     const grandEstQty   = rows.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
-    const grandEstTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0) + matGrandEstTotal;
+    const grandEstTotal = rows.reduce((s, r) => s + getEstimate(r).estTotal, 0);
     const grandEstUnitP = grandEstQty > 0 ? grandEstTotal / grandEstQty : null;
     const grandActQty   = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); return hasData ? s + actQty : s; }, 0);
-    const grandActTotal = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0) + matGrandActTotal;
+    const grandActTotal = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
     const grandActUnitP = grandActQty > 0 ? grandActTotal / grandActQty : null;
-    const grandHasAct   = rows.some(r => getActuals(r).hasData) || matGrandHasAct;
+    const grandHasAct   = rows.some(r => getActuals(r).hasData);
     const grandRemQty   = grandHasAct ? grandEstQty - grandActQty : null;
     const grandRemTotal = grandHasAct ? grandEstTotal - grandActTotal : null;
     const grandRemUnitP = grandRemQty !== null && grandRemQty > 0 && grandRemTotal !== null ? grandRemTotal / grandRemQty : null;
     const grandPct      = grandRemTotal !== null && grandEstTotal > 0 ? (grandRemTotal / grandEstTotal) * 100 : null;
     const grandExQty    = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); const eq = Number(r.quantity ?? 0); return hasData && actQty > eq ? s + (actQty - eq) : s; }, 0);
-    const grandExAmt    = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); const et = r.cost ?? 0; return hasData && actTotal > et ? s + (actTotal - et) : s; }, 0);
-    const grandHasEx    = rows.some(r => { const { actQty, actTotal, hasData } = getActuals(r); return hasData && (actQty > Number(r.quantity ?? 0) || actTotal > (r.cost ?? 0)); });
+    const grandExAmt    = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); const et = getEstimate(r).estTotal; return hasData && actTotal > et ? s + (actTotal - et) : s; }, 0);
+    const grandHasEx    = rows.some(r => { const { actQty, actTotal, hasData } = getActuals(r); const { estQty, estTotal } = getEstimate(r); return hasData && (actQty > estQty || actTotal > estTotal); });
 
     const totalW = colWidths.reduce((s, w) => s + w, 0);
 
@@ -430,8 +372,6 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         const sectionItems = rows.filter(r => r.sectionName === section.name);
                         if (sectionItems.length === 0) return null;
                         const subs = subsMap.get(toId(section._id)) ?? [];
-                        const sectionLaborIds = new Set(sectionItems.map(r => toId(r._id)));
-                        const sectionMaterials = materialRows.filter(m => sectionLaborIds.has(toId(m.estimatedLaborId)));
                         return (
                             <>
                                 <tr key={`sec-${section._id}`}>
@@ -467,16 +407,6 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                     })
                                     : sectionItems.map(row => renderRow(row, ++counter, 16))
                                 }
-                                {sectionMaterials.length > 0 && (
-                                    <>
-                                        <tr key={`mat-hdr-${section._id}`}>
-                                            <td colSpan={NCOLS} style={tdStyle({ fontSize: '0.73rem', color: '#a0907a', fontStyle: 'italic', paddingLeft: 12, paddingTop: 6, paddingBottom: 4, borderTop: '1px dashed #e0d8c8', backgroundColor: '#fdfaf5' })}>
-                                                Nyuther
-                                            </td>
-                                        </tr>
-                                        {sectionMaterials.map((m, i) => renderMaterialRow(m, i + 1))}
-                                    </>
-                                )}
                             </>
                         );
                     })}

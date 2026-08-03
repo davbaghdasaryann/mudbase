@@ -327,35 +327,44 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const totalCols = BASE_COLS.length;
     let itemCounter = 0;
 
-    const renderMaterialRow = (mRow: MaterialRow, idx: number) => {
-        const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(mRow.materialItemId));
-        const actQty = pe?.costedQuantity ?? 0;
-        const actTotal = pe ? pe.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) : 0;
-        const actUP = actQty > 0 && actTotal > 0 ? actTotal / actQty : 0;
-        const hasData = !!pe && actQty > 0;
-        const estQty = mRow.quantity;
-        const estUP = mRow.changableAveragePrice;
-        const estTot = mRow.cost;
-        const rQty = hasData ? estQty - actQty : null;
+    const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
+        const rowId = toId(row._id);
+        const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+        const matEstTotal = mats.reduce((s, m) => s + m.cost, 0);
+        const matActTotal = mats.reduce((s, m) => {
+            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId));
+            return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
+        }, 0);
+        const a = actualData[rowId];
+        const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+        const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
+        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
+        const actTotal = volumeTotal + salaryTotal + matActTotal;
+        const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
+        const estQty = Number(row.quantity ?? 0);
+        const estTotal = (row.cost ?? 0) + matEstTotal;
+        const estUP = estQty > 0 ? estTotal / estQty : (row.changableAveragePrice ?? 0);
+        const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
+        const rQty = hasData ? estQty - q : null;
         const rUp = hasData ? estUP - actUP : null;
-        const rTot = hasData ? estTot - actTotal : null;
+        const rTot = hasData ? estTotal - actTotal : null;
         const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
         const fw = (v: number | null) => v !== null ? 600 : 400;
         return (
-            <tr key={toId(mRow._id)} style={{ backgroundColor: '#fdfaf5' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#faf5e8'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fdfaf5'; }}
+            <tr key={toId(row._id)} style={{ backgroundColor: '#fff' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
             >
-                <td style={tdStyle({ textAlign: 'center', color: '#ccc', fontSize: '0.74rem' })}>{idx}</td>
-                <td style={tdStyle({ paddingLeft: 28, whiteSpace: 'normal', color: '#777', fontSize: '0.8rem' })}>
-                    {mRow.materialOfferItemName || mRow.materialCatalogName}
+                <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
+                <td style={tdStyle({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
+                    {row.laborOfferItemName || row.catalogName}
                 </td>
-                <td style={tdStyle({ textAlign: 'center', color: '#aaa', fontSize: '0.78rem' })}>{mRow.unitSymbol || '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: '#888' })}>{estQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                <td style={tdStyle({ textAlign: 'right', color: '#777' })}>{formatCurrencyRounded(estUP)}</td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: '#666' })}>{formatCurrencyRounded(estTot)}</td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: hasData ? '#444' : '#ccc' })}>{hasData ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#666' : '#ccc' })}>{hasData ? formatCurrencyRounded(actUP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
+                <td style={tdStyle({ textAlign: 'right' })}>{estQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(estUP)}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(estTotal)}</td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>{hasData ? formatCurrencyRounded(actUP) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(actTotal) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
@@ -363,57 +372,6 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
             </tr>
         );
     };
-
-    const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => (
-        <tr key={toId(row._id)} style={{ backgroundColor: '#fff' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
-        >
-            <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
-            <td style={tdStyle({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
-                {row.laborOfferItemName || row.catalogName}
-            </td>
-            <td style={tdStyle({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
-            <td style={tdStyle({ textAlign: 'right' })}>{Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(row.changableAveragePrice)}</td>
-            <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(row.cost)}</td>
-            {(() => {
-                const rowId = toId(row._id);
-                const a = actualData[rowId];
-                const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
-                const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
-                const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
-                const tot = volumeTotal + salaryTotal;
-                const p = q > 0 && tot > 0 ? tot / q : 0;
-                const hasData = a || salaryTotal > 0;
-                return (
-                    <>
-                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: hasData ? '#222' : '#ccc' })}>{hasData ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                        <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>{hasData ? formatCurrencyRounded(p) : '—'}</td>
-                        <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(tot) : '—'}</td>
-                        {(() => {
-                            const estQty = Number(row.quantity ?? 0);
-                            const estUp = row.changableAveragePrice ?? 0;
-                            const estTot = row.cost ?? 0;
-                            const rQty = hasData ? estQty - q : null;
-                            const rUp  = hasData ? estUp - p : null;
-                            const rTot = hasData ? estTot - tot : null;
-                            const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
-                            const fw  = (v: number | null) => v !== null ? 600 : 400;
-                            const fmt3 = (v: number | null, decimals = 2) => v !== null ? v.toLocaleString(undefined, { maximumFractionDigits: decimals }) : '—';
-                            return (
-                                <>
-                                    <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{fmt3(rQty)}</td>
-                                    <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
-                                    <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
-                                </>
-                            );
-                        })()}
-                    </>
-                );
-            })()}
-        </tr>
-    );
 
     return (
         <Box sx={{ mb: 4 }}>
@@ -497,17 +455,6 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                         })
                                         : sectionItems.map(row => renderItemRow(row, ++itemCounter, 20))
                                     }
-
-                                    {sectionMaterials.length > 0 && (
-                                        <>
-                                            <tr key={`mat-hdr-${section._id}`}>
-                                                <td colSpan={totalCols} style={tdStyle({ fontSize: '0.73rem', color: '#a0907a', fontStyle: 'italic', paddingLeft: 16, paddingTop: 6, paddingBottom: 4, borderTop: '1px dashed #e0d8c8', backgroundColor: '#fdfaf5' })}>
-                                                    Nyuther
-                                                </td>
-                                            </tr>
-                                            {sectionMaterials.map((m, i) => renderMaterialRow(m, i + 1))}
-                                        </>
-                                    )}
 
                                     <tr style={{ backgroundColor: '#f9feff' }}>
                                         <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
