@@ -441,7 +441,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240
 
     return (
         <Paper elevation={0} sx={{ height: '100%', border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
                     {estData.length === 0
