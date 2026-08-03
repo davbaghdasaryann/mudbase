@@ -46,6 +46,7 @@ interface HistoryEntryInput { workName: string; unit: string; quantity: number; 
 
 interface Props {
     estimateId: string;
+    unforeseenEstimateId?: string;
     entries: PahestEntry[];
     onChange: (entries: PahestEntry[]) => void;
     onHistoryEntry?: (e: HistoryEntryInput) => void;
@@ -58,7 +59,7 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, entries, onChange, onHistoryEntry }: Props) {
+export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [loading, setLoading] = useState(true);
@@ -78,10 +79,7 @@ export default function PahestMainMaterials({ estimateId, entries, onChange, onH
 
     useEffect(() => {
         setLoading(true);
-        Api.requestSession<any[]>({
-            command: 'estimate/fetch_materials_list',
-            args: { estimateId },
-        }).then(items => {
+        const parseItems = (items: any[]): MaterialOption[] => {
             const seen = new Set<string>();
             const rows: MaterialOption[] = [];
             for (const item of items) {
@@ -98,9 +96,20 @@ export default function PahestMainMaterials({ estimateId, entries, onChange, onH
                     costPerUnit: md?.averagePrice ?? 0,
                 });
             }
-            setMaterials(rows);
+            return rows;
+        };
+        const fetches = [
+            Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId } }),
+            ...(unforeseenEstimateId ? [Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: unforeseenEstimateId } })] : []),
+        ];
+        Promise.all(fetches).then(([main, uf]) => {
+            const mainRows = parseItems(main ?? []);
+            const ufRows = parseItems(uf ?? []);
+            const seen = new Set(mainRows.map(r => r.materialItemId));
+            const combined = [...mainRows, ...ufRows.filter(r => !seen.has(r.materialItemId))];
+            setMaterials(combined);
         }).catch(console.error).finally(() => setLoading(false));
-    }, [estimateId]);
+    }, [estimateId, unforeseenEstimateId]);
 
     const openAdd = () => {
         setSearch('');

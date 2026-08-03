@@ -938,6 +938,7 @@ export default function CostingPage() {
                         <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Հիմնական նյութեր</Typography>
                         <PahestMainMaterials
                             estimateId={selected.estimateId}
+                            unforeseenEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                             entries={pahestEntries}
                             onChange={setPahestEntries}
                             onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main' }, ...prev])}
