@@ -988,13 +988,15 @@ export default function CostingPage() {
                     <Button onClick={() => setExportOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                     <Button variant='contained' disabled={exportTypes.size === 0} onClick={() => {
                         const filtered = costHistory.filter(e => exportTypes.has(getHistoryTypeKey(e.paymentMethod ?? '', e.isSubcontractor)));
+                        const includeSalary = [...exportTypes].some(k => k.startsWith('salary_'));
                         const esc = (s: string | number | undefined) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                         const hdr = (label: string) => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#e0f7fa;">${esc(label)}</th>`;
                         let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">`;
-                        html += `<tr>${hdr(t('Action Type'))}${hdr(t('Description of Work'))}${hdr(t('Unit'))}${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}${hdr(t('Date of Creation'))}</tr>`;
+                        html += `<tr>${hdr(t('Action Type'))}${hdr(t('Description of Work'))}${hdr(t('Unit'))}${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}${hdr(t('Date of Creation'))}${includeSalary ? hdr(t('Note')) : ''}</tr>`;
                         for (const e of filtered) {
                             const g = HISTORY_TYPE_GROUPS.find(g => g.match(e.paymentMethod ?? '', e.isSubcontractor));
                             const label = g?.label ?? '';
+                            const isSalaryRow = g?.key.startsWith('salary_') ?? false;
                             html += `<tr>` +
                                 `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(label)}</td>` +
                                 `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(e.workName)}</td>` +
@@ -1003,6 +1005,7 @@ export default function CostingPage() {
                                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${esc(e.unitPrice.toLocaleString(undefined, { maximumFractionDigits: 0 }))}</td>` +
                                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${esc(e.total.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
                                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(new Date(e.addedAt).toLocaleDateString())}</td>` +
+                                (includeSalary ? `<td style="border:1px solid #ccc;padding:5px 8px;">${isSalaryRow ? esc(e.note) : ''}</td>` : '') +
                             `</tr>`;
                         }
                         html += '</table>';
