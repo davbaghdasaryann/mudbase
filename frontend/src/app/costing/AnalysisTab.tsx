@@ -11,11 +11,17 @@ import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { mainPrimaryColor } from '@/theme';
 import type { CostHistoryEntry } from './page';
+import { type PahestEntry } from './PahestMainMaterials';
 
 interface LaborRow {
     _id: string; catalogName: string; laborOfferItemName: string;
     unitSymbol: string; quantity: number; changableAveragePrice: number;
     cost: number; subsectionName: string; sectionName: string;
+}
+interface MaterialRow {
+    _id: string; estimatedLaborId: string; materialItemId: string;
+    materialCatalogName: string; materialOfferItemName: string;
+    unitSymbol: string; quantity: number; changableAveragePrice: number; cost: number;
 }
 interface Section { _id: string; name: string; displayIndex: number; totalCost?: number; }
 interface Subsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
@@ -89,22 +95,25 @@ interface Props {
     onDeleteUnforeseen?: () => void;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     costHistory: CostHistoryEntry[];
+    pahestEntries?: PahestEntry[];
 }
 
 async function fetchAnalysisData(estimateId: string) {
-    const [laborData, sectData] = await Promise.all([
+    const [laborData, sectData, matData] = await Promise.all([
         Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
         Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
+        Api.requestSession<MaterialRow[]>({ command: 'estimate/fetch_materials_for_analysis', args: { estimateId } }),
     ]);
     const sorted = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
     const arrays = await Promise.all(
         sorted.map(s => Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: toId(s._id) } }).catch(() => [] as Subsection[]))
     );
-    return { rows: laborData ?? [], sections: sorted, subsections: arrays.flat() };
+    return { rows: laborData ?? [], sections: sorted, subsections: arrays.flat(), materialRows: matData ?? [] };
 }
 
-export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, onDeleteUnforeseen, actualData, costHistory }: Props) {
+export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, onDeleteUnforeseen, actualData, costHistory, pahestEntries }: Props) {
     const [rows, setRows] = useState<LaborRow[]>([]);
+    const [materialRows, setMaterialRows] = useState<MaterialRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [ufRows, setUfRows] = useState<LaborRow[]>([]);
@@ -124,6 +133,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             setRows(estimateSnapshot.laborRows);
             setSections(estimateSnapshot.sections);
             setSubsections(estimateSnapshot.subsections);
+            fetchAnalysisData(estimateId).then(d => setMaterialRows(d.materialRows)).catch(() => {});
             if (unforeseenSnapshot) {
                 setUfRows(unforeseenSnapshot.laborRows ?? []);
                 setUfSections(unforeseenSnapshot.sections ?? []);
@@ -138,7 +148,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         }
         setLoading(true);
         const fetches: Promise<void>[] = [
-            fetchAnalysisData(estimateId).then(d => { setRows(d.rows); setSections(d.sections); setSubsections(d.subsections); }),
+            fetchAnalysisData(estimateId).then(d => { setRows(d.rows); setSections(d.sections); setSubsections(d.subsections); setMaterialRows(d.materialRows); }),
         ];
         if (ufEstimateId) {
             fetches.push(fetchAnalysisData(ufEstimateId).then(d => { setUfRows(d.rows); setUfSections(d.sections); setUfSubsections(d.subsections); }));
@@ -276,13 +286,83 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         );
     };
 
+    const getMaterialActuals = (mRow: MaterialRow) => {
+        const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(mRow.materialItemId));
+        const actQty = pe?.costedQuantity ?? 0;
+        const actTotal = pe ? pe.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) : 0;
+        const hasData = !!pe && actQty > 0;
+        return { actQty, actTotal, hasData };
+    };
+
+    const renderMaterialRow = (mRow: MaterialRow, idx: number) => {
+        const { actQty, actTotal, hasData } = getMaterialActuals(mRow);
+        const actUnitP = actQty > 0 && actTotal > 0 ? actTotal / actQty : null;
+        const estQty = mRow.quantity;
+        const estUnitP = mRow.changableAveragePrice;
+        const estTotal = mRow.cost;
+        const remQty = hasData ? estQty - actQty : null;
+        const remTotal = hasData ? estTotal - actTotal : null;
+        const remUnitP = remQty !== null && remQty > 0 && remTotal !== null ? remTotal / remQty : null;
+        const pct = remTotal !== null && estTotal > 0 ? (remTotal / estTotal) * 100 : null;
+        const cheaper = remTotal !== null ? remTotal >= 0 : null;
+        const exQty = hasData && actQty > estQty ? actQty - estQty : null;
+        const exAmt = hasData && actTotal > estTotal ? actTotal - estTotal : null;
+        return (
+            <tr key={toId(mRow._id)} style={{ backgroundColor: '#fdfaf5' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#faf5e8'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fdfaf5'; }}
+            >
+                <td style={tdStyle({ textAlign: 'center', color: '#ccc', fontSize: '0.74rem' })}>{idx}</td>
+                <td style={tdStyle({ paddingLeft: 32, whiteSpace: 'normal', color: '#777', fontSize: '0.8rem' })}>{mRow.materialOfferItemName || mRow.materialCatalogName}</td>
+                <td style={tdStyle({ textAlign: 'center', color: '#aaa', fontSize: '0.78rem' })}>{mRow.unitSymbol || '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#888', borderLeft: GSEP })}>{fmtQty(estQty)}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#777' })}>{estUnitP > 0 ? fmtUnit(estUnitP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#555', fontWeight: 500 })}>{formatCurrencyRounded(estTotal)}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#777' : '#ddd', borderLeft: GSEP })}>{hasData ? fmtQty(actQty) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData && actUnitP !== null ? '#555' : '#ddd' })}>{hasData && actUnitP !== null ? fmtUnit(actUnitP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? ACCENT : '#ddd', fontWeight: hasData ? 600 : 400 })}>
+                    {hasData ? formatCurrencyRounded(actTotal) : '—'}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: remQty === null ? '#ddd' : remQty >= 0 ? '#2e7d32' : '#c62828' })}>
+                    {fmtQty(remQty)}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', color: remUnitP === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828' })}>
+                    {remUnitP !== null ? fmtUnit(remUnitP) : '—'}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', color: remTotal === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828', fontWeight: remTotal !== null ? 600 : 400 })}>
+                    {remTotal !== null ? `${remTotal >= 0 ? '+' : ''}${formatCurrencyRounded(remTotal)}` : '—'}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
+                    {pct !== null ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                            {cheaper ? <TrendingDownIcon sx={{ fontSize: 13, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 13, color: '#c62828' }} />}
+                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: cheaper ? '#2e7d32' : '#c62828' }}>
+                                {Math.abs(pct).toFixed(1)}%
+                            </span>
+                        </Box>
+                    ) : <span style={{ color: '#ddd' }}>{'—'}</span>}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: exQty !== null ? '#c62828' : '#ddd', fontWeight: exQty !== null ? 600 : 400 })}>
+                    {exQty !== null ? fmtQty(exQty) : '—'}
+                </td>
+                <td style={tdStyle({ textAlign: 'right', color: exAmt !== null ? '#c62828' : '#ddd', fontWeight: exAmt !== null ? 700 : 400 })}>
+                    {exAmt !== null ? formatCurrencyRounded(exAmt) : '—'}
+                </td>
+            </tr>
+        );
+    };
+
+    const matGrandEstTotal = materialRows.reduce((s, m) => s + m.cost, 0);
+    const matGrandActTotal = materialRows.reduce((s, m) => { const { actTotal } = getMaterialActuals(m); return s + actTotal; }, 0);
+    const matGrandHasAct   = materialRows.some(m => getMaterialActuals(m).hasData);
+
     const grandEstQty   = rows.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
-    const grandEstTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0);
+    const grandEstTotal = rows.reduce((s, r) => s + (r.cost ?? 0), 0) + matGrandEstTotal;
     const grandEstUnitP = grandEstQty > 0 ? grandEstTotal / grandEstQty : null;
     const grandActQty   = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); return hasData ? s + actQty : s; }, 0);
-    const grandActTotal = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
+    const grandActTotal = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0) + matGrandActTotal;
     const grandActUnitP = grandActQty > 0 ? grandActTotal / grandActQty : null;
-    const grandHasAct   = rows.some(r => getActuals(r).hasData);
+    const grandHasAct   = rows.some(r => getActuals(r).hasData) || matGrandHasAct;
     const grandRemQty   = grandHasAct ? grandEstQty - grandActQty : null;
     const grandRemTotal = grandHasAct ? grandEstTotal - grandActTotal : null;
     const grandRemUnitP = grandRemQty !== null && grandRemQty > 0 && grandRemTotal !== null ? grandRemTotal / grandRemQty : null;
@@ -350,6 +430,8 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         const sectionItems = rows.filter(r => r.sectionName === section.name);
                         if (sectionItems.length === 0) return null;
                         const subs = subsMap.get(toId(section._id)) ?? [];
+                        const sectionLaborIds = new Set(sectionItems.map(r => toId(r._id)));
+                        const sectionMaterials = materialRows.filter(m => sectionLaborIds.has(toId(m.estimatedLaborId)));
                         return (
                             <>
                                 <tr key={`sec-${section._id}`}>
@@ -385,6 +467,16 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                     })
                                     : sectionItems.map(row => renderRow(row, ++counter, 16))
                                 }
+                                {sectionMaterials.length > 0 && (
+                                    <>
+                                        <tr key={`mat-hdr-${section._id}`}>
+                                            <td colSpan={NCOLS} style={tdStyle({ fontSize: '0.73rem', color: '#a0907a', fontStyle: 'italic', paddingLeft: 12, paddingTop: 6, paddingBottom: 4, borderTop: '1px dashed #e0d8c8', backgroundColor: '#fdfaf5' })}>
+                                                Nyuther
+                                            </td>
+                                        </tr>
+                                        {sectionMaterials.map((m, i) => renderMaterialRow(m, i + 1))}
+                                    </>
+                                )}
                             </>
                         );
                     })}

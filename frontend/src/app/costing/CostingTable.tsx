@@ -10,6 +10,7 @@ import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import type { CostHistoryEntry } from './page';
+import { type PahestEntry } from './PahestMainMaterials';
 
 const ACCENT = '#00A390';
 
@@ -28,6 +29,18 @@ interface LaborRow {
     cost: number;
     subsectionName: string;
     sectionName: string;
+}
+
+interface MaterialRow {
+    _id: string;
+    estimatedLaborId: string;
+    materialItemId: string;
+    materialCatalogName: string;
+    materialOfferItemName: string;
+    unitSymbol: string;
+    quantity: number;
+    changableAveragePrice: number;
+    cost: number;
 }
 
 interface Section {
@@ -108,9 +121,10 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory }: { estimate: EstimatesApi.ApiEstimate; estimateSnapshot?: SnapshotData | null; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[] }) {
+export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory, pahestEntries }: { estimate: EstimatesApi.ApiEstimate; estimateSnapshot?: SnapshotData | null; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[]; pahestEntries?: PahestEntry[] }) {
     const { t } = useTranslation();
     const [rows, setRows] = useState<LaborRow[]>([]);
+    const [materialRows, setMaterialRows] = useState<MaterialRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
     const [subsections, setSubsections] = useState<Subsection[]>([]);
     const [loading, setLoading] = useState(true);
@@ -133,22 +147,26 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const estimateId = toId(estimate._id);
 
     useEffect(() => {
+        const matFetch = Api.requestSession<MaterialRow[]>({ command: 'estimate/fetch_materials_for_analysis', args: { estimateId } });
         if (estimateSnapshot) {
             setRows(estimateSnapshot.laborRows);
             setSections(estimateSnapshot.sections);
             setSubsections(estimateSnapshot.subsections);
             setLoading(false);
+            matFetch.then(d => setMaterialRows(d ?? [])).catch(() => {});
             return;
         }
         setLoading(true);
         Promise.all([
             Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } }),
             Api.requestSession<Section[]>({ command: 'estimate/fetch_sections', args: { estimateId } }),
+            matFetch,
         ])
-            .then(async ([laborData, sectData]) => {
+            .then(async ([laborData, sectData, matData]) => {
                 const sortedSections = (sectData ?? []).sort((a, b) => a.displayIndex - b.displayIndex);
                 setSections(sortedSections);
                 setRows(laborData ?? []);
+                setMaterialRows(matData ?? []);
                 const arrays = await Promise.all(
                     sortedSections.map(s =>
                         Api.requestSession<Subsection[]>({ command: 'estimate/fetch_subsections', args: { estimateSectionId: String(s._id) } })
@@ -309,6 +327,43 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const totalCols = BASE_COLS.length;
     let itemCounter = 0;
 
+    const renderMaterialRow = (mRow: MaterialRow, idx: number) => {
+        const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(mRow.materialItemId));
+        const actQty = pe?.costedQuantity ?? 0;
+        const actTotal = pe ? pe.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) : 0;
+        const actUP = actQty > 0 && actTotal > 0 ? actTotal / actQty : 0;
+        const hasData = !!pe && actQty > 0;
+        const estQty = mRow.quantity;
+        const estUP = mRow.changableAveragePrice;
+        const estTot = mRow.cost;
+        const rQty = hasData ? estQty - actQty : null;
+        const rUp = hasData ? estUP - actUP : null;
+        const rTot = hasData ? estTot - actTotal : null;
+        const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
+        const fw = (v: number | null) => v !== null ? 600 : 400;
+        return (
+            <tr key={toId(mRow._id)} style={{ backgroundColor: '#fdfaf5' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#faf5e8'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fdfaf5'; }}
+            >
+                <td style={tdStyle({ textAlign: 'center', color: '#ccc', fontSize: '0.74rem' })}>{idx}</td>
+                <td style={tdStyle({ paddingLeft: 28, whiteSpace: 'normal', color: '#777', fontSize: '0.8rem' })}>
+                    {mRow.materialOfferItemName || mRow.materialCatalogName}
+                </td>
+                <td style={tdStyle({ textAlign: 'center', color: '#aaa', fontSize: '0.78rem' })}>{mRow.unitSymbol || '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#888' })}>{estQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                <td style={tdStyle({ textAlign: 'right', color: '#777' })}>{formatCurrencyRounded(estUP)}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: '#666' })}>{formatCurrencyRounded(estTot)}</td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: hasData ? '#444' : '#ccc' })}>{hasData ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#666' : '#ccc' })}>{hasData ? formatCurrencyRounded(actUP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(actTotal) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
+            </tr>
+        );
+    };
+
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => (
         <tr key={toId(row._id)} style={{ backgroundColor: '#fff' }}
             onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
@@ -412,7 +467,10 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                             const sectionItems = rows.filter(r => r.sectionName === section.name);
                             if (sectionItems.length === 0) return null;
                             const subs = subsectionsBySection.get(String(section._id)) ?? [];
-                            const sectionTotal = sectionItems.reduce((sum, r) => sum + (r.cost ?? 0), 0);
+                            const sectionLaborIds = new Set(sectionItems.map(r => toId(r._id)));
+                            const sectionMaterials = materialRows.filter(m => sectionLaborIds.has(toId(m.estimatedLaborId)));
+                            const sectionTotal = sectionItems.reduce((sum, r) => sum + (r.cost ?? 0), 0)
+                                + sectionMaterials.reduce((sum, m) => sum + m.cost, 0);
 
                             return (
                                 <>
@@ -439,6 +497,17 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                         })
                                         : sectionItems.map(row => renderItemRow(row, ++itemCounter, 20))
                                     }
+
+                                    {sectionMaterials.length > 0 && (
+                                        <>
+                                            <tr key={`mat-hdr-${section._id}`}>
+                                                <td colSpan={totalCols} style={tdStyle({ fontSize: '0.73rem', color: '#a0907a', fontStyle: 'italic', paddingLeft: 16, paddingTop: 6, paddingBottom: 4, borderTop: '1px dashed #e0d8c8', backgroundColor: '#fdfaf5' })}>
+                                                    Nyuther
+                                                </td>
+                                            </tr>
+                                            {sectionMaterials.map((m, i) => renderMaterialRow(m, i + 1))}
+                                        </>
+                                    )}
 
                                     <tr style={{ backgroundColor: '#f9feff' }}>
                                         <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
