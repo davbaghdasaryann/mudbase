@@ -125,7 +125,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         if (qty <= 0) return;
         const now = new Date();
         const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
-        const unitPrice = !isNaN(enteredPrice) && addPriceInput.trim() !== '' ? enteredPrice : selected.costPerUnit;
+        const unitPrice = (!isNaN(enteredPrice) && addPriceInput.trim() !== '') ? enteredPrice : 0;
         const newRecord: PahestHistoryRecord = { quantity: qty, costPerUnit: unitPrice, addedAt: now };
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId);
         if (existing >= 0) {
@@ -161,7 +161,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const idx = entries.findIndex(e => e.materialItemId === plusEntry.materialItemId);
         if (idx < 0) return;
         const next = [...entries];
-        const newCostPerUnit = !isNaN(price) && plusPriceInput.trim() !== '' ? price : next[idx].costPerUnit;
+        const newCostPerUnit = (!isNaN(price) && plusPriceInput.trim() !== '') ? price : 0;
         const patch: Partial<PahestEntry> & { history?: PahestHistoryRecord[]; addedAt?: Date } = {};
         if (qty > 0) {
             patch.quantity = next[idx].quantity + qty;
