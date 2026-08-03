@@ -50,7 +50,7 @@ interface Props {
 
 const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, cursor: 'text', transition: 'border-color 0.15s', '&:focus-within': { borderColor: '#00ABBE' } };
 
-function NumInput({ label, value, onChange, autoFocus }: { label: string; value: string; onChange: (v: string) => void; autoFocus?: boolean }) {
+function NumInput({ label, value, onChange, autoFocus, unit = 'AMD' }: { label: string; value: string; onChange: (v: string) => void; autoFocus?: boolean; unit?: string }) {
     const inputRef = React.useRef<HTMLInputElement>(null);
     return (
         <Box sx={INPUT_SX} onClick={() => inputRef.current?.focus()}>
@@ -61,7 +61,7 @@ function NumInput({ label, value, onChange, autoFocus }: { label: string; value:
                     placeholder='0'
                     inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.92rem', fontWeight: 600, color: '#333' } }}
                 />
-                <Typography sx={{ fontSize: '0.78rem', color: '#aaa' }}>AMD</Typography>
+                {unit && <Typography sx={{ fontSize: '0.78rem', color: '#aaa' }}>{unit}</Typography>}
             </Box>
         </Box>
     );
@@ -76,10 +76,11 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const [val1, setVal1] = useState('');
     const [val2, setVal2] = useState('');
     const [notes, setNotes] = useState('');
+    const [workVolume, setWorkVolume] = useState('');
 
     useEffect(() => {
         if (!open) { setSelectedRow(null); return; }
-        setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes('');
+        setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume('');
         const ufId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
         if (estimateSnapshot) {
             setRows(estimateSnapshot.laborRows);
@@ -133,6 +134,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             addedAt: new Date(),
             paymentMethod: 'salary_' + type,
             note: notes.trim() || undefined,
+            workVolume: type === 'miavorzham' && parseFloat(workVolume.replace(',', '.')) > 0 ? parseFloat(workVolume.replace(',', '.')) : undefined,
         };
         onEntrySaved(entry);
         handleClose();
@@ -203,7 +205,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                             const remaining = Math.max(0, planned - covered);
                                             const done = planned > 0 && remaining <= 0;
                                             return (
-                                                <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); }}
+                                                <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
                                                     sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                                 >
                                                     <Box sx={{ flex: 1 }}>
@@ -240,7 +242,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const remaining = Math.max(0, planned - covered);
                                                     const done = planned > 0 && remaining <= 0;
                                                     return (
-                                                    <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); }}
+                                                    <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
                                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#fff8f4' } }}
                                                     >
                                                         <Box sx={{ flex: 1 }}>
@@ -278,6 +280,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <NumInput autoFocus label='1 ժամվա դրույքաչափ' value={val1} onChange={setVal1} />
                             <NumInput label='ժամերի քանակը' value={val2} onChange={setVal2} />
                         </>}
+                        {type === 'miavorzham' && <NumInput label='Աշխատանքային ծավալ' value={workVolume} onChange={setWorkVolume} unit={selectedRow?.unitSymbol || ''} />}
                         <Box sx={{ ...INPUT_SX, alignItems: 'flex-start', flexDirection: 'column', gap: 0.5 }} onClick={() => document.getElementById('salary-notes-input')?.focus()}>
                             <Typography sx={{ fontSize: '0.78rem', color: '#999', fontWeight: 600 }}>Նշումներ</Typography>
                             <InputBase

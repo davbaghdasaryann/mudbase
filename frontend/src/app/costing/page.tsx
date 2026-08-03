@@ -74,6 +74,7 @@ export interface CostHistoryEntry {
     mechanismRows?: SectionRow[];
     materialRows?: SectionRow[];
     laborItemId?: string;
+    workVolume?: number;
 }
 
 interface SnapshotLaborRow {
