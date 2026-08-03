@@ -163,7 +163,7 @@ const HISTORY_TYPE_GROUPS: { key: string; label: string; match: (pm: string, isS
     { key: 'pahest',            label: 'Մուտք Պահեստ', match: pm => pm === 'pahest_main' || pm === 'pahest_ayl' },
     { key: 'nyuth',             label: 'Նյութի Ծախսագրում', match: pm => pm === 'nyuth_tsakhsagrum' },
     { key: 'salary_gorcarqayin',label: 'Աշխատավարձ «Գործարքային»', match: pm => pm === 'salary_gorcarqayin' },
-    { key: 'salary_miavorzham', label: 'Աշխատավարձ «Դրույքային»', match: pm => pm === 'salary_miavorzham' },
+    { key: 'salary_miavorzham', label: 'Աշխատավարձ «Ժամավճարային»', match: pm => pm === 'salary_miavorzham' },
     { key: 'subcontractor',     label: 'Ենթակապալ', match: (pm, isSub) => pm === 'subcontractor' || !!isSub },
     { key: 'unforeseen',        label: 'Չնախատեսված աշխատանքներ', match: pm => pm === 'unforeseen' },
     { key: 'volume',            label: 'Ծավալի հաշվառում', match: pm => !pm || pm === '' || pm === 'salary_druqayin' },
@@ -911,7 +911,7 @@ export default function CostingPage() {
                                         const pm = entry.paymentMethod ?? '';
                                         const actionType = pm === 'salary_druqayin' ? t('Rate-based')
                                             : pm === 'salary_gorcarqayin' ? 'Աշխատավարձ «Գործարքային»'
-                                            : pm === 'salary_miavorzham' ? 'Աշխատավարձ «Դրույքային»'
+                                            : pm === 'salary_miavorzham' ? 'Աշխատավարձ «Ժամավճարային»'
                                             : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
                                             : pm === 'nyuth_tsakhsagrum' ? 'Նյութի Ծախսագրում'
                                             : pm === 'subcontractor' ? 'Ենթակապալ'

@@ -127,7 +127,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             id: String(Date.now() + Math.random()),
             workName: selectedRow.laborOfferItemName || selectedRow.catalogName || '—',
             laborItemId: selectedRow._id,
-            unit: type === 'gorcarqayin' ? selectedRow.unitSymbol || '' : 'ժամ',
+            unit: selectedRow.unitSymbol || '',
             quantity: n1,
             unitPrice: n2,
             total: computedTotal,
@@ -270,7 +270,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, overflowY: 'auto' }}>
                         <RadioGroup row value={type} onChange={ev => { setType(ev.target.value as SalaryType); setVal1(''); setVal2(''); }}>
                             <FormControlLabel value='gorcarqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Գործարքային</Typography>} />
-                            <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Միավոր/ժամ</Typography>} />
+                            <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>ժամավճարային</Typography>} />
                         </RadioGroup>
                         {type === 'gorcarqayin' && <>
                             <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} />
