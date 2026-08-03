@@ -818,7 +818,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setUnforeseenOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Unforeseen Works')}</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                            <Box sx={{ flex: 2, minHeight: 220 }}>
+                            <Box sx={{ flex: 1.5, minHeight: 220 }}>
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
