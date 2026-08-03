@@ -72,6 +72,20 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         ])
         .toArray();
 
+    // Fetch all materials using string comparison to catch both ObjectId and string-typed estimatedLaborId
+    const subsectionIds = rawSubsections.map(s => s._id);
+    const materials = await Db.getEstimateMaterialItemsCollection()
+        .find({ estimateSubsectionId: { $in: subsectionIds } })
+        .project({ estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 })
+        .toArray();
+
+    const matCostByLaborId = new Map<string, number>();
+    for (const mat of materials) {
+        const laborIdStr = mat.estimatedLaborId?.toString() ?? '';
+        if (!laborIdStr) continue;
+        matCostByLaborId.set(laborIdStr, (matCostByLaborId.get(laborIdStr) ?? 0) + (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0));
+    }
+
     const laborRows: Db.SnapshotLaborRow[] = laborItems.map((item: any) => ({
         _id: item._id.toString(),
         catalogName: item.catalogName ?? '',
@@ -80,6 +94,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         quantity: item.quantity ?? 0,
         changableAveragePrice: item.changableAveragePrice ?? 0,
         cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+        materialTotalCost: matCostByLaborId.get(item._id.toString()) ?? 0,
         subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
         sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
     }));

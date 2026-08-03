@@ -27,6 +27,7 @@ interface LaborRow {
     quantity: number;
     changableAveragePrice: number;
     cost: number;
+    materialTotalCost?: number;
     subsectionName: string;
     sectionName: string;
 }
@@ -330,7 +331,6 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
-        const matEstTotal = mats.reduce((s, m) => s + m.cost, 0);
         const matActTotal = mats.reduce((s, m) => {
             const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId));
             return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
@@ -343,7 +343,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
         const estQty = Number(row.quantity ?? 0);
         const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
-        const matCostRounded = Math.round(matEstTotal);
+        const rawMatEst = row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);
+        const matCostRounded = Math.round(rawMatEst);
         const estTotal = laborCostRounded + matCostRounded;
         const estUP = estQty > 0 ? Math.round((laborCostRounded + matCostRounded) / estQty) : (row.changableAveragePrice ?? 0);
         const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
@@ -430,8 +431,10 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                             const sectionLaborIds = new Set(sectionItems.map(r => toId(r._id)));
                             const sectionMaterials = materialRows.filter(m => sectionLaborIds.has(toId(m.estimatedLaborId)));
                             const sectionTotal = sectionItems.reduce((sum, r) => {
-                                return sum + Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice);
-                            }, 0) + Math.round(sectionMaterials.reduce((sum, m) => sum + m.cost, 0));
+                                const lc = Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice);
+                                const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : sectionMaterials.filter(m => toId(m.estimatedLaborId) === toId(r._id)).reduce((s, m) => s + m.cost, 0);
+                                return sum + lc + Math.round(rawMat);
+                            }, 0);
 
                             return (
                                 <>
