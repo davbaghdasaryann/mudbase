@@ -27,7 +27,6 @@ interface LaborRow {
     quantity: number;
     changableAveragePrice: number;
     cost: number;
-    materialTotalCost: number;
     subsectionName: string;
     sectionName: string;
 }
@@ -331,6 +330,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+        const matEstTotal = mats.reduce((s, m) => s + m.cost, 0);
         const matActTotal = mats.reduce((s, m) => {
             const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId));
             return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
@@ -343,7 +343,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
         const estQty = Number(row.quantity ?? 0);
         const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
-        const matCostRounded = Math.round(row.materialTotalCost ?? 0);
+        const matCostRounded = Math.round(matEstTotal);
         const estTotal = laborCostRounded + matCostRounded;
         const estUP = estQty > 0 ? Math.round((laborCostRounded + matCostRounded) / estQty) : (row.changableAveragePrice ?? 0);
         const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
@@ -427,11 +427,11 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                             const sectionItems = rows.filter(r => r.sectionName === section.name);
                             if (sectionItems.length === 0) return null;
                             const subs = subsectionsBySection.get(String(section._id)) ?? [];
+                            const sectionLaborIds = new Set(sectionItems.map(r => toId(r._id)));
+                            const sectionMaterials = materialRows.filter(m => sectionLaborIds.has(toId(m.estimatedLaborId)));
                             const sectionTotal = sectionItems.reduce((sum, r) => {
-                                const lc = Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice);
-                                const mc = Math.round(r.materialTotalCost ?? 0);
-                                return sum + lc + mc;
-                            }, 0);
+                                return sum + Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice);
+                            }, 0) + Math.round(sectionMaterials.reduce((sum, m) => sum + m.cost, 0));
 
                             return (
                                 <>

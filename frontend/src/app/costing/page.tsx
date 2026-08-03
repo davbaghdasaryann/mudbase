@@ -85,7 +85,6 @@ interface SnapshotLaborRow {
     quantity: number;
     changableAveragePrice: number;
     cost: number;
-    materialTotalCost: number;
     subsectionName: string;
     sectionName: string;
 }
