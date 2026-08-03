@@ -233,7 +233,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const matEstTotal = mats.reduce((s, m) => s + m.cost, 0);
         const estQty = Number(row.quantity ?? 0);
         const estTotal = (row.cost ?? 0) + matEstTotal;
-        const estUnitP = estQty > 0 ? estTotal / estQty : (row.changableAveragePrice ?? null);
+        const estUnitP = estQty > 0 ? row.changableAveragePrice + matEstTotal / estQty : (row.changableAveragePrice ?? null);
         return { estQty, estTotal, estUnitP };
     };
 

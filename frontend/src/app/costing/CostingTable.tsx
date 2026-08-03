@@ -343,7 +343,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
         const estQty = Number(row.quantity ?? 0);
         const estTotal = (row.cost ?? 0) + matEstTotal;
-        const estUP = estQty > 0 ? estTotal / estQty : (row.changableAveragePrice ?? 0);
+        const estUP = estQty > 0 ? row.changableAveragePrice + matEstTotal / estQty : (row.changableAveragePrice ?? 0);
         const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
         const rQty = hasData ? estQty - q : null;
         const rUp = hasData ? estUP - actUP : null;
