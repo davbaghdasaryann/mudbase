@@ -822,7 +822,7 @@ export default function CostingPage() {
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
-                                <OtherExpensesChart estimate={selectedEstimate} height={220} />
+                                <OtherExpensesChart estimate={selectedEstimate} height={220} aylEntries={aylEntries} />
                             </Box>
                         </Box>
                         {(() => {
