@@ -80,9 +80,17 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     useEffect(() => {
         if (!open) { setSelectedRow(null); return; }
         setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes('');
+        const ufId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
         if (estimateSnapshot) {
             setRows(estimateSnapshot.laborRows);
-            setUfRows(unforeseenSnapshot?.laborRows ?? []);
+            if (unforeseenSnapshot) {
+                setUfRows(unforeseenSnapshot.laborRows ?? []);
+            } else if (ufId) {
+                Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId: ufId } })
+                    .then(data => setUfRows(data ?? [])).catch(console.error);
+            } else {
+                setUfRows([]);
+            }
             return;
         }
         const estimateId = toId(estimate?._id);
@@ -92,7 +100,6 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } })
                 .then(data => setRows(data ?? [])).catch(console.error),
         ];
-        const ufId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
         if (ufId) {
             fetches.push(
                 Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId: ufId } })

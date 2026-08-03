@@ -88,9 +88,15 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             setSections(estimateSnapshot.sections);
             setSubsections(estimateSnapshot.subsections);
             setRows(estimateSnapshot.laborRows);
-            setUfSections(unforeseenSnapshot?.sections ?? []);
-            setUfSubsections(unforeseenSnapshot?.subsections ?? []);
-            setUfRows(unforeseenSnapshot?.laborRows ?? []);
+            if (unforeseenSnapshot) {
+                setUfSections(unforeseenSnapshot.sections ?? []);
+                setUfSubsections(unforeseenSnapshot.subsections ?? []);
+                setUfRows(unforeseenSnapshot.laborRows ?? []);
+            } else if (ufEstimateId) {
+                fetchEstimateRows(ufEstimateId).then(d => { setUfSections(d.sections); setUfSubsections(d.subsections); setUfRows(d.rows); }).catch(console.error);
+            } else {
+                setUfSections([]); setUfSubsections([]); setUfRows([]);
+            }
             return;
         }
         setLoading(true);
