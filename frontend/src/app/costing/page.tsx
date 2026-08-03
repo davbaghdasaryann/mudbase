@@ -682,6 +682,16 @@ export default function CostingPage() {
         setTab('pahest');
     };
 
+    const handleAylCostedUpdate = (id: string, qty: number) => {
+        setAylEntries(prev => prev.map(e =>
+            e.id === id
+                ? { ...e, tsakh: String(Math.round((parseFloat(e.tsakh || '0') + qty) * 1000) / 1000) }
+                : e
+        ));
+        setMaterialsOpen(false);
+        setTab('pahest');
+    };
+
     const openEditModal = (entry: CostHistoryEntry) => {
         setEditEntry(entry);
         setEditUnit(entry.unit);
@@ -1137,6 +1147,8 @@ export default function CostingPage() {
                     unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
+                    aylEntries={aylEntries}
+                    onAylUpdate={handleAylCostedUpdate}
                     onCostAdded={handleCostAdded}
                 />
                 <SalaryDialog

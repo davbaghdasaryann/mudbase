@@ -49,7 +49,7 @@ const newRow = (): AylEntry => ({
     history: [],
 });
 
-const COLS = '1fr 90px 140px 120px 120px 88px';
+const COLS = '1fr 90px 140px 120px 120px 120px 88px';
 
 export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }: Props) {
     const { t } = useTranslation();
@@ -134,7 +134,7 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: COLS, bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 2 }}>
-                        {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', ''].map((h, i) => (
+                        {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', 'Մնացորդ', ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
@@ -166,13 +166,12 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: e.mutq > 0 ? mainPrimaryColor : '#bbb', textAlign: 'center' }}>
                                 {e.mutq > 0 ? e.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                             </Typography>
-                            <InputBase
-                                value={e.tsakh}
-                                onChange={ev => update(e.id, 'tsakh', ev.target.value.replace(/[^0-9.]/g, ''))}
-                                placeholder='0'
-                                inputProps={{ style: { textAlign: 'center', padding: 0 } }}
-                                sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#555' }}
-                            />
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: (parseFloat(e.tsakh || '0') > 0) ? 700 : 400, color: parseFloat(e.tsakh || '0') > 0 ? mainPrimaryColor : '#aaa', textAlign: 'center' }}>
+                                {parseFloat(e.tsakh || '0') > 0 ? parseFloat(e.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: (e.mutq - parseFloat(e.tsakh || '0')) !== 0 ? 700 : 400, color: (e.mutq - parseFloat(e.tsakh || '0')) < 0 ? '#e53935' : (e.mutq - parseFloat(e.tsakh || '0')) > 0 ? '#555' : '#aaa', textAlign: 'center' }}>
+                                {(e.mutq - parseFloat(e.tsakh || '0')) !== 0 ? (e.mutq - parseFloat(e.tsakh || '0')).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                            </Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                                 <Tooltip title={t('Add')}>
                                     <IconButton size='small' onClick={() => { setPlusEntry(e); setPlusQtyInput(''); setPlusPriceInput(''); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>

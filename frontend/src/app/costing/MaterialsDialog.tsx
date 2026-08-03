@@ -14,6 +14,7 @@ import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { mainPrimaryColor } from '@/theme';
 import { type PahestEntry } from './PahestMainMaterials';
+import { type AylEntry } from './PahestAylMaterials';
 import { type CostHistoryEntry } from './page';
 
 interface Section { _id: string; name: string; displayIndex: number; }
@@ -33,6 +34,11 @@ interface MaterialModalState {
     value: string;
 }
 
+interface AylModalState {
+    entry: AylEntry;
+    value: string;
+}
+
 type SnapshotData = { laborRows: LaborRow[]; sections: Section[]; subsections: Subsection[] };
 
 interface Props {
@@ -44,6 +50,8 @@ interface Props {
     unforeseenSnapshot?: SnapshotData | null;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number) => void;
+    aylEntries?: AylEntry[];
+    onAylUpdate?: (id: string, qty: number) => void;
     onCostAdded?: (entry: CostHistoryEntry) => void;
 }
 
@@ -66,7 +74,7 @@ async function fetchEstimateRows(estimateId: string) {
     return { sections: sorted, subsections: arrays.flat(), rows: laborData ?? [] };
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, onCostAdded }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, aylEntries, onAylUpdate, onCostAdded }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -77,6 +85,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [ufRows, setUfRows] = useState<LaborRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
+    const [aylModal, setAylModal] = useState<AylModalState | null>(null);
 
     const estimateId = toId(estimate._id);
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
@@ -128,6 +137,26 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             paymentMethod: 'nyuth_tsakhsagrum',
         });
         setMaterialModal(null);
+    };
+
+    const handleAylConfirm = () => {
+        if (!aylModal) return;
+        const qty = parseFloat(aylModal.value.replace(',', '.')) || 0;
+        if (qty <= 0) return;
+        const e = aylModal.entry;
+        onAylUpdate?.(e.id, qty);
+        const unitPrice = parseFloat(e.costPerUnit) || 0;
+        onCostAdded?.({
+            id: String(Date.now() + Math.random()),
+            workName: e.name || '—',
+            unit: e.unit,
+            quantity: qty,
+            unitPrice,
+            total: qty * unitPrice,
+            addedAt: new Date(),
+            paymentMethod: 'nyuth_tsakhsagrum',
+        });
+        setAylModal(null);
     };
 
     const onPage2 = !!selectedRow;
@@ -232,7 +261,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
 
                     {/* PAGE 2: Materials for selected work */}
                     <Box sx={{ width: '50%', overflowY: 'auto', p: 2 }}>
-                        {pahestEntries.filter(e => e.quantity > 0).length === 0 ? (
+                        {pahestEntries.filter(e => e.quantity > 0).length === 0 && (!aylEntries || aylEntries.filter(e => e.mutq > 0).length === 0) ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
                                 <ShoppingCartOutlinedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.3 }} />
                                 <Typography sx={{ fontSize: '0.88rem' }}>Պահեստում նյութերի չկան</Typography>
@@ -278,6 +307,45 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                 ))}
                             </Box>
                         )}
+                                {aylEntries && aylEntries.filter(e => e.mutq > 0).length > 0 && (
+                                    <>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 0.5 }}>
+                                            <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
+                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութер</Typography>
+                                            <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
+                                        </Box>
+                                        {aylEntries.filter(e => e.mutq > 0).map(ayl => (
+                                            <Box key={ayl.id} sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                                                    <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{ayl.name || '—'}</Typography>
+                                                    <Tooltip title={t('Add new quantity')}>
+                                                        <IconButton size='small' onClick={() => setAylModal({ entry: ayl, value: '' })} sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}>
+                                                            <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                                    <Box>
+                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
+                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{ayl.unit || '—'}</Typography>
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Moutraqratsvadz</Typography>
+                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
+                                                            {ayl.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Tsakhsagrvadz</Typography>
+                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: parseFloat(ayl.tsakh || '0') > 0 ? '#222' : '#ccc' }}>
+                                                            {parseFloat(ayl.tsakh || '0') > 0 ? parseFloat(ayl.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </>
+                                )}
                     </Box>
                 </Box>
             </DialogContent>
@@ -331,6 +399,55 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                     variant='contained'
                     onClick={handleConfirm}
                     disabled={!materialModal || !(parseFloat((materialModal.value ?? '').replace(',', '.')) > 0)}
+                    sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
+                >
+                    {t('Add')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+        <Dialog open={!!aylModal} onClose={() => setAylModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
+                {aylModal?.entry.name}
+            </DialogTitle>
+            <DialogContent sx={{ pt: 1 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
+                    <Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{aylModal?.entry.unit || '—'}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Մուտքագրված</Typography>
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: mainPrimaryColor }}>
+                            {aylModal?.entry.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                        </Typography>
+                    </Box>
+                </Box>
+                {aylModal && parseFloat(aylModal.entry.tsakh || '0') > 0 && (
+                    <Box sx={{ mb: 1.5, px: 1.5, py: 0.8, bgcolor: '#f0fbfc', borderRadius: 1.5 }}>
+                        <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
+                            Ծախսագրված: <strong style={{ color: '#555' }}>{parseFloat(aylModal.entry.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 })}</strong>
+                        </Typography>
+                    </Box>
+                )}
+                <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
+                    <InputBase
+                        autoFocus
+                        fullWidth
+                        value={aylModal?.value ?? ''}
+                        onChange={ev => setAylModal(prev => prev ? { ...prev, value: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
+                        onKeyDown={ev => { if (ev.key === 'Enter') handleAylConfirm(); if (ev.key === 'Escape') setAylModal(null); }}
+                        placeholder='0'
+                        sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
+                    />
+                </Box>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                <Button onClick={() => setAylModal(null)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                <Button
+                    variant='contained'
+                    onClick={handleAylConfirm}
+                    disabled={!aylModal || !(parseFloat((aylModal.value ?? '').replace(',', '.')) > 0)}
                     sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
                 >
                     {t('Add')}
