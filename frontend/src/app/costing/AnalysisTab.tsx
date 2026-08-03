@@ -124,9 +124,15 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             setRows(estimateSnapshot.laborRows);
             setSections(estimateSnapshot.sections);
             setSubsections(estimateSnapshot.subsections);
-            setUfRows(unforeseenSnapshot?.laborRows ?? []);
-            setUfSections(unforeseenSnapshot?.sections ?? []);
-            setUfSubsections(unforeseenSnapshot?.subsections ?? []);
+            if (unforeseenSnapshot) {
+                setUfRows(unforeseenSnapshot.laborRows ?? []);
+                setUfSections(unforeseenSnapshot.sections ?? []);
+                setUfSubsections(unforeseenSnapshot.subsections ?? []);
+            } else if (ufEstimateId) {
+                fetchAnalysisData(ufEstimateId).then(d => { setUfRows(d.rows); setUfSections(d.sections); setUfSubsections(d.subsections); }).catch(console.error);
+            } else {
+                setUfRows([]); setUfSections([]); setUfSubsections([]);
+            }
             setLoading(false);
             return;
         }

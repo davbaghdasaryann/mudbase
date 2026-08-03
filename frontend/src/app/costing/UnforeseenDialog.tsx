@@ -65,7 +65,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
     const handleDelete = async (est: EstimatesApi.ApiEstimate, e: React.MouseEvent) => {
         e.stopPropagation();
         const confirmed = await confirmDialog(t('confirm_delete'), undefined, { noTitle: true, confirmText: t('Delete'), cancelText: t('Cancel'), confirmColor: '#DC3741' });
-        if (!confirmed) return;
+        if (!confirmed.isConfirmed) return;
         await Api.requestSession({ command: 'estimate/delete', args: { estimateId: String(est._id) } });
         setEstimates(prev => prev.filter(e => String(e._id) !== String(est._id)));
         if (selectedEstimate?._id === est._id) setSelectedEstimate(null);

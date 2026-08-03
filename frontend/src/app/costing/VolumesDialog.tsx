@@ -93,6 +93,8 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                 setUfSections(unforeseenSnapshot.sections);
                 setUfSubsections(unforeseenSnapshot.subsections);
                 setUfRows(unforeseenSnapshot.laborRows);
+            } else if (ufEstimateId) {
+                fetchEstimateData(ufEstimateId).then(d => { setUfSections(d.sections); setUfSubsections(d.subsections); setUfRows(d.rows); }).catch(console.error);
             } else {
                 setUfSections([]); setUfSubsections([]); setUfRows([]);
             }
