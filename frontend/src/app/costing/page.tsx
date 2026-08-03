@@ -602,8 +602,8 @@ export default function CostingPage() {
             ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
             : r
         ));
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selected, saveToBackend]);
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, saveToBackend]); // eslint-disable-line
 
     useEffect(() => {
         if (!unforeseenEstimate || tab !== 'main' || !scrollToUnforeseenRef.current) return;
