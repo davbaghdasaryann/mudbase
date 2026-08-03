@@ -533,6 +533,18 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
             },
             { $unwind: { path: '$directUnit', preserveNullAndEmptyArrays: true } },
             {
+                $lookup: {
+                    from: 'estimate_material_items',
+                    let: { laborId: '$_id' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$estimatedLaborId', '$$laborId'] } } },
+                        { $group: { _id: null, matCost: { $sum: { $multiply: ['$quantity', '$changableAveragePrice'] } } } },
+                    ],
+                    as: 'matAgg',
+                },
+            },
+            { $unwind: { path: '$matAgg', preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     laborItemId: 1,
                     estimateSubsectionId: 1,
@@ -543,6 +555,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                     laborOfferItemName: 1,
                     unitSymbol: { $ifNull: ['$catalogItem.unitSymbol', '$directUnit.representationSymbol'] },
                     displayIndex: 1,
+                    materialTotalCost: { $ifNull: ['$matAgg.matCost', 0] },
                 },
             },
             { $sort: { displayIndex: 1, _id: 1 } },
@@ -559,6 +572,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
         quantity: item.quantity ?? 0,
         changableAveragePrice: item.changableAveragePrice ?? 0,
         cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+        materialTotalCost: item.materialTotalCost ?? 0,
         subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
         sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
     }));

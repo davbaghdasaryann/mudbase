@@ -16,7 +16,7 @@ import { type PahestEntry } from './PahestMainMaterials';
 interface LaborRow {
     _id: string; catalogName: string; laborOfferItemName: string;
     unitSymbol: string; quantity: number; changableAveragePrice: number;
-    cost: number; subsectionName: string; sectionName: string;
+    cost: number; materialTotalCost: number; subsectionName: string; sectionName: string;
 }
 interface MaterialRow {
     _id: string; estimatedLaborId: string; materialItemId: string;
@@ -229,11 +229,11 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
     };
 
     const getEstimate = (row: LaborRow) => {
-        const mats = materialRows.filter(m => toId(m.estimatedLaborId) === toId(row._id));
-        const matEstTotal = mats.reduce((s, m) => s + m.cost, 0);
         const estQty = Number(row.quantity ?? 0);
-        const estTotal = (row.cost ?? 0) + matEstTotal;
-        const estUnitP = estQty > 0 ? row.changableAveragePrice + matEstTotal / estQty : (row.changableAveragePrice ?? null);
+        const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
+        const matCostRounded = Math.round(row.materialTotalCost ?? 0);
+        const estTotal = laborCostRounded + matCostRounded;
+        const estUnitP = estQty > 0 ? Math.round((laborCostRounded + matCostRounded) / estQty) : (row.changableAveragePrice ?? null);
         return { estQty, estTotal, estUnitP };
     };
 
