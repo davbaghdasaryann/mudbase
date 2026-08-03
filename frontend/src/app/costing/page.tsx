@@ -859,7 +859,7 @@ export default function CostingPage() {
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
-                                <CostingTable estimate={unforeseenEstimate} estimateSnapshot={unforeseenSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
+                                <CostingTable estimate={unforeseenEstimate} estimateSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} />
                             </Box>
                             );
                         })()}
@@ -953,7 +953,7 @@ export default function CostingPage() {
 
                  {tab === 'analysis' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <AnalysisTab estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} unforeseenEstimate={unforeseenEstimate} unforeseenSnapshot={unforeseenSnapshot} onDeleteUnforeseen={handleDeleteUnforeseen} actualData={actualData} costHistory={costHistory} />
+                        <AnalysisTab estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} unforeseenEstimate={unforeseenEstimate} unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot} onDeleteUnforeseen={handleDeleteUnforeseen} actualData={actualData} costHistory={costHistory} />
                     </Box>
                 )}
             </Box>
@@ -1112,7 +1112,7 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
-                    unforeseenSnapshot={unforeseenSnapshot}
+                    unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot}
                     onCostAdded={handleCostAdded}
                     actualData={actualData}
                     onActualUpdate={(rowId, qty, arzhek) => setActualData(prev => {
@@ -1130,7 +1130,7 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
-                    unforeseenSnapshot={unforeseenSnapshot}
+                    unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
                     onCostAdded={handleCostAdded}
@@ -1141,7 +1141,7 @@ export default function CostingPage() {
                     estimate={selectedEstimate}
                     estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
-                    unforeseenSnapshot={unforeseenSnapshot}
+                    unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot}
                     onEntrySaved={(entry, replaceId) => setCostHistory(prev =>
                         replaceId ? prev.map(e => e.id === replaceId ? entry : e) : [entry, ...prev]
                     )}
