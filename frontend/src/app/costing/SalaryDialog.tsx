@@ -132,7 +132,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             total: computedTotal,
             addedAt: new Date(),
             paymentMethod: 'salary_' + type,
-            note: notes.trim() || (type === 'gorcarqayin' ? 'Գործարքային' : 'Միավոր/ժամ'),
+            note: notes.trim() || undefined,
         };
         onEntrySaved(entry);
         handleClose();
