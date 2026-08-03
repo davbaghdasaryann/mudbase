@@ -76,7 +76,7 @@ export default function OtherExpensesChart({ estimate, height = 260, aylEntries 
             }, 0);
             if (total > 0) {
                 const actualBar = {
-                    name: 'Փոքրածավալ շիննյութեր (Փ.)',
+                    name: 'Փոքրածավալ շինանյութ (Փ.)',
                     value: Math.round(total),
                     gradId: 'actual-grad',
                     dotColor: ACTUAL_GRAD.top,
@@ -151,7 +151,7 @@ export default function OtherExpensesChart({ estimate, height = 260, aylEntries 
                 {data.map(d => (
                     <Box key={d.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: d.dotColor, flexShrink: 0 }} />
-                        <Typography variant='caption' sx={{ color: d.isActual ? '#E64A19' : 'text.secondary', fontWeight: d.isActual ? 700 : 400, fontSize: '0.7rem' }}>{d.name}</Typography>
+                        <Typography variant='caption' sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '0.7rem' }}>{d.name}</Typography>
                     </Box>
                 ))}
             </Box>
