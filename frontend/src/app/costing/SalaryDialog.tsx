@@ -134,6 +134,9 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const filteredRows = actualData
         ? rows.filter(r => { const e = actualData[r._id]; return e && parseFloat(e.quantity) > 0; })
         : rows;
+    const filteredUfRows = actualData
+        ? ufRows.filter(r => { const e = actualData[r._id]; return e && parseFloat(e.quantity) > 0; })
+        : ufRows;
     const sections = Array.from(new Set(filteredRows.map(r => r.sectionName || '—')));
 
     const selectedCovered = selectedRow ? getSalaryCoveredQty(selectedRow._id) : 0;
@@ -212,31 +215,41 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                         })}
                                     </Box>
                                 ))}
-                                {ufRows.length > 0 && (
+                                {filteredUfRows.length > 0 && (
                                     <>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 1 }}>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                             <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                         </Box>
-                                        {Array.from(new Set(ufRows.map(r => r.sectionName || '—'))).map(secName => (
+                                        {Array.from(new Set(filteredUfRows.map(r => r.sectionName || '—'))).map(secName => (
                                             <Box key={'uf-' + secName} sx={{ mb: 1 }}>
                                                 <Box sx={{ bgcolor: '#fff3ee', px: 2, py: 1, borderLeft: '4px solid #e65100' }}>
                                                     <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#e65100' }}>{secName}</Typography>
                                                 </Box>
-                                                {ufRows.filter(r => (r.sectionName || '—') === secName).map(row => (
+                                                {filteredUfRows.filter(r => (r.sectionName || '—') === secName).map(row => {
+                                                    const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
+                                                    const covered = getSalaryCoveredQty(row._id);
+                                                    const remaining = Math.max(0, planned - covered);
+                                                    const done = planned > 0 && remaining <= 0;
+                                                    return (
                                                     <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); }}
                                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#fff8f4' } }}
                                                     >
                                                         <Box sx={{ flex: 1 }}>
-                                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
+                                                            <Typography sx={{ fontSize: '0.83rem', color: done ? '#43a047' : '#222', fontWeight: 500 }}>
                                                                 {row.laborOfferItemName || row.catalogName || '—'}
                                                             </Typography>
-                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 0.3 }}>{row.unitSymbol} · {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
+                                                            <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
+                                                                {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                            </Box>
                                                         </Box>
-                                                        <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
+                                                        <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
                                                     </Box>
-                                                ))}
+                                                    );
+                                                })}
                                             </Box>
                                         ))}
                                     </>
