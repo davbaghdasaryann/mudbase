@@ -1005,7 +1005,7 @@ export default function CostingPage() {
                                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${esc(e.unitPrice.toLocaleString(undefined, { maximumFractionDigits: 0 }))}</td>` +
                                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${esc(e.total.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
                                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(new Date(e.addedAt).toLocaleDateString())}</td>` +
-                                (includeSalary ? `<td style="border:1px solid #ccc;padding:5px 8px;">${isSalaryRow ? esc(e.note) : ''}</td>` : '') +
+                                (includeSalary ? `<td style="border:1px solid #ccc;padding:5px 8px;">${isSalaryRow ? esc(e.note && e.note !== 'Գործարքային' && e.note !== 'Միավոր/ժամ' ? e.note : '') : ''}</td>` : '') +
                             `</tr>`;
                         }
                         html += '</table>';
