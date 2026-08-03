@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Button, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import { Box, Button, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, Dialog, DialogTitle, DialogContent, DialogActions, Switch, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import CloseIcon from '@mui/icons-material/Close';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -43,6 +44,8 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    const [exportModalOpen, setExportModalOpen] = useState(false);
+    const [useLibraryNames, setUseLibraryNames] = useState(true);
 
     const estimateId = String(estimate._id);
     const totalMaterialCost = estimate.materialTotalCost ?? 1;
@@ -86,7 +89,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
     const toggle = (key: string) => setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
     const pct = (cost: number) => totalMaterialCost > 0 ? ((cost / totalMaterialCost) * 100).toFixed(2) + '%' : '0%';
 
-    const handleExport = useCallback(() => {
+    const handleExport = useCallback((libraryNames: boolean) => {
         const esc = (s: string | number) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const th = (label: string) => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#e0f7fa;">${esc(label)}</th>`;
         let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">`;
@@ -101,8 +104,9 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${pct(g.totalCost)}</td>` +
             `</tr>`;
             for (const item of g.items) {
+                const itemName = libraryNames ? item.laborCatalogName : (item.laborOfferItemName || item.laborCatalogName);
                 html += `<tr>` +
-                    `<td style="border:1px solid #ccc;padding:4px 8px 4px 24px;color:#555;">${esc(item.laborCatalogName || item.laborOfferItemName)}</td>` +
+                    `<td style="border:1px solid #ccc;padding:4px 8px 4px 24px;color:#555;">${esc(itemName)}</td>` +
                     `<td style="border:1px solid #ccc;padding:4px 8px;"></td>` +
                     `<td style="border:1px solid #ccc;padding:4px 8px;text-align:center;">${esc(item.unitSymbol)}</td>` +
                     `<td style="border:1px solid #ccc;padding:4px 8px;text-align:right;">${Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
@@ -132,9 +136,10 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
     if (groups.length === 0) return null;
 
     return (
+        <>
         <Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-            <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={handleExport}
+            <Button variant='outlined' size='small' startIcon={<SaveAltIcon />} onClick={() => setExportModalOpen(true)}
                 sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
                 {t('Export')}
             </Button>
@@ -212,5 +217,44 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
             </TableBody>
         </Table>
         </Box>
+
+        <Dialog open={exportModalOpen} onClose={() => setExportModalOpen(false)} maxWidth='xs' fullWidth>
+            <DialogTitle sx={{ pb: 1 }}>
+                {t('Export Settings')}
+                <IconButton onClick={() => setExportModalOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}>
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent sx={{ pt: 1, pb: 2, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
+                    <Box>
+                        <Typography variant='body2' fontWeight={500}>{t('Name source')}</Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                            {useLibraryNames ? 'ըստ շտեմարանի' : 'ըստ խմբագրվածի'}
+                        </Typography>
+                    </Box>
+                    <Switch
+                        checked={useLibraryNames}
+                        onChange={(e) => setUseLibraryNames(e.target.checked)}
+                        sx={{
+                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                        }}
+                    />
+                </Box>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button onClick={() => setExportModalOpen(false)} size='small' sx={{ color: '#00A390' }}>{t('Cancel')}</Button>
+                <Button
+                    variant='contained'
+                    size='small'
+                    onClick={() => { setExportModalOpen(false); handleExport(useLibraryNames); }}
+                    sx={{ backgroundColor: '#00A390', '&:hover': { backgroundColor: '#008f7e' } }}
+                >
+                    {t('Export')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+        </>
     );
 }
