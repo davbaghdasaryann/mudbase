@@ -668,21 +668,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
             itemArr.itemTotalCost = roundNumber(item.quantity * item.itemUnitPrice);
         }
+        const qty1 = item.quantity ?? 0;
         if (itemArr.isGroupRow) {
-            itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
-        } else if (item.quantity && item.itemChangableAveragePrice) {
-            itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
+            itemArr.itemWithoutMaterial = roundNumber((item.groupLaborTotalCost ?? 0) * qty1);
+        } else if (qty1 && item.itemChangableAveragePrice) {
+            itemArr.itemWithoutMaterial = roundNumber(qty1 * item.itemChangableAveragePrice);
         }
 
         // if (item.materialTotalCost) {
-        const rawMatCost1 = itemArr.isGroupRow ? (item.groupMaterialCost ?? 0) : (item.materialTotalCost ?? 0);
+        const rawMatCost1 = itemArr.isGroupRow ? (item.groupMaterialCost ?? 0) * qty1 : (item.materialTotalCost ?? 0);
         itemArr.materialTotalCost = roundNumber(rawMatCost1);
         if (itemArr.itemWithoutMaterial) {
             itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + rawMatCost1);
             if (itemArr.isGroupRow) {
-                if (item.quantity) itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
+                if (qty1) itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / qty1);
             } else if (itemArr.itemLaborHours) {
-                itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
+                itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / qty1);
             }
         }
         // }
@@ -749,21 +750,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             newItem.itemTotalCost = roundNumber(item.quantity * item.itemUnitCost);
                         }
 
+                        const qty2 = item.quantity ?? 0;
                         if (item.isGroupRow) {
-                            newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
-                        } else if (item.quantity && item.itemChangableAveragePrice) {
-                            newItem.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
+                            newItem.itemWithoutMaterial = roundNumber((item.groupLaborTotalCost ?? 0) * qty2);
+                        } else if (qty2 && item.itemChangableAveragePrice) {
+                            newItem.itemWithoutMaterial = roundNumber(qty2 * item.itemChangableAveragePrice);
                         }
 
                         // if (item.materialTotalCost) {
-                        const rawMatCost2 = item.isGroupRow ? (item.groupMaterialCost ?? 0) : (item.materialTotalCost ?? 0);
+                        const rawMatCost2 = item.isGroupRow ? (item.groupMaterialCost ?? 0) * qty2 : (item.materialTotalCost ?? 0);
                         newItem.materialTotalCost = roundNumber(rawMatCost2);
                         if (newItem.itemWithoutMaterial) {
                             newItem.priceWithMaterial = roundNumber((newItem.itemWithoutMaterial ?? 0) + rawMatCost2);
                             if (item.isGroupRow) {
-                                if (item.quantity) newItem.unitPrice = roundNumber(newItem.priceWithMaterial / item.quantity);
+                                if (qty2) newItem.unitPrice = roundNumber(newItem.priceWithMaterial / qty2);
                             } else if (newItem.itemLaborHours) {
-                                newItem.unitPrice = roundNumber(newItem.priceWithMaterial / item.quantity);
+                                newItem.unitPrice = roundNumber(newItem.priceWithMaterial / qty2);
                             }
                         }
                         if (item.groupTotalCost != null) newItem.groupTotalCost = item.groupTotalCost;
@@ -826,21 +828,22 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             //     itemArr.materialUnitPrice = item.materialUnitPrice;
             //     itemArr.materialTotalCost = item.materialQuantity * item.materialUnitPrice;
             // }
+            const qty3 = item.quantity ?? 0;
             if (itemArr.isGroupRow) {
-                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost ?? 0);
-            } else if (item.quantity && item.itemChangableAveragePrice) {
-                itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
+                itemArr.itemWithoutMaterial = roundNumber((item.groupLaborTotalCost ?? 0) * qty3);
+            } else if (qty3 && item.itemChangableAveragePrice) {
+                itemArr.itemWithoutMaterial = roundNumber(qty3 * item.itemChangableAveragePrice);
             }
             // if (item.materialTotalCost) {
-            const rawMatCost3 = itemArr.isGroupRow ? (item.groupMaterialCost ?? 0) : (item.materialTotalCost ?? 0);
+            const rawMatCost3 = itemArr.isGroupRow ? (item.groupMaterialCost ?? 0) * qty3 : (item.materialTotalCost ?? 0);
             itemArr.materialTotalCost = roundNumber(rawMatCost3);
 
             if (itemArr.itemWithoutMaterial) {
                 itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + rawMatCost3);
                 if (itemArr.isGroupRow) {
-                    if (item.quantity) itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
+                    if (qty3) itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / qty3);
                 } else if (itemArr.itemLaborHours) {
-                    itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
+                    itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / qty3);
                 }
             }
             if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
@@ -1234,8 +1237,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                     <>
                                         <DataTableComponent
                                             isCellEditable={(params) => {
+                                                const row = params.row as AccordionItem;
                                                 if (params.field === 'itemMeasurementUnit') {
-                                                    return (params.row as AccordionItem).itemFullCode === 'N/A';
+                                                    return row.itemFullCode === 'N/A';
+                                                }
+                                                if (params.field === 'itemChangableAveragePrice' && row.isGroupRow) {
+                                                    return false;
                                                 }
                                                 return true;
                                             }}
@@ -1362,10 +1369,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         if (row && isMyPriceRow(row)) return 'editableCell myPriceCell';
                                                         if (row && isMarketPriceRow(row)) return 'editableCell marketPriceCell';
                                                         return 'editableCell';
-                                                    },
-                                                    renderEditCell: (params) => {
-                                                        if ((params.row as AccordionItem).isGroupRow) return <></>;
-                                                        return <GridEditInputCell {...params} />;
                                                     },
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
@@ -1679,8 +1682,12 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         <>
                                                             <DataTableComponent
                                                                 isCellEditable={(params) => {
+                                                                    const row = params.row as AccordionItem;
                                                                     if (params.field === 'itemMeasurementUnit') {
-                                                                        return (params.row as AccordionItem).itemFullCode === 'N/A';
+                                                                        return row.itemFullCode === 'N/A';
+                                                                    }
+                                                                    if (params.field === 'itemChangableAveragePrice' && row.isGroupRow) {
+                                                                        return false;
                                                                     }
                                                                     return true;
                                                                 }}
