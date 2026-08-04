@@ -167,7 +167,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             const secSubs = subs.filter(sub => toId(sub.estimateSectionId) === toId(sec._id)).sort((a, b) => a.displayIndex - b.displayIndex);
             return (
                 <Box key={toId(sec._id)} sx={{ mb: 1 }}>
-                    <Box sx={{ bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 2, py: 1, borderLeft: `4px solid ${accentColor}` }}>
+                    <Box sx={{ bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 3, py: 1, borderLeft: `4px solid ${accentColor}` }}>
                         <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: accentColor }}>{sec.name}</Typography>
                     </Box>
                     {secSubs.map(sub => {
@@ -175,11 +175,11 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         if (subRows.length === 0) return null;
                         return (
                             <Box key={toId(sub._id)}>
-                                <Box sx={{ px: 2, py: 0.6, bgcolor: subBg, borderTop: '1px solid #e8f9fb' }}>
+                                <Box sx={{ px: 3, py: 0.6, bgcolor: subBg, borderTop: '1px solid #e8f9fb' }}>
                                     <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#666', fontStyle: 'italic' }}>{sub.name}</Typography>
                                 </Box>
                                 {subRows.map(row => (
-                                    <Box key={toId(row._id)} onClick={() => setSelectedRow(row)} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: accentColor === mainPrimaryColor ? '#f2fcfd' : '#fff8f4' } }}>
+                                    <Box key={toId(row._id)} onClick={() => setSelectedRow(row)} sx={{ display: 'flex', alignItems: 'center', px: 3, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: accentColor === mainPrimaryColor ? '#f2fcfd' : '#fff8f4' } }}>
                                         <Box sx={{ flex: 1 }}>
                                             <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>{row.laborOfferItemName || row.catalogName || '—'}</Typography>
                                             <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>{row.unitSymbol} · {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
@@ -201,7 +201,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth='sm'
+            maxWidth='md'
             fullWidth
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', overflow: 'hidden' } }}
         >
@@ -247,7 +247,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                 {renderWorkSections(sections, subsections, rows)}
                                 {ufSections.length > 0 && (
                                     <>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 1 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 3 }}>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                             <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
@@ -260,7 +260,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                     </Box>
 
                     {/* PAGE 2: Materials for selected work */}
-                    <Box sx={{ width: '50%', overflowY: 'auto', p: 2 }}>
+                    <Box sx={{ width: '50%', overflowY: 'auto', p: 3 }}>
                         {pahestEntries.filter(e => e.quantity > 0).length === 0 && (!aylEntries || aylEntries.filter(e => e.mutq > 0).length === 0) ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
                                 <ShoppingCartOutlinedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.3 }} />
