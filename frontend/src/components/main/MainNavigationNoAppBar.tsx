@@ -324,16 +324,16 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 <Divider />
                 <Stack direction='row' justifyContent='center' alignItems='center' spacing={4} sx={{width: '100%'}}>
                     <Link href={facebookUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/facebook_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(75%) contrast(103%)'}}} />
+                        <ImgElement src='/images/icons/facebook_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(75%) contrast(101%)'}}} />
                     </Link>
                     <Link href={telegramUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/telegram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(75%) contrast(103%)'}}} />
+                        <ImgElement src='/images/icons/telegram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(75%) contrast(101%)'}}} />
                     </Link>
                     <Link href={instagramUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(75%) contrast(103%)'}}} />
+                        <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(75%) contrast(101%)'}}} />
                     </Link>
                     <Link href={youtubeChannelUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(75%) contrast(103%)'}}} />
+                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(156deg) brightness(75%) contrast(101%)'}}} />
                     </Link>
                 </Stack>
             </Stack>

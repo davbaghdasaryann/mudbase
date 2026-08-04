@@ -107,6 +107,7 @@ export default function OtherExpensesChart({ estimate, height = 260, aylEntries 
         <Paper
             elevation={0}
             sx={{
+                flex: 1,
                 border: '1px solid #e0f0f4',
                 borderRadius: 3,
                 p: 2.5,
