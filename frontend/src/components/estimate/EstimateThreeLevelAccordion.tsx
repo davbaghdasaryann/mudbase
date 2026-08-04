@@ -1823,6 +1823,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         editable: true,
                                                                         cellClassName: (params) => {
                                                                             const row = params.row as AccordionItem;
+                                                                            if (row?.isGroupRow) return '';
                                                                             if (row && isMyPriceRow(row)) return 'editableCell myPriceCell';
                                                                             if (row && isMarketPriceRow(row)) return 'editableCell marketPriceCell';
                                                                             return 'editableCell';
@@ -1830,7 +1831,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
-                                                                            if (row.isGroupRow) return <></>;
+                                                                            if (row.isGroupRow) {
+                                                                                const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
+                                                                                return <>{total ? formatCurrency(total) : null}</>;
+                                                                            }
                                                                             return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
