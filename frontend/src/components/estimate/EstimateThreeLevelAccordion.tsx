@@ -668,26 +668,19 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.itemUnitPrice = roundToThree(item.itemUnitPrice);
             itemArr.itemTotalCost = roundNumber(item.quantity * item.itemUnitPrice);
         }
-        if (itemArr.isGroupRow) {
-            if (item.groupLaborTotalCost) {
-                itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
-            }
-            const groupTotal = (item.groupLaborTotalCost || 0) + (item.groupMaterialCost || 0);
-            if (groupTotal) itemArr.priceWithMaterial = roundNumber(groupTotal);
-        } else if (item.quantity && item.itemChangableAveragePrice) {
+        if (item.quantity && item.itemChangableAveragePrice) {
             itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
         }
 
         // if (item.materialTotalCost) {
-        itemArr.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
-        if (!itemArr.isGroupRow && itemArr.itemWithoutMaterial) {
-            itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
-            if (itemArr.itemLaborHours) {
-                if (itemArr.itemLaborHours === 0) {
-                    itemArr.unitPrice = 0;
-                } else {
-                    itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
-                }
+        const rawMatCost1 = itemArr.isGroupRow ? (item.groupMaterialCost ?? 0) : (item.materialTotalCost ?? 0);
+        itemArr.materialTotalCost = roundNumber(rawMatCost1);
+        if (itemArr.itemWithoutMaterial) {
+            itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + rawMatCost1);
+            if (itemArr.isGroupRow) {
+                if (item.quantity) itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
+            } else if (itemArr.itemLaborHours) {
+                itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
             }
         }
         // }
@@ -754,24 +747,18 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             newItem.itemTotalCost = roundNumber(item.quantity * item.itemUnitCost);
                         }
 
-                        if (item.isGroupRow) {
-                            if (item.groupLaborTotalCost) {
-                                newItem.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
-                            }
-                            const groupTotal = (item.groupLaborTotalCost || 0) + (item.groupMaterialCost || 0);
-                            if (groupTotal) newItem.priceWithMaterial = roundNumber(groupTotal);
-                        } else if (item.quantity && item.itemChangableAveragePrice) {
+                        if (item.quantity && item.itemChangableAveragePrice) {
                             newItem.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
                         }
 
                         // if (item.materialTotalCost) {
-                        newItem.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
-                        // Make sure itemWithoutMaterial is defined before adding
-                        if (!item.isGroupRow) newItem.priceWithMaterial = roundNumber((newItem.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
-                        if (newItem.itemLaborHours) {
-                            if (newItem.itemLaborHours === 0) {
-                                newItem.unitPrice = 0;
-                            } else {
+                        const rawMatCost2 = item.isGroupRow ? (item.groupMaterialCost ?? 0) : (item.materialTotalCost ?? 0);
+                        newItem.materialTotalCost = roundNumber(rawMatCost2);
+                        if (newItem.itemWithoutMaterial) {
+                            newItem.priceWithMaterial = roundNumber((newItem.itemWithoutMaterial ?? 0) + rawMatCost2);
+                            if (item.isGroupRow) {
+                                if (item.quantity) newItem.unitPrice = roundNumber(newItem.priceWithMaterial / item.quantity);
+                            } else if (newItem.itemLaborHours) {
                                 newItem.unitPrice = roundNumber(newItem.priceWithMaterial / item.quantity);
                             }
                         }
@@ -835,26 +822,19 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             //     itemArr.materialUnitPrice = item.materialUnitPrice;
             //     itemArr.materialTotalCost = item.materialQuantity * item.materialUnitPrice;
             // }
-            if (itemArr.isGroupRow) {
-                if (item.groupLaborTotalCost) {
-                    itemArr.itemWithoutMaterial = roundNumber(item.groupLaborTotalCost);
-                }
-                const groupTotal = (item.groupLaborTotalCost || 0) + (item.groupMaterialCost || 0);
-                if (groupTotal) itemArr.priceWithMaterial = roundNumber(groupTotal);
-            } else if (item.quantity && item.itemChangableAveragePrice) {
+            if (item.quantity && item.itemChangableAveragePrice) {
                 itemArr.itemWithoutMaterial = roundNumber(item.quantity * item.itemChangableAveragePrice);
             }
             // if (item.materialTotalCost) {
-            itemArr.materialTotalCost = roundNumber(item.materialTotalCost ?? 0);
+            const rawMatCost3 = itemArr.isGroupRow ? (item.groupMaterialCost ?? 0) : (item.materialTotalCost ?? 0);
+            itemArr.materialTotalCost = roundNumber(rawMatCost3);
 
-            if (!itemArr.isGroupRow && itemArr.itemWithoutMaterial) {
-                itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + (item.materialTotalCost ?? 0));
-                if (itemArr.itemLaborHours) {
-                    if (itemArr.itemLaborHours === 0) {
-                        itemArr.unitPrice = 0;
-                    } else {
-                        itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
-                    }
+            if (itemArr.itemWithoutMaterial) {
+                itemArr.priceWithMaterial = roundNumber((itemArr.itemWithoutMaterial ?? 0) + rawMatCost3);
+                if (itemArr.isGroupRow) {
+                    if (item.quantity) itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
+                } else if (itemArr.itemLaborHours) {
+                    itemArr.unitPrice = roundNumber(itemArr.priceWithMaterial / item.quantity);
                 }
             }
             if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
@@ -1391,9 +1371,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 160,
                                                     renderCell: (params) => {
-                                                        const row = params.row as AccordionItem;
-                                                        const val = row.isGroupRow ? (row.groupLaborTotalCost || undefined) : params.value;
-                                                        return <>{formatCurrency(val)}</>;
+                                                        return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
                                                 {
@@ -1402,9 +1380,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 160,
                                                     renderCell: (params) => {
-                                                        const row = params.row as AccordionItem;
-                                                        const val = row.isGroupRow && row.groupMaterialCost != null ? row.groupMaterialCost : params.value;
-                                                        return <>{formatCurrency(val)}</>;
+                                                        return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
                                                 {
@@ -1413,11 +1389,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 160,
                                                     renderCell: (params) => {
-                                                        const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow) {
-                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
-                                                            return <>{total ? formatCurrency(total) : null}</>;
-                                                        }
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
@@ -1427,11 +1398,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     align: 'center',
                                                     width: 160,
                                                     renderCell: (params) => {
-                                                        const row = params.row as AccordionItem;
-                                                        if (row.isGroupRow) {
-                                                            const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
-                                                            return <>{total ? formatCurrency(total) : null}</>;
-                                                        }
                                                         return <>{formatCurrency(params.value)}</>;
                                                     },
                                                 },
@@ -1858,9 +1824,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         width: 160,
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
-                                                                            const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow ? (row.groupLaborTotalCost || undefined) : params.value;
-                                                                            return <>{formatCurrency(val)}</>;
+                                                                            return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
                                                                     {
@@ -1871,9 +1835,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         width: 160,
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
-                                                                            const row = params.row as AccordionItem;
-                                                                            const val = row.isGroupRow && row.groupMaterialCost != null ? row.groupMaterialCost : params.value;
-                                                                            return <>{formatCurrency(val)}</>;
+                                                                            return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
                                                                     {
@@ -1884,11 +1846,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         width: 160,
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
-                                                                            const row = params.row as AccordionItem;
-                                                                            if (row.isGroupRow) {
-                                                                                const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
-                                                                                return <>{total ? formatCurrency(total) : null}</>;
-                                                                            }
                                                                             return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
@@ -1900,10 +1857,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         width: 160,
                                                                         disableColumnMenu: true,
                                                                         renderCell: (params) => {
-                                                                            const row = params.row as AccordionItem;
-                                                                            if (row.isGroupRow) {
-                                                                                return <>{formatCurrency(row.groupSumUnitPrice ?? undefined)}</>;
-                                                                            }
                                                                             return <>{formatCurrency(params.value)}</>;
                                                                         },
                                                                     },
