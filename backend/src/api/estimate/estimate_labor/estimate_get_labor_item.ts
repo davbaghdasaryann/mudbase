@@ -549,19 +549,81 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
         ])
         .toArray();
 
-    const result = laborItems.map((item: any) => ({
-        _id: item._id,
-        laborItemId: item.laborItemId,
-        fullCode: item.fullCode ?? '',
-        catalogName: item.catalogName ?? '',
-        laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
-        unitSymbol: item.unitSymbol ?? '',
-        quantity: item.quantity ?? 0,
-        changableAveragePrice: item.changableAveragePrice ?? 0,
-        cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
-        subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
-        sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
-    }));
+    const groupRowItems = await Db.getEstimateLaborItemsCollection()
+        .aggregate([
+            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true }, isGroupRow: true } },
+            {
+                $lookup: {
+                    from: 'estimate_labor_items',
+                    let: { groupId: '$_id' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$parentGroupRowId', '$$groupId'] }, isHidden: { $ne: true } } },
+                        { $project: { quantity: 1, changableAveragePrice: 1 } },
+                    ],
+                    as: 'children',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'measurement_unit',
+                    localField: 'measurementUnitMongoId',
+                    foreignField: '_id',
+                    as: 'directUnit',
+                },
+            },
+            { $unwind: { path: '$directUnit', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    estimateSubsectionId: 1,
+                    quantity: 1,
+                    laborOfferItemName: 1,
+                    unitSymbol: '$directUnit.representationSymbol',
+                    displayIndex: 1,
+                    childrenCost: {
+                        $sum: {
+                            $map: {
+                                input: '$children',
+                                as: 'c',
+                                in: { $multiply: ['$$c.quantity', '$$c.changableAveragePrice'] },
+                            },
+                        },
+                    },
+                },
+            },
+            { $sort: { displayIndex: 1, _id: 1 } },
+        ])
+        .toArray();
+
+    const result = [
+        ...laborItems.map((item: any) => ({
+            _id: item._id,
+            laborItemId: item.laborItemId,
+            isGroupRow: false,
+            fullCode: item.fullCode ?? '',
+            catalogName: item.catalogName ?? '',
+            laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+            unitSymbol: item.unitSymbol ?? '',
+            quantity: item.quantity ?? 0,
+            changableAveragePrice: item.changableAveragePrice ?? 0,
+            cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+            subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+            sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+        })),
+        ...groupRowItems.map((item: any) => ({
+            _id: item._id,
+            laborItemId: item._id, // use own _id as grouping key
+            isGroupRow: true,
+            fullCode: '',
+            catalogName: item.laborOfferItemName ?? '',
+            laborOfferItemName: item.laborOfferItemName ?? '',
+            unitSymbol: item.unitSymbol ?? '',
+            quantity: item.quantity ?? 0,
+            changableAveragePrice: 0,
+            cost: item.childrenCost ?? 0,
+            subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+            sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+        })),
+    ];
 
     respondJsonData(res, result);
 });

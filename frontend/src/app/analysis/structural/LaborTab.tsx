@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 interface LaborRow {
     _id: string;
     laborItemId: string;
+    isGroupRow: boolean;
     fullCode: string;
     catalogName: string;
     laborOfferItemName: string;
@@ -58,8 +59,11 @@ export default function LaborTab({ estimate }: { estimate: EstimatesApi.ApiEstim
                 const map = new Map<string, GroupedLabor>();
                 for (const row of (rows ?? [])) {
                     const key = String(row.laborItemId);
+                    const displayName = row.isGroupRow
+                        ? (row.laborOfferItemName || row.catalogName)
+                        : row.catalogName;
                     if (!map.has(key)) {
-                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: row.catalogName, unitSymbol: row.unitSymbol ?? '', totalCost: 0, totalQuantity: 0, items: [] });
+                        map.set(key, { laborItemId: key, fullCode: row.fullCode, name: displayName, unitSymbol: row.unitSymbol ?? '', totalCost: 0, totalQuantity: 0, items: [] });
                     }
                     const g = map.get(key)!;
                     g.totalCost += row.cost;
