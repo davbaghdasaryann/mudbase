@@ -150,16 +150,17 @@ export default function StructuralAnalysisPage() {
                                 <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
                                     {/* Top row: pie placeholder | bar chart | param cards */}
                                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                        {/* Cost breakdown donut chart */}
-                                        <Box sx={{ flex: 1, minHeight: 180 }}>
-                                            <CostBreakdownChart estimate={selectedEstimate!} height={220} />
-                                        </Box>
-                                        {/* Other Expenses bar chart */}
-                                        <Box sx={{ flex: 1, minHeight: 180 }}>
-                                            <OtherExpensesChart estimate={selectedEstimate!} height={220} />
+                                        {/* Charts wrapper — 50/50 between the two charts */}
+                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, minHeight: 180 }}>
+                                            <Box sx={{ flex: 1 }}>
+                                                <CostBreakdownChart estimate={selectedEstimate!} height={220} />
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <OtherExpensesChart estimate={selectedEstimate!} height={220} />
+                                            </Box>
                                         </Box>
                                         {/* Param cards stacked */}
-                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: 0.7 } }}>
+                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, flexWrap: { xs: 'wrap', md: 'nowrap' }, gap: 1.5, flex: { xs: 'unset', md: '0 0 220px' } }}>
                                             <ParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.laborItemCount ?? 0} />
                                             <ParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.materialItemCount ?? 0} />
                                             <ParamCard label={t('Unit Time')} icon={<AccessTimeIcon sx={{ fontSize: 24 }} />} value={selectedEstimate!.unitTime ?? 0} />
