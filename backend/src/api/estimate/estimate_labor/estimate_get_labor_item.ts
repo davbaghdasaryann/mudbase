@@ -501,7 +501,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
 
     const laborItems = await Db.getEstimateLaborItemsCollection()
         .aggregate([
-            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true }, isGroupRow: { $ne: true } } },
+            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true }, isGroupRow: { $ne: true }, quantity: { $gt: 0 } } },
             {
                 $lookup: {
                     from: 'labor_items',
