@@ -609,20 +609,22 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
             subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
             sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
         })),
-        ...groupRowItems.map((item: any) => ({
-            _id: item._id,
-            laborItemId: item._id, // use own _id as grouping key
-            isGroupRow: true,
-            fullCode: '',
-            catalogName: item.laborOfferItemName ?? '',
-            laborOfferItemName: item.laborOfferItemName ?? '',
-            unitSymbol: item.unitSymbol ?? '',
-            quantity: item.quantity ?? 0,
-            changableAveragePrice: 0,
-            cost: item.childrenCost ?? 0,
-            subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
-            sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
-        })),
+        ...groupRowItems
+            .filter((item: any) => !!(item.laborOfferItemName ?? '').trim())
+            .map((item: any) => ({
+                _id: item._id,
+                laborItemId: item._id, // use own _id as grouping key
+                isGroupRow: true,
+                fullCode: '',
+                catalogName: item.laborOfferItemName ?? '',
+                laborOfferItemName: item.laborOfferItemName ?? '',
+                unitSymbol: item.unitSymbol ?? '',
+                quantity: item.quantity ?? 0,
+                changableAveragePrice: 0,
+                cost: item.childrenCost ?? 0,
+                subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+                sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+            })),
     ];
 
     respondJsonData(res, result);
