@@ -858,7 +858,6 @@ export default function CostingPage() {
 
                 {tab === 'main' && (
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: '1.5rem', mb: 3 }}>{selected.estimateName}</Typography>
                         <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                         {unforeseenEstimate && (() => {
                             return (
