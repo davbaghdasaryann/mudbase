@@ -120,7 +120,7 @@ export default function StructuralAnalysisPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 {hasData && (
                     <>
-                        {/* Back button + estimate title — fixed, doesn't scroll */}
+                        {/* Back button — fixed, doesn't scroll */}
                         <Box sx={{ flexShrink: 0, mb: 0.5 }}>
                             <Button
                                 startIcon={<ArrowBackIcon fontSize='small' />}
@@ -130,9 +130,6 @@ export default function StructuralAnalysisPage() {
                             >
                                 {t('Back')}
                             </Button>
-                            <Typography variant='h5' sx={{ fontWeight: 700 }}>
-                                {selectedEstimate!.name}
-                            </Typography>
                         </Box>
 
                         <TabContext value={activeTab}>
