@@ -246,10 +246,10 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const { estQty, estTotal, estUnitP } = getEstimate(row);
         const actUnitP = hasData && actQty > 0 ? actTotal / actQty : null;
         const remQty   = hasData ? estQty - actQty : null;
-        const remTotal = hasData ? estTotal - actTotal : null;
-        const remUnitP = remQty !== null && remQty > 0 && remTotal !== null ? remTotal / remQty : null;
-        const pct      = remTotal !== null && estTotal > 0 ? (remTotal / estTotal) * 100 : null;
-        const cheaper  = remTotal !== null ? remTotal >= 0 : null;
+        const remUnitP = hasData ? estUnitP : null;
+        const remTotal = remQty !== null && estUnitP !== null ? Math.round(remQty * estUnitP) : null;
+        const pct      = hasData && actUnitP !== null && estUnitP !== null && estUnitP > 0 ? ((estUnitP - actUnitP) / estUnitP) * 100 : null;
+        const cheaper  = pct !== null ? pct >= 0 : null;
         const exQty    = hasData && actQty > estQty ? actQty - estQty : null;
         const exAmt    = hasData && actTotal > estTotal ? actTotal - estTotal : null;
         const itemName = row.laborOfferItemName || row.catalogName;
@@ -277,8 +277,8 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                 <td style={tdStyle({ textAlign: 'right', color: remUnitP === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828' })}>
                     {remUnitP !== null ? fmtUnit(remUnitP) : '\u2014'}
                 </td>
-                <td style={tdStyle({ textAlign: 'right', color: remTotal === null ? '#ddd' : cheaper! ? '#2e7d32' : '#c62828', fontWeight: remTotal !== null ? 600 : 400 })}>
-                    {remTotal !== null ? `${remTotal >= 0 ? '+' : ''}${formatCurrencyRounded(remTotal)}` : '\u2014'}
+                <td style={tdStyle({ textAlign: 'right', color: remTotal === null ? '#ddd' : cheaper !== null && cheaper ? '#2e7d32' : '#c62828', fontWeight: remTotal !== null ? 600 : 400 })}>
+                    {remTotal !== null ? `+${formatCurrencyRounded(remTotal)}` : '\u2014'}
                 </td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                     {pct !== null ? (
@@ -308,9 +308,9 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
     const grandActUnitP = grandActQty > 0 ? grandActTotal / grandActQty : null;
     const grandHasAct   = rows.some(r => getActuals(r).hasData);
     const grandRemQty   = grandHasAct ? grandEstQty - grandActQty : null;
-    const grandRemTotal = grandHasAct ? grandEstTotal - grandActTotal : null;
-    const grandRemUnitP = grandRemQty !== null && grandRemQty > 0 && grandRemTotal !== null ? grandRemTotal / grandRemQty : null;
-    const grandPct      = grandRemTotal !== null && grandEstTotal > 0 ? (grandRemTotal / grandEstTotal) * 100 : null;
+    const grandRemUnitP = grandHasAct ? grandEstUnitP : null;
+    const grandRemTotal = grandHasAct && grandRemQty !== null && grandEstUnitP !== null ? Math.round(grandRemQty * grandEstUnitP) : null;
+    const grandPct      = grandHasAct && grandActUnitP !== null && grandEstUnitP !== null && grandEstUnitP > 0 ? ((grandEstUnitP - grandActUnitP) / grandEstUnitP) * 100 : null;
     const grandExQty    = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); const eq = Number(r.quantity ?? 0); return hasData && actQty > eq ? s + (actQty - eq) : s; }, 0);
     const grandExAmt    = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); const et = getEstimate(r).estTotal; return hasData && actTotal > et ? s + (actTotal - et) : s; }, 0);
     const grandHasEx    = rows.some(r => { const { actQty, actTotal, hasData } = getActuals(r); const { estQty, estTotal } = getEstimate(r); return hasData && (actQty > estQty || actTotal > estTotal); });
@@ -423,9 +423,9 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: '#555' })}>{grandHasAct && grandActUnitP !== null ? fmtUnit(grandActUnitP) : '\u2014'}</td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: ACCENT, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{grandHasAct ? formatCurrencyRounded(grandActTotal) : '\u2014'}</td>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemQty === null ? '#ccc' : grandRemQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: 600 })}>{fmtQty(grandRemQty)}</td>
-                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemUnitP === null ? '#ccc' : grandRemTotal !== null && grandRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>{grandRemUnitP !== null ? fmtUnit(grandRemUnitP) : '\u2014'}</td>
-                        <td style={tdStyle({ textAlign: 'right', fontWeight: 700, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemTotal === null ? '#ccc' : grandRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>
-                            {grandRemTotal !== null ? `${grandRemTotal >= 0 ? '+' : ''}${formatCurrencyRounded(grandRemTotal)}` : '\u2014'}
+                        <td style={tdStyle({ textAlign: 'right', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemUnitP === null ? '#ccc' : grandPct !== null && grandPct >= 0 ? '#2e7d32' : '#c62828' })}>{grandRemUnitP !== null ? fmtUnit(grandRemUnitP) : '\u2014'}</td>
+                        <td style={tdStyle({ textAlign: 'right', fontWeight: 700, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemTotal === null ? '#ccc' : grandPct !== null && grandPct >= 0 ? '#2e7d32' : '#c62828' })}>
+                            {grandRemTotal !== null ? `+${formatCurrencyRounded(grandRemTotal)}` : '\u2014'}
                         </td>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             {grandPct !== null
