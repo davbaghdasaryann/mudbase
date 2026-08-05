@@ -17,6 +17,7 @@ interface LaborRow {
     _id: string; catalogName: string; laborOfferItemName: string;
     unitSymbol: string; quantity: number; changableAveragePrice: number;
     cost: number; materialTotalCost?: number; subsectionName: string; sectionName: string;
+    isGroupRow?: boolean; parentGroupRowId?: string;
 }
 interface MaterialRow {
     _id: string; estimatedLaborId: string; materialItemId: string;
@@ -378,7 +379,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                 </thead>
                 <tbody>
                     {sections.map((section, si) => {
-                        const sectionItems = rows.filter(r => r.sectionName === section.name);
+                        const sectionItems = rows.filter(r => r.sectionName === section.name && !r.parentGroupRowId);
                         if (sectionItems.length === 0) return null;
                         const subs = subsMap.get(toId(section._id)) ?? [];
                         return (
@@ -477,7 +478,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                     </td>
                                 </tr>
                                 {ufSections.map((section, si) => {
-                                    const sectionItems = ufRows.filter(r => r.sectionName === section.name);
+                                    const sectionItems = ufRows.filter(r => r.sectionName === section.name && !r.parentGroupRowId);
                                     if (sectionItems.length === 0) return null;
                                     const subs = ufSubsMap.get(toId(section._id)) ?? [];
                                     return (

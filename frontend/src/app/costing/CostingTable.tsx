@@ -30,6 +30,8 @@ interface LaborRow {
     materialTotalCost?: number;
     subsectionName: string;
     sectionName: string;
+    isGroupRow?: boolean;
+    parentGroupRowId?: string;
 }
 
 interface MaterialRow {
@@ -268,7 +270,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         let counter = 0;
         for (let si = 0; si < sections.length; si++) {
             const section = sections[si];
-            const sectionItems = rows.filter(r => r.sectionName === section.name);
+            const sectionItems = rows.filter(r => r.sectionName === section.name && !r.parentGroupRowId);
             if (sectionItems.length === 0) continue;
             const subs = subsMap.get(String(section._id)) ?? [];
             html += `<tr><td colspan="${TOTAL_COLS}" style="font-weight:bold;font-size:13px;background:#e0f5f7;border:1px solid #ccc;padding:6px 10px;text-align:center;">${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
@@ -426,7 +428,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     </thead>
                     <tbody>
                         {sections.map((section, sectionIdx) => {
-                            const sectionItems = rows.filter(r => r.sectionName === section.name);
+                            const sectionItems = rows.filter(r => r.sectionName === section.name && !r.parentGroupRowId);
                             if (sectionItems.length === 0) return null;
                             const subs = subsectionsBySection.get(String(section._id)) ?? [];
                             const sectionLaborIds = new Set(sectionItems.map(r => toId(r._id)));

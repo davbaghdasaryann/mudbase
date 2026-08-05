@@ -501,7 +501,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
 
     const laborItems = await Db.getEstimateLaborItemsCollection()
         .aggregate([
-            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true }, isGroupRow: { $ne: true }, quantity: { $gt: 0 } } },
+            { $match: { estimateSubsectionId: { $in: subsectionIds }, isHidden: { $ne: true }, isGroupRow: { $ne: true }, parentGroupRowId: { $exists: false }, quantity: { $gt: 0 } } },
             {
                 $lookup: {
                     from: 'labor_items',
@@ -620,7 +620,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                 laborOfferItemName: item.laborOfferItemName ?? '',
                 unitSymbol: item.unitSymbol ?? '',
                 quantity: item.quantity ?? 0,
-                changableAveragePrice: 0,
+                changableAveragePrice: (item.quantity ?? 0) > 0 ? Math.round((item.childrenCost ?? 0) / item.quantity) : 0,
                 cost: item.childrenCost ?? 0,
                 subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
                 sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',

@@ -67,6 +67,8 @@ export interface SnapshotLaborRow {
     materialTotalCost?: number;
     subsectionName: string;
     sectionName: string;
+    isGroupRow?: boolean;
+    parentGroupRowId?: string;
 }
 
 export interface SnapshotSection {

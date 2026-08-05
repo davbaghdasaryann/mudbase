@@ -66,6 +66,8 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
                     laborOfferItemName: 1,
                     unitSymbol: { $ifNull: ['$catalogItem.unitSymbol', '$directUnit.representationSymbol'] },
                     displayIndex: 1,
+                    isGroupRow: 1,
+                    parentGroupRowId: 1,
                 },
             },
             { $sort: { displayIndex: 1, _id: 1 } },
@@ -97,6 +99,8 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         materialTotalCost: matCostByLaborId.get(item._id.toString()) ?? 0,
         subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
         sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+        isGroupRow: item.isGroupRow === true ? true : undefined,
+        parentGroupRowId: item.parentGroupRowId ? item.parentGroupRowId.toString() : undefined,
     }));
 
     const sections: Db.SnapshotSection[] = rawSections.map(s => ({
