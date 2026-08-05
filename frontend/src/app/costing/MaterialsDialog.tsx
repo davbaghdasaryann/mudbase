@@ -264,7 +264,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         {pahestEntries.filter(e => e.quantity > 0).length === 0 && (!aylEntries || aylEntries.filter(e => e.mutq > 0).length === 0) ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
                                 <ShoppingCartOutlinedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.3 }} />
-                                <Typography sx={{ fontSize: '0.88rem' }}>Պահեստում նյութերի չկան</Typography>
+                                <Typography sx={{ fontSize: '0.88rem' }}>Պահեստում նյութեր չկան</Typography>
                             </Box>
                         ) : (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
