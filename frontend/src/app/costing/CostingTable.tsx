@@ -238,6 +238,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         updateActualData({ ...actualData, [toId(modalSelected._id)]: { quantity: modalQty, unitPrice: String(p), spent: modalSpent } });
         onCostAdded?.({
             id: `${Date.now()}-${toId(modalSelected._id)}`,
+            laborItemId: toId(modalSelected._id),
             workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
             unit: modalSelected.unitSymbol,
             quantity: q,
