@@ -142,6 +142,18 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const [modalQty, setModalQty] = useState('');
     const [modalSpent, setModalSpent] = useState('');
 
+    const [groupDialog, setGroupDialog] = useState<{ open: boolean; groupName: string; items: any[]; loading: boolean }>({ open: false, groupName: '', items: [], loading: false });
+
+    const handleGroupRowClick = useCallback(async (row: LaborRow) => {
+        setGroupDialog({ open: true, groupName: row.laborOfferItemName || row.catalogName, items: [], loading: true });
+        try {
+            const items = await Api.requestSession<any[]>({ command: 'estimate/fetch_group_works', args: { parentGroupRowId: row._id } });
+            setGroupDialog(prev => ({ ...prev, items: items ?? [], loading: false }));
+        } catch {
+            setGroupDialog(prev => ({ ...prev, loading: false }));
+        }
+    }, []);
+
     const scrollRef = useRef<HTMLDivElement>(null);
     const isScrollDragging = useRef(false);
     const scrollDragStart = useRef({ x: 0, scrollLeft: 0 });
@@ -363,7 +375,14 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
             >
                 <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{counter}</td>
                 <td style={tdStyle({ paddingLeft: descIndent, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' })}>
-                    {row.laborOfferItemName || row.catalogName}
+                    {row.isGroupRow ? (
+                        <span
+                            onClick={() => handleGroupRowClick(row)}
+                            style={{ color: ACCENT, cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
+                        >
+                            {row.laborOfferItemName || row.catalogName}
+                        </span>
+                    ) : (row.laborOfferItemName || row.catalogName)}
                 </td>
                 <td style={tdStyle({ textAlign: 'center', color: '#666' })}>{row.unitSymbol}</td>
                 <td style={tdStyle({ textAlign: 'right' })}>{estQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
@@ -568,6 +587,58 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     >
                         {t('Add')}
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Group Works Dialog */}
+            <Dialog open={groupDialog.open} onClose={() => setGroupDialog(prev => ({ ...prev, open: false }))} maxWidth='lg' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: ACCENT, pb: 1 }}>{groupDialog.groupName}</DialogTitle>
+                <DialogContent sx={{ pt: 1 }}>
+                    {groupDialog.loading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>
+                    ) : groupDialog.items.length === 0 ? (
+                        <Typography sx={{ color: '#888', py: 2 }}>{t('No works')}</Typography>
+                    ) : (
+                        <Box sx={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                                <thead>
+                                    <tr>
+                                        {[t('ID'), t('Labor'), t('Unit'), t('Quantity'), t('Price'), t('Without material'), t('Material Cost'), t('Price with material'), t('Unit Price')].map((h, i) => (
+                                            <th key={i} style={{ padding: '8px 10px', textAlign: i === 0 ? 'center' : i <= 1 ? 'left' : 'right', fontWeight: 600, fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.03em', borderBottom: '2px solid #e8f7f9', whiteSpace: 'nowrap' }}>
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {groupDialog.items.map((item: any, idx: number) => {
+                                        const qty = item.quantity ?? 0;
+                                        const price = item.changableAveragePrice ?? 0;
+                                        const matCost = item.materialTotalCost ?? 0;
+                                        const withoutMat = Math.round(qty * price);
+                                        const withMat = withoutMat + Math.round(matCost);
+                                        const unitPrice = qty > 0 ? Math.round(withMat / qty) : 0;
+                                        return (
+                                            <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#fff' : '#fafeff' }}>
+                                                <td style={{ padding: '7px 10px', textAlign: 'center', color: '#888', borderBottom: '1px solid #f0f2f4' }}>{item.fullCode || '—'}</td>
+                                                <td style={{ padding: '7px 10px', borderBottom: '1px solid #f0f2f4' }}>{item.laborOfferItemName || '—'}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', color: '#666', borderBottom: '1px solid #f0f2f4' }}>{item.itemMeasurementUnit || '—'}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', borderBottom: '1px solid #f0f2f4' }}>{qty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', borderBottom: '1px solid #f0f2f4' }}>{formatCurrencyRounded(price)}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', borderBottom: '1px solid #f0f2f4' }}>{formatCurrencyRounded(withoutMat)}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', borderBottom: '1px solid #f0f2f4' }}>{formatCurrencyRounded(matCost)}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', fontWeight: 500, borderBottom: '1px solid #f0f2f4' }}>{formatCurrencyRounded(withMat)}</td>
+                                                <td style={{ padding: '7px 10px', textAlign: 'right', color: ACCENT, fontWeight: 600, borderBottom: '1px solid #f0f2f4' }}>{formatCurrencyRounded(unitPrice)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setGroupDialog(prev => ({ ...prev, open: false }))} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
                 </DialogActions>
             </Dialog>
         </Box>
