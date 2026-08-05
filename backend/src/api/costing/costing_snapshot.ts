@@ -88,14 +88,16 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         matCostByLaborId.set(laborIdStr, (matCostByLaborId.get(laborIdStr) ?? 0) + (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0));
     }
 
-    // For group rows without a manually set price: compute from children
+    // For group rows: compute unit price from children using same formula as estimate page:
+    // groupUnitPrice = sum(childQty * childPrice + childMatCost) = groupLaborTotalCost + groupMaterialCost
     const groupUnitPriceFromChildrenMap = new Map<string, number>();
     for (const item of laborItems as any[]) {
         const parentId = item.parentGroupRowId ? item.parentGroupRowId.toString() : null;
         if (!parentId) continue;
-        const laborCostPerUnit = (item.quantity ?? 0) * (item.changableAveragePrice ?? 0);
-        const matCostPerUnit = matCostByLaborId.get(item._id.toString()) ?? 0;
-        groupUnitPriceFromChildrenMap.set(parentId, (groupUnitPriceFromChildrenMap.get(parentId) ?? 0) + laborCostPerUnit + matCostPerUnit);
+        const childQty = item.quantity ?? 0;
+        const childPrice = isNaN(item.changableAveragePrice) ? 0 : (item.changableAveragePrice ?? 0);
+        const childMatCost = matCostByLaborId.get(item._id.toString()) ?? 0;
+        groupUnitPriceFromChildrenMap.set(parentId, (groupUnitPriceFromChildrenMap.get(parentId) ?? 0) + childQty * childPrice + childMatCost);
     }
 
     const laborRows: Db.SnapshotLaborRow[] = (laborItems as any[])
