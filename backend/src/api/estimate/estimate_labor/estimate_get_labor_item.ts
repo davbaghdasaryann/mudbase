@@ -589,6 +589,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                 $project: {
                     estimateSubsectionId: 1,
                     quantity: 1,
+                    changableAveragePrice: 1,
                     laborOfferItemName: 1,
                     unitSymbol: '$directUnit.representationSymbol',
                     displayIndex: 1,
@@ -633,8 +634,8 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                 laborOfferItemName: item.laborOfferItemName ?? '',
                 unitSymbol: item.unitSymbol ?? '',
                 quantity: item.quantity ?? 0,
-                changableAveragePrice: (item.quantity ?? 0) > 0 ? Math.round((item.childrenCost ?? 0) / item.quantity) : 0,
-                cost: item.childrenCost ?? 0,
+                changableAveragePrice: item.changableAveragePrice ?? 0,
+                cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
                 subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
                 sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
             })),
