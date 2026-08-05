@@ -231,13 +231,13 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
     };
 
     const getEstimate = (row: LaborRow) => {
-        const mats = materialRows.filter(m => toId(m.estimatedLaborId) === toId(row._id));
-        const rawMatEst = row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);
         const estQty = Number(row.quantity ?? 0);
-        const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
+        const laborCostRounded = row.isGroupRow ? Math.round(row.cost ?? 0) : Math.round(estQty * row.changableAveragePrice);
+        const mats = row.isGroupRow ? [] : materialRows.filter(m => toId(m.estimatedLaborId) === toId(row._id));
+        const rawMatEst = row.isGroupRow ? 0 : (row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0));
         const matCostRounded = Math.round(rawMatEst);
         const estTotal = laborCostRounded + matCostRounded;
-        const estUnitP = estQty > 0 ? Math.round((laborCostRounded + matCostRounded) / estQty) : (row.changableAveragePrice ?? null);
+        const estUnitP = estQty > 0 ? Math.round(estTotal / estQty) : (row.changableAveragePrice ?? null);
         return { estQty, estTotal, estUnitP };
     };
 

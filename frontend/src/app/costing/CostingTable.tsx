@@ -345,11 +345,11 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const actTotal = volumeTotal + salaryTotal + matActTotal;
         const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
         const estQty = Number(row.quantity ?? 0);
-        const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
-        const rawMatEst = row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);
+        const laborCostRounded = row.isGroupRow ? Math.round(row.cost ?? 0) : Math.round(estQty * row.changableAveragePrice);
+        const rawMatEst = row.isGroupRow ? 0 : (row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0));
         const matCostRounded = Math.round(rawMatEst);
         const estTotal = laborCostRounded + matCostRounded;
-        const estUP = estQty > 0 ? Math.round((laborCostRounded + matCostRounded) / estQty) : (row.changableAveragePrice ?? 0);
+        const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (row.changableAveragePrice ?? 0);
         const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
         const rQty = hasData ? estQty - q : null;
         const rUp = hasData ? estUP : null;
@@ -453,12 +453,14 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                             if (subItems.length === 0) return null;
                                             return (
                                                 <>
-                                                    <tr key={`sub-${sub._id}`}>
-                                                        <td colSpan={totalCols} style={tdStyle({ paddingLeft: 28, color: '#9ca3af', fontStyle: 'italic', fontSize: '0.78rem' })}>
-                                                            {sectionIdx + 1}.{subIdx + 1}. {sub.name}
-                                                        </td>
-                                                    </tr>
-                                                    {subItems.map(row => renderItemRow(row, ++itemCounter, 36))}
+                                                    {sub.name?.trim() && (
+                                                        <tr key={`sub-${sub._id}`}>
+                                                            <td colSpan={totalCols} style={tdStyle({ paddingLeft: 28, color: '#9ca3af', fontStyle: 'italic', fontSize: '0.78rem' })}>
+                                                                {sectionIdx + 1}.{subIdx + 1}. {sub.name}
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    {subItems.map(row => renderItemRow(row, ++itemCounter, sub.name?.trim() ? 36 : 20))}
                                                 </>
                                             );
                                         })
