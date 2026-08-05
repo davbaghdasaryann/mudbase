@@ -103,10 +103,10 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         .map(item => {
             const isGroup = item.isGroupRow === true;
             const qty = item.quantity ?? 0;
-            const storedPrice = item.changableAveragePrice ?? 0;
-            // Use stored price if set; fall back to children-computed price
+            const storedPrice = isNaN(item.changableAveragePrice) ? 0 : (item.changableAveragePrice ?? 0);
+            // Group rows: always compute from children (same as estimate page)
             const unitPrice = isGroup
-                ? (storedPrice > 0 ? storedPrice : Math.round(groupUnitPriceFromChildrenMap.get(item._id.toString()) ?? 0))
+                ? Math.round(groupUnitPriceFromChildrenMap.get(item._id.toString()) ?? 0)
                 : storedPrice;
             const matCost = isGroup ? 0 : (matCostByLaborId.get(item._id.toString()) ?? 0);
             return {
