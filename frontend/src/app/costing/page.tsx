@@ -838,7 +838,7 @@ export default function CostingPage() {
                                 return estQty > 0 && actQty >= estQty;
                             }).length : 0;
                             const materialCurrent = pahestEntries.length;
-                            const materialCompleted = pahestEntries.filter(e => (e.costedQuantity ?? 0) >= e.estimateQuantity && e.estimateQuantity > 0).length;
+                            const materialCompleted = pahestEntries.filter(e => e.quantity >= e.estimateQuantity && e.estimateQuantity > 0).length;
                             return (
                                 <>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 2 }}>
