@@ -345,8 +345,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const actTotal = volumeTotal + salaryTotal + matActTotal;
         const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
         const estQty = Number(row.quantity ?? 0);
-        const laborCostRounded = row.isGroupRow ? Math.round(row.cost ?? 0) : Math.round(estQty * row.changableAveragePrice);
-        const rawMatEst = row.isGroupRow ? 0 : (row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0));
+        const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
+        const rawMatEst = row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);
         const matCostRounded = Math.round(rawMatEst);
         const estTotal = laborCostRounded + matCostRounded;
         const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (row.changableAveragePrice ?? 0);

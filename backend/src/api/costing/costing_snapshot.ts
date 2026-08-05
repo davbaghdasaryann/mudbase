@@ -88,20 +88,41 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         matCostByLaborId.set(laborIdStr, (matCostByLaborId.get(laborIdStr) ?? 0) + (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0));
     }
 
-    const laborRows: Db.SnapshotLaborRow[] = laborItems.map((item: any) => ({
-        _id: item._id.toString(),
-        catalogName: item.catalogName ?? '',
-        laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
-        unitSymbol: item.unitSymbol ?? '',
-        quantity: item.quantity ?? 0,
-        changableAveragePrice: item.changableAveragePrice ?? 0,
-        cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
-        materialTotalCost: matCostByLaborId.get(item._id.toString()) ?? 0,
-        subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
-        sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
-        isGroupRow: item.isGroupRow === true ? true : undefined,
-        parentGroupRowId: item.parentGroupRowId ? item.parentGroupRowId.toString() : undefined,
-    }));
+    // Compute total cost (labor + materials) for each child row, then aggregate by parentGroupRowId
+    const groupCostMap = new Map<string, number>(); // groupRowId -> sum of children labor+material costs
+    for (const item of laborItems as any[]) {
+        const parentId = item.parentGroupRowId ? item.parentGroupRowId.toString() : null;
+        if (!parentId) continue;
+        const laborCost = (item.quantity ?? 0) * (item.changableAveragePrice ?? 0);
+        const matCost = matCostByLaborId.get(item._id.toString()) ?? 0;
+        groupCostMap.set(parentId, (groupCostMap.get(parentId) ?? 0) + laborCost + matCost);
+    }
+
+    const laborRows: Db.SnapshotLaborRow[] = laborItems
+        .filter((item: any) => !item.parentGroupRowId) // exclude child rows; they're aggregated into group rows
+        .map((item: any) => {
+            const isGroup = item.isGroupRow === true;
+            const groupCost = isGroup ? (groupCostMap.get(item._id.toString()) ?? 0) : 0;
+            const qty = item.quantity ?? 0;
+            const laborCost = isGroup ? groupCost : Math.round(qty * (item.changableAveragePrice ?? 0));
+            const matCost = isGroup ? 0 : (matCostByLaborId.get(item._id.toString()) ?? 0);
+            const totalCost = laborCost + matCost;
+            const unitPrice = isGroup ? (qty > 0 ? Math.round(groupCost / qty) : 0) : (item.changableAveragePrice ?? 0);
+            return {
+                _id: item._id.toString(),
+                catalogName: item.catalogName ?? '',
+                laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+                unitSymbol: item.unitSymbol ?? '',
+                quantity: qty,
+                changableAveragePrice: unitPrice,
+                cost: totalCost,
+                materialTotalCost: matCost,
+                subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+                sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+                isGroupRow: isGroup ? true : undefined,
+                parentGroupRowId: undefined,
+            };
+        });
 
     const sections: Db.SnapshotSection[] = rawSections.map(s => ({
         _id: s._id.toString(),

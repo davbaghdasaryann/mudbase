@@ -558,7 +558,20 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                     let: { groupId: '$_id' },
                     pipeline: [
                         { $match: { $expr: { $eq: ['$parentGroupRowId', '$$groupId'] }, isHidden: { $ne: true } } },
-                        { $project: { quantity: 1, changableAveragePrice: 1 } },
+                        {
+                            $lookup: {
+                                from: 'estimate_material_items',
+                                localField: '_id',
+                                foreignField: 'estimatedLaborId',
+                                pipeline: [{ $project: { quantity: 1, changableAveragePrice: 1 } }],
+                                as: 'mats',
+                            },
+                        },
+                        { $project: {
+                            quantity: 1,
+                            changableAveragePrice: 1,
+                            matCost: { $sum: { $map: { input: '$mats', as: 'm', in: { $multiply: ['$$m.quantity', '$$m.changableAveragePrice'] } } } },
+                        }},
                     ],
                     as: 'children',
                 },
@@ -584,7 +597,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                             $map: {
                                 input: '$children',
                                 as: 'c',
-                                in: { $multiply: ['$$c.quantity', '$$c.changableAveragePrice'] },
+                                in: { $add: [{ $multiply: ['$$c.quantity', '$$c.changableAveragePrice'] }, '$$c.matCost'] },
                             },
                         },
                     },
