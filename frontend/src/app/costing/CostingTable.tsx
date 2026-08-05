@@ -351,7 +351,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
         const rQty = hasData ? estQty - q : null;
         const rUp = hasData ? estUP - actUP : null;
-        const rTot = hasData ? estTotal - actTotal : null;
+        const rTot = hasData ? Math.round((estQty - q) * estUP) : null;
         const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
         const fw = (v: number | null) => v !== null ? 600 : 400;
         return (
