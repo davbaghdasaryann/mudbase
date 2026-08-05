@@ -273,7 +273,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>ժամավճարային</Typography>} />
                         </RadioGroup>
                         {type === 'gorcarqayin' && <>
-                            <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} />
+                            <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} unit={selectedRow?.unitSymbol || ''} />
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
