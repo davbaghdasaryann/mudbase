@@ -840,8 +840,8 @@ export default function CostingPage() {
                             }).map(row => toRowId(row._id)) : []);
                             const laborCompleted = completedRowIds.size;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
-                            const materialCurrent = pahestEntries.length;
-                            const materialCompleted = pahestEntries.filter(e => (e.costedQuantity ?? 0) >= e.estimateQuantity && e.estimateQuantity > 0).length;
+                            const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && e.quantity >= e.estimateQuantity).length;
+                            const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && e.quantity < e.estimateQuantity).length;
                             return (
                                 <>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 2 }}>
