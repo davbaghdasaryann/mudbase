@@ -72,6 +72,12 @@ registerApiSession('estimate/move_labor_items', async (req, res, session) => {
         { $set: { estimateSubsectionId: targetSubsectionOid } }
     );
 
+    // Also move children of any group rows that were moved
+    await estimateLaborItemsColl.updateMany(
+        { parentGroupRowId: { $in: estimatedLaborIds }, estimateId },
+        { $set: { estimateSubsectionId: targetSubsectionOid } }
+    );
+
     await updateEstimateCostById(estimateId);
 
     respondJson(res, { ok: true, modifiedCount: result.modifiedCount });
