@@ -88,15 +88,14 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         matCostByLaborId.set(laborIdStr, (matCostByLaborId.get(laborIdStr) ?? 0) + (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0));
     }
 
-    // For group rows: unit price = sum(child.qty * child.price + child.matCost) per group unit
-    // Child quantities in DB are stored per group unit, so the sum IS the unit price directly
-    const groupUnitPriceMap = new Map<string, number>(); // groupRowId -> unit price
+    // For group rows without a manually set price: compute from children
+    const groupUnitPriceFromChildrenMap = new Map<string, number>();
     for (const item of laborItems as any[]) {
         const parentId = item.parentGroupRowId ? item.parentGroupRowId.toString() : null;
         if (!parentId) continue;
         const laborCostPerUnit = (item.quantity ?? 0) * (item.changableAveragePrice ?? 0);
         const matCostPerUnit = matCostByLaborId.get(item._id.toString()) ?? 0;
-        groupUnitPriceMap.set(parentId, (groupUnitPriceMap.get(parentId) ?? 0) + laborCostPerUnit + matCostPerUnit);
+        groupUnitPriceFromChildrenMap.set(parentId, (groupUnitPriceFromChildrenMap.get(parentId) ?? 0) + laborCostPerUnit + matCostPerUnit);
     }
 
     const laborRows: Db.SnapshotLaborRow[] = (laborItems as any[])
@@ -104,7 +103,11 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         .map(item => {
             const isGroup = item.isGroupRow === true;
             const qty = item.quantity ?? 0;
-            const unitPrice = isGroup ? Math.round(groupUnitPriceMap.get(item._id.toString()) ?? 0) : (item.changableAveragePrice ?? 0);
+            const storedPrice = item.changableAveragePrice ?? 0;
+            // Use stored price if set; fall back to children-computed price
+            const unitPrice = isGroup
+                ? (storedPrice > 0 ? storedPrice : Math.round(groupUnitPriceFromChildrenMap.get(item._id.toString()) ?? 0))
+                : storedPrice;
             const matCost = isGroup ? 0 : (matCostByLaborId.get(item._id.toString()) ?? 0);
             return {
                 _id: item._id.toString(),
