@@ -833,12 +833,13 @@ export default function CostingPage() {
                             const actualTotal = actualMaterials + actualLabor;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_')).map(e => e.laborItemId)).size;
                             const laborCompleted = estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
-                                const actQty = parseFloat(actualData[row._id]?.quantity || '0') || 0;
+                                const rid = typeof row._id === 'object' && row._id !== null && 'oid' in (row._id as any) ? (row._id as any).oid : String(row._id);
+                                const actQty = parseFloat(actualData[rid]?.quantity || '0') || 0;
                                 const estQty = Number(row.quantity ?? 0);
                                 return estQty > 0 && actQty >= estQty;
                             }).length : 0;
                             const materialCurrent = pahestEntries.length;
-                            const materialCompleted = pahestEntries.filter(e => e.quantity >= e.estimateQuantity && e.estimateQuantity > 0).length;
+                            const materialCompleted = pahestEntries.filter(e => (e.costedQuantity ?? 0) >= e.estimateQuantity && e.estimateQuantity > 0).length;
                             return (
                                 <>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 2 }}>
