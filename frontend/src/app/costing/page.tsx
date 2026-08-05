@@ -833,8 +833,9 @@ export default function CostingPage() {
                             const actualTotal = actualMaterials + actualLabor;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_')).map(e => e.laborItemId)).size;
                             const laborCompleted = estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
-                                const spent = parseFloat(actualData[row._id]?.spent || '0') || 0;
-                                return row.cost > 0 && spent >= row.cost;
+                                const actQty = parseFloat(actualData[row._id]?.quantity || '0') || 0;
+                                const estQty = Number(row.quantity ?? 0);
+                                return estQty > 0 && actQty >= estQty;
                             }).length : 0;
                             const materialCurrent = pahestEntries.length;
                             const materialCompleted = pahestEntries.filter(e => (e.costedQuantity ?? 0) >= e.estimateQuantity && e.estimateQuantity > 0).length;
