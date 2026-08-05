@@ -72,9 +72,13 @@ registerApiSession('estimate/duplicate', async (req, res, session) => {
             const newSubsectionResult = await subsectionsCol.insertOne(newSubsection);
             const newSubsectionId = newSubsectionResult.insertedId;
 
-            // Copy all labor items for this subsection
+            // Copy all labor items for this subsection (two passes: group rows first, then children)
             const laborItems = await laborItemsCol.find({estimateSubsectionId: subsection._id}).toArray();
-            for (const laborItem of laborItems) {
+            const oldToNewLaborId = new Map<string, ObjectId>();
+
+            // Pass 1: copy non-child rows (group rows and regular rows)
+            const nonChildItems = laborItems.filter(li => !li.parentGroupRowId);
+            for (const laborItem of nonChildItems) {
                 const newLaborItem: Partial<Db.EntityEstimateLaborItem> = {
                     estimateSubsectionId: newSubsectionId,
                     estimateId: newEstimateId,
@@ -89,11 +93,57 @@ registerApiSession('estimate/duplicate', async (req, res, session) => {
                     isHidden: laborItem.isHidden,
                     displayIndex: laborItem.displayIndex,
                     priceSource: laborItem.priceSource,
+                    isGroupRow: laborItem.isGroupRow,
                 };
                 const newLaborItemResult = await laborItemsCol.insertOne(newLaborItem);
                 const newLaborItemId = newLaborItemResult.insertedId;
+                oldToNewLaborId.set(laborItem._id.toString(), newLaborItemId);
 
                 // Copy all material items for this labor item
+                const materialItems = await materialItemsCol.find({estimatedLaborId: laborItem._id}).toArray();
+                for (const materialItem of materialItems) {
+                    const newMaterialItem: Partial<Db.EntityEstimateMaterialItems> = {
+                        estimateSubsectionId: newSubsectionId,
+                        estimateId: newEstimateId,
+                        estimatedLaborId: newLaborItemId,
+                        materialItemId: materialItem.materialItemId,
+                        materialOfferId: materialItem.materialOfferId,
+                        measurementUnitMongoId: materialItem.measurementUnitMongoId,
+                        quantity: materialItem.quantity,
+                        averagePrice: materialItem.averagePrice,
+                        changableAveragePrice: materialItem.changableAveragePrice,
+                        materialOfferItemName: materialItem.materialOfferItemName,
+                        materialConsumptionNorm: materialItem.materialConsumptionNorm,
+                    };
+                    await materialItemsCol.insertOne(newMaterialItem);
+                }
+            }
+
+            // Pass 2: copy child rows with remapped parentGroupRowId
+            const childItems = laborItems.filter(li => !!li.parentGroupRowId);
+            for (const laborItem of childItems) {
+                const newParentId = oldToNewLaborId.get(laborItem.parentGroupRowId!.toString());
+                if (!newParentId) continue;
+                const newLaborItem: Partial<Db.EntityEstimateLaborItem> = {
+                    estimateSubsectionId: newSubsectionId,
+                    estimateId: newEstimateId,
+                    laborItemId: laborItem.laborItemId,
+                    laborOfferId: laborItem.laborOfferId,
+                    measurementUnitMongoId: laborItem.measurementUnitMongoId,
+                    quantity: laborItem.quantity,
+                    averagePrice: laborItem.averagePrice,
+                    changableAveragePrice: laborItem.changableAveragePrice,
+                    laborOfferItemName: laborItem.laborOfferItemName,
+                    laborHours: laborItem.laborHours,
+                    isHidden: laborItem.isHidden,
+                    displayIndex: laborItem.displayIndex,
+                    priceSource: laborItem.priceSource,
+                    parentGroupRowId: newParentId,
+                };
+                const newLaborItemResult = await laborItemsCol.insertOne(newLaborItem);
+                const newLaborItemId = newLaborItemResult.insertedId;
+                oldToNewLaborId.set(laborItem._id.toString(), newLaborItemId);
+
                 const materialItems = await materialItemsCol.find({estimatedLaborId: laborItem._id}).toArray();
                 for (const materialItem of materialItems) {
                     const newMaterialItem: Partial<Db.EntityEstimateMaterialItems> = {

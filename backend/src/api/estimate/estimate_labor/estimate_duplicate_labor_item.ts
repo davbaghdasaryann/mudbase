@@ -67,6 +67,34 @@ registerApiSession('estimate/duplicate_labor_item', async (req, res, session) =>
         await estimateMaterialItemsColl.insertMany(newMaterials);
     }
 
+    // If this is a group row, also duplicate all child rows (and their materials)
+    if (source!.isGroupRow) {
+        const children = await estimateLaborItemsColl
+            .find({ parentGroupRowId: estimatedLaborId })
+            .toArray();
+        for (const child of children) {
+            const { _id: _childId, ...childData } = child;
+            const newChildId = new ObjectId();
+            await estimateLaborItemsColl.insertOne({
+                ...childData,
+                _id: newChildId,
+                parentGroupRowId: newLaborId,
+            });
+            const childMats = await estimateMaterialItemsColl
+                .find({ estimatedLaborId: child._id })
+                .toArray();
+            if (childMats.length > 0) {
+                await estimateMaterialItemsColl.insertMany(
+                    childMats.map(({ _id: _mid, ...m }) => ({
+                        ...m,
+                        _id: new ObjectId(),
+                        estimatedLaborId: newChildId,
+                    }))
+                );
+            }
+        }
+    }
+
     await updateEstimateCostById(source!.estimateId);
 
     respondJsonData(res, { ok: true, newLaborId });
