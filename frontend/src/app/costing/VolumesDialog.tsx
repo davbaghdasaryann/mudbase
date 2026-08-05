@@ -120,6 +120,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
         onActualUpdate?.(toId(row._id), qty, 0);
         onCostAdded({
             id: String(Date.now() + Math.random()),
+            laborItemId: row._id,
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
             quantity: qty,
