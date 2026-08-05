@@ -831,13 +831,15 @@ export default function CostingPage() {
                             const actualMaterials = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
                             const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
                             const actualTotal = actualMaterials + actualLabor;
-                            const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_')).map(e => e.laborItemId)).size;
-                            const laborCompleted = estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
-                                const rid = typeof row._id === 'object' && row._id !== null && 'oid' in (row._id as any) ? (row._id as any).oid : String(row._id);
+                            const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
+                            const completedRowIds = new Set(estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
+                                const rid = toRowId(row._id);
                                 const actQty = parseFloat(actualData[rid]?.quantity || '0') || 0;
                                 const estQty = Number(row.quantity ?? 0);
                                 return estQty > 0 && actQty >= estQty;
-                            }).length : 0;
+                            }).map(row => toRowId(row._id)) : []);
+                            const laborCompleted = completedRowIds.size;
+                            const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
                             const materialCurrent = pahestEntries.length;
                             const materialCompleted = pahestEntries.filter(e => (e.costedQuantity ?? 0) >= e.estimateQuantity && e.estimateQuantity > 0).length;
                             return (
