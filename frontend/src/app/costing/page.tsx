@@ -497,7 +497,7 @@ function SmallScaleMaterialsWidget({ estimate, aylEntries, height = 240 }: { est
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>Փոqratsavall shinanyuth</Typography>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>Փոքրածավալ շինանյութ</Typography>
 
             <Box sx={{ flex: 1, minHeight: chartH }}>
                 <ResponsiveContainer width='100%' height='100%'>
