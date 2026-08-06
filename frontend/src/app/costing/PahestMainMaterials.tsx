@@ -19,6 +19,7 @@ import { mainPrimaryColor } from '@/theme';
 
 interface MaterialOption {
     materialItemId: string;
+    estimatedLaborId: string;
     name: string;
     fullCode: string;
     unit: string;
@@ -74,6 +75,7 @@ interface Props {
     entries: PahestEntry[];
     onChange: (entries: PahestEntry[]) => void;
     onHistoryEntry?: (e: HistoryEntryInput) => void;
+    actualData?: Record<string, { quantity: string; unitPrice: string }>;
 }
 
 function toIdStr(id: unknown): string {
@@ -83,7 +85,7 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry }: Props) {
+export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, actualData }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [groupData, setGroupData] = useState<GroupMaterialData[]>([]);
@@ -115,6 +117,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 const md = item.estimateMaterialItemData?.[0];
                 rows.push({
                     materialItemId: id,
+                    estimatedLaborId: toIdStr(item.estimatedLaborId),
                     name: md?.name || '—',
                     fullCode: md?.fullCode || '',
                     unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
@@ -245,9 +248,15 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         }
     };
 
+    const hasVolume = (laborId: string) => parseFloat(actualData?.[laborId]?.quantity || '0') > 0;
     const filtered = materials.filter(m =>
+        hasVolume(m.estimatedLaborId) &&
         (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase())
     );
+    const filteredGroupData = groupData.map(g => ({
+        ...g,
+        children: g.children.filter(c => hasVolume(c.childId)),
+    })).filter(g => g.children.length > 0);
 
     return (
         <Box>
@@ -354,7 +363,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                 ))}
 
                                 {/* Group rows with expandable materials (children flattened) */}
-                                {groupData
+                                {filteredGroupData
                                     .filter(g => !search || g.groupName.toLowerCase().includes(search.toLowerCase()) || g.children.some(c => c.materials.some(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()))))
                                     .map(group => {
                                         const isGroupExpanded = expandedGroups.has(group.groupId);
@@ -393,7 +402,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                     })
                                 }
 
-                                {filtered.length === 0 && groupData.length === 0 && (
+                                {filtered.length === 0 && filteredGroupData.length === 0 && (
                                     <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>{t('No results')}</Typography>
                                 )}
                             </>

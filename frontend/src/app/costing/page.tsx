@@ -1060,6 +1060,7 @@ export default function CostingPage() {
                             unforeseenEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                             entries={pahestEntries}
                             onChange={setPahestEntries}
+                            actualData={actualData}
                             onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main' }, ...prev])}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
