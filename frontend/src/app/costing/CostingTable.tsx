@@ -389,8 +389,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(estUP)}</td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(estTotal)}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: q > 0 ? '#222' : '#ccc' })}>{q > 0 ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: q > 0 ? '#555' : '#ccc' })}>{q > 0 ? formatCurrencyRounded(actUP) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(actTotal) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: (q > 0 && actTotal > 0) ? '#555' : '#ccc' })}>{(q > 0 && actTotal > 0) ? formatCurrencyRounded(actUP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: actTotal > 0 ? ACCENT : '#ccc' })}>{actTotal > 0 ? formatCurrencyRounded(actTotal) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
