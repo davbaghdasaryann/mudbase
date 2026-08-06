@@ -19,7 +19,7 @@ import { mainPrimaryColor } from '@/theme';
 
 interface MaterialOption {
     materialItemId: string;
-    estimatedLaborId: string;
+    estimatedLaborIds: string[];
     name: string;
     fullCode: string;
     unit: string;
@@ -108,24 +108,27 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     useEffect(() => {
         setLoading(true);
         const parseItems = (items: any[]): MaterialOption[] => {
-            const seen = new Set<string>();
-            const rows: MaterialOption[] = [];
+            const map = new Map<string, MaterialOption>();
             for (const item of items) {
                 const id = toIdStr(item.materialItemId);
-                if (!id || seen.has(id)) continue;
-                seen.add(id);
-                const md = item.estimateMaterialItemData?.[0];
-                rows.push({
-                    materialItemId: id,
-                    estimatedLaborId: toIdStr(item.estimatedLaborId),
-                    name: md?.name || '—',
-                    fullCode: md?.fullCode || '',
-                    unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
-                    estimateQuantity: item.quantity ?? 0,
-                    costPerUnit: md?.averagePrice ?? 0,
-                });
+                if (!id) continue;
+                const laborId = toIdStr(item.estimatedLaborId);
+                if (map.has(id)) {
+                    if (laborId) map.get(id)!.estimatedLaborIds.push(laborId);
+                } else {
+                    const md = item.estimateMaterialItemData?.[0];
+                    map.set(id, {
+                        materialItemId: id,
+                        estimatedLaborIds: laborId ? [laborId] : [],
+                        name: md?.name || '—',
+                        fullCode: md?.fullCode || '',
+                        unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
+                        estimateQuantity: item.quantity ?? 0,
+                        costPerUnit: md?.averagePrice ?? 0,
+                    });
+                }
             }
-            return rows;
+            return Array.from(map.values());
         };
         const fetches = [
             Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId } }),
@@ -166,7 +169,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     });
 
     const selectGroupMaterial = (m: GroupChildMaterial) => {
-        setSelected({ materialItemId: m.materialItemId, name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit });
+        setSelected({ materialItemId: m.materialItemId, estimatedLaborIds: [], name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit });
         setQtyInput('');
     };
 
@@ -250,7 +253,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
 
     const hasVolume = (laborId: string) => parseFloat(actualData?.[laborId]?.quantity || '0') > 0;
     const filtered = materials.filter(m =>
-        hasVolume(m.estimatedLaborId) &&
+        m.estimatedLaborIds.some(hasVolume) &&
         (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase())
     );
     const filteredGroupData = groupData.map(g => ({
