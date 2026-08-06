@@ -93,7 +93,6 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MaterialOption | null>(null);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-    const [expandedChildren, setExpandedChildren] = useState<Set<string>>(new Set());
     const [qtyInput, setQtyInput] = useState('');
     const [addPriceInput, setAddPriceInput] = useState('');
 
@@ -151,19 +150,12 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         setQtyInput('');
         setAddPriceInput('');
         setExpandedGroups(new Set());
-        setExpandedChildren(new Set());
         setAddOpen(true);
     };
 
     const toggleGroup = (groupId: string) => setExpandedGroups(prev => {
         const next = new Set(prev);
         if (next.has(groupId)) next.delete(groupId); else next.add(groupId);
-        return next;
-    });
-
-    const toggleChild = (childId: string) => setExpandedChildren(prev => {
-        const next = new Set(prev);
-        if (next.has(childId)) next.delete(childId); else next.add(childId);
         return next;
     });
 
@@ -358,58 +350,41 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                     </Box>
                                 ))}
 
-                                {/* Group rows with expandable children */}
+                                {/* Group rows with expandable materials (children flattened) */}
                                 {groupData
                                     .filter(g => !search || g.groupName.toLowerCase().includes(search.toLowerCase()) || g.children.some(c => c.materials.some(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()))))
                                     .map(group => {
                                         const isGroupExpanded = expandedGroups.has(group.groupId);
+                                        const allMaterials = group.children.flatMap(c => c.materials).filter(m => !search || (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()));
                                         return (
                                             <Box key={group.groupId} sx={{ borderBottom: '1px solid #f0fbfc' }}>
-                                                {/* Group row header */}
+                                                {/* Group row header — same styling as regular rows */}
                                                 <Box
                                                     onClick={() => toggleGroup(group.groupId)}
-                                                    sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', backgroundColor: '#f5feff', '&:hover': { backgroundColor: '#edfbfc' } }}
+                                                    sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' } }}
                                                 >
-                                                    {isGroupExpanded ? <ExpandMoreIcon sx={{ fontSize: 16, color: mainPrimaryColor }} /> : <ChevronRightIcon sx={{ fontSize: 16, color: '#aaa' }} />}
-                                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: mainPrimaryColor }}>{group.groupName || t('Group')}</Typography>
+                                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 400, color: '#333' }}>{group.groupName || t('Group')}</Typography>
+                                                    {isGroupExpanded ? <ExpandMoreIcon sx={{ fontSize: 16, color: '#aaa' }} /> : <ChevronRightIcon sx={{ fontSize: 16, color: '#aaa' }} />}
                                                 </Box>
 
-                                                {/* Children (shown when group expanded) */}
-                                                {isGroupExpanded && group.children.map(child => {
-                                                    const isChildExpanded = expandedChildren.has(child.childId);
-                                                    const childMats = child.materials.filter(m => !search || (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()));
-                                                    return (
-                                                        <Box key={child.childId}>
-                                                            {/* Child header */}
-                                                            <Box
-                                                                onClick={() => toggleChild(child.childId)}
-                                                                sx={{ pl: 4, pr: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', backgroundColor: '#fafeff', '&:hover': { backgroundColor: '#f2fbfc' } }}
-                                                            >
-                                                                {isChildExpanded ? <ExpandMoreIcon sx={{ fontSize: 14, color: '#aaa' }} /> : <ChevronRightIcon sx={{ fontSize: 14, color: '#ccc' }} />}
-                                                                <Typography sx={{ fontSize: '0.82rem', color: '#555', fontWeight: 500 }}>{child.childName}</Typography>
-                                                            </Box>
-
-                                                            {/* Materials (shown when child expanded) */}
-                                                            {isChildExpanded && childMats.map(m => (
-                                                                <Box
-                                                                    key={m.estimatedMaterialId}
-                                                                    onClick={() => selectGroupMaterial(m)}
-                                                                    sx={{
-                                                                        pl: 6, pr: 2, py: 0.75, fontSize: '0.83rem', cursor: 'pointer',
-                                                                        borderBottom: '1px solid #f8fdfe',
-                                                                        backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                                                        color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#444',
-                                                                        fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
-                                                                        '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
-                                                                    }}
-                                                                >
-                                                                    {m.name}
-                                                                    <Typography component='span' sx={{ ml: 1, fontSize: '0.76rem', color: '#888' }}>({m.unit})</Typography>
-                                                                </Box>
-                                                            ))}
-                                                        </Box>
-                                                    );
-                                                })}
+                                                {/* Materials directly under group (no child work level) */}
+                                                {isGroupExpanded && allMaterials.map(m => (
+                                                    <Box
+                                                        key={m.estimatedMaterialId}
+                                                        onClick={() => selectGroupMaterial(m)}
+                                                        sx={{
+                                                            pl: 4, pr: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
+                                                            borderBottom: '1px solid #f0fbfc',
+                                                            backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                                            color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
+                                                            fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
+                                                            '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
+                                                        }}
+                                                    >
+                                                        {m.name}
+                                                        <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
+                                                    </Box>
+                                                ))}
                                             </Box>
                                         );
                                     })
