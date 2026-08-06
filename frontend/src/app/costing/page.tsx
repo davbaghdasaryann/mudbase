@@ -491,7 +491,7 @@ function SmallScaleMaterialsWidget({ estimate, aylEntries, height = 240 }: { est
     if (estimatedValue === 0 && actualValue === 0) return null;
 
     const data = [
-        { name: 'Նախahashiv', value: estimatedValue, gradId: 'ssm-est', dotColor: SSM_EST_GRAD.top, stroke: SSM_EST_GRAD.stroke },
+        { name: 'Նախահաշիվ', value: estimatedValue, gradId: 'ssm-est', dotColor: SSM_EST_GRAD.top, stroke: SSM_EST_GRAD.stroke },
         { name: 'Փաստացի', value: actualValue, gradId: 'ssm-act', dotColor: SSM_ACT_GRAD.top, stroke: SSM_ACT_GRAD.stroke },
     ];
 
