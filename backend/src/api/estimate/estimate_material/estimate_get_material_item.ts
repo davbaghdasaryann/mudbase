@@ -132,6 +132,108 @@ registerApiSession('estimate/fetch_materials_list', async (req, res, session) =>
     respondJsonData(res, data);
 });
 
+/** Returns group rows → children → materials for the warehouse "Add" modal. */
+registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+    const sectionsCol = Db.getEstimateSectionsCollection();
+    const subsectionsCol = Db.getEstimateSubsectionsCollection();
+    const laborCol = Db.getEstimateLaborItemsCollection();
+    const materialCol = Db.getEstimateMaterialItemsCollection();
+
+    const sections = await sectionsCol.find({ estimateId }).project({ _id: 1 }).toArray();
+    if (sections.length === 0) { respondJsonData(res, []); return; }
+    const sectionIds = sections.map(s => s._id);
+
+    const subsections = await subsectionsCol.find({ estimateSectionId: { $in: sectionIds } }).project({ _id: 1 }).toArray();
+    if (subsections.length === 0) { respondJsonData(res, []); return; }
+    const subsectionIds = subsections.map(s => s._id);
+
+    // All group rows
+    const groupRows = await laborCol.find({ estimateSubsectionId: { $in: subsectionIds }, isGroupRow: true }).toArray();
+    if (groupRows.length === 0) { respondJsonData(res, []); return; }
+
+    const groupIds = groupRows.map(g => g._id);
+
+    // All children of those group rows
+    const children = await laborCol.find({ parentGroupRowId: { $in: groupIds } }).toArray();
+    const childIds = children.map(c => c._id);
+
+    // Materials for all children (with catalog info)
+    const materials = childIds.length > 0 ? await materialCol.aggregate([
+        { $match: { estimatedLaborId: { $in: childIds } } },
+        {
+            $lookup: {
+                from: 'material_items',
+                let: { mid: '$materialItemId' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$_id', '$$mid'] } } },
+                    { $project: { name: 1, fullCode: 1, averagePrice: 1, _id: 0 } },
+                ],
+                as: 'matData',
+            },
+        },
+        { $match: { matData: { $ne: [] } } },
+        {
+            $lookup: {
+                from: 'measurement_unit',
+                localField: 'measurementUnitMongoId',
+                foreignField: '_id',
+                as: 'unitData',
+            },
+        },
+        { $unwind: { path: '$unitData', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                estimatedLaborId: 1,
+                materialItemId: 1,
+                quantity: 1,
+                name: { $arrayElemAt: ['$matData.name', 0] },
+                fullCode: { $arrayElemAt: ['$matData.fullCode', 0] },
+                costPerUnit: { $arrayElemAt: ['$matData.averagePrice', 0] },
+                unit: '$unitData.representationSymbol',
+            },
+        },
+    ]).toArray() : [];
+
+    // Build map: childId → materials
+    const matByChild = new Map<string, any[]>();
+    for (const m of materials) {
+        const key = m.estimatedLaborId?.toString() ?? '';
+        if (!key) continue;
+        if (!matByChild.has(key)) matByChild.set(key, []);
+        matByChild.get(key)!.push(m);
+    }
+
+    // Build map: groupId → children
+    const childrenByGroup = new Map<string, any[]>();
+    for (const c of children) {
+        const key = c.parentGroupRowId?.toString() ?? '';
+        if (!key) continue;
+        if (!childrenByGroup.has(key)) childrenByGroup.set(key, []);
+        childrenByGroup.get(key)!.push(c);
+    }
+
+    const result = groupRows.map(g => ({
+        groupId: g._id.toString(),
+        groupName: g.laborOfferItemName || '',
+        children: (childrenByGroup.get(g._id.toString()) ?? []).map(c => ({
+            childId: c._id.toString(),
+            childName: c.laborOfferItemName || '',
+            materials: (matByChild.get(c._id.toString()) ?? []).map(m => ({
+                estimatedMaterialId: m._id?.toString() ?? '',
+                materialItemId: m.materialItemId?.toString() ?? '',
+                name: m.name || '',
+                fullCode: m.fullCode || '',
+                unit: m.unit || '',
+                estimateQuantity: m.quantity ?? 0,
+                costPerUnit: m.costPerUnit ?? 0,
+            })),
+        })).filter(c => c.materials.length > 0),
+    })).filter(g => g.children.length > 0);
+
+    respondJsonData(res, result);
+});
+
 registerApiSession('estimate/get_material_item', async (req, res, session) => {
     let estimateMaterialId = requireMongoIdParam(req, 'estimatedMaterialId');
 

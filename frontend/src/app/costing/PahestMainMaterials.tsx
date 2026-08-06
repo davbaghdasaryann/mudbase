@@ -11,6 +11,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import HistoryIcon from '@mui/icons-material/History';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
@@ -22,6 +24,28 @@ interface MaterialOption {
     unit: string;
     estimateQuantity: number;
     costPerUnit: number;
+}
+
+interface GroupChildMaterial {
+    estimatedMaterialId: string;
+    materialItemId: string;
+    name: string;
+    fullCode: string;
+    unit: string;
+    estimateQuantity: number;
+    costPerUnit: number;
+}
+
+interface GroupChild {
+    childId: string;
+    childName: string;
+    materials: GroupChildMaterial[];
+}
+
+interface GroupMaterialData {
+    groupId: string;
+    groupName: string;
+    children: GroupChild[];
 }
 
 export interface PahestHistoryRecord {
@@ -62,11 +86,14 @@ function toIdStr(id: unknown): string {
 export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
+    const [groupData, setGroupData] = useState<GroupMaterialData[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [addOpen, setAddOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MaterialOption | null>(null);
+    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+    const [expandedChildren, setExpandedChildren] = useState<Set<string>>(new Set());
     const [qtyInput, setQtyInput] = useState('');
     const [addPriceInput, setAddPriceInput] = useState('');
 
@@ -102,12 +129,19 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
             Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId } }),
             ...(unforeseenEstimateId ? [Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: unforeseenEstimateId } })] : []),
         ];
-        Promise.all(fetches).then(([main, uf]) => {
+        Promise.all([
+            ...fetches,
+            Api.requestSession<GroupMaterialData[]>({ command: 'estimate/fetch_group_materials_for_pahest', args: { estimateId } }),
+        ]).then(([main, ufOrGroup, maybeGroup]) => {
+            const hasUf = !!unforeseenEstimateId;
+            const uf = hasUf ? (ufOrGroup as any[]) : [];
+            const groups = (hasUf ? maybeGroup : ufOrGroup) as GroupMaterialData[] ?? [];
             const mainRows = parseItems(main ?? []);
             const ufRows = parseItems(uf ?? []);
             const seen = new Set(mainRows.map(r => r.materialItemId));
             const combined = [...mainRows, ...ufRows.filter(r => !seen.has(r.materialItemId))];
             setMaterials(combined);
+            setGroupData(groups ?? []);
         }).catch(console.error).finally(() => setLoading(false));
     }, [estimateId, unforeseenEstimateId]);
 
@@ -116,7 +150,26 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         setSelected(null);
         setQtyInput('');
         setAddPriceInput('');
+        setExpandedGroups(new Set());
+        setExpandedChildren(new Set());
         setAddOpen(true);
+    };
+
+    const toggleGroup = (groupId: string) => setExpandedGroups(prev => {
+        const next = new Set(prev);
+        if (next.has(groupId)) next.delete(groupId); else next.add(groupId);
+        return next;
+    });
+
+    const toggleChild = (childId: string) => setExpandedChildren(prev => {
+        const next = new Set(prev);
+        if (next.has(childId)) next.delete(childId); else next.add(childId);
+        return next;
+    });
+
+    const selectGroupMaterial = (m: GroupChildMaterial) => {
+        setSelected({ materialItemId: m.materialItemId, name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit });
+        setQtyInput('');
     };
 
     const handleConfirm = () => {
@@ -279,31 +332,94 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                             autoFocus
                         />
                     </Box>
-                    <Box sx={{ maxHeight: 320, overflowY: 'auto', border: '1px solid #e0f5f7', borderRadius: 2, mb: 2 }}>
+                    <Box sx={{ maxHeight: 380, overflowY: 'auto', border: '1px solid #e0f5f7', borderRadius: 2, mb: 2 }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
                                 <CircularProgress size={24} sx={{ color: mainPrimaryColor }} />
                             </Box>
-                        ) : filtered.length === 0 ? (
-                            <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>{t('No results')}</Typography>
-                        ) : filtered.map(m => (
-                            <Box
-                                key={m.materialItemId}
-                                onClick={() => { setSelected(m); setQtyInput(''); }}
-                                sx={{
-                                    px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
-                                    borderBottom: '1px solid #f0fbfc',
-                                    backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                    color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
-                                    fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
-                                    '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
-                                    '&:last-child': { borderBottom: 'none' },
-                                }}
-                            >
-                                {m.name}
-                                <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
-                            </Box>
-                        ))}
+                        ) : (
+                            <>
+                                {/* Standalone materials */}
+                                {filtered.map(m => (
+                                    <Box
+                                        key={m.materialItemId}
+                                        onClick={() => { setSelected(m); setQtyInput(''); }}
+                                        sx={{
+                                            px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
+                                            borderBottom: '1px solid #f0fbfc',
+                                            backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                            color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
+                                            fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
+                                            '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
+                                        }}
+                                    >
+                                        {m.name}
+                                        <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
+                                    </Box>
+                                ))}
+
+                                {/* Group rows with expandable children */}
+                                {groupData
+                                    .filter(g => !search || g.groupName.toLowerCase().includes(search.toLowerCase()) || g.children.some(c => c.materials.some(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()))))
+                                    .map(group => {
+                                        const isGroupExpanded = expandedGroups.has(group.groupId);
+                                        return (
+                                            <Box key={group.groupId} sx={{ borderBottom: '1px solid #f0fbfc' }}>
+                                                {/* Group row header */}
+                                                <Box
+                                                    onClick={() => toggleGroup(group.groupId)}
+                                                    sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', backgroundColor: '#f5feff', '&:hover': { backgroundColor: '#edfbfc' } }}
+                                                >
+                                                    {isGroupExpanded ? <ExpandMoreIcon sx={{ fontSize: 16, color: mainPrimaryColor }} /> : <ChevronRightIcon sx={{ fontSize: 16, color: '#aaa' }} />}
+                                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: mainPrimaryColor }}>{group.groupName || t('Group')}</Typography>
+                                                </Box>
+
+                                                {/* Children (shown when group expanded) */}
+                                                {isGroupExpanded && group.children.map(child => {
+                                                    const isChildExpanded = expandedChildren.has(child.childId);
+                                                    const childMats = child.materials.filter(m => !search || (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()));
+                                                    return (
+                                                        <Box key={child.childId}>
+                                                            {/* Child header */}
+                                                            <Box
+                                                                onClick={() => toggleChild(child.childId)}
+                                                                sx={{ pl: 4, pr: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', backgroundColor: '#fafeff', '&:hover': { backgroundColor: '#f2fbfc' } }}
+                                                            >
+                                                                {isChildExpanded ? <ExpandMoreIcon sx={{ fontSize: 14, color: '#aaa' }} /> : <ChevronRightIcon sx={{ fontSize: 14, color: '#ccc' }} />}
+                                                                <Typography sx={{ fontSize: '0.82rem', color: '#555', fontWeight: 500 }}>{child.childName}</Typography>
+                                                            </Box>
+
+                                                            {/* Materials (shown when child expanded) */}
+                                                            {isChildExpanded && childMats.map(m => (
+                                                                <Box
+                                                                    key={m.estimatedMaterialId}
+                                                                    onClick={() => selectGroupMaterial(m)}
+                                                                    sx={{
+                                                                        pl: 6, pr: 2, py: 0.75, fontSize: '0.83rem', cursor: 'pointer',
+                                                                        borderBottom: '1px solid #f8fdfe',
+                                                                        backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                                                        color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#444',
+                                                                        fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
+                                                                        '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
+                                                                    }}
+                                                                >
+                                                                    {m.name}
+                                                                    <Typography component='span' sx={{ ml: 1, fontSize: '0.76rem', color: '#888' }}>({m.unit})</Typography>
+                                                                </Box>
+                                                            ))}
+                                                        </Box>
+                                                    );
+                                                })}
+                                            </Box>
+                                        );
+                                    })
+                                }
+
+                                {filtered.length === 0 && groupData.length === 0 && (
+                                    <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>{t('No results')}</Typography>
+                                )}
+                            </>
+                        )}
                     </Box>
                     {selected && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
