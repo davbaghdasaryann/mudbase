@@ -466,6 +466,77 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240
     );
 }
 
+const SMALL_SCALE_KEY = 'smallScaleConstructionMaterials';
+const SSM_EST_GRAD = { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' };
+const SSM_ACT_GRAD = { top: '#FF8A65', bottom: '#E64A19', stroke: '#bf360c' };
+
+function SmallScaleMaterialsWidget({ estimate, aylEntries, height = 240 }: { estimate: EstimatesApi.ApiEstimate; aylEntries: AylEntry[]; height?: number }) {
+    const chartH = Math.max(80, height - 90);
+
+    const estimatedValue = (() => {
+        const expenses = estimate.otherExpenses ?? [];
+        const base = estimate.totalCost ?? 0;
+        const exp = expenses.find(e => Object.keys(e)[0] === SMALL_SCALE_KEY);
+        if (!exp) return 0;
+        return Math.round(base * (exp[SMALL_SCALE_KEY] ?? 0) / 100);
+    })();
+
+    const actualValue = Math.round(aylEntries.reduce((sum, e) => {
+        const tsakh = parseFloat(e.tsakh || '0') || 0;
+        const cpu = parseFloat(e.costPerUnit || '0') || 0;
+        return sum + tsakh * cpu;
+    }, 0));
+
+    if (estimatedValue === 0 && actualValue === 0) return null;
+
+    const singleDonut = (value: number, gradId: string, top: string, bottom: string, stroke: string) => (
+        <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            {value > 0 ? (
+                <>
+                    <Box sx={{ width: '100%', height: chartH }}>
+                        <ResponsiveContainer width='100%' height='100%'>
+                            <PieChart>
+                                <defs>
+                                    <radialGradient id={gradId} cx='50%' cy='50%' r='50%'>
+                                        <stop offset='0%' stopColor={top} />
+                                        <stop offset='100%' stopColor={bottom} />
+                                    </radialGradient>
+                                </defs>
+                                <Pie data={[{ value: 1 }]} cx='50%' cy='50%' innerRadius={36} outerRadius={58} dataKey='value' strokeWidth={0} startAngle={90} endAngle={-270}>
+                                    <Cell fill={`url(#${gradId})`} stroke={stroke} strokeWidth={0.5} />
+                                </Pie>
+                                <RechartsTooltip content={() => null} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </Box>
+                    <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: bottom, textAlign: 'center', mt: 0.5 }}>
+                        {formatCurrencyRounded(value)} AMD
+                    </Typography>
+                </>
+            ) : (
+                <Typography variant='body2' color='text.secondary'>—</Typography>
+            )}
+        </Box>
+    );
+
+    return (
+        <Paper elevation={0} sx={{ height: '100%', border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='subtitle2' sx={{ fontWeight: 700, mb: 1, fontSize: '0.82rem', color: '#444' }}>Փոքրածավալ շինանյութ</Typography>
+            <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
+                    {singleDonut(estimatedValue, 'ssm-est-grad', SSM_EST_GRAD.top, SSM_EST_GRAD.bottom, SSM_EST_GRAD.stroke)}
+                </Box>
+                <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
+                    {singleDonut(actualValue, 'ssm-act-grad', SSM_ACT_GRAD.top, SSM_ACT_GRAD.bottom, SSM_ACT_GRAD.stroke)}
+                </Box>
+            </Box>
+        </Paper>
+    );
+}
+
 export default function CostingPage() {
     const { t } = useTranslation();
     const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis'];
@@ -825,6 +896,9 @@ export default function CostingPage() {
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} aylEntries={aylEntries} />
+                            </Box>
+                            <Box sx={{ flex: 1, minHeight: 220 }}>
+                                <SmallScaleMaterialsWidget estimate={selectedEstimate} aylEntries={aylEntries} height={220} />
                             </Box>
                         </Box>
                         {(() => {
