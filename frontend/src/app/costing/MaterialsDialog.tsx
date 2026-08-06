@@ -311,7 +311,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                     <>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 0.5 }}>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
-                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութер</Typography>
+                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութեր</Typography>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
                                         </Box>
                                         {aylEntries.filter(e => e.mutq > 0).map(ayl => (
@@ -330,13 +330,13 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                                         <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{ayl.unit || '—'}</Typography>
                                                     </Box>
                                                     <Box>
-                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Moutraqratsvadz</Typography>
+                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
                                                         <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
                                                             {ayl.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                                                         </Typography>
                                                     </Box>
                                                     <Box>
-                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Tsakhsagrvadz</Typography>
+                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
                                                         <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: parseFloat(ayl.tsakh || '0') > 0 ? '#222' : '#ccc' }}>
                                                             {parseFloat(ayl.tsakh || '0') > 0 ? parseFloat(ayl.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                                                         </Typography>
