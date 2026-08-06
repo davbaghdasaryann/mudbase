@@ -907,17 +907,26 @@ export default function CostingPage() {
                                 const key = Object.keys(exp)[0];
                                 return key && key !== 'typeOfCost' && (exp[key] ?? 0) > 0;
                             });
-                            if (expenses.length === 0) return null;
                             const aylActual = Math.round(aylEntries.reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0));
+                            // Always include smallScaleConstructionMaterials when there's actual data even if not in estimate
+                            const SSM_KEY = 'smallScaleConstructionMaterials';
+                            const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
+                            const extraWidgets = (!hasSSMInExpenses && aylActual > 0)
+                                ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length }]
+                                : [];
+                            if (expenses.length === 0 && extraWidgets.length === 0) return null;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === 'smallScaleConstructionMaterials' ? aylActual : 0;
+                                        const actualValue = key === SSM_KEY ? aylActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
+                                    {extraWidgets.map(w => (
+                                        <OtherExpenseBarWidget key={w.key} expenseKey={w.key} label={t(estimateOtherExpensesItems.find(it => it.id === w.key)?.label ?? w.key)} estimatedValue={w.estimatedValue} actualValue={w.actualValue} gradIndex={w.gradIndex} height={200} />
+                                    ))}
                                 </Box>
                             );
                         })()}
