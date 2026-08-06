@@ -139,8 +139,11 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
             const ufRows = parseItems(uf ?? []);
             const seen = new Set(mainRows.map(r => r.materialItemId));
             const combined = [...mainRows, ...ufRows.filter(r => !seen.has(r.materialItemId))];
-            setMaterials(combined);
-            setGroupData(groups ?? []);
+            const resolvedGroups: GroupMaterialData[] = groups ?? [];
+            // Exclude from standalone list any material already shown under a group
+            const groupMatIds = new Set(resolvedGroups.flatMap(g => g.children.flatMap(c => c.materials.map(m => m.materialItemId))));
+            setMaterials(combined.filter(m => !groupMatIds.has(m.materialItemId)));
+            setGroupData(resolvedGroups);
         }).catch(console.error).finally(() => setLoading(false));
     }, [estimateId, unforeseenEstimateId]);
 
