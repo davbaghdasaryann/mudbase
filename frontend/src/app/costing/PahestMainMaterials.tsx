@@ -399,29 +399,29 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                             </>
                         )}
                     </Box>
-                    {selected && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                            <Box>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
-                                <InputBase
-                                    value={qtyInput}
-                                    onChange={e => setQtyInput(e.target.value.replace(/[^0-9.]/g, ''))}
-                                    placeholder='0'
-                                    autoFocus
-                                    sx={{ border: `1px solid ${mainPrimaryColor}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
-                                />
-                            </Box>
-                            <Box>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>Միավորի արժեք</Typography>
-                                <InputBase
-                                    value={addPriceInput}
-                                    onChange={e => setAddPriceInput(e.target.value.replace(/[^0-9.]/g, ''))}
-                                    placeholder={selected.costPerUnit > 0 ? String(selected.costPerUnit) : '0'}
-                                    sx={{ border: '1px solid #e0f5f7', borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
-                                />
-                            </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, opacity: selected ? 1 : 0.4, pointerEvents: selected ? 'auto' : 'none' }}>
+                        <Box>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
+                            <InputBase
+                                value={qtyInput}
+                                onChange={e => setQtyInput(e.target.value.replace(/[^0-9.]/g, ''))}
+                                placeholder='0'
+                                autoFocus={!!selected}
+                                disabled={!selected}
+                                sx={{ border: `1px solid ${selected ? mainPrimaryColor : '#e0e0e0'}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                            />
                         </Box>
-                    )}
+                        <Box>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>Միավորի արժեք</Typography>
+                            <InputBase
+                                value={addPriceInput}
+                                onChange={e => setAddPriceInput(e.target.value.replace(/[^0-9.]/g, ''))}
+                                placeholder={selected?.costPerUnit && selected.costPerUnit > 0 ? String(selected.costPerUnit) : '0'}
+                                disabled={!selected}
+                                sx={{ border: '1px solid #e0f5f7', borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
+                            />
+                        </Box>
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
                     <Button onClick={() => setAddOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
