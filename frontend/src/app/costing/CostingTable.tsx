@@ -363,9 +363,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const estTotal = laborCostRounded + matCostRounded;
         const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (row.changableAveragePrice ?? 0);
         const actUP = q > 0 && actTotal > 0 ? actTotal / q : 0;
-        const rQty = hasData ? estQty - q : null;
-        const rUp = hasData ? estUP : null;
-        const rTot = hasData ? Math.round((estQty - q) * estUP) : null;
+        const rQty = q > 0 ? estQty - q : null;
+        const rUp = q > 0 ? estUP : null;
+        const rTot = q > 0 ? Math.round((estQty - q) * estUP) : null;
         const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
         const fw = (v: number | null) => v !== null ? 600 : 400;
         return (
@@ -388,9 +388,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right' })}>{estQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                 <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(estUP)}</td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(estTotal)}</td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: (hasData && q > 0) ? '#222' : '#ccc' })}>{(hasData && q > 0) ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: (hasData && actUP > 0) ? '#555' : '#ccc' })}>{(hasData && actUP > 0) ? formatCurrencyRounded(actUP) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(actTotal) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: q > 0 ? '#222' : '#ccc' })}>{q > 0 ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: actUP > 0 ? '#555' : '#ccc' })}>{actUP > 0 ? formatCurrencyRounded(actUP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: q > 0 ? ACCENT : '#ccc' })}>{q > 0 ? formatCurrencyRounded(actTotal) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
