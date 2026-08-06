@@ -47,6 +47,7 @@ import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import CostBreakdownChart from '@/app/analysis/structural/CostBreakdownChart';
+import { estimateOtherExpensesItems } from '@/data/estimate_manual';
 import OtherExpensesChart from '@/app/analysis/structural/OtherExpensesChart';
 import BreakdownTable from '@/app/analysis/structural/BreakdownTable';
 
@@ -466,81 +467,78 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240
     );
 }
 
-const SMALL_SCALE_KEY = 'smallScaleConstructionMaterials';
-const SSM_EST_GRAD = { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' };
-const SSM_ACT_GRAD = { top: '#FF8A65', bottom: '#E64A19', stroke: '#bf360c' };
-const ssmFormatY = (v: number) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${Math.round(v / 1_000)}K` : String(Math.round(v));
+const OE_BAR_GRADS = [
+    { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
+    { top: '#4EE89A', bottom: '#1CA461', stroke: '#148048' },
+    { top: '#A8DED9', bottom: '#5CB8B0', stroke: '#44908a' },
+    { top: '#27C97A', bottom: '#00855A', stroke: '#006644' },
+    { top: '#6FE0D8', bottom: '#2BADA6', stroke: '#1e8880' },
+    { top: '#00B28F', bottom: '#007060', stroke: '#005548' },
+    { top: '#C5E8C6', bottom: '#7DB87E', stroke: '#5e9660' },
+    { top: '#3DC9BF', bottom: '#1A8A84', stroke: '#116b66' },
+];
+const OE_ACT_GRAD = { top: '#FF8A65', bottom: '#E64A19', stroke: '#bf360c' };
+const oeFormatY = (v: number) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${Math.round(v / 1_000)}K` : String(Math.round(v));
 
-function SmallScaleMaterialsWidget({ estimate, aylEntries, height = 240 }: { estimate: EstimatesApi.ApiEstimate; aylEntries: AylEntry[]; height?: number }) {
+function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue, gradIndex, height = 200 }: { expenseKey: string; label: string; estimatedValue: number; actualValue: number; gradIndex: number; height?: number }) {
     const chartH = Math.max(80, height - 72);
-
-    const estimatedValue = (() => {
-        const expenses = estimate.otherExpenses ?? [];
-        const base = estimate.totalCost ?? 0;
-        const exp = expenses.find(e => Object.keys(e)[0] === SMALL_SCALE_KEY);
-        if (!exp) return 0;
-        return Math.round(base * (exp[SMALL_SCALE_KEY] ?? 0) / 100);
-    })();
-
-    const actualValue = Math.round(aylEntries.reduce((sum, e) => {
-        const tsakh = parseFloat(e.tsakh || '0') || 0;
-        const cpu = parseFloat(e.costPerUnit || '0') || 0;
-        return sum + tsakh * cpu;
-    }, 0));
+    const estGrad = OE_BAR_GRADS[gradIndex % OE_BAR_GRADS.length];
+    const estId = `oe-est-${expenseKey}`;
+    const actId = `oe-act-${expenseKey}`;
 
     if (estimatedValue === 0 && actualValue === 0) return null;
 
     const data = [
-        { name: 'Նախահաշիվ', value: estimatedValue, gradId: 'ssm-est', dotColor: SSM_EST_GRAD.top, stroke: SSM_EST_GRAD.stroke },
-        { name: 'Փաստացի', value: actualValue, gradId: 'ssm-act', dotColor: SSM_ACT_GRAD.top, stroke: SSM_ACT_GRAD.stroke },
+        { name: "Նախահաշիվ", value: estimatedValue, gradId: estId, dotColor: estGrad.top, stroke: estGrad.stroke },
+        { name: "Փաստացի", value: actualValue, gradId: actId, dotColor: OE_ACT_GRAD.top, stroke: OE_ACT_GRAD.stroke },
     ];
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>Փոքրածավալ շինանյութ</Typography>
-
+        <Paper elevation={0} sx={{ border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: height }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#333', mb: 1, lineHeight: 1.3 }}>{label}</Typography>
             <Box sx={{ flex: 1, minHeight: chartH }}>
                 <ResponsiveContainer width='100%' height='100%'>
-                    <BarChart data={data} margin={{ top: 4, right: 12, left: 4, bottom: 0 }} barCategoryGap='40%'>
+                    <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap='40%'>
                         <defs>
-                            <linearGradient id='ssm-est' x1='0' y1='0' x2='0' y2='1'>
-                                <stop offset='0%' stopColor={SSM_EST_GRAD.top} />
-                                <stop offset='100%' stopColor={SSM_EST_GRAD.bottom} />
+                            <linearGradient id={estId} x1='0' y1='0' x2='0' y2='1'>
+                                <stop offset='0%' stopColor={estGrad.top} />
+                                <stop offset='100%' stopColor={estGrad.bottom} />
                             </linearGradient>
-                            <linearGradient id='ssm-act' x1='0' y1='0' x2='0' y2='1'>
-                                <stop offset='0%' stopColor={SSM_ACT_GRAD.top} />
-                                <stop offset='100%' stopColor={SSM_ACT_GRAD.bottom} />
+                            <linearGradient id={actId} x1='0' y1='0' x2='0' y2='1'>
+                                <stop offset='0%' stopColor={OE_ACT_GRAD.top} />
+                                <stop offset='100%' stopColor={OE_ACT_GRAD.bottom} />
                             </linearGradient>
                         </defs>
                         <CartesianGrid vertical={false} strokeDasharray='3 3' stroke='#f0f0f0' />
                         <XAxis dataKey='name' tick={false} axisLine={false} tickLine={false} />
-                        <YAxis tickFormatter={ssmFormatY} tick={{ fontSize: 11, fill: '#9e9e9e' }} axisLine={false} tickLine={false} width={44} />
-                        <RechartsTooltip content={({ active, payload, label }: any) => {
+                        <YAxis tickFormatter={oeFormatY} tick={{ fontSize: 10, fill: '#9e9e9e' }} axisLine={false} tickLine={false} width={40} />
+                        <RechartsTooltip content={({ active, payload, label: lbl }: any) => {
                             if (!active || !payload?.length) return null;
                             return (
-                                <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 140 }}>
-                                    <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{label}</Typography>
+                                <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
+                                    <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{lbl}</Typography>
                                     <Typography variant='body2' sx={{ color: '#00ABBE' }}>{Number(payload[0].value).toLocaleString()} AMD</Typography>
                                 </Paper>
                             );
                         }} cursor={{ fill: 'rgba(0,171,190,0.06)' }} />
-                        <Bar dataKey='value' radius={[4, 4, 0, 0]} maxBarSize={64}>
+                        <Bar dataKey='value' radius={[4, 4, 0, 0]} maxBarSize={52}>
                             {data.map(d => <Cell key={d.name} fill={`url(#${d.gradId})`} stroke={d.stroke} strokeWidth={0.5} />)}
                         </Bar>
                     </BarChart>
                 </ResponsiveContainer>
             </Box>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', mt: 0.5 }}>
                 {data.map(d => (
                     <Box key={d.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: d.dotColor, flexShrink: 0 }} />
-                        <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{d.name}</Typography>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: d.dotColor, flexShrink: 0 }} />
+                        <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>{d.name}</Typography>
                     </Box>
                 ))}
             </Box>
         </Paper>
     );
 }
+
 
 export default function CostingPage() {
     const { t } = useTranslation();
@@ -902,10 +900,27 @@ export default function CostingPage() {
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} aylEntries={aylEntries} />
                             </Box>
-                            <Box sx={{ flex: 1, minHeight: 220 }}>
-                                <SmallScaleMaterialsWidget estimate={selectedEstimate} aylEntries={aylEntries} height={220} />
-                            </Box>
                         </Box>
+                        {(() => {
+                            const base = selectedEstimate.totalCost ?? 0;
+                            const expenses = (selectedEstimate.otherExpenses ?? []).filter(exp => {
+                                const key = Object.keys(exp)[0];
+                                return key && key !== 'typeOfCost' && (exp[key] ?? 0) > 0;
+                            });
+                            if (expenses.length === 0) return null;
+                            const aylActual = Math.round(aylEntries.reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0));
+                            return (
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
+                                    {expenses.map((exp, i) => {
+                                        const key = Object.keys(exp)[0];
+                                        const estimatedValue = Math.round(base * (exp[key] ?? 0) / 100);
+                                        const actualValue = key === 'smallScaleConstructionMaterials' ? aylActual : 0;
+                                        const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
+                                        return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
+                                    })}
+                                </Box>
+                            );
+                        })()}
                         {(() => {
                             const actualMaterials = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
                             const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
