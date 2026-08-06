@@ -364,7 +364,7 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     );
 }
 
-function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240 }: { estimate: EstimatesApi.ApiEstimate; pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
+function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, height = 240 }: { estimate: EstimatesApi.ApiEstimate; pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; aylEntries?: AylEntry[]; height?: number }) {
     const { t } = useTranslation();
     const chartH = Math.max(80, height - 80);
 
@@ -386,11 +386,13 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240
     const actData = (() => {
         const materialsTotal = pahestEntries.reduce((s, e) => s + e.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0), 0);
         const laborTotal = costHistory.filter(e => e.paymentMethod?.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
-        const total = materialsTotal + laborTotal;
+        const otherTotal = (aylEntries ?? []).reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0);
+        const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
         return [
-            { key: 'labor',     name: t('Labor'),    value: laborTotal,     pct: ((laborTotal / total) * 100).toFixed(1) },
-            { key: 'materials', name: t('Materials'), value: materialsTotal, pct: ((materialsTotal / total) * 100).toFixed(1) },
+            { key: 'labor',     name: t('Labor'),         value: laborTotal,     pct: ((laborTotal / total) * 100).toFixed(1) },
+            { key: 'materials', name: t('Materials'),      value: materialsTotal, pct: ((materialsTotal / total) * 100).toFixed(1) },
+            { key: 'other',     name: t('Other Expenses'), value: otherTotal,     pct: ((otherTotal / total) * 100).toFixed(1) },
         ].filter(d => d.value > 0);
     })();
 
@@ -895,7 +897,7 @@ export default function CostingPage() {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
-                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} height={220} />
+                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} aylEntries={aylEntries} />
