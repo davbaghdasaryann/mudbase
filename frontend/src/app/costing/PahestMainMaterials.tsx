@@ -314,7 +314,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
             )}
 
             {/* Add material modal */}
-            <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, minHeight: 480 } }}>
+            <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, minHeight: 480 } }}>
                 <DialogTitle sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#111', pb: 1 }}><img src='/images/logo_square.svg' alt='M' width={24} height={24} style={{ position: 'absolute', left: 24 }} />Ավելացնել</DialogTitle>
                 <DialogContent sx={{ pt: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #e0f5f7', borderRadius: 2, px: 1.5, mb: 1.5, backgroundColor: '#fafeff' }}>
