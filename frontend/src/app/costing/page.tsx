@@ -7,7 +7,7 @@ import {
     InputBase, Radio, RadioGroup, FormControlLabel, Checkbox, TextField, Chip, Paper, CircularProgress,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -469,9 +469,10 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, height = 240
 const SMALL_SCALE_KEY = 'smallScaleConstructionMaterials';
 const SSM_EST_GRAD = { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' };
 const SSM_ACT_GRAD = { top: '#FF8A65', bottom: '#E64A19', stroke: '#bf360c' };
+const ssmFormatY = (v: number) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${Math.round(v / 1_000)}K` : String(Math.round(v));
 
 function SmallScaleMaterialsWidget({ estimate, aylEntries, height = 240 }: { estimate: EstimatesApi.ApiEstimate; aylEntries: AylEntry[]; height?: number }) {
-    const chartH = Math.max(80, height - 90);
+    const chartH = Math.max(80, height - 72);
 
     const estimatedValue = (() => {
         const expenses = estimate.otherExpenses ?? [];
@@ -489,49 +490,53 @@ function SmallScaleMaterialsWidget({ estimate, aylEntries, height = 240 }: { est
 
     if (estimatedValue === 0 && actualValue === 0) return null;
 
-    const singleDonut = (value: number, gradId: string, top: string, bottom: string, stroke: string) => (
-        <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            {value > 0 ? (
-                <>
-                    <Box sx={{ width: '100%', height: chartH }}>
-                        <ResponsiveContainer width='100%' height='100%'>
-                            <PieChart>
-                                <defs>
-                                    <radialGradient id={gradId} cx='50%' cy='50%' r='50%'>
-                                        <stop offset='0%' stopColor={top} />
-                                        <stop offset='100%' stopColor={bottom} />
-                                    </radialGradient>
-                                </defs>
-                                <Pie data={[{ value: 1 }]} cx='50%' cy='50%' innerRadius={36} outerRadius={58} dataKey='value' strokeWidth={0} startAngle={90} endAngle={-270}>
-                                    <Cell fill={`url(#${gradId})`} stroke={stroke} strokeWidth={0.5} />
-                                </Pie>
-                                <RechartsTooltip content={() => null} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </Box>
-                    <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: bottom, textAlign: 'center', mt: 0.5 }}>
-                        {formatCurrencyRounded(value)} AMD
-                    </Typography>
-                </>
-            ) : (
-                <Typography variant='body2' color='text.secondary'>—</Typography>
-            )}
-        </Box>
-    );
+    const data = [
+        { name: 'Նախahashiv', value: estimatedValue, gradId: 'ssm-est', dotColor: SSM_EST_GRAD.top, stroke: SSM_EST_GRAD.stroke },
+        { name: 'Փաստացի', value: actualValue, gradId: 'ssm-act', dotColor: SSM_ACT_GRAD.top, stroke: SSM_ACT_GRAD.stroke },
+    ];
 
     return (
-        <Paper elevation={0} sx={{ height: '100%', border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle2' sx={{ fontWeight: 700, mb: 1, fontSize: '0.82rem', color: '#444' }}>Փոքրածավալ շինանյութ</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
-                    {singleDonut(estimatedValue, 'ssm-est-grad', SSM_EST_GRAD.top, SSM_EST_GRAD.bottom, SSM_EST_GRAD.stroke)}
-                </Box>
-                <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
-                    {singleDonut(actualValue, 'ssm-act-grad', SSM_ACT_GRAD.top, SSM_ACT_GRAD.bottom, SSM_ACT_GRAD.stroke)}
-                </Box>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>Փոqratsavall shinanyuth</Typography>
+
+            <Box sx={{ flex: 1, minHeight: chartH }}>
+                <ResponsiveContainer width='100%' height='100%'>
+                    <BarChart data={data} margin={{ top: 4, right: 12, left: 4, bottom: 0 }} barCategoryGap='40%'>
+                        <defs>
+                            <linearGradient id='ssm-est' x1='0' y1='0' x2='0' y2='1'>
+                                <stop offset='0%' stopColor={SSM_EST_GRAD.top} />
+                                <stop offset='100%' stopColor={SSM_EST_GRAD.bottom} />
+                            </linearGradient>
+                            <linearGradient id='ssm-act' x1='0' y1='0' x2='0' y2='1'>
+                                <stop offset='0%' stopColor={SSM_ACT_GRAD.top} />
+                                <stop offset='100%' stopColor={SSM_ACT_GRAD.bottom} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeDasharray='3 3' stroke='#f0f0f0' />
+                        <XAxis dataKey='name' tick={false} axisLine={false} tickLine={false} />
+                        <YAxis tickFormatter={ssmFormatY} tick={{ fontSize: 11, fill: '#9e9e9e' }} axisLine={false} tickLine={false} width={44} />
+                        <RechartsTooltip content={({ active, payload, label }: any) => {
+                            if (!active || !payload?.length) return null;
+                            return (
+                                <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 140 }}>
+                                    <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{label}</Typography>
+                                    <Typography variant='body2' sx={{ color: '#00ABBE' }}>{Number(payload[0].value).toLocaleString()} AMD</Typography>
+                                </Paper>
+                            );
+                        }} cursor={{ fill: 'rgba(0,171,190,0.06)' }} />
+                        <Bar dataKey='value' radius={[4, 4, 0, 0]} maxBarSize={64}>
+                            {data.map(d => <Cell key={d.name} fill={`url(#${d.gradId})`} stroke={d.stroke} strokeWidth={0.5} />)}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1 }}>
+                {data.map(d => (
+                    <Box key={d.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: d.dotColor, flexShrink: 0 }} />
+                        <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{d.name}</Typography>
+                    </Box>
+                ))}
             </Box>
         </Paper>
     );
