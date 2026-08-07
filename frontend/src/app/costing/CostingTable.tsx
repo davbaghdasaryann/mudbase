@@ -124,8 +124,9 @@ function ResizeHandle({ onDragStart }: { onDragStart: (e: React.MouseEvent) => v
     );
 }
 
-export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory, pahestEntries }: { estimate: EstimatesApi.ApiEstimate; estimateSnapshot?: SnapshotData | null; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[]; pahestEntries?: PahestEntry[] }) {
+export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, actualData: externalActualData, onActualDataChange, costHistory, pahestEntries, accentColor }: { estimate: EstimatesApi.ApiEstimate; estimateSnapshot?: SnapshotData | null; onCostAdded?: (entry: CostHistoryEntry) => void; actualData?: ActualData; onActualDataChange?: (data: ActualData) => void; costHistory?: CostHistoryEntry[]; pahestEntries?: PahestEntry[]; accentColor?: string }) {
     const { t } = useTranslation();
+    const SA = accentColor ?? ACCENT;
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [materialRows, setMaterialRows] = useState<MaterialRow[]>([]);
     const [sections, setSections] = useState<Section[]>([]);
@@ -461,7 +462,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                             return (
                                 <>
                                     <tr key={`section-${section._id}`} style={{ backgroundColor: '#f9feff' }}>
-                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: ACCENT, paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
+                                        <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, fontSize: '0.85rem', color: SA, paddingLeft: 16, letterSpacing: '0.03em', borderTop: sectionIdx > 0 ? GSEP : undefined })}>
                                             {sectionIdx + 1}. {section.name.toUpperCase()}
                                         </td>
                                     </tr>
@@ -488,7 +489,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
 
                                     <tr style={{ backgroundColor: '#f9feff' }}>
                                         <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
-                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: ACCENT, whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
                                         <td style={tdStyle({ borderLeft: GSEP })}></td>
                                         <td style={tdStyle({})}></td>
                                         <td style={tdStyle({})}></td>
@@ -501,7 +502,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                         })}
 
                         <tr style={{ backgroundColor: '#f0fbfc' }}>
-                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: ACCENT, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{t('Total')}</td>
+                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: SA, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{t('Total')}</td>
                         </tr>
                     </tbody>
                 </table>
