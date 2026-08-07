@@ -1073,13 +1073,15 @@ export default function CostingPage() {
                             const UF_KEY = 'unforeseenWorks';
                             const _toRId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
                             const ufRowIds = new Set((unforeseenSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
-                            const ufActual = Math.round(Array.from(ufRowIds).reduce((s, id) => {
-                                const spent = parseFloat((actualData[id]?.spent ?? '').replace(',', '.')) || 0;
-                                const salary = costHistory.filter(e => _toRId(e.laborItemId) === id && !e.paymentMethod?.startsWith('pahest_')).reduce((ss, e) => ss + e.total, 0);
-                                return s + spent + salary;
+                            const ufActual = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
+                                const id = _toRId(r._id);
+                                const actQty = parseFloat((actualData[id]?.quantity ?? '').replace(',', '.')) || 0;
+                                const actUP = parseFloat((actualData[id]?.unitPrice ?? '').replace(',', '.')) || Number(r.changableAveragePrice ?? 0);
+                                const directPayments = costHistory.filter(e => _toRId(e.laborItemId) === id && !e.paymentMethod?.startsWith('pahest_')).reduce((ss, e) => ss + e.total, 0);
+                                return s + (directPayments > 0 ? directPayments : actQty * actUP);
                             }, 0));
                             const ufEstimated = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
-                                return s + Number(r.quantity ?? 0) * Number(r.unitPrice ?? 0);
+                                return s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0);
                             }, 0));
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
