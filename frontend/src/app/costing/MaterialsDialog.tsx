@@ -87,6 +87,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
     const [aylModal, setAylModal] = useState<AylModalState | null>(null);
+    const [laborMatIds, setLaborMatIds] = useState<Map<string, Set<string>>>(new Map());
 
     const estimateId = toId(estimate._id);
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
@@ -94,6 +95,28 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     useEffect(() => {
         if (!open) return;
         setSelectedRow(null);
+
+        const buildLaborMatMap = (items: any[]): Map<string, Set<string>> => {
+            const map = new Map<string, Set<string>>();
+            for (const item of items ?? []) {
+                const laborId = toId(item.estimatedLaborId);
+                const matId = toId(item.materialItemId);
+                if (!laborId || !matId) continue;
+                if (!map.has(laborId)) map.set(laborId, new Set());
+                map.get(laborId)!.add(matId);
+            }
+            return map;
+        };
+
+        const matFetches = [
+            Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId } }),
+            ...(ufEstimateId ? [Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: ufEstimateId } })] : []),
+        ];
+        Promise.all(matFetches).then(([main, uf]) => {
+            const combined = [...(main ?? []), ...(uf ?? [])];
+            setLaborMatIds(buildLaborMatMap(combined));
+        }).catch(console.error);
+
         if (estimateSnapshot) {
             setSections(estimateSnapshot.sections);
             setSubsections(estimateSnapshot.subsections);
@@ -267,91 +290,99 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
 
                     {/* PAGE 2: Materials for selected work */}
                     <Box sx={{ width: '50%', overflowY: 'auto', p: 3 }}>
-                        {pahestEntries.filter(e => e.quantity > 0).length === 0 && (!aylEntries || aylEntries.filter(e => e.mutq > 0).length === 0) ? (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
-                                <ShoppingCartOutlinedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.3 }} />
-                                <Typography sx={{ fontSize: '0.88rem' }}>Պահեստում նյութեր չկան</Typography>
-                            </Box>
-                        ) : (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
-                                {pahestEntries.filter(e => e.quantity > 0).map(mat => (
-                                    <Box
-                                        key={mat.materialItemId}
-                                        sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}
-                                    >
-                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                                            <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{mat.name}</Typography>
-                                            <Tooltip title={t('Add new quantity')}>
-                                                <IconButton
-                                                    size='small'
-                                                    onClick={() => setMaterialModal({ material: mat, value: '' })}
-                                                    sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}
-                                                >
-                                                    <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', gap: 2 }}>
-                                            <Box>
-                                                <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
-                                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{mat.unit || '—'}</Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
-                                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
-                                                    {mat.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                                                </Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
-                                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: (mat.costedQuantity ?? 0) > 0 ? '#222' : '#ccc' }}>
-                                                    {(mat.costedQuantity ?? 0) > 0 ? mat.costedQuantity!.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
+                        {(() => {
+                            const allowedMatIds = selectedRow ? (laborMatIds.get(toId(selectedRow._id)) ?? new Set<string>()) : new Set<string>();
+                            const visiblePahest = pahestEntries.filter(e => e.quantity > 0 && allowedMatIds.has(e.materialItemId));
+                            const visibleAyl = aylEntries?.filter(e => e.mutq > 0) ?? [];
+                            if (visiblePahest.length === 0 && visibleAyl.length === 0) {
+                                return (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
+                                        <ShoppingCartOutlinedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.3 }} />
+                                        <Typography sx={{ fontSize: '0.88rem' }}>Պահեստում նյութեր չկան</Typography>
                                     </Box>
-                                ))}
-                            </Box>
-                        )}
-                                {aylEntries && aylEntries.filter(e => e.mutq > 0).length > 0 && (
-                                    <>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 0.5 }}>
-                                            <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
-                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութեր</Typography>
-                                            <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
-                                        </Box>
-                                        {aylEntries.filter(e => e.mutq > 0).map(ayl => (
-                                            <Box key={ayl.id} sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                                                    <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{ayl.name || '—'}</Typography>
-                                                    <Tooltip title={t('Add new quantity')}>
-                                                        <IconButton size='small' onClick={() => setAylModal({ entry: ayl, value: '' })} sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}>
-                                                            <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
-                                                        </IconButton>
-                                                    </Tooltip>
+                                );
+                            }
+                            return (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                                    {visiblePahest.map(mat => (
+                                        <Box
+                                            key={mat.materialItemId}
+                                            sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}
+                                        >
+                                            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                                                <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{mat.name}</Typography>
+                                                <Tooltip title={t('Add new quantity')}>
+                                                    <IconButton
+                                                        size='small'
+                                                        onClick={() => setMaterialModal({ material: mat, value: '' })}
+                                                        sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}
+                                                    >
+                                                        <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
+                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{mat.unit || '—'}</Typography>
                                                 </Box>
-                                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                                    <Box>
-                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
-                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{ayl.unit || '—'}</Typography>
-                                                    </Box>
-                                                    <Box>
-                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
-                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
-                                                            {ayl.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box>
-                                                        <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
-                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: parseFloat(ayl.tsakh || '0') > 0 ? '#222' : '#ccc' }}>
-                                                            {parseFloat(ayl.tsakh || '0') > 0 ? parseFloat(ayl.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
-                                                        </Typography>
-                                                    </Box>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
+                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
+                                                        {mat.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
+                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: (mat.costedQuantity ?? 0) > 0 ? '#222' : '#ccc' }}>
+                                                        {(mat.costedQuantity ?? 0) > 0 ? mat.costedQuantity!.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                                                    </Typography>
                                                 </Box>
                                             </Box>
-                                        ))}
-                                    </>
-                                )}
+                                        </Box>
+                                    ))}
+                                    {visibleAyl.length > 0 && (
+                                        <>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 0.5 }}>
+                                                <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
+                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութեր</Typography>
+                                                <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
+                                            </Box>
+                                            {visibleAyl.map(ayl => (
+                                                <Box key={ayl.id} sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{ayl.name || '—'}</Typography>
+                                                        <Tooltip title={t('Add new quantity')}>
+                                                            <IconButton size='small' onClick={() => setAylModal({ entry: ayl, value: '' })} sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}>
+                                                                <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                                        <Box>
+                                                            <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
+                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{ayl.unit || '—'}</Typography>
+                                                        </Box>
+                                                        <Box>
+                                                            <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
+                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
+                                                                {ayl.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                                                            </Typography>
+                                                        </Box>
+                                                        <Box>
+                                                            <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
+                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: parseFloat(ayl.tsakh || '0') > 0 ? '#222' : '#ccc' }}>
+                                                                {parseFloat(ayl.tsakh || '0') > 0 ? parseFloat(ayl.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            ))}
+                                        </>
+                                    )}
+                                </Box>
+                            );
+                        })()}
                     </Box>
                 </Box>
             </DialogContent>
