@@ -580,7 +580,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.9rem' }}>Աշխատանքների եկամտաբերություն</Typography>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.9rem' }}>Աշխատանքների միջին շահութաբերություն</Typography>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 {avgProfit === null ? (
                     <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Տվյալ չկա</Typography>
@@ -614,10 +614,10 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
                         </Box>
                         <Box sx={{ mt: 1.5, px: 1, py: 0.8, borderRadius: 2, bgcolor: bgColor, textAlign: 'center' }}>
                             <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                                {profitValues.length} {profitValues.length === 1 ? 'labor' : 'labors'} · avg unit price efficiency
+                                {profitValues.length} աշխ. · մեկ միավորի արդյունավետություն
                             </Typography>
                             <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color, mt: 0.2 }}>
-                                {avgProfit >= 0 ? 'Saving vs estimate' : 'Over estimate'}
+                                {avgProfit >= 0 ? 'Խնայողություն նախահաշվի համեմատ' : 'Գերազանցում է նախահաշիվը'}
                             </Typography>
                         </Box>
                     </>
