@@ -445,14 +445,14 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         <td colSpan={3} style={tdStyle({ fontWeight: 700, color: ACCENT, fontSize: '0.82rem', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             Ընդամենը
                         </td>
-                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
-                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
+                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
+                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#222', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{formatCurrencyRounded(grandEstTotal)}</td>
-                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
-                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
+                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
+                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: ACCENT, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{grandHasAct ? formatCurrencyRounded(grandActTotal) : '\u2014'}</td>
-                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
-                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
+                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
+                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none', color: grandRemTotal === null ? '#ccc' : grandPct !== null && grandPct >= 0 ? '#2e7d32' : '#c62828' })}>
                             {grandRemTotal !== null ? `+${formatCurrencyRounded(grandRemTotal)}` : '\u2014'}
                         </td>
@@ -461,8 +461,8 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                 ? <span style={{ fontWeight: 700, fontSize: '0.82rem', color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '\u2014'}
                         </td>
-                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
-                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>{'\u2014'}</td>
+                        <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
+                        <td style={tdStyle({ borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
                         <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: grandHasEx ? '#c62828' : '#ccc', borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             {grandHasEx ? formatCurrencyRounded(grandExAmt) : '\u2014'}
                         </td>
@@ -532,10 +532,10 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                         Ընդամենը (չնախ.)
                                     </td>
                                     <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{fmtQty(ufEstQty)}</td>
-                                    <td style={tdStyle({ textAlign: 'right', borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{'—'}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{''}</td>
                                     <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#222', borderTop: '2px solid #e65100', borderBottom: 'none' })}>{formatCurrencyRounded(ufEstTotal)}</td>
                                     <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{ufHasAct ? fmtQty(ufActQty) : '—'}</td>
-                                    <td style={tdStyle({ textAlign: 'right', borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{'—'}</td>
+                                    <td style={tdStyle({ textAlign: 'right', borderTop: '2px solid #e65100', borderBottom: 'none', color: '#555' })}>{''}</td>
                                     <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#e65100', borderTop: '2px solid #e65100', borderBottom: 'none' })}>{ufHasAct ? formatCurrencyRounded(ufActTotal) : '—'}</td>
                                     <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: '2px solid #e65100', borderBottom: 'none', color: ufRemQty === null ? '#ccc' : ufRemQty >= 0 ? '#2e7d32' : '#c62828', fontWeight: 600 })}>{fmtQty(ufRemQty)}</td>
                                     <td colSpan={6} style={tdStyle({ borderTop: '2px solid #e65100', borderBottom: 'none', color: ufRemTotal === null ? '#ccc' : ufRemTotal >= 0 ? '#2e7d32' : '#c62828', textAlign: 'right', fontWeight: 700 })}>
