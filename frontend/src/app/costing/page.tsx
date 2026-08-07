@@ -497,7 +497,7 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
 
     return (
         <Paper elevation={0} sx={{ border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: height }}>
-            <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#333', mb: 1, lineHeight: 1.3 }}>{label}</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{label}</Typography>
             <Box sx={{ flex: 1, minHeight: chartH }}>
                 <ResponsiveContainer width='100%' height='100%'>
                     <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap='40%'>
