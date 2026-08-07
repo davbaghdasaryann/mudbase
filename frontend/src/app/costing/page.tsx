@@ -1070,6 +1070,14 @@ export default function CostingPage() {
                             const aylActual = Math.round(aylEntries.reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0));
                             // Always include smallScaleConstructionMaterials when there's actual data even if not in estimate
                             const SSM_KEY = 'smallScaleConstructionMaterials';
+                            const UF_KEY = 'unforeseenWorks';
+                            const _toRId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+                            const ufRowIds = new Set((unforeseenSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
+                            const ufActual = Math.round(Array.from(ufRowIds).reduce((s, id) => {
+                                const spent = parseFloat((actualData[id]?.spent ?? '').replace(',', '.')) || 0;
+                                const salary = costHistory.filter(e => e.laborItemId === id && !e.paymentMethod?.startsWith('pahest_')).reduce((ss, e) => ss + e.total, 0);
+                                return s + spent + salary;
+                            }, 0));
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const extraWidgets = (!hasSSMInExpenses && aylActual > 0)
                                 ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length }]
@@ -1080,7 +1088,7 @@ export default function CostingPage() {
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === SSM_KEY ? aylActual : 0;
+                                        const actualValue = key === SSM_KEY ? aylActual : key === UF_KEY ? ufActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
