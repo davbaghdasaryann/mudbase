@@ -1075,19 +1075,24 @@ export default function CostingPage() {
                             const ufRowIds = new Set((unforeseenSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
                             const ufActual = Math.round(Array.from(ufRowIds).reduce((s, id) => {
                                 const spent = parseFloat((actualData[id]?.spent ?? '').replace(',', '.')) || 0;
-                                const salary = costHistory.filter(e => e.laborItemId === id && !e.paymentMethod?.startsWith('pahest_')).reduce((ss, e) => ss + e.total, 0);
+                                const salary = costHistory.filter(e => _toRId(e.laborItemId) === id && !e.paymentMethod?.startsWith('pahest_')).reduce((ss, e) => ss + e.total, 0);
                                 return s + spent + salary;
                             }, 0));
+                            const ufEstimated = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
+                                return s + Number(r.quantity ?? 0) * Number(r.unitPrice ?? 0);
+                            }, 0));
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
-                            const extraWidgets = (!hasSSMInExpenses && aylActual > 0)
-                                ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length }]
-                                : [];
+                            const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
+                            const extraWidgets = [
+                                ...(!hasSSMInExpenses && aylActual > 0 ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length }] : []),
+                                ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (!hasSSMInExpenses && aylActual > 0 ? 1 : 0) }] : []),
+                            ];
                             if (expenses.length === 0 && extraWidgets.length === 0) return null;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
-                                        const estimatedValue = Math.round(base * (exp[key] ?? 0) / 100);
+                                        const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
                                         const actualValue = key === SSM_KEY ? aylActual : key === UF_KEY ? ufActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
