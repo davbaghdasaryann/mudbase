@@ -304,6 +304,14 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                             }
                             return (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                        <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
+                                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Հիմնական նյութեր</Typography>
+                                        <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
+                                    </Box>
+                                    {visiblePahest.length === 0 && (
+                                        <Typography sx={{ fontSize: '0.82rem', color: '#bbb', textAlign: 'center', py: 1 }}>Հիմնական նյութեր չկան</Typography>
+                                    )}
                                     {visiblePahest.map(mat => (
                                         <Box
                                             key={mat.materialItemId}
