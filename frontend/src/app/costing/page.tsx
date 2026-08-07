@@ -305,7 +305,7 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1 }}>{t('Actual')}</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Actual')}</Typography>
             {data.length === 0 ? (
                 <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Typography variant='body2' color='text.secondary'>—</Typography>
@@ -569,7 +569,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.9rem' }}>Կատարման տոկոս</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Կատարման տոկոս</Typography>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 {pct === null ? (
                     <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Ծավալ գրանցված չէ</Typography>
@@ -651,7 +651,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.9rem' }}>Աշխատանքների միջին շահութաբերություն</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Աշխատանքների միջին շահութաբերություն</Typography>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 {avgProfit === null ? (
                     <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Տվյալ չկա</Typography>
