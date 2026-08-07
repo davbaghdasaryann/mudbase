@@ -1077,9 +1077,9 @@ export default function CostingPage() {
                             const ufRowIds = new Set((unforeseenSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
                             const ufActual = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
                                 const id = _toRId(r._id);
-                                const actQty = parseFloat((actualData[id]?.quantity ?? '').replace(',', '.')) || 0;
-                                const directPayments = costHistory.filter(e => _toRId(e.laborItemId) === id && !e.paymentMethod?.startsWith('pahest_')).reduce((ss, e) => ss + e.total, 0);
-                                return s + (directPayments > 0 ? directPayments : actQty * Number(r.changableAveragePrice ?? 0));
+                                const spent = parseFloat((actualData[id]?.spent ?? '').replace(',', '.')) || 0;
+                                const salary = costHistory.filter(e => _toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0);
+                                return s + spent + salary;
                             }, 0));
                             const ufEstimated = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
                                 return s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0);
