@@ -53,6 +53,7 @@ interface Props {
     aylEntries?: AylEntry[];
     onAylUpdate?: (id: string, qty: number) => void;
     onCostAdded?: (entry: CostHistoryEntry) => void;
+    actualData?: Record<string, { quantity: string; unitPrice: string }>;
 }
 
 function toId(v: unknown): string {
@@ -74,7 +75,7 @@ async function fetchEstimateRows(estimateId: string) {
     return { sections: sorted, subsections: arrays.flat(), rows: laborData ?? [] };
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, aylEntries, onAylUpdate, onCostAdded }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, aylEntries, onAylUpdate, onCostAdded, actualData }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -161,7 +162,9 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
 
     const onPage2 = !!selectedRow;
 
-    const renderWorkSections = (secs: Section[], subs: Subsection[], rws: LaborRow[], accentColor = mainPrimaryColor, subBg = '#f7fdfe') => (
+    const renderWorkSections = (secs: Section[], subs: Subsection[], rws: LaborRow[], accentColor = mainPrimaryColor, subBg = '#f7fdfe') => {
+        const withVolume = rws.filter(r => parseFloat(actualData?.[toId(r._id)]?.quantity || '0') > 0);
+        return (
         <>
         {secs.map(sec => {
             const secSubs = subs.filter(sub => toId(sub.estimateSectionId) === toId(sec._id)).sort((a, b) => a.displayIndex - b.displayIndex);
@@ -171,7 +174,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: accentColor }}>{sec.name}</Typography>
                     </Box>
                     {secSubs.map(sub => {
-                        const subRows = rws.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
+                        const subRows = withVolume.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
                         if (subRows.length === 0) return null;
                         return (
                             <Box key={toId(sub._id)}>
@@ -194,7 +197,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             );
         })}
         </>
-    );
+        );
+    };
 
     return (
         <>

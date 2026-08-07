@@ -1260,6 +1260,7 @@ export default function CostingPage() {
                     aylEntries={aylEntries}
                     onAylUpdate={handleAylCostedUpdate}
                     onCostAdded={handleCostAdded}
+                    actualData={actualData}
                 />
                 <SalaryDialog
                     open={salaryOpen}
