@@ -605,9 +605,6 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                             <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
                                 {completedRows} / {rows.length} աշխ. ավարտված
                             </Typography>
-                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', mt: 0.3 }}>
-                                {totalAct.toLocaleString(undefined, { maximumFractionDigits: 1 })} / {totalEst.toLocaleString(undefined, { maximumFractionDigits: 1 })} ծավալ
-                            </Typography>
                         </Box>
                     </>
                 )}
