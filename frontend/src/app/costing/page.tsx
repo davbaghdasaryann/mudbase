@@ -542,6 +542,91 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
 }
 
 
+function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, height = 220 }: {
+    estimateSnapshot?: EstimateSnapshot | null;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    costHistory: CostHistoryEntry[];
+    height?: number;
+}) {
+    const toRowId = (id: unknown): string =>
+        typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+
+    const rows = estimateSnapshot?.laborRows ?? [];
+    const profitValues: number[] = [];
+
+    for (const row of rows) {
+        const rowId = toRowId(row._id);
+        const estUP = row.changableAveragePrice ?? 0;
+        if (estUP <= 0) continue;
+        const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
+        if (actQty <= 0) continue;
+        const actLaborTotal = costHistory
+            .filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_'))
+            .reduce((s, e) => s + e.total, 0);
+        if (actLaborTotal <= 0) continue;
+        const actUP = actLaborTotal / actQty;
+        profitValues.push((estUP - actUP) / estUP * 100);
+    }
+
+    const avgProfit = profitValues.length > 0
+        ? profitValues.reduce((s, v) => s + v, 0) / profitValues.length
+        : null;
+
+    const RANGE = 60;
+    const clamped = avgProfit !== null ? Math.max(-RANGE, Math.min(RANGE, avgProfit)) : 0;
+    const filled = 50 + (clamped / RANGE) * 50;
+    const color = avgProfit === null ? '#bbb' : avgProfit >= 0 ? '#2e7d32' : '#c62828';
+    const bgColor = avgProfit === null ? '#f0f0f0' : avgProfit >= 0 ? 'rgba(46,125,50,0.08)' : 'rgba(198,40,40,0.06)';
+
+    return (
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.9rem' }}>Աշխատանքների եկամտաբերություն</Typography>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                {avgProfit === null ? (
+                    <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Տվյալ չկա</Typography>
+                ) : (
+                    <>
+                        <Box sx={{ position: 'relative', width: 160, height: 90 }}>
+                            <ResponsiveContainer width={160} height={90}>
+                                <PieChart>
+                                    <Pie
+                                        data={[{ v: filled }, { v: 100 - filled }]}
+                                        startAngle={180}
+                                        endAngle={0}
+                                        cx={80}
+                                        cy={80}
+                                        innerRadius={52}
+                                        outerRadius={72}
+                                        paddingAngle={0}
+                                        dataKey='v'
+                                        strokeWidth={0}
+                                    >
+                                        <Cell fill={color} />
+                                        <Cell fill='#eeeeee' />
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <Box sx={{ position: 'absolute', bottom: 6, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color, lineHeight: 1 }}>
+                                    {avgProfit >= 0 ? '+' : ''}{avgProfit.toFixed(1)}%
+                                </Typography>
+                            </Box>
+                        </Box>
+                        <Box sx={{ mt: 1.5, px: 1, py: 0.8, borderRadius: 2, bgcolor: bgColor, textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
+                                {profitValues.length} {profitValues.length === 1 ? 'labor' : 'labors'} · avg unit price efficiency
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color, mt: 0.2 }}>
+                                {avgProfit >= 0 ? 'Saving vs estimate' : 'Over estimate'}
+                            </Typography>
+                        </Box>
+                    </>
+                )}
+            </Box>
+        </Paper>
+    );
+}
+
 export default function CostingPage() {
     const { t } = useTranslation();
     const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis'];
@@ -900,6 +985,9 @@ export default function CostingPage() {
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <OtherExpensesChart estimate={selectedEstimate} height={220} aylEntries={aylEntries} />
+                            </Box>
+                            <Box sx={{ flex: 1, minHeight: 220 }}>
+                                <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} height={220} />
                             </Box>
                         </Box>
                         {(() => {
