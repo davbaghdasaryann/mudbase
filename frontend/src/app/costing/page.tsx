@@ -1074,16 +1074,21 @@ export default function CostingPage() {
                             const SSM_KEY = 'smallScaleConstructionMaterials';
                             const UF_KEY = 'unforeseenWorks';
                             const _toRId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
-                            const ufRowIds = new Set((unforeseenSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
-                            const ufActual = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
-                                const id = _toRId(r._id);
-                                const spent = parseFloat((actualData[id]?.spent ?? '').replace(',', '.')) || 0;
-                                const salary = costHistory.filter(e => _toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0);
-                                return s + spent + salary;
-                            }, 0));
-                            const ufEstimated = Math.round((unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => {
-                                return s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0);
-                            }, 0));
+                            // Use actualData keys not in the main snapshot — robust to stale unforeseen snapshot
+                            const mainRowIds = new Set((estimateSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
+                            const ufActual = Math.round(
+                                Object.entries(actualData)
+                                    .filter(([id]) => id && !mainRowIds.has(id))
+                                    .reduce((s, [id, data]) => {
+                                        const spent = parseFloat(((data as any).spent ?? '').replace(',', '.')) || 0;
+                                        const salary = costHistory.filter(e => _toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0);
+                                        return s + spent + salary;
+                                    }, 0)
+                            );
+                            const ufEstimated = Math.round(
+                                unforeseenEstimate?.totalCost ??
+                                (unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0)
+                            );
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
                             const extraWidgets = [
