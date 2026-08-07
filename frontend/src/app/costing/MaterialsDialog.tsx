@@ -168,6 +168,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         <>
         {secs.map(sec => {
             const secSubs = subs.filter(sub => toId(sub.estimateSectionId) === toId(sec._id)).sort((a, b) => a.displayIndex - b.displayIndex);
+            const secHasVolume = secSubs.some(sub => withVolume.some(r => r.subsectionName === sub.name && r.sectionName === sec.name));
+            if (!secHasVolume) return null;
             return (
                 <Box key={toId(sec._id)} sx={{ mb: 1 }}>
                     <Box sx={{ bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 3, py: 1, borderLeft: `4px solid ${accentColor}` }}>
@@ -249,7 +251,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         ) : (
                             <Box>
                                 {renderWorkSections(sections, subsections, rows)}
-                                {ufSections.length > 0 && (
+                                {ufSections.length > 0 && ufRows.some(r => parseFloat(actualData?.[toId(r._id)]?.quantity || '0') > 0) && (
                                     <>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 3 }}>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
