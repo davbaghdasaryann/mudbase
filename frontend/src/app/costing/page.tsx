@@ -711,6 +711,7 @@ export default function CostingPage() {
     const [salaryOpen, setSalaryOpen] = useState(false);
     const [subcontractorOpen, setSubcontractorOpen] = useState(false);
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
+    const [estimationOpen, setEstimationOpen] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
@@ -1049,6 +1050,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
                             <Button variant='outlined' startIcon={<ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setUnforeseenOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Unforeseen Works')}</Button>
+                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
@@ -1460,6 +1462,75 @@ export default function CostingPage() {
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={handleUnforeseenEstimateSelected}
                 />
+                <Dialog open={estimationOpen} onClose={() => setEstimationOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+                        <Typography fontWeight={700} fontSize='1.05rem'>{t('Estimation')}</Typography>
+                        <IconButton size='small' onClick={() => setEstimationOpen(false)}><CloseIcon fontSize='small' /></IconButton>
+                    </DialogTitle>
+                    <DialogContent dividers sx={{ p: 0 }}>
+                        {(() => {
+                            const toRId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+                            const rows = (estimateSnapshot?.laborRows ?? []).filter(r => {
+                                const qty = parseFloat((actualData[toRId(r._id)]?.quantity ?? '').replace(',', '.')) || 0;
+                                return qty > 0;
+                            });
+                            if (rows.length === 0) return (
+                                <Box sx={{ p: 4, textAlign: 'center' }}>
+                                    <Typography color='text.secondary' fontSize='0.9rem'>{t('No recorded labors yet')}</Typography>
+                                </Box>
+                            );
+                            const sections = Array.from(new Set(rows.map(r => r.sectionName)));
+                            let idx = 0;
+                            return (
+                                <Table size='small' stickyHeader>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#6b7280', width: 40 }}>№</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#6b7280' }}>{t('Name')}</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#6b7280', width: 60 }}>{t('Unit')}</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#6b7280', width: 90 }} align='right'>{t('Qty')}</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#6b7280', width: 110 }} align='right'>{t('Unit Price')}</TableCell>
+                                            <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', color: '#6b7280', width: 120 }} align='right'>{t('Total')}</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {sections.map(sec => {
+                                            const secRows = rows.filter(r => r.sectionName === sec);
+                                            const secTotal = secRows.reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0);
+                                            return [
+                                                <TableRow key={`sec-${sec}`}>
+                                                    <TableCell colSpan={6} sx={{ fontWeight: 700, fontSize: '0.78rem', color: '#00A390', bgcolor: '#f0faf9', py: 0.75, borderTop: '1px solid #e0f0f4' }}>{sec}</TableCell>
+                                                </TableRow>,
+                                                ...secRows.map(r => {
+                                                    idx++;
+                                                    const total = Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0);
+                                                    return (
+                                                        <TableRow key={toRId(r._id)} sx={{ '&:hover': { bgcolor: '#f9fafb' } }}>
+                                                            <TableCell sx={{ fontSize: '0.78rem', color: '#9e9e9e' }}>{idx}</TableCell>
+                                                            <TableCell sx={{ fontSize: '0.82rem' }}>{r.laborOfferItemName}</TableCell>
+                                                            <TableCell sx={{ fontSize: '0.78rem', color: '#6b7280' }}>{r.unitSymbol}</TableCell>
+                                                            <TableCell sx={{ fontSize: '0.82rem' }} align='right'>{Number(r.quantity ?? 0).toLocaleString()}</TableCell>
+                                                            <TableCell sx={{ fontSize: '0.82rem' }} align='right'>{formatCurrencyRounded(Number(r.changableAveragePrice ?? 0))}</TableCell>
+                                                            <TableCell sx={{ fontSize: '0.82rem', fontWeight: 600 }} align='right'>{formatCurrencyRounded(total)}</TableCell>
+                                                        </TableRow>
+                                                    );
+                                                }),
+                                                <TableRow key={`sec-total-${sec}`}>
+                                                    <TableCell colSpan={5} sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#6b7280', textAlign: 'right', borderTop: '1px solid #e0f0f4', py: 0.5 }}>{t('Subtotal')}</TableCell>
+                                                    <TableCell sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00A390', borderTop: '1px solid #e0f0f4', py: 0.5 }} align='right'>{formatCurrencyRounded(secTotal)}</TableCell>
+                                                </TableRow>,
+                                            ];
+                                        })}
+                                        <TableRow>
+                                            <TableCell colSpan={5} sx={{ fontSize: '0.85rem', fontWeight: 700, textAlign: 'right', borderTop: '2px solid #00A390', color: '#374151' }}>{t('Total')}</TableCell>
+                                            <TableCell sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#00A390', borderTop: '2px solid #00A390' }} align='right'>{formatCurrencyRounded(rows.reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0))}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            );
+                        })()}
+                    </DialogContent>
+                </Dialog>
                 </>
             )}
         </PageContents>
