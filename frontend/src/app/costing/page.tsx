@@ -542,6 +542,80 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
 }
 
 
+function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }: {
+    estimateSnapshot?: EstimateSnapshot | null;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    height?: number;
+}) {
+    const toRowId = (id: unknown): string =>
+        typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+
+    const rows = (estimateSnapshot?.laborRows ?? []).filter(r => Number(r.quantity ?? 0) > 0);
+    let totalEst = 0;
+    let totalAct = 0;
+    let completedRows = 0;
+
+    for (const row of rows) {
+        const estQty = Number(row.quantity ?? 0);
+        const actQty = parseFloat((actualData[toRowId(row._id)]?.quantity ?? '').replace(',', '.')) || 0;
+        totalEst += estQty;
+        totalAct += Math.min(actQty, estQty);
+        if (actQty >= estQty) completedRows++;
+    }
+
+    const pct = totalEst > 0 ? Math.min(100, (totalAct / totalEst) * 100) : null;
+    const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
+    const filled = pct ?? 0;
+
+    return (
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='subtitle1' sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.9rem' }}>Կատարման տոկոս</Typography>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                {pct === null ? (
+                    <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Ծավալ գրանցված չէ</Typography>
+                ) : (
+                    <>
+                        <Box sx={{ position: 'relative', width: 130, height: 130 }}>
+                            <ResponsiveContainer width={130} height={130}>
+                                <PieChart>
+                                    <Pie
+                                        data={[{ v: filled }, { v: 100 - filled }]}
+                                        startAngle={90}
+                                        endAngle={-270}
+                                        cx={65}
+                                        cy={65}
+                                        innerRadius={46}
+                                        outerRadius={62}
+                                        paddingAngle={0}
+                                        dataKey='v'
+                                        strokeWidth={0}
+                                    >
+                                        <Cell fill={color} />
+                                        <Cell fill='#eeeeee' />
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color, lineHeight: 1 }}>
+                                    {pct.toFixed(0)}%
+                                </Typography>
+                            </Box>
+                        </Box>
+                        <Box sx={{ mt: 1.5, textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
+                                {completedRows} / {rows.length} աշխ. ավարտված
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', mt: 0.3 }}>
+                                {totalAct.toLocaleString(undefined, { maximumFractionDigits: 1 })} / {totalEst.toLocaleString(undefined, { maximumFractionDigits: 1 })} ծավալ
+                            </Typography>
+                        </Box>
+                    </>
+                )}
+            </Box>
+        </Paper>
+    );
+}
+
 function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, height = 220 }: {
     estimateSnapshot?: EstimateSnapshot | null;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
@@ -984,7 +1058,7 @@ export default function CostingPage() {
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
-                                <OtherExpensesChart estimate={selectedEstimate} height={220} aylEntries={aylEntries} />
+                                <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} height={220} />
