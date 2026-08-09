@@ -158,7 +158,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         setSelected(null);
         setQtyInput('');
         setAddPriceInput('');
-        setExpandedGroups(new Set());
+        setExpandedGroups(new Set(groupData.map(g => g.groupId)));
         setAddOpen(true);
     };
 
