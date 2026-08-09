@@ -251,15 +251,15 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         }
     };
 
-    const hasVolume = (laborId: string) => parseFloat(actualData?.[laborId]?.quantity || '0') > 0;
     const filtered = materials.filter(m =>
-        m.estimatedLaborIds.some(hasVolume) &&
         (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase())
     );
-    const filteredGroupData = groupData.map(g => ({
-        ...g,
-        children: g.children.filter(c => hasVolume(c.childId)),
-    })).filter(g => g.children.length > 0);
+    const filteredGroupData = search
+        ? groupData.map(g => ({
+            ...g,
+            children: g.children.filter(c => c.materials.some(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()))),
+        })).filter(g => g.children.length > 0)
+        : groupData;
 
     return (
         <Box>
