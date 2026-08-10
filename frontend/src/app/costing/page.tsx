@@ -718,6 +718,7 @@ export default function CostingPage() {
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
     const [smallScaleOpen, setSmallScaleOpen] = useState(false);
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
+    const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
     const [estimationOpen, setEstimationOpen] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
@@ -1123,7 +1124,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<CategoryOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Materials Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
-                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
+                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => smallScaleEstimate ? setSmallScaleEditOpen(true) : setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրածավալ</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
@@ -1225,9 +1226,7 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Box sx={{ mb: 1.5 }}>
-                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => smallScaleEstimate ? setSmallScaleEditOpen(true) : setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>
-                                Փոքրածավալ{smallScaleEstimate ? ` — ${smallScaleEstimate.name}` : ''}
-                            </Button>
+                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setMainEstimateEditOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
                         </Box>
                         <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                     </Box>
@@ -1573,6 +1572,13 @@ export default function CostingPage() {
                             Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(smallScaleEstimate._id) } })
                                 .then(est => setSmallScaleEstimate(est)).catch(() => {});
                         }}
+                    />
+                )}
+                {mainEstimateEditOpen && selected && (
+                    <EstimatePageDialog
+                        estimateId={String(selected.estimateId)}
+                        estimateTitle={selected.estimateName ?? ''}
+                        onClose={() => setMainEstimateEditOpen(false)}
                     />
                 )}
                 <Dialog open={estimationOpen} onClose={() => setEstimationOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
