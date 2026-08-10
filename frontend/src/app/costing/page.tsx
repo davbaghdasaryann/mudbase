@@ -864,6 +864,12 @@ export default function CostingPage() {
     }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, saveToBackend]); // eslint-disable-line
 
     useEffect(() => {
+        if (smallScaleOpen || !smallScaleEstimate) return;
+        Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(smallScaleEstimate._id) } })
+            .then(est => setSmallScaleEstimate(est)).catch(() => {});
+    }, [smallScaleOpen]); // eslint-disable-line
+
+    useEffect(() => {
         if (!unforeseenEstimate || tab !== 'main' || !scrollToUnforeseenRef.current) return;
         scrollToUnforeseenRef.current = false;
         const timer = setTimeout(() => {
@@ -1146,8 +1152,8 @@ export default function CostingPage() {
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
                             const extraWidgets = [
-                                ...(!hasSSMInExpenses && (aylActual > 0 || ssEstimated > 0) ? [{ key: SSM_KEY, estimatedValue: ssEstimated, actualValue: aylActual, gradIndex: expenses.length }] : []),
-                                ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (!hasSSMInExpenses && (aylActual > 0 || ssEstimated > 0) ? 1 : 0) }] : []),
+                                ...(!hasSSMInExpenses && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? [{ key: SSM_KEY, estimatedValue: ssEstimated, actualValue: aylActual, gradIndex: expenses.length }] : []),
+                                ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (!hasSSMInExpenses && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? 1 : 0) }] : []),
                             ];
                             if (expenses.length === 0 && extraWidgets.length === 0) return null;
                             return (
