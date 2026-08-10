@@ -184,7 +184,7 @@ const outlinedCreateSx = {
     '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
 };
 
-type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis';
+type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis' | 'unforeseen';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
@@ -700,7 +700,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
 export default function CostingPage() {
     const { t } = useTranslation();
-    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis'];
+    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen'];
     const [tab, setTab] = useState<TabValue>('general');
     useEffect(() => {
         const saved = localStorage.getItem('costingTab') as TabValue | null;
@@ -883,10 +883,9 @@ export default function CostingPage() {
     }, [selected, costHistory, pahestEntries, aylEntries, actualData, saveToBackend]); // eslint-disable-line
 
     const handleUnforeseenEstimateSelected = useCallback(async (est: EstimatesApi.ApiEstimate) => {
-        scrollToUnforeseenRef.current = true;
         setUnforeseenEstimate(est);
-        setTab('main');
-        localStorage.setItem('costingTab', 'main');
+        setTab('unforeseen');
+        localStorage.setItem('costingTab', 'unforeseen');
         if (!selected) return;
         let newId = unforeseenCostingIdRef.current;
         if (!newId) {
@@ -1037,6 +1036,7 @@ export default function CostingPage() {
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><FormatListBulletedIcon sx={{ fontSize: 18 }} />{t('Main')}</Box>} value='main' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><WarehouseOutlinedIcon sx={{ fontSize: 18 }} />{t('Pahest')}</Box>} value='pahest' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><InsightsIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='analysis' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />Չնախատեսված</Box>} value='unforeseen' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><HistoryIcon sx={{ fontSize: 18 }} />{t('History')}</Box>} value='history' />
                             </TabList>
                         </Box>
@@ -1049,7 +1049,6 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<CategoryOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setMaterialsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Materials Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
-                            <Button variant='outlined' startIcon={<ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setUnforeseenOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Unforeseen Works')}</Button>
                             <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
@@ -1147,21 +1146,31 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
-                        {unforeseenEstimate && (() => {
-                            return (
-                            <Box ref={unforeseenSectionRef} sx={{ mt: 4, borderTop: '2px solid #ffe0cc', pt: 3 }}>
+                    </Box>
+                )}
+
+                {tab === 'unforeseen' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        {!unforeseenEstimate ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8, pt: 8 }}>
+                                <ReportProblemOutlinedIcon sx={{ fontSize: 80, color: '#e65100', opacity: 0.25 }} />
+                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Կապված Չնախատեսված գնահատական չկա</Typography>
+                                <Button variant='outlined' startIcon={<ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setUnforeseenOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#e65100', color: '#e65100', fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)', borderColor: '#e65100' } }}>Ընտրել գնահատական</Button>
+                            </Box>
+                        ) : (
+                            <Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                     <ReportProblemOutlinedIcon sx={{ fontSize: 20, color: '#e65100' }} />
                                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#e65100' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({unforeseenEstimate.name})</Typography>
+                                    <Button variant='outlined' size='small' onClick={() => setUnforeseenOpen(true)} sx={{ ml: 1, borderRadius: '20px', textTransform: 'none', borderColor: '#e65100', color: '#e65100', fontSize: '0.75rem', px: 1.5, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)' } }}>Փոխել</Button>
                                     <IconButton size='small' onClick={handleDeleteUnforeseen} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon fontSize='small' />
                                     </IconButton>
                                 </Box>
                                 <CostingTable estimate={unforeseenEstimate} estimateSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} accentColor='#e65100' />
                             </Box>
-                            );
-                        })()}
+                        )}
                     </Box>
                 )}
 
