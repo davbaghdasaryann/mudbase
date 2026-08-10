@@ -1169,7 +1169,7 @@ export default function CostingPage() {
                             const needsSSExtra = !hasSSwInExpenses && !hasSSmInExpenses;
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
                             const extraWidgets = [
-                                ...(needsSSExtra && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? [{ key: SSW_KEY, estimatedValue: ssEstimated, actualValue: aylActual, gradIndex: expenses.length }] : []),
+                                ...(needsSSExtra && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? [{ key: SSW_KEY, estimatedValue: 0, actualValue: ssEstimated || aylActual, gradIndex: expenses.length }] : []),
                                 ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (needsSSExtra && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? 1 : 0) }] : []),
                             ];
                             if (expenses.length === 0 && extraWidgets.length === 0) return null;
@@ -1177,8 +1177,8 @@ export default function CostingPage() {
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
-                                        const estimatedValue = key === UF_KEY ? ufEstimated : key === primarySSKey && ssEstimated > 0 ? ssEstimated : Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === primarySSKey ? aylActual : key === UF_KEY ? ufActual : 0;
+                                        const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
+                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
