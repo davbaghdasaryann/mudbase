@@ -850,7 +850,10 @@ export default function CostingPage() {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, unforeseenEstimateId: unforeseenId ?? '', unforeseenCostingId: unforeseenCostingIdRef.current ?? '', smallScaleEstimateId: smallScaleId ?? '', smallScaleCostingId: smallScaleCostingIdRef.current ?? '' } }).catch(console.error);
+            const json: Record<string, unknown> = { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad };
+            if (unforeseenId !== null) { json.unforeseenEstimateId = unforeseenId ?? ''; json.unforeseenCostingId = unforeseenCostingIdRef.current ?? ''; }
+            if (smallScaleId !== null) { json.smallScaleEstimateId = smallScaleId ?? ''; json.smallScaleCostingId = smallScaleCostingIdRef.current ?? ''; }
+            Api.requestSession({ command: 'costing/save', args: { id }, json }).catch(console.error);
         }, 800);
     }, []);
 
@@ -868,6 +871,16 @@ export default function CostingPage() {
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(smallScaleEstimate._id) } })
             .then(est => setSmallScaleEstimate(est)).catch(() => {});
     }, [smallScaleOpen]); // eslint-disable-line
+
+    useEffect(() => {
+        const refresh = () => {
+            if (!smallScaleEstimate) return;
+            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(smallScaleEstimate._id) } })
+                .then(est => setSmallScaleEstimate(est)).catch(() => {});
+        };
+        window.addEventListener('focus', refresh);
+        return () => window.removeEventListener('focus', refresh);
+    }, [smallScaleEstimate]); // eslint-disable-line
 
     useEffect(() => {
         if (!unforeseenEstimate || tab !== 'main' || !scrollToUnforeseenRef.current) return;
