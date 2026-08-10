@@ -41,6 +41,7 @@ import MaterialsDialog from './MaterialsDialog';
 import SalaryDialog from './SalaryDialog';
 import SubcontractorDialog from './SubcontractorDialog';
 import UnforeseenDialog from './UnforeseenDialog';
+import SmallScaleDialog from './SmallScaleDialog';
 import AnalysisTab from './AnalysisTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
@@ -1556,7 +1557,7 @@ export default function CostingPage() {
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={handleUnforeseenEstimateSelected}
                 />
-                <UnforeseenDialog
+                <SmallScaleDialog
                     open={smallScaleOpen}
                     onClose={() => setSmallScaleOpen(false)}
                     activeEstimateId={smallScaleEstimate ? String(smallScaleEstimate._id) : undefined}
