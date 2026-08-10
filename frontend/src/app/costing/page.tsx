@@ -1142,33 +1142,19 @@ export default function CostingPage() {
                                 unforeseenEstimate?.totalCost ??
                                 (unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0)
                             );
-                            const ssRowIds = new Set((smallScaleSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
-                            const ssActual = ssRowIds.size > 0 ? Math.round(
-                                Object.entries(actualData)
-                                    .filter(([id]) => id && ssRowIds.has(id))
-                                    .reduce((s, [id, data]) => {
-                                        const spent = parseFloat(((data as any).spent ?? '').replace(',', '.')) || 0;
-                                        const salary = costHistory.filter(e => _toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0);
-                                        return s + spent + salary;
-                                    }, 0)
-                            ) : 0;
-                            const ssEstimated = Math.round(
-                                smallScaleEstimate?.totalCost ??
-                                (smallScaleSnapshot?.laborRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0)
-                            );
-                            const showSS = smallScaleEstimate != null && (ssEstimated > 0 || ssActual > 0);
+                            const ssEstimated = Math.round(smallScaleEstimate?.totalCost ?? 0);
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
                             const extraWidgets = [
-                                ...(!hasSSMInExpenses && aylActual > 0 ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length }] : []),
-                                ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (!hasSSMInExpenses && aylActual > 0 ? 1 : 0) }] : []),
+                                ...(!hasSSMInExpenses && (aylActual > 0 || ssEstimated > 0) ? [{ key: SSM_KEY, estimatedValue: ssEstimated, actualValue: aylActual, gradIndex: expenses.length }] : []),
+                                ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (!hasSSMInExpenses && (aylActual > 0 || ssEstimated > 0) ? 1 : 0) }] : []),
                             ];
-                            if (expenses.length === 0 && extraWidgets.length === 0 && !showSS) return null;
+                            if (expenses.length === 0 && extraWidgets.length === 0) return null;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
-                                        const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
+                                        const estimatedValue = key === UF_KEY ? ufEstimated : key === SSM_KEY && ssEstimated > 0 ? ssEstimated : Math.round(base * (exp[key] ?? 0) / 100);
                                         const actualValue = key === SSM_KEY ? aylActual : key === UF_KEY ? ufActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
@@ -1176,9 +1162,6 @@ export default function CostingPage() {
                                     {extraWidgets.map(w => (
                                         <OtherExpenseBarWidget key={w.key} expenseKey={w.key} label={t(estimateOtherExpensesItems.find(it => it.id === w.key)?.label ?? w.key)} estimatedValue={w.estimatedValue} actualValue={w.actualValue} gradIndex={w.gradIndex} height={200} />
                                     ))}
-                                    {showSS && (
-                                        <OtherExpenseBarWidget key='smallScaleConstruction' expenseKey='smallScaleConstruction' label='Փոքրածավալ' estimatedValue={ssEstimated} actualValue={ssActual} gradIndex={expenses.length + extraWidgets.length} height={200} />
-                                    )}
                                 </Box>
                             );
                         })()}
