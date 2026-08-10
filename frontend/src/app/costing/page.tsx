@@ -1103,7 +1103,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
                             <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
-                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրամասշտաբ</Button>
+                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրածավալ</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
@@ -1177,7 +1177,7 @@ export default function CostingPage() {
                                         <OtherExpenseBarWidget key={w.key} expenseKey={w.key} label={t(estimateOtherExpensesItems.find(it => it.id === w.key)?.label ?? w.key)} estimatedValue={w.estimatedValue} actualValue={w.actualValue} gradIndex={w.gradIndex} height={200} />
                                     ))}
                                     {showSS && (
-                                        <OtherExpenseBarWidget key='smallScaleConstruction' expenseKey='smallScaleConstruction' label='Փոքրամասշտաբ' estimatedValue={ssEstimated} actualValue={ssActual} gradIndex={expenses.length + extraWidgets.length} height={200} />
+                                        <OtherExpenseBarWidget key='smallScaleConstruction' expenseKey='smallScaleConstruction' label='Փոքրածավալ' estimatedValue={ssEstimated} actualValue={ssActual} gradIndex={expenses.length + extraWidgets.length} height={200} />
                                     )}
                                 </Box>
                             );

@@ -47,7 +47,7 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: ACCENT, pb: 1 }}>
                 <BuildIcon sx={{ fontSize: 22 }} />
-                Փոքրամասշտաբ
+                Փոքրածավալ
                 <Button
                     size='small'
                     startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
