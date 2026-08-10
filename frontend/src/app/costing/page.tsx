@@ -1106,7 +1106,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
                             <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
-                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրամասշտաբ շինարարություն</Button>
+                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրամասշտաբ</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
@@ -1236,14 +1236,14 @@ export default function CostingPage() {
                         {!smallScaleEstimate ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8, pt: 8 }}>
                                 <BuildIcon sx={{ fontSize: 80, color: '#1565c0', opacity: 0.25 }} />
-                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Փոքրամասշտաբ շինարարության նախահաշիվ չկա</Typography>
+                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Փոքրամասշտաբ նախահաշիվ չկա</Typography>
                                 <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Ընտրել նախահաշիվ</Button>
                             </Box>
                         ) : (
                             <Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                     <BuildIcon sx={{ fontSize: 20, color: '#1565c0' }} />
-                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1565c0' }}>Փոքրամասշտաբ շինարարություն</Typography>
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1565c0' }}>Փոքրամասշտաբ</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({smallScaleEstimate.name})</Typography>
                                     <Button variant='outlined' size='small' onClick={() => setSmallScaleOpen(true)} sx={{ ml: 1, borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontSize: '0.75rem', px: 1.5, '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}>Փոխել</Button>
                                     <IconButton size='small' onClick={handleDeleteSmallScale} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>

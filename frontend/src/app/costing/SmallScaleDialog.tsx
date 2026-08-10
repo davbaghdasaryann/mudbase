@@ -4,13 +4,12 @@ import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, Table, TableHead, TableBody,
-    TableRow, TableCell, Radio, CircularProgress, IconButton,
+    TableRow, TableCell, Radio, IconButton,
 } from '@mui/material';
 import BuildIcon from '@mui/icons-material/Build';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { useTranslation } from 'react-i18next';
-import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatDate } from '@/lib/format_date';
 import CreateEstimateDialog from '../estimates/CreateEstimateDialog';
@@ -28,23 +27,13 @@ interface Props {
 export default function SmallScaleDialog({ open, onClose, onEstimateSelected, activeEstimateId }: Props) {
     const { t } = useTranslation();
     const [estimates, setEstimates] = useState<EstimatesApi.ApiEstimate[]>([]);
-    const [loading, setLoading] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [editingEstimate, setEditingEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
 
-    const fetchEstimates = () => {
-        setLoading(true);
-        Api.requestSession<EstimatesApi.ApiEstimate[]>({ command: 'estimates/fetch', args: { searchVal: 'empty' } })
-            .then(data => setEstimates(data ?? []))
-            .catch(() => setEstimates([]))
-            .finally(() => setLoading(false));
-    };
-
     useEffect(() => {
         if (!open) return;
         setSelectedEstimate(null);
-        fetchEstimates();
     }, [open]);
 
     const handleConfirm = () => {
@@ -58,7 +47,7 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: ACCENT, pb: 1 }}>
                 <BuildIcon sx={{ fontSize: 22 }} />
-                Փոքրամասշտաբ շինարարություն
+                Փոքրամասշտաբ
                 <Button
                     size='small'
                     startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
@@ -70,11 +59,7 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
             </DialogTitle>
 
             <DialogContent sx={{ p: 0, pt: 1, pl: 3 }}>
-                {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                        <CircularProgress size={28} sx={{ color: ACCENT }} />
-                    </Box>
-                ) : estimates.length === 0 ? (
+                {estimates.length === 0 ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
                         <Typography variant='body2' color='text.secondary'>{t('No estimations found')}</Typography>
                     </Box>
