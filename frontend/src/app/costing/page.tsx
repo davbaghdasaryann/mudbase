@@ -1154,8 +1154,8 @@ export default function CostingPage() {
                         {!unforeseenEstimate ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8, pt: 8 }}>
                                 <ReportProblemOutlinedIcon sx={{ fontSize: 80, color: '#e65100', opacity: 0.25 }} />
-                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Կապված Չնախատեսված գնահատական չկա</Typography>
-                                <Button variant='outlined' startIcon={<ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setUnforeseenOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#e65100', color: '#e65100', fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)', borderColor: '#e65100' } }}>Ընտրել գնահատական</Button>
+                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Չնախատեսված նախահաշիվ չկա</Typography>
+                                <Button variant='outlined' startIcon={<ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setUnforeseenOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#e65100', color: '#e65100', fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(230,81,0,0.06)', borderColor: '#e65100' } }}>Ընտրել նախահաշիվ</Button>
                             </Box>
                         ) : (
                             <Box>
