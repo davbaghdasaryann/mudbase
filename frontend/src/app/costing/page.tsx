@@ -718,7 +718,6 @@ export default function CostingPage() {
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
     const [smallScaleOpen, setSmallScaleOpen] = useState(false);
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
-    const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
     const [estimationOpen, setEstimationOpen] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
@@ -1226,7 +1225,7 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Box sx={{ mb: 1.5 }}>
-                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setMainEstimateEditOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
+                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
                         </Box>
                         <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                     </Box>
@@ -1572,13 +1571,6 @@ export default function CostingPage() {
                             Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(smallScaleEstimate._id) } })
                                 .then(est => setSmallScaleEstimate(est)).catch(() => {});
                         }}
-                    />
-                )}
-                {mainEstimateEditOpen && selected && (
-                    <EstimatePageDialog
-                        estimateId={String(selected.estimateId)}
-                        estimateTitle={selected.estimateName ?? ''}
-                        onClose={() => setMainEstimateEditOpen(false)}
                     />
                 )}
                 <Dialog open={estimationOpen} onClose={() => setEstimationOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
