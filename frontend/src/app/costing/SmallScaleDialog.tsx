@@ -11,6 +11,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { useTranslation } from 'react-i18next';
 import * as EstimatesApi from '@/api/estimate';
+import * as Api from '@/api/api';
 import { formatDate } from '@/lib/format_date';
 import CreateEstimateDialog from '../estimates/CreateEstimateDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
@@ -32,9 +33,20 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
     const [editingEstimate, setEditingEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
 
     useEffect(() => {
-        if (!open) return;
-        setSelectedEstimate(null);
-    }, [open]);
+        if (!open) {
+            setEstimates([]);
+            setSelectedEstimate(null);
+            return;
+        }
+        if (!activeEstimateId) return;
+        Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: activeEstimateId } })
+            .then(est => {
+                if (est) {
+                    setEstimates([est]);
+                    setSelectedEstimate(est);
+                }
+            }).catch(() => {});
+    }, [open]); // eslint-disable-line
 
     const handleConfirm = () => {
         if (!selectedEstimate) return;
@@ -131,7 +143,10 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                 onClose={() => setCreateOpen(false)}
                 onConfirm={(est) => {
                     setCreateOpen(false);
-                    if (est) setEstimates(prev => [...prev, est as EstimatesApi.ApiEstimate]);
+                    if (est) {
+                        onEstimateSelected(est as EstimatesApi.ApiEstimate);
+                        onClose();
+                    }
                 }}
             />
         )}
@@ -140,7 +155,17 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
             <EstimatePageDialog
                 estimateId={String(editingEstimate._id)}
                 estimateTitle={editingEstimate.name ?? ''}
-                onClose={() => setEditingEstimate(null)}
+                onClose={() => {
+                    const id = String(editingEstimate._id);
+                    setEditingEstimate(null);
+                    Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: id } })
+                        .then(updated => {
+                            if (updated) {
+                                setEstimates(prev => prev.map(e => String(e._id) === id ? updated : e));
+                                setSelectedEstimate(prev => prev && String(prev._id) === id ? updated : prev);
+                            }
+                        }).catch(() => {});
+                }}
             />
         )}
         </>
