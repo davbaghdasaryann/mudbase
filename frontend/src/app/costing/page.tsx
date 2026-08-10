@@ -188,7 +188,7 @@ const outlinedCreateSx = {
     '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
 };
 
-type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis' | 'unforeseen' | 'smallscale';
+type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis' | 'unforeseen';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
@@ -704,7 +704,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
 export default function CostingPage() {
     const { t } = useTranslation();
-    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen', 'smallscale'];
+    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen'];
     const [tab, setTab] = useState<TabValue>('general');
     useEffect(() => {
         const saved = localStorage.getItem('costingTab') as TabValue | null;
@@ -927,8 +927,6 @@ export default function CostingPage() {
 
     const handleSmallScaleEstimateSelected = useCallback(async (est: EstimatesApi.ApiEstimate) => {
         setSmallScaleEstimate(est);
-        setTab('smallscale');
-        localStorage.setItem('costingTab', 'smallscale');
         if (!selected) return;
         let newId = smallScaleCostingIdRef.current;
         if (!newId) {
@@ -1092,7 +1090,6 @@ export default function CostingPage() {
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><WarehouseOutlinedIcon sx={{ fontSize: 18 }} />{t('Pahest')}</Box>} value='pahest' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><InsightsIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='analysis' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />Չնախատեսված</Box>} value='unforeseen' />
-                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><BuildIcon sx={{ fontSize: 18 }} />Փոքրամասշտաբ</Box>} value='smallscale' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><HistoryIcon sx={{ fontSize: 18 }} />{t('History')}</Box>} value='history' />
                             </TabList>
                         </Box>
@@ -1145,13 +1142,28 @@ export default function CostingPage() {
                                 unforeseenEstimate?.totalCost ??
                                 (unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0)
                             );
+                            const ssRowIds = new Set((smallScaleSnapshot?.laborRows ?? []).map(r => _toRId(r._id)));
+                            const ssActual = ssRowIds.size > 0 ? Math.round(
+                                Object.entries(actualData)
+                                    .filter(([id]) => id && ssRowIds.has(id))
+                                    .reduce((s, [id, data]) => {
+                                        const spent = parseFloat(((data as any).spent ?? '').replace(',', '.')) || 0;
+                                        const salary = costHistory.filter(e => _toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0);
+                                        return s + spent + salary;
+                                    }, 0)
+                            ) : 0;
+                            const ssEstimated = Math.round(
+                                smallScaleEstimate?.totalCost ??
+                                (smallScaleSnapshot?.laborRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0)
+                            );
+                            const showSS = smallScaleEstimate != null && (ssEstimated > 0 || ssActual > 0);
                             const hasSSMInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
                             const extraWidgets = [
                                 ...(!hasSSMInExpenses && aylActual > 0 ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length }] : []),
                                 ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (!hasSSMInExpenses && aylActual > 0 ? 1 : 0) }] : []),
                             ];
-                            if (expenses.length === 0 && extraWidgets.length === 0) return null;
+                            if (expenses.length === 0 && extraWidgets.length === 0 && !showSS) return null;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
                                     {expenses.map((exp, i) => {
@@ -1164,6 +1176,9 @@ export default function CostingPage() {
                                     {extraWidgets.map(w => (
                                         <OtherExpenseBarWidget key={w.key} expenseKey={w.key} label={t(estimateOtherExpensesItems.find(it => it.id === w.key)?.label ?? w.key)} estimatedValue={w.estimatedValue} actualValue={w.actualValue} gradIndex={w.gradIndex} height={200} />
                                     ))}
+                                    {showSS && (
+                                        <OtherExpenseBarWidget key='smallScaleConstruction' expenseKey='smallScaleConstruction' label='Փոքրամասշտաբ' estimatedValue={ssEstimated} actualValue={ssActual} gradIndex={expenses.length + extraWidgets.length} height={200} />
+                                    )}
                                 </Box>
                             );
                         })()}
@@ -1230,32 +1245,6 @@ export default function CostingPage() {
                         )}
                     </Box>
                 )}
-
-                {tab === 'smallscale' && (
-                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        {!smallScaleEstimate ? (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8, pt: 8 }}>
-                                <BuildIcon sx={{ fontSize: 80, color: '#1565c0', opacity: 0.25 }} />
-                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Փոքրամասշտաբ նախահաշիվ չկա</Typography>
-                                <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Ընտրել նախահաշիվ</Button>
-                            </Box>
-                        ) : (
-                            <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                    <BuildIcon sx={{ fontSize: 20, color: '#1565c0' }} />
-                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1565c0' }}>Փոքրամասշտաբ</Typography>
-                                    <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({smallScaleEstimate.name})</Typography>
-                                    <Button variant='outlined' size='small' onClick={() => setSmallScaleOpen(true)} sx={{ ml: 1, borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontSize: '0.75rem', px: 1.5, '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}>Փոխել</Button>
-                                    <IconButton size='small' onClick={handleDeleteSmallScale} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
-                                        <DeleteOutlineIcon fontSize='small' />
-                                    </IconButton>
-                                </Box>
-                                <CostingTable estimate={smallScaleEstimate} estimateSnapshot={smallScaleSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} accentColor='#1565c0' />
-                            </Box>
-                        )}
-                    </Box>
-                )}
-
                 {tab === 'history' && (
                     <>
                     {costHistory.length === 0 ? (
