@@ -110,6 +110,9 @@ interface CostingRecord {
     unforeseenEstimateSnapshot?: EstimateSnapshot;
     unforeseenEstimateId?: string;
     unforeseenCostingId?: string;
+    smallScaleEstimateSnapshot?: EstimateSnapshot;
+    smallScaleEstimateId?: string;
+    smallScaleCostingId?: string;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt: string;
@@ -184,7 +187,7 @@ const outlinedCreateSx = {
     '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
 };
 
-type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis' | 'unforeseen';
+type TabValue = 'general' | 'main' | 'history' | 'pahest' | 'analysis' | 'unforeseen' | 'smallscale';
 
 const newRow = (): SectionRow => ({ id: String(Date.now() + Math.random()), description: '', quantity: '', unitPrice: '' });
 
@@ -700,7 +703,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
 export default function CostingPage() {
     const { t } = useTranslation();
-    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen'];
+    const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen', 'smallscale'];
     const [tab, setTab] = useState<TabValue>('general');
     useEffect(() => {
         const saved = localStorage.getItem('costingTab') as TabValue | null;
@@ -711,13 +714,17 @@ export default function CostingPage() {
     const [salaryOpen, setSalaryOpen] = useState(false);
     const [subcontractorOpen, setSubcontractorOpen] = useState(false);
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
+    const [smallScaleOpen, setSmallScaleOpen] = useState(false);
     const [estimationOpen, setEstimationOpen] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
+    const [smallScaleEstimate, setSmallScaleEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
+    const [smallScaleCostingId, setSmallScaleCostingId] = useState<string>('');
     const [estimateSnapshot, setEstimateSnapshot] = useState<EstimateSnapshot | null>(null);
     const [unforeseenSnapshot, setUnforeseenSnapshot] = useState<EstimateSnapshot | null>(null);
+    const [smallScaleSnapshot, setSmallScaleSnapshot] = useState<EstimateSnapshot | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [records, setRecords] = useState<CostingRecord[]>([]);
@@ -748,6 +755,7 @@ export default function CostingPage() {
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLoadingRef = useRef(false);
     const unforeseenCostingIdRef = useRef<string>('');
+    const smallScaleCostingIdRef = useRef<string>('');
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
     const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
@@ -788,16 +796,25 @@ export default function CostingPage() {
         })));
         setActualData(rec.actualData ?? {});
         setUnforeseenEstimate(null);
+        setSmallScaleEstimate(null);
         unforeseenCostingIdRef.current = rec.unforeseenCostingId ?? '';
         setUnforeseenCostingId(rec.unforeseenCostingId ?? '');
+        smallScaleCostingIdRef.current = rec.smallScaleCostingId ?? '';
+        setSmallScaleCostingId(rec.smallScaleCostingId ?? '');
         setEstimateSnapshot(rec.estimateSnapshot ?? null);
         setUnforeseenSnapshot(rec.unforeseenEstimateSnapshot ?? null);
+        setSmallScaleSnapshot(rec.smallScaleEstimateSnapshot ?? null);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
         if (rec.unforeseenEstimateId) {
             Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.unforeseenEstimateId } })
                 .then(est => setUnforeseenEstimate(est))
+                .catch(() => {});
+        }
+        if (rec.smallScaleEstimateId) {
+            Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.smallScaleEstimateId } })
+                .then(est => setSmallScaleEstimate(est))
                 .catch(() => {});
         }
         if (typeof window !== 'undefined') {
@@ -811,8 +828,12 @@ export default function CostingPage() {
         setUnforeseenEstimate(null);
         unforeseenCostingIdRef.current = '';
         setUnforeseenCostingId('');
+        setSmallScaleEstimate(null);
+        smallScaleCostingIdRef.current = '';
+        setSmallScaleCostingId('');
         setEstimateSnapshot(null);
         setUnforeseenSnapshot(null);
+        setSmallScaleSnapshot(null);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -822,12 +843,13 @@ export default function CostingPage() {
         pe: PahestEntry[],
         ae: AylEntry[],
         ad: Record<string, { quantity: string; unitPrice: string }>,
-        unforeseenId?: string | null
+        unforeseenId?: string | null,
+        smallScaleId?: string | null
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
-            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, unforeseenEstimateId: unforeseenId ?? '', unforeseenCostingId: unforeseenCostingIdRef.current ?? '' } }).catch(console.error);
+            Api.requestSession({ command: 'costing/save', args: { id }, json: { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad, unforeseenEstimateId: unforeseenId ?? '', unforeseenCostingId: unforeseenCostingIdRef.current ?? '', smallScaleEstimateId: smallScaleId ?? '', smallScaleCostingId: smallScaleCostingIdRef.current ?? '' } }).catch(console.error);
         }, 800);
     }, []);
 
@@ -837,8 +859,8 @@ export default function CostingPage() {
             ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
             : r
         ));
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, saveToBackend]); // eslint-disable-line
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, saveToBackend]); // eslint-disable-line
 
     useEffect(() => {
         if (!unforeseenEstimate || tab !== 'main' || !scrollToUnforeseenRef.current) return;
@@ -875,12 +897,12 @@ export default function CostingPage() {
         setUnforeseenEstimate(null);
         unforeseenCostingIdRef.current = '';
         setUnforeseenCostingId('');
-        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, '');
+        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, '', smallScaleEstimate ? String(smallScaleEstimate._id) : null);
         if (childId) {
             Api.requestSession({ command: 'costing/delete', args: { id: childId } }).catch(console.error);
             setRecords(prev => prev.filter(r => r._id !== childId));
         }
-    }, [selected, costHistory, pahestEntries, aylEntries, actualData, saveToBackend]); // eslint-disable-line
+    }, [selected, costHistory, pahestEntries, aylEntries, actualData, smallScaleEstimate, saveToBackend]); // eslint-disable-line
 
     const handleUnforeseenEstimateSelected = useCallback(async (est: EstimatesApi.ApiEstimate) => {
         setUnforeseenEstimate(est);
@@ -899,8 +921,40 @@ export default function CostingPage() {
             setUnforeseenCostingId(newId);
             if (created.estimateSnapshot) setUnforeseenSnapshot(created.estimateSnapshot);
         }
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id));
-    }, [selected, costHistory, pahestEntries, aylEntries, actualData, saveToBackend]); // eslint-disable-line
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, String(est._id), smallScaleEstimate ? String(smallScaleEstimate._id) : null);
+    }, [selected, costHistory, pahestEntries, aylEntries, actualData, smallScaleEstimate, saveToBackend]); // eslint-disable-line
+
+    const handleSmallScaleEstimateSelected = useCallback(async (est: EstimatesApi.ApiEstimate) => {
+        setSmallScaleEstimate(est);
+        setTab('smallscale');
+        localStorage.setItem('costingTab', 'smallscale');
+        if (!selected) return;
+        let newId = smallScaleCostingIdRef.current;
+        if (!newId) {
+            const created = await Api.requestSession<CostingRecord>({
+                command: 'costing/create',
+                args: { estimateId: String(est._id), estimateName: est.name, isUnforeseen: 'true', parentCostingId: selected._id },
+            });
+            setRecords(prev => [created, ...prev]);
+            newId = created._id;
+            smallScaleCostingIdRef.current = newId;
+            setSmallScaleCostingId(newId);
+            if (created.estimateSnapshot) setSmallScaleSnapshot(created.estimateSnapshot);
+        }
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, String(est._id));
+    }, [selected, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate, saveToBackend]); // eslint-disable-line
+
+    const handleDeleteSmallScale = useCallback(() => {
+        const childId = smallScaleCostingIdRef.current;
+        setSmallScaleEstimate(null);
+        smallScaleCostingIdRef.current = '';
+        setSmallScaleCostingId('');
+        if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, '');
+        if (childId) {
+            Api.requestSession({ command: 'costing/delete', args: { id: childId } }).catch(console.error);
+            setRecords(prev => prev.filter(r => r._id !== childId));
+        }
+    }, [selected, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate, saveToBackend]); // eslint-disable-line
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
@@ -1037,6 +1091,7 @@ export default function CostingPage() {
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><WarehouseOutlinedIcon sx={{ fontSize: 18 }} />{t('Pahest')}</Box>} value='pahest' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><InsightsIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='analysis' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><ReportProblemOutlinedIcon sx={{ fontSize: 18 }} />Չնախատեսված</Box>} value='unforeseen' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><BuildIcon sx={{ fontSize: 18 }} />Փոքրամասշտաբ</Box>} value='smallscale' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><HistoryIcon sx={{ fontSize: 18 }} />{t('History')}</Box>} value='history' />
                             </TabList>
                         </Box>
@@ -1050,6 +1105,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
                             <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
+                            <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրամասշտաբ շինարարություն</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
@@ -1169,6 +1225,31 @@ export default function CostingPage() {
                                     </IconButton>
                                 </Box>
                                 <CostingTable estimate={unforeseenEstimate} estimateSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} accentColor='#e65100' />
+                            </Box>
+                        )}
+                    </Box>
+                )}
+
+                {tab === 'smallscale' && (
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        {!smallScaleEstimate ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8, pt: 8 }}>
+                                <BuildIcon sx={{ fontSize: 80, color: '#1565c0', opacity: 0.25 }} />
+                                <Typography color='text.secondary' sx={{ fontWeight: 400 }}>Փոքրամասշտաբ շինարարության նախահաշիվ չկա</Typography>
+                                <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Ընտրել նախահաշիվ</Button>
+                            </Box>
+                        ) : (
+                            <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                    <BuildIcon sx={{ fontSize: 20, color: '#1565c0' }} />
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1565c0' }}>Փոքրամասշտաբ շինարարություն</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#999', ml: 0.5 }}>({smallScaleEstimate.name})</Typography>
+                                    <Button variant='outlined' size='small' onClick={() => setSmallScaleOpen(true)} sx={{ ml: 1, borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontSize: '0.75rem', px: 1.5, '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}>Փոխել</Button>
+                                    <IconButton size='small' onClick={handleDeleteSmallScale} sx={{ ml: 'auto', color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                        <DeleteOutlineIcon fontSize='small' />
+                                    </IconButton>
+                                </Box>
+                                <CostingTable estimate={smallScaleEstimate} estimateSnapshot={smallScaleSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} accentColor='#1565c0' />
                             </Box>
                         )}
                     </Box>
@@ -1474,6 +1555,12 @@ export default function CostingPage() {
                     onClose={() => setUnforeseenOpen(false)}
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={handleUnforeseenEstimateSelected}
+                />
+                <UnforeseenDialog
+                    open={smallScaleOpen}
+                    onClose={() => setSmallScaleOpen(false)}
+                    activeEstimateId={smallScaleEstimate ? String(smallScaleEstimate._id) : undefined}
+                    onEstimateSelected={handleSmallScaleEstimateSelected}
                 />
                 <Dialog open={estimationOpen} onClose={() => setEstimationOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                     <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>

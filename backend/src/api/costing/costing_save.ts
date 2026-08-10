@@ -7,7 +7,7 @@ import { buildEstimateSnapshot } from './costing_snapshot';
 
 registerApiSession('costing/save', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
-    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId } = req.body as {
+    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId, smallScaleEstimateId, smallScaleCostingId } = req.body as {
         costHistory: Db.CostingHistoryRecord[];
         pahestEntries: Db.CostingPahestEntry[];
         aylEntries: Db.CostingAylEntry[];
@@ -15,6 +15,8 @@ registerApiSession('costing/save', async (req, res, session) => {
         salaryData: Db.CostingSalaryData;
         unforeseenEstimateId?: string;
         unforeseenCostingId?: string;
+        smallScaleEstimateId?: string;
+        smallScaleCostingId?: string;
     };
 
     const col = Db.getCostingsCollection();
@@ -28,18 +30,28 @@ registerApiSession('costing/save', async (req, res, session) => {
     };
     if (unforeseenEstimateId !== undefined) updateFields.unforeseenEstimateId = unforeseenEstimateId || undefined;
     if (unforeseenCostingId !== undefined) updateFields.unforeseenCostingId = unforeseenCostingId || undefined;
+    if (smallScaleEstimateId !== undefined) updateFields.smallScaleEstimateId = smallScaleEstimateId || undefined;
+    if (smallScaleCostingId !== undefined) updateFields.smallScaleCostingId = smallScaleCostingId || undefined;
 
-    // Build and store unforeseen snapshot when a new unforeseen estimate is linked
+    // Build snapshots when a new estimate is linked
+    const existing = (unforeseenEstimateId !== undefined || smallScaleEstimateId !== undefined)
+        ? await col.findOne({ _id: new ObjectId(id), accountId: session.mongoAccountId }, { projection: { unforeseenEstimateId: 1, smallScaleEstimateId: 1 } })
+        : null;
+
     if (unforeseenEstimateId) {
-        const existing = await col.findOne(
-            { _id: new ObjectId(id), accountId: session.mongoAccountId },
-            { projection: { unforeseenEstimateId: 1 } }
-        );
         if (!existing?.unforeseenEstimateId || existing.unforeseenEstimateId !== unforeseenEstimateId) {
             updateFields.unforeseenEstimateSnapshot = await buildEstimateSnapshot(unforeseenEstimateId);
         }
     } else if (unforeseenEstimateId === '') {
         updateFields.unforeseenEstimateSnapshot = undefined;
+    }
+
+    if (smallScaleEstimateId) {
+        if (!existing?.smallScaleEstimateId || existing.smallScaleEstimateId !== smallScaleEstimateId) {
+            updateFields.smallScaleEstimateSnapshot = await buildEstimateSnapshot(smallScaleEstimateId);
+        }
+    } else if (smallScaleEstimateId === '') {
+        updateFields.smallScaleEstimateSnapshot = undefined;
     }
 
     await col.updateOne(
