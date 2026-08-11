@@ -115,6 +115,7 @@ interface CostingRecord {
     smallScaleEstimateSnapshot?: EstimateSnapshot;
     smallScaleEstimateId?: string;
     smallScaleCostingId?: string;
+    localEstimateId?: string;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt: string;
@@ -718,6 +719,9 @@ export default function CostingPage() {
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
     const [smallScaleOpen, setSmallScaleOpen] = useState(false);
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
+    const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
+    const [isForkingEstimate, setIsForkingEstimate] = useState(false);
+    const [localEstimateId, setLocalEstimateId] = useState<string>('');
     const [estimationOpen, setEstimationOpen] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
@@ -807,6 +811,7 @@ export default function CostingPage() {
         setEstimateSnapshot(rec.estimateSnapshot ?? null);
         setUnforeseenSnapshot(rec.unforeseenEstimateSnapshot ?? null);
         setSmallScaleSnapshot(rec.smallScaleEstimateSnapshot ?? null);
+        setLocalEstimateId(rec.localEstimateId ?? '');
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -836,6 +841,7 @@ export default function CostingPage() {
         setSmallScaleCostingId('');
         setEstimateSnapshot(null);
         setUnforeseenSnapshot(null);
+        setLocalEstimateId('');
         setSmallScaleSnapshot(null);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
@@ -975,6 +981,24 @@ export default function CostingPage() {
             setRecords(prev => prev.filter(r => r._id !== childId));
         }
     }, [selected, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate, saveToBackend]); // eslint-disable-line
+
+    const handleEstimationOpen = async () => {
+        if (!selected) return;
+        if (localEstimateId) { setMainEstimateEditOpen(true); return; }
+        setIsForkingEstimate(true);
+        try {
+            const result = await Api.requestSession<{ localEstimateId: string; snapshot: EstimateSnapshot; actualData: Record<string, { quantity: string; unitPrice: string }> }>({
+                command: 'costing/fork_estimate', args: { id: selected._id },
+            });
+            setLocalEstimateId(result.localEstimateId);
+            setEstimateSnapshot(result.snapshot);
+            isLoadingRef.current = true;
+            setActualData(result.actualData);
+            setTimeout(() => { isLoadingRef.current = false; }, 100);
+            setMainEstimateEditOpen(true);
+        } catch (e) { console.error(e); }
+        finally { setIsForkingEstimate(false); }
+    };
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
@@ -1225,7 +1249,7 @@ export default function CostingPage() {
                 {tab === 'main' && (
                     <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Box sx={{ mb: 1.5 }}>
-                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setEstimationOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Estimation')}</Button>
+                            <Button variant='outlined' startIcon={<RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />} onClick={handleEstimationOpen} disabled={isForkingEstimate} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{isForkingEstimate ? '...' : t('Estimation')}</Button>
                         </Box>
                         <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                     </Box>
@@ -1570,6 +1594,21 @@ export default function CostingPage() {
                             setSmallScaleEditOpen(false);
                             Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: String(smallScaleEstimate._id) } })
                                 .then(est => setSmallScaleEstimate(est)).catch(() => {});
+                        }}
+                    />
+                )}
+                {mainEstimateEditOpen && selected && localEstimateId && (
+                    <EstimatePageDialog
+                        estimateId={localEstimateId}
+                        estimateTitle={selected.estimateName ?? ''}
+                        onClose={async () => {
+                            setMainEstimateEditOpen(false);
+                            try {
+                                const result = await Api.requestSession<{ snapshot: EstimateSnapshot | null }>({
+                                    command: 'costing/refresh_local_snapshot', args: { id: selected._id },
+                                });
+                                if (result.snapshot) setEstimateSnapshot(result.snapshot);
+                            } catch (e) { console.error(e); }
                         }}
                     />
                 )}
