@@ -25,6 +25,7 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
         {accountId: session.mongoAccountId},
         notDeletedFilter,
         notArchivedFilter,
+        {isLocalCopy: {$ne: true}},
         ...(includeUnforeseenOnly ? [] : [notUnforeseenOnlyFilter]),
     ];
 
