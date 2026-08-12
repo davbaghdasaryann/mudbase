@@ -1247,7 +1247,7 @@ export default function CostingPage() {
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : 0;
+                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : key === 'temporaryStructures' ? temporaryStructures : key === 'transportationCosts' ? transportationCosts : key === 'operationHandoverCosts' ? commissioningCosts : key === 'stateDutiesAndFees' ? stateFees : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
