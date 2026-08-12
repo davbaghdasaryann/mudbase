@@ -7,7 +7,7 @@ import { buildEstimateSnapshot } from './costing_snapshot';
 
 registerApiSession('costing/save', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
-    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId, smallScaleEstimateId, smallScaleCostingId } = req.body as {
+    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId, smallScaleEstimateId, smallScaleCostingId, vatDeduction } = req.body as {
         costHistory: Db.CostingHistoryRecord[];
         pahestEntries: Db.CostingPahestEntry[];
         aylEntries: Db.CostingAylEntry[];
@@ -17,6 +17,7 @@ registerApiSession('costing/save', async (req, res, session) => {
         unforeseenCostingId?: string;
         smallScaleEstimateId?: string;
         smallScaleCostingId?: string;
+        vatDeduction?: number;
     };
 
     const col = Db.getCostingsCollection();
@@ -32,6 +33,7 @@ registerApiSession('costing/save', async (req, res, session) => {
     if (unforeseenCostingId !== undefined) updateFields.unforeseenCostingId = unforeseenCostingId || undefined;
     if (smallScaleEstimateId !== undefined) updateFields.smallScaleEstimateId = smallScaleEstimateId || undefined;
     if (smallScaleCostingId !== undefined) updateFields.smallScaleCostingId = smallScaleCostingId || undefined;
+    if (vatDeduction !== undefined) updateFields.vatDeduction = vatDeduction;
 
     // Build snapshots when a new estimate is linked
     const existing = (unforeseenEstimateId !== undefined || smallScaleEstimateId !== undefined)

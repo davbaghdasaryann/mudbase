@@ -44,6 +44,7 @@ import SubcontractorDialog from './SubcontractorDialog';
 import UnforeseenDialog from './UnforeseenDialog';
 import SmallScaleDialog from './SmallScaleDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
+import OtherCostsDialog from './OtherCostsDialog';
 import AnalysisTab from './AnalysisTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
@@ -117,6 +118,7 @@ interface CostingRecord {
     smallScaleEstimateId?: string;
     smallScaleCostingId?: string;
     localEstimateId?: string;
+    vatDeduction?: number;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt: string;
@@ -722,6 +724,7 @@ export default function CostingPage() {
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
     const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
     const [otherCostsOpen, setOtherCostsOpen] = useState(false);
+    const [vatDeduction, setVatDeduction] = useState(0);
     const [isForkingEstimate, setIsForkingEstimate] = useState(false);
     const [localEstimateId, setLocalEstimateId] = useState<string>('');
     const [estimationOpen, setEstimationOpen] = useState(false);
@@ -814,6 +817,7 @@ export default function CostingPage() {
         setUnforeseenSnapshot(rec.unforeseenEstimateSnapshot ?? null);
         setSmallScaleSnapshot(rec.smallScaleEstimateSnapshot ?? null);
         setLocalEstimateId(rec.localEstimateId ?? '');
+        setVatDeduction(rec.vatDeduction ?? 0);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -845,6 +849,7 @@ export default function CostingPage() {
         setUnforeseenSnapshot(null);
         setLocalEstimateId('');
         setSmallScaleSnapshot(null);
+        setVatDeduction(0);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -855,7 +860,8 @@ export default function CostingPage() {
         ae: AylEntry[],
         ad: Record<string, { quantity: string; unitPrice: string }>,
         unforeseenId?: string | null,
-        smallScaleId?: string | null
+        smallScaleId?: string | null,
+        vatDed?: number
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -863,6 +869,7 @@ export default function CostingPage() {
             const json: Record<string, unknown> = { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad };
             if (unforeseenId !== null) { json.unforeseenEstimateId = unforeseenId ?? ''; json.unforeseenCostingId = unforeseenCostingIdRef.current ?? ''; }
             if (smallScaleId !== null) { json.smallScaleEstimateId = smallScaleId ?? ''; json.smallScaleCostingId = smallScaleCostingIdRef.current ?? ''; }
+            if (vatDed !== undefined) json.vatDeduction = vatDed;
             Api.requestSession({ command: 'costing/save', args: { id }, json }).catch(console.error);
         }, 800);
     }, []);
@@ -873,8 +880,8 @@ export default function CostingPage() {
             ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
             : r
         ));
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, saveToBackend]); // eslint-disable-line
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null, vatDeduction);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, vatDeduction, saveToBackend]); // eslint-disable-line
 
     useEffect(() => {
         if (smallScaleOpen || !smallScaleEstimate) return;
@@ -1150,7 +1157,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
                             <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => smallScaleEstimate ? setSmallScaleEditOpen(true) : setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրածավալ</Button>
-                            <Button variant='outlined' startIcon={<AddCardOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setOtherCostsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Other Costs</Button>
+                            <Button variant='outlined' startIcon={<AddCardOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setOtherCostsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{'Այլ ծախսեր'}</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
@@ -1191,6 +1198,18 @@ export default function CostingPage() {
                                 (unforeseenSnapshot?.laborRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0) * Number(r.changableAveragePrice ?? 0), 0)
                             );
                             const ssEstimated = Math.round(smallScaleEstimate?.totalCost ?? 0);
+                            const VAT_KEY = 'valueAddedTax';
+                            const actualMatsForVat = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
+                            const actualLaborForVat = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
+                            const totalActualForVat = actualLaborForVat + actualMatsForVat + aylActual + ufActual;
+                            const nonVatExpensesOnActual = expenses.reduce((sum, exp) => {
+                                const key = Object.keys(exp)[0];
+                                if (key === VAT_KEY || key === 'typeOfCost') return sum;
+                                return sum + Math.round(totalActualForVat * (exp[key] ?? 0) / 100);
+                            }, 0);
+                            const vatPct = (() => { const v = expenses.find(e => Object.keys(e)[0] === VAT_KEY); return v ? (v[VAT_KEY] ?? 20) : 20; })();
+                            const vatBase = totalActualForVat + nonVatExpensesOnActual;
+                            const vatActual = Math.max(0, Math.round(vatBase * vatPct / 100) - vatDeduction);
                             const hasSSwInExpenses = expenses.some(e => Object.keys(e)[0] === SSW_KEY);
                             const hasSSmInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const primarySSKey = hasSSwInExpenses ? SSW_KEY : SSM_KEY;
@@ -1206,7 +1225,7 @@ export default function CostingPage() {
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : 0;
+                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
@@ -1583,6 +1602,31 @@ export default function CostingPage() {
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={handleUnforeseenEstimateSelected}
                 />
+                {selected && (
+                    <OtherCostsDialog
+                        open={otherCostsOpen}
+                        onClose={() => setOtherCostsOpen(false)}
+                        totalActual={(() => {
+                            const mats = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
+                            const labor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
+                            const ayl = aylEntries.reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0);
+                            const toRId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+                            const mainIds = new Set((estimateSnapshot?.laborRows ?? []).map(r => toRId(r._id)));
+                            const uf = Object.entries(actualData).filter(([id]) => id && !mainIds.has(id)).reduce((s, [id, data]) => s + (parseFloat(((data as any).spent ?? '').replace(',', '.')) || 0) + costHistory.filter(e => toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0), 0);
+                            return Math.round(labor + mats + ayl + uf);
+                        })()}
+                        otherExpenses={(selectedEstimate.otherExpenses ?? []).filter(exp => {
+                            const key = Object.keys(exp)[0];
+                            return key && key !== 'typeOfCost' && key !== 'valueAddedTax' && (exp[key] ?? 0) > 0;
+                        }).map(exp => {
+                            const key = Object.keys(exp)[0];
+                            return { key, label: t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key), percentage: exp[key] as number };
+                        })}
+                        vatPercentage={(() => { const v = (selectedEstimate.otherExpenses ?? []).find(e => Object.keys(e)[0] === 'valueAddedTax'); return v ? (v['valueAddedTax'] ?? 20) : 20; })()}
+                        vatDeduction={vatDeduction}
+                        onDeductionChange={val => setVatDeduction(val)}
+                    />
+                )}
                 <SmallScaleDialog
                     open={smallScaleOpen}
                     onClose={() => setSmallScaleOpen(false)}

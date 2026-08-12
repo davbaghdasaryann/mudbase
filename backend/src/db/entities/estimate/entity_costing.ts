@@ -108,6 +108,7 @@ export interface EntityCosting {
     smallScaleEstimateId?: string;
     smallScaleCostingId?: string;
     localEstimateId?: string;
+    vatDeduction?: number;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt?: Date;
