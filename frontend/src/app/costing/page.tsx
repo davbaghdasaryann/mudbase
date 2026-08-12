@@ -9,6 +9,7 @@ import {
 import { TabContext, TabList } from '@mui/lab';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
@@ -720,6 +721,7 @@ export default function CostingPage() {
     const [smallScaleOpen, setSmallScaleOpen] = useState(false);
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
     const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
+    const [otherCostsOpen, setOtherCostsOpen] = useState(false);
     const [isForkingEstimate, setIsForkingEstimate] = useState(false);
     const [localEstimateId, setLocalEstimateId] = useState<string>('');
     const [estimationOpen, setEstimationOpen] = useState(false);
@@ -1148,6 +1150,7 @@ export default function CostingPage() {
                             <Button variant='outlined' startIcon={<AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setSalaryOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Salary Cost Recording')}</Button>
                             <Button variant='outlined' startIcon={<StraightenIcon sx={{ fontSize: 18 }} />} onClick={() => setVolumesOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>{t('Volume Registration')}</Button>
                             <Button variant='outlined' startIcon={<BuildIcon sx={{ fontSize: 18 }} />} onClick={() => smallScaleEstimate ? setSmallScaleEditOpen(true) : setSmallScaleOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: '#1565c0', color: '#1565c0', fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)', borderColor: '#1565c0' } }}>Փոքրածավալ</Button>
+                            <Button variant='outlined' startIcon={<AddCardOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => setOtherCostsOpen(true)} sx={{ borderRadius: '20px', textTransform: 'none', borderColor: mainPrimaryColor, color: mainPrimaryColor, fontWeight: 600, px: 2.5, fontSize: '14px', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)', borderColor: mainPrimaryColor } }}>Other Costs</Button>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
