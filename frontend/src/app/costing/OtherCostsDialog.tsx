@@ -6,6 +6,7 @@ import {
     Button, Box, Typography, TextField, Divider,
 } from '@mui/material';
 import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     open: boolean;
@@ -19,6 +20,7 @@ interface Props {
 const ACCENT = '#00A390';
 
 export default function OtherCostsDialog({ open, onClose, vatActual, onVatActualChange, climateActual, onClimateActualChange }: Props) {
+    const { t } = useTranslation();
     const [vatInput, setVatInput] = useState(String(vatActual || ''));
     const [climateInput, setClimateInput] = useState(String(climateActual || ''));
 
@@ -30,7 +32,7 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
     }, [open]); // eslint-disable-line
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: ACCENT, pb: 1 }}>
                 <AddCardOutlinedIcon sx={{ fontSize: 22 }} />
                 {'Այլ ծախսեր'}
@@ -68,7 +70,7 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
 
             <DialogActions sx={{ px: 3, pb: 2 }}>
                 <Button onClick={onClose} variant='contained' sx={{ borderRadius: '20px', backgroundColor: ACCENT, '&:hover': { backgroundColor: '#008a79' } }}>
-                    OK
+                    {t('Confirm')}
                 </Button>
             </DialogActions>
         </Dialog>
