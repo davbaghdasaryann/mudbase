@@ -74,7 +74,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
     const commissioningCostsRef = useRef<HTMLInputElement>(null);
     const stateFeesRef = useRef<HTMLInputElement>(null);
 
-    const show = (_key: string) => true;
+    const show = (key: string) => !activeExpenseKeys || activeExpenseKeys.includes(key);
 
     useEffect(() => {
         if (open) {
