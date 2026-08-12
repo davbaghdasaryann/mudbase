@@ -754,6 +754,7 @@ export default function CostingPage() {
     const [selected, setSelected] = useState<CostingRecord | null>(null);
     const [fullEstimate, setFullEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const didRestoreRef = useRef(false);
+    const selectedRecordRef = useRef<CostingRecord | null>(null);
 
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
@@ -803,7 +804,30 @@ export default function CostingPage() {
 
     useEffect(() => { loadRecords(); }, [loadRecords]);
 
+    const fetchFullEstimate = useCallback(async (rec: CostingRecord) => {
+        try {
+            const est = await Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.localEstimateId ?? rec.estimateId } });
+            if (rec.localEstimateId && rec.estimateId) {
+                try {
+                    const orig = await Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } });
+                    const existingKeys = new Set((est.otherExpenses ?? []).map((e: any) => Object.keys(e)[0]));
+                    const extra = (orig.otherExpenses ?? []).filter((e: any) => !existingKeys.has(Object.keys(e)[0]));
+                    setFullEstimate({ ...est, otherExpenses: [...(est.otherExpenses ?? []), ...extra] });
+                } catch { setFullEstimate(est); }
+            } else {
+                setFullEstimate(est);
+            }
+        } catch (e) { console.error(e); }
+    }, []);
+
+    useEffect(() => {
+        const onFocus = () => { if (selectedRecordRef.current) fetchFullEstimate(selectedRecordRef.current); };
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, [fetchFullEstimate]);
+
     const openRecord = (rec: CostingRecord) => {
+        selectedRecordRef.current = rec;
         isLoadingRef.current = true;
         setSelected(rec);
         setFullEstimate(null);
@@ -833,20 +857,7 @@ export default function CostingPage() {
         setTransportationCosts(rec.transportationCosts ?? 0);
         setCommissioningCosts(rec.commissioningCosts ?? 0);
         setStateFees(rec.stateFees ?? 0);
-        Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.localEstimateId ?? rec.estimateId } })
-            .then(async est => {
-                if (rec.localEstimateId && rec.estimateId) {
-                    try {
-                        const orig = await Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } });
-                        const existingKeys = new Set((est.otherExpenses ?? []).map((e: any) => Object.keys(e)[0]));
-                        const extra = (orig.otherExpenses ?? []).filter((e: any) => !existingKeys.has(Object.keys(e)[0]));
-                        setFullEstimate({ ...est, otherExpenses: [...(est.otherExpenses ?? []), ...extra] });
-                    } catch { setFullEstimate(est); }
-                } else {
-                    setFullEstimate(est);
-                }
-            })
-            .catch(console.error);
+        fetchFullEstimate(rec);
         if (rec.unforeseenEstimateId) {
             Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.unforeseenEstimateId } })
                 .then(est => setUnforeseenEstimate(est))
