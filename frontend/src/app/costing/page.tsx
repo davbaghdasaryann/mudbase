@@ -834,7 +834,18 @@ export default function CostingPage() {
         setCommissioningCosts(rec.commissioningCosts ?? 0);
         setStateFees(rec.stateFees ?? 0);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.localEstimateId ?? rec.estimateId } })
-            .then(est => setFullEstimate(est))
+            .then(async est => {
+                if (rec.localEstimateId && rec.estimateId) {
+                    try {
+                        const orig = await Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } });
+                        const existingKeys = new Set((est.otherExpenses ?? []).map((e: any) => Object.keys(e)[0]));
+                        const extra = (orig.otherExpenses ?? []).filter((e: any) => !existingKeys.has(Object.keys(e)[0]));
+                        setFullEstimate({ ...est, otherExpenses: [...(est.otherExpenses ?? []), ...extra] });
+                    } catch { setFullEstimate(est); }
+                } else {
+                    setFullEstimate(est);
+                }
+            })
             .catch(console.error);
         if (rec.unforeseenEstimateId) {
             Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.unforeseenEstimateId } })
