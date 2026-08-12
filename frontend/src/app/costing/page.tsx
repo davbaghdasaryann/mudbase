@@ -833,7 +833,7 @@ export default function CostingPage() {
         setTransportationCosts(rec.transportationCosts ?? 0);
         setCommissioningCosts(rec.commissioningCosts ?? 0);
         setStateFees(rec.stateFees ?? 0);
-        Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
+        Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.localEstimateId ?? rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
         if (rec.unforeseenEstimateId) {
