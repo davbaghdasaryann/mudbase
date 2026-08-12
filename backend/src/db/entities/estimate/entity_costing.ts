@@ -109,6 +109,7 @@ export interface EntityCosting {
     smallScaleCostingId?: string;
     localEstimateId?: string;
     vatDeduction?: number;
+    climateImpact?: number;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt?: Date;

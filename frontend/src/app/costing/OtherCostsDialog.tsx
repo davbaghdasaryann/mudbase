@@ -21,6 +21,8 @@ interface Props {
     vatPercentage: number;
     vatDeduction: number;
     onDeductionChange: (val: number) => void;
+    climateImpact: number;
+    onClimateImpactChange: (val: number) => void;
 }
 
 const ACCENT = '#00A390';
@@ -29,11 +31,15 @@ function fmt(n: number) {
     return Math.round(n).toLocaleString('en-US') + ' AMD';
 }
 
-export default function OtherCostsDialog({ open, onClose, totalActual, otherExpenses, vatPercentage, vatDeduction, onDeductionChange }: Props) {
+export default function OtherCostsDialog({ open, onClose, totalActual, otherExpenses, vatPercentage, vatDeduction, onDeductionChange, climateImpact, onClimateImpactChange }: Props) {
     const [deductionInput, setDeductionInput] = useState(String(vatDeduction || ''));
+    const [climateInput, setClimateInput] = useState(String(climateImpact || ''));
 
     useEffect(() => {
-        if (open) setDeductionInput(String(vatDeduction || ''));
+        if (open) {
+            setDeductionInput(String(vatDeduction || ''));
+            setClimateInput(String(climateImpact || ''));
+        }
     }, [open]); // eslint-disable-line
 
     const expenseAmounts = otherExpenses.map(e => ({
@@ -45,11 +51,6 @@ export default function OtherCostsDialog({ open, onClose, totalActual, otherExpe
     const vatAmount = Math.round(vatBase * vatPercentage / 100);
     const deductionVal = parseFloat(deductionInput.replace(/,/g, '')) || 0;
     const finalVat = Math.max(0, vatAmount - deductionVal);
-
-    const handleDeductionBlur = () => {
-        const val = parseFloat(deductionInput.replace(/,/g, '')) || 0;
-        onDeductionChange(val);
-    };
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
@@ -77,18 +78,19 @@ export default function OtherCostsDialog({ open, onClose, totalActual, otherExpe
 
                     <Divider sx={{ my: 1 }} />
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75 }}>
-                        <Typography sx={{ fontSize: '0.92rem', color: 'text.secondary' }}>{'Նվազեցում'}</Typography>
-                        <TextField
-                            size='small'
-                            value={deductionInput}
-                            onChange={e => setDeductionInput(e.target.value)}
-                            onBlur={handleDeductionBlur}
-                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', fontSize: '0.92rem' } }}
-                            placeholder='0'
-                        />
-                    </Box>
+                    <EditableRow
+                        label={'Կլիմայական ծախսերի ազդեցություն'}
+                        value={climateInput}
+                        onChange={setClimateInput}
+                        onBlur={() => onClimateImpactChange(parseFloat(climateInput.replace(/,/g, '')) || 0)}
+                    />
+
+                    <EditableRow
+                        label={'Նվազեցում'}
+                        value={deductionInput}
+                        onChange={setDeductionInput}
+                        onBlur={() => onDeductionChange(parseFloat(deductionInput.replace(/,/g, '')) || 0)}
+                    />
 
                     <Divider sx={{ my: 1 }} />
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, bgcolor: `${ACCENT}11`, borderRadius: 2, px: 1.5 }}>
@@ -112,6 +114,23 @@ function Row({ label, value, bold, indent }: { label: string; value: string; bol
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5, pl: indent ? 2 : 0 }}>
             <Typography sx={{ fontSize: '0.9rem', color: bold ? 'text.primary' : 'text.secondary', fontWeight: bold ? 600 : 400 }}>{label}</Typography>
             <Typography sx={{ fontSize: '0.9rem', fontWeight: bold ? 600 : 400 }}>{value}</Typography>
+        </Box>
+    );
+}
+
+function EditableRow({ label, value, onChange, onBlur }: { label: string; value: string; onChange: (v: string) => void; onBlur: () => void }) {
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75 }}>
+            <Typography sx={{ fontSize: '0.92rem', color: 'text.secondary', flex: 1, pr: 2 }}>{label}</Typography>
+            <TextField
+                size='small'
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                onBlur={onBlur}
+                inputProps={{ style: { textAlign: 'right', width: 140 } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', fontSize: '0.92rem' } }}
+                placeholder='0'
+            />
         </Box>
     );
 }

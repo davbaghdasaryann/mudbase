@@ -119,6 +119,7 @@ interface CostingRecord {
     smallScaleCostingId?: string;
     localEstimateId?: string;
     vatDeduction?: number;
+    climateImpact?: number;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt: string;
@@ -725,6 +726,7 @@ export default function CostingPage() {
     const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
     const [otherCostsOpen, setOtherCostsOpen] = useState(false);
     const [vatDeduction, setVatDeduction] = useState(0);
+    const [climateImpact, setClimateImpact] = useState(0);
     const [isForkingEstimate, setIsForkingEstimate] = useState(false);
     const [localEstimateId, setLocalEstimateId] = useState<string>('');
     const [estimationOpen, setEstimationOpen] = useState(false);
@@ -818,6 +820,7 @@ export default function CostingPage() {
         setSmallScaleSnapshot(rec.smallScaleEstimateSnapshot ?? null);
         setLocalEstimateId(rec.localEstimateId ?? '');
         setVatDeduction(rec.vatDeduction ?? 0);
+        setClimateImpact(rec.climateImpact ?? 0);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -850,6 +853,7 @@ export default function CostingPage() {
         setLocalEstimateId('');
         setSmallScaleSnapshot(null);
         setVatDeduction(0);
+        setClimateImpact(0);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -861,7 +865,8 @@ export default function CostingPage() {
         ad: Record<string, { quantity: string; unitPrice: string }>,
         unforeseenId?: string | null,
         smallScaleId?: string | null,
-        vatDed?: number
+        vatDed?: number,
+        climatImp?: number
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -870,6 +875,7 @@ export default function CostingPage() {
             if (unforeseenId !== null) { json.unforeseenEstimateId = unforeseenId ?? ''; json.unforeseenCostingId = unforeseenCostingIdRef.current ?? ''; }
             if (smallScaleId !== null) { json.smallScaleEstimateId = smallScaleId ?? ''; json.smallScaleCostingId = smallScaleCostingIdRef.current ?? ''; }
             if (vatDed !== undefined) json.vatDeduction = vatDed;
+            if (climatImp !== undefined) json.climateImpact = climatImp;
             Api.requestSession({ command: 'costing/save', args: { id }, json }).catch(console.error);
         }, 800);
     }, []);
@@ -880,8 +886,8 @@ export default function CostingPage() {
             ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
             : r
         ));
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null, vatDeduction);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, vatDeduction, saveToBackend]); // eslint-disable-line
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null, vatDeduction, climateImpact);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, vatDeduction, climateImpact, saveToBackend]); // eslint-disable-line
 
     useEffect(() => {
         if (smallScaleOpen || !smallScaleEstimate) return;
@@ -1625,6 +1631,8 @@ export default function CostingPage() {
                         vatPercentage={(() => { const v = (selectedEstimate.otherExpenses ?? []).find(e => Object.keys(e)[0] === 'valueAddedTax'); return v ? (v['valueAddedTax'] ?? 20) : 20; })()}
                         vatDeduction={vatDeduction}
                         onDeductionChange={val => setVatDeduction(val)}
+                        climateImpact={climateImpact}
+                        onClimateImpactChange={val => setClimateImpact(val)}
                     />
                 )}
                 <SmallScaleDialog
