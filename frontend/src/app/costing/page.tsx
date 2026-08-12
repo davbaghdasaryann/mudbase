@@ -1627,7 +1627,7 @@ export default function CostingPage() {
                 <OtherCostsDialog
                     open={otherCostsOpen}
                     onClose={() => setOtherCostsOpen(false)}
-                    activeExpenseKeys={(selectedEstimate.otherExpenses ?? []).filter(exp => { const k = Object.keys(exp)[0]; return k && k !== 'typeOfCost' && (exp[k] ?? 0) > 0; }).map(exp => Object.keys(exp)[0])}
+                    activeExpenseKeys={(selectedEstimate.otherExpenses ?? []).filter(exp => { const k = Object.keys(exp)[0]; return k && k !== 'typeOfCost'; }).map(exp => Object.keys(exp)[0])}
                     vatActual={vatDeduction}
                     onVatActualChange={val => setVatDeduction(val)}
                     climateActual={climateImpact}
