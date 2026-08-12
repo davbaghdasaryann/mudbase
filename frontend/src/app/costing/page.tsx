@@ -1205,17 +1205,9 @@ export default function CostingPage() {
                             );
                             const ssEstimated = Math.round(smallScaleEstimate?.totalCost ?? 0);
                             const VAT_KEY = 'valueAddedTax';
-                            const actualMatsForVat = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
-                            const actualLaborForVat = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
-                            const totalActualForVat = actualLaborForVat + actualMatsForVat + aylActual + ufActual;
-                            const nonVatExpensesOnActual = expenses.reduce((sum, exp) => {
-                                const key = Object.keys(exp)[0];
-                                if (key === VAT_KEY || key === 'typeOfCost') return sum;
-                                return sum + Math.round(totalActualForVat * (exp[key] ?? 0) / 100);
-                            }, 0);
-                            const vatPct = (() => { const v = expenses.find(e => Object.keys(e)[0] === VAT_KEY); return v ? (v[VAT_KEY] ?? 20) : 20; })();
-                            const vatBase = totalActualForVat + nonVatExpensesOnActual;
-                            const vatActual = Math.max(0, Math.round(vatBase * vatPct / 100) - vatDeduction);
+                            const CLIMATE_KEY = 'climaticImpactCosts';
+                            const vatActual = vatDeduction;
+                            const climateActual = climateImpact;
                             const hasSSwInExpenses = expenses.some(e => Object.keys(e)[0] === SSW_KEY);
                             const hasSSmInExpenses = expenses.some(e => Object.keys(e)[0] === SSM_KEY);
                             const primarySSKey = hasSSwInExpenses ? SSW_KEY : SSM_KEY;
@@ -1231,7 +1223,7 @@ export default function CostingPage() {
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : 0;
+                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
@@ -1608,33 +1600,14 @@ export default function CostingPage() {
                     activeEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                     onEstimateSelected={handleUnforeseenEstimateSelected}
                 />
-                {selected && (
-                    <OtherCostsDialog
-                        open={otherCostsOpen}
-                        onClose={() => setOtherCostsOpen(false)}
-                        totalActual={(() => {
-                            const mats = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
-                            const labor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
-                            const ayl = aylEntries.reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0);
-                            const toRId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
-                            const mainIds = new Set((estimateSnapshot?.laborRows ?? []).map(r => toRId(r._id)));
-                            const uf = Object.entries(actualData).filter(([id]) => id && !mainIds.has(id)).reduce((s, [id, data]) => s + (parseFloat(((data as any).spent ?? '').replace(',', '.')) || 0) + costHistory.filter(e => toRId(e.laborItemId) === id).reduce((ss, e) => ss + e.total, 0), 0);
-                            return Math.round(labor + mats + ayl + uf);
-                        })()}
-                        otherExpenses={(selectedEstimate.otherExpenses ?? []).filter(exp => {
-                            const key = Object.keys(exp)[0];
-                            return key && key !== 'typeOfCost' && key !== 'valueAddedTax' && (exp[key] ?? 0) > 0;
-                        }).map(exp => {
-                            const key = Object.keys(exp)[0];
-                            return { key, label: t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key), percentage: exp[key] as number };
-                        })}
-                        vatPercentage={(() => { const v = (selectedEstimate.otherExpenses ?? []).find(e => Object.keys(e)[0] === 'valueAddedTax'); return v ? (v['valueAddedTax'] ?? 20) : 20; })()}
-                        vatDeduction={vatDeduction}
-                        onDeductionChange={val => setVatDeduction(val)}
-                        climateImpact={climateImpact}
-                        onClimateImpactChange={val => setClimateImpact(val)}
-                    />
-                )}
+                <OtherCostsDialog
+                    open={otherCostsOpen}
+                    onClose={() => setOtherCostsOpen(false)}
+                    vatActual={vatDeduction}
+                    onVatActualChange={val => setVatDeduction(val)}
+                    climateActual={climateImpact}
+                    onClimateActualChange={val => setClimateImpact(val)}
+                />
                 <SmallScaleDialog
                     open={smallScaleOpen}
                     onClose={() => setSmallScaleOpen(false)}
