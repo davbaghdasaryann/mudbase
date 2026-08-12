@@ -37,30 +37,28 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
             </DialogTitle>
 
             <DialogContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0.5 }}>
-                    <Box>
-                        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mb: 0.75 }}>{'Ավելացված արժեքի հարկ'}</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Ավելացված արժեքի հարկ'}</Typography>
                         <TextField
-                            fullWidth
                             size='small'
                             value={vatInput}
                             onChange={e => setVatInput(e.target.value)}
                             onBlur={() => onVatActualChange(parseFloat(vatInput.replace(/,/g, '')) || 0)}
-                            inputProps={{ style: { textAlign: 'right' } }}
+                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'
                         />
                     </Box>
                     <Divider />
-                    <Box>
-                        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mb: 0.75 }}>{'Կլիմայական ազդեցության ծախսեր'}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Կլիմայական ազդեցության ծախսեր'}</Typography>
                         <TextField
-                            fullWidth
                             size='small'
                             value={climateInput}
                             onChange={e => setClimateInput(e.target.value)}
                             onBlur={() => onClimateActualChange(parseFloat(climateInput.replace(/,/g, '')) || 0)}
-                            inputProps={{ style: { textAlign: 'right' } }}
+                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'
                         />
