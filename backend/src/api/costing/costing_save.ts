@@ -7,7 +7,7 @@ import { buildEstimateSnapshot } from './costing_snapshot';
 
 registerApiSession('costing/save', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
-    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId, smallScaleEstimateId, smallScaleCostingId, vatDeduction, climateImpact } = req.body as {
+    const { costHistory, pahestEntries, aylEntries, actualData, salaryData, unforeseenEstimateId, unforeseenCostingId, smallScaleEstimateId, smallScaleCostingId, vatDeduction, climateImpact, temporaryStructures, transportationCosts, commissioningCosts, stateFees } = req.body as {
         costHistory: Db.CostingHistoryRecord[];
         pahestEntries: Db.CostingPahestEntry[];
         aylEntries: Db.CostingAylEntry[];
@@ -19,6 +19,10 @@ registerApiSession('costing/save', async (req, res, session) => {
         smallScaleCostingId?: string;
         vatDeduction?: number;
         climateImpact?: number;
+        temporaryStructures?: number;
+        transportationCosts?: number;
+        commissioningCosts?: number;
+        stateFees?: number;
     };
 
     const col = Db.getCostingsCollection();
@@ -36,6 +40,10 @@ registerApiSession('costing/save', async (req, res, session) => {
     if (smallScaleCostingId !== undefined) updateFields.smallScaleCostingId = smallScaleCostingId || undefined;
     if (vatDeduction !== undefined) updateFields.vatDeduction = vatDeduction;
     if (climateImpact !== undefined) updateFields.climateImpact = climateImpact;
+    if (temporaryStructures !== undefined) updateFields.temporaryStructures = temporaryStructures;
+    if (transportationCosts !== undefined) updateFields.transportationCosts = transportationCosts;
+    if (commissioningCosts !== undefined) updateFields.commissioningCosts = commissioningCosts;
+    if (stateFees !== undefined) updateFields.stateFees = stateFees;
 
     // Build snapshots when a new estimate is linked
     const existing = (unforeseenEstimateId !== undefined || smallScaleEstimateId !== undefined)

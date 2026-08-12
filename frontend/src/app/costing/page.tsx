@@ -120,6 +120,10 @@ interface CostingRecord {
     localEstimateId?: string;
     vatDeduction?: number;
     climateImpact?: number;
+    temporaryStructures?: number;
+    transportationCosts?: number;
+    commissioningCosts?: number;
+    stateFees?: number;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt: string;
@@ -727,6 +731,10 @@ export default function CostingPage() {
     const [otherCostsOpen, setOtherCostsOpen] = useState(false);
     const [vatDeduction, setVatDeduction] = useState(0);
     const [climateImpact, setClimateImpact] = useState(0);
+    const [temporaryStructures, setTemporaryStructures] = useState(0);
+    const [transportationCosts, setTransportationCosts] = useState(0);
+    const [commissioningCosts, setCommissioningCosts] = useState(0);
+    const [stateFees, setStateFees] = useState(0);
     const [isForkingEstimate, setIsForkingEstimate] = useState(false);
     const [localEstimateId, setLocalEstimateId] = useState<string>('');
     const [estimationOpen, setEstimationOpen] = useState(false);
@@ -821,6 +829,10 @@ export default function CostingPage() {
         setLocalEstimateId(rec.localEstimateId ?? '');
         setVatDeduction(rec.vatDeduction ?? 0);
         setClimateImpact(rec.climateImpact ?? 0);
+        setTemporaryStructures(rec.temporaryStructures ?? 0);
+        setTransportationCosts(rec.transportationCosts ?? 0);
+        setCommissioningCosts(rec.commissioningCosts ?? 0);
+        setStateFees(rec.stateFees ?? 0);
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: rec.estimateId } })
             .then(est => setFullEstimate(est))
             .catch(console.error);
@@ -854,6 +866,10 @@ export default function CostingPage() {
         setSmallScaleSnapshot(null);
         setVatDeduction(0);
         setClimateImpact(0);
+        setTemporaryStructures(0);
+        setTransportationCosts(0);
+        setCommissioningCosts(0);
+        setStateFees(0);
         if (typeof window !== 'undefined') window.history.pushState({}, '', '/costing');
     };
 
@@ -866,7 +882,11 @@ export default function CostingPage() {
         unforeseenId?: string | null,
         smallScaleId?: string | null,
         vatDed?: number,
-        climatImp?: number
+        climatImp?: number,
+        tmpStructures?: number,
+        transpCosts?: number,
+        commCosts?: number,
+        stFees?: number
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -876,6 +896,10 @@ export default function CostingPage() {
             if (smallScaleId !== null) { json.smallScaleEstimateId = smallScaleId ?? ''; json.smallScaleCostingId = smallScaleCostingIdRef.current ?? ''; }
             if (vatDed !== undefined) json.vatDeduction = vatDed;
             if (climatImp !== undefined) json.climateImpact = climatImp;
+            if (tmpStructures !== undefined) json.temporaryStructures = tmpStructures;
+            if (transpCosts !== undefined) json.transportationCosts = transpCosts;
+            if (commCosts !== undefined) json.commissioningCosts = commCosts;
+            if (stFees !== undefined) json.stateFees = stFees;
             Api.requestSession({ command: 'costing/save', args: { id }, json }).catch(console.error);
         }, 800);
     }, []);
@@ -886,8 +910,8 @@ export default function CostingPage() {
             ? { ...r, costHistory, pahestEntries, aylEntries, actualData }
             : r
         ));
-        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null, vatDeduction, climateImpact);
-    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, vatDeduction, climateImpact, saveToBackend]); // eslint-disable-line
+        saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, actualData, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null, vatDeduction, climateImpact, temporaryStructures, transportationCosts, commissioningCosts, stateFees);
+    }, [costHistory, pahestEntries, aylEntries, actualData, selected, unforeseenEstimate, smallScaleEstimate, vatDeduction, climateImpact, temporaryStructures, transportationCosts, commissioningCosts, stateFees, saveToBackend]); // eslint-disable-line
 
     useEffect(() => {
         if (smallScaleOpen || !smallScaleEstimate) return;
@@ -1607,6 +1631,14 @@ export default function CostingPage() {
                     onVatActualChange={val => setVatDeduction(val)}
                     climateActual={climateImpact}
                     onClimateActualChange={val => setClimateImpact(val)}
+                    temporaryStructuresActual={temporaryStructures}
+                    onTemporaryStructuresActualChange={val => setTemporaryStructures(val)}
+                    transportationCostsActual={transportationCosts}
+                    onTransportationCostsActualChange={val => setTransportationCosts(val)}
+                    commissioningCostsActual={commissioningCosts}
+                    onCommissioningCostsActualChange={val => setCommissioningCosts(val)}
+                    stateFeesActual={stateFees}
+                    onStateFeesActualChange={val => setStateFees(val)}
                 />
                 <SmallScaleDialog
                     open={smallScaleOpen}

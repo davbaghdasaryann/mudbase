@@ -15,6 +15,14 @@ interface Props {
     onVatActualChange: (val: number) => void;
     climateActual: number;
     onClimateActualChange: (val: number) => void;
+    temporaryStructuresActual: number;
+    onTemporaryStructuresActualChange: (val: number) => void;
+    transportationCostsActual: number;
+    onTransportationCostsActualChange: (val: number) => void;
+    commissioningCostsActual: number;
+    onCommissioningCostsActualChange: (val: number) => void;
+    stateFeesActual: number;
+    onStateFeesActualChange: (val: number) => void;
 }
 
 const ACCENT = '#00A390';
@@ -50,17 +58,29 @@ function applyFormat(
     });
 }
 
-export default function OtherCostsDialog({ open, onClose, vatActual, onVatActualChange, climateActual, onClimateActualChange }: Props) {
+export default function OtherCostsDialog({ open, onClose, vatActual, onVatActualChange, climateActual, onClimateActualChange, temporaryStructuresActual, onTemporaryStructuresActualChange, transportationCostsActual, onTransportationCostsActualChange, commissioningCostsActual, onCommissioningCostsActualChange, stateFeesActual, onStateFeesActualChange }: Props) {
     const { t } = useTranslation();
     const [vatInput, setVatInput] = useState(fmtNum(vatActual));
     const [climateInput, setClimateInput] = useState(fmtNum(climateActual));
+    const [temporaryStructuresInput, setTemporaryStructuresInput] = useState(fmtNum(temporaryStructuresActual));
+    const [transportationCostsInput, setTransportationCostsInput] = useState(fmtNum(transportationCostsActual));
+    const [commissioningCostsInput, setCommissioningCostsInput] = useState(fmtNum(commissioningCostsActual));
+    const [stateFeesInput, setStateFeesInput] = useState(fmtNum(stateFeesActual));
     const vatRef = useRef<HTMLInputElement>(null);
     const climateRef = useRef<HTMLInputElement>(null);
+    const temporaryStructuresRef = useRef<HTMLInputElement>(null);
+    const transportationCostsRef = useRef<HTMLInputElement>(null);
+    const commissioningCostsRef = useRef<HTMLInputElement>(null);
+    const stateFeesRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (open) {
             setVatInput(fmtNum(vatActual));
             setClimateInput(fmtNum(climateActual));
+            setTemporaryStructuresInput(fmtNum(temporaryStructuresActual));
+            setTransportationCostsInput(fmtNum(transportationCostsActual));
+            setCommissioningCostsInput(fmtNum(commissioningCostsActual));
+            setStateFeesInput(fmtNum(stateFeesActual));
         }
     }, [open]); // eslint-disable-line
 
@@ -95,6 +115,62 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                             inputRef={climateRef}
                             onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setClimateInput, climateRef)}
                             onBlur={() => onClimateActualChange(parseNum(climateInput))}
+                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                            placeholder='0'
+                        />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Ժamаnаkаvor kаrruytcner'}</Typography>
+                        <TextField
+                            size='small'
+                            value={temporaryStructuresInput}
+                            inputRef={temporaryStructuresRef}
+                            onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setTemporaryStructuresInput, temporaryStructuresRef)}
+                            onBlur={() => onTemporaryStructuresActualChange(parseNum(temporaryStructuresInput))}
+                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                            placeholder='0'
+                        />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Тrансpортаyin ծахserer'}</Typography>
+                        <TextField
+                            size='small'
+                            value={transportationCostsInput}
+                            inputRef={transportationCostsRef}
+                            onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setTransportationCostsInput, transportationCostsRef)}
+                            onBlur={() => onTransportationCostsActualChange(parseNum(transportationCostsInput))}
+                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                            placeholder='0'
+                        />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Шаhаgortsмаn hаndnмаn ծахserer'}</Typography>
+                        <TextField
+                            size='small'
+                            value={commissioningCostsInput}
+                            inputRef={commissioningCostsRef}
+                            onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setCommissioningCostsInput, commissioningCostsRef)}
+                            onBlur={() => onCommissioningCostsActualChange(parseNum(commissioningCostsInput))}
+                            inputProps={{ style: { textAlign: 'right', width: 140 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                            placeholder='0'
+                        />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Pетаkаn turkker ev vchаrner'}</Typography>
+                        <TextField
+                            size='small'
+                            value={stateFeesInput}
+                            inputRef={stateFeesRef}
+                            onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setStateFeesInput, stateFeesRef)}
+                            onBlur={() => onStateFeesActualChange(parseNum(stateFeesInput))}
                             inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'

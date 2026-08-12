@@ -110,6 +110,10 @@ export interface EntityCosting {
     localEstimateId?: string;
     vatDeduction?: number;
     climateImpact?: number;
+    temporaryStructures?: number;
+    transportationCosts?: number;
+    commissioningCosts?: number;
+    stateFees?: number;
     isUnforeseen?: boolean;
     parentCostingId?: string;
     createdAt?: Date;
