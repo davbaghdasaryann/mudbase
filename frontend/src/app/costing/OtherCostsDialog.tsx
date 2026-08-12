@@ -74,12 +74,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
     const commissioningCostsRef = useRef<HTMLInputElement>(null);
     const stateFeesRef = useRef<HTMLInputElement>(null);
 
-    const existingValues: Record<string, number> = {
-        valueAddedTax: vatActual, climaticImpactCosts: climateActual,
-        temporaryStructures: temporaryStructuresActual, transportationCosts: transportationCostsActual,
-        operationHandoverCosts: commissioningCostsActual, stateDutiesAndFees: stateFeesActual,
-    };
-    const show = (key: string) => !activeExpenseKeys || activeExpenseKeys.includes(key) || (existingValues[key] ?? 0) > 0;
+    const show = (_key: string) => true;
 
     useEffect(() => {
         if (open) {
@@ -92,11 +87,6 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
         }
     }, [open]); // eslint-disable-line
 
-    const allHidden = activeExpenseKeys !== undefined && [
-        'valueAddedTax', 'climaticImpactCosts', 'temporaryStructures',
-        'transportationCosts', 'operationHandoverCosts', 'stateDutiesAndFees',
-    ].every(k => !activeExpenseKeys.includes(k));
-
     return (
         <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: ACCENT, pb: 1 }}>
@@ -105,9 +95,6 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
             </DialogTitle>
 
             <DialogContent>
-                {allHidden ? (
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', py: 1 }}>No other expenses configured in this estimate.</Typography>
-                ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5 }}>
                     {show('valueAddedTax') && (
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
@@ -175,7 +162,6 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         </Box>
                     </>)}
                 </Box>
-                )}
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2 }}>
