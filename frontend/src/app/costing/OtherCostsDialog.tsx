@@ -19,15 +19,18 @@ interface Props {
 
 const ACCENT = '#00A390';
 
+const fmt = (n: number) => n > 0 ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '';
+const parse = (s: string) => parseFloat(s.replace(/[\s]/g, '').replace(',', '.')) || 0;
+
 export default function OtherCostsDialog({ open, onClose, vatActual, onVatActualChange, climateActual, onClimateActualChange }: Props) {
     const { t } = useTranslation();
-    const [vatInput, setVatInput] = useState(String(vatActual || ''));
-    const [climateInput, setClimateInput] = useState(String(climateActual || ''));
+    const [vatInput, setVatInput] = useState(fmt(vatActual));
+    const [climateInput, setClimateInput] = useState(fmt(climateActual));
 
     useEffect(() => {
         if (open) {
-            setVatInput(String(vatActual || ''));
-            setClimateInput(String(climateActual || ''));
+            setVatInput(fmt(vatActual));
+            setClimateInput(fmt(climateActual));
         }
     }, [open]); // eslint-disable-line
 
@@ -46,7 +49,8 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                             size='small'
                             value={vatInput}
                             onChange={e => setVatInput(e.target.value)}
-                            onBlur={() => onVatActualChange(parseFloat(vatInput.replace(/,/g, '')) || 0)}
+                            onFocus={() => setVatInput(String(parse(vatInput) || ''))}
+                            onBlur={() => { const val = parse(vatInput); setVatInput(fmt(val)); onVatActualChange(val); }}
                             inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'
@@ -59,7 +63,8 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                             size='small'
                             value={climateInput}
                             onChange={e => setClimateInput(e.target.value)}
-                            onBlur={() => onClimateActualChange(parseFloat(climateInput.replace(/,/g, '')) || 0)}
+                            onFocus={() => setClimateInput(String(parse(climateInput) || ''))}
+                            onBlur={() => { const val = parse(climateInput); setClimateInput(fmt(val)); onClimateActualChange(val); }}
                             inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'
