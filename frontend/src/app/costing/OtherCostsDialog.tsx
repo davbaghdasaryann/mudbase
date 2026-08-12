@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, TextField, Divider,
@@ -19,18 +19,48 @@ interface Props {
 
 const ACCENT = '#00A390';
 
-const fmt = (n: number) => n > 0 ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '';
-const parse = (s: string) => parseFloat(s.replace(/[\s]/g, '').replace(',', '.')) || 0;
+const fmtNum = (n: number) => n > 0 ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '';
+const parseNum = (s: string) => parseInt(s.replace(/\s/g, ''), 10) || 0;
+
+function applyFormat(
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    elRef: React.RefObject<HTMLInputElement | null>
+) {
+    const input = e.target;
+    const raw = input.value.replace(/\s/g, '');
+    if (raw !== '' && !/^\d+$/.test(raw)) return;
+
+    const digitsBeforeCursor = input.value.slice(0, input.selectionStart ?? 0).replace(/\s/g, '').length;
+    const num = raw === '' ? 0 : parseInt(raw, 10);
+    const formatted = num > 0 ? fmtNum(num) : '';
+
+    setter(formatted);
+
+    requestAnimationFrame(() => {
+        const el = elRef.current;
+        if (!el) return;
+        let newPos = formatted.length;
+        let count = 0;
+        for (let i = 0; i < formatted.length; i++) {
+            if (formatted[i] !== ' ') count++;
+            if (count === digitsBeforeCursor) { newPos = i + 1; break; }
+        }
+        el.setSelectionRange(newPos, newPos);
+    });
+}
 
 export default function OtherCostsDialog({ open, onClose, vatActual, onVatActualChange, climateActual, onClimateActualChange }: Props) {
     const { t } = useTranslation();
-    const [vatInput, setVatInput] = useState(fmt(vatActual));
-    const [climateInput, setClimateInput] = useState(fmt(climateActual));
+    const [vatInput, setVatInput] = useState(fmtNum(vatActual));
+    const [climateInput, setClimateInput] = useState(fmtNum(climateActual));
+    const vatRef = useRef<HTMLInputElement>(null);
+    const climateRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (open) {
-            setVatInput(fmt(vatActual));
-            setClimateInput(fmt(climateActual));
+            setVatInput(fmtNum(vatActual));
+            setClimateInput(fmtNum(climateActual));
         }
     }, [open]); // eslint-disable-line
 
@@ -48,9 +78,9 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                         <TextField
                             size='small'
                             value={vatInput}
-                            onChange={e => setVatInput(e.target.value)}
-                            onFocus={() => setVatInput(String(parse(vatInput) || ''))}
-                            onBlur={() => { const val = parse(vatInput); setVatInput(fmt(val)); onVatActualChange(val); }}
+                            inputRef={vatRef}
+                            onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setVatInput, vatRef)}
+                            onBlur={() => onVatActualChange(parseNum(vatInput))}
                             inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'
@@ -62,9 +92,9 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                         <TextField
                             size='small'
                             value={climateInput}
-                            onChange={e => setClimateInput(e.target.value)}
-                            onFocus={() => setClimateInput(String(parse(climateInput) || ''))}
-                            onBlur={() => { const val = parse(climateInput); setClimateInput(fmt(val)); onClimateActualChange(val); }}
+                            inputRef={climateRef}
+                            onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setClimateInput, climateRef)}
+                            onBlur={() => onClimateActualChange(parseNum(climateInput))}
                             inputProps={{ style: { textAlign: 'right', width: 140 } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                             placeholder='0'
