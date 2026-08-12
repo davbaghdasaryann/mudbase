@@ -74,7 +74,12 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
     const commissioningCostsRef = useRef<HTMLInputElement>(null);
     const stateFeesRef = useRef<HTMLInputElement>(null);
 
-    const show = (key: string) => !activeExpenseKeys || activeExpenseKeys.includes(key);
+    const existingValues: Record<string, number> = {
+        valueAddedTax: vatActual, climaticImpactCosts: climateActual,
+        temporaryStructures: temporaryStructuresActual, transportationCosts: transportationCostsActual,
+        operationHandoverCosts: commissioningCostsActual, stateDutiesAndFees: stateFeesActual,
+    };
+    const show = (key: string) => !activeExpenseKeys || activeExpenseKeys.includes(key) || (existingValues[key] ?? 0) > 0;
 
     useEffect(() => {
         if (open) {
