@@ -122,7 +122,7 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Ժamаnаkаvor kаrruytcner'}</Typography>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Ժամանակավոր կառույցներ'}</Typography>
                         <TextField
                             size='small'
                             value={temporaryStructuresInput}
@@ -136,7 +136,7 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Тrансpортаyin ծахserer'}</Typography>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Տրանսպորտային ծախսեր'}</Typography>
                         <TextField
                             size='small'
                             value={transportationCostsInput}
@@ -150,7 +150,7 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Шаhаgortsмаn hаndnмаn ծахserer'}</Typography>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Շահագործման հանձնման ծախսեր'}</Typography>
                         <TextField
                             size='small'
                             value={commissioningCostsInput}
@@ -164,7 +164,7 @@ export default function OtherCostsDialog({ open, onClose, vatActual, onVatActual
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Pетаkаn turkker ev vchаrner'}</Typography>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Պետական տուրքեր և վճարներ'}</Typography>
                         <TextField
                             size='small'
                             value={stateFeesInput}
