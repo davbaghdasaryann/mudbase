@@ -268,7 +268,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
     return (
         <>
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh' } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
                 <ListAltIcon sx={{ fontSize: 22 }} />
                 Ծավալների գրանցում
             </DialogTitle>
@@ -302,7 +302,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
 
         {/* Cost entry sub-modal */}
         <Dialog open={!!costModal} onClose={() => setCostModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
+            <DialogTitle sx={{ fontWeight: 700, color: '#1a1a1a', pb: 1, fontSize: '1rem' }}>
                 Ծախսագրում
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>

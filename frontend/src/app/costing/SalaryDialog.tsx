@@ -182,7 +182,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
         <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh' } }}
         >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1, flexShrink: 0 }}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1, flexShrink: 0 }}>
                 {selectedRow ? (
                     <>
                         <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>

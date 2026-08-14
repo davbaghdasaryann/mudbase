@@ -83,7 +83,7 @@ export default function SubcontractorDialog({ open, onClose, onCostAdded }: Prop
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1 }}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
                 <HandshakeOutlinedIcon sx={{ fontSize: 22 }} />
                 Ենթակապալ
             </DialogTitle>

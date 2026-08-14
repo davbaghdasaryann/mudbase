@@ -235,7 +235,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', overflow: 'hidden' } }}
         >
             {/* Dynamic title */}
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: mainPrimaryColor, pb: 1, minHeight: 56, flexShrink: 0 }}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1, minHeight: 56, flexShrink: 0 }}>
                 {onPage2 ? (
                     <>
                         <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
@@ -402,7 +402,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
 
         {/* Material costing sub-modal */}
         <Dialog open={!!materialModal} onClose={() => setMaterialModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
+            <DialogTitle sx={{ fontWeight: 700, color: '#1a1a1a', pb: 1, fontSize: '1rem' }}>
                 {materialModal?.material.name}
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>
@@ -451,7 +451,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             </DialogActions>
         </Dialog>
         <Dialog open={!!aylModal} onClose={() => setAylModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>
+            <DialogTitle sx={{ fontWeight: 700, color: '#1a1a1a', pb: 1, fontSize: '1rem' }}>
                 {aylModal?.entry.name}
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>
