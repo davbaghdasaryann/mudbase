@@ -580,9 +580,8 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
 
 
     const pct = totalEst > 0 ? Math.min(100, (totalAct / totalEst) * 100) : null;
-    const pctColor = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
-    const color = '#00A390';
-    const lightBg = 'rgba(0,163,144,0.08)';
+    const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
+    const lightBg = pct === null ? '#f5f5f5' : pct >= 80 ? 'rgba(46,125,50,0.08)' : pct >= 40 ? 'rgba(230,81,0,0.08)' : 'rgba(198,40,40,0.08)';
     const filled = pct ?? 0;
 
     return (
@@ -610,11 +609,11 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color: pctColor, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
+                                    <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
                                 </Box>
                             </Box>
                             <Box sx={{ mt: 1.5, px: 2, py: 0.5, borderRadius: 5, bgcolor: lightBg, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color: pctColor }}>{completedRows} / {rows.length}</Typography>
+                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color }}>{completedRows} / {rows.length}</Typography>
                                 <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{t('works completed')}</Typography>
                             </Box>
                         </>
