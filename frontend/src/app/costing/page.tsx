@@ -1197,7 +1197,8 @@ export default function CostingPage() {
 
                 {tab === 'general' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>Quick actions</Typography>
+                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
                             {[
                                 { icon: <CategoryOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
                                 { icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Salary Cost Recording'), onClick: () => setSalaryOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
@@ -1211,6 +1212,7 @@ export default function CostingPage() {
                                 </Box>
                             ))}
                         </Box>
+                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>Overview</Typography>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} height={220} />
