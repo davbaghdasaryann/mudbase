@@ -679,7 +679,9 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
                                         position: 'absolute',
                                         height: '100%',
                                         borderRadius: 4,
-                                        bgcolor: color,
+                                        background: avgProfit >= 0
+                                            ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))'
+                                            : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)',
                                         left: avgProfit >= 0 ? '50%' : `${50 + (clamped / 60) * 50}%`,
                                         width: `${Math.abs(clamped / 60) * 50}%`,
                                     }} />
