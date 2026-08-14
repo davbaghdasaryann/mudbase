@@ -318,7 +318,7 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     const total = data.reduce((s, d) => s + d.value, 0);
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
             <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Actual')}</Typography>
             {data.length === 0 ? (
                 <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -459,7 +459,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     );
 
     return (
-        <Paper elevation={0} sx={{ height: '100%', border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ height: '100%', border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
@@ -510,7 +510,7 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
     ];
 
     return (
-        <Paper elevation={0} sx={{ border: '1px solid #e0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: height }}>
+        <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: height }}>
             <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{label}</Typography>
             <Box sx={{ flex: 1, minHeight: chartH }}>
                 <ResponsiveContainer width='100%' height='100%'>
@@ -580,8 +580,9 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
 
 
     const pct = totalEst > 0 ? Math.min(100, (totalAct / totalEst) * 100) : null;
-    const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
-    const lightBg = pct === null ? '#f5f5f5' : pct >= 80 ? 'rgba(46,125,50,0.08)' : pct >= 40 ? 'rgba(230,81,0,0.08)' : 'rgba(198,40,40,0.08)';
+    const pctColor = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
+    const color = '#00A390';
+    const lightBg = 'rgba(0,163,144,0.08)';
     const filled = pct ?? 0;
 
     return (
@@ -609,11 +610,11 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
+                                    <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color: pctColor, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
                                 </Box>
                             </Box>
                             <Box sx={{ mt: 1.5, px: 2, py: 0.5, borderRadius: 5, bgcolor: lightBg, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color }}>{completedRows} / {rows.length}</Typography>
+                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color: pctColor }}>{completedRows} / {rows.length}</Typography>
                                 <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{t('works completed')}</Typography>
                             </Box>
                         </>
@@ -1197,7 +1198,7 @@ export default function CostingPage() {
 
                 {tab === 'general' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>Quick actions</Typography>
+                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Quick actions')}</Typography>
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
                             {[
                                 { icon: <CategoryOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
@@ -1206,13 +1207,13 @@ export default function CostingPage() {
                                 { icon: <BuildIcon sx={{ fontSize: 26, color: '#1565c0' }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 26, color: '#1565c0' }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
-                                <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 120, minHeight: 88, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg } }}>
+                                <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 120, height: 96, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg } }}>
                                     {icon}
                                     <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.3 }}>{label}</Typography>
                                 </Box>
                             ))}
                         </Box>
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>Overview</Typography>
+                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Overview')}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} height={220} />
