@@ -1199,13 +1199,13 @@ export default function CostingPage() {
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
                             {[
-                                { icon: <CategoryOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor },
-                                { icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Salary Cost Recording'), onClick: () => setSalaryOpen(true), accent: mainPrimaryColor },
-                                { icon: <StraightenIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: mainPrimaryColor },
-                                { icon: <BuildIcon sx={{ fontSize: 26, color: '#1565c0' }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#1565c0' },
-                                { icon: <AddCardOutlinedIcon sx={{ fontSize: 26, color: '#1565c0' }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#1565c0' },
-                            ].map(({ icon, label, onClick, accent }) => (
-                                <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 120, minHeight: 88, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)' } }}>
+                                { icon: <CategoryOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
+                                { icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Salary Cost Recording'), onClick: () => setSalaryOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
+                                { icon: <StraightenIcon sx={{ fontSize: 26, color: mainPrimaryColor }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
+                                { icon: <BuildIcon sx={{ fontSize: 26, color: '#1565c0' }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
+                                { icon: <AddCardOutlinedIcon sx={{ fontSize: 26, color: '#1565c0' }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
+                            ].map(({ icon, label, onClick, accent, hoverBg }) => (
+                                <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 120, minHeight: 88, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg } }}>
                                     {icon}
                                     <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: accent, textAlign: 'center', lineHeight: 1.3 }}>{label}</Typography>
                                 </Box>
