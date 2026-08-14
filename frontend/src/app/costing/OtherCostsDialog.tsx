@@ -89,7 +89,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: ACCENT, pb: 1 }}>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
                 <AddCardOutlinedIcon sx={{ fontSize: 22 }} />
                 {'Այլ ծախսեր'}
             </DialogTitle>
