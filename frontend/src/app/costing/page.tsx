@@ -585,7 +585,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
     const filled = pct ?? 0;
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <Box sx={{ height: 3, bgcolor: pct === null ? '#e0e0e0' : color, borderRadius: '12px 12px 0 0' }} />
             <Box sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Completion percentage')}</Typography>
@@ -663,7 +663,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
     const bgColor = avgProfit === null ? '#f0f0f0' : avgProfit >= 0 ? 'rgba(46,125,50,0.08)' : 'rgba(198,40,40,0.06)';
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <Box sx={{ height: 3, bgcolor: avgProfit === null ? '#e0e0e0' : color, borderRadius: '12px 12px 0 0' }} />
             <Box sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
