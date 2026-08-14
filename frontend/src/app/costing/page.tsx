@@ -578,51 +578,48 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
         if (actQty >= estQty) completedRows++;
     }
 
+
     const pct = totalEst > 0 ? Math.min(100, (totalAct / totalEst) * 100) : null;
     const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
+    const lightBg = pct === null ? '#f5f5f5' : pct >= 80 ? 'rgba(46,125,50,0.08)' : pct >= 40 ? 'rgba(230,81,0,0.08)' : 'rgba(198,40,40,0.08)';
     const filled = pct ?? 0;
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Completion percentage')}</Typography>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                {pct === null ? (
-                    <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Ծավալ գրանցված չէ</Typography>
-                ) : (
-                    <>
-                        <Box sx={{ position: 'relative', width: 130, height: 130 }}>
-                            <ResponsiveContainer width={130} height={130}>
-                                <PieChart>
-                                    <Pie
-                                        data={[{ v: filled }, { v: 100 - filled }]}
-                                        startAngle={90}
-                                        endAngle={-270}
-                                        cx={65}
-                                        cy={65}
-                                        innerRadius={46}
-                                        outerRadius={62}
-                                        paddingAngle={0}
-                                        dataKey='v'
-                                        strokeWidth={0}
-                                    >
-                                        <Cell fill={color} />
-                                        <Cell fill='#eeeeee' />
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color, lineHeight: 1 }}>
-                                    {pct.toFixed(0)}%
-                                </Typography>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ height: 3, bgcolor: pct === null ? '#e0e0e0' : color, borderRadius: '12px 12px 0 0' }} />
+            <Box sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Completion percentage')}</Typography>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    {pct === null ? (
+                        <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
+                    ) : (
+                        <>
+                            <Box sx={{ position: 'relative', width: 130, height: 130 }}>
+                                <ResponsiveContainer width={130} height={130}>
+                                    <PieChart>
+                                        <defs>
+                                            <linearGradient id='comp-grad' x1='0' y1='0' x2='1' y2='1'>
+                                                <stop offset='0%' stopColor={color} stopOpacity={0.75} />
+                                                <stop offset='100%' stopColor={color} />
+                                            </linearGradient>
+                                        </defs>
+                                        <Pie data={[{ v: filled }, { v: 100 - filled }]} startAngle={90} endAngle={-270} cx={65} cy={65} innerRadius={44} outerRadius={61} paddingAngle={0} dataKey='v' strokeWidth={0}>
+                                            <Cell fill='url(#comp-grad)' />
+                                            <Cell fill='#f0f0f0' />
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
+                                </Box>
                             </Box>
-                        </Box>
-                        <Box sx={{ mt: 1.5, textAlign: 'center' }}>
-                            <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                                {completedRows} / {rows.length} {t('works completed')}
-                            </Typography>
-                        </Box>
-                    </>
-                )}
+                            <Box sx={{ mt: 1.5, px: 2, py: 0.5, borderRadius: 5, bgcolor: lightBg, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color }}>{completedRows} / {rows.length}</Typography>
+                                <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{t('works completed')}</Typography>
+                            </Box>
+                        </>
+                    )}
+                </Box>
             </Box>
         </Paper>
     );
@@ -666,49 +663,43 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
     const bgColor = avgProfit === null ? '#f0f0f0' : avgProfit >= 0 ? 'rgba(46,125,50,0.08)' : 'rgba(198,40,40,0.06)';
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Average profitability of works')}</Typography>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                {avgProfit === null ? (
-                    <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>{t('No data')}</Typography>
-                ) : (
-                    <>
-                        <Box sx={{ position: 'relative', width: 160, height: 90 }}>
-                            <ResponsiveContainer width={160} height={90}>
-                                <PieChart>
-                                    <Pie
-                                        data={[{ v: filled }, { v: 100 - filled }]}
-                                        startAngle={180}
-                                        endAngle={0}
-                                        cx={80}
-                                        cy={80}
-                                        innerRadius={52}
-                                        outerRadius={72}
-                                        paddingAngle={0}
-                                        dataKey='v'
-                                        strokeWidth={0}
-                                    >
-                                        <Cell fill={color} />
-                                        <Cell fill='#eeeeee' />
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <Box sx={{ position: 'absolute', bottom: 6, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color, lineHeight: 1 }}>
-                                    {avgProfit >= 0 ? '+' : ''}{avgProfit.toFixed(1)}%
-                                </Typography>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ height: 3, bgcolor: avgProfit === null ? '#e0e0e0' : color, borderRadius: '12px 12px 0 0' }} />
+            <Box sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    {avgProfit === null ? (
+                        <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
+                    ) : (
+                        <>
+                            <Typography sx={{ fontSize: '2rem', fontWeight: 800, color, lineHeight: 1.1, mb: 1.5 }}>
+                                {avgProfit >= 0 ? '+' : ''}{avgProfit.toFixed(1)}%
+                            </Typography>
+                            <Box sx={{ width: '100%', px: 1 }}>
+                                <Box sx={{ position: 'relative', height: 8, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        height: '100%',
+                                        borderRadius: 4,
+                                        bgcolor: color,
+                                        left: avgProfit >= 0 ? '50%' : `${50 + (clamped / 60) * 50}%`,
+                                        width: `${Math.abs(clamped / 60) * 50}%`,
+                                    }} />
+                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.4 }}>
+                                    <Typography sx={{ fontSize: '0.6rem', color: '#bbb' }}>-{60}%</Typography>
+                                    <Typography sx={{ fontSize: '0.6rem', color: '#bbb' }}>0</Typography>
+                                    <Typography sx={{ fontSize: '0.6rem', color: '#bbb' }}>+{60}%</Typography>
+                                </Box>
                             </Box>
-                        </Box>
-                        <Box sx={{ mt: 1.5, px: 1, py: 0.8, borderRadius: 2, bgcolor: bgColor, textAlign: 'center' }}>
-                            <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                                {profitValues.length} {t('works · unit effectiveness')}
-                            </Typography>
-                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color, mt: 0.2 }}>
-                                {avgProfit >= 0 ? t('Savings vs estimate') : t('Exceeds estimate')}
-                            </Typography>
-                        </Box>
-                    </>
-                )}
+                            <Box sx={{ mt: 1.5, px: 2, py: 0.5, borderRadius: 5, bgcolor: bgColor, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color }}>{profitValues.length}</Typography>
+                                <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{avgProfit >= 0 ? t('Savings vs estimate') : t('Exceeds estimate')}</Typography>
+                            </Box>
+                        </>
+                    )}
+                </Box>
             </Box>
         </Paper>
     );
