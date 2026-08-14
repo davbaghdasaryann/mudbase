@@ -561,6 +561,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     height?: number;
 }) {
+    const { t } = useTranslation();
     const toRowId = (id: unknown): string =>
         typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
 
@@ -583,7 +584,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Կատարման տոկոս</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Completion percentage')}</Typography>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 {pct === null ? (
                     <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Ծավալ գրանցված չէ</Typography>
@@ -617,7 +618,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                         </Box>
                         <Box sx={{ mt: 1.5, textAlign: 'center' }}>
                             <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                                {completedRows} / {rows.length} աշխ. ավարտված
+                                {completedRows} / {rows.length} {t('works completed')}
                             </Typography>
                         </Box>
                     </>
@@ -633,6 +634,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
     costHistory: CostHistoryEntry[];
     height?: number;
 }) {
+    const { t } = useTranslation();
     const toRowId = (id: unknown): string =>
         typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
 
@@ -665,10 +667,10 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #e0f0f4', borderRadius: 3, p: 2.5, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Աշխատանքների միջին շահութաբերություն</Typography>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Average profitability of works')}</Typography>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 {avgProfit === null ? (
-                    <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>Տվյալ չկա</Typography>
+                    <Typography variant='body2' color='text.secondary' sx={{ py: 3 }}>{t('No data')}</Typography>
                 ) : (
                     <>
                         <Box sx={{ position: 'relative', width: 160, height: 90 }}>
@@ -699,10 +701,10 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
                         </Box>
                         <Box sx={{ mt: 1.5, px: 1, py: 0.8, borderRadius: 2, bgcolor: bgColor, textAlign: 'center' }}>
                             <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                                {profitValues.length} աշխ. · մեկ միավորի արդյունավետություն
+                                {profitValues.length} {t('works · unit effectiveness')}
                             </Typography>
                             <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color, mt: 0.2 }}>
-                                {avgProfit >= 0 ? 'Խնայողություն նախահաշվի համեմատ' : 'Գերազանցում է նախահաշիվը'}
+                                {avgProfit >= 0 ? t('Savings vs estimate') : t('Exceeds estimate')}
                             </Typography>
                         </Box>
                     </>

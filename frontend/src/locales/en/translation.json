@@ -321,5 +321,12 @@
   "Create Group": "Create Group",
   "Enter group name": "Enter group name",
   "Add": "Add",
-  "Confirm": "Confirm"
+  "Confirm": "Confirm",
+  "Completion percentage": "Completion percentage",
+  "works completed": "works completed",
+  "Average profitability of works": "Average profitability of works",
+  "works · unit effectiveness": "works · unit effectiveness",
+  "Savings vs estimate": "Savings vs estimate",
+  "Exceeds estimate": "Exceeds estimate",
+  "No data": "No data"
 }

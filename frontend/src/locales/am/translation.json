@@ -651,5 +651,12 @@
   "Separate other costs": "Առանձնացնել այլ ծախսերը",
   "Other costs shown as separate line items": "Այլ ծախսերը ցուցադրվում են առանձին տողերով",
   "Other costs included in unit cost by percentage": "Այլ ծախսերը ներառված են միավոր արժեքում՝ ըստ տոկոսի",
-  "Pahest": "Պահեստ"
+  "Pahest": "Պահեստ",
+  "Completion percentage": "Կատարման տոկոս",
+  "works completed": "աշխ. ավարտված",
+  "Average profitability of works": "Աշխատանքների միջին շահութաբերություն",
+  "works · unit effectiveness": "աշխ. · մեկ միավորի արդյունավետություն",
+  "Savings vs estimate": "Խնայողություն նախահաշվի համեմատ",
+  "Exceeds estimate": "Գերազանցում է նախահաշիվը",
+  "No data": "Տվյալ չկա"
 }
