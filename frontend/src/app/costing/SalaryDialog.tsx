@@ -235,7 +235,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                                 >
                                                     <Box sx={{ flex: 1 }}>
-                                                        <Typography sx={{ fontSize: '0.83rem', color: done ? '#43a047' : '#222', fontWeight: 500 }}>
+                                                        <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
                                                             {row.laborOfferItemName || row.catalogName || '—'}
                                                         </Typography>
                                                         <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
@@ -272,7 +272,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#fff8f4' } }}
                                                     >
                                                         <Box sx={{ flex: 1 }}>
-                                                            <Typography sx={{ fontSize: '0.83rem', color: done ? '#43a047' : '#222', fontWeight: 500 }}>
+                                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
                                                                 {row.laborOfferItemName || row.catalogName || '—'}
                                                             </Typography>
                                                             <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
