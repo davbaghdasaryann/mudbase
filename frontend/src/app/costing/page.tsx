@@ -378,7 +378,7 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     );
 }
 
-function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, height = 240 }: { estimate: EstimatesApi.ApiEstimate; pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; aylEntries?: AylEntry[]; height?: number }) {
+function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, extraActualCosts = 0, height = 240 }: { estimate: EstimatesApi.ApiEstimate; pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; aylEntries?: AylEntry[]; extraActualCosts?: number; height?: number }) {
     const { t } = useTranslation();
     const chartH = Math.max(80, height - 80);
 
@@ -400,7 +400,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     const actData = (() => {
         const materialsTotal = pahestEntries.reduce((s, e) => s + e.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0), 0);
         const laborTotal = costHistory.filter(e => e.paymentMethod?.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
-        const otherTotal = (aylEntries ?? []).reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0);
+        const otherTotal = (aylEntries ?? []).reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0) + extraActualCosts;
         const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
         return [
@@ -1215,7 +1215,7 @@ export default function CostingPage() {
                         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Overview')}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
-                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} height={220} />
+                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees + vatDeduction} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} height={220} />
