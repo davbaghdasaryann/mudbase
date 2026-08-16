@@ -59,7 +59,7 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
                 <BuildIcon sx={{ fontSize: 22 }} />
-                Փոքրածավալ
+                Փոքրածավալ շինարարական աշխատանքներ
                 <Button
                     size='small'
                     startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
