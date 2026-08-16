@@ -1215,7 +1215,7 @@ export default function CostingPage() {
                         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Overview')}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
-                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees + vatDeduction} height={220} />
+                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} height={220} />
