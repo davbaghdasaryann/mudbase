@@ -27,6 +27,7 @@ import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 
@@ -413,6 +414,7 @@ function useMainNavigation() {
         }
 
         navigation.push({segment: 'haymnadits', title: t('Haymnadits'), icon: <CorporateFareOutlinedIcon />});
+        navigation.push({segment: 'karavarium', title: t('Karavarium'), icon: <ManageAccountsOutlinedIcon />});
 
         navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
 
