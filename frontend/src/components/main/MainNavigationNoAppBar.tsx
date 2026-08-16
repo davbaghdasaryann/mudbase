@@ -26,6 +26,7 @@ import SupervisorAccountOutlinedIcon from '@mui/icons-material/SupervisorAccount
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 
@@ -410,6 +411,8 @@ function useMainNavigation() {
         else if (session?.user) {
             navigation.push({segment: 'dashboard-builder', title: t('Dashboard'), icon: <DashboardIcon />});
         }
+
+        navigation.push({segment: 'haymnadits', title: t('Haymnadits'), icon: <CorporateFareOutlinedIcon />});
 
         navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
 
