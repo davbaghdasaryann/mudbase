@@ -1262,7 +1262,7 @@ export default function CostingPage() {
                             const needsSSExtra = !hasSSwInExpenses && !hasSSmInExpenses;
                             const hasUFInExpenses = expenses.some(e => Object.keys(e)[0] === UF_KEY);
                             const extraWidgets = [
-                                ...(needsSSExtra && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? [{ key: SSW_KEY, estimatedValue: 0, actualValue: ssEstimated || aylActual, gradIndex: expenses.length }] : []),
+                                ...(needsSSExtra && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? [{ key: SSW_KEY, estimatedValue: 0, actualValue: ssEstimated + aylActual, gradIndex: expenses.length }] : []),
                                 ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + (needsSSExtra && (aylActual > 0 || ssEstimated > 0 || smallScaleEstimate != null) ? 1 : 0) }] : []),
                             ];
                             if (expenses.length === 0 && extraWidgets.length === 0) return null;
@@ -1271,7 +1271,7 @@ export default function CostingPage() {
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === primarySSKey ? ssEstimated : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : key === 'temporaryStructures' ? temporaryStructures : key === 'transportationCosts' ? transportationCosts : key === 'operationHandoverCosts' ? commissioningCosts : key === 'stateDutiesAndFees' ? stateFees : 0;
+                                        const actualValue = key === primarySSKey ? ssEstimated + aylActual : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : key === 'temporaryStructures' ? temporaryStructures : key === 'transportationCosts' ? transportationCosts : key === 'operationHandoverCosts' ? commissioningCosts : key === 'stateDutiesAndFees' ? stateFees : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
