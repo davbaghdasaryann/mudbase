@@ -190,7 +190,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
                         <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: mainPrimaryColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {selectedRow.laborOfferItemName || selectedRow.catalogName}
                             </Typography>
                             {(selectedCovered > 0 || selectedPlanned > 0) && (
