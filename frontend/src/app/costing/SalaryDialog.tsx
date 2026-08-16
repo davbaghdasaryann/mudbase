@@ -24,6 +24,7 @@ interface LaborRow {
     unitSymbol: string;
     quantity: number;
     sectionName: string;
+    subsectionName?: string;
     isGroupRow?: boolean;
 }
 
@@ -220,36 +221,50 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <Typography sx={{ color: '#aaa', py: 4, textAlign: 'center', px: 2 }}>{t('No sections found')}</Typography>
                         ) : (
                             <Box>
-                                {sections.map(secName => (
+                                {sections.map(secName => {
+                                    const secRows = filteredRows.filter(r => (r.sectionName || '—') === secName);
+                                    const subsecNames = Array.from(new Set(secRows.map(r => r.subsectionName || '—')));
+                                    const hasMultipleSubs = subsecNames.length > 1 || (subsecNames.length === 1 && subsecNames[0] !== '—');
+                                    return (
                                     <Box key={secName} sx={{ mb: 1 }}>
                                         <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
                                             <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{secName}</Typography>
                                         </Box>
-                                        {filteredRows.filter(r => (r.sectionName || '—') === secName).map(row => {
-                                            const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
-                                            const covered = getSalaryCoveredQty(row._id);
-                                            const remaining = Math.max(0, planned - covered);
-                                            const done = planned > 0 && remaining <= 0;
-                                            return (
-                                                <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
-                                                    sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
-                                                >
-                                                    <Box sx={{ flex: 1 }}>
-                                                        <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
-                                                            {row.laborOfferItemName || row.catalogName || '—'}
-                                                        </Typography>
-                                                        <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                            {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                            {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                            {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                        </Box>
+                                        {subsecNames.map(subName => (
+                                            <Box key={subName}>
+                                                {hasMultipleSubs && (
+                                                    <Box sx={{ bgcolor: '#f5fbfc', px: 2, py: 0.6, borderLeft: `2px solid ${mainPrimaryColor}`, ml: 1 }}>
+                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#4b9ead' }}>{subName}</Typography>
                                                     </Box>
-                                                    <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
-                                                </Box>
-                                            );
-                                        })}
+                                                )}
+                                                {secRows.filter(r => (r.subsectionName || '—') === subName).map(row => {
+                                                    const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
+                                                    const covered = getSalaryCoveredQty(row._id);
+                                                    const remaining = Math.max(0, planned - covered);
+                                                    const done = planned > 0 && remaining <= 0;
+                                                    return (
+                                                        <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
+                                                            sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
+                                                        >
+                                                            <Box sx={{ flex: 1 }}>
+                                                                <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
+                                                                    {row.laborOfferItemName || row.catalogName || '—'}
+                                                                </Typography>
+                                                                <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
+                                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                </Box>
+                                                            </Box>
+                                                            <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
+                                                        </Box>
+                                                    );
+                                                })}
+                                            </Box>
+                                        ))}
                                     </Box>
-                                ))}
+                                    );
+                                })}
                                 {filteredUfRows.length > 0 && (
                                     <>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 1 }}>
