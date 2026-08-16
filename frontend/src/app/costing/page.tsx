@@ -1294,7 +1294,7 @@ export default function CostingPage() {
                             }).map(row => toRowId(row._id)) : []);
                             const laborCompleted = completedRowIds.size;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
-                            const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && e.quantity >= e.estimateQuantity).length;
+                            const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && (e.costedQuantity ?? 0) >= e.estimateQuantity).length;
                             const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && e.quantity < e.estimateQuantity).length;
                             return (
                                 <>
