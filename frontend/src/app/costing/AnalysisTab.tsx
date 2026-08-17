@@ -403,6 +403,10 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         const sectionItems = rows.filter(r => r.sectionName === section.name && !r.parentGroupRowId);
                         if (sectionItems.length === 0) return null;
                         const subs = subsMap.get(toId(section._id)) ?? [];
+                        const sectEstTotal = sectionItems.reduce((s, r) => s + getEstimate(r).estTotal, 0);
+                        const sectActTotal = sectionItems.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
+                        const sectHasAct = sectionItems.some(r => getActuals(r).hasData);
+                        const sectRemTotal = sectHasAct ? sectEstTotal - sectActTotal : null;
                         return (
                             <>
                                 <tr key={`sec-${section._id}`}>
@@ -419,6 +423,10 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                     ? subs.map((sub, subI) => {
                                         const subItems = sectionItems.filter(r => r.subsectionName === sub.name);
                                         if (subItems.length === 0) return null;
+                                        const subEstTotal = subItems.reduce((s, r) => s + getEstimate(r).estTotal, 0);
+                                        const subActTotal = subItems.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
+                                        const subHasAct = subItems.some(r => getActuals(r).hasData);
+                                        const subRemTotal = subHasAct ? subEstTotal - subActTotal : null;
                                         return (
                                             <>
                                                 {sub.name?.trim() && (
@@ -433,11 +441,45 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                                     </tr>
                                                 )}
                                                 {subItems.map(row => renderRow(row, ++counter, 32))}
+                                                <tr key={`subtotal-${sub._id}`} style={{ backgroundColor: '#f5fbfc' }}>
+                                                    <td colSpan={3} style={tdStyle({ fontWeight: 600, color: '#555', fontSize: '0.76rem', paddingLeft: 24, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>
+                                                        {si + 1}.{subI + 1}. Ընդամ.
+                                                    </td>
+                                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                    <td style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: '#333', borderTop: '1px solid #d6f0f2', borderBottom: 'none', fontSize: '0.78rem' })}>{formatCurrencyRounded(subEstTotal)}</td>
+                                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                    <td style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: subHasAct ? ACCENT : '#ddd', borderTop: '1px solid #d6f0f2', borderBottom: 'none', fontSize: '0.78rem' })}>{subHasAct ? formatCurrencyRounded(subActTotal) : '—'}</td>
+                                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                    <td style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 600, borderTop: '1px solid #d6f0f2', borderBottom: 'none', fontSize: '0.78rem', color: subRemTotal === null ? '#ddd' : subRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>
+                                                        {subRemTotal !== null ? `${subRemTotal >= 0 ? '+' : ''}${formatCurrencyRounded(subRemTotal)}` : '—'}
+                                                    </td>
+                                                    <td colSpan={4} style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                </tr>
                                             </>
                                         );
                                     })
                                     : sectionItems.map(row => renderRow(row, ++counter, 16))
                                 }
+                                <tr key={`sectotal-${section._id}`} style={{ backgroundColor: '#eef9fb' }}>
+                                    <td colSpan={3} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>
+                                        {si + 1}. Ընդամ.
+                                    </td>
+                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: '#222', borderTop: '2px solid #c0e8ec', borderBottom: 'none', fontSize: '0.78rem' })}>{formatCurrencyRounded(sectEstTotal)}</td>
+                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: sectHasAct ? ACCENT : '#ddd', borderTop: '2px solid #c0e8ec', borderBottom: 'none', fontSize: '0.78rem' })}>{sectHasAct ? formatCurrencyRounded(sectActTotal) : '—'}</td>
+                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, borderTop: '2px solid #c0e8ec', borderBottom: 'none', fontSize: '0.78rem', color: sectRemTotal === null ? '#ddd' : sectRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>
+                                        {sectRemTotal !== null ? `${sectRemTotal >= 0 ? '+' : ''}${formatCurrencyRounded(sectRemTotal)}` : '—'}
+                                    </td>
+                                    <td colSpan={4} style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                </tr>
                             </>
                         );
                     })}
