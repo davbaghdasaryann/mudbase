@@ -1205,6 +1205,7 @@ export default function CostingPage() {
                                 { icon: <StraightenIcon sx={{ fontSize: 30, color: '#E65100' }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: '#E65100', hoverBg: 'rgba(230,81,0,0.06)' },
                                 { icon: <BuildIcon sx={{ fontSize: 30, color: '#4caf50' }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#4caf50', hoverBg: 'rgba(76,175,80,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 30, color: '#e53935' }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
+                                { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a' }} />, label: 'Վeradi tsakhser', onClick: () => {}, accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 140, height: 108, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg } }}>
                                     {icon}

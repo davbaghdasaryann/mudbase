@@ -346,6 +346,19 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const totalCols = BASE_COLS.length;
     let itemCounter = 0;
 
+    const getRowActTotal = (row: LaborRow) => {
+        const rowId = toId(row._id);
+        const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+        const matActTotal = mats.reduce((s, m) => {
+            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId));
+            return s + (pe ? pe.history.reduce((ss, r2) => ss + r2.quantity * r2.costPerUnit, 0) : 0);
+        }, 0);
+        const a = actualData[rowId];
+        const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
+        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
+        return { actTotal: volumeTotal + salaryTotal + matActTotal, hasData: !!(a || salaryTotal > 0 || matActTotal > 0) };
+    };
+
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
