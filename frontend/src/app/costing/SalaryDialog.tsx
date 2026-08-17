@@ -73,8 +73,6 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [ufRows, setUfRows] = useState<LaborRow[]>([]);
-    const [groupChildRows, setGroupChildRows] = useState<LaborRow[]>([]);
-    const [groupChildUfRows, setGroupChildUfRows] = useState<LaborRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
     const [type, setType] = useState<SalaryType>('gorcarqayin');
     const [val1, setVal1] = useState('');
@@ -116,26 +114,6 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
         Promise.all(fetches).finally(() => setLoading(false));
     }, [open, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot]);
 
-    useEffect(() => {
-        const fetchChildren = (src: LaborRow[], setter: (v: LaborRow[]) => void) => {
-            const groups = src.filter(r => r.isGroupRow);
-            if (groups.length === 0) { setter([]); return; }
-            Promise.all(groups.map(gr =>
-                Api.requestSession<any[]>({ command: 'estimate/fetch_group_works', args: { parentGroupRowId: toId(gr._id) } })
-                    .then(children => (children ?? []).map(c => ({
-                        _id: typeof c._id === 'object' && (c._id as any).$oid ? (c._id as any).$oid : String(c._id),
-                        catalogName: '',
-                        laborOfferItemName: c.laborOfferItemName || c.catalogName || '',
-                        unitSymbol: c.itemMeasurementUnit || '',
-                        quantity: c.quantity || 0,
-                        sectionName: gr.sectionName,
-                    } as LaborRow)))
-                    .catch(() => [] as LaborRow[])
-            )).then(arrays => setter(arrays.flat()));
-        };
-        fetchChildren(rows, setGroupChildRows);
-        fetchChildren(ufRows, setGroupChildUfRows);
-    }, [rows, ufRows]);
 
     const handleClose = () => { setSelectedRow(null); onClose(); };
     const n1 = parseFloat(val1.replace(',', '.')) || 0;
@@ -165,8 +143,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
         handleClose();
     };
 
-    const allRows = [...rows.filter(r => !r.isGroupRow), ...groupChildRows];
-    const allUfRows = [...ufRows.filter(r => !r.isGroupRow), ...groupChildUfRows];
+    const allRows = rows;
+    const allUfRows = ufRows;
     const filteredRows = actualData
         ? allRows.filter(r => { const e = actualData[r._id]; return e && parseFloat(e.quantity) > 0; })
         : allRows;
