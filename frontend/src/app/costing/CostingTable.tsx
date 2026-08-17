@@ -699,10 +699,6 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                 </Box>
                             ))}
                             <Divider sx={{ my: 1 }} />
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.4 }}>
-                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#222' }}>{t('Total')}</Typography>
-                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: SA, whiteSpace: 'nowrap' }}>{fmtAMD(actTotal)}</Typography>
-                            </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
                                 <Typography sx={{ fontSize: '0.78rem', color: '#999' }}>{t('Unit Price')} / {unitSymbol}</Typography>
                                 <Typography sx={{ fontSize: '0.78rem', color: '#555', whiteSpace: 'nowrap' }}>{fmtAMD(Math.round(actUP))}</Typography>
