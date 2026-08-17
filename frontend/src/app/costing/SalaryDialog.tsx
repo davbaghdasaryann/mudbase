@@ -189,7 +189,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const selectedRemaining = Math.max(0, selectedPlanned - selectedCovered);
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth
+        <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh' } }}
         >
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1, flexShrink: 0 }}>
@@ -269,10 +269,10 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: row.isGroupRow ? 600 : 500 }}>
                                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                                 </Typography>
-                                                                <Box sx={{ display: 'flex', gap: 0.8, mt: 0.4, flexWrap: 'wrap' }}>
-                                                                    {planned > 0 && <Box sx={{ px: 0.8, py: 0.1, borderRadius: '10px', bgcolor: '#f0f0f0' }}><Typography sx={{ fontSize: '0.68rem', color: '#777' }}>Չափ: {planned.toLocaleString()} {row.unitSymbol}</Typography></Box>}
-                                                                    {covered > 0 && <Box sx={{ px: 0.8, py: 0.1, borderRadius: '10px', bgcolor: '#e8f7f9' }}><Typography sx={{ fontSize: '0.68rem', color: mainPrimaryColor }}>Ծախս: {covered.toLocaleString()} {row.unitSymbol}</Typography></Box>}
-                                                                    {planned > 0 && remaining > 0 && <Box sx={{ px: 0.8, py: 0.1, borderRadius: '10px', bgcolor: '#fff3ee' }}><Typography sx={{ fontSize: '0.68rem', color: '#e65100' }}>Մնաց: {remaining.toLocaleString()} {row.unitSymbol}</Typography></Box>}
+                                                                <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
+                                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                                 </Box>
                                                             </Box>
                                                             <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => e.stopPropagation()}>
