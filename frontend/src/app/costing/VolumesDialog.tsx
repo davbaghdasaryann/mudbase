@@ -7,8 +7,6 @@ import {
 } from '@mui/material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
@@ -80,36 +78,8 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
     const [ufSubsections, setUfSubsections] = useState<Subsection[]>([]);
     const [ufRows, setUfRows] = useState<LaborRow[]>([]);
     const [costModal, setCostModal] = useState<CostModalState | null>(null);
-    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-    const [loadingGroups, setLoadingGroups] = useState<Set<string>>(new Set());
-    const [groupChildren, setGroupChildren] = useState<Record<string, LaborRow[]>>({});
 
     const getActualQty = (rowId: string) => parseFloat(actualData?.[rowId]?.quantity || '0') || 0;
-
-    const handleGroupToggle = async (groupId: string, groupRow: LaborRow) => {
-        if (expandedGroups.has(groupId)) {
-            setExpandedGroups(prev => { const s = new Set(prev); s.delete(groupId); return s; });
-            return;
-        }
-        setExpandedGroups(prev => new Set([...prev, groupId]));
-        if (groupChildren[groupId]) return;
-        setLoadingGroups(prev => new Set([...prev, groupId]));
-        try {
-            const children = await Api.requestSession<any[]>({ command: 'estimate/fetch_group_works', args: { parentGroupRowId: groupId } });
-            const mapped: LaborRow[] = (children ?? []).map(c => ({
-                _id: typeof c._id === 'object' && c._id.$oid ? c._id.$oid : String(c._id),
-                catalogName: '',
-                laborOfferItemName: c.laborOfferItemName || c.catalogName || '',
-                unitSymbol: c.itemMeasurementUnit || '',
-                quantity: c.quantity || 0,
-                subsectionName: groupRow.subsectionName,
-                sectionName: groupRow.sectionName,
-            }));
-            setGroupChildren(prev => ({ ...prev, [groupId]: mapped }));
-        } finally {
-            setLoadingGroups(prev => { const s = new Set(prev); s.delete(groupId); return s; });
-        }
-    };
 
     const estimateId = toId(estimate._id);
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
@@ -194,56 +164,15 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                         </Box>
                                         {subRows.map((row, i) => {
                                             const gid = toId(row._id);
-                                            if (row.isGroupRow) {
-                                                const isExpanded = expandedGroups.has(gid);
-                                                const isLoadingG = loadingGroups.has(gid);
-                                                const children = groupChildren[gid] ?? [];
-                                                return (
-                                                    <React.Fragment key={gid}>
-                                                        <Box
-                                                            sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff', cursor: 'pointer', '&:hover': { bgcolor: '#f0f9fc' } }}
-                                                            onClick={() => handleGroupToggle(gid, row)}
-                                                        >
-                                                            <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                {row.laborOfferItemName || row.catalogName || '—'}
-                                                            </Typography>
-                                                            <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
-                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
-                                                            <Box />
-                                                            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                                {isLoadingG ? (
-                                                                    <CircularProgress size={12} sx={{ color: accentColor }} />
-                                                                ) : isExpanded ? (
-                                                                    <ExpandMoreIcon sx={{ fontSize: 16, color: accentColor }} />
-                                                                ) : (
-                                                                    <ChevronRightIcon sx={{ fontSize: 16, color: '#aaa' }} />
-                                                                )}
-                                                            </Box>
-                                                        </Box>
-                                                        {isExpanded && children.map((child, ci) => (
-                                                            <Box key={toId(child._id)} sx={{ display: 'grid', gridTemplateColumns: COLS, pl: 4, pr: 2, py: 0.5, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${accentColor}22` }}>
-                                                                <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
-                                                                <Typography sx={{ fontSize: '0.8rem', color: '#666', textAlign: 'center' }}>{child.unitSymbol || '—'}</Typography>
-                                                                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{child.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
-                                                                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{getActualQty(toId(child._id)) > 0 ? getActualQty(toId(child._id)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
-                                                                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                                    <Tooltip title={t('Add new quantity')}>
-                                                                        <IconButton size='small' onClick={() => setCostModal({ row: child, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
-                                                                            <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
-                                                                        </IconButton>
-                                                                    </Tooltip>
-                                                                </Box>
-                                                            </Box>
-                                                        ))}
-                                                    </React.Fragment>
-                                                );
-                                            }
+                                            const actualQty = getActualQty(gid);
                                             return (
                                                 <Box key={gid} sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
-                                                    <Typography sx={{ fontSize: '0.82rem', color: '#333' }}>{row.laborOfferItemName || row.catalogName || '—'}</Typography>
+                                                    <Typography sx={{ fontSize: '0.82rem', color: row.isGroupRow ? accentColor : '#333', textDecoration: row.isGroupRow ? 'underline' : 'none', textDecorationStyle: row.isGroupRow ? 'dotted' : undefined, textUnderlineOffset: row.isGroupRow ? '3px' : undefined, fontWeight: row.isGroupRow ? 600 : 400 }}>
+                                                        {row.laborOfferItemName || row.catalogName || '—'}
+                                                    </Typography>
                                                     <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
                                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
-                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{getActualQty(toId(row._id)) > 0 ? getActualQty(toId(row._id)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
+                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
                                                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                         <Tooltip title={t('Add new quantity')}>
                                                             <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
