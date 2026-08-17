@@ -208,13 +208,11 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
                                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
                                                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                        {!row.isGroupRow && (
-                                                            <Tooltip title={t('Add new quantity')}>
-                                                                <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
-                                                                    <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        )}
+                                                        <Tooltip title={t('Add new quantity')}>
+                                                            <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
+                                                                <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
+                                                            </IconButton>
+                                                        </Tooltip>
                                                     </Box>
                                                 </Box>
                                             );
@@ -275,8 +273,8 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                     <Typography sx={{ color: '#aaa', py: 2 }}>{t('No works')}</Typography>
                 ) : (
                     <Box>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.5, bgcolor: '#f0fbfc', borderRadius: 1 }}>
-                            {HEADERS.map((h, i) => (
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 120px', px: 2, py: 0.5, bgcolor: '#f0fbfc', borderRadius: 1 }}>
+                            {HEADERS.slice(0, 4).map((h, i) => (
                                 <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                             ))}
                         </Box>
@@ -284,18 +282,11 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                             const cid = toId(child._id);
                             const actualQty = getActualQty(cid);
                             return (
-                                <Box key={cid} sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                                <Box key={cid} sx={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 120px', px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#333' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{child.unitSymbol || '—'}</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor, textAlign: 'center' }}>{child.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                        <Tooltip title={t('Add new quantity')}>
-                                            <IconButton size='small' onClick={() => { setGroupDialog(prev => ({ ...prev, open: false })); setCostModal({ row: child, value: '', spent: '' }); }} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
-                                                <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Box>
                                 </Box>
                             );
                         })}
