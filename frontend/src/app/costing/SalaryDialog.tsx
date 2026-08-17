@@ -275,7 +275,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                     {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                                 </Box>
                                                             </Box>
-                                                            <AddCircleOutlineIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
+                                                            <AddCircleOutlineIcon sx={{ fontSize: 18, color: '#ccc' }} />
                                                         </Box>
                                                         {isExpanded && children.map((child, ci) => (
                                                             <Box key={toId(child._id)} sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22` }}>
