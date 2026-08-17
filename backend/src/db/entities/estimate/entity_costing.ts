@@ -26,6 +26,7 @@ export interface CostingPahestHistoryRecord {
 
 export interface CostingPahestEntry {
     materialItemId: string;
+    estimatedLaborId?: string;
     name: string;
     unit: string;
     quantity: number;

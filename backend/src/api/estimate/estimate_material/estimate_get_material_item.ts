@@ -126,10 +126,23 @@ registerApiSession('estimate/fetch_materials_list', async (req, res, session) =>
                 as: 'estimateMeasurementUnitData',
             },
         },
+        {
+            $lookup: {
+                from: 'estimate_labor_items',
+                localField: 'estimatedLaborId',
+                foreignField: '_id',
+                as: 'laborData',
+            },
+        },
+        { $unwind: { path: '$laborData', preserveNullAndEmptyArrays: true } },
     ];
 
     const data = await estimateMaterialItemsColl.aggregate(pipeline).toArray();
-    respondJsonData(res, data);
+    const result = data.map((item: any) => ({
+        ...item,
+        laborName: item.laborData?.laborOfferItemName || '',
+    }));
+    respondJsonData(res, result);
 });
 
 /** Returns group rows → children → materials for the warehouse "Add" modal. */

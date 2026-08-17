@@ -19,7 +19,8 @@ import { mainPrimaryColor } from '@/theme';
 
 interface MaterialOption {
     materialItemId: string;
-    estimatedLaborIds: string[];
+    estimatedLaborId: string;
+    laborName: string;
     name: string;
     fullCode: string;
     unit: string;
@@ -57,6 +58,7 @@ export interface PahestHistoryRecord {
 
 export interface PahestEntry {
     materialItemId: string;
+    estimatedLaborId?: string;
     name: string;
     unit: string;
     quantity: number;
@@ -99,7 +101,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     const [addPriceInput, setAddPriceInput] = useState('');
 
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
-    const historyEntry = historyEntryId ? (entries.find(e => e.materialItemId === historyEntryId) ?? null) : null;
+    const historyEntry = historyEntryId ? (entries.find(e => `${e.materialItemId}|${e.estimatedLaborId ?? ''}` === historyEntryId) ?? null) : null;
 
     const [plusEntry, setPlusEntry] = useState<PahestEntry | null>(null);
     const [plusQtyInput, setPlusQtyInput] = useState('');
@@ -113,13 +115,15 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 const id = toIdStr(item.materialItemId);
                 if (!id) continue;
                 const laborId = toIdStr(item.estimatedLaborId);
-                if (map.has(id)) {
-                    if (laborId) map.get(id)!.estimatedLaborIds.push(laborId);
+                const key = `${id}|${laborId}`;
+                if (map.has(key)) {
+                    map.get(key)!.estimateQuantity += item.quantity ?? 0;
                 } else {
                     const md = item.estimateMaterialItemData?.[0];
-                    map.set(id, {
+                    map.set(key, {
                         materialItemId: id,
-                        estimatedLaborIds: laborId ? [laborId] : [],
+                        estimatedLaborId: laborId,
+                        laborName: item.laborName || '',
                         name: md?.name || '—',
                         fullCode: md?.fullCode || '',
                         unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
@@ -143,8 +147,8 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
             const groups = (hasUf ? maybeGroup : ufOrGroup) as GroupMaterialData[] ?? [];
             const mainRows = parseItems(main ?? []);
             const ufRows = parseItems(uf ?? []);
-            const seen = new Set(mainRows.map(r => r.materialItemId));
-            const combined = [...mainRows, ...ufRows.filter(r => !seen.has(r.materialItemId))];
+            const seen = new Set(mainRows.map(r => `${r.materialItemId}|${r.estimatedLaborId}`));
+            const combined = [...mainRows, ...ufRows.filter(r => !seen.has(`${r.materialItemId}|${r.estimatedLaborId}`))];
             const resolvedGroups: GroupMaterialData[] = groups ?? [];
             // Exclude from standalone list any material already shown under a group
             const groupMatIds = new Set(resolvedGroups.flatMap(g => g.children.flatMap(c => c.materials.map(m => m.materialItemId))));
@@ -181,7 +185,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
         const unitPrice = (!isNaN(enteredPrice) && addPriceInput.trim() !== '') ? enteredPrice : 0;
         const newRecord: PahestHistoryRecord = { quantity: qty, costPerUnit: unitPrice, addedAt: now };
-        const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId);
+        const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId && e.estimatedLaborId === selected.estimatedLaborId);
         if (existing >= 0) {
             const next = [...entries];
             next[existing] = {
@@ -194,6 +198,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         } else {
             onChange([...entries, {
                 materialItemId: selected.materialItemId,
+                estimatedLaborId: selected.estimatedLaborId,
                 name: selected.name,
                 unit: selected.unit,
                 quantity: qty,
@@ -212,7 +217,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const qty = parseFloat(plusQtyInput.replace(',', '.')) || 0;
         const price = parseFloat(plusPriceInput.replace(',', '.'));
         const now = new Date();
-        const idx = entries.findIndex(e => e.materialItemId === plusEntry.materialItemId);
+        const idx = entries.findIndex(e => e.materialItemId === plusEntry.materialItemId && e.estimatedLaborId === plusEntry.estimatedLaborId);
         if (idx < 0) return;
         const next = [...entries];
         const newCostPerUnit = (!isNaN(price) && plusPriceInput.trim() !== '') ? price : 0;
@@ -231,18 +236,18 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         setPlusPriceInput('');
     };
 
-    const handleDelete = (materialItemId: string) => {
-        onChange(entries.filter(e => e.materialItemId !== materialItemId));
+    const handleDelete = (materialItemId: string, estimatedLaborId?: string) => {
+        onChange(entries.filter(e => !(e.materialItemId === materialItemId && e.estimatedLaborId === estimatedLaborId)));
     };
 
-    const deleteHistoryRecord = (materialItemId: string, recIdx: number) => {
-        const idx = entries.findIndex(e => e.materialItemId === materialItemId);
+    const deleteHistoryRecord = (materialItemId: string, estimatedLaborId: string | undefined, recIdx: number) => {
+        const idx = entries.findIndex(e => e.materialItemId === materialItemId && e.estimatedLaborId === estimatedLaborId);
         if (idx < 0) return;
         const entry = entries[idx];
         const rec = entry.history[recIdx];
         const newHistory = entry.history.filter((_, i) => i !== recIdx);
         if (newHistory.length === 0) {
-            onChange(entries.filter(e => e.materialItemId !== materialItemId));
+            onChange(entries.filter(e => !(e.materialItemId === materialItemId && e.estimatedLaborId === estimatedLaborId)));
             setHistoryEntryId(null);
         } else {
             const next = [...entries];
@@ -289,7 +294,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                     {entries.map((e, idx) => {
                         const remaining = e.quantity - (e.costedQuantity ?? 0);
                         return (
-                        <Box key={e.materialItemId} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
+                        <Box key={`${e.materialItemId}|${e.estimatedLaborId ?? ''}`} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
                             <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>{e.unit}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'center' }}>
@@ -309,12 +314,12 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={t('History')}>
-                                    <IconButton size='small' onClick={() => setHistoryEntryId(e.materialItemId)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                    <IconButton size='small' onClick={() => setHistoryEntryId(`${e.materialItemId}|${e.estimatedLaborId ?? ''}`)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
                                         <HistoryIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={t('Remove')}>
-                                    <IconButton size='small' onClick={() => handleDelete(e.materialItemId)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                    <IconButton size='small' onClick={() => handleDelete(e.materialItemId, e.estimatedLaborId)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
                                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
@@ -354,14 +359,15 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                         sx={{
                                             px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
                                             borderBottom: '1px solid #f0fbfc',
-                                            backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                            color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
-                                            fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
+                                            backgroundColor: selected?.materialItemId === m.materialItemId && selected?.estimatedLaborId === m.estimatedLaborId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                            color: selected?.materialItemId === m.materialItemId && selected?.estimatedLaborId === m.estimatedLaborId ? mainPrimaryColor : '#333',
+                                            fontWeight: selected?.materialItemId === m.materialItemId && selected?.estimatedLaborId === m.estimatedLaborId ? 600 : 400,
                                             '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
                                         }}
                                     >
                                         {m.name}
                                         <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
+                                        {m.laborName && <Typography component='span' sx={{ ml: 1, fontSize: '0.72rem', color: '#aaa', fontStyle: 'italic' }}>— {m.laborName}</Typography>}
                                     </Box>
                                 ))}
 

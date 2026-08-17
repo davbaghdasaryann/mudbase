@@ -233,7 +233,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const salTotal = costHistory.filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
         const mats     = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
         const matActTotal = mats.reduce((s, m) => {
-            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId));
+            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && (!p.estimatedLaborId || p.estimatedLaborId === rowId));
             return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
         }, 0);
         const actTotal = volTotal + salTotal + matActTotal;
