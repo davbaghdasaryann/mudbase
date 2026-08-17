@@ -269,13 +269,15 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: row.isGroupRow ? 600 : 500 }}>
                                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                                 </Typography>
-                                                                <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                <Box sx={{ display: 'flex', gap: 0.8, mt: 0.4, flexWrap: 'wrap' }}>
+                                                                    {planned > 0 && <Box sx={{ px: 0.8, py: 0.1, borderRadius: '10px', bgcolor: '#f0f0f0' }}><Typography sx={{ fontSize: '0.68rem', color: '#777' }}>Չափ: {planned.toLocaleString()} {row.unitSymbol}</Typography></Box>}
+                                                                    {covered > 0 && <Box sx={{ px: 0.8, py: 0.1, borderRadius: '10px', bgcolor: '#e8f7f9' }}><Typography sx={{ fontSize: '0.68rem', color: mainPrimaryColor }}>Ծախս: {covered.toLocaleString()} {row.unitSymbol}</Typography></Box>}
+                                                                    {planned > 0 && remaining > 0 && <Box sx={{ px: 0.8, py: 0.1, borderRadius: '10px', bgcolor: '#fff3ee' }}><Typography sx={{ fontSize: '0.68rem', color: '#e65100' }}>Մնաց: {remaining.toLocaleString()} {row.unitSymbol}</Typography></Box>}
                                                                 </Box>
                                                             </Box>
-                                                            <AddCircleOutlineIcon sx={{ fontSize: 18, color: '#ccc' }} />
+                                                            <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => e.stopPropagation()}>
+                                                                <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                            </IconButton>
                                                         </Box>
                                                         {isExpanded && children.map((child, ci) => (
                                                             <Box key={toId(child._id)} sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22` }}>
@@ -324,7 +326,9 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                             </Box>
                                                         </Box>
-                                                        <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
+                                                        <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#e65100' } }} onClick={e => e.stopPropagation()}>
+                                                            <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                        </IconButton>
                                                     </Box>
                                                     );
                                                 })}
@@ -364,7 +368,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                 inputProps={{ style: { fontSize: '0.88rem', color: '#333', padding: 0, lineHeight: 1.5 } }}
                             />
                         </Box>
-        {canAdd && (
+                        {canAdd && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <Typography sx={{ fontSize: '0.82rem', color: '#777' }}>
                                     {t('Total')}: <strong style={{ color: mainPrimaryColor }}>{(n1 * n2).toLocaleString()} AMD</strong>
