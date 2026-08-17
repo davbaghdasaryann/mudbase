@@ -161,6 +161,26 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
                         </Box>
                     </>)}
+                    {(show('valueAddedTax') || show('climaticImpactCosts') || show('temporaryStructures') || show('transportationCosts') || show('operationHandoverCosts') || show('stateDutiesAndFees')) && (() => {
+                        const total =
+                            (show('valueAddedTax') ? parseNum(vatInput) : 0) +
+                            (show('climaticImpactCosts') ? parseNum(climateInput) : 0) +
+                            (show('temporaryStructures') ? parseNum(temporaryStructuresInput) : 0) +
+                            (show('transportationCosts') ? parseNum(transportationCostsInput) : 0) +
+                            (show('operationHandoverCosts') ? parseNum(commissioningCostsInput) : 0) +
+                            (show('stateDutiesAndFees') ? parseNum(stateFeesInput) : 0);
+                        return (
+                            <>
+                                <Divider sx={{ borderColor: '#ccc' }} />
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#1a1a1a', flex: 1 }}>Ընդամենը</Typography>
+                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: ACCENT, width: 140, textAlign: 'right', pr: '14px' }}>
+                                        {total > 0 ? fmtNum(total) + ' AMD' : '—'}
+                                    </Typography>
+                                </Box>
+                            </>
+                        );
+                    })()}
                 </Box>
             </DialogContent>
 
