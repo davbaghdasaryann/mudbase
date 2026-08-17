@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, InputBase, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Divider, InputBase, Popover, Typography } from '@mui/material';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
@@ -144,6 +144,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const [modalSpent, setModalSpent] = useState('');
 
     const [groupDialog, setGroupDialog] = useState<{ open: boolean; groupName: string; items: any[]; loading: boolean }>({ open: false, groupName: '', items: [], loading: false });
+    const [breakdownAnchor, setBreakdownAnchor] = useState<HTMLElement | null>(null);
+    const [breakdownData, setBreakdownData] = useState<{ salaryTotal: number; volumeTotal: number; matActTotal: number; actTotal: number; actUP: number; unitSymbol: string } | null>(null);
 
     const handleGroupRowClick = useCallback(async (row: LaborRow) => {
         setGroupDialog({ open: true, groupName: row.laborOfferItemName || row.catalogName, items: [], loading: true });
@@ -390,7 +392,16 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(estUP)}</td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(estTotal)}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: q > 0 ? '#222' : '#ccc' })}>{q > 0 ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: (q > 0 && actTotal > 0) ? '#555' : '#ccc' })}>{(q > 0 && actTotal > 0) ? formatCurrencyRounded(actUP) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', color: (q > 0 && actTotal > 0) ? '#555' : '#ccc' })}>
+                    {(q > 0 && actTotal > 0) ? (
+                        <span
+                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
+                            style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
+                        >
+                            {formatCurrencyRounded(actUP)}
+                        </span>
+                    ) : '—'}
+                </td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: actTotal > 0 ? ACCENT : '#ccc' })}>{actTotal > 0 ? formatCurrencyRounded(actTotal) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
@@ -658,6 +669,48 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     <Button onClick={() => setGroupDialog(prev => ({ ...prev, open: false }))} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Actual unit price breakdown popover */}
+            <Popover
+                open={!!breakdownAnchor}
+                anchorEl={breakdownAnchor}
+                onClose={() => setBreakdownAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: 220, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
+            >
+                {breakdownData && (() => {
+                    const { salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol } = breakdownData;
+                    const fmtAMD = (v: number) => `${formatCurrencyRounded(v)} AMD`;
+                    const rows: { label: string; value: number }[] = [
+                        { label: t('Labor Cost'), value: salaryTotal },
+                        { label: 'Volume / Spent', value: volumeTotal },
+                        { label: t('Materials Cost'), value: matActTotal },
+                    ].filter(r => r.value > 0);
+                    return (
+                        <Box>
+                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1 }}>
+                                {t('Cost Breakdown')}
+                            </Typography>
+                            {rows.map(r => (
+                                <Box key={r.label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.6 }}>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>{r.label}</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, whiteSpace: 'nowrap' }}>{fmtAMD(r.value)}</Typography>
+                                </Box>
+                            ))}
+                            <Divider sx={{ my: 1 }} />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.4 }}>
+                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#222' }}>{t('Total')}</Typography>
+                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: SA, whiteSpace: 'nowrap' }}>{fmtAMD(actTotal)}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#999' }}>{t('Unit Price')} / {unitSymbol}</Typography>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#555', whiteSpace: 'nowrap' }}>{fmtAMD(Math.round(actUP))}</Typography>
+                            </Box>
+                        </Box>
+                    );
+                })()}
+            </Popover>
         </Box>
     );
 }
