@@ -242,8 +242,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                         {subsecNames.map(subName => (
                                             <Box key={subName}>
                                                 {hasMultipleSubs && (
-                                                    <Box sx={{ bgcolor: '#f5fbfc', px: 2, py: 0.6, borderLeft: `2px solid ${mainPrimaryColor}`, ml: 1 }}>
-                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#4b9ead' }}>{subName}</Typography>
+                                                    <Box sx={{ bgcolor: '#f5fbfc', px: 2, py: 0.6, ml: 1 }}>
+                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#222' }}>{subName}</Typography>
                                                     </Box>
                                                 )}
                                                 {secRows.filter(r => (r.subsectionName || '—') === subName).map(row => {
