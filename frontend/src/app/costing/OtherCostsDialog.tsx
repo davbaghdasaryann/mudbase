@@ -174,7 +174,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                                 <Divider sx={{ borderColor: '#ccc' }} />
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                                     <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#1a1a1a', flex: 1 }}>Ընդամենը</Typography>
-                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: ACCENT, width: 140, textAlign: 'right', pr: '14px' }}>
+                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: ACCENT, width: 140, textAlign: 'right', pr: '14px', whiteSpace: 'nowrap' }}>
                                         {total > 0 ? fmtNum(total) + ' AMD' : '—'}
                                     </Typography>
                                 </Box>
