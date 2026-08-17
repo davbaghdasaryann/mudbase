@@ -9,6 +9,7 @@ import {
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
@@ -79,6 +80,35 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const [val2, setVal2] = useState('');
     const [notes, setNotes] = useState('');
     const [workVolume, setWorkVolume] = useState('');
+    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+    const [loadingGroups, setLoadingGroups] = useState<Set<string>>(new Set());
+    const [groupChildren, setGroupChildren] = useState<Record<string, LaborRow[]>>({});
+
+    const handleGroupToggle = async (e: React.MouseEvent, gid: string, row: LaborRow) => {
+        e.stopPropagation();
+        if (expandedGroups.has(gid)) {
+            setExpandedGroups(prev => { const s = new Set(prev); s.delete(gid); return s; });
+            return;
+        }
+        setExpandedGroups(prev => new Set([...prev, gid]));
+        if (groupChildren[gid]) return;
+        setLoadingGroups(prev => new Set([...prev, gid]));
+        try {
+            const children = await Api.requestSession<any[]>({ command: 'estimate/fetch_group_works', args: { parentGroupRowId: gid } });
+            const mapped: LaborRow[] = (children ?? []).map(c => ({
+                _id: typeof c._id === 'object' && (c._id as any).$oid ? (c._id as any).$oid : String(c._id),
+                catalogName: '',
+                laborOfferItemName: c.laborOfferItemName || c.catalogName || '',
+                unitSymbol: c.itemMeasurementUnit || '',
+                quantity: c.quantity || 0,
+                sectionName: row.sectionName,
+                subsectionName: row.subsectionName,
+            }));
+            setGroupChildren(prev => ({ ...prev, [gid]: mapped }));
+        } finally {
+            setLoadingGroups(prev => { const s = new Set(prev); s.delete(gid); return s; });
+        }
+    };
 
     useEffect(() => {
         if (!open) { setSelectedRow(null); return; }
@@ -216,16 +246,26 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     </Box>
                                                 )}
                                                 {secRows.filter(r => (r.subsectionName || '—') === subName).map(row => {
-                                                    const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
-                                                    const covered = getSalaryCoveredQty(row._id);
+                                                    const gid = toId(row._id);
+                                                    const planned = parseFloat(actualData?.[gid]?.quantity || '0') || 0;
+                                                    const covered = getSalaryCoveredQty(gid);
                                                     const remaining = Math.max(0, planned - covered);
                                                     const done = planned > 0 && remaining <= 0;
+                                                    const isExpanded = row.isGroupRow && expandedGroups.has(gid);
+                                                    const isLoadingG = row.isGroupRow && loadingGroups.has(gid);
+                                                    const children = row.isGroupRow ? (groupChildren[gid] ?? []) : [];
                                                     return (
-                                                        <Box key={String(row._id)} onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
+                                                        <React.Fragment key={gid}>
+                                                        <Box onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
                                                             sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                                         >
+                                                            {row.isGroupRow && (
+                                                                <Box onClick={(e) => handleGroupToggle(e, gid, row)} sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}>
+                                                                    {isLoadingG ? <CircularProgress size={12} sx={{ color: mainPrimaryColor }} /> : isExpanded ? <ExpandMoreIcon sx={{ fontSize: 16, color: mainPrimaryColor }} /> : <ChevronRightIcon sx={{ fontSize: 16, color: mainPrimaryColor }} />}
+                                                                </Box>
+                                                            )}
                                                             <Box sx={{ flex: 1 }}>
-                                                                <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
+                                                                <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: row.isGroupRow ? 600 : 500 }}>
                                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                                 </Typography>
                                                                 <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
@@ -236,6 +276,15 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                             </Box>
                                                             <ChevronRightIcon sx={{ fontSize: 18, color: done ? '#43a047' : '#ccc' }} />
                                                         </Box>
+                                                        {isExpanded && children.map((child, ci) => (
+                                                            <Box key={toId(child._id)} sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22` }}>
+                                                                <Box sx={{ flex: 1 }}>
+                                                                    <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
+                                                                    {child.quantity > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
+                                                                </Box>
+                                                            </Box>
+                                                        ))}
+                                                        </React.Fragment>
                                                     );
                                                 })}
                                             </Box>
