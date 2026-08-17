@@ -443,7 +443,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                                 {subItems.map(row => renderRow(row, ++counter, 32))}
                                                 <tr key={`subtotal-${sub._id}`} style={{ backgroundColor: '#f5fbfc' }}>
                                                     <td colSpan={3} style={tdStyle({ fontWeight: 600, color: '#555', fontSize: '0.76rem', paddingLeft: 24, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>
-                                                        {si + 1}.{subI + 1}. Ընդամ.
+                                                        {si + 1}.{subI + 1}. Ընդամենը
                                                     </td>
                                                     <td style={tdStyle({ borderLeft: GSEP, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
                                                     <td style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
@@ -465,7 +465,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                 }
                                 <tr key={`sectotal-${section._id}`} style={{ backgroundColor: '#eef9fb' }}>
                                     <td colSpan={3} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>
-                                        {si + 1}. Ընդամ.
+                                        {si + 1}. Ընդամենը
                                     </td>
                                     <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
                                     <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
