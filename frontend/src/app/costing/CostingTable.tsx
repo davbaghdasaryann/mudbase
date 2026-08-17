@@ -499,14 +499,21 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                                     )}
                                                     {subItems.map(row => renderItemRow(row, ++itemCounter, sub.name?.trim() ? 36 : 20))}
                                                     <tr key={`subtotal-${sub._id}`} style={{ backgroundColor: '#f5fbfc' }}>
-                                                        <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{sectionIdx + 1}.{subIdx + 1}. Ընդամենը</td>
-                                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '1px solid #d6f0f2' })}>{formatCurrencyRounded(subTotal)} AMD</td>
-                                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
-                                                        <td style={tdStyle({})}></td>
-                                                        <td style={tdStyle({})}></td>
-                                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
-                                                        <td style={tdStyle({})}></td>
-                                                        <td style={tdStyle({})}></td>
+                                                        {(() => {
+                                                            const subActTotal = subItems.reduce((s, r) => s + getRowActTotal(r).actTotal, 0);
+                                                            const subHasAct = subItems.some(r => getRowActTotal(r).hasData);
+                                                            const subRemTotal = subHasAct ? subTotal - subActTotal : null;
+                                                            return (<>
+                                                                <td colSpan={5} style={tdStyle({ fontWeight: 600, color: '#6b7280', fontSize: '0.78rem', paddingLeft: 28, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>{sectionIdx + 1}.{subIdx + 1}. Ընդամենը</td>
+                                                                <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>{formatCurrencyRounded(subTotal)} AMD</td>
+                                                                <td style={tdStyle({ borderLeft: GSEP, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                                <td style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                                <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: subHasAct ? SA : '#ccc', whiteSpace: 'nowrap', borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>{subHasAct ? formatCurrencyRounded(subActTotal) + ' AMD' : '—'}</td>
+                                                                <td style={tdStyle({ borderLeft: GSEP, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                                <td style={tdStyle({ borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}></td>
+                                                                <td style={tdStyle({ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap', borderTop: '1px solid #d6f0f2', borderBottom: 'none', color: subRemTotal === null ? '#ccc' : subRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>{subRemTotal !== null ? formatCurrencyRounded(subRemTotal) + ' AMD' : '—'}</td>
+                                                            </>);
+                                                        })()}
                                                     </tr>
                                                 </>
                                             );
@@ -515,21 +522,48 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                     }
 
                                     <tr key={`sectotal-${section._id}`} style={{ backgroundColor: '#eef9fb' }}>
-                                        <td colSpan={5} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{sectionIdx + 1}. Ընդամենը</td>
-                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
-                                        <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
-                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
-                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
-                                        <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
-                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
-                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                        {(() => {
+                                            const sectActTotal = sectionItems.reduce((s, r) => s + getRowActTotal(r).actTotal, 0);
+                                            const sectHasAct = sectionItems.some(r => getRowActTotal(r).hasData);
+                                            const sectRemTotal = sectHasAct ? sectionTotal - sectActTotal : null;
+                                            return (<>
+                                                <td colSpan={5} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{sectionIdx + 1}. Ընդամենը</td>
+                                                <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                                <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                                <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                                <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: sectHasAct ? SA : '#ccc', whiteSpace: 'nowrap', borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{sectHasAct ? formatCurrencyRounded(sectActTotal) + ' AMD' : '—'}</td>
+                                                <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                                <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                                <td style={tdStyle({ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap', borderTop: '2px solid #c0e8ec', borderBottom: 'none', color: sectRemTotal === null ? '#ccc' : sectRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>{sectRemTotal !== null ? formatCurrencyRounded(sectRemTotal) + ' AMD' : '—'}</td>
+                                            </>);
+                                        })()}
                                     </tr>
                                 </>
                             );
                         })}
 
                         <tr style={{ backgroundColor: '#f0fbfc' }}>
-                            <td colSpan={totalCols} style={tdStyle({ fontWeight: 700, textAlign: 'left', color: SA, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{t('Total')}</td>
+                            {(() => {
+                                const grandEstTotal = rows.reduce((s, r) => {
+                                    const mats = materialRows.filter(m => toId(m.estimatedLaborId) === toId(r._id));
+                                    const lc = Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice);
+                                    const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
+                                    return s + lc + Math.round(rawMat);
+                                }, 0);
+                                const grandActTotal = rows.reduce((s, r) => s + getRowActTotal(r).actTotal, 0);
+                                const grandHasAct = rows.some(r => getRowActTotal(r).hasData);
+                                const grandRemTotal = grandHasAct ? grandEstTotal - grandActTotal : null;
+                                return (<>
+                                    <td colSpan={5} style={tdStyle({ fontWeight: 700, color: SA, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{t('Total')}</td>
+                                    <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{formatCurrencyRounded(grandEstTotal)} AMD</td>
+                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ borderTop: `2px solid ${SA}`, borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, color: grandHasAct ? SA : '#ccc', whiteSpace: 'nowrap', borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{grandHasAct ? formatCurrencyRounded(grandActTotal) + ' AMD' : '—'}</td>
+                                    <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ borderTop: `2px solid ${SA}`, borderBottom: 'none' })}></td>
+                                    <td style={tdStyle({ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap', borderTop: `2px solid ${SA}`, borderBottom: 'none', color: grandRemTotal === null ? '#ccc' : grandRemTotal >= 0 ? '#2e7d32' : '#c62828' })}>{grandRemTotal !== null ? formatCurrencyRounded(grandRemTotal) + ' AMD' : '—'}</td>
+                                </>);
+                            })()}
                         </tr>
                     </tbody>
                 </table>
