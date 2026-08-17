@@ -471,6 +471,12 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                         ? subs.map((sub, subIdx) => {
                                             const subItems = sectionItems.filter(r => r.subsectionName === sub.name);
                                             if (subItems.length === 0) return null;
+                                            const subTotal = subItems.reduce((sum, r) => {
+                                                const mats = materialRows.filter(m => toId(m.estimatedLaborId) === toId(r._id));
+                                                const lc = Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice);
+                                                const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);
+                                                return sum + lc + Math.round(rawMat);
+                                            }, 0);
                                             return (
                                                 <>
                                                     {sub.name?.trim() && (
@@ -481,6 +487,16 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                                         </tr>
                                                     )}
                                                     {subItems.map(row => renderItemRow(row, ++itemCounter, sub.name?.trim() ? 36 : 20))}
+                                                    <tr key={`subtotal-${sub._id}`} style={{ backgroundColor: '#f5fbfc' }}>
+                                                        <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{sectionIdx + 1}.{subIdx + 1}. Ընդամենը</td>
+                                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '1px solid #d6f0f2' })}>{formatCurrencyRounded(subTotal)} AMD</td>
+                                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
+                                                        <td style={tdStyle({})}></td>
+                                                        <td style={tdStyle({})}></td>
+                                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
+                                                        <td style={tdStyle({})}></td>
+                                                        <td style={tdStyle({})}></td>
+                                                    </tr>
                                                 </>
                                             );
                                         })
