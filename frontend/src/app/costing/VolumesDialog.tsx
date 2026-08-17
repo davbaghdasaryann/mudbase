@@ -32,6 +32,14 @@ interface CostModalState {
     spent: string;
 }
 
+interface GroupDialog {
+    open: boolean;
+    groupName: string;
+    groupRow: LaborRow | null;
+    items: LaborRow[];
+    loading: boolean;
+}
+
 type SnapshotData = { laborRows: LaborRow[]; sections: Section[]; subsections: Subsection[] };
 
 interface Props {
@@ -78,8 +86,28 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
     const [ufSubsections, setUfSubsections] = useState<Subsection[]>([]);
     const [ufRows, setUfRows] = useState<LaborRow[]>([]);
     const [costModal, setCostModal] = useState<CostModalState | null>(null);
+    const [groupDialog, setGroupDialog] = useState<GroupDialog>({ open: false, groupName: '', groupRow: null, items: [], loading: false });
 
     const getActualQty = (rowId: string) => parseFloat(actualData?.[rowId]?.quantity || '0') || 0;
+
+    const handleGroupClick = async (row: LaborRow) => {
+        setGroupDialog({ open: true, groupName: row.laborOfferItemName || row.catalogName || '—', groupRow: row, items: [], loading: true });
+        try {
+            const children = await Api.requestSession<any[]>({ command: 'estimate/fetch_group_works', args: { parentGroupRowId: toId(row._id) } });
+            const mapped: LaborRow[] = (children ?? []).map(c => ({
+                _id: typeof c._id === 'object' && c._id.$oid ? c._id.$oid : String(c._id),
+                catalogName: '',
+                laborOfferItemName: c.laborOfferItemName || c.catalogName || '',
+                unitSymbol: c.itemMeasurementUnit || '',
+                quantity: c.quantity || 0,
+                subsectionName: row.subsectionName,
+                sectionName: row.sectionName,
+            }));
+            setGroupDialog(prev => ({ ...prev, items: mapped, loading: false }));
+        } catch {
+            setGroupDialog(prev => ({ ...prev, loading: false }));
+        }
+    };
 
     const estimateId = toId(estimate._id);
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
@@ -167,18 +195,26 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                             const actualQty = getActualQty(gid);
                                             return (
                                                 <Box key={gid} sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
-                                                    <Typography onClick={row.isGroupRow ? () => setCostModal({ row, value: '', spent: '' }) : undefined} sx={{ fontSize: '0.82rem', color: row.isGroupRow ? accentColor : '#333', textDecoration: row.isGroupRow ? 'underline' : 'none', textDecorationStyle: row.isGroupRow ? 'dotted' : undefined, textUnderlineOffset: row.isGroupRow ? '3px' : undefined, fontWeight: row.isGroupRow ? 600 : 400, cursor: row.isGroupRow ? 'pointer' : 'default' }}>
-                                                        {row.laborOfferItemName || row.catalogName || '—'}
-                                                    </Typography>
+                                                    {row.isGroupRow ? (
+                                                        <Typography onClick={() => handleGroupClick(row)} sx={{ fontSize: '0.82rem', color: accentColor, textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px', fontWeight: 600, cursor: 'pointer' }}>
+                                                            {row.laborOfferItemName || row.catalogName || '—'}
+                                                        </Typography>
+                                                    ) : (
+                                                        <Typography sx={{ fontSize: '0.82rem', color: '#333' }}>
+                                                            {row.laborOfferItemName || row.catalogName || '—'}
+                                                        </Typography>
+                                                    )}
                                                     <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
                                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
                                                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
                                                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                        <Tooltip title={t('Add new quantity')}>
-                                                            <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
-                                                                <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                        {!row.isGroupRow && (
+                                                            <Tooltip title={t('Add new quantity')}>
+                                                                <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
+                                                                    <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
                                                     </Box>
                                                 </Box>
                                             );
@@ -226,6 +262,48 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
                 <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
+            </DialogActions>
+        </Dialog>
+
+        {/* Group works dialog */}
+        <Dialog open={groupDialog.open} onClose={() => setGroupDialog(prev => ({ ...prev, open: false }))} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '70vh' } }}>
+            <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, pb: 1, fontSize: '1rem' }}>{groupDialog.groupName}</DialogTitle>
+            <DialogContent sx={{ pt: 1 }}>
+                {groupDialog.loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} sx={{ color: mainPrimaryColor }} /></Box>
+                ) : groupDialog.items.length === 0 ? (
+                    <Typography sx={{ color: '#aaa', py: 2 }}>{t('No works')}</Typography>
+                ) : (
+                    <Box>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.5, bgcolor: '#f0fbfc', borderRadius: 1 }}>
+                            {HEADERS.map((h, i) => (
+                                <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
+                            ))}
+                        </Box>
+                        {groupDialog.items.map((child, i) => {
+                            const cid = toId(child._id);
+                            const actualQty = getActualQty(cid);
+                            return (
+                                <Box key={cid} sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#333' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{child.unitSymbol || '—'}</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor, textAlign: 'center' }}>{child.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                        <Tooltip title={t('Add new quantity')}>
+                                            <IconButton size='small' onClick={() => { setGroupDialog(prev => ({ ...prev, open: false })); setCostModal({ row: child, value: '', spent: '' }); }} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: mainPrimaryColor } }}>
+                                                <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                )}
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button onClick={() => setGroupDialog(prev => ({ ...prev, open: false }))} sx={{ borderRadius: '20px', color: '#888' }}>{t('Close')}</Button>
             </DialogActions>
         </Dialog>
 
