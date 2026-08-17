@@ -34,7 +34,8 @@ const parseNum = (s: string) => parseInt(s.replace(/\s/g, ''), 10) || 0;
 function applyFormat(
     e: React.ChangeEvent<HTMLInputElement>,
     setter: React.Dispatch<React.SetStateAction<string>>,
-    elRef: React.RefObject<HTMLInputElement | null>
+    elRef: React.RefObject<HTMLInputElement | null>,
+    onUpdate?: (val: number) => void
 ) {
     const input = e.target;
     const raw = input.value.replace(/\s/g, '');
@@ -45,6 +46,7 @@ function applyFormat(
     const formatted = num > 0 ? fmtNum(num) : '';
 
     setter(formatted);
+    onUpdate?.(num);
 
     requestAnimationFrame(() => {
         const el = elRef.current;
@@ -100,7 +102,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Ավելացված արժեքի հարկ'}</Typography>
                             <TextField size='small' value={vatInput} inputRef={vatRef}
-                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setVatInput, vatRef)}
+                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setVatInput, vatRef, onVatActualChange)}
                                 onBlur={() => onVatActualChange(parseNum(vatInput))}
                                 inputProps={{ style: { textAlign: 'right', width: 140 } }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
@@ -111,7 +113,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Կլիմայական ազդեցության ծախսեր'}</Typography>
                             <TextField size='small' value={climateInput} inputRef={climateRef}
-                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setClimateInput, climateRef)}
+                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setClimateInput, climateRef, onClimateActualChange)}
                                 onBlur={() => onClimateActualChange(parseNum(climateInput))}
                                 inputProps={{ style: { textAlign: 'right', width: 140 } }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
@@ -122,7 +124,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Ժամանակավոր կառույցներ'}</Typography>
                             <TextField size='small' value={temporaryStructuresInput} inputRef={temporaryStructuresRef}
-                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setTemporaryStructuresInput, temporaryStructuresRef)}
+                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setTemporaryStructuresInput, temporaryStructuresRef, onTemporaryStructuresActualChange)}
                                 onBlur={() => onTemporaryStructuresActualChange(parseNum(temporaryStructuresInput))}
                                 inputProps={{ style: { textAlign: 'right', width: 140 } }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
@@ -133,7 +135,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Տրանսպորտային ծախսեր'}</Typography>
                             <TextField size='small' value={transportationCostsInput} inputRef={transportationCostsRef}
-                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setTransportationCostsInput, transportationCostsRef)}
+                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setTransportationCostsInput, transportationCostsRef, onTransportationCostsActualChange)}
                                 onBlur={() => onTransportationCostsActualChange(parseNum(transportationCostsInput))}
                                 inputProps={{ style: { textAlign: 'right', width: 140 } }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
@@ -144,7 +146,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Շահագործման հանձնման ծախսեր'}</Typography>
                             <TextField size='small' value={commissioningCostsInput} inputRef={commissioningCostsRef}
-                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setCommissioningCostsInput, commissioningCostsRef)}
+                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setCommissioningCostsInput, commissioningCostsRef, onCommissioningCostsActualChange)}
                                 onBlur={() => onCommissioningCostsActualChange(parseNum(commissioningCostsInput))}
                                 inputProps={{ style: { textAlign: 'right', width: 140 } }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
@@ -155,7 +157,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', flex: 1 }}>{'Պետական տուրքեր և վճարներ'}</Typography>
                             <TextField size='small' value={stateFeesInput} inputRef={stateFeesRef}
-                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setStateFeesInput, stateFeesRef)}
+                                onChange={e => applyFormat(e as React.ChangeEvent<HTMLInputElement>, setStateFeesInput, stateFeesRef, onStateFeesActualChange)}
                                 onBlur={() => onStateFeesActualChange(parseNum(stateFeesInput))}
                                 inputProps={{ style: { textAlign: 'right', width: 140 } }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }} placeholder='0' />
@@ -185,7 +187,19 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} variant='contained' sx={{ borderRadius: '20px', backgroundColor: ACCENT, '&:hover': { backgroundColor: '#008a79' } }}>
+                <Button
+                    onClick={() => {
+                        onVatActualChange(parseNum(vatInput));
+                        onClimateActualChange(parseNum(climateInput));
+                        onTemporaryStructuresActualChange(parseNum(temporaryStructuresInput));
+                        onTransportationCostsActualChange(parseNum(transportationCostsInput));
+                        onCommissioningCostsActualChange(parseNum(commissioningCostsInput));
+                        onStateFeesActualChange(parseNum(stateFeesInput));
+                        onClose();
+                    }}
+                    variant='contained'
+                    sx={{ borderRadius: '20px', backgroundColor: ACCENT, '&:hover': { backgroundColor: '#008a79' } }}
+                >
                     {t('Confirm')}
                 </Button>
             </DialogActions>
