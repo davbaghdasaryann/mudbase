@@ -167,7 +167,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                             const actualQty = getActualQty(gid);
                                             return (
                                                 <Box key={gid} sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.6, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: i % 2 === 0 ? '#fff' : '#fbfeff' }}>
-                                                    <Typography sx={{ fontSize: '0.82rem', color: row.isGroupRow ? accentColor : '#333', textDecoration: row.isGroupRow ? 'underline' : 'none', textDecorationStyle: row.isGroupRow ? 'dotted' : undefined, textUnderlineOffset: row.isGroupRow ? '3px' : undefined, fontWeight: row.isGroupRow ? 600 : 400 }}>
+                                                    <Typography onClick={row.isGroupRow ? () => setCostModal({ row, value: '', spent: '' }) : undefined} sx={{ fontSize: '0.82rem', color: row.isGroupRow ? accentColor : '#333', textDecoration: row.isGroupRow ? 'underline' : 'none', textDecorationStyle: row.isGroupRow ? 'dotted' : undefined, textUnderlineOffset: row.isGroupRow ? '3px' : undefined, fontWeight: row.isGroupRow ? 600 : 400, cursor: row.isGroupRow ? 'pointer' : 'default' }}>
                                                         {row.laborOfferItemName || row.catalogName || '—'}
                                                     </Typography>
                                                     <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
