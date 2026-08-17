@@ -503,15 +503,15 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                         : sectionItems.map(row => renderItemRow(row, ++itemCounter, 20))
                                     }
 
-                                    <tr style={{ backgroundColor: '#f9feff' }}>
-                                        <td colSpan={5} style={tdStyle({ fontWeight: 600, textAlign: 'right', color: '#6b7280', fontSize: '0.78rem', paddingRight: 12 })}>{t('Subtotal')}</td>
-                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
-                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
-                                        <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({ borderLeft: GSEP })}></td>
-                                        <td style={tdStyle({})}></td>
-                                        <td style={tdStyle({})}></td>
+                                    <tr key={`sectotal-${section._id}`} style={{ backgroundColor: '#eef9fb' }}>
+                                        <td colSpan={5} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{sectionIdx + 1}. Ընդամենը</td>
+                                        <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
+                                        <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                        <td style={tdStyle({ borderLeft: GSEP, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
+                                        <td style={tdStyle({ borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}></td>
                                     </tr>
                                 </>
                             );
