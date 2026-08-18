@@ -732,20 +732,20 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const { salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol } = breakdownData;
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
-                    const rows: { label: string; unitCost: number }[] = [
-                        { label: t('Labor Cost'), unitCost: salaryTotal / q },
-                        { label: 'Volume / Spent', unitCost: volumeTotal / q },
-                        { label: t('Materials Cost'), unitCost: matActTotal / q },
-                    ].filter(r => r.unitCost > 0);
+                    const rows: { label: string; total: number }[] = [
+                        { label: t('Labor Cost'), total: salaryTotal },
+                        { label: 'Volume / Spent', total: volumeTotal },
+                        { label: t('Materials Cost'), total: matActTotal },
+                    ].filter(r => r.total > 0);
                     return (
                         <Box>
                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1 }}>
-                                {t('Cost Breakdown')} / {unitSymbol}
+                                {t('Cost Breakdown')}
                             </Typography>
                             {rows.map(r => (
                                 <Box key={r.label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.6 }}>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>{r.label}</Typography>
-                                    <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, whiteSpace: 'nowrap' }}>{fmtAMD(r.unitCost)}</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, whiteSpace: 'nowrap' }}>{fmtAMD(r.total)}</Typography>
                                 </Box>
                             ))}
                             <Divider sx={{ my: 1 }} />
