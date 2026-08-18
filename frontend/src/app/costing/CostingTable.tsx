@@ -351,10 +351,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
         const matActTotal = mats.reduce((s, m) => {
             const matId = toId(m.materialItemId);
-            const pe = (pahestEntries ?? []).find(p => p.materialItemId === matId && p.estimatedLaborId === rowId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId && !p.estimatedLaborId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId);
-            return s + (pe ? pe.history.reduce((ss, r2) => ss + r2.quantity * r2.costPerUnit, 0) : 0);
+            const matchingPe = (pahestEntries ?? []).filter(p => p.materialItemId === matId);
+            return s + matchingPe.reduce((ss, p) => ss + p.history.reduce((sss, r2) => sss + r2.quantity * r2.costPerUnit, 0), 0);
         }, 0);
         const a = actualData[rowId];
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
@@ -367,10 +365,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
         const matActTotal = mats.reduce((s, m) => {
             const matId = toId(m.materialItemId);
-            const pe = (pahestEntries ?? []).find(p => p.materialItemId === matId && p.estimatedLaborId === rowId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId && !p.estimatedLaborId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId);
-            return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
+            const matchingPe = (pahestEntries ?? []).filter(p => p.materialItemId === matId);
+            return s + matchingPe.reduce((ss, p) => ss + p.history.reduce((sss, r) => sss + r.quantity * r.costPerUnit, 0), 0);
         }, 0);
         const a = actualData[rowId];
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
