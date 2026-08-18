@@ -189,7 +189,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         const withVolume = rws.filter(r => {
             const laborId = toId(r._id);
             const hasVolume = parseFloat(actualData?.[laborId]?.quantity || '0') > 0;
-            const hasPahest = pahestEntries.some(e => e.quantity > 0 && e.estimatedLaborId === laborId);
+            const laborAllowedMats = laborMatIds.get(laborId) ?? new Set<string>();
+            const hasPahest = pahestEntries.some(e => e.quantity > 0 && laborAllowedMats.has(e.materialItemId));
             return hasVolume || hasPahest;
         });
         return (
@@ -297,12 +298,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                     <Box sx={{ width: '50%', overflowY: 'auto', p: 3 }}>
                         {(() => {
                             const allowedMatIds = selectedRow ? (laborMatIds.get(toId(selectedRow._id)) ?? new Set<string>()) : new Set<string>();
-                            const selLaborId = selectedRow ? toId(selectedRow._id) : '';
-const visiblePahest = pahestEntries.filter(e => {
-                                if (e.quantity <= 0 || !selectedRow) return false;
-                                if (e.estimatedLaborId) return e.estimatedLaborId === selLaborId;
-                                return allowedMatIds.has(e.materialItemId);
-                            });
+                            const visiblePahest = pahestEntries.filter(e => e.quantity > 0 && allowedMatIds.has(e.materialItemId));
                             const visibleAyl = aylEntries?.filter(e => e.mutq > 0) ?? [];
                             if (visiblePahest.length === 0 && visibleAyl.length === 0) {
                                 return (
