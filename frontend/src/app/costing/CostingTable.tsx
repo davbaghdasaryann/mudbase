@@ -346,32 +346,33 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     const totalCols = BASE_COLS.length;
     let itemCounter = 0;
 
+    // Computes material actual total for a row, handling both new entries (laborItemId set) and
+    // old entries (no laborItemId, look up via pahest estimatedLaborId)
+    const calcMatActTotal = (rowId: string) => (costHistory ?? []).filter(e => {
+        if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+        if (e.laborItemId) return e.laborItemId === rowId;
+        if (!e.materialItemId) return false;
+        const pe = (pahestEntries ?? []).find(p => p.materialItemId === e.materialItemId);
+        return pe?.estimatedLaborId ? pe.estimatedLaborId === rowId : false;
+    }).reduce((s, e) => s + e.total, 0);
+
     const getRowActTotal = (row: LaborRow) => {
         const rowId = toId(row._id);
-        const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
-        const matActTotal = mats.reduce((s, m) => {
-            const matId = toId(m.materialItemId);
-            const matchingPe = (pahestEntries ?? []).filter(p => p.materialItemId === matId);
-            return s + matchingPe.reduce((ss, p) => ss + p.history.reduce((sss, r2) => sss + r2.quantity * r2.costPerUnit, 0), 0);
-        }, 0);
         const a = actualData[rowId];
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
-        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
+        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const matActTotal = calcMatActTotal(rowId);
         return { actTotal: volumeTotal + salaryTotal + matActTotal, hasData: !!(a || salaryTotal > 0 || matActTotal > 0) };
     };
 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
-        const matActTotal = mats.reduce((s, m) => {
-            const matId = toId(m.materialItemId);
-            const matchingPe = (pahestEntries ?? []).filter(p => p.materialItemId === matId);
-            return s + matchingPe.reduce((ss, p) => ss + p.history.reduce((sss, r) => sss + r.quantity * r.costPerUnit, 0), 0);
-        }, 0);
         const a = actualData[rowId];
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
-        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
+        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const matActTotal = calcMatActTotal(rowId);
         const actTotal = volumeTotal + salaryTotal + matActTotal;
         const hasData = !!(a || salaryTotal > 0 || matActTotal > 0);
         const estQty = Number(row.quantity ?? 0);
@@ -732,20 +733,20 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const { salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol } = breakdownData;
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
-                    const rows: { label: string; total: number }[] = [
-                        { label: t('Labor Cost'), total: salaryTotal },
-                        { label: 'Volume / Spent', total: volumeTotal },
-                        { label: t('Materials Cost'), total: matActTotal },
-                    ].filter(r => r.total > 0);
+                    const rows: { label: string; val: number }[] = [
+                        { label: t('Labor Cost'), val: salaryTotal / q },
+                        { label: 'Volume / Spent', val: volumeTotal / q },
+                        { label: t('Materials Cost'), val: matActTotal / q },
+                    ].filter(r => r.val > 0);
                     return (
                         <Box>
                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1 }}>
-                                {t('Cost Breakdown')}
+                                {t('Cost Breakdown')} / {unitSymbol}
                             </Typography>
                             {rows.map(r => (
                                 <Box key={r.label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.6 }}>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>{r.label}</Typography>
-                                    <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, whiteSpace: 'nowrap' }}>{fmtAMD(r.total)}</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, whiteSpace: 'nowrap' }}>{fmtAMD(r.val)}</Typography>
                                 </Box>
                             ))}
                             <Divider sx={{ my: 1 }} />
