@@ -1200,13 +1200,13 @@ export default function CostingPage() {
                         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Quick actions')}</Typography>
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
                             {[
+                                { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 30, color: '#7b1fa2' }} />, label: 'Ընդհանուր նախահաշիվ', onClick: handleEstimationOpen, accent: '#7b1fa2', hoverBg: 'rgba(123,31,162,0.06)' },
                                 { icon: <CategoryOutlinedIcon sx={{ fontSize: 30, color: mainPrimaryColor }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
                                 { icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 30, color: '#1565c0' }} />, label: t('Salary Cost Recording'), onClick: () => setSalaryOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
                                 { icon: <StraightenIcon sx={{ fontSize: 30, color: '#E65100' }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: '#E65100', hoverBg: 'rgba(230,81,0,0.06)' },
                                 { icon: <BuildIcon sx={{ fontSize: 30, color: '#4caf50' }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#4caf50', hoverBg: 'rgba(76,175,80,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 30, color: '#e53935' }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a' }} />, label: 'Վերադիր ծախսեր', onClick: () => {}, accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
-                                { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 30, color: '#7b1fa2' }} />, label: 'Ընդհանուր նախահաշիվ', onClick: handleEstimationOpen, accent: '#7b1fa2', hoverBg: 'rgba(123,31,162,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 140, height: 108, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg } }}>
                                     {icon}
