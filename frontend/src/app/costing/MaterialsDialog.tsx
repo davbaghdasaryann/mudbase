@@ -292,7 +292,12 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                     <Box sx={{ width: '50%', overflowY: 'auto', p: 3 }}>
                         {(() => {
                             const allowedMatIds = selectedRow ? (laborMatIds.get(toId(selectedRow._id)) ?? new Set<string>()) : new Set<string>();
-                            const visiblePahest = pahestEntries.filter(e => e.quantity > 0 && allowedMatIds.has(e.materialItemId));
+                            const selLaborId = selectedRow ? toId(selectedRow._id) : '';
+                            const visiblePahest = pahestEntries.filter(e => {
+                                if (e.quantity <= 0 || !selectedRow) return false;
+                                if (e.estimatedLaborId) return e.estimatedLaborId === selLaborId;
+                                return allowedMatIds.has(e.materialItemId);
+                            });
                             const visibleAyl = aylEntries?.filter(e => e.mutq > 0) ?? [];
                             if (visiblePahest.length === 0 && visibleAyl.length === 0) {
                                 return (
