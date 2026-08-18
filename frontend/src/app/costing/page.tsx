@@ -80,6 +80,7 @@ export interface CostHistoryEntry {
     materialRows?: SectionRow[];
     laborItemId?: string;
     workVolume?: number;
+    materialItemId?: string;
 }
 
 interface SnapshotLaborRow {
@@ -300,13 +301,10 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     const { t } = useTranslation();
     const chartHeight = Math.max(100, height - 72);
 
-    const materialsTotal = pahestEntries.reduce(
-        (sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0),
-        0
-    );
+    const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
 
     const laborTotal = costHistory
-        .filter(e => !e.paymentMethod?.startsWith('pahest_'))
+        .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum')
         .reduce((s, e) => s + e.total, 0);
 
     const data = [
@@ -398,8 +396,8 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     })();
 
     const actData = (() => {
-        const materialsTotal = pahestEntries.reduce((s, e) => s + e.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0), 0);
-        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
+        const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const otherTotal = (aylEntries ?? []).reduce((s, e) => s + (parseFloat(e.tsakh || '0') || 0) * (parseFloat(e.costPerUnit || '0') || 0), 0) + extraActualCosts;
         const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
@@ -825,10 +823,12 @@ export default function CostingPage() {
         isLoadingRef.current = true;
         setSelected(rec);
         setFullEstimate(null);
-        setCostHistory((rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
+        const ch = (rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) }));
+        setCostHistory(ch);
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
             ...e,
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
+            costedQuantity: ch.filter(c => c.paymentMethod === 'nyuth_tsakhsagrum' && c.materialItemId === e.materialItemId).reduce((s, c) => s + c.quantity, 0),
         })));
         setAylEntries((rec.aylEntries ?? []).map(e => ({
             ...e,
@@ -1059,12 +1059,19 @@ export default function CostingPage() {
         setCostHistory(prev => [entry, ...prev]);
     };
 
-    const handlePahestCostedUpdate = (materialItemId: string, qty: number) => {
-        setPahestEntries(prev => prev.map(e =>
-            e.materialItemId === materialItemId
-                ? { ...e, costedQuantity: (e.costedQuantity ?? 0) + qty }
-                : e
-        ));
+    const handlePahestCostedUpdate = (materialItemId: string, qty: number, costPerUnit: number = 0, estimatedLaborId?: string) => {
+        setPahestEntries(prev => prev.map(e => {
+            if (e.materialItemId !== materialItemId) return e;
+            const laborMatch = estimatedLaborId
+                ? (e.estimatedLaborId === estimatedLaborId || !e.estimatedLaborId)
+                : !e.estimatedLaborId;
+            if (!laborMatch) return e;
+            return {
+                ...e,
+                costedQuantity: (e.costedQuantity ?? 0) + qty,
+                history: [...e.history, { quantity: qty, costPerUnit, addedAt: new Date(), attributedLaborId: estimatedLaborId || undefined }],
+            };
+        }));
         setMaterialsOpen(false);
         setTab('pahest');
     };
@@ -1228,8 +1235,8 @@ export default function CostingPage() {
                             </Box>
                         </Box>
                         {(() => {
-                            const actualMaterials = pahestEntries.reduce((sum, e) => sum + e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0), 0);
-                            const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
+                            const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+                            const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                             const actualTotal = actualMaterials + actualLabor;
                             const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
                             const completedRowIds = new Set(estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
@@ -1399,7 +1406,25 @@ export default function CostingPage() {
                                             <TableCell align='center' sx={{ color: '#888', fontSize: '0.82rem' }}>{entry.addedAt.toLocaleDateString()}</TableCell>
                                             <TableCell padding='none'>
                                                 <Tooltip title={t('Remove')}>
-                                                    <IconButton size='small' onClick={() => setCostHistory(prev => prev.filter(e => e.id !== entry.id))} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                                    <IconButton size='small' onClick={() => {
+                                                        if (entry.paymentMethod === 'nyuth_tsakhsagrum' && entry.materialItemId) {
+                                                            setPahestEntries(prev => prev.map(e =>
+                                                                e.materialItemId === entry.materialItemId
+                                                                    ? { ...e, costedQuantity: Math.max(0, (e.costedQuantity ?? 0) - entry.quantity) }
+                                                                    : e
+                                                            ));
+                                                        } else if (entry.laborItemId && !entry.paymentMethod?.startsWith('pahest_')) {
+                                                            const remaining = costHistory.filter(e => e.id !== entry.id && e.laborItemId === entry.laborItemId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum');
+                                                            const prev = remaining.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime())[0];
+                                                            setActualData(ad => {
+                                                                if (prev) return { ...ad, [entry.laborItemId!]: { ...(ad[entry.laborItemId!] ?? {}), quantity: String(prev.quantity), spent: String(prev.total) } };
+                                                                const next = { ...ad };
+                                                                delete next[entry.laborItemId!];
+                                                                return next;
+                                                            });
+                                                        }
+                                                        setCostHistory(prev => prev.filter(e => e.id !== entry.id));
+                                                    }} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
                                                         <DeleteOutlineIcon fontSize='small' />
                                                     </IconButton>
                                                 </Tooltip>
