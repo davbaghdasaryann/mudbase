@@ -186,7 +186,12 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const onPage2 = !!selectedRow;
 
     const renderWorkSections = (secs: Section[], subs: Subsection[], rws: LaborRow[], accentColor = mainPrimaryColor, subBg = '#f7fdfe') => {
-        const withVolume = rws.filter(r => parseFloat(actualData?.[toId(r._id)]?.quantity || '0') > 0);
+        const withVolume = rws.filter(r => {
+            const laborId = toId(r._id);
+            const hasVolume = parseFloat(actualData?.[laborId]?.quantity || '0') > 0;
+            const hasPahest = pahestEntries.some(e => e.quantity > 0 && e.estimatedLaborId === laborId);
+            return hasVolume || hasPahest;
+        });
         return (
         <>
         {secs.map(sec => {
@@ -293,7 +298,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         {(() => {
                             const allowedMatIds = selectedRow ? (laborMatIds.get(toId(selectedRow._id)) ?? new Set<string>()) : new Set<string>();
                             const selLaborId = selectedRow ? toId(selectedRow._id) : '';
-                            const visiblePahest = pahestEntries.filter(e => {
+const visiblePahest = pahestEntries.filter(e => {
                                 if (e.quantity <= 0 || !selectedRow) return false;
                                 if (e.estimatedLaborId) return e.estimatedLaborId === selLaborId;
                                 return allowedMatIds.has(e.materialItemId);
