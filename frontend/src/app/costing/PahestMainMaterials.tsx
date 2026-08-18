@@ -173,7 +173,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     });
 
     const selectGroupMaterial = (m: GroupChildMaterial) => {
-        setSelected({ materialItemId: m.materialItemId, estimatedLaborIds: [], name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit });
+        setSelected({ materialItemId: m.materialItemId, estimatedLaborId: '', laborName: '', name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit });
         setQtyInput('');
     };
 
@@ -535,7 +535,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                                 </Typography>
                                             </Box>
                                             <Tooltip title={t('Remove')}>
-                                                <IconButton size='small' onClick={() => deleteHistoryRecord(historyEntry.materialItemId, i)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3, alignSelf: 'flex-start' }}>
+                                                <IconButton size='small' onClick={() => deleteHistoryRecord(historyEntry.materialItemId, historyEntry.estimatedLaborId, i)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3, alignSelf: 'flex-start' }}>
                                                     <DeleteOutlineIcon sx={{ fontSize: 16 }} />
                                                 </IconButton>
                                             </Tooltip>
