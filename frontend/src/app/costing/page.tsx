@@ -823,7 +823,15 @@ export default function CostingPage() {
         isLoadingRef.current = true;
         setSelected(rec);
         setFullEstimate(null);
-        const ch = (rec.costHistory ?? []).map(e => ({ ...e, addedAt: new Date(e.addedAt) }));
+        const rawPahest = (rec.pahestEntries ?? []);
+        const ch = (rec.costHistory ?? []).map(e => {
+            // Self-heal: backfill laborItemId on old nyuth_tsakhsagrum entries that predate the field
+            if (e.paymentMethod === 'nyuth_tsakhsagrum' && !e.laborItemId && e.materialItemId) {
+                const pe = rawPahest.find(p => p.materialItemId === e.materialItemId);
+                if (pe?.estimatedLaborId) return { ...e, addedAt: new Date(e.addedAt), laborItemId: pe.estimatedLaborId };
+            }
+            return { ...e, addedAt: new Date(e.addedAt) };
+        });
         setCostHistory(ch);
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
             ...e,
