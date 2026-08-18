@@ -1251,6 +1251,7 @@ export default function CostingPage() {
                                 </Box>
                             );
                         })()}
+                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1, mt: 1 }}>{t('Other Expenses')}</Typography>
                         {(() => {
                             const base = selectedEstimate.totalCost ?? 0;
                             const expenses = (selectedEstimate.otherExpenses ?? []).filter(exp => {
