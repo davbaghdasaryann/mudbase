@@ -350,8 +350,10 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
         const matActTotal = mats.reduce((s, m) => {
-            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && p.estimatedLaborId === rowId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && !p.estimatedLaborId);
+            const matId = toId(m.materialItemId);
+            const pe = (pahestEntries ?? []).find(p => p.materialItemId === matId && p.estimatedLaborId === rowId)
+                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId && !p.estimatedLaborId)
+                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId);
             return s + (pe ? pe.history.reduce((ss, r2) => ss + r2.quantity * r2.costPerUnit, 0) : 0);
         }, 0);
         const a = actualData[rowId];
@@ -364,8 +366,10 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
         const matActTotal = mats.reduce((s, m) => {
-            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && p.estimatedLaborId === rowId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && !p.estimatedLaborId);
+            const matId = toId(m.materialItemId);
+            const pe = (pahestEntries ?? []).find(p => p.materialItemId === matId && p.estimatedLaborId === rowId)
+                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId && !p.estimatedLaborId)
+                ?? (pahestEntries ?? []).find(p => p.materialItemId === matId);
             return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
         }, 0);
         const a = actualData[rowId];
