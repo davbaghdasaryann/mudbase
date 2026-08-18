@@ -834,7 +834,18 @@ export default function CostingPage() {
             ...e,
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
         })));
-        setActualData(rec.actualData ?? {});
+        const baseActual = rec.actualData ?? {};
+        // Self-heal: for each labor row that has cost history, derive quantity/spent from the most recent entry
+        const laborEntries = ch.filter(c => c.laborItemId && !c.paymentMethod?.startsWith('pahest_') && c.paymentMethod !== 'nyuth_tsakhsagrum');
+        const healedActual = { ...baseActual };
+        const laborIds = [...new Set(laborEntries.map(c => c.laborItemId!))];
+        for (const lid of laborIds) {
+            const entries = laborEntries.filter(c => c.laborItemId === lid).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+            if (entries.length > 0) {
+                healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(entries[0].quantity), spent: String(entries[0].total) };
+            }
+        }
+        setActualData(healedActual);
         setUnforeseenEstimate(null);
         setSmallScaleEstimate(null);
         unforeseenCostingIdRef.current = rec.unforeseenCostingId ?? '';
