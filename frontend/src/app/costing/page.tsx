@@ -422,7 +422,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
                             </radialGradient>
                         ))}
                     </defs>
-                    <Pie data={data} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={2} dataKey='value' strokeWidth={0}>
+                    <Pie data={data} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={2} dataKey='value' strokeWidth={0} minAngle={6}>
                         {data.map(entry => {
                             const seg = COST_SEGMENTS.find(s => s.key === entry.key);
                             return <Cell key={entry.key} fill={seg ? `url(#${gradPrefix}-${seg.key})` : '#ccc'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
@@ -445,13 +445,14 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     );
 
     const legend = (data: typeof estData) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 0.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
             {data.map(d => {
                 const seg = COST_SEGMENTS.find(s => s.key === d.key);
                 return (
                     <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: seg?.dot ?? '#ccc', flexShrink: 0 }} />
                         <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>{d.name} {d.pct}%</Typography>
+                        <Typography variant='caption' sx={{ color: '#aaa', fontSize: '0.65rem', ml: 'auto' }}>{Math.round(d.value).toLocaleString()}</Typography>
                     </Box>
                 );
             })}
