@@ -1067,7 +1067,13 @@ export default function CostingPage() {
     };
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
-        setCostHistory(prev => [entry, ...prev]);
+        setCostHistory(prev => {
+            // Labor entries (no paymentMethod) replace existing entries for the same row so re-registering volume doesn't double-count
+            if (!entry.paymentMethod && entry.laborItemId) {
+                return [entry, ...prev.filter(e => !(e.laborItemId === entry.laborItemId && !e.paymentMethod))];
+            }
+            return [entry, ...prev];
+        });
     };
 
     const handlePahestCostedUpdate = (materialItemId: string, qty: number, costPerUnit: number = 0, estimatedLaborId?: string) => {
