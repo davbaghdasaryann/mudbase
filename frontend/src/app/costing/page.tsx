@@ -842,7 +842,7 @@ export default function CostingPage() {
         for (const lid of laborIds) {
             const entries = laborEntries.filter(c => c.laborItemId === lid).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
             if (entries.length > 0) {
-                healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(entries[0].quantity), spent: String(entries[0].total) };
+                healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(entries[0].quantity) };
             }
         }
         setActualData(healedActual);
@@ -1428,7 +1428,7 @@ export default function CostingPage() {
                                                             const remaining = costHistory.filter(e => e.id !== entry.id && e.laborItemId === entry.laborItemId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum');
                                                             const prev = remaining.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime())[0];
                                                             setActualData(ad => {
-                                                                if (prev) return { ...ad, [entry.laborItemId!]: { ...(ad[entry.laborItemId!] ?? {}), quantity: String(prev.quantity), spent: String(prev.total) } };
+                                                                if (prev) return { ...ad, [entry.laborItemId!]: { ...(ad[entry.laborItemId!] ?? {}), quantity: String(prev.quantity) } };
                                                                 const next = { ...ad };
                                                                 delete next[entry.laborItemId!];
                                                                 return next;
