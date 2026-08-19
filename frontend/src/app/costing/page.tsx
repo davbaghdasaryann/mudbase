@@ -1103,7 +1103,6 @@ export default function CostingPage() {
             };
         }));
         setMaterialsOpen(false);
-        setTab('pahest');
     };
 
     const handleAylCostedUpdate = (id: string, qty: number) => {
@@ -1113,7 +1112,6 @@ export default function CostingPage() {
                 : e
         ));
         setMaterialsOpen(false);
-        setTab('pahest');
     };
 
     const openEditModal = (entry: CostHistoryEntry) => {
