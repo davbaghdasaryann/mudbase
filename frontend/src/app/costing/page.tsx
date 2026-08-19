@@ -1102,7 +1102,6 @@ export default function CostingPage() {
                 history: [...e.history, { quantity: qty, costPerUnit, addedAt: new Date(), attributedLaborId: estimatedLaborId || undefined }],
             };
         }));
-        setMaterialsOpen(false);
     };
 
     const handleAylCostedUpdate = (id: string, qty: number) => {
@@ -1111,7 +1110,6 @@ export default function CostingPage() {
                 ? { ...e, tsakh: String(Math.round((parseFloat(e.tsakh || '0') + qty) * 1000) / 1000) }
                 : e
         ));
-        setMaterialsOpen(false);
     };
 
     const openEditModal = (entry: CostHistoryEntry) => {
