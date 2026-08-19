@@ -237,7 +237,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
         }).reduce((s, e) => s + e.total, 0);
         const actTotal = salTotal + matActTotal;
-        const hasData  = !!(a || salTotal > 0 || matActTotal > 0);
+        const hasData  = actQty > 0 && actTotal > 0;
         return { actQty, actTotal, hasData };
     };
 
