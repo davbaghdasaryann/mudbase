@@ -76,6 +76,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const [rows, setRows] = useState<LaborRow[]>([]);
     const [ufRows, setUfRows] = useState<LaborRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<LaborRow | null>(null);
+    const [parentGroupRow, setParentGroupRow] = useState<LaborRow | null>(null);
     const [type, setType] = useState<SalaryType>('gorcarqayin');
     const [val1, setVal1] = useState('');
     const [val2, setVal2] = useState('');
@@ -112,8 +113,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     };
 
     useEffect(() => {
-        if (!open) { setSelectedRow(null); return; }
-        setSelectedRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume('');
+        if (!open) { setSelectedRow(null); setParentGroupRow(null); return; }
+        setSelectedRow(null); setParentGroupRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume('');
         const ufId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
         if (estimateSnapshot) {
             setRows(estimateSnapshot.laborRows);
@@ -146,7 +147,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     }, [open, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot]);
 
 
-    const handleClose = () => { setSelectedRow(null); onClose(); };
+    const handleClose = () => { setSelectedRow(null); setParentGroupRow(null); onClose(); };
     const n1 = parseFloat(val1.replace(',', '.')) || 0;
     const n2 = parseFloat(val2.replace(',', '.')) || 0;
     const computedTotal = n1 * n2;
@@ -157,11 +158,12 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
 
     const handleAdd = () => {
         if (!canAdd || !selectedRow) return;
+        const billingRow = parentGroupRow ?? selectedRow;
         const entry: CostHistoryEntry = {
             id: String(Date.now() + Math.random()),
-            workName: selectedRow.laborOfferItemName || selectedRow.catalogName || '—',
-            laborItemId: selectedRow._id,
-            unit: selectedRow.unitSymbol || '',
+            workName: billingRow.laborOfferItemName || billingRow.catalogName || '—',
+            laborItemId: billingRow._id,
+            unit: billingRow.unitSymbol || '',
             quantity: n1,
             unitPrice: n2,
             total: computedTotal,
@@ -184,8 +186,9 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
         : allUfRows;
     const sections = Array.from(new Set(filteredRows.map(r => r.sectionName || '—')));
 
-    const selectedCovered = selectedRow ? getSalaryCoveredQty(selectedRow._id) : 0;
-    const selectedPlanned = selectedRow ? parseFloat(actualData?.[selectedRow._id]?.quantity || '0') || 0 : 0;
+    const billingRow = parentGroupRow ?? selectedRow;
+    const selectedCovered = billingRow ? getSalaryCoveredQty(billingRow._id) : 0;
+    const selectedPlanned = billingRow ? parseFloat(actualData?.[billingRow._id]?.quantity || '0') || 0 : 0;
     const selectedRemaining = Math.max(0, selectedPlanned - selectedCovered);
 
     return (
@@ -195,7 +198,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1, flexShrink: 0 }}>
                 {selectedRow ? (
                     <>
-                        <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
+                        <IconButton size='small' onClick={() => { setSelectedRow(null); setParentGroupRow(null); }} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
                         <Box sx={{ flex: 1, overflow: 'hidden' }}>
@@ -254,7 +257,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const isExpanded = row.isGroupRow && expandedGroups.has(gid);
                                                     const isLoadingG = row.isGroupRow && loadingGroups.has(gid);
                                                     const children = row.isGroupRow ? (groupChildren[gid] ?? []) : [];
-                                                    const selectRow = (r: LaborRow) => { setSelectedRow(r); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); };
+                                                    const selectRow = (r: LaborRow, parent?: LaborRow) => { setSelectedRow(r); setParentGroupRow(parent ?? null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); };
                                                     return (
                                                         <React.Fragment key={gid}>
                                                         <Box
@@ -284,28 +287,18 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 </IconButton>
                                                             )}
                                                         </Box>
-                                                        {isExpanded && children.map((child, ci) => {
-                                                            const cid = toId(child._id);
-                                                            const cPlanned = parseFloat(actualData?.[cid]?.quantity || '0') || 0;
-                                                            const cCovered = getSalaryCoveredQty(cid);
-                                                            const cRemaining = Math.max(0, cPlanned - cCovered);
-                                                            return (
-                                                                <Box key={cid} onClick={() => selectRow(child)}
-                                                                    sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22`, cursor: 'pointer', '&:hover': { bgcolor: '#eef9fb' } }}>
-                                                                    <Box sx={{ flex: 1 }}>
-                                                                        <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
-                                                                        <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                                            {cPlanned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {cPlanned.toLocaleString()} {child.unitSymbol}</Typography>}
-                                                                            {cCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {cCovered.toLocaleString()} {child.unitSymbol}</Typography>}
-                                                                            {cPlanned > 0 && cRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {cRemaining.toLocaleString()} {child.unitSymbol}</Typography>}
-                                                                        </Box>
-                                                                    </Box>
-                                                                    <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(child); }}>
-                                                                        <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-                                                                    </IconButton>
+                                                        {isExpanded && children.map((child, ci) => (
+                                                            <Box key={toId(child._id)} onClick={() => selectRow(child, row)}
+                                                                sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22`, cursor: 'pointer', '&:hover': { bgcolor: '#eef9fb' } }}>
+                                                                <Box sx={{ flex: 1 }}>
+                                                                    <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
+                                                                    {child.quantity > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
                                                                 </Box>
-                                                            );
-                                                        })}
+                                                                <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(child, row); }}>
+                                                                    <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                                </IconButton>
+                                                            </Box>
+                                                        ))}
                                                         </React.Fragment>
                                                     );
                                                 })}
