@@ -533,7 +533,7 @@ html += `
                         <td rowspan="${rowspan}" style="text-align:left;">${labor.laborOfferItemName}</td>
                         <td rowspan="${rowspan}">${labor.measurementUnitMongoId}</td>
                         <td rowspan="${rowspan}">${fmt(labor.quantity)}</td>
-                        <td rowspan="${rowspan}">${isGroupRow ? formatEstimateCurrency(groupLaborPrice) : formatEstimateCurrency(labor.changableAveragePrice)}</td>
+                        <td rowspan="${rowspan}">${formatEstimateCurrency(isGroupRow ? (labor.quantity > 0 ? totalCostDisplay / labor.quantity : totalCostDisplay) : labor.changableAveragePrice)}</td>
                         <td rowspan="${rowspan}">${labor.laborHours}</td>
                         `;
 
@@ -1126,7 +1126,7 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
                 dataCell(ws, startRow, 3,  labor.laborOfferItemName || '', { align: 'left' });
                 dataCell(ws, startRow, 4,  labor.measurementUnitMongoId || '', {});
                 dataCell(ws, startRow, 5,  labor.quantity, { num: true });
-                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(groupLaborPriceXl) : Math.round(labor.changableAveragePrice), { num: true });
+                dataCell(ws, startRow, 6,  isGroupRowXl ? Math.round(labor.quantity > 0 ? totalCost / labor.quantity : totalCost) : Math.round(labor.changableAveragePrice), { num: true });
                 dataCell(ws, startRow, 7,  labor.laborHours || '', {});
                 dataCell(ws, startRow, 15, Math.round(unitCost),  { num: true });
                 dataCell(ws, startRow, 16, Math.round(totalCost), { num: true, bold: true });
