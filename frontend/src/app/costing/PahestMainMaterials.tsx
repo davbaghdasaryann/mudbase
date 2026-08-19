@@ -11,8 +11,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import HistoryIcon from '@mui/icons-material/History';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
@@ -256,25 +255,33 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         }
     };
 
-    const filtered = (() => {
-        const base = materials.filter(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()));
-        const seen = new Map<string, MaterialOption>();
-        for (const m of base) {
-            if (!seen.has(m.materialItemId)) {
-                seen.set(m.materialItemId, { ...m, estimatedLaborId: '', laborName: '' });
+    // Merge standalone + group materials into one flat deduplicated list with source labels
+    const allMergedMaterials = (() => {
+        const q = search.toLowerCase();
+        const map = new Map<string, { mat: MaterialOption; sources: string[] }>();
+        const add = (mat: MaterialOption, source: string) => {
+            const ex = map.get(mat.materialItemId);
+            if (ex) {
+                if (source && !ex.sources.includes(source)) ex.sources.push(source);
+                ex.mat = { ...ex.mat, estimateQuantity: ex.mat.estimateQuantity + mat.estimateQuantity };
             } else {
-                const ex = seen.get(m.materialItemId)!;
-                seen.set(m.materialItemId, { ...ex, estimateQuantity: ex.estimateQuantity + m.estimateQuantity });
+                map.set(mat.materialItemId, { mat: { ...mat, estimatedLaborId: '', laborName: '' }, sources: source ? [source] : [] });
+            }
+        };
+        for (const m of materials) {
+            if (!q || (m.name + m.fullCode).toLowerCase().includes(q)) add(m, m.laborName);
+        }
+        for (const g of groupData) {
+            for (const c of g.children) {
+                for (const m of c.materials) {
+                    if (!q || (m.name + m.fullCode).toLowerCase().includes(q)) {
+                        add({ materialItemId: m.materialItemId, estimatedLaborId: '', laborName: '', name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit }, g.groupName || 'Group');
+                    }
+                }
             }
         }
-        return [...seen.values()];
+        return [...map.values()];
     })();
-    const filteredGroupData = search
-        ? groupData.map(g => ({
-            ...g,
-            children: g.children.filter(c => c.materials.some(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()))),
-        })).filter(g => g.children.length > 0)
-        : groupData;
 
     return (
         <Box>
@@ -361,74 +368,39 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                             </Box>
                         ) : (
                             <>
-                                {/* Standalone materials */}
-                                {filtered.map(m => (
+                                {allMergedMaterials.map(({ mat: m, sources }) => (
                                     <Box
                                         key={m.materialItemId}
                                         onClick={() => { setSelected(m); setQtyInput(''); }}
                                         sx={{
-                                            px: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
+                                            px: 2, py: 0.9, fontSize: '0.85rem', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                             borderBottom: '1px solid #f0fbfc',
-                                            backgroundColor: selected?.materialItemId === m.materialItemId && selected?.estimatedLaborId === m.estimatedLaborId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                            color: selected?.materialItemId === m.materialItemId && selected?.estimatedLaborId === m.estimatedLaborId ? mainPrimaryColor : '#333',
-                                            fontWeight: selected?.materialItemId === m.materialItemId && selected?.estimatedLaborId === m.estimatedLaborId ? 600 : 400,
+                                            backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
+                                            color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
+                                            fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
                                             '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
                                         }}
                                     >
-                                        {m.name}
-                                        <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
-                                        {m.laborName && <Typography component='span' sx={{ ml: 1, fontSize: '0.72rem', color: '#aaa', fontStyle: 'italic' }}>— {m.laborName}</Typography>}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
+                                            <Typography sx={{ fontSize: '0.85rem', color: 'inherit', fontWeight: 'inherit' }}>{m.name}</Typography>
+                                            <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888', flexShrink: 0 }}>({m.unit})</Typography>
+                                        </Box>
+                                        {sources.length > 0 && (
+                                            <Tooltip title={sources.join(', ')} placement='left' onClick={e => e.stopPropagation()}>
+                                                <InfoOutlinedIcon sx={{ fontSize: 15, color: '#ccc', ml: 1, flexShrink: 0, '&:hover': { color: '#aaa' } }} />
+                                            </Tooltip>
+                                        )}
                                     </Box>
                                 ))}
-
-                                {/* Group rows with expandable materials (children flattened) */}
-                                {filteredGroupData
-                                    .filter(g => !search || g.groupName.toLowerCase().includes(search.toLowerCase()) || g.children.some(c => c.materials.some(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()))))
-                                    .map(group => {
-                                        const isGroupExpanded = expandedGroups.has(group.groupId);
-                                        const allMaterials = group.children.flatMap(c => c.materials).filter(m => !search || (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()));
-                                        return (
-                                            <Box key={group.groupId} sx={{ borderBottom: '1px solid #f0fbfc' }}>
-                                                {/* Group row header — same styling as regular rows */}
-                                                <Box
-                                                    onClick={() => toggleGroup(group.groupId)}
-                                                    sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', backgroundColor: 'transparent', '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' } }}
-                                                >
-                                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 400, color: '#333' }}>{group.groupName || t('Group')}</Typography>
-                                                    {isGroupExpanded ? <ExpandMoreIcon sx={{ fontSize: 16, color: '#aaa' }} /> : <ChevronRightIcon sx={{ fontSize: 16, color: '#aaa' }} />}
-                                                </Box>
-
-                                                {/* Materials directly under group (no child work level) */}
-                                                {isGroupExpanded && allMaterials.map(m => (
-                                                    <Box
-                                                        key={m.estimatedMaterialId}
-                                                        onClick={() => selectGroupMaterial(m)}
-                                                        sx={{
-                                                            pl: 4, pr: 2, py: 1, fontSize: '0.85rem', cursor: 'pointer',
-                                                            borderBottom: '1px solid #f0fbfc',
-                                                            backgroundColor: selected?.materialItemId === m.materialItemId ? 'rgba(0,171,190,0.08)' : 'transparent',
-                                                            color: selected?.materialItemId === m.materialItemId ? mainPrimaryColor : '#333',
-                                                            fontWeight: selected?.materialItemId === m.materialItemId ? 600 : 400,
-                                                            '&:hover': { backgroundColor: 'rgba(0,171,190,0.06)' },
-                                                        }}
-                                                    >
-                                                        {m.name}
-                                                        <Typography component='span' sx={{ ml: 1, fontSize: '0.78rem', color: '#888' }}>({m.unit})</Typography>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        );
-                                    })
-                                }
-
-                                {filtered.length === 0 && filteredGroupData.length === 0 && (
+                                {allMergedMaterials.length === 0 && (
                                     <Typography sx={{ px: 2, py: 2, fontSize: '0.85rem', color: '#aaa' }}>{t('No results')}</Typography>
                                 )}
                             </>
                         )}
                     </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, opacity: selected ? 1 : 0.4, pointerEvents: selected ? 'auto' : 'none' }}>
-                        <Box>
+                    <Box sx={{ display: 'flex', gap: 2, opacity: selected ? 1 : 0.4, pointerEvents: selected ? 'auto' : 'none' }}>
+                        <Box sx={{ flex: 1 }}>
                             <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>{t('Quantity')}</Typography>
                             <InputBase
                                 value={qtyInput}
@@ -439,7 +411,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                 sx={{ border: `1px solid ${selected ? mainPrimaryColor : '#e0e0e0'}`, borderRadius: '6px', px: 1.5, py: 0.5, width: '100%', fontSize: '0.88rem', '&:focus-within': { boxShadow: '0 0 0 2px rgba(0,171,190,0.15)' } }}
                             />
                         </Box>
-                        <Box>
+                        <Box sx={{ flex: 1 }}>
                             <Typography sx={{ fontSize: '0.78rem', color: '#666', mb: 0.5 }}>Միավորի արժեք</Typography>
                             <InputBase
                                 value={addPriceInput}
