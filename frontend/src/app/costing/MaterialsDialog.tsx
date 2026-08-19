@@ -49,7 +49,7 @@ interface Props {
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
     unforeseenSnapshot?: SnapshotData | null;
     pahestEntries: PahestEntry[];
-    onPahestUpdate: (materialItemId: string, qty: number) => void;
+    onPahestUpdate: (materialItemId: string, qty: number, costPerUnit: number, estimatedLaborId?: string) => void;
     aylEntries?: AylEntry[];
     onAylUpdate?: (id: string, qty: number) => void;
     onCostAdded?: (entry: CostHistoryEntry) => void;
@@ -96,7 +96,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         if (!open) return;
         setSelectedRow(null);
 
-        const buildLaborMatMap = (items: any[]): Map<string, Set<string>> => {
+        const buildLaborMatMap = (items: any[], groupData?: any[]): Map<string, Set<string>> => {
             const map = new Map<string, Set<string>>();
             for (const item of items ?? []) {
                 const laborId = toId(item.estimatedLaborId);
@@ -105,16 +105,32 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                 if (!map.has(laborId)) map.set(laborId, new Set());
                 map.get(laborId)!.add(matId);
             }
+            for (const group of groupData ?? []) {
+                const groupId = toId(group.groupId);
+                if (!groupId) continue;
+                for (const child of group.children ?? []) {
+                    for (const mat of child.materials ?? []) {
+                        const matId = toId(mat.materialItemId);
+                        if (!matId) continue;
+                        if (!map.has(groupId)) map.set(groupId, new Set());
+                        map.get(groupId)!.add(matId);
+                    }
+                }
+            }
             return map;
         };
 
         const matFetches = [
             Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId } }),
             ...(ufEstimateId ? [Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: ufEstimateId } })] : []),
+            Api.requestSession<any[]>({ command: 'estimate/fetch_group_materials_for_pahest', args: { estimateId } }),
         ];
-        Promise.all(matFetches).then(([main, uf]) => {
+        Promise.all(matFetches).then(([main, ufOrGroup, maybeGroup]) => {
+            const hasUf = !!ufEstimateId;
+            const uf = hasUf ? (ufOrGroup as any[]) : [];
+            const groups = (hasUf ? maybeGroup : ufOrGroup) as any[] ?? [];
             const combined = [...(main ?? []), ...(uf ?? [])];
-            setLaborMatIds(buildLaborMatMap(combined));
+            setLaborMatIds(buildLaborMatMap(combined, groups));
         }).catch(console.error);
 
         if (estimateSnapshot) {
@@ -149,7 +165,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         const qty = parseFloat(materialModal.value.replace(',', '.')) || 0;
         if (qty <= 0) return;
         const mat = materialModal.material;
-        onPahestUpdate(mat.materialItemId, qty);
+        const effectiveLaborId = mat.estimatedLaborId || (selectedRow ? toId(selectedRow._id) : '');
+        onPahestUpdate(mat.materialItemId, qty, mat.costPerUnit, effectiveLaborId);
         onCostAdded?.({
             id: String(Date.now() + Math.random()),
             workName: mat.name,
@@ -159,6 +176,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             total: qty * mat.costPerUnit,
             addedAt: new Date(),
             paymentMethod: 'nyuth_tsakhsagrum',
+            laborItemId: effectiveLaborId || undefined,
+            materialItemId: mat.materialItemId,
         });
         setMaterialModal(null);
     };
