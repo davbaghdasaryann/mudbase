@@ -290,16 +290,18 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
             const subs = subsMap.get(String(section._id)) ?? [];
             html += `<tr><td colspan="${TOTAL_COLS}" style="font-weight:bold;font-size:13px;background:#e0f5f7;border:1px solid #ccc;padding:6px 10px;text-align:center;">${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
 
-            const renderRow = (row: LaborRow, idx: number) =>
-                `<tr><td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${idx}</td>` +
+            const renderRow = (row: LaborRow, idx: number) => {
+                const rowTotal = Math.round(Number(row.quantity ?? 0) * row.changableAveragePrice);
+                return `<tr><td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${idx}</td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(row.laborOfferItemName || row.catalogName)}</td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(row.unitSymbol)}</td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${formatCurrencyRounded(row.changableAveragePrice)}</td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${formatCurrencyRounded(row.cost)}</td>` +
+                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${formatCurrencyRounded(rowTotal)}</td>` +
                 `<td style="border:1px solid #ccc;border-left:2px solid #b2e8ed;padding:5px 8px;text-align:right;"></td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;"></td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;"></td></tr>`;
+            };
 
             if (subs.length > 0) {
                 for (let subI = 0; subI < subs.length; subI++) {
@@ -313,7 +315,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 for (const row of sectionItems) html += renderRow(row, ++counter);
             }
 
-            const secTotal = sectionItems.reduce((s, r) => s + (r.cost ?? 0), 0);
+            const secTotal = sectionItems.reduce((s, r) => s + Math.round(Number(r.quantity ?? 0) * r.changableAveragePrice), 0);
             html += `<tr style="background:#eaf8fa;">` +
                 `<td colspan="5" style="font-weight:bold;text-align:right;border:1px solid #ccc;padding:5px 10px;">${esc(t('Subtotal'))}</td>` +
                 `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${formatCurrencyRounded(secTotal)} AMD</td>` +
