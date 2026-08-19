@@ -222,7 +222,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                             <Tooltip title={t('Add new quantity')}>
                                                                 <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
-                                                                    <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
+                                                                    <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                 </IconButton>
                                                             </Tooltip>
                                                         </Box>

@@ -350,7 +350,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                                         onClick={() => setMaterialModal({ material: mat, value: '' })}
                                                         sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}
                                                     >
-                                                        <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
+                                                        <AddCircleOutlineIcon sx={{ fontSize: 22 }} />
                                                     </IconButton>
                                                 </Tooltip>
                                             </Box>
@@ -387,7 +387,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                                         <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{ayl.name || '—'}</Typography>
                                                         <Tooltip title={t('Add new quantity')}>
                                                             <IconButton size='small' onClick={() => setAylModal({ entry: ayl, value: '' })} sx={{ color: mainPrimaryColor, bgcolor: 'rgba(0,171,190,0.08)', '&:hover': { bgcolor: 'rgba(0,171,190,0.18)' }, p: 0.6 }}>
-                                                                <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
+                                                                <AddCircleOutlineIcon sx={{ fontSize: 22 }} />
                                                             </IconButton>
                                                         </Tooltip>
                                                     </Box>

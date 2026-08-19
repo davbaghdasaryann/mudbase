@@ -283,7 +283,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                             </Box>
                                                             {!row.isGroupRow && (
                                                                 <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(row); }}>
-                                                                    <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                                    <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                 </IconButton>
                                                             )}
                                                         </Box>
@@ -295,7 +295,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                     {child.quantity > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
                                                                 </Box>
                                                                 <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(child, row); }}>
-                                                                    <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                                    <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                 </IconButton>
                                                             </Box>
                                                         ))}
@@ -339,7 +339,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                             </Box>
                                                         </Box>
                                                         <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#e65100' } }} onClick={e => e.stopPropagation()}>
-                                                            <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                            <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                         </IconButton>
                                                     </Box>
                                                     );
