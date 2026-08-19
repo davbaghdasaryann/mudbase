@@ -54,6 +54,7 @@ export interface PahestHistoryRecord {
     quantity: number;
     costPerUnit: number;
     addedAt: Date;
+    attributedLaborId?: string;
 }
 
 export interface PahestEntry {
@@ -184,15 +185,15 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const now = new Date();
         const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
         const unitPrice = (!isNaN(enteredPrice) && addPriceInput.trim() !== '') ? enteredPrice : 0;
-        const newRecord: PahestHistoryRecord = { quantity: qty, costPerUnit: unitPrice, addedAt: now };
+        // Adding to pahest = inventory receipt only, not a cost record. History stays unchanged.
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId && e.estimatedLaborId === selected.estimatedLaborId);
         if (existing >= 0) {
             const next = [...entries];
             next[existing] = {
                 ...next[existing],
                 quantity: next[existing].quantity + qty,
+                costPerUnit: unitPrice || next[existing].costPerUnit,
                 addedAt: now,
-                history: [...next[existing].history, newRecord],
             };
             onChange(next);
         } else {
@@ -205,10 +206,9 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 estimateQuantity: selected.estimateQuantity,
                 costPerUnit: unitPrice,
                 addedAt: now,
-                history: [newRecord],
+                history: [],
             }]);
         }
-        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice });
         setAddOpen(false);
     };
 
@@ -256,9 +256,19 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         }
     };
 
-    const filtered = materials.filter(m =>
-        (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = (() => {
+        const base = materials.filter(m => (m.name + m.fullCode).toLowerCase().includes(search.toLowerCase()));
+        const seen = new Map<string, MaterialOption>();
+        for (const m of base) {
+            if (!seen.has(m.materialItemId)) {
+                seen.set(m.materialItemId, { ...m, estimatedLaborId: '', laborName: '' });
+            } else {
+                const ex = seen.get(m.materialItemId)!;
+                seen.set(m.materialItemId, { ...ex, estimateQuantity: ex.estimateQuantity + m.estimateQuantity });
+            }
+        }
+        return [...seen.values()];
+    })();
     const filteredGroupData = search
         ? groupData.map(g => ({
             ...g,
