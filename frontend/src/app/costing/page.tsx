@@ -847,11 +847,16 @@ export default function CostingPage() {
         const laborEntries = ch.filter(c => c.laborItemId && !c.paymentMethod?.startsWith('pahest_') && c.paymentMethod !== 'nyuth_tsakhsagrum');
         const healedActual = { ...baseActual };
         const laborIds = [...new Set(laborEntries.map(c => c.laborItemId!))];
+        const laborLidSet = new Set(laborIds);
         for (const lid of laborIds) {
             const entries = laborEntries.filter(c => c.laborItemId === lid).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
             if (entries.length > 0) {
                 healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(entries[0].quantity) };
             }
+        }
+        // Remove stale actualData entries for rows whose labor history was deleted
+        for (const lid of Object.keys(healedActual)) {
+            if (!laborLidSet.has(lid)) delete healedActual[lid];
         }
         setActualData(healedActual);
         setUnforeseenEstimate(null);
