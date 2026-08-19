@@ -251,17 +251,18 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const planned = parseFloat(actualData?.[gid]?.quantity || '0') || 0;
                                                     const covered = getSalaryCoveredQty(gid);
                                                     const remaining = Math.max(0, planned - covered);
-                                                    const done = planned > 0 && remaining <= 0;
                                                     const isExpanded = row.isGroupRow && expandedGroups.has(gid);
                                                     const isLoadingG = row.isGroupRow && loadingGroups.has(gid);
                                                     const children = row.isGroupRow ? (groupChildren[gid] ?? []) : [];
+                                                    const selectRow = (r: LaborRow) => { setSelectedRow(r); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); };
                                                     return (
                                                         <React.Fragment key={gid}>
-                                                        <Box onClick={() => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
+                                                        <Box
+                                                            onClick={row.isGroupRow ? (e) => handleGroupToggle(e, gid, row) : () => selectRow(row)}
                                                             sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#f2fcfd' } }}
                                                         >
                                                             {row.isGroupRow && (
-                                                                <Box onClick={(e) => handleGroupToggle(e, gid, row)} sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}>
+                                                                <Box sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}>
                                                                     {isLoadingG ? <CircularProgress size={12} sx={{ color: mainPrimaryColor }} /> : isExpanded ? <ExpandMoreIcon sx={{ fontSize: 16, color: mainPrimaryColor }} /> : <ChevronRightIcon sx={{ fontSize: 16, color: mainPrimaryColor }} />}
                                                                 </Box>
                                                             )}
@@ -269,24 +270,42 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: row.isGroupRow ? 600 : 500 }}>
                                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                                 </Typography>
-                                                                <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                                    {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                    {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                    {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                </Box>
+                                                                {!row.isGroupRow && (
+                                                                    <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
+                                                                        {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                        {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                        {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                    </Box>
+                                                                )}
                                                             </Box>
-                                                            <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => e.stopPropagation()}>
-                                                                <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-                                                            </IconButton>
+                                                            {!row.isGroupRow && (
+                                                                <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(row); }}>
+                                                                    <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                                </IconButton>
+                                                            )}
                                                         </Box>
-                                                        {isExpanded && children.map((child, ci) => (
-                                                            <Box key={toId(child._id)} sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22` }}>
-                                                                <Box sx={{ flex: 1 }}>
-                                                                    <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
-                                                                    {child.quantity > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
+                                                        {isExpanded && children.map((child, ci) => {
+                                                            const cid = toId(child._id);
+                                                            const cPlanned = parseFloat(actualData?.[cid]?.quantity || '0') || 0;
+                                                            const cCovered = getSalaryCoveredQty(cid);
+                                                            const cRemaining = Math.max(0, cPlanned - cCovered);
+                                                            return (
+                                                                <Box key={cid} onClick={() => selectRow(child)}
+                                                                    sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22`, cursor: 'pointer', '&:hover': { bgcolor: '#eef9fb' } }}>
+                                                                    <Box sx={{ flex: 1 }}>
+                                                                        <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
+                                                                        <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
+                                                                            {cPlanned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {cPlanned.toLocaleString()} {child.unitSymbol}</Typography>}
+                                                                            {cCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {cCovered.toLocaleString()} {child.unitSymbol}</Typography>}
+                                                                            {cPlanned > 0 && cRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {cRemaining.toLocaleString()} {child.unitSymbol}</Typography>}
+                                                                        </Box>
+                                                                    </Box>
+                                                                    <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(child); }}>
+                                                                        <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                                                    </IconButton>
                                                                 </Box>
-                                                            </Box>
-                                                        ))}
+                                                            );
+                                                        })}
                                                         </React.Fragment>
                                                     );
                                                 })}
