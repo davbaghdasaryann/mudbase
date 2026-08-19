@@ -331,12 +331,13 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
     const grandEstUnitP = grandEstQty > 0 ? grandEstTotal / grandEstQty : null;
     const grandActQty   = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); return hasData ? s + actQty : s; }, 0);
     const grandActTotal = rows.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
-    const grandActUnitP = grandActQty > 0 ? grandActTotal / grandActQty : null;
     const grandHasAct   = rows.some(r => getActuals(r).hasData);
-    const grandRemQty   = grandHasAct ? grandEstQty - grandActQty : null;
-    const grandRemUnitP = grandHasAct ? grandEstUnitP : null;
-    const grandRemTotal = grandHasAct && grandRemQty !== null && grandEstUnitP !== null ? Math.round(grandRemQty * grandEstUnitP) : null;
-    const grandPct      = grandHasAct && grandActUnitP !== null && grandEstUnitP !== null && grandEstUnitP > 0 ? ((grandEstUnitP - grandActUnitP) / grandEstUnitP) * 100 : null;
+    const grandRemTotal = grandHasAct ? Math.round(grandEstTotal - grandActTotal) : null;
+    // Profitability: weighted savings across only rows that have actual data
+    const grandPctRows  = rows.filter(r => getActuals(r).hasData);
+    const grandPctEstTotal = grandPctRows.reduce((s, r) => s + getEstimate(r).estTotal, 0);
+    const grandPctActTotal = grandPctRows.reduce((s, r) => s + getActuals(r).actTotal, 0);
+    const grandPct      = grandHasAct && grandPctEstTotal > 0 ? ((grandPctEstTotal - grandPctActTotal) / grandPctEstTotal) * 100 : null;
     const grandExQty    = rows.reduce((s, r) => { const { actQty, hasData } = getActuals(r); const eq = Number(r.quantity ?? 0); return hasData && actQty > eq ? s + (actQty - eq) : s; }, 0);
     const grandExUnitP  = grandHasAct && grandEstUnitP !== null ? grandEstUnitP : null;
     const grandExAmt    = grandHasAct && grandExQty > 0 && grandEstUnitP !== null ? Math.round(grandExQty * grandEstUnitP) : null;
