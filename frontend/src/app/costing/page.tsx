@@ -1686,9 +1686,20 @@ export default function CostingPage() {
                     estimateSnapshot={estimateSnapshot}
                     unforeseenEstimate={unforeseenEstimate}
                     unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot}
-                    onEntrySaved={(entry, replaceId) => setCostHistory(prev =>
-                        replaceId ? prev.map(e => e.id === replaceId ? entry : e) : [entry, ...prev]
-                    )}
+                    onEntrySaved={(entry, replaceId) => {
+                        setCostHistory(prev =>
+                            replaceId ? prev.map(e => e.id === replaceId ? entry : e) : [entry, ...prev]
+                        );
+                        if (entry.laborItemId && entry.paymentMethod?.startsWith('salary_')) {
+                            const vol = entry.workVolume ?? entry.quantity;
+                            if (vol > 0) {
+                                setActualData(prev => ({
+                                    ...prev,
+                                    [entry.laborItemId!]: { ...(prev[entry.laborItemId!] ?? {}), quantity: String(vol) },
+                                }));
+                            }
+                        }
+                    }}
                     actualData={actualData}
                     costHistory={costHistory}
                 />
