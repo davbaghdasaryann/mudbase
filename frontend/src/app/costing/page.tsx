@@ -1239,9 +1239,9 @@ export default function CostingPage() {
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
                             {[
                                 { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 30, color: '#7b1fa2', opacity: 0.55 }} />, label: 'Ընդհանուր նախահաշիվ', onClick: handleEstimationOpen, accent: '#7b1fa2', hoverBg: 'rgba(123,31,162,0.06)' },
+                                { icon: <StraightenIcon sx={{ fontSize: 30, color: '#E65100', opacity: 0.55 }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: '#E65100', hoverBg: 'rgba(230,81,0,0.06)' },
                                 { icon: <CategoryOutlinedIcon sx={{ fontSize: 30, color: mainPrimaryColor, opacity: 0.55 }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
                                 { icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 30, color: '#1565c0', opacity: 0.55 }} />, label: t('Salary Cost Recording'), onClick: () => setSalaryOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
-                                { icon: <StraightenIcon sx={{ fontSize: 30, color: '#E65100', opacity: 0.55 }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: '#E65100', hoverBg: 'rgba(230,81,0,0.06)' },
                                 { icon: <BuildIcon sx={{ fontSize: 30, color: '#4caf50', opacity: 0.55 }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#4caf50', hoverBg: 'rgba(76,175,80,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 30, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => {}, accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
