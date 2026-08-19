@@ -228,16 +228,15 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
     const getActuals = (row: LaborRow) => {
         const rowId = toId(row._id);
         const a = actualData[rowId];
-        const actQty   = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
-        const volTotal = parseFloat((a?.spent    ?? '').replace(',', '.')) || 0;
-        const salTotal = costHistory.filter(e => e.laborItemId === rowId).reduce((s, e) => s + e.total, 0);
-        const mats     = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
-        const matActTotal = mats.reduce((s, m) => {
-            const pe = (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && p.estimatedLaborId === rowId)
-                ?? (pahestEntries ?? []).find(p => p.materialItemId === toId(m.materialItemId) && !p.estimatedLaborId);
-            return s + (pe ? pe.history.reduce((ss, r) => ss + r.quantity * r.costPerUnit, 0) : 0);
-        }, 0);
-        const actTotal = volTotal + salTotal + matActTotal;
+        const actQty = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+        const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const matActTotal = costHistory.filter(e => {
+            if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+            if (e.laborItemId) return e.laborItemId === rowId;
+            if (!e.materialItemId) return false;
+            return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+        }).reduce((s, e) => s + e.total, 0);
+        const actTotal = salTotal + matActTotal;
         const hasData  = !!(a || salTotal > 0 || matActTotal > 0);
         return { actQty, actTotal, hasData };
     };
