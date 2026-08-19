@@ -352,8 +352,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
         if (e.laborItemId) return e.laborItemId === rowId;
         if (!e.materialItemId) return false;
-        const pe = (pahestEntries ?? []).find(p => p.materialItemId === e.materialItemId);
-        return pe?.estimatedLaborId ? pe.estimatedLaborId === rowId : false;
+        return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
     }).reduce((s, e) => s + e.total, 0);
 
     const getRowActTotal = (row: LaborRow) => {
