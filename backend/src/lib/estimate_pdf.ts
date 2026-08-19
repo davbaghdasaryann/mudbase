@@ -13,6 +13,18 @@ interface ExportOptions {
     otherCostsMode?: 'separated' | 'included';
 }
 
+function computeEntryDisplayTotal(laborData: any, otherMultiplier: number, groupMode: string, otherCostsMode: string): number {
+    const labor = laborData.labor ?? laborData;
+    if (groupMode === 'closed' && labor.parentGroupRowId) return 0;
+    const isGroupRow = labor.isGroupRow === true;
+    const materials: any[] = laborData.materials || [];
+    const materialsTotal = materials.reduce((s: number, m: any) => s + ((m.changableAveragePrice || 0) * (m.quantity || 0)), 0);
+    const totalRaw = isGroupRow
+        ? (labor.groupAbsoluteTotalCost || 0)
+        : (labor.changableAveragePrice || 0) * (labor.quantity || 0) + materialsTotal;
+    return otherCostsMode === 'included' ? totalRaw * otherMultiplier : totalRaw;
+}
+
 export function generateEstimateHTML(data: any, t: TFunction, opts: ExportOptions = {}) {
     const groupMode = opts.groupMode ?? 'closed';
     const otherCostsMode = opts.otherCostsMode ?? 'separated';
@@ -391,20 +403,23 @@ html += `
 
     for (const sectionData of data.sections) {
         ++sectionIndex;
+        const sectionComputedTotal = sectionData.subsections.reduce((sum: number, sub: any) =>
+            sum + (sub.labors || []).reduce((s: number, l: any) => s + computeEntryDisplayTotal(l, otherMultiplier, groupMode, otherCostsMode), 0), 0);
         html += `
             <tr>
                 <td class="section" colspan="14">${sectionIndex}. ${ensureNotUndefined(sectionData.section.name || sectionData.section._id)}</td>
-                <td class="section" colspan="2"> ${formatEstimateCurrency(sectionData.section.totalCost)}</td>
+                <td class="section" colspan="2"> ${formatEstimateCurrency(sectionComputedTotal)}</td>
             </tr>`;
 
         let subSectIndex = 0;
         for (const subsectionData of sectionData.subsections) {
             ++subSectIndex;
             if (subsectionData.subsection.name) {
+                const subComputedTotal = (subsectionData.labors || []).reduce((s: number, l: any) => s + computeEntryDisplayTotal(l, otherMultiplier, groupMode, otherCostsMode), 0);
                 html += `
                 <tr>
                     <td class="lightBlue subsection" colspan="14"> ${sectionIndex}.${subSectIndex} ${ensureNotUndefined(subsectionData.subsection.name)}</td>
-                    <td class="lightBlue subsection" colspan="2"> ${formatEstimateCurrency(subsectionData.subsection.totalCost)}</td>
+                    <td class="lightBlue subsection" colspan="2"> ${formatEstimateCurrency(subComputedTotal)}</td>
                 </tr>`;
             }
 
@@ -1033,21 +1048,24 @@ export async function generateEstimateExcel(data: any, t: TFunction, opts: Expor
 
     for (const sectionData of data.sections) {
         ++sectionIndex;
+        const xlSectionTotal = sectionData.subsections.reduce((sum: number, sub: any) =>
+            sum + (sub.labors || []).reduce((s: number, l: any) => s + computeEntryDisplayTotal(l, otherMultiplier, groupMode, otherCostsMode), 0), 0);
         // Section header row
         ws.mergeCells(rowIdx, 1, rowIdx, 14);
         dataCell(ws, rowIdx, 1, `${sectionIndex}. ${sectionData.section.name || ''}`, { bold: true, bg: BLUE, align: 'center' });
         dataCell(ws, rowIdx, 15, '', { bg: BLUE });
-        dataCell(ws, rowIdx, 16, Math.round(sectionData.section.totalCost || 0), { bold: true, bg: BLUE, num: true });
+        dataCell(ws, rowIdx, 16, Math.round(xlSectionTotal), { bold: true, bg: BLUE, num: true });
         rowIdx++;
 
         let subSectIndex = 0;
         for (const subsectionData of sectionData.subsections) {
             ++subSectIndex;
             if (subsectionData.subsection.name) {
+                const xlSubTotal = (subsectionData.labors || []).reduce((s: number, l: any) => s + computeEntryDisplayTotal(l, otherMultiplier, groupMode, otherCostsMode), 0);
                 ws.mergeCells(rowIdx, 1, rowIdx, 14);
                 dataCell(ws, rowIdx, 1, `${sectionIndex}.${subSectIndex} ${subsectionData.subsection.name}`, { bold: true, bg: BLUE, align: 'left' });
                 dataCell(ws, rowIdx, 15, '', { bg: BLUE });
-                dataCell(ws, rowIdx, 16, Math.round(subsectionData.subsection.totalCost || 0), { bold: true, bg: BLUE, num: true });
+                dataCell(ws, rowIdx, 16, Math.round(xlSubTotal), { bold: true, bg: BLUE, num: true });
                 rowIdx++;
             }
 
