@@ -168,7 +168,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         const qty = parseFloat(materialModal.value.replace(',', '.')) || 0;
         if (qty <= 0) return;
         const mat = materialModal.material;
-        const effectiveLaborId = mat.estimatedLaborId || (selectedRow ? toId(selectedRow._id) : '');
+        const effectiveLaborId = selectedRow ? toId(selectedRow._id) : (mat.estimatedLaborId || '');
         onPahestUpdate(mat.materialItemId, qty, mat.costPerUnit, effectiveLaborId);
         onCostAdded?.({
             id: String(Date.now() + Math.random()),
