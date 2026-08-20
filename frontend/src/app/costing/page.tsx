@@ -1238,7 +1238,7 @@ export default function CostingPage() {
                 {tab === 'general' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         <Box onClick={() => toggleSection('quick')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
-                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', flex: 1 }}>{t('Quick actions')}</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Quick actions')}</Typography>
                             <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('quick') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                         </Box>
                         {!collapsedSections.has('quick') && <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
@@ -1258,7 +1258,7 @@ export default function CostingPage() {
                             ))}
                         </Box>}
                         <Box onClick={() => toggleSection('overview')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
-                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', flex: 1 }}>{t('Overview')}</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Overview')}</Typography>
                             <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                         </Box>
                         {!collapsedSections.has('overview') && <><Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
@@ -1298,7 +1298,7 @@ export default function CostingPage() {
                             );
                         })()}</>}
                         <Box onClick={() => toggleSection('other')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 1, userSelect: 'none' }}>
-                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', flex: 1 }}>{t('Other Expenses')}</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Other Expenses')}</Typography>
                             <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('other') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                         </Box>
                         {!collapsedSections.has('other') && (() => {
