@@ -860,10 +860,12 @@ export default function CostingPage() {
             const entries = laborEntries.filter(c => c.laborItemId === lid);
             const salaryEntries = entries.filter(c => c.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
             const volumeEntries = entries.filter(c => !c.paymentMethod);
-            // Salary takes precedence; if none, sum volume delta entries
+            // Salary takes precedence; if none, take max(savedActual, historySum) for backward compat:
+            // old records have correct actualData but history with only the last entry (replaced, not appended)
+            const baseQty = parseFloat((healedActual[lid] ?? {}).quantity || '0') || 0;
             const qty = salaryEntries.length > 0
                 ? salaryEntries[0].quantity
-                : volumeEntries.reduce((s, c) => s + c.quantity, 0);
+                : Math.max(baseQty, volumeEntries.reduce((s, c) => s + c.quantity, 0));
             if (qty > 0) {
                 healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(qty) };
             }
