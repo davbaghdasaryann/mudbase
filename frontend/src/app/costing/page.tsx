@@ -10,6 +10,7 @@ import { TabContext, TabList } from '@mui/lab';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -750,6 +751,9 @@ export default function CostingPage() {
     const didRestoreRef = useRef(false);
     const selectedRecordRef = useRef<CostingRecord | null>(null);
 
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+    const toggleSection = (key: string) => setCollapsedSections(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
+
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
@@ -1233,8 +1237,11 @@ export default function CostingPage() {
 
                 {tab === 'general' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Quick actions')}</Typography>
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
+                        <Box onClick={() => toggleSection('quick')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', flex: 1 }}>{t('Quick actions')}</Typography>
+                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('quick') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                        </Box>
+                        {!collapsedSections.has('quick') && <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
                             {[
                                 { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 30, color: '#7b1fa2', opacity: 0.55 }} />, label: 'Ընդհանուր նախահաշիվ', onClick: handleEstimationOpen, accent: '#7b1fa2', hoverBg: 'rgba(123,31,162,0.06)' },
                                 { icon: <StraightenIcon sx={{ fontSize: 30, color: '#E65100', opacity: 0.55 }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: '#E65100', hoverBg: 'rgba(230,81,0,0.06)' },
@@ -1249,9 +1256,12 @@ export default function CostingPage() {
                                     <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.3 }}>{label}</Typography>
                                 </Box>
                             ))}
+                        </Box>}
+                        <Box onClick={() => toggleSection('overview')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', flex: 1 }}>{t('Overview')}</Typography>
+                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                         </Box>
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1 }}>{t('Overview')}</Typography>
-                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                        {!collapsedSections.has('overview') && <><Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={vatDeduction + climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees} height={220} />
                             </Box>
@@ -1286,9 +1296,12 @@ export default function CostingPage() {
                                     <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} actualValue={actualLabor > 0 ? actualLabor : undefined} />
                                 </Box>
                             );
-                        })()}
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 1, mt: 1 }}>{t('Other Expenses')}</Typography>
-                        {(() => {
+                        })()}</>}
+                        <Box onClick={() => toggleSection('other')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 1, userSelect: 'none' }}>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', flex: 1 }}>{t('Other Expenses')}</Typography>
+                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('other') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                        </Box>
+                        {!collapsedSections.has('other') && (() => {
                             const base = selectedEstimate.totalCost ?? 0;
                             const expenses = (selectedEstimate.otherExpenses ?? []).filter(exp => {
                                 const key = Object.keys(exp)[0];
