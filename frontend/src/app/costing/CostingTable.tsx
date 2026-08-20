@@ -365,7 +365,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
         const actTotal = volumeTotal + salaryTotal + matActTotal;
-        return { actTotal, hasData: q > 0 && actTotal > 0 };
+        // Group rows: salary must be recorded; material alone is not enough to show breakdown
+        const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
+        return { actTotal, hasData };
     };
 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
@@ -377,7 +379,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
         const actTotal = volumeTotal + salaryTotal + matActTotal;
-        const hasData = q > 0 && actTotal > 0;
+        const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
         const estQty = Number(row.quantity ?? 0);
         const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
         const rawMatEst = row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);
@@ -411,8 +413,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(estUP)}</td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(estTotal)}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: q > 0 ? '#222' : '#ccc' })}>{q > 0 ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
-                <td style={tdStyle({ textAlign: 'right', color: (q > 0 && actTotal > 0) ? '#555' : '#ccc' })}>
-                    {(q > 0 && actTotal > 0) ? (
+                <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>
+                    {hasData ? (
                         <span
                             onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
                             style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
@@ -421,7 +423,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                         </span>
                     ) : '—'}
                 </td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: (q > 0 && actTotal > 0) ? ACCENT : '#ccc' })}>{(q > 0 && actTotal > 0) ? formatCurrencyRounded(actTotal) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: hasData ? ACCENT : '#ccc' })}>{hasData ? formatCurrencyRounded(actTotal) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
