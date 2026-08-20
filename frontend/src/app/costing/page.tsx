@@ -850,15 +850,22 @@ export default function CostingPage() {
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
         })));
         const baseActual = rec.actualData ?? {};
-        // Self-heal: for each labor row that has cost history, derive quantity/spent from the most recent entry
+        // Self-heal: restore actualData from cost history
+        // Volume entries (no paymentMethod) accumulate; salary entries (salary_*) take precedence if present
         const laborEntries = ch.filter(c => c.laborItemId && !c.paymentMethod?.startsWith('pahest_') && c.paymentMethod !== 'nyuth_tsakhsagrum');
         const healedActual = { ...baseActual };
         const laborIds = [...new Set(laborEntries.map(c => c.laborItemId!))];
         const laborLidSet = new Set(laborIds);
         for (const lid of laborIds) {
-            const entries = laborEntries.filter(c => c.laborItemId === lid).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
-            if (entries.length > 0) {
-                healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(entries[0].quantity) };
+            const entries = laborEntries.filter(c => c.laborItemId === lid);
+            const salaryEntries = entries.filter(c => c.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+            const volumeEntries = entries.filter(c => !c.paymentMethod);
+            // Salary takes precedence; if none, sum volume delta entries
+            const qty = salaryEntries.length > 0
+                ? salaryEntries[0].quantity
+                : volumeEntries.reduce((s, c) => s + c.quantity, 0);
+            if (qty > 0) {
+                healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(qty) };
             }
         }
         // Remove stale actualData entries for rows whose labor history was deleted
@@ -1087,13 +1094,7 @@ export default function CostingPage() {
     };
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
-        setCostHistory(prev => {
-            // Labor entries (no paymentMethod) replace existing entries for the same row so re-registering volume doesn't double-count
-            if (!entry.paymentMethod && entry.laborItemId) {
-                return [entry, ...prev.filter(e => !(e.laborItemId === entry.laborItemId && !e.paymentMethod))];
-            }
-            return [entry, ...prev];
-        });
+        setCostHistory(prev => [entry, ...prev]);
     };
 
     const handlePahestCostedUpdate = (materialItemId: string, qty: number, costPerUnit: number = 0, estimatedLaborId?: string) => {
@@ -1477,9 +1478,13 @@ export default function CostingPage() {
                                                             });
                                                         } else if (entry.laborItemId && !entry.paymentMethod?.startsWith('pahest_')) {
                                                             const remaining = costHistory.filter(e => e.id !== entry.id && e.laborItemId === entry.laborItemId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum');
-                                                            const prev = remaining.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime())[0];
+                                                            const salaryCandidates = remaining.filter(e => e.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+                                                            const volumeCandidates = remaining.filter(e => !e.paymentMethod);
+                                                            const qty = salaryCandidates.length > 0
+                                                                ? salaryCandidates[0].quantity
+                                                                : volumeCandidates.reduce((s, e) => s + e.quantity, 0);
                                                             setActualData(ad => {
-                                                                if (prev) return { ...ad, [entry.laborItemId!]: { ...(ad[entry.laborItemId!] ?? {}), quantity: String(prev.quantity) } };
+                                                                if (qty > 0) return { ...ad, [entry.laborItemId!]: { ...(ad[entry.laborItemId!] ?? {}), quantity: String(qty) } };
                                                                 const next = { ...ad };
                                                                 delete next[entry.laborItemId!];
                                                                 return next;

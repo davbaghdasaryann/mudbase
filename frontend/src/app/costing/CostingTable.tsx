@@ -365,7 +365,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
         const actTotal = volumeTotal + salaryTotal + matActTotal;
-        return { actTotal, hasData: q > 0 && actTotal > 0 };
+        const hasData = row.isGroupRow ? actTotal > 0 : (q > 0 && actTotal > 0);
+        return { actTotal, hasData };
     };
 
     const renderItemRow = (row: LaborRow, counter: number, descIndent: number) => {
@@ -390,6 +391,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const rTot = q > 0 ? Math.round((estQty - q) * estUP) : null;
         const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
         const fw = (v: number | null) => v !== null ? 600 : 400;
+        // Group rows: show total cost if any actual cost recorded, even without registered volume
+        const showActTotal = row.isGroupRow ? actTotal > 0 : (q > 0 && actTotal > 0);
         return (
             <tr key={toId(row._id)} style={{ backgroundColor: '#fff' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
@@ -421,7 +424,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                         </span>
                     ) : '—'}
                 </td>
-                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: (q > 0 && actTotal > 0) ? ACCENT : '#ccc' })}>{(q > 0 && actTotal > 0) ? formatCurrencyRounded(actTotal) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', fontWeight: 600, color: showActTotal ? ACCENT : '#ccc' })}>{showActTotal ? formatCurrencyRounded(actTotal) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: col(rQty), fontWeight: fw(rQty) })}>{rQty !== null ? rQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rUp), fontWeight: fw(rUp) })}>{rUp !== null ? formatCurrencyRounded(rUp) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: col(rTot), fontWeight: fw(rTot) })}>{rTot !== null ? formatCurrencyRounded(rTot) : '—'}</td>
