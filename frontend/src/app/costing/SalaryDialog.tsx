@@ -161,7 +161,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
         const billingRow = parentGroupRow ?? selectedRow;
         const entry: CostHistoryEntry = {
             id: String(Date.now() + Math.random()),
-            workName: billingRow.laborOfferItemName || billingRow.catalogName || '—',
+            workName: selectedRow.laborOfferItemName || selectedRow.catalogName || billingRow.laborOfferItemName || billingRow.catalogName || '—',
             laborItemId: billingRow._id,
             unit: billingRow.unitSymbol || '',
             quantity: n1,
