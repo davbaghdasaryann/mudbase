@@ -69,7 +69,7 @@ export interface PahestEntry {
     history: PahestHistoryRecord[];
 }
 
-interface HistoryEntryInput { workName: string; unit: string; quantity: number; unitPrice: number; total: number; }
+interface HistoryEntryInput { workName: string; unit: string; quantity: number; unitPrice: number; total: number; materialItemId?: string; }
 
 interface Props {
     estimateId: string;
@@ -207,7 +207,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 history: [],
             }]);
         }
-        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice });
+        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice, materialItemId: selected.materialItemId });
         setAddOpen(false);
     };
 
@@ -229,7 +229,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         if (!isNaN(price) && plusPriceInput.trim() !== '') patch.costPerUnit = price;
         next[idx] = { ...next[idx], ...patch };
         onChange(next);
-        if (qty > 0) onHistoryEntry?.({ workName: plusEntry.name, unit: plusEntry.unit, quantity: qty, unitPrice: newCostPerUnit, total: qty * newCostPerUnit });
+        if (qty > 0) onHistoryEntry?.({ workName: plusEntry.name, unit: plusEntry.unit, quantity: qty, unitPrice: newCostPerUnit, total: qty * newCostPerUnit, materialItemId: plusEntry.materialItemId });
         setPlusEntry(null);
         setPlusQtyInput('');
         setPlusPriceInput('');

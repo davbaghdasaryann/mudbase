@@ -1464,6 +1464,16 @@ export default function CostingPage() {
                                                                     ? { ...e, costedQuantity: Math.max(0, (e.costedQuantity ?? 0) - entry.quantity) }
                                                                     : e
                                                             ));
+                                                        } else if (entry.paymentMethod === 'pahest_main' && entry.materialItemId) {
+                                                            setPahestEntries(prev => {
+                                                                const idx = prev.findIndex(e => e.materialItemId === entry.materialItemId);
+                                                                if (idx < 0) return prev;
+                                                                const newQty = prev[idx].quantity - entry.quantity;
+                                                                if (newQty <= 0) return prev.filter((_, i) => i !== idx);
+                                                                const next = [...prev];
+                                                                next[idx] = { ...next[idx], quantity: newQty };
+                                                                return next;
+                                                            });
                                                         } else if (entry.laborItemId && !entry.paymentMethod?.startsWith('pahest_')) {
                                                             const remaining = costHistory.filter(e => e.id !== entry.id && e.laborItemId === entry.laborItemId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum');
                                                             const prev = remaining.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime())[0];
@@ -1499,7 +1509,7 @@ export default function CostingPage() {
                             entries={pahestEntries}
                             onChange={setPahestEntries}
                             actualData={actualData}
-                            onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main' }, ...prev])}
+                            onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main', materialItemId: e.materialItemId }, ...prev])}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
