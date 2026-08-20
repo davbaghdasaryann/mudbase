@@ -83,6 +83,7 @@ export interface CostHistoryEntry {
     laborItemId?: string;
     workVolume?: number;
     materialItemId?: string;
+    estimatedLaborId?: string;
     groupName?: string;
 }
 
@@ -1466,7 +1467,7 @@ export default function CostingPage() {
                                                             ));
                                                         } else if (entry.paymentMethod === 'pahest_main' && entry.materialItemId) {
                                                             setPahestEntries(prev => {
-                                                                const idx = prev.findIndex(e => e.materialItemId === entry.materialItemId);
+                                                                const idx = prev.findIndex(e => e.materialItemId === entry.materialItemId && (entry.estimatedLaborId == null || e.estimatedLaborId === entry.estimatedLaborId));
                                                                 if (idx < 0) return prev;
                                                                 const newQty = prev[idx].quantity - entry.quantity;
                                                                 if (newQty <= 0) return prev.filter((_, i) => i !== idx);
@@ -1509,7 +1510,7 @@ export default function CostingPage() {
                             entries={pahestEntries}
                             onChange={setPahestEntries}
                             actualData={actualData}
-                            onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main', materialItemId: e.materialItemId }, ...prev])}
+                            onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main', materialItemId: e.materialItemId, estimatedLaborId: e.estimatedLaborId }, ...prev])}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
