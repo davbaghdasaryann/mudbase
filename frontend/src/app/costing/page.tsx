@@ -1427,13 +1427,15 @@ export default function CostingPage() {
                                         <TableRow key={entry.id} hover>
                                             <TableCell sx={{ fontSize: '0.82rem', color: '#555' }}>{actionType}</TableCell>
                                             <TableCell>
-                                                {entry.groupName && (
-                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, bgcolor: '#e8f5e9', color: '#2e7d32', borderRadius: '4px', px: 0.7, py: 0.2, fontSize: '0.7rem', fontWeight: 600, mb: 0.3, mr: 0.5 }}>
-                                                        <AccountTreeOutlinedIcon sx={{ fontSize: 11 }} />
-                                                        {entry.groupName}
-                                                    </Box>
-                                                )}
-                                                {entry.workName}
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                                                    <span>{entry.workName}</span>
+                                                    {entry.groupName && (
+                                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, bgcolor: '#e8f5e9', color: '#2e7d32', borderRadius: '4px', px: 0.7, py: 0.2, fontSize: '0.7rem', fontWeight: 600, flexShrink: 0 }}>
+                                                            <AccountTreeOutlinedIcon sx={{ fontSize: 11 }} />
+                                                            {entry.groupName}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </TableCell>
                                             <TableCell align='center'>{entry.unit}</TableCell>
                                             <TableCell align='center'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
