@@ -184,7 +184,6 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const now = new Date();
         const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
         const unitPrice = (!isNaN(enteredPrice) && addPriceInput.trim() !== '') ? enteredPrice : 0;
-        // Adding to pahest = inventory receipt only, not a cost record. History stays unchanged.
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId && e.estimatedLaborId === selected.estimatedLaborId);
         if (existing >= 0) {
             const next = [...entries];
@@ -208,6 +207,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 history: [],
             }]);
         }
+        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice });
         setAddOpen(false);
     };
 
