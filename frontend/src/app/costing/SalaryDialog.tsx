@@ -163,6 +163,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             id: String(Date.now() + Math.random()),
             workName: selectedRow.laborOfferItemName || selectedRow.catalogName || billingRow.laborOfferItemName || billingRow.catalogName || '—',
             laborItemId: billingRow._id,
+            groupName: parentGroupRow ? (parentGroupRow.laborOfferItemName || parentGroupRow.catalogName || undefined) : undefined,
             unit: billingRow.unitSymbol || '',
             quantity: n1,
             unitPrice: n2,

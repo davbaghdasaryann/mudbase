@@ -9,6 +9,7 @@ import {
 import { TabContext, TabList } from '@mui/lab';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -81,6 +82,7 @@ export interface CostHistoryEntry {
     laborItemId?: string;
     workVolume?: number;
     materialItemId?: string;
+    groupName?: string;
 }
 
 interface SnapshotLaborRow {
@@ -1424,7 +1426,15 @@ export default function CostingPage() {
                                         return (
                                         <TableRow key={entry.id} hover>
                                             <TableCell sx={{ fontSize: '0.82rem', color: '#555' }}>{actionType}</TableCell>
-                                            <TableCell>{entry.workName}</TableCell>
+                                            <TableCell>
+                                                {entry.groupName && (
+                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, bgcolor: '#e8f5e9', color: '#2e7d32', borderRadius: '4px', px: 0.7, py: 0.2, fontSize: '0.7rem', fontWeight: 600, mb: 0.3, mr: 0.5 }}>
+                                                        <AccountTreeOutlinedIcon sx={{ fontSize: 11 }} />
+                                                        {entry.groupName}
+                                                    </Box>
+                                                )}
+                                                {entry.workName}
+                                            </TableCell>
                                             <TableCell align='center'>{entry.unit}</TableCell>
                                             <TableCell align='center'>{entry.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell align='center'>{formatCurrencyRounded(entry.unitPrice)}</TableCell>
