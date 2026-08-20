@@ -88,6 +88,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
     const [aylModal, setAylModal] = useState<AylModalState | null>(null);
     const [laborMatIds, setLaborMatIds] = useState<Map<string, Set<string>>>(new Map());
+    const [laborMatIdsReady, setLaborMatIdsReady] = useState(false);
 
     const estimateId = toId(estimate._id);
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
@@ -95,6 +96,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     useEffect(() => {
         if (!open) return;
         setSelectedRow(null);
+        setLaborMatIdsReady(false);
 
         const buildLaborMatMap = (items: any[], groupData?: any[]): Map<string, Set<string>> => {
             const map = new Map<string, Set<string>>();
@@ -131,7 +133,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             const groups = (hasUf ? maybeGroup : ufOrGroup) as any[] ?? [];
             const combined = [...(main ?? []), ...(uf ?? [])];
             setLaborMatIds(buildLaborMatMap(combined, groups));
-        }).catch(console.error);
+            setLaborMatIdsReady(true);
+        }).catch(() => setLaborMatIdsReady(true));
 
         if (estimateSnapshot) {
             setSections(estimateSnapshot.sections);
@@ -319,6 +322,9 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                             const allowedMatIds = selectedRow ? (laborMatIds.get(toId(selectedRow._id)) ?? new Set<string>()) : new Set<string>();
                             const visiblePahest = pahestEntries.filter(e => e.quantity > 0 && allowedMatIds.has(e.materialItemId));
                             const visibleAyl = aylEntries?.filter(e => e.mutq > 0) ?? [];
+                            if (!laborMatIdsReady) {
+                                return <Box sx={{ display: 'flex', justifyContent: 'center', pt: 6 }}><CircularProgress size={24} sx={{ color: mainPrimaryColor }} /></Box>;
+                            }
                             if (visiblePahest.length === 0 && visibleAyl.length === 0) {
                                 return (
                                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 5, color: '#bbb' }}>
