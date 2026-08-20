@@ -1430,7 +1430,7 @@ export default function CostingPage() {
                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                                                     <span>{entry.workName}</span>
                                                     {entry.groupName && (
-                                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, bgcolor: '#e8f5e9', color: '#2e7d32', borderRadius: '4px', px: 0.7, py: 0.2, fontSize: '0.7rem', fontWeight: 600, flexShrink: 0 }}>
+                                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, bgcolor: '#d6f5e0', color: '#2e7d32', borderRadius: '999px', px: 1, py: 0.25, fontSize: '0.7rem', fontWeight: 600, flexShrink: 0 }}>
                                                             <AccountTreeOutlinedIcon sx={{ fontSize: 11 }} />
                                                             {entry.groupName}
                                                         </Box>
