@@ -586,21 +586,21 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
     const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
     const lightBg = pct === null ? '#f5f5f5' : pct >= 80 ? 'rgba(46,125,50,0.08)' : pct >= 40 ? 'rgba(230,81,0,0.08)' : 'rgba(198,40,40,0.08)';
     const filled = pct ?? 0;
-    const gradStart = pct === null ? '#ddd' : pct >= 80 ? '#a5d6a7' : pct >= 40 ? '#ffcc80' : '#FF8A65';
-    const gradEnd = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#E64A19';
+    const gradStart = pct === null ? '#ddd' : pct >= 80 ? '#a5d6a7' : pct >= 40 ? '#ffcc80' : '#e57373';
+    const gradEnd = pct === null ? '#bbb' : pct >= 80 ? '#1b5e20' : pct >= 40 ? '#bf360c' : '#b71c1c';
 
     return (
         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: height, boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ px: 2, pt: 1.5, pb: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ px: 2, pt: 1.5, pb: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Completion percentage')}</Typography>
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 0 }}>
                     {pct === null ? (
                         <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
                     ) : (
                         <>
                             <Box sx={{ position: 'relative', width: 114, height: 114, flexShrink: 0 }}>
                                 <ResponsiveContainer width={114} height={114}>
-                                    <PieChart>
+                                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                                         <defs>
                                             <linearGradient id='comp-grad' x1='0' y1='0' x2='1' y2='1'>
                                                 <stop offset='0%' stopColor={gradStart} />
@@ -617,7 +617,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                                     <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
                                 </Box>
                             </Box>
-                            <Box sx={{ px: 2, py: 0.5, borderRadius: 5, bgcolor: lightBg, display: 'inline-flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                            <Box sx={{ mt: 1.5, mb: 2, px: 2, py: 0.5, borderRadius: 5, bgcolor: lightBg, display: 'inline-flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
                                 <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color }}>{completedRows} / {rows.length}</Typography>
                                 <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{t('works completed')}</Typography>
                             </Box>
