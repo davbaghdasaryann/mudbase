@@ -599,25 +599,23 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                     </Box>
                 ) : (
                     <>
-                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0 }}>
-                            <Box sx={{ position: 'relative', width: 114, height: 114 }}>
-                                <ResponsiveContainer width={114} height={114}>
-                                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                                        <defs>
-                                            <linearGradient id='comp-grad' x1='0' y1='0' x2='1' y2='1'>
-                                                <stop offset='0%' stopColor={gradColor} stopOpacity={gradOpacityStart} />
-                                                <stop offset='100%' stopColor={gradColor} stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <Pie data={[{ v: filled }, { v: 100 - filled }]} startAngle={90} endAngle={-270} cx={57} cy={57} innerRadius={38} outerRadius={53} paddingAngle={0} dataKey='v' strokeWidth={0}>
-                                            <Cell fill='url(#comp-grad)' />
-                                            <Cell fill='#f0f0f0' />
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
-                                </Box>
+                        <Box sx={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                            <ResponsiveContainer width='100%' height='100%'>
+                                <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                                    <defs>
+                                        <linearGradient id='comp-grad' x1='0' y1='0' x2='1' y2='1'>
+                                            <stop offset='0%' stopColor={gradColor} stopOpacity={gradOpacityStart} />
+                                            <stop offset='100%' stopColor={gradColor} stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
+                                    <Pie data={[{ v: filled }, { v: 100 - filled }]} startAngle={90} endAngle={-270} cx='50%' cy='50%' innerRadius='48%' outerRadius='68%' paddingAngle={0} dataKey='v' strokeWidth={0}>
+                                        <Cell fill='url(#comp-grad)' />
+                                        <Cell fill='#f0f0f0' />
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
                             </Box>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
