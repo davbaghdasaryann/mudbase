@@ -586,11 +586,11 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
     const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
     const lightBg = pct === null ? '#f5f5f5' : pct >= 80 ? 'rgba(46,125,50,0.08)' : pct >= 40 ? 'rgba(230,81,0,0.08)' : 'rgba(198,40,40,0.08)';
     const filled = pct ?? 0;
-    const gradStart = pct === null ? '#ddd' : pct >= 80 ? '#81c784' : pct >= 40 ? '#ffb74d' : '#ef5350';
-    const gradEnd = pct === null ? '#bbb' : pct >= 80 ? '#1b5e20' : pct >= 40 ? '#bf360c' : '#7f0000';
+    const gradStart = pct === null ? '#ddd' : pct >= 80 ? '#a5d6a7' : pct >= 40 ? '#ffcc80' : '#ff8a80';
+    const gradEnd = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
 
     return (
-        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: height, boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ px: 2, pt: 1.5, pb: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Completion percentage')}</Typography>
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
