@@ -1267,7 +1267,7 @@ export default function CostingPage() {
                         </Box>
                         {!collapsedSections.has('overview') && <><Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                             <Box sx={{ flex: 1.5, minHeight: 220 }}>
-                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={vatDeduction + climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees} height={220} />
+                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={vatDeduction + climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees + Math.round(smallScaleEstimate?.totalCost ?? 0)} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} height={220} />
