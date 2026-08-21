@@ -700,10 +700,6 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
                                     <Typography sx={{ fontSize: '0.6rem', color: '#bbb' }}>+{60}%</Typography>
                                 </Box>
                             </Box>
-                            <Box sx={{ mt: 1.5, px: 2, py: 0.5, borderRadius: 5, bgcolor: bgColor, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color }}>{profitValues.length}</Typography>
-                                <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{avgProfit >= 0 ? t('Savings vs estimate') : t('Exceeds estimate')}</Typography>
-                            </Box>
                         </>
                     )}
                 </Box>
