@@ -598,8 +598,8 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                         <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
                     ) : (
                         <>
-                            <Box sx={{ position: 'relative', width: 130, height: 130, flexShrink: 0 }}>
-                                <ResponsiveContainer width={130} height={130}>
+                            <Box sx={{ position: 'relative', width: 114, height: 114, flexShrink: 0 }}>
+                                <ResponsiveContainer width={114} height={114}>
                                     <PieChart>
                                         <defs>
                                             <linearGradient id='comp-grad' x1='0' y1='0' x2='1' y2='1'>
@@ -607,14 +607,14 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
                                                 <stop offset='100%' stopColor={gradEnd} />
                                             </linearGradient>
                                         </defs>
-                                        <Pie data={[{ v: filled }, { v: 100 - filled }]} startAngle={90} endAngle={-270} cx={65} cy={65} innerRadius={44} outerRadius={61} paddingAngle={0} dataKey='v' strokeWidth={0}>
+                                        <Pie data={[{ v: filled }, { v: 100 - filled }]} startAngle={90} endAngle={-270} cx={57} cy={57} innerRadius={38} outerRadius={53} paddingAngle={0} dataKey='v' strokeWidth={0}>
                                             <Cell fill='url(#comp-grad)' />
                                             <Cell fill='#f0f0f0' />
                                         </Pie>
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
+                                    <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1 }}>{pct.toFixed(0)}%</Typography>
                                 </Box>
                             </Box>
                             <Box sx={{ px: 2, py: 0.5, borderRadius: 5, bgcolor: lightBg, display: 'inline-flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
