@@ -1268,7 +1268,7 @@ export default function CostingPage() {
                                 { icon: <BuildIcon sx={{ fontSize: 30, color: '#4caf50', opacity: 0.55 }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#4caf50', hoverBg: 'rgba(76,175,80,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 30, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => {}, accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
-                                { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 30, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխուտյուն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
+                                { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 30, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
                                 { icon: <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 30, color: '#795548', opacity: 0.55 }} />, label: 'Մեխանիզմի ծախսագրում', onClick: () => {}, accent: '#795548', hoverBg: 'rgba(121,85,72,0.06)' },
                                 { icon: <SummarizeOutlinedIcon sx={{ fontSize: 30, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => {}, accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
