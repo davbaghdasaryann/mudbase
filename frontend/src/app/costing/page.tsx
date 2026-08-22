@@ -305,16 +305,18 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     const { t } = useTranslation();
     const chartHeight = Math.max(100, height - 72);
 
-    const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+    const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' || e.paymentMethod === 'pahest_main').reduce((s, e) => s + e.total, 0);
 
     const laborTotal = costHistory
         .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum')
         .reduce((s, e) => s + e.total, 0);
 
+    const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
+
     const data = [
         { key: 'labor',     name: t('Labor'),         value: laborTotal },
         { key: 'materials', name: t('Materials'),      value: materialsTotal },
-        { key: 'other',     name: t('Other Expenses'), value: 0 },
+        { key: 'other',     name: t('Other Expenses'), value: aylTotal },
     ].filter(d => d.value > 0);
 
     const total = data.reduce((s, d) => s + d.value, 0);
@@ -400,7 +402,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     })();
 
     const actData = (() => {
-        const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' || e.paymentMethod === 'pahest_main').reduce((s, e) => s + e.total, 0);
         const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
         const otherTotal = aylMatTotal + extraActualCosts;
@@ -1278,7 +1280,7 @@ export default function CostingPage() {
                             </Box>
                         </Box>
                         {(() => {
-                            const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+                            const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' || e.paymentMethod === 'pahest_main').reduce((s, e) => s + e.total, 0);
                             const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                             const actualTotal = actualMaterials + actualLabor;
                             const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
