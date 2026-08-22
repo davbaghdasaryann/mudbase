@@ -305,7 +305,7 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     const { t } = useTranslation();
     const chartHeight = Math.max(100, height - 72);
 
-    const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' || e.paymentMethod === 'pahest_main').reduce((s, e) => s + e.total, 0);
+    const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
 
     const laborTotal = costHistory
         .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum')
@@ -402,7 +402,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     })();
 
     const actData = (() => {
-        const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' || e.paymentMethod === 'pahest_main').reduce((s, e) => s + e.total, 0);
+        const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
         const otherTotal = aylMatTotal + extraActualCosts;
@@ -1280,7 +1280,7 @@ export default function CostingPage() {
                             </Box>
                         </Box>
                         {(() => {
-                            const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' || e.paymentMethod === 'pahest_main').reduce((s, e) => s + e.total, 0);
+                            const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                             const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                             const actualTotal = actualMaterials + actualLabor;
                             const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
@@ -1520,7 +1520,6 @@ export default function CostingPage() {
                             entries={pahestEntries}
                             onChange={setPahestEntries}
                             actualData={actualData}
-                            onRemoveEntry={(materialItemId, estimatedLaborId) => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'pahest_main' && e.materialItemId === materialItemId && (estimatedLaborId == null || e.estimatedLaborId === estimatedLaborId))))}
                             onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main', materialItemId: e.materialItemId, estimatedLaborId: e.estimatedLaborId }, ...prev])}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
