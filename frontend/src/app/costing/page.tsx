@@ -402,7 +402,8 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     const actData = (() => {
         const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const otherTotal = extraActualCosts;
+        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
+        const otherTotal = aylMatTotal + extraActualCosts;
         const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
         return [
