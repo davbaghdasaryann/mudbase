@@ -645,7 +645,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
         typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
 
     const rows = estimateSnapshot?.laborRows ?? [];
-    const profitValues: number[] = [];
+    let pNumer = 0, pDenom = 0, pHasAny = false;
 
     for (const row of rows) {
         const rowId = toRowId(row._id);
@@ -657,13 +657,12 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
             .filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_'))
             .reduce((s, e) => s + e.total, 0);
         if (actLaborTotal <= 0) continue;
-        const actUP = actLaborTotal / actQty;
-        profitValues.push((estUP - actUP) / estUP * 100);
+        pNumer += estUP * actQty - actLaborTotal;
+        pDenom += estUP * actQty;
+        pHasAny = true;
     }
 
-    const avgProfit = profitValues.length > 0
-        ? profitValues.reduce((s, v) => s + v, 0) / profitValues.length
-        : null;
+    const avgProfit = pHasAny && pDenom > 0 ? (pNumer / pDenom) * 100 : null;
 
     const RANGE = 60;
     const clamped = avgProfit !== null ? Math.max(-RANGE, Math.min(RANGE, avgProfit)) : 0;
