@@ -200,7 +200,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             unitPrice,
             total: qty * unitPrice,
             addedAt: new Date(),
-            paymentMethod: 'nyuth_tsakhsagrum',
+            paymentMethod: 'pahest_ayl',
+            materialItemId: e.id,
         });
         setAylModal(null);
     };
