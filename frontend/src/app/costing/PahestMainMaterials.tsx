@@ -186,7 +186,6 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
         const unitPrice = (!isNaN(enteredPrice) && addPriceInput.trim() !== '') ? enteredPrice : 0;
         const existing = entries.findIndex(e => e.materialItemId === selected.materialItemId && e.estimatedLaborId === selected.estimatedLaborId);
-        const historyRecord = { quantity: qty, costPerUnit: unitPrice, addedAt: now };
         if (existing >= 0) {
             const next = [...entries];
             next[existing] = {
@@ -194,7 +193,6 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 quantity: next[existing].quantity + qty,
                 costPerUnit: unitPrice || next[existing].costPerUnit,
                 addedAt: now,
-                history: [...next[existing].history, historyRecord],
             };
             onChange(next);
         } else {
@@ -207,10 +205,9 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 estimateQuantity: selected.estimateQuantity,
                 costPerUnit: unitPrice,
                 addedAt: now,
-                history: [historyRecord],
+                history: [],
             }]);
         }
-        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice, materialItemId: selected.materialItemId, estimatedLaborId: selected.estimatedLaborId });
         setAddOpen(false);
     };
 
