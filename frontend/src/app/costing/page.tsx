@@ -181,7 +181,7 @@ const TripleParamCard = ({ label, icon, estimate, current, completed, subLabel }
 );
 
 const HISTORY_TYPE_GROUPS: { key: string; label: string; match: (pm: string, isSub?: boolean) => boolean }[] = [
-    { key: 'pahest',            label: 'Մուտք Պահեստ', match: pm => pm === 'pahest_main' || pm === 'pahest_ayl' },
+    { key: 'pahest',            label: 'Մուտք Պահեստ', match: pm => pm === 'pahest_main' || pm === 'pahest_ayl' || pm === 'pahest_ayl_cost' },
     { key: 'nyuth',             label: 'Նյութի Ծախսագրում', match: pm => pm === 'nyuth_tsakhsagrum' },
     { key: 'salary_gorcarqayin',label: 'Աշխատավարձ «Գործարքային»', match: pm => pm === 'salary_gorcarqayin' },
     { key: 'salary_miavorzham', label: 'Աշխատավարձ «Ժամավճարային»', match: pm => pm === 'salary_miavorzham' },
@@ -311,7 +311,7 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
         .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum')
         .reduce((s, e) => s + e.total, 0);
 
-    const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
+    const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost').reduce((s, e) => s + e.total, 0);
 
     const data = [
         { key: 'labor',     name: t('Labor'),         value: laborTotal },
@@ -404,7 +404,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     const actData = (() => {
         const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
+        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost').reduce((s, e) => s + e.total, 0);
         const otherTotal = aylMatTotal + extraActualCosts;
         const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
@@ -1437,7 +1437,7 @@ export default function CostingPage() {
                                         const actionType = pm === 'salary_druqayin' ? t('Rate-based')
                                             : pm === 'salary_gorcarqayin' ? 'Աշխատավարձ «Գործարքային»'
                                             : pm === 'salary_miavorzham' ? 'Աշխատավարձ «Ժամավճարային»'
-                                            : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
+                                            : pm === 'pahest_main' || pm === 'pahest_ayl' || pm === 'pahest_ayl_cost' ? 'Մուտք Պահեստ'
                                             : pm === 'nyuth_tsakhsagrum' ? 'Նյութի Ծախսագրում'
                                             : pm === 'subcontractor' ? 'Ենթակապալ'
                                             : pm === 'unforeseen' ? 'Չնախատեսված աշխատանքներ'
@@ -1471,7 +1471,7 @@ export default function CostingPage() {
                                                                     ? { ...e, costedQuantity: Math.max(0, (e.costedQuantity ?? 0) - entry.quantity) }
                                                                     : e
                                                             ));
-                                                        } else if (entry.paymentMethod === 'pahest_ayl' && entry.materialItemId) {
+                                                        } else if ((entry.paymentMethod === 'pahest_ayl' || entry.paymentMethod === 'pahest_ayl_cost') && entry.materialItemId) {
                                                             setAylEntries(prev => {
                                                                 const idx = prev.findIndex(e => e.id === entry.materialItemId);
                                                                 if (idx < 0) return prev;
@@ -1537,7 +1537,8 @@ export default function CostingPage() {
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
                             <PahestAylMaterials entries={aylEntries} onChange={setAylEntries}
-                                onRemoveEntry={aylEntryId => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'pahest_ayl' && e.materialItemId === aylEntryId)))}
+                                onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_ayl', materialItemId: e.aylEntryId }, ...prev])}
+                                onRemoveEntry={aylEntryId => setCostHistory(prev => prev.filter(e => !((e.paymentMethod === 'pahest_ayl' || e.paymentMethod === 'pahest_ayl_cost') && e.materialItemId === aylEntryId)))}
                             />
                         </Box>
                     </Box>

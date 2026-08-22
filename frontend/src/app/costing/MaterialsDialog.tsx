@@ -200,7 +200,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             unitPrice,
             total: qty * unitPrice,
             addedAt: new Date(),
-            paymentMethod: 'pahest_ayl',
+            paymentMethod: 'pahest_ayl_cost',
             materialItemId: e.id,
         });
         setAylModal(null);
