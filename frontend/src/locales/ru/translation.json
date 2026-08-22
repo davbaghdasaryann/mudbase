@@ -195,5 +195,6 @@
   "History": "История",
   "Date Added": "Дата добавления",
   "Add new quantity": "Добавить новое количество",
-  "Confirm": "Подтвердить"
+  "Confirm": "Подтвердить",
+  "Delete cost history first": "Сначала удалите историю затрат"
 }

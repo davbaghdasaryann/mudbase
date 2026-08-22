@@ -340,7 +340,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                     </IconButton>
                                 </Tooltip>
                                 {(() => { const isCosted = costedMainKeys?.has(`${e.materialItemId}|${e.estimatedLaborId ?? ''}`); return (
-                                <Tooltip title={isCosted ? 'Նախ ջնջի ծախսագրումը / Delete cost history first' : t('Remove')}>
+                                <Tooltip title={isCosted ? t('Delete cost history first') : t('Remove')}>
                                     <span><IconButton size='small' disabled={isCosted} onClick={() => handleDelete(e.materialItemId, e.estimatedLaborId)} sx={{ color: isCosted ? '#e0e0e0' : '#ccc', '&:hover': { color: isCosted ? '#e0e0e0' : '#e53935' } }}>
                                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                                     </IconButton></span>

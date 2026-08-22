@@ -187,7 +187,7 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, 
                                     </IconButton>
                                 </Tooltip>
                                 {(() => { const isCosted = costedAylIds?.has(e.id); return (
-                                <Tooltip title={isCosted ? 'Նախ ջնջի ծախսագրումը / Delete cost history first' : t('Remove')}>
+                                <Tooltip title={isCosted ? t('Delete cost history first') : t('Remove')}>
                                     <span><IconButton size='small' disabled={isCosted} onClick={() => remove(e.id)} sx={{ color: isCosted ? '#e0e0e0' : '#ccc', '&:hover': { color: isCosted ? '#e0e0e0' : '#e53935' } }}>
                                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                                     </IconButton></span>
