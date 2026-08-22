@@ -634,10 +634,11 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
     );
 }
 
-function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, height = 220 }: {
+function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, pahestEntries, height = 220 }: {
     estimateSnapshot?: EstimateSnapshot | null;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
     costHistory: CostHistoryEntry[];
+    pahestEntries: PahestEntry[];
     height?: number;
 }) {
     const { t } = useTranslation();
@@ -649,15 +650,23 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, h
 
     for (const row of rows) {
         const rowId = toRowId(row._id);
-        const estUP = row.changableAveragePrice ?? 0;
+        const estQty = Number(row.quantity ?? 0);
+        if (estQty <= 0) continue;
+        const estTotal = Math.round(estQty * row.changableAveragePrice) + Math.round(row.materialTotalCost ?? 0);
+        const estUP = estTotal / estQty;
         if (estUP <= 0) continue;
         const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
         if (actQty <= 0) continue;
-        const actLaborTotal = costHistory
-            .filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_'))
-            .reduce((s, e) => s + e.total, 0);
-        if (actLaborTotal <= 0) continue;
-        pNumer += estUP * actQty - actLaborTotal;
+        const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const matActTotal = costHistory.filter(e => {
+            if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+            if (e.laborItemId) return e.laborItemId === rowId;
+            if (!e.materialItemId) return false;
+            return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+        }).reduce((s, e) => s + e.total, 0);
+        const actTotal = salTotal + matActTotal;
+        if (actTotal <= 0) continue;
+        pNumer += estUP * actQty - actTotal;
         pDenom += estUP * actQty;
         pHasAny = true;
     }
@@ -1275,7 +1284,7 @@ export default function CostingPage() {
                                 <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
-                                <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} height={220} />
+                                <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} pahestEntries={pahestEntries} height={220} />
                             </Box>
                         </Box>
                         {(() => {
