@@ -300,6 +300,14 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                             </Box>
                         ) : sections.length === 0 ? (
                             <Typography sx={{ color: '#aaa', py: 4, textAlign: 'center', px: 2 }}>{t('No sections found')}</Typography>
+                        ) : !rows.some(r => {
+                            const laborId = toId(r._id);
+                            return parseFloat(actualData?.[laborId]?.quantity || '0') > 0 || pahestEntries.some(e => e.quantity > 0 && (laborMatIds.get(laborId) ?? new Set<string>()).has(e.materialItemId));
+                        }) && !ufRows.some(r => parseFloat(actualData?.[toId(r._id)]?.quantity || '0') > 0) ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, px: 4, gap: 0.5 }}>
+                                <Typography sx={{ color: '#bbb', fontSize: '0.82rem', textAlign: 'center' }}>Նախ անհրաժեշտ է ծավալի գրանցում կատարել</Typography>
+                                <Typography sx={{ color: '#ccc', fontSize: '0.78rem', textAlign: 'center' }}>Volume registration must be completed first</Typography>
+                            </Box>
                         ) : (
                             <Box>
                                 {renderWorkSections(sections, subsections, rows)}
