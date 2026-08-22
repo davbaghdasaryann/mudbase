@@ -1531,12 +1531,14 @@ export default function CostingPage() {
                             entries={pahestEntries}
                             onChange={setPahestEntries}
                             actualData={actualData}
+                            costedMainKeys={new Set(costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.materialItemId).map(e => `${e.materialItemId}|${e.estimatedLaborId ?? ''}`))}
                             onRemoveEntry={(materialItemId, estimatedLaborId) => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'pahest_main' && e.materialItemId === materialItemId && (estimatedLaborId == null || e.estimatedLaborId === estimatedLaborId))))}
                             onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_main', materialItemId: e.materialItemId, estimatedLaborId: e.estimatedLaborId }, ...prev])}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
                             <PahestAylMaterials entries={aylEntries} onChange={setAylEntries}
+                                costedAylIds={new Set(costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' && e.materialItemId).map(e => e.materialItemId as string))}
                                 onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_ayl', materialItemId: e.aylEntryId }, ...prev])}
                                 onRemoveEntry={aylEntryId => setCostHistory(prev => prev.filter(e => !((e.paymentMethod === 'pahest_ayl' || e.paymentMethod === 'pahest_ayl_cost') && e.materialItemId === aylEntryId)))}
                             />

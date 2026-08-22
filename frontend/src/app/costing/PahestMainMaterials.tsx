@@ -79,6 +79,7 @@ interface Props {
     onHistoryEntry?: (e: HistoryEntryInput) => void;
     onRemoveEntry?: (materialItemId: string, estimatedLaborId?: string) => void;
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
+    costedMainKeys?: Set<string>;
 }
 
 function toIdStr(id: unknown): string {
@@ -88,7 +89,7 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, onRemoveEntry, actualData }: Props) {
+export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, onRemoveEntry, actualData, costedMainKeys }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [groupData, setGroupData] = useState<GroupMaterialData[]>([]);
@@ -338,11 +339,13 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                         <HistoryIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title={t('Remove')}>
-                                    <IconButton size='small' onClick={() => handleDelete(e.materialItemId, e.estimatedLaborId)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                {(() => { const isCosted = costedMainKeys?.has(`${e.materialItemId}|${e.estimatedLaborId ?? ''}`); return (
+                                <Tooltip title={isCosted ? 'Նախ ջնջի ծախսագրումը / Delete cost history first' : t('Remove')}>
+                                    <span><IconButton size='small' disabled={isCosted} onClick={() => handleDelete(e.materialItemId, e.estimatedLaborId)} sx={{ color: isCosted ? '#e0e0e0' : '#ccc', '&:hover': { color: isCosted ? '#e0e0e0' : '#e53935' } }}>
                                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-                                    </IconButton>
+                                    </IconButton></span>
                                 </Tooltip>
+                                ); })()}
                             </Box>
                         </Box>
                         );

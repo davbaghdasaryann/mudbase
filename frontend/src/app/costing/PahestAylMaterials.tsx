@@ -38,6 +38,7 @@ interface Props {
     onChange: (entries: AylEntry[]) => void;
     onHistoryEntry?: (e: HistoryEntryInput) => void;
     onRemoveEntry?: (aylEntryId: string) => void;
+    costedAylIds?: Set<string>;
 }
 
 const newRow = (): AylEntry => ({
@@ -52,7 +53,7 @@ const newRow = (): AylEntry => ({
 
 const COLS = '1fr 90px 140px 120px 120px 120px 88px';
 
-export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, onRemoveEntry }: Props) {
+export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, onRemoveEntry, costedAylIds }: Props) {
     const { t } = useTranslation();
     const [units, setUnits] = useState<UnitOption[]>([]);
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
@@ -185,11 +186,13 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, 
                                         <HistoryIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title={t('Remove')}>
-                                    <IconButton size='small' onClick={() => remove(e.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                {(() => { const isCosted = costedAylIds?.has(e.id); return (
+                                <Tooltip title={isCosted ? 'Նախ ջնջի ծախսագրումը / Delete cost history first' : t('Remove')}>
+                                    <span><IconButton size='small' disabled={isCosted} onClick={() => remove(e.id)} sx={{ color: isCosted ? '#e0e0e0' : '#ccc', '&:hover': { color: isCosted ? '#e0e0e0' : '#e53935' } }}>
                                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-                                    </IconButton>
+                                    </IconButton></span>
                                 </Tooltip>
+                                ); })()}
                             </Box>
                         </Box>
                     ))}
