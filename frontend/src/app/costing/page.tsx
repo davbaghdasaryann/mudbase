@@ -1537,7 +1537,6 @@ export default function CostingPage() {
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
                             <PahestAylMaterials entries={aylEntries} onChange={setAylEntries}
-                                onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_ayl', materialItemId: e.aylEntryId }, ...prev])}
                                 onRemoveEntry={aylEntryId => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'pahest_ayl' && e.materialItemId === aylEntryId)))}
                             />
                         </Box>
