@@ -311,10 +311,12 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
         .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum')
         .reduce((s, e) => s + e.total, 0);
 
+    const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
+
     const data = [
         { key: 'labor',     name: t('Labor'),         value: laborTotal },
         { key: 'materials', name: t('Materials'),      value: materialsTotal },
-        { key: 'other',     name: t('Other Expenses'), value: 0 },
+        { key: 'other',     name: t('Other Expenses'), value: aylTotal },
     ].filter(d => d.value > 0);
 
     const total = data.reduce((s, d) => s + d.value, 0);
@@ -402,7 +404,8 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     const actData = (() => {
         const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const otherTotal = extraActualCosts;
+        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl').reduce((s, e) => s + e.total, 0);
+        const otherTotal = aylMatTotal + extraActualCosts;
         const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
         return [
