@@ -77,6 +77,7 @@ interface Props {
     entries: PahestEntry[];
     onChange: (entries: PahestEntry[]) => void;
     onHistoryEntry?: (e: HistoryEntryInput) => void;
+    onRemoveEntry?: (materialItemId: string, estimatedLaborId?: string) => void;
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
 }
 
@@ -87,7 +88,7 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, actualData }: Props) {
+export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, onRemoveEntry, actualData }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [groupData, setGroupData] = useState<GroupMaterialData[]>([]);
@@ -239,6 +240,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
 
     const handleDelete = (materialItemId: string, estimatedLaborId?: string) => {
         onChange(entries.filter(e => !(e.materialItemId === materialItemId && e.estimatedLaborId === estimatedLaborId)));
+        onRemoveEntry?.(materialItemId, estimatedLaborId);
     };
 
     const deleteHistoryRecord = (materialItemId: string, estimatedLaborId: string | undefined, recIdx: number) => {
@@ -249,6 +251,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const newHistory = entry.history.filter((_, i) => i !== recIdx);
         if (newHistory.length === 0) {
             onChange(entries.filter(e => !(e.materialItemId === materialItemId && e.estimatedLaborId === estimatedLaborId)));
+            onRemoveEntry?.(materialItemId, estimatedLaborId);
             setHistoryEntryId(null);
         } else {
             const next = [...entries];
