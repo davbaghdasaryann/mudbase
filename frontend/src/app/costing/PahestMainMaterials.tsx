@@ -208,6 +208,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 history: [],
             }]);
         }
+        onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice, materialItemId: selected.materialItemId, estimatedLaborId: selected.estimatedLaborId });
         setAddOpen(false);
     };
 
