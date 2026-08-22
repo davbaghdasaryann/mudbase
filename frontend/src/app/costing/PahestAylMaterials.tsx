@@ -31,12 +31,13 @@ export interface AylEntry {
     history: AylHistoryRecord[];
 }
 
-interface HistoryEntryInput { workName: string; unit: string; quantity: number; unitPrice: number; total: number; }
+interface HistoryEntryInput { workName: string; unit: string; quantity: number; unitPrice: number; total: number; aylEntryId?: string; }
 
 interface Props {
     entries: AylEntry[];
     onChange: (entries: AylEntry[]) => void;
     onHistoryEntry?: (e: HistoryEntryInput) => void;
+    onRemoveEntry?: (aylEntryId: string) => void;
 }
 
 const newRow = (): AylEntry => ({
@@ -51,7 +52,7 @@ const newRow = (): AylEntry => ({
 
 const COLS = '1fr 90px 140px 120px 120px 120px 88px';
 
-export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }: Props) {
+export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, onRemoveEntry }: Props) {
     const { t } = useTranslation();
     const [units, setUnits] = useState<UnitOption[]>([]);
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
@@ -72,7 +73,7 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }
     const update = (id: string, field: keyof AylEntry, val: string) =>
         onChange(entries.map(e => e.id === id ? { ...e, [field]: val } : e));
 
-    const remove = (id: string) => onChange(entries.filter(e => e.id !== id));
+    const remove = (id: string) => { onChange(entries.filter(e => e.id !== id)); onRemoveEntry?.(id); };
 
     const handlePlusConfirm = () => {
         if (!plusEntry) return;
@@ -91,7 +92,7 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }
         }));
         if (qty > 0) {
             const price = parseFloat(priceForRecord) || 0;
-            onHistoryEntry?.({ workName: plusEntry.name || '—', unit: plusEntry.unit, quantity: qty, unitPrice: price, total: qty * price });
+            onHistoryEntry?.({ workName: plusEntry.name || '—', unit: plusEntry.unit, quantity: qty, unitPrice: price, total: qty * price, aylEntryId: plusEntry.id });
         }
         setPlusEntry(null);
         setPlusQtyInput('');
@@ -105,6 +106,7 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry }
         const newHistory = entry.history.filter((_, i) => i !== recIdx);
         if (newHistory.length === 0) {
             onChange(entries.filter(e => e.id !== entryId));
+            onRemoveEntry?.(entryId);
             setHistoryEntryId(null);
         } else {
             onChange(entries.map(e => e.id === entryId
