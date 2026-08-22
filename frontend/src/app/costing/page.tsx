@@ -1471,6 +1471,17 @@ export default function CostingPage() {
                                                                     ? { ...e, costedQuantity: Math.max(0, (e.costedQuantity ?? 0) - entry.quantity) }
                                                                     : e
                                                             ));
+                                                        } else if (entry.paymentMethod === 'pahest_ayl' && entry.materialItemId) {
+                                                            setAylEntries(prev => {
+                                                                const idx = prev.findIndex(e => e.id === entry.materialItemId);
+                                                                if (idx < 0) return prev;
+                                                                const newMutq = prev[idx].mutq - entry.quantity;
+                                                                const newHistory = prev[idx].history.filter((_, i) => i !== prev[idx].history.findIndex(r => Math.abs(r.quantity - entry.quantity) < 0.001));
+                                                                if (newMutq <= 0 || newHistory.length === 0) return prev.filter((_, i) => i !== idx);
+                                                                const next = [...prev];
+                                                                next[idx] = { ...next[idx], mutq: Math.max(0, newMutq), history: newHistory };
+                                                                return next;
+                                                            });
                                                         } else if (entry.paymentMethod === 'pahest_main' && entry.materialItemId) {
                                                             setPahestEntries(prev => {
                                                                 const idx = prev.findIndex(e => e.materialItemId === entry.materialItemId && (entry.estimatedLaborId == null || e.estimatedLaborId === entry.estimatedLaborId));
