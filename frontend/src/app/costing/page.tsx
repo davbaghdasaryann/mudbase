@@ -1249,14 +1249,6 @@ export default function CostingPage() {
         }
 
         const overheadTotal = overheadEntries.reduce((s, e) => s + e.total, 0);
-        if (overheadTotal > 0) {
-            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">Վերադիր ծախսեր</td></tr>`;
-            for (const oe of overheadEntries) {
-                tableBodyHtml += `<tr><td></td><td></td><td style="text-align:left;">${esc(oe.name)}</td><td colspan="10"></td><td class="bold">${fmtN(oe.total)}</td></tr>`;
-            }
-            grandActTotal += overheadTotal;
-        }
-
         const otherCostsList: [string, number][] = [
             [t('valueAddedTax'), vatDeduction],
             [t('climaticImpactCosts'), climateImpact],
@@ -1265,11 +1257,15 @@ export default function CostingPage() {
             [t('operationHandoverCosts'), commissioningCosts],
             [t('stateDutiesAndFees'), stateFees],
         ].filter(([, v]) => (v as number) > 0) as [string, number][];
-        if (otherCostsList.length > 0) {
+        if (overheadTotal > 0 || otherCostsList.length > 0) {
             tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
+            if (overheadTotal > 0) {
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13">Վերադիր ծախսեր</td><td></td><td class="bold">${fmtN(overheadTotal)}</td></tr>`;
+                grandActTotal += overheadTotal;
+            }
             for (const [label, val] of otherCostsList) {
-                tableBodyHtml += `<tr><td class="importantInfo" colspan="13">${esc(label)}</td><td></td><td class="bold">${fmtN(val)}</td></tr>`;
-                grandActTotal += val;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13">${esc(label)}</td><td></td><td class="bold">${fmtN(val as number)}</td></tr>`;
+                grandActTotal += val as number;
             }
         }
 
