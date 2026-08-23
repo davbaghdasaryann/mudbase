@@ -66,7 +66,7 @@ const inputSx = {
     py: 0.6,
     fontSize: '0.9rem',
     bgcolor: '#fff',
-    width: 160,
+    width: '100%',
     '& input': { textAlign: 'right' },
     '&:focus-within': { borderColor: ACCENT, boxShadow: `0 0 0 2px ${ACCENT}18` },
     transition: 'all 0.15s',
@@ -185,11 +185,12 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                         </Box>
                     ))}
 
-                    {/* Footer total */}
+                    {/* Footer total + confirm — same grid as rows for alignment */}
                     {rows.length > 0 && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 180px', gap: 1, alignItems: 'center', px: 1.5, pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
+                            <Box />
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>Ընդամենը</Typography>
-                            <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: ACCENT }}>
+                            <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: ACCENT, textAlign: 'right' }}>
                                 {grandTotal > 0 ? fmtNum(grandTotal) + ' AMD' : '—'}
                             </Typography>
                         </Box>
@@ -197,12 +198,14 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                 </Box>
             </DialogContent>
 
-            {/* Save button */}
-            <Box sx={{ px: 3, pb: 2.5, pt: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            {/* Confirm button aligned to amount column */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 180px', gap: 1, px: 3, pb: 2.5, pt: 1 }}>
+                <Box /><Box />
                 <Button
                     onClick={handleConfirm}
                     variant='contained'
-                    sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: ACCENT, fontWeight: 600, px: 3, boxShadow: 'none', '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
+                    fullWidth
+                    sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: ACCENT, fontWeight: 600, boxShadow: 'none', '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
                 >
                     {t('Confirm')}
                 </Button>
