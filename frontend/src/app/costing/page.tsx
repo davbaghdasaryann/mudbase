@@ -1321,13 +1321,12 @@ export default function CostingPage() {
                             const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && (e.costedQuantity ?? 0) >= e.estimateQuantity).length;
                             const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (e.costedQuantity ?? 0) < e.estimateQuantity).length;
                             return (
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' }, gap: 2, mb: 2 }}>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
                                     <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
                                     <TripleParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.materialItemCount ?? 0} current={materialCurrent} completed={materialCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
                                     <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} actualValue={actualTotal > 0 ? actualTotal : undefined} />
                                     <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} actualValue={actualMaterials > 0 ? actualMaterials : undefined} />
                                     <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} actualValue={actualLabor > 0 ? actualLabor : undefined} />
-                                    <MetricCard label='Վերադիր ծախսեր' value={overheadEntries.reduce((s, e) => s + e.total, 0)} />
                                 </Box>
                             );
                         })()}</>}
@@ -1384,7 +1383,8 @@ export default function CostingPage() {
                                     {expenses.map((exp, i) => {
                                         const key = Object.keys(exp)[0];
                                         const estimatedValue = key === UF_KEY ? ufEstimated : Math.round(base * (exp[key] ?? 0) / 100);
-                                        const actualValue = key === SSW_KEY ? ssEstimated : key === SSM_KEY ? aylActual : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : key === 'temporaryStructures' ? temporaryStructures : key === 'transportationCosts' ? transportationCosts : key === 'operationHandoverCosts' ? commissioningCosts : key === 'stateDutiesAndFees' ? stateFees : 0;
+                                        const overheadActual = overheadEntries.reduce((s, e) => s + e.total, 0);
+                                        const actualValue = key === SSW_KEY ? ssEstimated : key === SSM_KEY ? aylActual : key === UF_KEY ? ufActual : key === VAT_KEY ? vatActual : key === CLIMATE_KEY ? climateActual : key === 'temporaryStructures' ? temporaryStructures : key === 'transportationCosts' ? transportationCosts : key === 'operationHandoverCosts' ? commissioningCosts : key === 'stateDutiesAndFees' ? stateFees : key === 'overheadCosts' ? overheadActual : 0;
                                         const label = t(estimateOtherExpensesItems.find(it => it.id === key)?.label ?? key);
                                         return <OtherExpenseBarWidget key={key} expenseKey={key} label={label} estimatedValue={estimatedValue} actualValue={actualValue} gradIndex={i} height={200} />;
                                     })}
