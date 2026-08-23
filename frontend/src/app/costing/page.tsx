@@ -1153,7 +1153,7 @@ export default function CostingPage() {
                     return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
                 }).reduce((s, e) => s + e.total, 0);
                 const actTotal = salTotal + matActTotal;
-                const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
+                const actUP = actQty > 0 ? Math.round(salTotal / actQty) : 0;
 
                 // Skip rows with no actual data
                 if (actQty === 0 && actTotal === 0) return '';
@@ -1194,7 +1194,7 @@ export default function CostingPage() {
                     <td>${mat0.costPerUnit > 0 ? fmtN(mat0.costPerUnit) : ''}</td>
                     <td>${mat0.total > 0 ? fmtN(mat0.total) : ''}</td>
                     <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td rowspan="${rowspan}" class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
+                    <td rowspan="${rowspan}" class="bold">${salTotal > 0 ? fmtN(salTotal) : ''}</td>
                 </tr>`;
                     for (let mi = 1; mi < mats.length; mi++) {
                         const mat = mats[mi];
@@ -1212,7 +1212,7 @@ export default function CostingPage() {
                 } else {
                     html += `<td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                     <td>${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
+                    <td class="bold">${salTotal > 0 ? fmtN(salTotal) : ''}</td>
                 </tr>`;
                 }
                 return html;
