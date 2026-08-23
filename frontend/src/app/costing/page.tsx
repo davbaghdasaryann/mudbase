@@ -1274,8 +1274,8 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 </div>
 <div class="columnHalf">
 <table class="headerTable">
-    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Նախահաշվի անվանումը)</td><td class="headerTableValue center bold">${fmtN(est?.totalCost ?? 0)} AMD</td></tr>
-    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Ուղղակի ծախսեր)</td><td class="headerTableValue center bold">${fmtN(grandActTotal)} AMD</td></tr>
+    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Ըստ նախահաշվի)</td><td class="headerTableValue center bold">${fmtN(est?.totalCost ?? 0)} AMD</td></tr>
+    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Փաստացի)</td><td class="headerTableValue center bold">${fmtN(grandActTotal)} AMD</td></tr>
 </table>
 </div>
 </div>
@@ -1291,12 +1291,12 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
     <th class="lightBlue" rowspan="2">Հ/հ</th>
     <th class="lightBlue" rowspan="2">Աշխատանքի անվանումը</th>
     <th class="lightBlue" rowspan="2">Չ․Մ․</th>
-    <th class="lightBlue" colspan="3">Նախահաշվի անվանումը</th>
-    <th class="lightGreen" colspan="3">Ուղղակի ծախսեր</th>
+    <th class="lightBlue" colspan="3">Ըստ նախահաշվի</th>
+    <th class="lightGreen" colspan="3">Փաստացի</th>
 </tr>
 <tr>
-    <th class="lightBlue">Քանակը</th><th class="lightBlue">Ուղղակի ծախսեր</th><th class="lightBlue">Ընդհանուր արժեքը</th>
-    <th class="lightGreen">Քանակը</th><th class="lightGreen">Ուղղակի ծախսեր</th><th class="lightGreen">Ընդհանուր արժեքը</th>
+    <th class="lightBlue">Քանակ</th><th class="lightBlue">Միավորի արժեքը</th><th class="lightBlue">Ընդհանուր</th>
+    <th class="lightGreen">Քանակ</th><th class="lightGreen">Միավորի արժեքը</th><th class="lightGreen">Ընդհանուր</th>
 </tr>
 </thead>
 <tbody>
