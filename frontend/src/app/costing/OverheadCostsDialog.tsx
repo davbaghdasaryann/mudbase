@@ -143,17 +143,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                         </Box>
                         <Box sx={{ flex: 1 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Վերադիր ծախսեր</Typography>
-                            {grandTotal > 0 && (
-                                <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.1 }}>
-                                    {entries.length} {t('entries')} · {fmt(grandTotal)} AMD
-                                </Typography>
-                            )}
                         </Box>
-                        <Chip
-                            label={`${fmt(grandTotal)} AMD`}
-                            size='small'
-                            sx={{ bgcolor: `${PRIMARY}12`, color: PRIMARY, fontWeight: 700, fontSize: '0.8rem', border: `1px solid ${PRIMARY}30`, display: grandTotal > 0 ? 'flex' : 'none' }}
-                        />
                         <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
                             <CloseIcon sx={{ fontSize: 18 }} />
                         </IconButton>
@@ -210,10 +200,11 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                             {!addOpen ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                     <Button
-                                        variant='contained'
-                                        startIcon={<AddIcon />}
+                                        variant='outlined'
+                                        size='small'
+                                        startIcon={<AddIcon sx={{ fontSize: 16 }} />}
                                         onClick={() => setAddOpen(true)}
-                                        sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: ACCENT, fontWeight: 600, px: 3, boxShadow: 'none', '&:hover': { bgcolor: '#455a64', boxShadow: 'none' } }}
+                                        sx={{ borderRadius: '20px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2, fontSize: '0.8rem', boxShadow: 'none', '&:hover': { bgcolor: ACCENT, color: '#fff', borderColor: ACCENT, boxShadow: 'none' } }}
                                     >
                                         {t('Add')}
                                     </Button>
@@ -336,7 +327,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                         {entries.length > 0 && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
                                 <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>
-                                    Ենդամենը:&nbsp;
+                                    Ընդամենը:&nbsp;
                                     <Box component='span' sx={{ color: PRIMARY, fontSize: '1rem' }}>{fmt(grandTotal)} AMD</Box>
                                 </Typography>
                             </Box>
