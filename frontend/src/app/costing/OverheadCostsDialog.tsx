@@ -200,7 +200,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                 Ծախսեր դեռ չեն ավելացվել
                             </Typography>
                         ) : entries.map((e, idx) => (
-                            <Box key={e.id} sx={{ borderBottom: '1px solid #f0f0f0', bgcolor: idx % 2 === 0 ? '#fafafa' : '#fff', borderRadius: 1 }}>
+                            <Box key={e.id} sx={{ borderBottom: '1px solid #f0f0f0', bgcolor: idx % 2 === 0 ? '#fff' : '#fafafa', borderRadius: 1 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', py: 1.2, gap: 1, px: 1 }}>
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
                                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
