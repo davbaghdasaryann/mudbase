@@ -282,7 +282,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                                 <HistoryIcon sx={{ fontSize: 17 }} />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title='Avelacel'>
+                                        <Tooltip title='Ավելացնել'>
                                             <IconButton size='small' onClick={() => { setPlusEntryId(plusEntryId === e.id ? null : e.id); setPlusAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#4caf50' }, p: 0.5 }}>
                                                 <AddCircleOutlineIcon sx={{ fontSize: 17 }} />
                                             </IconButton>
