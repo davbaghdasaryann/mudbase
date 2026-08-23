@@ -218,7 +218,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                         <InputBase
                                             value={addName}
                                             onChange={e => setAddName(e.target.value)}
-                                            placeholder='ծախսի անվանումը'
+                                            placeholder='Ծախսի անվանումը'
                                             sx={{ ...inputSx, flex: 2 }}
                                             autoFocus
                                             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAddOpen(false); setAddName(''); setAddAmount(''); } }}
@@ -226,7 +226,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                         <InputBase
                                             value={addAmount}
                                             onChange={e => setAddAmount(e.target.value)}
-                                            placeholder='ծախսի անվանումը'
+                                            placeholder='0'
                                             type='number'
                                             sx={{ ...inputSx, flex: 1 }}
                                             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
