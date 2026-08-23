@@ -179,18 +179,18 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                     sx={{ ...inputSx, flex: 1, minWidth: 100 }}
                                     onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
                                 />
-                                <Button
-                                    size='small'
-                                    variant='contained'
-                                    onClick={handleAdd}
-                                    disabled={!addName.trim() || parse(addAmount) <= 0}
-                                    sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: ACCENT, '&:hover': { bgcolor: '#455a64' }, '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#aaa' } }}
-                                >
-                                    {t('Confirm')}
-                                </Button>
-                                <Button size='small' onClick={() => { setAddOpen(false); setAddName(''); setAddAmount(''); }} sx={{ borderRadius: '20px', textTransform: 'none', color: '#888' }}>
-                                    {t('Cancel')}
-                                </Button>
+                                <Tooltip title={t('Confirm')}>
+                                    <span>
+                                        <IconButton size='small' onClick={handleAdd} disabled={!addName.trim() || parse(addAmount) <= 0} sx={{ color: PRIMARY, '&.Mui-disabled': { color: '#e0e0e0' } }}>
+                                            <CheckIcon sx={{ fontSize: 20 }} />
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                                <Tooltip title={t('Cancel')}>
+                                    <IconButton size='small' onClick={() => { setAddOpen(false); setAddName(''); setAddAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                        <CloseIcon sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Tooltip>
                             </Box>
                         )}
 
