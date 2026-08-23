@@ -1127,7 +1127,7 @@ export default function CostingPage() {
         const fmtN = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const fmtDate = () => new Date().toLocaleDateString('hy-AM');
-        const COLS = 16;
+        const COLS = 15;
 
         const sections = [...estimateSnapshot.sections].sort((a, b) => a.displayIndex - b.displayIndex);
         const subsections = estimateSnapshot.subsections;
@@ -1153,7 +1153,7 @@ export default function CostingPage() {
                     return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
                 }).reduce((s, e) => s + e.total, 0);
                 const actTotal = salTotal + matActTotal;
-                const actUP = actQty > 0 ? Math.round(salTotal / actQty) : 0;
+                const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
 
                 // Skip rows with no actual data
                 if (actQty === 0 && actTotal === 0) return '';
@@ -1179,8 +1179,7 @@ export default function CostingPage() {
                     <td rowspan="${rowspan}" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
                     <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
                     <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
-                    <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td rowspan="${rowspan}"></td>`;
+                    <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>`;
 
                 if (mats.length > 0) {
                     const mat0 = mats[0];
@@ -1210,7 +1209,7 @@ export default function CostingPage() {
                 </tr>`;
                     }
                 } else {
-                    html += `<td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    html += `<td></td><td></td><td></td><td></td><td></td><td></td>
                     <td>${actUP > 0 ? fmtN(actUP) : ''}</td>
                     <td class="bold">${salTotal > 0 ? fmtN(salTotal) : ''}</td>
                 </tr>`;
@@ -1240,7 +1239,7 @@ export default function CostingPage() {
 
             if (sectionHasData) {
                 tableBodyHtml += `<tr>
-                <td class="section" colspan="14">${esc(`${si + 1}. ${section.name}`)}</td>
+                <td class="section" colspan="13">${esc(`${si + 1}. ${section.name}`)}</td>
                 <td class="section" colspan="2">${fmtN(secActTotal)}</td>
             </tr>`;
                 tableBodyHtml += sectionBodyHtml;
@@ -1252,7 +1251,7 @@ export default function CostingPage() {
         if (overheadTotal > 0) {
             tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">Վերադիր ծախսեր</td></tr>`;
             for (const oe of overheadEntries) {
-                tableBodyHtml += `<tr><td></td><td></td><td style="text-align:left;">${esc(oe.name)}</td><td colspan="11"></td><td class="bold">${fmtN(oe.total)}</td></tr>`;
+                tableBodyHtml += `<tr><td></td><td></td><td style="text-align:left;">${esc(oe.name)}</td><td colspan="10"></td><td class="bold">${fmtN(oe.total)}</td></tr>`;
             }
             grandActTotal += overheadTotal;
         }
@@ -1268,13 +1267,13 @@ export default function CostingPage() {
         if (otherCostsList.length > 0) {
             tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
             for (const [label, val] of otherCostsList) {
-                tableBodyHtml += `<tr><td class="importantInfo" colspan="14">${esc(label)}</td><td></td><td class="bold">${fmtN(val)}</td></tr>`;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13">${esc(label)}</td><td></td><td class="bold">${fmtN(val)}</td></tr>`;
                 grandActTotal += val;
             }
         }
 
         tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
-        tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="14">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
+        tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
         const est = selectedEstimate as any;
         const full = `<!DOCTYPE html>
@@ -1339,7 +1338,6 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
     <col style="min-width:24px;max-width:24px;">
     <col style="min-width:60px;max-width:60px;">
     <col style="min-width:60px;max-width:60px;">
-    <col style="min-width:60px;max-width:60px;">
     <col style="min-width:50px;max-width:50px;">
     <col style="min-width:100px;">
     <col style="min-width:24px;max-width:24px;">
@@ -1358,7 +1356,6 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
     <th class="lightBlue" rowspan="2">Չ․Մ․</th>
     <th class="lightBlue" rowspan="2">Քանակը</th>
     <th class="lightBlue" rowspan="2">Արժեքը</th>
-    <th class="lightBlue" rowspan="2">Միավոր/ ժամ</th>
     <th class="lightGreen" colspan="7">Հաշվարկային նյութածախս</th>
     <th class="lightGray" rowspan="2">Աշխատ․ միավոր արժեքը</th>
     <th class="lightGray" rowspan="2">Ընդհանուր միավոր արժեքը</th>
