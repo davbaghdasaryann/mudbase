@@ -1264,11 +1264,9 @@ export default function CostingPage() {
         </tr>`;
         html += '</table>';
 
-        const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
-        const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'amphoph_hashvark.xls'; a.click();
-        URL.revokeObjectURL(url);
+        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Ամփոփ հաշվարկ</title><style>body{font-family:Arial,sans-serif;padding:20px;}@media print{body{padding:0;}}</style></head><body>${html}</body></html>`;
+        const win = window.open('', '_blank');
+        if (win) { win.document.write(full); win.document.close(); }
     };
 
     const handleCostAdded = (entry: CostHistoryEntry) => {
