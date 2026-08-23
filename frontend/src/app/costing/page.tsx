@@ -50,6 +50,7 @@ import UnforeseenDialog from './UnforeseenDialog';
 import SmallScaleDialog from './SmallScaleDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
 import OtherCostsDialog from './OtherCostsDialog';
+import OverheadCostsDialog, { type OverheadEntry } from './OverheadCostsDialog';
 import AnalysisTab from './AnalysisTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
@@ -191,6 +192,7 @@ const HISTORY_TYPE_GROUPS: { key: string; label: string; match: (pm: string, isS
     { key: 'subcontractor',     label: 'Ենթակապալ', match: (pm, isSub) => pm === 'subcontractor' || !!isSub },
     { key: 'unforeseen',        label: 'Չնախատեսված աշխատանքներ', match: pm => pm === 'unforeseen' },
     { key: 'volume',            label: 'Ծավալի հաշվառում', match: pm => !pm || pm === '' || pm === 'salary_druqayin' },
+    { key: 'overhead',          label: 'Վերադիր ծախսեր', match: pm => pm === 'overhead' },
 ];
 
 const getHistoryTypeKey = (pm: string, isSub?: boolean): string => {
@@ -311,10 +313,10 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
 
     const laborTotal = costHistory
-        .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum')
+        .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead')
         .reduce((s, e) => s + e.total, 0);
 
-    const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost').reduce((s, e) => s + e.total, 0);
+    const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' || e.paymentMethod === 'overhead').reduce((s, e) => s + e.total, 0);
 
     const data = [
         { key: 'labor',     name: t('Labor'),         value: laborTotal },
@@ -406,8 +408,8 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
 
     const actData = (() => {
         const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost').reduce((s, e) => s + e.total, 0);
+        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
+        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' || e.paymentMethod === 'overhead').reduce((s, e) => s + e.total, 0);
         const otherTotal = aylMatTotal + extraActualCosts;
         const total = materialsTotal + laborTotal + otherTotal;
         if (total === 0) return [];
@@ -772,6 +774,8 @@ export default function CostingPage() {
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
+    const [overheadEntries, setOverheadEntries] = useState<OverheadEntry[]>([]);
+    const [overheadOpen, setOverheadOpen] = useState(false);
     const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string; spent?: string }>>({});
 
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
@@ -854,6 +858,14 @@ export default function CostingPage() {
             return { ...e, addedAt: new Date(e.addedAt) };
         });
         setCostHistory(ch);
+        const overheadMap = new Map<string, OverheadEntry>();
+        for (const c of ch.filter(c => c.paymentMethod === 'overhead' && c.materialItemId)) {
+            if (!overheadMap.has(c.materialItemId!)) overheadMap.set(c.materialItemId!, { id: c.materialItemId!, name: c.workName, total: 0, history: [] });
+            const oe = overheadMap.get(c.materialItemId!)!;
+            oe.total += c.total;
+            oe.history.push({ id: c.id, amount: c.total, addedAt: c.addedAt });
+        }
+        setOverheadEntries([...overheadMap.values()]);
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
             ...e,
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
@@ -1268,7 +1280,7 @@ export default function CostingPage() {
                                 { icon: <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 30, color: '#795548', opacity: 0.55 }} />, label: 'Մեխանիզմի ծախսագրում', onClick: () => {}, accent: '#795548', hoverBg: 'rgba(121,85,72,0.06)' },
                                 { icon: <BuildIcon sx={{ fontSize: 30, color: '#4caf50', opacity: 0.55 }} />, label: 'Փոքրածավալ', onClick: () => setSmallScaleOpen(true), accent: '#4caf50', hoverBg: 'rgba(76,175,80,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 30, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
-                                { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => {}, accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
+                                { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 30, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
                                 { icon: <SummarizeOutlinedIcon sx={{ fontSize: 30, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => {}, accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
@@ -1309,12 +1321,13 @@ export default function CostingPage() {
                             const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && (e.costedQuantity ?? 0) >= e.estimateQuantity).length;
                             const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (e.costedQuantity ?? 0) < e.estimateQuantity).length;
                             return (
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' }, gap: 2, mb: 2 }}>
                                     <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
                                     <TripleParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.materialItemCount ?? 0} current={materialCurrent} completed={materialCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
                                     <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} actualValue={actualTotal > 0 ? actualTotal : undefined} />
                                     <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} actualValue={actualMaterials > 0 ? actualMaterials : undefined} />
                                     <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} actualValue={actualLabor > 0 ? actualLabor : undefined} />
+                                    <MetricCard label='Վերադիր ծախսեր' value={overheadEntries.reduce((s, e) => s + e.total, 0)} />
                                 </Box>
                             );
                         })()}</>}
@@ -1504,6 +1517,17 @@ export default function CostingPage() {
                                                                 if (newQty <= 0) return prev.filter((_, i) => i !== idx);
                                                                 const next = [...prev];
                                                                 next[idx] = { ...next[idx], quantity: newQty };
+                                                                return next;
+                                                            });
+                                                        } else if (entry.paymentMethod === 'overhead' && entry.materialItemId) {
+                                                            setOverheadEntries(prev => {
+                                                                const idx = prev.findIndex(e => e.id === entry.materialItemId);
+                                                                if (idx < 0) return prev;
+                                                                const newTotal = prev[idx].total - entry.total;
+                                                                const newHistory = prev[idx].history.filter(h => h.id !== entry.id);
+                                                                if (newTotal <= 0 || newHistory.length === 0) return prev.filter((_, i) => i !== idx);
+                                                                const next = [...prev];
+                                                                next[idx] = { ...next[idx], total: Math.max(0, newTotal), history: newHistory };
                                                                 return next;
                                                             });
                                                         } else if (entry.laborItemId && !entry.paymentMethod?.startsWith('pahest_')) {
@@ -1801,6 +1825,15 @@ export default function CostingPage() {
                     onCommissioningCostsActualChange={val => setCommissioningCosts(val)}
                     stateFeesActual={stateFees}
                     onStateFeesActualChange={val => setStateFees(val)}
+                />
+                <OverheadCostsDialog
+                    open={overheadOpen}
+                    onClose={() => setOverheadOpen(false)}
+                    entries={overheadEntries}
+                    onChange={setOverheadEntries}
+                    onHistoryEntry={e => setCostHistory(prev => [{ id: e.id, workName: e.workName, unit: '—', quantity: 1, unitPrice: e.amount, total: e.amount, addedAt: new Date(), paymentMethod: 'overhead', materialItemId: e.overheadEntryId }, ...prev])}
+                    onRemoveEntry={entryId => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'overhead' && e.materialItemId === entryId)))}
+                    onRemoveHistoryRecord={histId => setCostHistory(prev => prev.filter(e => e.id !== histId))}
                 />
                 <SmallScaleDialog
                     open={smallScaleOpen}
