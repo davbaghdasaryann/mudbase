@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent,
-    Box, Button, Typography, IconButton, Tooltip, InputBase,
+    Box, Button, Chip, Divider, Typography, IconButton, Tooltip, InputBase,
 } from '@mui/material';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -48,6 +48,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
     const [historyEntryId, setHistoryEntryId] = useState<string | null>(null);
 
     const histEntry = historyEntryId ? entries.find(e => e.id === historyEntryId) ?? null : null;
+    const grandTotal = entries.reduce((s, e) => s + e.total, 0);
 
     const handleAdd = () => {
         const amount = parse(addAmount);
@@ -101,137 +102,218 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
         border: '1px solid #e0e0e0',
         borderRadius: 2,
         px: 1.5,
-        py: 0.5,
-        fontSize: '0.88rem',
-        bgcolor: '#fafafa',
-        '&:focus-within': { borderColor: ACCENT, bgcolor: '#fff' },
+        py: 0.75,
+        fontSize: '0.9rem',
+        bgcolor: '#fff',
+        '&:focus-within': { borderColor: ACCENT, boxShadow: `0 0 0 2px ${ACCENT}18` },
+        transition: 'all 0.15s',
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh' } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth='md'
+            fullWidth
+            PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}
+        >
+            {/* Header */}
+            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
                 {histEntry ? (
-                    <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton size='small' onClick={() => setHistoryEntryId(null)} sx={{ color: ACCENT, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: ACCENT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {histEntry.name}
-                        </Typography>
-                    </>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {histEntry.name}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.1 }}>
+                                {t('History')} · {fmt(histEntry.total)} AMD
+                            </Typography>
+                        </Box>
+                        <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
                 ) : (
-                    <>
-                        <TuneOutlinedIcon sx={{ fontSize: 22, color: ACCENT, flexShrink: 0 }} />
-                        <span style={{ flex: 1 }}>Վերադիր ծախսեր</span>
-                        <IconButton size='small' onClick={onClose} sx={{ color: '#aaa' }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
-                    </>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${ACCENT}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <TuneOutlinedIcon sx={{ fontSize: 20, color: ACCENT }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Վերադիր ծախսեր</Typography>
+                            {grandTotal > 0 && (
+                                <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.1 }}>
+                                    {entries.length} {t('entries')} · {fmt(grandTotal)} AMD
+                                </Typography>
+                            )}
+                        </Box>
+                        <Chip
+                            label={`${fmt(grandTotal)} AMD`}
+                            size='small'
+                            sx={{ bgcolor: `${PRIMARY}12`, color: PRIMARY, fontWeight: 700, fontSize: '0.8rem', border: `1px solid ${PRIMARY}30`, display: grandTotal > 0 ? 'flex' : 'none' }}
+                        />
+                        <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
                 )}
             </DialogTitle>
+
+            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
             <DialogContent sx={{ p: 0, overflowY: 'auto' }}>
                 {histEntry ? (
                     /* History panel */
-                    <Box sx={{ px: 3, pb: 2 }}>
+                    <Box sx={{ px: 3, py: 2 }}>
                         {histEntry.history.length === 0 ? (
-                            <Typography sx={{ color: '#bbb', textAlign: 'center', py: 4, fontSize: '0.85rem' }}>No history</Typography>
-                        ) : [...histEntry.history].reverse().map(rec => (
-                            <Box key={rec.id} sx={{ display: 'flex', alignItems: 'center', py: 1, borderBottom: '1px solid #f5f5f5' }}>
-                                <Typography sx={{ flex: 1, fontSize: '0.88rem', fontWeight: 700, color: PRIMARY }}>{fmt(rec.amount)} AMD</Typography>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#999', mr: 1.5 }}>{rec.addedAt.toLocaleDateString()}</Typography>
-                                <Tooltip title={t('Remove')}>
-                                    <IconButton size='small' onClick={() => handleDeleteHistory(histEntry, rec.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.3 }}>
-                                        <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                                    </IconButton>
-                                </Tooltip>
+                            <Typography sx={{ color: '#bbb', textAlign: 'center', py: 6, fontSize: '0.88rem' }}>No history</Typography>
+                        ) : (
+                            <Box>
+                                {/* Column headers */}
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 140px 80px 40px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 1 }}>
+                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Ամսաթիվ</Typography>
+                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
+                                    <Box />
+                                    <Box />
+                                </Box>
+                                {[...histEntry.history].reverse().map((rec, idx) => (
+                                    <Box key={rec.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 140px 80px 40px', gap: 1, alignItems: 'center', px: 1.5, py: 1, borderRadius: 1.5, bgcolor: idx % 2 !== 0 ? '#fafafa' : '#fff', '&:hover': { bgcolor: '#f0f4f6' }, transition: 'background 0.12s' }}>
+                                        <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>
+                                            {rec.addedAt.toLocaleDateString('hy-AM', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: PRIMARY, textAlign: 'right' }}>{fmt(rec.amount)} AMD</Typography>
+                                        <Box />
+                                        <Tooltip title={t('Remove')}>
+                                            <IconButton size='small' onClick={() => handleDeleteHistory(histEntry, rec.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.4 }}>
+                                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
+                                ))}
+                                {/* History total */}
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '1px solid #f0f0f0' }}>
+                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#444' }}>
+                                        Ընդամենը:&nbsp;
+                                        <Box component='span' sx={{ color: PRIMARY }}>{fmt(histEntry.total)} AMD</Box>
+                                    </Typography>
+                                </Box>
                             </Box>
-                        ))}
+                        )}
                     </Box>
                 ) : (
                     /* Main panel */
-                    <Box sx={{ px: 2.5, pb: 2 }}>
-                        {/* Add row */}
-                        {!addOpen ? (
-                            <Box sx={{ pt: 1.5, pb: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                                <Button
-                                    variant='outlined'
-                                    startIcon={<AddIcon />}
-                                    onClick={() => setAddOpen(true)}
-                                    sx={{ borderRadius: '20px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: 'rgba(84,110,122,0.06)', borderColor: ACCENT } }}
-                                >
-                                    {t('Add')}
-                                </Button>
-                            </Box>
-                        ) : (
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', pt: 1.5, pb: 1 }}>
-                                <InputBase
-                                    value={addName}
-                                    onChange={e => setAddName(e.target.value)}
-                                    placeholder='Ծախսի անվանումը'
-                                    sx={{ ...inputSx, flex: 2, minWidth: 160 }}
-                                    autoFocus
-                                    onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAddOpen(false); setAddName(''); setAddAmount(''); } }}
-                                />
-                                <InputBase
-                                    value={addAmount}
-                                    onChange={e => setAddAmount(e.target.value)}
-                                    placeholder='AMD'
-                                    type='number'
-                                    sx={{ ...inputSx, flex: 1, minWidth: 100 }}
-                                    onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
-                                />
-                                <Tooltip title={t('Confirm')}>
-                                    <span>
-                                        <IconButton size='small' onClick={handleAdd} disabled={!addName.trim() || parse(addAmount) <= 0} sx={{ color: PRIMARY, '&.Mui-disabled': { color: '#e0e0e0' } }}>
-                                            <CheckIcon sx={{ fontSize: 20 }} />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-                                <Tooltip title={t('Cancel')}>
-                                    <IconButton size='small' onClick={() => { setAddOpen(false); setAddName(''); setAddAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
-                                        <CloseIcon sx={{ fontSize: 18 }} />
-                                    </IconButton>
-                                </Tooltip>
+                    <Box sx={{ px: 3, pb: 3 }}>
+                        {/* Add form */}
+                        <Box sx={{ pt: 2, pb: 1.5 }}>
+                            {!addOpen ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Button
+                                        variant='contained'
+                                        startIcon={<AddIcon />}
+                                        onClick={() => setAddOpen(true)}
+                                        sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: ACCENT, fontWeight: 600, px: 3, boxShadow: 'none', '&:hover': { bgcolor: '#455a64', boxShadow: 'none' } }}
+                                    >
+                                        {t('Add')}
+                                    </Button>
+                                </Box>
+                            ) : (
+                                <Box sx={{ bgcolor: `${ACCENT}08`, border: `1px solid ${ACCENT}22`, borderRadius: 2.5, p: 2 }}>
+                                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
+                                        Նոր ծախս
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                                        <InputBase
+                                            value={addName}
+                                            onChange={e => setAddName(e.target.value)}
+                                            placeholder='ծախսի անվանումը'
+                                            sx={{ ...inputSx, flex: 2 }}
+                                            autoFocus
+                                            onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAddOpen(false); setAddName(''); setAddAmount(''); } }}
+                                        />
+                                        <InputBase
+                                            value={addAmount}
+                                            onChange={e => setAddAmount(e.target.value)}
+                                            placeholder='ծախսի անվանումը'
+                                            type='number'
+                                            sx={{ ...inputSx, flex: 1 }}
+                                            onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
+                                        />
+                                        <Tooltip title={t('Confirm')}>
+                                            <span>
+                                                <IconButton
+                                                    onClick={handleAdd}
+                                                    disabled={!addName.trim() || parse(addAmount) <= 0}
+                                                    sx={{ bgcolor: PRIMARY, color: '#fff', '&:hover': { bgcolor: '#008070' }, '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#bbb' }, borderRadius: 2, p: 0.9 }}
+                                                >
+                                                    <CheckIcon sx={{ fontSize: 20 }} />
+                                                </IconButton>
+                                            </span>
+                                        </Tooltip>
+                                        <Tooltip title={t('Cancel')}>
+                                            <IconButton onClick={() => { setAddOpen(false); setAddName(''); setAddAmount(''); }} sx={{ color: '#aaa', '&:hover': { color: '#e53935' }, borderRadius: 2, p: 0.9 }}>
+                                                <CloseIcon sx={{ fontSize: 18 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* Column headers */}
+                        {entries.length > 0 && (
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>#</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուն</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>Գործեր</Typography>
                             </Box>
                         )}
 
                         {/* Entry list */}
                         {entries.length === 0 ? (
-                            <Typography sx={{ color: '#bbb', textAlign: 'center', py: 5, fontSize: '0.85rem' }}>
-                                Ծախսեր դեռ չեն ավելացվել
-                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8, gap: 1 }}>
+                                <TuneOutlinedIcon sx={{ fontSize: 40, color: '#e0e0e0' }} />
+                                <Typography sx={{ color: '#bbb', fontSize: '0.88rem' }}>ծախսեր դեռ չեն ավելացվել</Typography>
+                            </Box>
                         ) : entries.map((e, idx) => (
-                            <Box key={e.id} sx={{ borderBottom: '1px solid #f0f0f0', bgcolor: idx % 2 === 0 ? '#fff' : '#fafafa', borderRadius: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', py: 1.2, gap: 1, px: 1 }}>
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
-                                    </Box>
-                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: PRIMARY, whiteSpace: 'nowrap' }}>
+                            <Box key={e.id}>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, alignItems: 'center', px: 1.5, py: 1.1, borderRadius: 1.5, bgcolor: idx % 2 !== 0 ? '#fafafa' : '#fff', '&:hover': { bgcolor: '#f0f4f6' }, transition: 'background 0.12s' }}>
+                                    <Typography sx={{ fontSize: '0.78rem', color: '#bbb', fontWeight: 600 }}>{idx + 1}</Typography>
+                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
+                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: PRIMARY, textAlign: 'right', whiteSpace: 'nowrap' }}>
                                         {fmt(e.total)} AMD
                                     </Typography>
-                                    <Tooltip title={t('History')}>
-                                        <IconButton size='small' onClick={() => setHistoryEntryId(e.id)} sx={{ color: '#bbb', '&:hover': { color: ACCENT } }}>
-                                            <HistoryIcon sx={{ fontSize: 18 }} />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title={t('Add')}>
-                                        <IconButton size='small' onClick={() => { setPlusEntryId(plusEntryId === e.id ? null : e.id); setPlusAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#4caf50' } }}>
-                                            <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title={t('Remove')}>
-                                        <IconButton size='small' onClick={() => handleDelete(e.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
-                                            <DeleteOutlineIcon sx={{ fontSize: 18 }} />
-                                        </IconButton>
-                                    </Tooltip>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.25 }}>
+                                        <Tooltip title={t('History')}>
+                                            <IconButton size='small' onClick={() => setHistoryEntryId(e.id)} sx={{ color: '#bbb', '&:hover': { color: ACCENT }, p: 0.5 }}>
+                                                <HistoryIcon sx={{ fontSize: 17 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title='Avelacel'>
+                                            <IconButton size='small' onClick={() => { setPlusEntryId(plusEntryId === e.id ? null : e.id); setPlusAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#4caf50' }, p: 0.5 }}>
+                                                <AddCircleOutlineIcon sx={{ fontSize: 17 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title={t('Remove')}>
+                                            <IconButton size='small' onClick={() => handleDelete(e.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.5 }}>
+                                                <DeleteOutlineIcon sx={{ fontSize: 17 }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
                                 </Box>
+
+                                {/* Inline plus row */}
                                 {plusEntryId === e.id && (
-                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pb: 1.5, pl: 0.5 }}>
+                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', px: 1.5, py: 1, bgcolor: '#f0f7f6', borderRadius: 1.5, mx: 0, mb: 0.5 }}>
+                                        <Typography sx={{ fontSize: '0.78rem', color: '#888', flexShrink: 0 }}>Ավելացել:</Typography>
                                         <InputBase
                                             value={plusAmount}
                                             onChange={ev => setPlusAmount(ev.target.value)}
-                                            placeholder='AMD'
+                                            placeholder='Քանակ (AMD)'
                                             type='number'
-                                            sx={{ ...inputSx, width: 130 }}
+                                            sx={{ ...inputSx, flex: 1 }}
                                             autoFocus
                                             onKeyDown={ev => { if (ev.key === 'Enter') handlePlus(e.id); if (ev.key === 'Escape') { setPlusEntryId(null); setPlusAmount(''); } }}
                                         />
@@ -242,13 +324,23 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                                 </IconButton>
                                             </span>
                                         </Tooltip>
-                                        <IconButton size='small' onClick={() => { setPlusEntryId(null); setPlusAmount(''); }} sx={{ color: '#bbb' }}>
+                                        <IconButton size='small' onClick={() => { setPlusEntryId(null); setPlusAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                             <CloseIcon sx={{ fontSize: 16 }} />
                                         </IconButton>
                                     </Box>
                                 )}
                             </Box>
                         ))}
+
+                        {/* Footer total */}
+                        {entries.length > 0 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
+                                <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>
+                                    Ենդամենը:&nbsp;
+                                    <Box component='span' sx={{ color: PRIMARY, fontSize: '1rem' }}>{fmt(grandTotal)} AMD</Box>
+                                </Typography>
+                            </Box>
+                        )}
                     </Box>
                 )}
             </DialogContent>
