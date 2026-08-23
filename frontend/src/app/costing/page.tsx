@@ -1127,11 +1127,11 @@ export default function CostingPage() {
         const fmtN = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const fmtDate = () => new Date().toLocaleDateString('hy-AM');
+        const COLS = 16;
 
         const sections = [...estimateSnapshot.sections].sort((a, b) => a.displayIndex - b.displayIndex);
         const subsections = estimateSnapshot.subsections;
         let counter = 0;
-        let grandEstTotal = 0;
         let grandActTotal = 0;
         let tableBodyHtml = '';
 
@@ -1140,14 +1140,10 @@ export default function CostingPage() {
             const secRows = estimateSnapshot.laborRows.filter(r => r.sectionName === section.name);
             if (secRows.length === 0) continue;
             const secSubs = subsections.filter(s => s.estimateSectionId === section._id).sort((a, b) => a.displayIndex - b.displayIndex);
-            let secEstTotal = 0;
             let secActTotal = 0;
 
             const renderLaborRow = (row: SnapshotLaborRow) => {
                 const rowId = toId(row._id);
-                const estQty = Number(row.quantity ?? 0);
-                const estUP = row.changableAveragePrice;
-                const estTotal = Math.round(estQty * estUP);
                 const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
                 const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
                 const matActTotal = costHistory.filter(e => {
@@ -1158,18 +1154,19 @@ export default function CostingPage() {
                 }).reduce((s, e) => s + e.total, 0);
                 const actTotal = salTotal + matActTotal;
                 const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
-                secEstTotal += estTotal;
+                const actUnitCost = actTotal;
                 secActTotal += actTotal;
                 return `<tr>
-                    <td>${counter}</td>
-                    <td style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
-                    <td>${esc(row.unitSymbol)}</td>
-                    <td>${estQty > 0 ? estQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
-                    <td>${estUP > 0 ? fmtN(estUP) : ''}</td>
-                    <td class="bold">${estTotal > 0 ? fmtN(estTotal) : ''}</td>
-                    <td class="lightGreen">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
-                    <td class="lightGreen">${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td class="lightGreen bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
+                    <td rowspan="1">${counter}</td>
+                    <td rowspan="1"></td>
+                    <td rowspan="1" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
+                    <td rowspan="1">${esc(row.unitSymbol)}</td>
+                    <td rowspan="1">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td rowspan="1">${actUP > 0 ? fmtN(actUP) : ''}</td>
+                    <td rowspan="1"></td>
+                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    <td rowspan="1">${actUP > 0 ? fmtN(actUP) : ''}</td>
+                    <td rowspan="1" class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
                 </tr>`;
             };
 
@@ -1179,7 +1176,7 @@ export default function CostingPage() {
                     const sub = secSubs[subI];
                     const subRows = secRows.filter(r => r.subsectionName === sub.name);
                     if (subRows.length === 0) continue;
-                    sectionBodyHtml += `<tr><td class="subsection lightBlue" colspan="9">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
+                    sectionBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
                     for (const row of subRows) { counter++; sectionBodyHtml += renderLaborRow(row); }
                 }
             } else {
@@ -1187,21 +1184,18 @@ export default function CostingPage() {
             }
 
             tableBodyHtml += `<tr>
-                <td class="section" colspan="5">${esc(`${si + 1}. ${section.name}`)}</td>
-                <td class="section">${fmtN(secEstTotal)}</td>
-                <td class="section lightGreen" colspan="2"></td>
-                <td class="section lightGreen">${fmtN(secActTotal)}</td>
+                <td class="section" colspan="14">${esc(`${si + 1}. ${section.name}`)}</td>
+                <td class="section" colspan="2">${fmtN(secActTotal)}</td>
             </tr>`;
             tableBodyHtml += sectionBodyHtml;
-            grandEstTotal += secEstTotal;
             grandActTotal += secActTotal;
         }
 
         const overheadTotal = overheadEntries.reduce((s, e) => s + e.total, 0);
         if (overheadTotal > 0) {
-            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="9">Վերադիր ծախսեր</td></tr>`;
+            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">Վերադիր ծախսեր</td></tr>`;
             for (const oe of overheadEntries) {
-                tableBodyHtml += `<tr><td></td><td style="text-align:left;">${esc(oe.name)}</td><td></td><td></td><td></td><td></td><td class="lightGreen"></td><td class="lightGreen"></td><td class="lightGreen bold">${fmtN(oe.total)}</td></tr>`;
+                tableBodyHtml += `<tr><td></td><td></td><td style="text-align:left;">${esc(oe.name)}</td><td colspan="11"></td><td class="bold">${fmtN(oe.total)}</td></tr>`;
             }
             grandActTotal += overheadTotal;
         }
@@ -1215,14 +1209,15 @@ export default function CostingPage() {
             [t('stateDutiesAndFees'), stateFees],
         ].filter(([, v]) => (v as number) > 0) as [string, number][];
         if (otherCostsList.length > 0) {
-            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="9">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
+            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
             for (const [label, val] of otherCostsList) {
-                tableBodyHtml += `<tr><td></td><td style="text-align:left;">${esc(label)}</td><td></td><td></td><td></td><td></td><td class="lightGreen"></td><td class="lightGreen"></td><td class="lightGreen bold">${fmtN(val)}</td></tr>`;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="14">${esc(label)}</td><td></td><td class="bold">${fmtN(val)}</td></tr>`;
                 grandActTotal += val;
             }
         }
 
-        tableBodyHtml += `<tr class="lightGray"><td class="importantInfo bold" colspan="5" style="text-align:right;">ԸՆԴԱՄԵՆԸ՝</td><td class="bold">${fmtN(grandEstTotal)}</td><td class="lightGreen" colspan="2"></td><td class="lightGreen bold">${fmtN(grandActTotal)}</td></tr>`;
+        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
+        tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="14">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
         const est = selectedEstimate as any;
         const full = `<!DOCTYPE html>
@@ -1274,29 +1269,51 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 </div>
 <div class="columnHalf">
 <table class="headerTable">
-    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Ըստ նախահաշվի)</td><td class="headerTableValue center bold">${fmtN(est?.totalCost ?? 0)} AMD</td></tr>
-    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Փաստացի)</td><td class="headerTableValue center bold">${fmtN(grandActTotal)} AMD</td></tr>
+    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը</td><td class="headerTableValue center bold">${fmtN(grandActTotal)} AMD</td></tr>
 </table>
 </div>
 </div>
 <div>&nbsp;</div>
 <table class="estimateTable">
 <colgroup>
-    <col style="min-width:40px;max-width:40px;"><col><col style="min-width:55px;max-width:55px;">
-    <col style="min-width:65px;"><col style="min-width:80px;"><col style="min-width:95px;">
-    <col style="min-width:65px;"><col style="min-width:80px;"><col style="min-width:95px;">
+    <col style="min-width:24px;max-width:24px;">
+    <col style="min-width:50px;max-width:50px;">
+    <col style="min-width:100px;">
+    <col style="min-width:24px;max-width:24px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:50px;max-width:50px;">
+    <col style="min-width:100px;">
+    <col style="min-width:24px;max-width:24px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
+    <col style="min-width:60px;max-width:60px;">
 </colgroup>
 <thead>
-<tr>
+<tr class="table-header">
     <th class="lightBlue" rowspan="2">Հ/հ</th>
+    <th class="lightBlue" rowspan="2">Կոդը</th>
     <th class="lightBlue" rowspan="2">Աշխատանքի անվանումը</th>
     <th class="lightBlue" rowspan="2">Չ․Մ․</th>
-    <th class="lightBlue" colspan="3">Ըստ նախահաշվի</th>
-    <th class="lightGreen" colspan="3">Փաստացի</th>
+    <th class="lightBlue" rowspan="2">Քանակը</th>
+    <th class="lightBlue" rowspan="2">Արժեքը</th>
+    <th class="lightBlue" rowspan="2">Միավոր/ ժամ</th>
+    <th class="lightGreen" colspan="7">Հաշվարկային նյութածախս</th>
+    <th class="lightGray" rowspan="2">Աշխատ․ միավոր արժեքը</th>
+    <th class="lightGray" rowspan="2">Ընդհանուր միավոր արժեքը</th>
 </tr>
 <tr>
-    <th class="lightBlue">Քանակ</th><th class="lightBlue">Միավորի արժեքը</th><th class="lightBlue">Ընդհանուր</th>
-    <th class="lightGreen">Քանակ</th><th class="lightGreen">Միավորի արժեքը</th><th class="lightGreen">Ընդհանուր</th>
+    <th class="lightGreen">Կոդ</th>
+    <th class="lightGreen">Նյութի անվանումը</th>
+    <th class="lightGreen">Չ․Մ․</th>
+    <th class="lightGreen">Նորմա ծախս</th>
+    <th class="lightGreen">Քանակ</th>
+    <th class="lightGreen">Նյութի արժեքը</th>
+    <th class="lightGreen">Նյութի ընդհանուր արժեքը</th>
 </tr>
 </thead>
 <tbody>
