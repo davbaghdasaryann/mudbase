@@ -1154,41 +1154,89 @@ export default function CostingPage() {
                 }).reduce((s, e) => s + e.total, 0);
                 const actTotal = salTotal + matActTotal;
                 const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
-                const actUnitCost = actTotal;
+
+                // Skip rows with no actual data
+                if (actQty === 0 && actTotal === 0) return '';
+
+                // Materials for this labor row
+                const mats = pahestEntries.filter(p => p.estimatedLaborId === rowId && p.quantity > 0);
+                const rowspan = mats.length || 1;
+
                 secActTotal += actTotal;
-                return `<tr>
-                    <td rowspan="1">${counter}</td>
-                    <td rowspan="1"></td>
-                    <td rowspan="1" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
-                    <td rowspan="1">${esc(row.unitSymbol)}</td>
-                    <td rowspan="1">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
-                    <td rowspan="1">${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td rowspan="1"></td>
-                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                    <td rowspan="1">${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td rowspan="1" class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
+
+                let html = `<tr>
+                    <td rowspan="${rowspan}">${counter}</td>
+                    <td rowspan="${rowspan}"></td>
+                    <td rowspan="${rowspan}" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
+                    <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
+                    <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>
+                    <td rowspan="${rowspan}"></td>`;
+
+                if (mats.length > 0) {
+                    const mat0 = mats[0];
+                    const mat0Total = Math.round(mat0.quantity * mat0.costPerUnit);
+                    html += `
+                    <td></td>
+                    <td style="text-align:left;">${esc(mat0.name)}</td>
+                    <td>${esc(mat0.unit)}</td>
+                    <td>${mat0.estimateQuantity > 0 ? mat0.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
+                    <td>${mat0.quantity > 0 ? mat0.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td>${mat0.costPerUnit > 0 ? fmtN(mat0.costPerUnit) : ''}</td>
+                    <td>${mat0Total > 0 ? fmtN(mat0Total) : ''}</td>
+                    <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>
+                    <td rowspan="${rowspan}" class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
                 </tr>`;
+                    for (let mi = 1; mi < mats.length; mi++) {
+                        const mat = mats[mi];
+                        const matTotal = Math.round(mat.quantity * mat.costPerUnit);
+                        html += `<tr>
+                    <td></td>
+                    <td style="text-align:left;">${esc(mat.name)}</td>
+                    <td>${esc(mat.unit)}</td>
+                    <td>${mat.estimateQuantity > 0 ? mat.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
+                    <td>${mat.quantity > 0 ? mat.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td>${mat.costPerUnit > 0 ? fmtN(mat.costPerUnit) : ''}</td>
+                    <td>${matTotal > 0 ? fmtN(matTotal) : ''}</td>
+                </tr>`;
+                    }
+                } else {
+                    html += `<td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    <td>${actUP > 0 ? fmtN(actUP) : ''}</td>
+                    <td class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
+                </tr>`;
+                }
+                return html;
             };
 
             let sectionBodyHtml = '';
+            let sectionHasData = false;
             if (secSubs.length > 0) {
                 for (let subI = 0; subI < secSubs.length; subI++) {
                     const sub = secSubs[subI];
                     const subRows = secRows.filter(r => r.subsectionName === sub.name);
                     if (subRows.length === 0) continue;
-                    sectionBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
-                    for (const row of subRows) { counter++; sectionBodyHtml += renderLaborRow(row); }
+                    let subHtml = '';
+                    for (const row of subRows) { counter++; subHtml += renderLaborRow(row); }
+                    if (subHtml) {
+                        sectionBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
+                        sectionBodyHtml += subHtml;
+                        sectionHasData = true;
+                    }
                 }
             } else {
                 for (const row of secRows) { counter++; sectionBodyHtml += renderLaborRow(row); }
+                if (sectionBodyHtml) sectionHasData = true;
             }
 
-            tableBodyHtml += `<tr>
+            if (sectionHasData) {
+                tableBodyHtml += `<tr>
                 <td class="section" colspan="14">${esc(`${si + 1}. ${section.name}`)}</td>
                 <td class="section" colspan="2">${fmtN(secActTotal)}</td>
             </tr>`;
-            tableBodyHtml += sectionBodyHtml;
-            grandActTotal += secActTotal;
+                tableBodyHtml += sectionBodyHtml;
+                grandActTotal += secActTotal;
+            }
         }
 
         const overheadTotal = overheadEntries.reduce((s, e) => s + e.total, 0);
