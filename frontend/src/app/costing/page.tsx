@@ -1153,7 +1153,8 @@ export default function CostingPage() {
                     return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
                 }).reduce((s, e) => s + e.total, 0);
                 const actTotal = salTotal + matActTotal;
-                const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
+                const salUP  = actQty > 0 ? Math.round(salTotal / actQty) : 0;
+                const actUP  = actQty > 0 ? Math.round(actTotal / actQty) : 0;
 
                 // Skip rows with no actual data
                 if (actQty === 0 && actTotal === 0) return '';
@@ -1179,7 +1180,7 @@ export default function CostingPage() {
                     <td rowspan="${rowspan}" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
                     <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
                     <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
-                    <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>`;
+                    <td rowspan="${rowspan}">${salUP > 0 ? fmtN(salUP) : ''}</td>`;
 
                 if (mats.length > 0) {
                     const mat0 = mats[0];
@@ -1193,7 +1194,7 @@ export default function CostingPage() {
                     <td>${mat0.costPerUnit > 0 ? fmtN(mat0.costPerUnit) : ''}</td>
                     <td>${mat0.total > 0 ? fmtN(mat0.total) : ''}</td>
                     <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td rowspan="${rowspan}" class="bold">${salTotal > 0 ? fmtN(salTotal) : ''}</td>
+                    <td rowspan="${rowspan}" class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
                 </tr>`;
                     for (let mi = 1; mi < mats.length; mi++) {
                         const mat = mats[mi];
@@ -1209,9 +1210,9 @@ export default function CostingPage() {
                 </tr>`;
                     }
                 } else {
-                    html += `<td></td><td></td><td></td><td></td><td></td><td></td>
+                    html += `<td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                     <td>${actUP > 0 ? fmtN(actUP) : ''}</td>
-                    <td class="bold">${salTotal > 0 ? fmtN(salTotal) : ''}</td>
+                    <td class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
                 </tr>`;
                 }
                 return html;
