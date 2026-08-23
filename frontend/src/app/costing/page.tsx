@@ -1249,7 +1249,9 @@ export default function CostingPage() {
         }
 
         const overheadTotal = overheadEntries.reduce((s, e) => s + e.total, 0);
+        const smallScaleActualTotal = Math.round(smallScaleEstimate?.totalCost ?? 0);
         const otherCostsList: [string, number][] = [
+            [t('smallScaleConstructionWork'), smallScaleActualTotal],
             [t('valueAddedTax'), vatDeduction],
             [t('climaticImpactCosts'), climateImpact],
             [t('temporaryStructures'), temporaryStructures],
@@ -1541,7 +1543,7 @@ ${tableBodyHtml}
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 24, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
                                 { icon: <SummarizeOutlinedIcon sx={{ fontSize: 24, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: handleSummaryExport, accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
-                                <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 88, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
+                                <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                     {icon}
                                     <Typography sx={{ fontSize: '0.68rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{label}</Typography>
                                 </Box>
