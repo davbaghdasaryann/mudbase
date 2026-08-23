@@ -1121,6 +1121,156 @@ export default function CostingPage() {
         finally { setIsForkingEstimate(false); }
     };
 
+    const handleSummaryExport = () => {
+        if (!estimateSnapshot) return;
+        const toId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+        const fmtN = (n: number) => Math.round(n).toLocaleString('en-US').replace(/,/g, ' ');
+        const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const hdr = (label: string, extra = '') => `<th style="border:1px solid #b0bec5;padding:6px 8px;background:#e0f7fa;font-weight:700;white-space:nowrap;${extra}">${esc(label)}</th>`;
+        const cell = (val: string | number, extra = '') => `<td style="border:1px solid #cfd8dc;padding:5px 8px;${extra}">${esc(val)}</td>`;
+
+        const COLS = 9;
+        let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%;">`;
+        html += `<tr><td colspan="${COLS}" style="border:1px solid #b0bec5;padding:8px;font-weight:700;font-size:14px;text-align:center;background:#e0f7fa;">${esc(selectedEstimate?.name ?? '')} — Ամփոփ հաշվարկ</td></tr>`;
+        html += `<tr><td colspan="${COLS}" style="border:1px solid #b0bec5;padding:4px;">&nbsp;</td></tr>`;
+        html += `<tr>
+            ${hdr('№', 'rowspan="2"')}${hdr(t('Description of Work'), 'rowspan="2"')}${hdr(t('Unit'), 'rowspan="2"')}
+            <th colspan="3" style="border:1px solid #b0bec5;padding:6px;background:#e0f7fa;font-weight:700;text-align:center;">${t('As per Estimate')}</th>
+            <th colspan="3" style="border:1px solid #b0bec5;padding:6px;background:#fce4ec;font-weight:700;text-align:center;border-left:2px solid #e57373;">${t('Actual')}</th>
+        </tr>`;
+        html += `<tr>
+            ${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}
+            ${hdr(t('Quantity'), 'border-left:2px solid #e57373;background:#fce4ec;')}${hdr(t('Unit Price'), 'background:#fce4ec;')}${hdr(t('Total'), 'background:#fce4ec;')}
+        </tr>`;
+
+        const sections = [...estimateSnapshot.sections].sort((a, b) => a.displayIndex - b.displayIndex);
+        const subsections = estimateSnapshot.subsections;
+        let counter = 0;
+        let grandActTotal = 0;
+        let grandEstTotal = 0;
+
+        for (let si = 0; si < sections.length; si++) {
+            const section = sections[si];
+            const secRows = estimateSnapshot.laborRows.filter(r => r.sectionName === section.name);
+            if (secRows.length === 0) continue;
+            html += `<tr><td colspan="${COLS}" style="font-weight:700;background:#e0f5f7;border:1px solid #b0bec5;padding:6px 10px;text-align:center;">${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
+
+            const secSubs = subsections.filter(s => s.estimateSectionId === section._id).sort((a, b) => a.displayIndex - b.displayIndex);
+            let secEstTotal = 0;
+            let secActTotal = 0;
+
+            const renderLaborRow = (row: SnapshotLaborRow) => {
+                const rowId = toId(row._id);
+                const estQty = Number(row.quantity ?? 0);
+                const estUP = row.changableAveragePrice;
+                const estTotal = Math.round(estQty * estUP);
+
+                const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
+                const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
+                const matActTotal = costHistory.filter(e => {
+                    if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+                    if (e.laborItemId) return e.laborItemId === rowId;
+                    if (!e.materialItemId) return false;
+                    return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                }).reduce((s, e) => s + e.total, 0);
+                const actTotal = salTotal + matActTotal;
+                const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
+
+                secEstTotal += estTotal;
+                secActTotal += actTotal;
+
+                return `<tr>
+                    ${cell(++counter, 'text-align:center;')}
+                    ${cell(row.laborOfferItemName || row.catalogName)}
+                    ${cell(row.unitSymbol, 'text-align:center;')}
+                    ${cell(estQty > 0 ? estQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—', 'text-align:right;')}
+                    ${cell(estUP > 0 ? fmtN(estUP) : '—', 'text-align:right;')}
+                    ${cell(estTotal > 0 ? fmtN(estTotal) + ' AMD' : '—', 'text-align:right;font-weight:600;')}
+                    ${cell(actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—', 'text-align:right;border-left:2px solid #e57373;background:#fff8f8;')}
+                    ${cell(actUP > 0 ? fmtN(actUP) : '—', 'text-align:right;background:#fff8f8;')}
+                    ${cell(actTotal > 0 ? fmtN(actTotal) + ' AMD' : '—', 'text-align:right;font-weight:600;background:#fff8f8;')}
+                </tr>`;
+            };
+
+            if (secSubs.length > 0) {
+                for (let subI = 0; subI < secSubs.length; subI++) {
+                    const sub = secSubs[subI];
+                    const subRows = secRows.filter(r => r.subsectionName === sub.name);
+                    if (subRows.length === 0) continue;
+                    html += `<tr><td colspan="${COLS}" style="font-style:italic;border:1px solid #cfd8dc;padding:5px 10px 5px 20px;font-size:11px;background:#f7fdfe;">${esc(`${si + 1}.${subI + 1}. ${sub.name}`)}</td></tr>`;
+                    for (const row of subRows) html += renderLaborRow(row);
+                }
+            } else {
+                for (const row of secRows) html += renderLaborRow(row);
+            }
+
+            grandEstTotal += secEstTotal;
+            grandActTotal += secActTotal;
+            html += `<tr style="background:#eaf8fa;">
+                <td colspan="5" style="font-weight:700;text-align:right;border:1px solid #b0bec5;padding:5px 10px;">Enimary</td>
+                ${cell(secEstTotal > 0 ? fmtN(secEstTotal) + ' AMD' : '—', 'text-align:right;font-weight:700;')}
+                <td style="border:1px solid #cfd8dc;border-left:2px solid #e57373;background:#fff0f0;"></td>
+                <td style="border:1px solid #cfd8dc;background:#fff0f0;"></td>
+                ${cell(secActTotal > 0 ? fmtN(secActTotal) + ' AMD' : '—', 'text-align:right;font-weight:700;background:#fff0f0;')}
+            </tr>`;
+        }
+
+        // Overhead costs
+        const overheadTotal = overheadEntries.reduce((s, e) => s + e.total, 0);
+        if (overheadTotal > 0) {
+            html += `<tr><td colspan="${COLS}" style="font-weight:700;background:#eceff1;border:1px solid #b0bec5;padding:6px 10px;">Veradeadir tsakhseger</td></tr>`;
+            for (const oe of overheadEntries) {
+                html += `<tr>
+                    ${cell('', 'text-align:center;')}${cell(oe.name)}${cell('—', 'text-align:center;')}
+                    ${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}
+                    ${cell('—', 'text-align:right;border-left:2px solid #e57373;background:#fff8f8;')}
+                    ${cell('—', 'text-align:right;background:#fff8f8;')}
+                    ${cell(fmtN(oe.total) + ' AMD', 'text-align:right;font-weight:600;background:#fff8f8;')}
+                </tr>`;
+            }
+            grandActTotal += overheadTotal;
+        }
+
+        // Other costs
+        const otherRows: [string, number][] = [
+            ['Avelacravel arjeqi hark (AvA)', vatDeduction],
+            ['Klimayakan azdecut', climateImpact],
+            ['Zhamanakavor karuytsner', temporaryStructures],
+            ['Transportayin tsakhseger', transportationCosts],
+            ['Shahagortsman handnman', commissioningCosts],
+            ['Petakan turqer ev vcharner', stateFees],
+        ].filter(([, v]) => (v as number) > 0) as [string, number][];
+        if (otherRows.length > 0) {
+            html += `<tr><td colspan="${COLS}" style="font-weight:700;background:#eceff1;border:1px solid #b0bec5;padding:6px 10px;">Ayl tsakhseger</td></tr>`;
+            for (const [label, val] of otherRows) {
+                html += `<tr>
+                    ${cell('', 'text-align:center;')}${cell(label)}${cell('—', 'text-align:center;')}
+                    ${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}
+                    ${cell('—', 'text-align:right;border-left:2px solid #e57373;background:#fff8f8;')}
+                    ${cell('—', 'text-align:right;background:#fff8f8;')}
+                    ${cell(fmtN(val) + ' AMD', 'text-align:right;font-weight:600;background:#fff8f8;')}
+                </tr>`;
+                grandActTotal += val;
+            }
+        }
+
+        // Grand total
+        html += `<tr style="background:#b2ebf2;">
+            <td colspan="5" style="font-weight:700;text-align:right;border:1px solid #b0bec5;padding:6px 10px;font-size:13px;">YNDAMENY</td>
+            <td style="border:1px solid #b0bec5;padding:6px 8px;text-align:right;font-weight:700;font-size:13px;">${fmtN(grandEstTotal)} AMD</td>
+            <td style="border:1px solid #cfd8dc;border-left:2px solid #e57373;background:#ffebee;"></td>
+            <td style="border:1px solid #cfd8dc;background:#ffebee;"></td>
+            <td style="border:1px solid #b0bec5;padding:6px 8px;text-align:right;font-weight:700;font-size:13px;background:#ffebee;">${fmtN(grandActTotal)} AMD</td>
+        </tr>`;
+        html += '</table>';
+
+        const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+        const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'amphoph_hashvark.xls'; a.click();
+        URL.revokeObjectURL(url);
+    };
+
     const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
     };
@@ -1282,7 +1432,7 @@ export default function CostingPage() {
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 30, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 30, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 30, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
-                                { icon: <SummarizeOutlinedIcon sx={{ fontSize: 30, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => {}, accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
+                                { icon: <SummarizeOutlinedIcon sx={{ fontSize: 30, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: handleSummaryExport, accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, width: 140, height: 108, px: 1.5, py: 1.5, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                     {icon}
