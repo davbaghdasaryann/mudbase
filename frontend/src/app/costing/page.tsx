@@ -1145,7 +1145,7 @@ export default function CostingPage() {
             const renderLaborRow = (row: SnapshotLaborRow) => {
                 const rowId = toId(row._id);
                 const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
-                const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
+                const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                 const matActTotal = costHistory.filter(e => {
                     if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
                     if (e.laborItemId) return e.laborItemId === rowId;
@@ -1158,8 +1158,17 @@ export default function CostingPage() {
                 // Skip rows with no actual data
                 if (actQty === 0 && actTotal === 0) return '';
 
-                // Materials for this labor row
-                const mats = pahestEntries.filter(p => p.estimatedLaborId === rowId && p.quantity > 0);
+                // Materials for this labor row (derived from cost history)
+                const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
+                const matIds = [...new Set(nyuthForRow.map(e => e.materialItemId!))];
+                const mats = matIds.map(matId => {
+                    const p = pahestEntries.find(pe => pe.materialItemId === matId);
+                    const entries = nyuthForRow.filter(e => e.materialItemId === matId);
+                    const qty = entries.reduce((s, e) => s + e.quantity, 0);
+                    const total = entries.reduce((s, e) => s + e.total, 0);
+                    const unitPrice = qty > 0 ? total / qty : (p?.costPerUnit ?? 0);
+                    return { name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: p?.estimateQuantity ?? 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
+                }).filter(m => m.quantity > 0);
                 const rowspan = mats.length || 1;
 
                 secActTotal += actTotal;
@@ -1175,7 +1184,7 @@ export default function CostingPage() {
 
                 if (mats.length > 0) {
                     const mat0 = mats[0];
-                    const mat0Total = Math.round(mat0.quantity * mat0.costPerUnit);
+                    // mat0.total is pre-computed from cost history
                     html += `
                     <td></td>
                     <td style="text-align:left;">${esc(mat0.name)}</td>
@@ -1183,13 +1192,13 @@ export default function CostingPage() {
                     <td>${mat0.estimateQuantity > 0 ? mat0.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
                     <td>${mat0.quantity > 0 ? mat0.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
                     <td>${mat0.costPerUnit > 0 ? fmtN(mat0.costPerUnit) : ''}</td>
-                    <td>${mat0Total > 0 ? fmtN(mat0Total) : ''}</td>
+                    <td>${mat0.total > 0 ? fmtN(mat0.total) : ''}</td>
                     <td rowspan="${rowspan}">${actUP > 0 ? fmtN(actUP) : ''}</td>
                     <td rowspan="${rowspan}" class="bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
                 </tr>`;
                     for (let mi = 1; mi < mats.length; mi++) {
                         const mat = mats[mi];
-                        const matTotal = Math.round(mat.quantity * mat.costPerUnit);
+                        // mat.total is pre-computed from cost history
                         html += `<tr>
                     <td></td>
                     <td style="text-align:left;">${esc(mat.name)}</td>
@@ -1197,7 +1206,7 @@ export default function CostingPage() {
                     <td>${mat.estimateQuantity > 0 ? mat.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
                     <td>${mat.quantity > 0 ? mat.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
                     <td>${mat.costPerUnit > 0 ? fmtN(mat.costPerUnit) : ''}</td>
-                    <td>${matTotal > 0 ? fmtN(matTotal) : ''}</td>
+                    <td>${mat.total > 0 ? fmtN(mat.total) : ''}</td>
                 </tr>`;
                     }
                 } else {
