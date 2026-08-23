@@ -1124,37 +1124,21 @@ export default function CostingPage() {
     const handleSummaryExport = () => {
         if (!estimateSnapshot) return;
         const toId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
-        const fmtN = (n: number) => Math.round(n).toLocaleString('en-US').replace(/,/g, ' ');
+        const fmtN = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const hdr = (label: string, extra = '') => `<th style="border:1px solid #b0bec5;padding:6px 8px;background:#e0f7fa;font-weight:700;white-space:nowrap;${extra}">${esc(label)}</th>`;
-        const cell = (val: string | number, extra = '') => `<td style="border:1px solid #cfd8dc;padding:5px 8px;${extra}">${esc(val)}</td>`;
-
-        const COLS = 9;
-        let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%;">`;
-        html += `<tr><td colspan="${COLS}" style="border:1px solid #b0bec5;padding:8px;font-weight:700;font-size:14px;text-align:center;background:#e0f7fa;">${esc(selectedEstimate?.name ?? '')} — Ամփոփ հաշվարկ</td></tr>`;
-        html += `<tr><td colspan="${COLS}" style="border:1px solid #b0bec5;padding:4px;">&nbsp;</td></tr>`;
-        html += `<tr>
-            ${hdr('№', 'rowspan="2"')}${hdr(t('Description of Work'), 'rowspan="2"')}${hdr(t('Unit'), 'rowspan="2"')}
-            <th colspan="3" style="border:1px solid #b0bec5;padding:6px;background:#e0f7fa;font-weight:700;text-align:center;">${t('As per Estimate')}</th>
-            <th colspan="3" style="border:1px solid #b0bec5;padding:6px;background:#fce4ec;font-weight:700;text-align:center;border-left:2px solid #e57373;">${t('Actual')}</th>
-        </tr>`;
-        html += `<tr>
-            ${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}
-            ${hdr(t('Quantity'), 'border-left:2px solid #e57373;background:#fce4ec;')}${hdr(t('Unit Price'), 'background:#fce4ec;')}${hdr(t('Total'), 'background:#fce4ec;')}
-        </tr>`;
+        const fmtDate = () => new Date().toLocaleDateString('hy-AM');
 
         const sections = [...estimateSnapshot.sections].sort((a, b) => a.displayIndex - b.displayIndex);
         const subsections = estimateSnapshot.subsections;
         let counter = 0;
-        let grandActTotal = 0;
         let grandEstTotal = 0;
+        let grandActTotal = 0;
+        let tableBodyHtml = '';
 
         for (let si = 0; si < sections.length; si++) {
             const section = sections[si];
             const secRows = estimateSnapshot.laborRows.filter(r => r.sectionName === section.name);
             if (secRows.length === 0) continue;
-            html += `<tr><td colspan="${COLS}" style="font-weight:700;background:#e0f5f7;border:1px solid #b0bec5;padding:6px 10px;text-align:center;">${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
-
             const secSubs = subsections.filter(s => s.estimateSectionId === section._id).sort((a, b) => a.displayIndex - b.displayIndex);
             let secEstTotal = 0;
             let secActTotal = 0;
@@ -1164,7 +1148,6 @@ export default function CostingPage() {
                 const estQty = Number(row.quantity ?? 0);
                 const estUP = row.changableAveragePrice;
                 const estTotal = Math.round(estQty * estUP);
-
                 const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
                 const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
                 const matActTotal = costHistory.filter(e => {
@@ -1175,101 +1158,159 @@ export default function CostingPage() {
                 }).reduce((s, e) => s + e.total, 0);
                 const actTotal = salTotal + matActTotal;
                 const actUP = actQty > 0 ? Math.round(actTotal / actQty) : 0;
-
                 secEstTotal += estTotal;
                 secActTotal += actTotal;
-
                 return `<tr>
-                    ${cell(++counter, 'text-align:center;')}
-                    ${cell(row.laborOfferItemName || row.catalogName)}
-                    ${cell(row.unitSymbol, 'text-align:center;')}
-                    ${cell(estQty > 0 ? estQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—', 'text-align:right;')}
-                    ${cell(estUP > 0 ? fmtN(estUP) : '—', 'text-align:right;')}
-                    ${cell(estTotal > 0 ? fmtN(estTotal) + ' AMD' : '—', 'text-align:right;font-weight:600;')}
-                    ${cell(actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—', 'text-align:right;border-left:2px solid #e57373;background:#fff8f8;')}
-                    ${cell(actUP > 0 ? fmtN(actUP) : '—', 'text-align:right;background:#fff8f8;')}
-                    ${cell(actTotal > 0 ? fmtN(actTotal) + ' AMD' : '—', 'text-align:right;font-weight:600;background:#fff8f8;')}
+                    <td>${counter}</td>
+                    <td style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
+                    <td>${esc(row.unitSymbol)}</td>
+                    <td>${estQty > 0 ? estQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td>${estUP > 0 ? fmtN(estUP) : ''}</td>
+                    <td class="bold">${estTotal > 0 ? fmtN(estTotal) : ''}</td>
+                    <td class="lightGreen">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td class="lightGreen">${actUP > 0 ? fmtN(actUP) : ''}</td>
+                    <td class="lightGreen bold">${actTotal > 0 ? fmtN(actTotal) : ''}</td>
                 </tr>`;
             };
 
+            let sectionBodyHtml = '';
             if (secSubs.length > 0) {
                 for (let subI = 0; subI < secSubs.length; subI++) {
                     const sub = secSubs[subI];
                     const subRows = secRows.filter(r => r.subsectionName === sub.name);
                     if (subRows.length === 0) continue;
-                    html += `<tr><td colspan="${COLS}" style="font-style:italic;border:1px solid #cfd8dc;padding:5px 10px 5px 20px;font-size:11px;background:#f7fdfe;">${esc(`${si + 1}.${subI + 1}. ${sub.name}`)}</td></tr>`;
-                    for (const row of subRows) html += renderLaborRow(row);
+                    sectionBodyHtml += `<tr><td class="subsection lightBlue" colspan="9">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
+                    for (const row of subRows) { counter++; sectionBodyHtml += renderLaborRow(row); }
                 }
             } else {
-                for (const row of secRows) html += renderLaborRow(row);
+                for (const row of secRows) { counter++; sectionBodyHtml += renderLaborRow(row); }
             }
 
+            tableBodyHtml += `<tr>
+                <td class="section" colspan="5">${esc(`${si + 1}. ${section.name}`)}</td>
+                <td class="section">${fmtN(secEstTotal)}</td>
+                <td class="section lightGreen" colspan="2"></td>
+                <td class="section lightGreen">${fmtN(secActTotal)}</td>
+            </tr>`;
+            tableBodyHtml += sectionBodyHtml;
             grandEstTotal += secEstTotal;
             grandActTotal += secActTotal;
-            html += `<tr style="background:#eaf8fa;">
-                <td colspan="5" style="font-weight:700;text-align:right;border:1px solid #b0bec5;padding:5px 10px;">Enimary</td>
-                ${cell(secEstTotal > 0 ? fmtN(secEstTotal) + ' AMD' : '—', 'text-align:right;font-weight:700;')}
-                <td style="border:1px solid #cfd8dc;border-left:2px solid #e57373;background:#fff0f0;"></td>
-                <td style="border:1px solid #cfd8dc;background:#fff0f0;"></td>
-                ${cell(secActTotal > 0 ? fmtN(secActTotal) + ' AMD' : '—', 'text-align:right;font-weight:700;background:#fff0f0;')}
-            </tr>`;
         }
 
-        // Overhead costs
         const overheadTotal = overheadEntries.reduce((s, e) => s + e.total, 0);
         if (overheadTotal > 0) {
-            html += `<tr><td colspan="${COLS}" style="font-weight:700;background:#eceff1;border:1px solid #b0bec5;padding:6px 10px;">Veradeadir tsakhseger</td></tr>`;
+            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="9">Վերադիր ծախսեր</td></tr>`;
             for (const oe of overheadEntries) {
-                html += `<tr>
-                    ${cell('', 'text-align:center;')}${cell(oe.name)}${cell('—', 'text-align:center;')}
-                    ${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}
-                    ${cell('—', 'text-align:right;border-left:2px solid #e57373;background:#fff8f8;')}
-                    ${cell('—', 'text-align:right;background:#fff8f8;')}
-                    ${cell(fmtN(oe.total) + ' AMD', 'text-align:right;font-weight:600;background:#fff8f8;')}
-                </tr>`;
+                tableBodyHtml += `<tr><td></td><td style="text-align:left;">${esc(oe.name)}</td><td></td><td></td><td></td><td></td><td class="lightGreen"></td><td class="lightGreen"></td><td class="lightGreen bold">${fmtN(oe.total)}</td></tr>`;
             }
             grandActTotal += overheadTotal;
         }
 
-        // Other costs
-        const otherRows: [string, number][] = [
-            ['Avelacravel arjeqi hark (AvA)', vatDeduction],
-            ['Klimayakan azdecut', climateImpact],
-            ['Zhamanakavor karuytsner', temporaryStructures],
-            ['Transportayin tsakhseger', transportationCosts],
-            ['Shahagortsman handnman', commissioningCosts],
-            ['Petakan turqer ev vcharner', stateFees],
+        const otherCostsList: [string, number][] = [
+            [t('valueAddedTax'), vatDeduction],
+            [t('climaticImpactCosts'), climateImpact],
+            [t('temporaryStructures'), temporaryStructures],
+            [t('transportationCosts'), transportationCosts],
+            [t('operationHandoverCosts'), commissioningCosts],
+            [t('stateDutiesAndFees'), stateFees],
         ].filter(([, v]) => (v as number) > 0) as [string, number][];
-        if (otherRows.length > 0) {
-            html += `<tr><td colspan="${COLS}" style="font-weight:700;background:#eceff1;border:1px solid #b0bec5;padding:6px 10px;">Ayl tsakhseger</td></tr>`;
-            for (const [label, val] of otherRows) {
-                html += `<tr>
-                    ${cell('', 'text-align:center;')}${cell(label)}${cell('—', 'text-align:center;')}
-                    ${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}${cell('—', 'text-align:right;')}
-                    ${cell('—', 'text-align:right;border-left:2px solid #e57373;background:#fff8f8;')}
-                    ${cell('—', 'text-align:right;background:#fff8f8;')}
-                    ${cell(fmtN(val) + ' AMD', 'text-align:right;font-weight:600;background:#fff8f8;')}
-                </tr>`;
+        if (otherCostsList.length > 0) {
+            tableBodyHtml += `<tr><td class="lightBlue subsection" colspan="9">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
+            for (const [label, val] of otherCostsList) {
+                tableBodyHtml += `<tr><td></td><td style="text-align:left;">${esc(label)}</td><td></td><td></td><td></td><td></td><td class="lightGreen"></td><td class="lightGreen"></td><td class="lightGreen bold">${fmtN(val)}</td></tr>`;
                 grandActTotal += val;
             }
         }
 
-        // Grand total
-        html += `<tr style="background:#b2ebf2;">
-            <td colspan="5" style="font-weight:700;text-align:right;border:1px solid #b0bec5;padding:6px 10px;font-size:13px;">YNDAMENY</td>
-            <td style="border:1px solid #b0bec5;padding:6px 8px;text-align:right;font-weight:700;font-size:13px;">${fmtN(grandEstTotal)} AMD</td>
-            <td style="border:1px solid #cfd8dc;border-left:2px solid #e57373;background:#ffebee;"></td>
-            <td style="border:1px solid #cfd8dc;background:#ffebee;"></td>
-            <td style="border:1px solid #b0bec5;padding:6px 8px;text-align:right;font-weight:700;font-size:13px;background:#ffebee;">${fmtN(grandActTotal)} AMD</td>
-        </tr>`;
-        html += '</table>';
+        tableBodyHtml += `<tr class="lightGray"><td class="importantInfo bold" colspan="5" style="text-align:right;">ԸՆԴԱՄԵՆԸ՝</td><td class="bold">${fmtN(grandEstTotal)}</td><td class="lightGreen" colspan="2"></td><td class="lightGreen bold">${fmtN(grandActTotal)}</td></tr>`;
 
-        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Ամփոփ հաշվարկ</title><style>body{font-family:Arial,sans-serif;padding:20px;}@media print{body{padding:0;}}</style></head><body>${html}</body></html>`;
+        const est = selectedEstimate as any;
+        const full = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Ամփոփ հաշվարկ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding: 0; font-size: 12px; }
+.container { padding-top: 10px; padding-left: 10px; padding-right: 10px; }
+.stackContainer { display: flex; }
+.columnHalf { flex: 1; box-sizing: border-box; }
+.lightBlue { background-color: #b4ccd6; }
+.lightGreen { background-color: #e2efd9; }
+.lightGray { background-color: lightgray; }
+.headerTable { border-collapse: collapse; width: 100%; }
+.headerTableName { border: 1px solid black; font-style: italic; width: 200px; padding-left: 4px; padding-right: 4px; }
+.headerTableValue { padding-left: 4px; padding-right: 4px; }
+.center { text-align: center; }
+.bold { font-weight: bolder; }
+.estimateTable { border-collapse: collapse; width: 100%; }
+.estimateTable td, .estimateTable th { border: 1px solid black; text-align: center; padding-left: 4px; padding-right: 4px; }
+.section { font-weight: bold; text-align: center; padding-top: 8px; padding-bottom: 8px; }
+.subsection { font-weight: bold; text-align: center; padding-top: 8px; padding-bottom: 8px; }
+.importantInfo { font-weight: bold; text-align: left; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="stackContainer">
+<div style="flex: 1; box-sizing: border-box">
+    <table class="headerTable">
+        <tr><td class="headerTableName lightGreen">Նախահաշվի անվանումը</td><td class="headerTableValue bold">${esc(est?.name ?? '')}</td></tr>
+        <tr><td class="headerTableName lightGreen">Հասցե</td><td class="headerTableValue">${esc(est?.address ?? '')}</td></tr>
+        <tr><td class="headerTableName lightGreen">Գեներացման ամսաթիվ</td><td class="headerTableValue bold">${fmtDate()}</td></tr>
+    </table>
+</div>
+<div style="box-sizing: border-box">
+    <img src="/images/logo_wide.png" alt="Logo" style="height: 38px; width: auto; margin-right: 20px; margin-top: 5px;"/>
+</div>
+</div>
+<div>&nbsp;</div>
+<div class="stackContainer">
+<div class="columnHalf">
+<table class="headerTable">
+    <tr><td class="headerTableName lightGray">Նախահաշվի անվանումը</td><td class="headerTableValue bold">${esc(est?.name ?? '')}</td></tr>
+</table>
+</div>
+<div class="columnHalf">
+<table class="headerTable">
+    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Նախահաշվի անվանումը)</td><td class="headerTableValue center bold">${fmtN(est?.totalCost ?? 0)} AMD</td></tr>
+    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը (Ուղղակի ծախսեր)</td><td class="headerTableValue center bold">${fmtN(grandActTotal)} AMD</td></tr>
+</table>
+</div>
+</div>
+<div>&nbsp;</div>
+<table class="estimateTable">
+<colgroup>
+    <col style="min-width:40px;max-width:40px;"><col><col style="min-width:55px;max-width:55px;">
+    <col style="min-width:65px;"><col style="min-width:80px;"><col style="min-width:95px;">
+    <col style="min-width:65px;"><col style="min-width:80px;"><col style="min-width:95px;">
+</colgroup>
+<thead>
+<tr>
+    <th class="lightBlue" rowspan="2">Հ/հ</th>
+    <th class="lightBlue" rowspan="2">Աշխատանքի անվանումը</th>
+    <th class="lightBlue" rowspan="2">Չ․Մ․</th>
+    <th class="lightBlue" colspan="3">Նախահաշվի անվանումը</th>
+    <th class="lightGreen" colspan="3">Ուղղակի ծախսեր</th>
+</tr>
+<tr>
+    <th class="lightBlue">Քանակը</th><th class="lightBlue">Ուղղակի ծախսեր</th><th class="lightBlue">Ընդհանուր արժեքը</th>
+    <th class="lightGreen">Քանակը</th><th class="lightGreen">Ուղղակի ծախսեր</th><th class="lightGreen">Ընդհանուր արժեքը</th>
+</tr>
+</thead>
+<tbody>
+${tableBodyHtml}
+</tbody>
+</table>
+</div>
+</body>
+</html>`;
         const win = window.open('', '_blank');
         if (win) { win.document.write(full); win.document.close(); }
     };
 
-    const handleCostAdded = (entry: CostHistoryEntry) => {
+        const handleCostAdded = (entry: CostHistoryEntry) => {
         setCostHistory(prev => [entry, ...prev]);
     };
 
