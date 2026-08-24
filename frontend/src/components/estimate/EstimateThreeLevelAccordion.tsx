@@ -1170,18 +1170,28 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
                                 {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                     <>
-                                        {item.children &&
-                                            item.children.length > 0 &&
-                                            item.children[0]?.label === '' &&
+                                        {item.children != null &&
+                                            (item.children.length === 0 || item.children[0]?.label === '') &&
                                             (permAddFields || !props.isOnlyEstInfo) &&
                                             accordionIdShowingStar === item._id &&
                                             expandedAccordions.includes(item._id) && (
                                                 <Tooltip title={t('Import from Favorites')} arrow placement='top'>
                                                     <IconButton
                                                         component='div'
-                                                        onClick={(e) => {
+                                                        onClick={async (e) => {
                                                             e.stopPropagation();
-                                                            setShowSubsectionImportDialog(item.children![0]._id);
+                                                            let subsectionId: string;
+                                                            if (item.children!.length > 0) {
+                                                                subsectionId = item.children![0]._id;
+                                                            } else {
+                                                                const res = await Api.requestSession<{ _id: string }>({
+                                                                    command: 'estimate/ensure_blank_subsection',
+                                                                    args: { estimateSectionId: item._id },
+                                                                });
+                                                                subsectionId = String(res._id);
+                                                                await fetchChildren(item._id, 2);
+                                                            }
+                                                            setShowSubsectionImportDialog(subsectionId);
                                                             setRowIdThatOpenedImportDialog(null);
                                                         }}
                                                     >
