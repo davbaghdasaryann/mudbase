@@ -123,9 +123,9 @@ export default function MaterialsTwoPartDialog(props: Props) {
                         flexDirection: 'column',
                         p: 2,
                     }}>
-                        {props.estimatedLaborId && props.estimatedLaborName && (
+                        {props.estimatedLaborId && (
                             <MaterialsRightPaneContent
-                                estimatedLaborName={props.estimatedLaborName}
+                                estimatedLaborName={props.estimatedLaborName || ''}
                                 estimatedLaborId={props.estimatedLaborId}
                                 onConfirm={props.onConfirm}
                                 onClose={() => {}}
