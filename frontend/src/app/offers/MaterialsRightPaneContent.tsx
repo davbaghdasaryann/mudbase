@@ -234,7 +234,7 @@ export function MaterialsRightPaneContent(props: Props) {
                                         setEstimatedMaterialOfferViewChangableItemName(params.row.materialOfferItemName as string);
                                     }}
                                 >
-                                    {params.value}
+                                    {params.value || 'N/A'}
                                 </Button>
                             );
                         }
