@@ -1310,7 +1310,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     setEstimatedLaborOfferViewChangableItemName(params.row.itemName as string);
                                                                 }}
                                                             >
-                                                                {params.value}
+                                                                {params.value || 'N/A'}
                                                             </Button>
                                                         );
                                                     },
@@ -1764,7 +1764,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                         );
                                                                                     }}
                                                                                 >
-                                                                                    {params.value}
+                                                                                    {params.value || 'N/A'}
                                                                                 </Button>
                                                                             );
                                                                         },
