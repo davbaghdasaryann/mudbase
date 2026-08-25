@@ -47,6 +47,15 @@ export function MaterialsRightPaneContent(props: Props) {
     let [estimatedMaterialName, setEstimatedMaterialName] = React.useState<string | null>(null);
 
     const [progIndicator, setProgIndicator] = React.useState(false);
+    const [measurementUnits, setMeasurementUnits] = React.useState<{ value: string; label: string }[]>([]);
+
+    React.useEffect(() => {
+        Api.requestSession<{ _id: string; representationSymbol: string }[]>({
+            command: 'measurement_unit/fetch',
+        }).then((units) => {
+            setMeasurementUnits(units.map((u) => ({ value: u._id, label: u.representationSymbol })));
+        }).catch(() => {});
+    }, []);
 
     React.useEffect(() => {
         const updateData = () => {
@@ -240,7 +249,7 @@ export function MaterialsRightPaneContent(props: Props) {
                         }
                     },
                     { field: 'materialOfferItemName', headerName: t('Material'), headerAlign: 'left', editable: true, flex: 0.5, disableColumnMenu: true },
-                    { field: 'estimatedMaterialMeasurementUnit', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true },
+                    { field: 'estimatedMaterialMeasurementUnitId', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true, type: 'singleSelect', editable: true, valueOptions: measurementUnits, cellClassName: 'editableCell' },
                     { field: 'materialConsumptionNorm', headerName: t('Material consumption norm'), headerAlign: 'left', flex: 0.2, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
                     { field: 'quantity', headerName: t('Quantity'), headerAlign: 'left', flex: 0.15, disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
                     { field: 'changableAveragePrice', headerName: t('Price'), headerAlign: 'left', flex: 0.23, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
@@ -277,6 +286,12 @@ export function MaterialsRightPaneContent(props: Props) {
                 ]}
                 rows={estimatedMaterialsData}
                 // autoPageSize={true}
+                isCellEditable={(params) => {
+                    if (params.field === 'estimatedMaterialMeasurementUnitId') {
+                        return !params.row.estimatedMaterialFullCode;
+                    }
+                    return true;
+                }}
                 processRowUpdate={handleUpdateRow} // Handle updates
                 disableRowSelectionOnClick
                 getRowId={row => row._id}

@@ -180,6 +180,7 @@ export class EstimateMaterialItemDisplayData {
     estimatedMaterialName!: string;
     estimatedMaterialFullCode!: string;
     estimatedMaterialMeasurementUnit!: string;
+    estimatedMaterialMeasurementUnitId?: string;
 
     quantity?: number;
     materialConsumptionNorm?: number;
@@ -219,6 +220,7 @@ export class EstimateMaterialItemDisplayData {
             if (estimateMaterialItem.estimateMeasurementUnitData.length > 0) {
                 let estimatedLaborMeasurementUnit = estimateMaterialItem.estimateMeasurementUnitData[0] as ApiMeasurementUnit
                 this.estimatedMaterialMeasurementUnit = estimatedLaborMeasurementUnit.representationSymbol;
+                this.estimatedMaterialMeasurementUnitId = estimatedLaborMeasurementUnit._id;
             }
         }
 

@@ -57,7 +57,14 @@ registerApiSession('estimate/update_material_item', async (req, res, session) =>
         // updatedData.materialConsumptionNorm = Math.round(updatedData.materialConsumptionNorm * 100) / 100;
     }
 
-    const allowedFields = ["materialOfferItemName", "quantity", "changableAveragePrice", "materialConsumptionNorm"];
+    if (updatedData.estimatedMaterialMeasurementUnitId !== undefined) {
+        if (typeof updatedData.estimatedMaterialMeasurementUnitId === 'string' && updatedData.estimatedMaterialMeasurementUnitId !== '') {
+            updatedData.measurementUnitMongoId = new ObjectId(updatedData.estimatedMaterialMeasurementUnitId);
+        }
+        delete updatedData.estimatedMaterialMeasurementUnitId;
+    }
+
+    const allowedFields = ["materialOfferItemName", "quantity", "changableAveragePrice", "materialConsumptionNorm", "measurementUnitMongoId"];
 
     const filteredUpdateData: Partial<Db.EntityEstimateMaterialItems> = Object.fromEntries(
         Object.entries(updatedData).filter(([key]) => allowedFields.includes(key))
