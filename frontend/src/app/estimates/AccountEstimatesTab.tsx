@@ -97,7 +97,7 @@ export default function AccountEstimatesTab() {
     const onDuplicate = useCallback((estimateId: string) => {
         if (!estimateId) return;
 
-        confirmDialog(t('Are you sure you want to duplicate this estimate?')).then((result) => {
+        confirmDialog(t('Are you sure you want to duplicate this estimate?'), undefined, { noTitle: true }).then((result) => {
             if (result.isConfirmed) {
                 setProgIndic(true);
                 setBigProgIndic(true);
