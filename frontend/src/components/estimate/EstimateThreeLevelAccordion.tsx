@@ -1170,7 +1170,9 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
                                 {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                     <>
-                                        {(permAddFields || !props.isOnlyEstInfo) &&
+                                        {item.children != null &&
+                                            item.children.length === 0 &&
+                                            (permAddFields || !props.isOnlyEstInfo) &&
                                             expandedAccordions.includes(item._id) && (
                                                 <Tooltip title={t('Import from Favorites')} arrow placement='top'>
                                                     <IconButton
