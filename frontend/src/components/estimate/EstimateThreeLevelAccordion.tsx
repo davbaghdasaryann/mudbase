@@ -1495,6 +1495,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                 setEstimatedLaborItemId(cell.row._id);
                                                                                 setOpenAddOfferDialogTypeWithouSubsection('material');
                                                                                 setEstimatedLaborItemName(cell.row.itemChangableName);
+                                                                                setCurrentSectionId(item._id);
+                                                                                setCurrentSubsectionId(item.children?.[0]?._id ?? null);
                                                                             }}
                                                                         >
                                                                             <ImgElement src='/images/icons/material.svg' sx={{ height: materialIconHeight }} />
@@ -2171,8 +2173,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                         <MaterialsTwoPartDialog
                             offerType={openAddOfferDialogTypeWithouSubsection}
                             isEstimation={true}
-                            // estimateSectionId={item._id}
                             estimateSectionId={currentSectionId}
+                            estimateSubsectionId={currentSubsectionId}
                             estimatedLaborId={estimatedLaborItemId}
                             estimatedLaborName={estimatedLaborItemName}
                             onConfirm={() => {
