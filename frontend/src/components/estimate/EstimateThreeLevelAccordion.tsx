@@ -1171,7 +1171,6 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                 {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
                                     <>
                                         {(permAddFields || !props.isOnlyEstInfo) &&
-                                            accordionIdShowingStar === item._id &&
                                             expandedAccordions.includes(item._id) && (
                                                 <Tooltip title={t('Import from Favorites')} arrow placement='top'>
                                                     <IconButton
