@@ -173,8 +173,22 @@ registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res,
     if (subsections.length === 0) { respondJsonData(res, []); return; }
     const subsectionIds = subsections.map(s => s._id);
 
-    // All group rows
-    const groupRows = await laborCol.find({ estimateSubsectionId: { $in: subsectionIds }, isGroupRow: true }).toArray();
+    // All group rows (with catalog name fallback)
+    const groupRows = await laborCol.aggregate([
+        { $match: { estimateSubsectionId: { $in: subsectionIds }, isGroupRow: true } },
+        {
+            $lookup: {
+                from: 'labor_items',
+                let: { laborItemId: '$laborItemId' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$_id', '$$laborItemId'] } } },
+                    { $project: { name: 1, _id: 0 } },
+                ],
+                as: 'catalogData',
+            },
+        },
+        { $unwind: { path: '$catalogData', preserveNullAndEmptyArrays: true } },
+    ]).toArray();
     if (groupRows.length === 0) { respondJsonData(res, []); return; }
 
     const groupIds = groupRows.map(g => g._id);
@@ -240,7 +254,7 @@ registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res,
 
     const result = groupRows.map(g => ({
         groupId: g._id.toString(),
-        groupName: g.laborOfferItemName || '',
+        groupName: g.laborOfferItemName || g.catalogData?.name || '',
         children: (childrenByGroup.get(g._id.toString()) ?? []).map(c => ({
             childId: c._id.toString(),
             childName: c.laborOfferItemName || '',
