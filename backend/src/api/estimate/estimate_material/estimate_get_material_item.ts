@@ -135,12 +135,24 @@ registerApiSession('estimate/fetch_materials_list', async (req, res, session) =>
             },
         },
         { $unwind: { path: '$laborData', preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: 'labor_items',
+                let: { laborItemId: '$laborData.laborItemId' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$_id', '$$laborItemId'] } } },
+                    { $project: { name: 1, _id: 0 } },
+                ],
+                as: 'laborCatalogData',
+            },
+        },
+        { $unwind: { path: '$laborCatalogData', preserveNullAndEmptyArrays: true } },
     ];
 
     const data = await estimateMaterialItemsColl.aggregate(pipeline).toArray();
     const result = data.map((item: any) => ({
         ...item,
-        laborName: item.laborData?.laborOfferItemName || '',
+        laborName: item.laborData?.laborOfferItemName || item.laborCatalogData?.name || '',
     }));
     respondJsonData(res, result);
 });
