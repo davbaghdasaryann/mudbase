@@ -281,7 +281,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
             for (const c of g.children) {
                 for (const m of c.materials) {
                     if (!q || (m.name + m.fullCode).toLowerCase().includes(q)) {
-                        add({ materialItemId: m.materialItemId, estimatedLaborId: '', laborName: '', name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit }, g.groupName || 'Group');
+                        add({ materialItemId: m.materialItemId, estimatedLaborId: '', laborName: '', name: m.name, fullCode: m.fullCode, unit: m.unit, estimateQuantity: m.estimateQuantity, costPerUnit: m.costPerUnit }, g.groupName || c.childName || 'Group');
                     }
                 }
             }
