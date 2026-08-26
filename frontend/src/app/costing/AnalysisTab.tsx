@@ -258,7 +258,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const { actQty, actTotal, hasData } = getActuals(row);
         const { estQty, estTotal, estUnitP } = getEstimate(row);
         const actUnitP = hasData && actQty > 0 ? actTotal / actQty : null;
-        const remQty   = hasData ? estQty - actQty : null;
+        const remQty   = hasData ? Math.max(0, estQty - actQty) : null;
         const remUnitP = hasData ? estUnitP : null;
         const remTotal = remQty !== null && estUnitP !== null ? Math.round(remQty * estUnitP) : null;
         const pct      = hasData && actUnitP !== null && estUnitP !== null && estUnitP > 0 ? ((estUnitP - actUnitP) / estUnitP) * 100 : null;
@@ -424,7 +424,12 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         const sectEstTotal = sectionItems.reduce((s, r) => s + getEstimate(r).estTotal, 0);
                         const sectActTotal = sectionItems.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
                         const sectHasAct = sectionItems.some(r => getActuals(r).hasData);
-                        const sectRemTotal = sectHasAct ? sectEstTotal - sectActTotal : null;
+                        const sectRemTotal = sectHasAct ? sectionItems.reduce((s, r) => {
+                            const { estQty, estUnitP } = getEstimate(r);
+                            const { actQty, hasData: hd } = getActuals(r);
+                            if (!hd || estUnitP === null) return s;
+                            return s + Math.max(0, Math.round((estQty - actQty) * estUnitP));
+                        }, 0) : null;
                         return (
                             <>
                                 <tr key={`sec-${section._id}`}>
@@ -444,7 +449,12 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                                         const subEstTotal = subItems.reduce((s, r) => s + getEstimate(r).estTotal, 0);
                                         const subActTotal = subItems.reduce((s, r) => { const { actTotal, hasData } = getActuals(r); return hasData ? s + actTotal : s; }, 0);
                                         const subHasAct = subItems.some(r => getActuals(r).hasData);
-                                        const subRemTotal = subHasAct ? subEstTotal - subActTotal : null;
+                                        const subRemTotal = subHasAct ? subItems.reduce((s, r) => {
+                            const { estQty, estUnitP } = getEstimate(r);
+                            const { actQty, hasData: hd } = getActuals(r);
+                            if (!hd || estUnitP === null) return s;
+                            return s + Math.max(0, Math.round((estQty - actQty) * estUnitP));
+                        }, 0) : null;
                                         return (
                                             <>
                                                 {sub.name?.trim() && (

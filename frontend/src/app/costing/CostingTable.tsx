@@ -387,9 +387,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const estTotal = laborCostRounded + matCostRounded;
         const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (row.changableAveragePrice ?? 0);
         const actUP = q > 0 ? actTotal / q : 0;
-        const rQty = q > 0 ? estQty - q : null;
+        const rQty = q > 0 ? Math.max(0, estQty - q) : null;
         const rUp = q > 0 ? estUP : null;
-        const rTot = q > 0 ? Math.round((estQty - q) * estUP) : null;
+        const rTot = q > 0 ? Math.max(0, Math.round((estQty - q) * estUP)) : null;
         const col = (v: number | null) => v === null ? '#ccc' : v >= 0 ? '#2e7d32' : '#c62828';
         const fw = (v: number | null) => v !== null ? 600 : 400;
         return (
@@ -534,7 +534,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                                                 const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
                                                                 const estTotal = lc + Math.round(rawMat);
                                                                 const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (r.changableAveragePrice ?? 0);
-                                                                return s + Math.round((estQty - q) * estUP);
+                                                                return s + Math.max(0, Math.round((estQty - q) * estUP));
                                                             }, 0) : null;
                                                             return (<>
                                                                 <td colSpan={5} style={tdStyle({ fontWeight: 600, color: '#6b7280', fontSize: '0.78rem', paddingLeft: 28, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>{sectionIdx + 1}.{subIdx + 1}. Ընդամենը</td>
@@ -569,7 +569,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                                 const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
                                                 const estTotal = lc + Math.round(rawMat);
                                                 const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (r.changableAveragePrice ?? 0);
-                                                return s + Math.round((estQty - q) * estUP);
+                                                return s + Math.max(0, Math.round((estQty - q) * estUP));
                                             }, 0) : null;
                                             return (<>
                                                 <td colSpan={5} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{sectionIdx + 1}. Ընդամենը</td>
@@ -608,7 +608,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                     const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
                                     const estTotal = lc + Math.round(rawMat);
                                     const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (r.changableAveragePrice ?? 0);
-                                    return s + Math.round((estQty - q) * estUP);
+                                    return s + Math.max(0, Math.round((estQty - q) * estUP));
                                 }, 0) : null;
                                 return (<>
                                     <td colSpan={5} style={tdStyle({ fontWeight: 700, color: SA, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{t('Total')}</td>
