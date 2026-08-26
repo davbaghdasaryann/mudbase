@@ -338,7 +338,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             const { actQty, hasData } = getActuals(r);
             if (!hasData) return s;
             const { estQty, estUnitP } = getEstimate(r);
-            return s + (estUnitP !== null ? Math.round((estQty - actQty) * estUnitP) : 0);
+            return s + (estUnitP !== null ? Math.max(0, Math.round((estQty - actQty) * estUnitP)) : 0);
         }, 0)
         : null;
     // Profitability: weighted unit-price savings = (estUnitP × actQty - actTotal) / (estUnitP × actQty)
