@@ -523,7 +523,19 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                                         {(() => {
                                                             const subActTotal = subItems.reduce((s, r) => s + getRowActTotal(r).actTotal, 0);
                                                             const subHasAct = subItems.some(r => getRowActTotal(r).hasData);
-                                                            const subRemTotal = subHasAct ? subTotal - subActTotal : null;
+                                                            const subRemTotal = subHasAct ? subItems.reduce((s, r) => {
+                                                                const rowId = toId(r._id);
+                                                                const a = actualData[rowId];
+                                                                const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+                                                                if (q <= 0) return s;
+                                                                const estQty = Number(r.quantity ?? 0);
+                                                                const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+                                                                const lc = Math.round(estQty * r.changableAveragePrice);
+                                                                const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
+                                                                const estTotal = lc + Math.round(rawMat);
+                                                                const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (r.changableAveragePrice ?? 0);
+                                                                return s + Math.round((estQty - q) * estUP);
+                                                            }, 0) : null;
                                                             return (<>
                                                                 <td colSpan={5} style={tdStyle({ fontWeight: 600, color: '#6b7280', fontSize: '0.78rem', paddingLeft: 28, borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>{sectionIdx + 1}.{subIdx + 1}. Ընդամենը</td>
                                                                 <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '1px solid #d6f0f2', borderBottom: 'none' })}>{formatCurrencyRounded(subTotal)} AMD</td>
@@ -546,7 +558,19 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                         {(() => {
                                             const sectActTotal = sectionItems.reduce((s, r) => s + getRowActTotal(r).actTotal, 0);
                                             const sectHasAct = sectionItems.some(r => getRowActTotal(r).hasData);
-                                            const sectRemTotal = sectHasAct ? sectionTotal - sectActTotal : null;
+                                            const sectRemTotal = sectHasAct ? sectionItems.reduce((s, r) => {
+                                                const rowId = toId(r._id);
+                                                const a = actualData[rowId];
+                                                const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+                                                if (q <= 0) return s;
+                                                const estQty = Number(r.quantity ?? 0);
+                                                const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+                                                const lc = Math.round(estQty * r.changableAveragePrice);
+                                                const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
+                                                const estTotal = lc + Math.round(rawMat);
+                                                const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (r.changableAveragePrice ?? 0);
+                                                return s + Math.round((estQty - q) * estUP);
+                                            }, 0) : null;
                                             return (<>
                                                 <td colSpan={5} style={tdStyle({ fontWeight: 700, color: '#007a89', fontSize: '0.77rem', paddingLeft: 12, borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{sectionIdx + 1}. Ընդամենը</td>
                                                 <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: '2px solid #c0e8ec', borderBottom: 'none' })}>{formatCurrencyRounded(sectionTotal)} AMD</td>
