@@ -259,8 +259,8 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const { estQty, estTotal, estUnitP } = getEstimate(row);
         const actUnitP = hasData && actQty > 0 ? actTotal / actQty : null;
         const remQty   = hasData ? Math.max(0, estQty - actQty) : null;
-        const remUnitP = hasData ? estUnitP : null;
-        const remTotal = remQty !== null && estUnitP !== null ? Math.round(remQty * estUnitP) : null;
+        const remUnitP = hasData && actQty < estQty ? estUnitP : null;
+        const remTotal = remUnitP !== null && remQty !== null ? Math.round(remQty * estUnitP!) : null;
         const pct      = hasData && actUnitP !== null && estUnitP !== null && estUnitP > 0 ? ((estUnitP - actUnitP) / estUnitP) * 100 : null;
         const cheaper  = pct !== null ? pct >= 0 : null;
         const exQty    = hasData && actQty > estQty ? actQty - estQty : null;
