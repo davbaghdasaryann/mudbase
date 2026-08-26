@@ -573,7 +573,19 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                                 }, 0);
                                 const grandActTotal = rows.reduce((s, r) => s + getRowActTotal(r).actTotal, 0);
                                 const grandHasAct = rows.some(r => getRowActTotal(r).hasData);
-                                const grandRemTotal = grandHasAct ? grandEstTotal - grandActTotal : null;
+                                const grandRemTotal = grandHasAct ? rows.reduce((s, r) => {
+                                    const rowId = toId(r._id);
+                                    const a = actualData[rowId];
+                                    const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+                                    if (q <= 0) return s;
+                                    const estQty = Number(r.quantity ?? 0);
+                                    const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
+                                    const lc = Math.round(estQty * r.changableAveragePrice);
+                                    const rawMat = r.materialTotalCost !== undefined ? r.materialTotalCost : mats.reduce((sm, m) => sm + m.cost, 0);
+                                    const estTotal = lc + Math.round(rawMat);
+                                    const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (r.changableAveragePrice ?? 0);
+                                    return s + Math.round((estQty - q) * estUP);
+                                }, 0) : null;
                                 return (<>
                                     <td colSpan={5} style={tdStyle({ fontWeight: 700, color: SA, fontSize: '0.85rem', paddingLeft: 16, borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{t('Total')}</td>
                                     <td style={tdStyle({ fontWeight: 700, textAlign: 'right', color: SA, whiteSpace: 'nowrap', borderTop: `2px solid ${SA}`, borderBottom: 'none' })}>{formatCurrencyRounded(grandEstTotal)} AMD</td>
