@@ -793,6 +793,7 @@ export default function CostingPage() {
     const [tempPaymentValue, setTempPaymentValue] = useState('');
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingFlushRef = useRef<{ url: string; body: string } | null>(null);
     const isLoadingRef = useRef(false);
     const unforeseenCostingIdRef = useRef<string>('');
     const smallScaleCostingIdRef = useRef<string>('');
@@ -820,6 +821,24 @@ export default function CostingPage() {
     }, []); // eslint-disable-line
 
     useEffect(() => { loadRecords(); }, [loadRecords]);
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            const pending = pendingFlushRef.current;
+            if (!pending) return;
+            try {
+                fetch(pending.url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: pending.body,
+                    credentials: 'include',
+                    keepalive: true,
+                });
+            } catch {}
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, []);
 
     const fetchFullEstimate = useCallback(async (rec: CostingRecord) => {
         try {
@@ -972,18 +991,22 @@ export default function CostingPage() {
     ) => {
         if (isLoadingRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        const json: Record<string, unknown> = { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad };
+        if (unforeseenId !== null) { json.unforeseenEstimateId = unforeseenId ?? ''; json.unforeseenCostingId = unforeseenCostingIdRef.current ?? ''; }
+        if (smallScaleId !== null) { json.smallScaleEstimateId = smallScaleId ?? ''; json.smallScaleCostingId = smallScaleCostingIdRef.current ?? ''; }
+        if (vatDed !== undefined) json.vatDeduction = vatDed;
+        if (climatImp !== undefined) json.climateImpact = climatImp;
+        if (tmpStructures !== undefined) json.temporaryStructures = tmpStructures;
+        if (transpCosts !== undefined) json.transportationCosts = transpCosts;
+        if (commCosts !== undefined) json.commissioningCosts = commCosts;
+        if (stFees !== undefined) json.stateFees = stFees;
+        const body = JSON.stringify(json);
+        const saveUrl = `/api/v1/costing/save/?id=${encodeURIComponent(id)}`;
+        pendingFlushRef.current = { url: saveUrl, body };
         saveTimerRef.current = setTimeout(() => {
-            const json: Record<string, unknown> = { costHistory: ch, pahestEntries: pe, aylEntries: ae, actualData: ad };
-            if (unforeseenId !== null) { json.unforeseenEstimateId = unforeseenId ?? ''; json.unforeseenCostingId = unforeseenCostingIdRef.current ?? ''; }
-            if (smallScaleId !== null) { json.smallScaleEstimateId = smallScaleId ?? ''; json.smallScaleCostingId = smallScaleCostingIdRef.current ?? ''; }
-            if (vatDed !== undefined) json.vatDeduction = vatDed;
-            if (climatImp !== undefined) json.climateImpact = climatImp;
-            if (tmpStructures !== undefined) json.temporaryStructures = tmpStructures;
-            if (transpCosts !== undefined) json.transportationCosts = transpCosts;
-            if (commCosts !== undefined) json.commissioningCosts = commCosts;
-            if (stFees !== undefined) json.stateFees = stFees;
+            pendingFlushRef.current = null;
             Api.requestSession({ command: 'costing/save', args: { id }, json }).catch(console.error);
-        }, 800);
+        }, 300);
     }, []);
 
     useEffect(() => {
