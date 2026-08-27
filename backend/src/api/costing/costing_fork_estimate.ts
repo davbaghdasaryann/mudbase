@@ -175,14 +175,34 @@ registerApiSession('costing/fork_estimate', async (req, res, session) => {
         if (newId) newActualData[newId.toString()] = value as { quantity: string; unitPrice: string };
     }
 
+    // Remap costHistory laborItemId references
+    const oldCostHistory: any[] = costing.costHistory ?? [];
+    const newCostHistory = oldCostHistory.map((e: any) => {
+        if (e.laborItemId) {
+            const newId = oldToNewLaborId.get(e.laborItemId.toString());
+            if (newId) return { ...e, laborItemId: newId.toString() };
+        }
+        return e;
+    });
+
+    // Remap pahestEntries estimatedLaborId references
+    const oldPahestEntries: any[] = costing.pahestEntries ?? [];
+    const newPahestEntries = oldPahestEntries.map((e: any) => {
+        if (e.estimatedLaborId) {
+            const newId = oldToNewLaborId.get(e.estimatedLaborId.toString());
+            if (newId) return { ...e, estimatedLaborId: newId.toString() };
+        }
+        return e;
+    });
+
     // Build new snapshot from forked estimate
     const newSnapshot = await buildEstimateSnapshot(newEstimateId.toString());
 
     // Persist to costing
     await col.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { localEstimateId: newEstimateId.toString(), estimateSnapshot: newSnapshot, actualData: newActualData, updatedAt: new Date() } }
+        { $set: { localEstimateId: newEstimateId.toString(), estimateSnapshot: newSnapshot, actualData: newActualData, costHistory: newCostHistory, pahestEntries: newPahestEntries, updatedAt: new Date() } }
     );
 
-    respondJsonData(res, { localEstimateId: newEstimateId.toString(), snapshot: newSnapshot, actualData: newActualData });
+    respondJsonData(res, { localEstimateId: newEstimateId.toString(), snapshot: newSnapshot, actualData: newActualData, costHistory: newCostHistory, pahestEntries: newPahestEntries });
 });

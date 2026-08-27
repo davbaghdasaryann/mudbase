@@ -1131,13 +1131,15 @@ export default function CostingPage() {
         if (localEstimateId) { setMainEstimateEditOpen(true); return; }
         setIsForkingEstimate(true);
         try {
-            const result = await Api.requestSession<{ localEstimateId: string; snapshot: EstimateSnapshot; actualData: Record<string, { quantity: string; unitPrice: string }> }>({
+            const result = await Api.requestSession<{ localEstimateId: string; snapshot: EstimateSnapshot; actualData: Record<string, { quantity: string; unitPrice: string }>; costHistory?: CostHistoryEntry[]; pahestEntries?: PahestEntry[] }>({
                 command: 'costing/fork_estimate', args: { id: selected._id },
             });
             setLocalEstimateId(result.localEstimateId);
             setEstimateSnapshot(result.snapshot);
             isLoadingRef.current = true;
             setActualData(result.actualData);
+            if (result.costHistory) setCostHistory(result.costHistory.map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
+            if (result.pahestEntries) setPahestEntries(result.pahestEntries);
             setTimeout(() => { isLoadingRef.current = false; }, 100);
             setMainEstimateEditOpen(true);
         } catch (e) { console.error(e); }
