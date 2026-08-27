@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Box, Button, Typography, CircularProgress,
     Dialog, DialogTitle, DialogContent, DialogActions,
@@ -108,6 +108,8 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     const [plusEntry, setPlusEntry] = useState<PahestEntry | null>(null);
     const [plusQtyInput, setPlusQtyInput] = useState('');
     const [plusPriceInput, setPlusPriceInput] = useState('');
+    const confirmingRef = useRef(false);
+    const plusConfirmingRef = useRef(false);
 
     useEffect(() => {
         setLoading(true);
@@ -180,9 +182,10 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
     };
 
     const handleConfirm = () => {
-        if (!selected || !qtyInput) return;
+        if (!selected || !qtyInput || confirmingRef.current) return;
         const qty = parseFloat(qtyInput.replace(',', '.')) || 0;
         if (qty <= 0) return;
+        confirmingRef.current = true;
         const now = new Date();
         const enteredPrice = parseFloat(addPriceInput.replace(',', '.'));
         const unitPrice = (!isNaN(enteredPrice) && addPriceInput.trim() !== '') ? enteredPrice : 0;
@@ -213,10 +216,11 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         }
         onHistoryEntry?.({ workName: selected.name, unit: selected.unit, quantity: qty, unitPrice, total: qty * unitPrice, materialItemId: selected.materialItemId, estimatedLaborId: selected.estimatedLaborId });
         setAddOpen(false);
+        setTimeout(() => { confirmingRef.current = false; }, 600);
     };
 
     const handlePlusConfirm = () => {
-        if (!plusEntry) return;
+        if (!plusEntry || plusConfirmingRef.current) return;
         const qty = parseFloat(plusQtyInput.replace(',', '.')) || 0;
         const price = parseFloat(plusPriceInput.replace(',', '.'));
         const now = new Date();
@@ -233,10 +237,12 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         if (!isNaN(price) && plusPriceInput.trim() !== '') patch.costPerUnit = price;
         next[idx] = { ...next[idx], ...patch };
         onChange(next);
+        plusConfirmingRef.current = true;
         if (qty > 0) onHistoryEntry?.({ workName: plusEntry.name, unit: plusEntry.unit, quantity: qty, unitPrice: newCostPerUnit, total: qty * newCostPerUnit, materialItemId: plusEntry.materialItemId, estimatedLaborId: plusEntry.estimatedLaborId });
         setPlusEntry(null);
         setPlusQtyInput('');
         setPlusPriceInput('');
+        setTimeout(() => { plusConfirmingRef.current = false; }, 600);
     };
 
     const handleDelete = (materialItemId: string, estimatedLaborId?: string) => {
