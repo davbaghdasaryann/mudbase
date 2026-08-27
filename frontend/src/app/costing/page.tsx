@@ -2144,10 +2144,12 @@ ${tableBodyHtml}
                         onClose={async () => {
                             setMainEstimateEditOpen(false);
                             try {
-                                const result = await Api.requestSession<{ snapshot: EstimateSnapshot | null }>({
+                                const result = await Api.requestSession<{ snapshot: EstimateSnapshot | null; costHistory?: CostHistoryEntry[]; pahestEntries?: PahestEntry[] }>({
                                     command: 'costing/refresh_local_snapshot', args: { id: selected._id },
                                 });
                                 if (result.snapshot) setEstimateSnapshot(result.snapshot);
+                                if (result.costHistory) setCostHistory(result.costHistory.map(e => ({ ...e, addedAt: new Date(e.addedAt) })));
+                                if (result.pahestEntries) setPahestEntries(result.pahestEntries);
                             } catch (e) { console.error(e); }
                         }}
                     />
