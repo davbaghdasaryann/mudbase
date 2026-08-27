@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase,
@@ -89,6 +89,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [aylModal, setAylModal] = useState<AylModalState | null>(null);
     const [laborMatIds, setLaborMatIds] = useState<Map<string, Set<string>>>(new Map());
     const [laborMatIdsReady, setLaborMatIdsReady] = useState(false);
+    const confirmingRef = useRef(false);
+    const aylConfirmingRef = useRef(false);
 
     const estimateId = toId(estimate._id);
     const ufEstimateId = unforeseenEstimate ? toId(unforeseenEstimate._id) : '';
@@ -164,9 +166,10 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     }, [open, estimateId, ufEstimateId, estimateSnapshot, unforeseenSnapshot]);
 
     const handleConfirm = () => {
-        if (!materialModal) return;
+        if (!materialModal || confirmingRef.current) return;
         const qty = parseFloat(materialModal.value.replace(',', '.')) || 0;
         if (qty <= 0) return;
+        confirmingRef.current = true;
         const mat = materialModal.material;
         const effectiveLaborId = selectedRow ? toId(selectedRow._id) : (mat.estimatedLaborId || '');
         onPahestUpdate(mat.materialItemId, qty, mat.costPerUnit, effectiveLaborId);
@@ -183,12 +186,14 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             materialItemId: mat.materialItemId,
         });
         setMaterialModal(null);
+        setTimeout(() => { confirmingRef.current = false; }, 600);
     };
 
     const handleAylConfirm = () => {
-        if (!aylModal) return;
+        if (!aylModal || aylConfirmingRef.current) return;
         const qty = parseFloat(aylModal.value.replace(',', '.')) || 0;
         if (qty <= 0) return;
+        aylConfirmingRef.current = true;
         const e = aylModal.entry;
         onAylUpdate?.(e.id, qty);
         const unitPrice = parseFloat(e.costPerUnit) || 0;
@@ -204,6 +209,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             materialItemId: e.id,
         });
         setAylModal(null);
+        setTimeout(() => { aylConfirmingRef.current = false; }, 600);
     };
 
     const onPage2 = !!selectedRow;
