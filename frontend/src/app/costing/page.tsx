@@ -1591,8 +1591,8 @@ ${tableBodyHtml}
                         </Box>
                         {(() => {
                             const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-                            const actualLabor = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-                            const actualTotal = actualMaterials + actualLabor;
+                            const actualLabor = costHistory.filter(e => !e.paymentMethod || e.paymentMethod === '' || e.paymentMethod.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
+                            const actualTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
                             const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
                             const completedRowIds = new Set(estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
                                 const rid = toRowId(row._id);
