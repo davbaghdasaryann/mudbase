@@ -1659,7 +1659,7 @@ ${tableBodyHtml}
                             const extraWidgets = [
                                 ...(needsSSWExtra ? [{ key: SSW_KEY, estimatedValue: 0, actualValue: ssEstimated, gradIndex: expenses.length }] : []),
                                 ...(needsSSMExtra ? [{ key: SSM_KEY, estimatedValue: 0, actualValue: aylActual, gradIndex: expenses.length + (needsSSWExtra ? 1 : 0) }] : []),
-                                ...(!hasUFInExpenses && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + extraSSCount }] : []),
+                                ...(!hasUFInExpenses && unforeseenEstimate != null && (ufEstimated > 0 || ufActual > 0) ? [{ key: UF_KEY, estimatedValue: ufEstimated, actualValue: ufActual, gradIndex: expenses.length + extraSSCount }] : []),
                             ];
                             if (expenses.length === 0 && extraWidgets.length === 0) return null;
                             return (
