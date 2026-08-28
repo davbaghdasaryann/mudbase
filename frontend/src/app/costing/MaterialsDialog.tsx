@@ -89,6 +89,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [aylModal, setAylModal] = useState<AylModalState | null>(null);
     const [laborMatIds, setLaborMatIds] = useState<Map<string, Set<string>>>(new Map());
     const [laborMatIdsReady, setLaborMatIdsReady] = useState(false);
+    const [matNameMap, setMatNameMap] = useState<Map<string, string>>(new Map());
     const confirmingRef = useRef(false);
     const aylConfirmingRef = useRef(false);
 
@@ -140,6 +141,23 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             const groups = (hasUf ? maybeGroup : ufOrGroup) as any[] ?? [];
             const combined = [...(main ?? []), ...(uf ?? [])];
             setLaborMatIds(buildLaborMatMap(combined, groups));
+            // Build materialItemId → name map to fill in blank names from old entries
+            const nameMap = new Map<string, string>();
+            for (const item of combined) {
+                const rawMatId = toId(item.materialItemId);
+                const matId = (rawMatId && rawMatId !== ZERO_MAT_ID) ? rawMatId : toId(item._id);
+                const name = item.estimateMaterialItemData?.[0]?.name || item.materialOfferItemName || '';
+                if (matId && name) { nameMap.set(matId, name); if (rawMatId === ZERO_MAT_ID) nameMap.set(ZERO_MAT_ID, name); }
+            }
+            for (const group of groups ?? []) {
+                for (const child of group.children ?? []) {
+                    for (const mat of child.materials ?? []) {
+                        const matId = toId(mat.materialItemId);
+                        if (matId && mat.name) nameMap.set(matId, mat.name);
+                    }
+                }
+            }
+            setMatNameMap(nameMap);
             setLaborMatIdsReady(true);
         }).catch(() => setLaborMatIdsReady(true));
 
@@ -369,7 +387,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                             sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}
                                         >
                                             <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                                                <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{mat.name || '—'}</Typography>
+                                                <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{mat.name || matNameMap.get(mat.materialItemId) || '—'}</Typography>
                                                 <Tooltip title={t('Add new quantity')}>
                                                     <IconButton
                                                         size='small'
