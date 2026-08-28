@@ -910,12 +910,13 @@ export default function CostingPage() {
             const entries = laborEntries.filter(c => c.laborItemId === lid);
             const salaryEntries = entries.filter(c => c.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
             const volumeEntries = entries.filter(c => !c.paymentMethod).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
-            // Salary takes precedence; if none, take max(savedActual, latestVolumeEntry).
-            // Volume entries are absolute totals (not deltas), so use the latest one — not their sum.
+            // Volume entries are absolute totals (not deltas) — use the latest one, not their sum.
+            // Salary is only used as a fallback for salary-only rows (no volume entries).
+            // If volume entries exist, always trust the saved actualData or latest volume entry.
             const baseQty = parseFloat((healedActual[lid] ?? {}).quantity || '0') || 0;
             const latestVolumeQty = volumeEntries.length > 0 ? volumeEntries[0].quantity : 0;
-            const qty = salaryEntries.length > 0
-                ? salaryEntries[0].quantity
+            const qty = volumeEntries.length === 0 && salaryEntries.length > 0
+                ? Math.max(baseQty, salaryEntries[0].quantity)
                 : Math.max(baseQty, latestVolumeQty);
             if (qty > 0) {
                 healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(qty) };
