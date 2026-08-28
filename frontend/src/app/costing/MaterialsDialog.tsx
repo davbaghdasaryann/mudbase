@@ -100,14 +100,19 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         setSelectedRow(null);
         setLaborMatIdsReady(false);
 
+        const ZERO_MAT_ID = '000000000000000000000000';
         const buildLaborMatMap = (items: any[], groupData?: any[]): Map<string, Set<string>> => {
             const map = new Map<string, Set<string>>();
             for (const item of items ?? []) {
                 const laborId = toId(item.estimatedLaborId);
-                const matId = toId(item.materialItemId);
+                const rawMatId = toId(item.materialItemId);
+                // Blank materials use document _id as materialItemId in pahest entries
+                const matId = (rawMatId && rawMatId !== ZERO_MAT_ID) ? rawMatId : toId(item._id);
                 if (!laborId || !matId) continue;
                 if (!map.has(laborId)) map.set(laborId, new Set());
                 map.get(laborId)!.add(matId);
+                // Also keep zero-ID for backward compat with old pahest entries
+                if (rawMatId === ZERO_MAT_ID) map.get(laborId)!.add(ZERO_MAT_ID);
             }
             for (const group of groupData ?? []) {
                 const groupId = toId(group.groupId);
