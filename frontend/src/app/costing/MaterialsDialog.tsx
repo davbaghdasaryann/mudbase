@@ -50,6 +50,7 @@ interface Props {
     unforeseenSnapshot?: SnapshotData | null;
     pahestEntries: PahestEntry[];
     onPahestUpdate: (materialItemId: string, qty: number, costPerUnit: number, estimatedLaborId?: string) => void;
+    originalEstimateId?: string;
     aylEntries?: AylEntry[];
     onAylUpdate?: (id: string, qty: number) => void;
     onCostAdded?: (entry: CostHistoryEntry) => void;
@@ -75,7 +76,7 @@ async function fetchEstimateRows(estimateId: string) {
     return { sections: sorted, subsections: arrays.flat(), rows: laborData ?? [] };
 }
 
-export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, aylEntries, onAylUpdate, onCostAdded, actualData }: Props) {
+export default function MaterialsDialog({ open, onClose, estimate, estimateSnapshot, unforeseenEstimate, unforeseenSnapshot, pahestEntries, onPahestUpdate, originalEstimateId, aylEntries, onAylUpdate, onCostAdded, actualData }: Props) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [sections, setSections] = useState<Section[]>([]);
@@ -128,17 +129,46 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             return map;
         };
 
-        const matFetches = [
+        const origId = originalEstimateId && originalEstimateId !== estimateId ? originalEstimateId : '';
+        const empty: Promise<any[]> = Promise.resolve([]);
+        Promise.all([
             Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId } }),
-            ...(ufEstimateId ? [Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: ufEstimateId } })] : []),
+            ufEstimateId ? Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: ufEstimateId } }) : empty,
             Api.requestSession<any[]>({ command: 'estimate/fetch_group_materials_for_pahest', args: { estimateId } }),
-        ];
-        Promise.all(matFetches).then(([main, ufOrGroup, maybeGroup]) => {
-            const hasUf = !!ufEstimateId;
-            const uf = hasUf ? (ufOrGroup as any[]) : [];
-            const groups = (hasUf ? maybeGroup : ufOrGroup) as any[] ?? [];
+            origId ? Api.requestSession<any[]>({ command: 'estimate/fetch_materials_list', args: { estimateId: origId } }) : empty,
+        ]).then(([main, uf, groups, origMain]) => {
             const combined = [...(main ?? []), ...(uf ?? [])];
-            setLaborMatIds(buildLaborMatMap(combined, groups));
+            const builtMap = buildLaborMatMap(combined, groups);
+
+            // For costings that were forked from an original estimate, pahest entries may store
+            // the original estimate's estimate_material_items._id as materialItemId for blank materials.
+            // Build a localLaborName → localLaborId map from local blank materials, then add the
+            // original estimate's blank material _id to the matching local labor row's allowed set.
+            if (origId && origMain && origMain.length > 0) {
+                const localNameToLaborId = new Map<string, string>();
+                for (const item of main ?? []) {
+                    const rawMatId = toId(item.materialItemId);
+                    if (!rawMatId || rawMatId === ZERO_MAT_ID) {
+                        const laborId = toId(item.estimatedLaborId);
+                        const laborName: string = item.laborData?.laborOfferItemName || item.laborName || '';
+                        if (laborId && laborName) localNameToLaborId.set(laborName, laborId);
+                    }
+                }
+                for (const item of origMain) {
+                    const rawMatId = toId(item.materialItemId);
+                    if (!rawMatId || rawMatId === ZERO_MAT_ID) {
+                        const origMatId = toId(item._id);
+                        const laborName: string = item.laborData?.laborOfferItemName || item.laborName || '';
+                        const localLaborId = localNameToLaborId.get(laborName);
+                        if (origMatId && localLaborId) {
+                            if (!builtMap.has(localLaborId)) builtMap.set(localLaborId, new Set());
+                            builtMap.get(localLaborId)!.add(origMatId);
+                        }
+                    }
+                }
+            }
+
+            setLaborMatIds(builtMap);
             // Build materialItemId → name map to fill in blank names from old entries
             const nameMap = new Map<string, string>();
             for (const item of combined) {

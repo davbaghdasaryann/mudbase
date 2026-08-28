@@ -2054,6 +2054,7 @@ ${tableBodyHtml}
                     unforeseenSnapshot={(unforeseenEstimate as any)?.isUnforeseenOnly ? null : unforeseenSnapshot}
                     pahestEntries={pahestEntries}
                     onPahestUpdate={handlePahestCostedUpdate}
+                    originalEstimateId={localEstimateId ? String(selected.estimateId) : undefined}
                     aylEntries={aylEntries}
                     onAylUpdate={handleAylCostedUpdate}
                     onCostAdded={handleCostAdded}
