@@ -827,13 +827,18 @@ export default function CostingPage() {
             const pending = pendingFlushRef.current;
             if (!pending) return;
             try {
-                fetch(pending.url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: pending.body,
-                    credentials: 'include',
-                    keepalive: true,
-                });
+                const sent = typeof navigator.sendBeacon === 'function'
+                    ? navigator.sendBeacon(pending.url, new Blob([pending.body], { type: 'application/json' }))
+                    : false;
+                if (!sent) {
+                    fetch(pending.url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: pending.body,
+                        credentials: 'include',
+                        keepalive: true,
+                    });
+                }
             } catch {}
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -904,13 +909,14 @@ export default function CostingPage() {
         for (const lid of laborIds) {
             const entries = laborEntries.filter(c => c.laborItemId === lid);
             const salaryEntries = entries.filter(c => c.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
-            const volumeEntries = entries.filter(c => !c.paymentMethod);
-            // Salary takes precedence; if none, take max(savedActual, historySum) for backward compat:
-            // old records have correct actualData but history with only the last entry (replaced, not appended)
+            const volumeEntries = entries.filter(c => !c.paymentMethod).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+            // Salary takes precedence; if none, take max(savedActual, latestVolumeEntry).
+            // Volume entries are absolute totals (not deltas), so use the latest one — not their sum.
             const baseQty = parseFloat((healedActual[lid] ?? {}).quantity || '0') || 0;
+            const latestVolumeQty = volumeEntries.length > 0 ? volumeEntries[0].quantity : 0;
             const qty = salaryEntries.length > 0
                 ? salaryEntries[0].quantity
-                : Math.max(baseQty, volumeEntries.reduce((s, c) => s + c.quantity, 0));
+                : Math.max(baseQty, latestVolumeQty);
             if (qty > 0) {
                 healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(qty) };
             }
@@ -1004,8 +1010,9 @@ export default function CostingPage() {
         const saveUrl = `/api/v1/costing/save/?id=${encodeURIComponent(id)}`;
         pendingFlushRef.current = { url: saveUrl, body };
         saveTimerRef.current = setTimeout(() => {
-            pendingFlushRef.current = null;
-            Api.requestSession({ command: 'costing/save', args: { id }, json }).catch(console.error);
+            Api.requestSession({ command: 'costing/save', args: { id }, json })
+                .then(() => { if (pendingFlushRef.current?.body === body) pendingFlushRef.current = null; })
+                .catch(console.error);
         }, 300);
     }, []);
 
