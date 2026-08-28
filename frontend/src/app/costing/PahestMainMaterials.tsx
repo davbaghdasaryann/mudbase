@@ -223,6 +223,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
 
     const handlePlusConfirm = () => {
         if (!plusEntry || plusConfirmingRef.current) return;
+        plusConfirmingRef.current = true;
         const qty = parseFloat(plusQtyInput.replace(',', '.')) || 0;
         const price = parseFloat(plusPriceInput.replace(',', '.'));
         const now = new Date();
@@ -239,7 +240,6 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         if (!isNaN(price) && plusPriceInput.trim() !== '') patch.costPerUnit = price;
         next[idx] = { ...next[idx], ...patch };
         onChange(next);
-        plusConfirmingRef.current = true;
         if (qty > 0) onHistoryEntry?.({ workName: plusEntry.name, unit: plusEntry.unit, quantity: qty, unitPrice: newCostPerUnit, total: qty * newCostPerUnit, materialItemId: plusEntry.materialItemId, estimatedLaborId: plusEntry.estimatedLaborId });
         setPlusEntry(null);
         setPlusQtyInput('');
