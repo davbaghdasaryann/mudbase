@@ -326,7 +326,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                         const remaining = e.quantity - (e.costedQuantity ?? 0);
                         return (
                         <Box key={`${e.materialItemId}|${e.estimatedLaborId ?? ''}`} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
-                            <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name}</Typography>
+                            <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name || '—'}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>{e.unit}</Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: mainPrimaryColor, textAlign: 'center' }}>
                                 {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}

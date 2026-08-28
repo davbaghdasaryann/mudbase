@@ -369,7 +369,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                             sx={{ border: '1px solid #e0f5f7', borderRadius: 2, p: 1.5, bgcolor: '#fff', '&:hover': { bgcolor: '#f8fdfe', borderColor: mainPrimaryColor } }}
                                         >
                                             <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                                                <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{mat.name}</Typography>
+                                                <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', flex: 1, pr: 1 }}>{mat.name || '—'}</Typography>
                                                 <Tooltip title={t('Add new quantity')}>
                                                     <IconButton
                                                         size='small'
