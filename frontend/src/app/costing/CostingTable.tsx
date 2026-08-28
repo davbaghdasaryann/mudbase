@@ -253,23 +253,17 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const s = parseFloat(modalSpent.replace(',', '.')) || 0;
         const p = q > 0 ? s / q : 0;
         const rowId = toId(modalSelected._id);
-        const existing = actualData[rowId];
-        const prevQ = parseFloat((existing?.quantity ?? '').replace(',', '.')) || 0;
-        const prevS = parseFloat((existing?.spent ?? '').replace(',', '.')) || 0;
         updateActualData({ ...actualData, [rowId]: { quantity: modalQty, unitPrice: String(p), spent: modalSpent } });
-        // Only append history when values actually changed — prevents double-counting on re-confirm
-        if (q !== prevQ || s !== prevS) {
-            onCostAdded?.({
-                id: `${Date.now()}-${rowId}`,
-                laborItemId: rowId,
-                workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
-                unit: modalSelected.unitSymbol,
-                quantity: q,
-                unitPrice: p,
-                total: q * p,
-                addedAt: new Date(),
-            });
-        }
+        onCostAdded?.({
+            id: `${Date.now()}-${rowId}`,
+            laborItemId: rowId,
+            workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
+            unit: modalSelected.unitSymbol,
+            quantity: q,
+            unitPrice: p,
+            total: q * p,
+            addedAt: new Date(),
+        });
         setModalOpen(false);
     }, [modalSelected, modalQty, modalSpent, onCostAdded, actualData, updateActualData]);
 
