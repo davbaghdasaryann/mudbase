@@ -364,10 +364,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
-        // Group rows: the modal saves the same amount to both actualData.spent and costHistory,
-        // so volumeTotal would double-count salaryTotal. Use only salaryTotal for group rows.
-        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + matActTotal;
-        // Group rows: salary must be recorded; material alone is not enough to show breakdown
+        // Group rows: exclude volumeTotal (modal double-saves to both actualData.spent and costHistory)
+        // and exclude matActTotal (estimate cost is labor-only for group rows; materials tracked in pahest).
+        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + (row.isGroupRow ? 0 : matActTotal);
         const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
         return { actTotal, hasData };
     };
@@ -380,7 +379,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
-        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + matActTotal;
+        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + (row.isGroupRow ? 0 : matActTotal);
         const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
         const estQty = Number(row.quantity ?? 0);
         const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
