@@ -1420,7 +1420,7 @@ ${tableBodyHtml}
         setPahestEntries(prev => prev.map(e => {
             if (e.materialItemId !== materialItemId) return e;
             const laborMatch = estimatedLaborId
-                ? (e.estimatedLaborId === estimatedLaborId || !e.estimatedLaborId)
+                ? e.estimatedLaborId === estimatedLaborId
                 : !e.estimatedLaborId;
             if (!laborMatch) return e;
             return {

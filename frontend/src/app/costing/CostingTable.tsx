@@ -252,19 +252,26 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const q = parseFloat(modalQty.replace(',', '.')) || 0;
         const s = parseFloat(modalSpent.replace(',', '.')) || 0;
         const p = q > 0 ? s / q : 0;
-        updateActualData({ ...actualData, [toId(modalSelected._id)]: { quantity: modalQty, unitPrice: String(p), spent: modalSpent } });
-        onCostAdded?.({
-            id: `${Date.now()}-${toId(modalSelected._id)}`,
-            laborItemId: toId(modalSelected._id),
-            workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
-            unit: modalSelected.unitSymbol,
-            quantity: q,
-            unitPrice: p,
-            total: q * p,
-            addedAt: new Date(),
-        });
+        const rowId = toId(modalSelected._id);
+        const existing = actualData[rowId];
+        const prevQ = parseFloat((existing?.quantity ?? '').replace(',', '.')) || 0;
+        const prevS = parseFloat((existing?.spent ?? '').replace(',', '.')) || 0;
+        updateActualData({ ...actualData, [rowId]: { quantity: modalQty, unitPrice: String(p), spent: modalSpent } });
+        // Only append history when values actually changed — prevents double-counting on re-confirm
+        if (q !== prevQ || s !== prevS) {
+            onCostAdded?.({
+                id: `${Date.now()}-${rowId}`,
+                laborItemId: rowId,
+                workName: modalSelected.laborOfferItemName || modalSelected.catalogName,
+                unit: modalSelected.unitSymbol,
+                quantity: q,
+                unitPrice: p,
+                total: q * p,
+                addedAt: new Date(),
+            });
+        }
         setModalOpen(false);
-    }, [modalSelected, modalQty, modalSpent, onCostAdded]);
+    }, [modalSelected, modalQty, modalSpent, onCostAdded, actualData, updateActualData]);
 
     const handleExport = useCallback(() => {
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

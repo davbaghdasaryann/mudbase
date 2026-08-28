@@ -214,7 +214,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             setUfSections([]); setUfSubsections([]); setUfRows([]);
         }
         Promise.all(fetches).catch(console.error).finally(() => setLoading(false));
-    }, [open, estimateId, ufEstimateId, estimateSnapshot, unforeseenSnapshot]);
+    }, [open, estimateId, ufEstimateId, estimateSnapshot, unforeseenSnapshot, originalEstimateId]);
 
     const handleConfirm = () => {
         if (!materialModal || confirmingRef.current) return;
