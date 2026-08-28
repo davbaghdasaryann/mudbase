@@ -116,7 +116,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         const parseItems = (items: any[]): MaterialOption[] => {
             const map = new Map<string, MaterialOption>();
             for (const item of items) {
-                const id = toIdStr(item.materialItemId);
+                const id = toIdStr(item.materialItemId) || toIdStr(item._id);
                 if (!id) continue;
                 const laborId = toIdStr(item.estimatedLaborId);
                 const key = `${id}|${laborId}`;
@@ -128,11 +128,11 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                         materialItemId: id,
                         estimatedLaborId: laborId,
                         laborName: item.laborName || '',
-                        name: md?.name || '—',
+                        name: md?.name || item.materialOfferItemName || '—',
                         fullCode: md?.fullCode || '',
                         unit: item.estimateMeasurementUnitData?.[0]?.representationSymbol || '',
                         estimateQuantity: item.quantity ?? 0,
-                        costPerUnit: md?.averagePrice ?? 0,
+                        costPerUnit: md?.averagePrice ?? item.changableAveragePrice ?? 0,
                     });
                 }
             }

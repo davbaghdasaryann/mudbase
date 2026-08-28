@@ -117,7 +117,6 @@ registerApiSession('estimate/fetch_materials_list', async (req, res, session) =>
                 as: 'estimateMaterialItemData',
             },
         },
-        { $match: { estimateMaterialItemData: { $ne: [] } } },
         {
             $lookup: {
                 from: 'measurement_unit',
@@ -211,7 +210,6 @@ registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res,
                 as: 'matData',
             },
         },
-        { $match: { matData: { $ne: [] } } },
         {
             $lookup: {
                 from: 'measurement_unit',
@@ -225,6 +223,8 @@ registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res,
             $project: {
                 estimatedLaborId: 1,
                 materialItemId: 1,
+                materialOfferItemName: 1,
+                changableAveragePrice: 1,
                 quantity: 1,
                 name: { $arrayElemAt: ['$matData.name', 0] },
                 fullCode: { $arrayElemAt: ['$matData.fullCode', 0] },
@@ -260,12 +260,12 @@ registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res,
             childName: c.laborOfferItemName || '',
             materials: (matByChild.get(c._id.toString()) ?? []).map(m => ({
                 estimatedMaterialId: m._id?.toString() ?? '',
-                materialItemId: m.materialItemId?.toString() ?? '',
-                name: m.name || '',
+                materialItemId: (m.materialItemId?.toString() || m._id?.toString()) ?? '',
+                name: m.name || m.materialOfferItemName || '',
                 fullCode: m.fullCode || '',
                 unit: m.unit || '',
                 estimateQuantity: m.quantity ?? 0,
-                costPerUnit: m.costPerUnit ?? 0,
+                costPerUnit: m.costPerUnit ?? m.changableAveragePrice ?? 0,
             })),
         })).filter(c => c.materials.length > 0),
     })).filter(g => g.children.length > 0);
