@@ -112,8 +112,6 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                 if (!laborId || !matId) continue;
                 if (!map.has(laborId)) map.set(laborId, new Set());
                 map.get(laborId)!.add(matId);
-                // Also keep zero-ID for backward compat with old pahest entries
-                if (rawMatId === ZERO_MAT_ID) map.get(laborId)!.add(ZERO_MAT_ID);
             }
             for (const group of groupData ?? []) {
                 const groupId = toId(group.groupId);
@@ -147,7 +145,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                 const rawMatId = toId(item.materialItemId);
                 const matId = (rawMatId && rawMatId !== ZERO_MAT_ID) ? rawMatId : toId(item._id);
                 const name = item.estimateMaterialItemData?.[0]?.name || item.materialOfferItemName || '';
-                if (matId && name) { nameMap.set(matId, name); if (rawMatId === ZERO_MAT_ID) nameMap.set(ZERO_MAT_ID, name); }
+                if (matId && name) nameMap.set(matId, name);
             }
             for (const group of groups ?? []) {
                 for (const child of group.children ?? []) {
