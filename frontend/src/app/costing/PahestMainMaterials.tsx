@@ -115,8 +115,10 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
         setLoading(true);
         const parseItems = (items: any[]): MaterialOption[] => {
             const map = new Map<string, MaterialOption>();
+            const ZERO_ID = '000000000000000000000000';
             for (const item of items) {
-                const id = toIdStr(item.materialItemId) || toIdStr(item._id);
+                const rawId = toIdStr(item.materialItemId);
+                const id = (rawId && rawId !== ZERO_ID) ? rawId : toIdStr(item._id);
                 if (!id) continue;
                 const laborId = toIdStr(item.estimatedLaborId);
                 const key = `${id}|${laborId}`;

@@ -260,7 +260,7 @@ registerApiSession('estimate/fetch_group_materials_for_pahest', async (req, res,
             childName: c.laborOfferItemName || '',
             materials: (matByChild.get(c._id.toString()) ?? []).map(m => ({
                 estimatedMaterialId: m._id?.toString() ?? '',
-                materialItemId: (m.materialItemId?.toString() || m._id?.toString()) ?? '',
+                materialItemId: (m.materialItemId?.toString() === '000000000000000000000000' ? m._id?.toString() : (m.materialItemId?.toString() || m._id?.toString())) ?? '',
                 name: m.name || m.materialOfferItemName || '',
                 fullCode: m.fullCode || '',
                 unit: m.unit || '',
