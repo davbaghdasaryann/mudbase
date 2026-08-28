@@ -207,7 +207,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
             onChange([...entries, {
                 materialItemId: selected.materialItemId,
                 estimatedLaborId: selected.estimatedLaborId,
-                name: selected.name,
+                name: selected.name || '—',
                 unit: selected.unit,
                 quantity: qty,
                 estimateQuantity: selected.estimateQuantity,
