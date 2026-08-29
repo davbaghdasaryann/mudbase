@@ -663,17 +663,35 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, p
         const estTotal = Math.round(estQty * row.changableAveragePrice) + Math.round(row.materialTotalCost ?? 0);
         const estUP = estTotal / estQty;
         if (estUP <= 0) continue;
-        const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
-        if (actQty <= 0) continue;
-        const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const matActTotal = costHistory.filter(e => {
-            if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-            if (e.laborItemId) return e.laborItemId === rowId;
-            if (!e.materialItemId) return false;
-            return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
-        }).reduce((s, e) => s + e.total, 0);
-        const actTotal = salTotal + matActTotal;
-        if (actTotal <= 0) continue;
+        let actQty: number;
+        let actTotal: number;
+        if (row.isGroupRow && row.childIds && row.childIds.length > 0) {
+            actQty = estQty;
+            let childActTotal = 0;
+            for (const childId of row.childIds) {
+                const s = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((acc, e) => acc + e.total, 0);
+                const m = costHistory.filter(e => {
+                    if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+                    if (e.laborItemId) return e.laborItemId === childId;
+                    if (!e.materialItemId) return false;
+                    return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
+                }).reduce((acc, e) => acc + e.total, 0);
+                const v = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
+                childActTotal += v + s + m;
+            }
+            actTotal = childActTotal;
+        } else {
+            actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
+            const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+            const matActTotal = costHistory.filter(e => {
+                if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+                if (e.laborItemId) return e.laborItemId === rowId;
+                if (!e.materialItemId) return false;
+                return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+            }).reduce((s, e) => s + e.total, 0);
+            actTotal = salTotal + matActTotal;
+        }
+        if (actQty <= 0 || actTotal <= 0) continue;
         pNumer += estUP * actQty - actTotal;
         pDenom += estUP * actQty;
         pHasAny = true;
@@ -1195,15 +1213,38 @@ export default function CostingPage() {
 
             const renderLaborRow = (row: SnapshotLaborRow) => {
                 const rowId = toId(row._id);
-                const actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
-                const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-                const matActTotal = costHistory.filter(e => {
-                    if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                    if (e.laborItemId) return e.laborItemId === rowId;
-                    if (!e.materialItemId) return false;
-                    return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
-                }).reduce((s, e) => s + e.total, 0);
-                const actTotal = salTotal + matActTotal;
+                let actQty: number;
+                let salTotal: number;
+                let matActTotal: number;
+                let actTotal: number;
+                if (row.isGroupRow && row.childIds && row.childIds.length > 0) {
+                    actQty = Number(row.quantity ?? 0);
+                    salTotal = 0;
+                    matActTotal = 0;
+                    for (const childId of row.childIds) {
+                        const cs = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+                        const cm = costHistory.filter(e => {
+                            if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+                            if (e.laborItemId) return e.laborItemId === childId;
+                            if (!e.materialItemId) return false;
+                            return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
+                        }).reduce((s, e) => s + e.total, 0);
+                        const cv = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
+                        salTotal += cv + cs;
+                        matActTotal += cm;
+                    }
+                    actTotal = salTotal + matActTotal;
+                } else {
+                    actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
+                    salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+                    matActTotal = costHistory.filter(e => {
+                        if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+                        if (e.laborItemId) return e.laborItemId === rowId;
+                        if (!e.materialItemId) return false;
+                        return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                    }).reduce((s, e) => s + e.total, 0);
+                    actTotal = salTotal + matActTotal;
+                }
                 const salUP  = actQty > 0 ? Math.round(salTotal / actQty) : 0;
                 const actUP  = actQty > 0 ? Math.round(actTotal / actQty) : 0;
 
