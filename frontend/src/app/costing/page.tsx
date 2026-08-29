@@ -590,7 +590,9 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
     }
 
 
-    const pct = totalEst > 0 ? Math.min(100, (totalAct / totalEst) * 100) : null;
+    const rawPct = totalEst > 0 ? Math.min(100, (totalAct / totalEst) * 100) : null;
+    // Only show 100% when every row is actually completed, prevent rounding misleading display
+    const pct = rawPct !== null && completedRows < rows.length ? Math.min(rawPct, 99) : rawPct;
     const color = pct === null ? '#bbb' : pct >= 80 ? '#2e7d32' : pct >= 40 ? '#e65100' : '#c62828';
     const lightBg = pct === null ? '#f5f5f5' : pct >= 80 ? 'rgba(46,125,50,0.08)' : pct >= 40 ? 'rgba(230,81,0,0.08)' : 'rgba(198,40,40,0.08)';
     const filled = pct ?? 0;
