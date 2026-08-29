@@ -223,7 +223,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         confirmingRef.current = true;
         const mat = materialModal.material;
         const effectiveLaborId = selectedRow ? toId(selectedRow._id) : (mat.estimatedLaborId || '');
-        onPahestUpdate(mat.materialItemId, qty, mat.costPerUnit, effectiveLaborId);
+        onPahestUpdate(mat.materialItemId, qty, mat.costPerUnit, mat.estimatedLaborId || undefined);
         onCostAdded?.({
             id: String(Date.now() + Math.random()),
             workName: mat.name,
