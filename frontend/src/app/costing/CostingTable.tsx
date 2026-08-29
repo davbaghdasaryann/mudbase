@@ -33,6 +33,7 @@ interface LaborRow {
     isGroupRow?: boolean;
     parentGroupRowId?: string;
     childIds?: string[];
+    children?: LaborRow[];
 }
 
 interface MaterialRow {
@@ -292,17 +293,39 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
             const subs = subsMap.get(String(section._id)) ?? [];
             html += `<tr><td colspan="${TOTAL_COLS}" style="font-weight:bold;font-size:13px;background:#e0f5f7;border:1px solid #ccc;padding:6px 10px;text-align:center;">${esc(`${si + 1}. ${section.name.toUpperCase()}`)}</td></tr>`;
 
+            const tdB = (extra = '') => `style="border:1px solid #ccc;padding:5px 8px;${extra}"`;
             const renderRow = (row: LaborRow, idx: number) => {
                 const rowTotal = Math.round(Number(row.quantity ?? 0) * row.changableAveragePrice);
-                return `<tr><td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${idx}</td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(row.laborOfferItemName || row.catalogName)}</td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(row.unitSymbol)}</td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${formatCurrencyRounded(row.changableAveragePrice)}</td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${formatCurrencyRounded(rowTotal)}</td>` +
-                `<td style="border:1px solid #ccc;border-left:2px solid #b2e8ed;padding:5px 8px;text-align:right;"></td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;"></td>` +
-                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;"></td></tr>`;
+                if (row.isGroupRow && row.children && row.children.length > 0) {
+                    // Group header row
+                    let html = `<tr style="background:#dff6f9;"><td ${tdB('text-align:center;font-weight:bold;')}>${idx}</td>` +
+                        `<td colspan="${TOTAL_COLS - 1}" ${tdB('font-weight:bold;color:#007a89;')}>${esc(row.laborOfferItemName || row.catalogName)}</td></tr>`;
+                    // Child rows
+                    for (const child of row.children) {
+                        const childTotal = Math.round(Number(child.quantity ?? 0) * child.changableAveragePrice);
+                        html += `<tr style="background:#f5fdfe;"><td ${tdB('text-align:center;color:#aaa;')}></td>` +
+                            `<td ${tdB('padding-left:22px;')}>${esc(child.laborOfferItemName || child.catalogName)}</td>` +
+                            `<td ${tdB('text-align:center;')}>${esc(child.unitSymbol)}</td>` +
+                            `<td ${tdB('text-align:right;')}>${Number(child.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                            `<td ${tdB('text-align:right;')}>${formatCurrencyRounded(child.changableAveragePrice)}</td>` +
+                            `<td ${tdB('text-align:right;font-weight:bold;')}>${formatCurrencyRounded(childTotal)}</td>` +
+                            `<td ${tdB('border-left:2px solid #b2e8ed;')}></td><td ${tdB()}></td><td ${tdB()}></td></tr>`;
+                    }
+                    // Group subtotal
+                    html += `<tr style="background:#cceef5;"><td colspan="5" ${tdB('text-align:right;font-style:italic;font-size:11px;color:#555;')}>${esc(t('Subtotal'))}</td>` +
+                        `<td ${tdB('text-align:right;font-weight:bold;')}>${formatCurrencyRounded(rowTotal)}</td>` +
+                        `<td ${tdB('border-left:2px solid #b2e8ed;')}></td><td ${tdB()}></td><td ${tdB()}></td></tr>`;
+                    return html;
+                }
+                return `<tr><td ${tdB('text-align:center;')}>${idx}</td>` +
+                `<td ${tdB()}>${esc(row.laborOfferItemName || row.catalogName)}</td>` +
+                `<td ${tdB('text-align:center;')}>${esc(row.unitSymbol)}</td>` +
+                `<td ${tdB('text-align:right;')}>${Number(row.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                `<td ${tdB('text-align:right;')}>${formatCurrencyRounded(row.changableAveragePrice)}</td>` +
+                `<td ${tdB('text-align:right;font-weight:bold;')}>${formatCurrencyRounded(rowTotal)}</td>` +
+                `<td ${tdB('border-left:2px solid #b2e8ed;')}></td>` +
+                `<td ${tdB()}></td>` +
+                `<td ${tdB()}></td></tr>`;
             };
 
             if (subs.length > 0) {

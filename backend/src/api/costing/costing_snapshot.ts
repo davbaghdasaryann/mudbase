@@ -108,6 +108,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
     // groupUnitPrice = sum(childQty * childPrice + childMatCost) = groupLaborTotalCost + groupMaterialCost
     const groupUnitPriceFromChildrenMap = new Map<string, number>();
     const childIdsByGroupMap = new Map<string, string[]>();
+    const childSnapshotsByGroupMap = new Map<string, Db.SnapshotLaborRow[]>();
     for (const item of laborItems as any[]) {
         const parentId = item.parentGroupRowId ? item.parentGroupRowId.toString() : null;
         if (!parentId) continue;
@@ -118,6 +119,22 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         const childList = childIdsByGroupMap.get(parentId) ?? [];
         childList.push(item._id.toString());
         childIdsByGroupMap.set(parentId, childList);
+        const snapshotList = childSnapshotsByGroupMap.get(parentId) ?? [];
+        snapshotList.push({
+            _id: item._id.toString(),
+            catalogName: item.catalogName ?? '',
+            laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+            unitSymbol: item.unitSymbol ?? '',
+            quantity: childQty,
+            changableAveragePrice: childPrice,
+            cost: Math.round(childPrice * childQty) + childMatCost,
+            materialTotalCost: childMatCost,
+            subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+            sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+            parentGroupRowId: parentId,
+            fullCode: item.fullCode ?? undefined,
+        });
+        childSnapshotsByGroupMap.set(parentId, snapshotList);
     }
 
     const laborRows: Db.SnapshotLaborRow[] = (laborItems as any[])
@@ -145,6 +162,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
                 isGroupRow: isGroup ? true : undefined,
                 parentGroupRowId: undefined,
                 childIds: isGroup ? (childIdsByGroupMap.get(item._id.toString()) ?? undefined) : undefined,
+                children: isGroup ? (childSnapshotsByGroupMap.get(item._id.toString()) ?? undefined) : undefined,
                 fullCode: item.fullCode ?? undefined,
             };
         });
