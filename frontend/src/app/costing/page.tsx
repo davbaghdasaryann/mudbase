@@ -111,6 +111,7 @@ interface EstimateSnapshot {
     laborRows: SnapshotLaborRow[];
     sections: SnapshotSection[];
     subsections: SnapshotSubsection[];
+    materialFullCodes?: Record<string, string>;
 }
 
 interface CostingRecord {
@@ -1220,13 +1221,14 @@ export default function CostingPage() {
                     const qty = entries.reduce((s, e) => s + e.quantity, 0);
                     const total = entries.reduce((s, e) => s + e.total, 0);
                     const unitPrice = qty > 0 ? total / qty : (p?.costPerUnit ?? 0);
-                    return { name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: p?.estimateQuantity ?? 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
+                    return { matId, name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: p?.estimateQuantity ?? 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
                 }).filter(m => m.quantity > 0);
                 const rowspan = mats.length || 1;
 
                 secActTotal += actTotal;
 
-                const laborCode = row.isGroupRow ? 'խumB' : (row.fullCode || 'N/A');
+                const matCodes = estimateSnapshot.materialFullCodes ?? {};
+                const laborCode = row.isGroupRow ? 'Խումբ' : (row.fullCode || 'N/A');
                 let html = `<tr>
                     <td rowspan="${rowspan}">${counter}</td>
                     <td rowspan="${rowspan}">${laborCode}</td>
@@ -1239,7 +1241,7 @@ export default function CostingPage() {
                     const mat0 = mats[0];
                     // mat0.total is pre-computed from cost history
                     html += `
-                    <td></td>
+                    <td>${matCodes[mat0.matId] || 'N/A'}</td>
                     <td style="text-align:left;">${esc(mat0.name)}</td>
                     <td>${esc(mat0.unit)}</td>
                     <td>${mat0.estimateQuantity > 0 ? mat0.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
@@ -1253,7 +1255,7 @@ export default function CostingPage() {
                         const mat = mats[mi];
                         // mat.total is pre-computed from cost history
                         html += `<tr>
-                    <td></td>
+                    <td>${matCodes[mat.matId] || 'N/A'}</td>
                     <td style="text-align:left;">${esc(mat.name)}</td>
                     <td>${esc(mat.unit)}</td>
                     <td>${mat.estimateQuantity > 0 ? mat.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>

@@ -899,7 +899,7 @@ ${styles}
                 ++itemIndex;
 
                 const totalCost = laborData.labor.changableAveragePrice * laborData.labor.quantity;
-                const laborCode = laborData.labor.isGroupRow ? 'խumB' : (laborData.labor.laborItemId || 'N/A');
+                const laborCode = laborData.labor.isGroupRow ? 'Խումբ' : (laborData.labor.laborItemId || 'N/A');
 
                 html += `
                 <tr>

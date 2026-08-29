@@ -79,14 +79,29 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
     const subsectionIds = rawSubsections.map(s => s._id);
     const materials = await Db.getEstimateMaterialItemsCollection()
         .find({ estimateSubsectionId: { $in: subsectionIds } })
-        .project({ estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 })
+        .project({ estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1, materialItemId: 1 })
         .toArray();
 
     const matCostByLaborId = new Map<string, number>();
+    const uniqueMatItemIds: ObjectId[] = [];
+    const seenMatItemIds = new Set<string>();
     for (const mat of materials) {
         const laborIdStr = mat.estimatedLaborId?.toString() ?? '';
         if (!laborIdStr) continue;
         matCostByLaborId.set(laborIdStr, (matCostByLaborId.get(laborIdStr) ?? 0) + (mat.quantity ?? 0) * (mat.changableAveragePrice ?? 0));
+        if (mat.materialItemId) {
+            const idStr = mat.materialItemId.toString();
+            if (!seenMatItemIds.has(idStr)) { seenMatItemIds.add(idStr); uniqueMatItemIds.push(mat.materialItemId); }
+        }
+    }
+
+    // Build materialItemId → fullCode map for export
+    const matFullCodeDocs = uniqueMatItemIds.length > 0
+        ? await Db.getMaterialItemsCollection().find({ _id: { $in: uniqueMatItemIds } }).project({ fullCode: 1 }).toArray()
+        : [];
+    const materialFullCodes: Record<string, string> = {};
+    for (const doc of matFullCodeDocs) {
+        if (doc.fullCode) materialFullCodes[doc._id.toString()] = doc.fullCode;
     }
 
     // For group rows: compute unit price from children using same formula as estimate page:
@@ -142,5 +157,5 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         displayIndex: s.displayIndex as number ?? 0,
     }));
 
-    return { laborRows, sections, subsections };
+    return { laborRows, sections, subsections, materialFullCodes };
 }

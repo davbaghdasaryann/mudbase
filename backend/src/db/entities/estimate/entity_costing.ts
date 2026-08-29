@@ -90,6 +90,7 @@ export interface EstimateSnapshot {
     laborRows: SnapshotLaborRow[];
     sections: SnapshotSection[];
     subsections: SnapshotSubsection[];
+    materialFullCodes?: Record<string, string>;
 }
 
 export interface EntityCosting {
