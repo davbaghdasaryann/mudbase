@@ -1615,8 +1615,8 @@ ${tableBodyHtml}
                             }).map(row => toRowId(row._id)) : []);
                             const laborCompleted = completedRowIds.size;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
-                            const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) >= e.estimateQuantity).length;
-                            const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) < e.estimateQuantity).length;
+                            const materialCompleted = pahestEntries.filter(e => e.quantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) >= e.quantity).length;
+                            const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) < e.quantity).length;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
                                     <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
