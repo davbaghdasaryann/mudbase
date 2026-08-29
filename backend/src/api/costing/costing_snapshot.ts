@@ -107,6 +107,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
     // For group rows: compute unit price from children using same formula as estimate page:
     // groupUnitPrice = sum(childQty * childPrice + childMatCost) = groupLaborTotalCost + groupMaterialCost
     const groupUnitPriceFromChildrenMap = new Map<string, number>();
+    const childIdsByGroupMap = new Map<string, string[]>();
     for (const item of laborItems as any[]) {
         const parentId = item.parentGroupRowId ? item.parentGroupRowId.toString() : null;
         if (!parentId) continue;
@@ -114,6 +115,9 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
         const childPrice = isNaN(item.changableAveragePrice) ? 0 : (item.changableAveragePrice ?? 0);
         const childMatCost = matCostByLaborId.get(item._id.toString()) ?? 0;
         groupUnitPriceFromChildrenMap.set(parentId, (groupUnitPriceFromChildrenMap.get(parentId) ?? 0) + childQty * childPrice + childMatCost);
+        const childList = childIdsByGroupMap.get(parentId) ?? [];
+        childList.push(item._id.toString());
+        childIdsByGroupMap.set(parentId, childList);
     }
 
     const laborRows: Db.SnapshotLaborRow[] = (laborItems as any[])
@@ -140,6 +144,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
                 sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
                 isGroupRow: isGroup ? true : undefined,
                 parentGroupRowId: undefined,
+                childIds: isGroup ? (childIdsByGroupMap.get(item._id.toString()) ?? undefined) : undefined,
                 fullCode: item.fullCode ?? undefined,
             };
         });

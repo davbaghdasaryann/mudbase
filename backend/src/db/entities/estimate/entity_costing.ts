@@ -70,6 +70,7 @@ export interface SnapshotLaborRow {
     sectionName: string;
     isGroupRow?: boolean;
     parentGroupRowId?: string;
+    childIds?: string[];
     fullCode?: string;
 }
 

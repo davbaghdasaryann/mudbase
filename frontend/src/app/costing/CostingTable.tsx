@@ -32,6 +32,7 @@ interface LaborRow {
     sectionName: string;
     isGroupRow?: boolean;
     parentGroupRowId?: string;
+    childIds?: string[];
 }
 
 interface MaterialRow {
@@ -360,12 +361,23 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
 
     const getRowActTotal = (row: LaborRow) => {
         const rowId = toId(row._id);
+        if (row.isGroupRow && row.childIds && row.childIds.length > 0) {
+            // Group rows: actual = sum of children's actuals (mirrors how estimate derives group unit price from children)
+            let childActTotal = 0;
+            for (const childId of row.childIds) {
+                const ca = actualData[childId];
+                const childVol = parseFloat((ca?.spent ?? '').replace(',', '.')) || 0;
+                const childSalary = (costHistory ?? []).filter(e => e.laborItemId === childId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+                const childMat = calcMatActTotal(childId);
+                childActTotal += childVol + childSalary + childMat;
+            }
+            return { actTotal: childActTotal, hasData: childActTotal > 0 };
+        }
         const a = actualData[rowId];
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
-        // Group rows: exclude volumeTotal (modal double-saves to both actualData.spent and costHistory).
         const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + matActTotal;
         const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
         return { actTotal, hasData };
@@ -375,12 +387,14 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const rowId = toId(row._id);
         const mats = materialRows.filter(m => toId(m.estimatedLaborId) === rowId);
         const a = actualData[rowId];
-        const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+        // Group rows: use estimate qty so actUP = actTotal / groupQty (same denominator as estimate)
+        const q = row.isGroupRow
+            ? (row.quantity ?? 0)
+            : parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+        const { actTotal, hasData } = getRowActTotal(row);
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
-        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + matActTotal;
-        const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
         const estQty = Number(row.quantity ?? 0);
         const laborCostRounded = Math.round(estQty * row.changableAveragePrice);
         const rawMatEst = row.materialTotalCost !== undefined ? row.materialTotalCost : mats.reduce((s, m) => s + m.cost, 0);

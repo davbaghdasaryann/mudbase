@@ -103,6 +103,7 @@ interface SnapshotLaborRow {
     subsectionName: string;
     sectionName: string;
     isGroupRow?: boolean;
+    childIds?: string[];
     fullCode?: string;
 }
 interface SnapshotSection { _id: string; name: string; displayIndex: number; totalCost?: number; }
