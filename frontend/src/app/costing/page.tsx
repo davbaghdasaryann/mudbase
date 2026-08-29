@@ -308,9 +308,9 @@ const COST_SEGMENTS = [
 ];
 
 const ACTUAL_SEGMENTS = [
-    { key: 'labor',     inner: '#FF8A65', outer: '#E64A19', dot: '#E64A19' },
-    { key: 'materials', inner: '#FFAB40', outer: '#E65100', dot: '#E65100' },
-    { key: 'other',     inner: '#FFCC80', outer: '#FF8F00', dot: '#FF8F00' },
+    { key: 'labor',     inner: '#FF7043', outer: '#BF360C', dot: '#E64A19' },
+    { key: 'materials', inner: '#FFB300', outer: '#E65100', dot: '#F57C00' },
+    { key: 'other',     inner: '#FFE57F', outer: '#FF8F00', dot: '#FFA000' },
 ];
 
 function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
@@ -398,36 +398,33 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     const { t } = useTranslation();
     const chartH = Math.max(80, height - 80);
 
+    const ALL_KEYS = ['labor', 'materials', 'other'] as const;
+    const buildData = (labor: number, materials: number, other: number) => {
+        const total = labor + materials + other;
+        return ALL_KEYS.map(key => {
+            const value = key === 'labor' ? labor : key === 'materials' ? materials : other;
+            return { key, name: t(key === 'labor' ? 'Labor' : key === 'materials' ? 'Materials' : 'Other Expenses'), value, pct: total > 0 ? ((value / total) * 100).toFixed(1) : '0.0' };
+        });
+    };
+
     const estData = (() => {
         const labor = estimate.laborTotalCost ?? 0;
         const materials = estimate.materialTotalCost ?? 0;
         const base = estimate.totalCost ?? 0;
-        const withOther = estimate.totalCostWithOtherExpenses ?? base;
-        const other = Math.max(0, withOther - base);
-        const total = labor + materials + other;
-        if (total === 0) return [];
-        return [
-            { key: 'labor',     name: t('Labor'),         value: labor,     pct: ((labor / total) * 100).toFixed(1) },
-            { key: 'materials', name: t('Materials'),      value: materials, pct: ((materials / total) * 100).toFixed(1) },
-            { key: 'other',     name: t('Other Expenses'), value: other,     pct: ((other / total) * 100).toFixed(1) },
-        ].filter(d => d.value > 0);
+        const other = Math.max(0, (estimate.totalCostWithOtherExpenses ?? base) - base);
+        return buildData(labor, materials, other);
     })();
 
     const actData = (() => {
         const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
         const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' || e.paymentMethod === 'overhead').reduce((s, e) => s + e.total, 0);
-        const otherTotal = aylMatTotal + extraActualCosts;
-        const total = materialsTotal + laborTotal + otherTotal;
-        if (total === 0) return [];
-        return [
-            { key: 'labor',     name: t('Labor'),         value: laborTotal,     pct: ((laborTotal / total) * 100).toFixed(1) },
-            { key: 'materials', name: t('Materials'),      value: materialsTotal, pct: ((materialsTotal / total) * 100).toFixed(1) },
-            { key: 'other',     name: t('Other Expenses'), value: otherTotal,     pct: ((otherTotal / total) * 100).toFixed(1) },
-        ].filter(d => d.value > 0);
+        return buildData(laborTotal, materialsTotal, aylMatTotal + extraActualCosts);
     })();
 
-    const donut = (data: typeof estData, gradPrefix: string, segments = COST_SEGMENTS) => (
+    const donut = (data: ReturnType<typeof buildData>, gradPrefix: string, segments = COST_SEGMENTS) => {
+        const hasAny = data.some(d => d.value > 0);
+        return (
         <Box sx={{ flex: 1, minHeight: chartH }}>
             <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
@@ -439,14 +436,14 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
                             </radialGradient>
                         ))}
                     </defs>
-                    <Pie data={data} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={2} dataKey='value' strokeWidth={0} minAngle={6}>
-                        {data.map(entry => {
+                    <Pie data={hasAny ? data : [{ key: 'empty', name: '', value: 1, pct: '0' }]} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={hasAny ? 2 : 0} dataKey='value' strokeWidth={0} minAngle={hasAny ? 6 : 0}>
+                        {hasAny ? data.map(entry => {
                             const seg = segments.find(s => s.key === entry.key);
-                            return <Cell key={entry.key} fill={seg ? `url(#${gradPrefix}-${seg.key})` : '#ccc'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
-                        })}
+                            return <Cell key={entry.key} fill={entry.value > 0 ? (seg ? `url(#${gradPrefix}-${seg.key})` : '#ccc') : 'transparent'} stroke={entry.value > 0 ? (seg?.outer ?? '#ccc') : 'none'} strokeWidth={entry.value > 0 ? 0.5 : 0} />;
+                        }) : [<Cell key='empty' fill='#f0f0f0' stroke='none' />]}
                     </Pie>
-                    <RechartsTooltip content={({ active, payload }: any) => {
-                        if (!active || !payload?.length) return null;
+                    {hasAny && <RechartsTooltip content={({ active, payload }: any) => {
+                        if (!active || !payload?.length || !payload[0].value) return null;
                         const e = payload[0];
                         return (
                             <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
@@ -455,21 +452,22 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
                                 <Typography variant='caption' sx={{ color: 'text.secondary' }}>{e.payload.pct}%</Typography>
                             </Paper>
                         );
-                    }} />
+                    }} />}
                 </PieChart>
             </ResponsiveContainer>
         </Box>
-    );
+        );
+    };
 
-    const legend = (data: typeof estData, segments = COST_SEGMENTS) => (
+    const legend = (data: ReturnType<typeof buildData>, segments = COST_SEGMENTS) => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
             {data.map(d => {
                 const seg = segments.find(s => s.key === d.key);
                 return (
                     <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: seg?.dot ?? '#ccc', flexShrink: 0 }} />
-                        <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>{d.name} {d.pct}%</Typography>
-                        <Typography variant='caption' sx={{ color: '#aaa', fontSize: '0.65rem', ml: 'auto' }}>{Math.round(d.value).toLocaleString()}</Typography>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: d.value > 0 ? (seg?.dot ?? '#ccc') : '#e0e0e0', flexShrink: 0 }} />
+                        <Typography variant='caption' sx={{ color: d.value > 0 ? 'text.secondary' : '#bdbdbd', fontSize: '0.68rem' }}>{d.name} {d.value > 0 ? `${d.pct}%` : '—'}</Typography>
+                        <Typography variant='caption' sx={{ color: '#aaa', fontSize: '0.65rem', ml: 'auto' }}>{d.value > 0 ? Math.round(d.value).toLocaleString() : ''}</Typography>
                     </Box>
                 );
             })}
@@ -481,20 +479,14 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
             <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
-                    {estData.length === 0
-                        ? <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>—</Typography></Box>
-                        : donut(estData, 'est')
-                    }
-                    {estData.length > 0 && legend(estData)}
+                    {donut(estData, 'est')}
+                    {legend(estData)}
                 </Box>
                 <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
-                    {actData.length === 0
-                        ? <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>—</Typography></Box>
-                        : donut(actData, 'act', ACTUAL_SEGMENTS)
-                    }
-                    {actData.length > 0 && legend(actData, ACTUAL_SEGMENTS)}
+                    {donut(actData, 'act', ACTUAL_SEGMENTS)}
+                    {legend(actData, ACTUAL_SEGMENTS)}
                 </Box>
             </Box>
         </Paper>
