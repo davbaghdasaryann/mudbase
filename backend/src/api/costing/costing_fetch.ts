@@ -7,13 +7,14 @@ import { buildEstimateSnapshot } from './costing_snapshot';
 
 registerApiSession('costing/fetch', async (req, res, session) => {
     const estimateId = requireQueryParam(req, 'estimateId');
+    // Use localEstimateId for snapshot building if provided (forked estimates have different labor IDs)
+    const snapshotEstimateId = (req.query.snapshotEstimateId as string) || estimateId;
     const col = Db.getCostingsCollection();
     const doc = await col.findOne({
         accountId: session.mongoAccountId,
         estimateId: new ObjectId(estimateId),
     });
     if (!doc) { respondJsonData(res, null); return; }
-    // Always rebuild snapshot fresh so it reflects the latest estimate structure
-    const freshSnapshot = await buildEstimateSnapshot(estimateId);
+    const freshSnapshot = await buildEstimateSnapshot(snapshotEstimateId);
     respondJsonData(res, { ...doc, estimateSnapshot: freshSnapshot });
 });

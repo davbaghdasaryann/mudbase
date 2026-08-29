@@ -949,8 +949,10 @@ export default function CostingPage() {
         setEstimateSnapshot(rec.estimateSnapshot ?? null);
         setUnforeseenSnapshot(rec.unforeseenEstimateSnapshot ?? null);
         setSmallScaleSnapshot(rec.smallScaleEstimateSnapshot ?? null);
-        // Fetch fresh snapshot to populate fullCode and other computed fields missing from stored snapshots
-        Api.requestSession<any>({ command: 'costing/fetch', args: { estimateId: String(rec.estimateId) } })
+        // Fetch fresh snapshot to populate fullCode; use localEstimateId for snapshot so labor IDs match actualData
+        const snapshotArgs: Record<string, string> = { estimateId: String(rec.estimateId) };
+        if (rec.localEstimateId) snapshotArgs.snapshotEstimateId = rec.localEstimateId;
+        Api.requestSession<any>({ command: 'costing/fetch', args: snapshotArgs })
             .then(fresh => { if (fresh?.estimateSnapshot) setEstimateSnapshot(fresh.estimateSnapshot); })
             .catch(() => {});
         setLocalEstimateId(rec.localEstimateId ?? '');
