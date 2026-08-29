@@ -1277,10 +1277,12 @@ export default function CostingPage() {
 
                 const matCodes = estimateSnapshot.materialFullCodes ?? {};
                 const laborCode = row.isGroupRow ? 'Խումբ' : (row.fullCode || 'N/A');
-                let html = `<tr>
+                const groupRowStyle = row.isGroupRow ? ' style="background:#dff6f9;"' : '';
+                const groupNameStyle = row.isGroupRow ? ' style="text-align:left;font-weight:700;color:#0277bd;"' : ' style="text-align:left;"';
+                let html = `<tr${groupRowStyle}>
                     <td rowspan="${rowspan}">${counter}</td>
                     <td rowspan="${rowspan}">${laborCode}</td>
-                    <td rowspan="${rowspan}" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
+                    <td rowspan="${rowspan}"${groupNameStyle}>${esc(row.laborOfferItemName || row.catalogName)}</td>
                     <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
                     <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
                     <td rowspan="${rowspan}">${salUP > 0 ? fmtN(salUP) : ''}</td>`;
