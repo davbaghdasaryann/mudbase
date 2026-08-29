@@ -1426,8 +1426,13 @@ ${tableBodyHtml}
         setCostHistory(prev => [entry, ...prev]);
     };
 
-    const handlePahestCostedUpdate = (_materialItemId: string, _qty: number, _costPerUnit: number = 0, _estimatedLaborId?: string) => {
-        // costedQuantity is now derived from costHistory via costedQuantityMap — no manual sync needed
+    const handlePahestCostedUpdate = (materialItemId: string, qty: number, _costPerUnit: number = 0, estimatedLaborId?: string) => {
+        setPahestEntries(prev => prev.map(e => {
+            if (e.materialItemId !== materialItemId) return e;
+            const laborMatch = estimatedLaborId ? e.estimatedLaborId === estimatedLaborId : !e.estimatedLaborId;
+            if (!laborMatch) return e;
+            return { ...e, costedQuantity: (e.costedQuantity ?? 0) + qty };
+        }));
     };
 
     const handleAylCostedUpdate = (id: string, qty: number) => {
