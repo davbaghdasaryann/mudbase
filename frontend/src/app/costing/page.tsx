@@ -1857,7 +1857,7 @@ ${tableBodyHtml}
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pb: 4 }}>
                         <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Հիմնական նյութեր</Typography>
                         <PahestMainMaterials
-                            estimateId={selected.estimateId}
+                            estimateId={localEstimateId || selected.estimateId}
                             unforeseenEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                             entries={pahestEntries}
                             onChange={setPahestEntries}
