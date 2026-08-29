@@ -949,6 +949,10 @@ export default function CostingPage() {
         setEstimateSnapshot(rec.estimateSnapshot ?? null);
         setUnforeseenSnapshot(rec.unforeseenEstimateSnapshot ?? null);
         setSmallScaleSnapshot(rec.smallScaleEstimateSnapshot ?? null);
+        // Fetch fresh snapshot to populate fullCode and other computed fields missing from stored snapshots
+        Api.requestSession<any>({ command: 'costing/fetch', args: { estimateId: String(rec.estimateId) } })
+            .then(fresh => { if (fresh?.estimateSnapshot) setEstimateSnapshot(fresh.estimateSnapshot); })
+            .catch(() => {});
         setLocalEstimateId(rec.localEstimateId ?? '');
         setVatDeduction(rec.vatDeduction ?? 0);
         setClimateImpact(rec.climateImpact ?? 0);
