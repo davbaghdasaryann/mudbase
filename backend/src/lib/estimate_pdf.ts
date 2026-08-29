@@ -899,11 +899,12 @@ ${styles}
                 ++itemIndex;
 
                 const totalCost = laborData.labor.changableAveragePrice * laborData.labor.quantity;
+                const laborCode = laborData.labor.isGroupRow ? 'խumB' : (laborData.labor.laborItemId || 'N/A');
 
                 html += `
                 <tr>
                     <td>${itemIndex}</td>
-                    <td>${laborData.labor.laborItemId}</td>
+                    <td>${laborCode}</td>
                     <td style="text-align:left;">${laborData.labor.laborOfferItemName}</td>
                     <td>${laborData.labor.measurementUnitMongoId}</td>
                     <td>${fmt(laborData.labor.quantity)}</td>
