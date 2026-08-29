@@ -80,6 +80,7 @@ interface Props {
     onRemoveEntry?: (materialItemId: string, estimatedLaborId?: string) => void;
     actualData?: Record<string, { quantity: string; unitPrice: string }>;
     costedMainKeys?: Set<string>;
+    costedQuantityMap?: Map<string, number>;
 }
 
 function toIdStr(id: unknown): string {
@@ -89,7 +90,7 @@ function toIdStr(id: unknown): string {
     return String(id);
 }
 
-export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, onRemoveEntry, actualData, costedMainKeys }: Props) {
+export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, entries, onChange, onHistoryEntry, onRemoveEntry, actualData, costedMainKeys, costedQuantityMap }: Props) {
     const { t } = useTranslation();
     const [materials, setMaterials] = useState<MaterialOption[]>([]);
     const [groupData, setGroupData] = useState<GroupMaterialData[]>([]);
@@ -323,7 +324,8 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                         ))}
                     </Box>
                     {entries.map((e, idx) => {
-                        const remaining = e.quantity - (e.costedQuantity ?? 0);
+                        const costedQty = costedQuantityMap ? (costedQuantityMap.get(e.materialItemId) ?? 0) : (e.costedQuantity ?? 0);
+                        const remaining = e.quantity - costedQty;
                         return (
                         <Box key={`${e.materialItemId}|${e.estimatedLaborId ?? ''}`} sx={{ display: 'grid', gridTemplateColumns: '1fr 90px 140px 120px 120px 120px 88px', px: 2, py: 0.8, columnGap: 2, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: idx % 2 === 0 ? '#fff' : '#fbfeff', '&:hover': { bgcolor: '#f2fcfd' } }}>
                             <Typography sx={{ fontSize: '0.9rem', color: '#222', fontWeight: 500 }}>{e.name || '—'}</Typography>
@@ -332,8 +334,8 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                                 {e.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                             </Typography>
                             <Typography sx={{ fontSize: '0.9rem', color: '#555', textAlign: 'center', fontWeight: e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) > 0 ? 600 : 400 }}>{e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0) > 0 ? e.history.reduce((s, r) => s + r.quantity * r.costPerUnit, 0).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}</Typography>
-                            <Typography sx={{ fontSize: '0.9rem', fontWeight: (e.costedQuantity ?? 0) > 0 ? 700 : 400, color: (e.costedQuantity ?? 0) > 0 ? mainPrimaryColor : '#aaa', textAlign: 'center' }}>
-                                {(e.costedQuantity ?? 0) > 0 ? (e.costedQuantity!).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: costedQty > 0 ? 700 : 400, color: costedQty > 0 ? mainPrimaryColor : '#aaa', textAlign: 'center' }}>
+                                {costedQty > 0 ? costedQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                             </Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: remaining !== 0 ? 700 : 400, color: remaining < 0 ? '#e53935' : remaining > 0 ? '#555' : '#aaa', textAlign: 'center' }}>
                                 {remaining !== 0 ? remaining.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}

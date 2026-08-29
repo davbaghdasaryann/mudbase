@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     Box, Button, Tab, Typography, Table, TableHead, TableBody, TableRow, TableCell,
     Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
@@ -772,6 +772,15 @@ export default function CostingPage() {
     const toggleSection = (key: string) => setCollapsedSections(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
 
     const [costHistory, setCostHistory] = useState<CostHistoryEntry[]>([]);
+    const costedQuantityMap = useMemo(() => {
+        const map = new Map<string, number>();
+        for (const e of costHistory) {
+            if (e.paymentMethod === 'nyuth_tsakhsagrum' && e.materialItemId) {
+                map.set(e.materialItemId, (map.get(e.materialItemId) ?? 0) + e.quantity);
+            }
+        }
+        return map;
+    }, [costHistory]);
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
     const [overheadEntries, setOverheadEntries] = useState<OverheadEntry[]>([]);
@@ -1417,19 +1426,8 @@ ${tableBodyHtml}
         setCostHistory(prev => [entry, ...prev]);
     };
 
-    const handlePahestCostedUpdate = (materialItemId: string, qty: number, costPerUnit: number = 0, estimatedLaborId?: string) => {
-        setPahestEntries(prev => prev.map(e => {
-            if (e.materialItemId !== materialItemId) return e;
-            const laborMatch = estimatedLaborId
-                ? e.estimatedLaborId === estimatedLaborId
-                : !e.estimatedLaborId;
-            if (!laborMatch) return e;
-            return {
-                ...e,
-                costedQuantity: (e.costedQuantity ?? 0) + qty,
-                history: [...e.history, { quantity: qty, costPerUnit, addedAt: new Date(), attributedLaborId: estimatedLaborId || undefined }],
-            };
-        }));
+    const handlePahestCostedUpdate = (_materialItemId: string, _qty: number, _costPerUnit: number = 0, _estimatedLaborId?: string) => {
+        // costedQuantity is now derived from costHistory via costedQuantityMap — no manual sync needed
     };
 
     const handleAylCostedUpdate = (id: string, qty: number) => {
@@ -1610,8 +1608,8 @@ ${tableBodyHtml}
                             }).map(row => toRowId(row._id)) : []);
                             const laborCompleted = completedRowIds.size;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
-                            const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && (e.costedQuantity ?? 0) >= e.estimateQuantity).length;
-                            const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (e.costedQuantity ?? 0) < e.estimateQuantity).length;
+                            const materialCompleted = pahestEntries.filter(e => e.estimateQuantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) >= e.estimateQuantity).length;
+                            const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) < e.estimateQuantity).length;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
                                     <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
@@ -1785,13 +1783,7 @@ ${tableBodyHtml}
                                             <TableCell padding='none'>
                                                 <Tooltip title={t('Remove')}>
                                                     <IconButton size='small' onClick={() => {
-                                                        if (entry.paymentMethod === 'nyuth_tsakhsagrum' && entry.materialItemId) {
-                                                            setPahestEntries(prev => prev.map(e =>
-                                                                e.materialItemId === entry.materialItemId
-                                                                    ? { ...e, costedQuantity: Math.max(0, (e.costedQuantity ?? 0) - entry.quantity) }
-                                                                    : e
-                                                            ));
-                                                        } else if ((entry.paymentMethod === 'pahest_ayl' || entry.paymentMethod === 'pahest_ayl_cost') && entry.materialItemId) {
+                                                        if ((entry.paymentMethod === 'pahest_ayl' || entry.paymentMethod === 'pahest_ayl_cost') && entry.materialItemId) {
                                                             setAylEntries(prev => {
                                                                 const idx = prev.findIndex(e => e.id === entry.materialItemId);
                                                                 if (idx < 0) return prev;
@@ -1861,6 +1853,7 @@ ${tableBodyHtml}
                             unforeseenEstimateId={unforeseenEstimate ? String(unforeseenEstimate._id) : undefined}
                             entries={pahestEntries}
                             onChange={setPahestEntries}
+                            costedQuantityMap={costedQuantityMap}
                             actualData={actualData}
                             costedMainKeys={new Set(costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.materialItemId).map(e => `${e.materialItemId}|${e.estimatedLaborId ?? ''}`))}
                             onRemoveEntry={(materialItemId, estimatedLaborId) => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'pahest_main' && e.materialItemId === materialItemId && (estimatedLaborId == null || e.estimatedLaborId === estimatedLaborId))))}
