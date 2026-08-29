@@ -307,7 +307,11 @@ const COST_SEGMENTS = [
     { key: 'other',     inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
 ];
 
-const ACTUAL_SEGMENTS = COST_SEGMENTS;
+const ACTUAL_SEGMENTS = [
+    { key: 'labor',     inner: '#FF8A65', outer: '#E64A19', dot: '#E64A19' },
+    { key: 'materials', inner: '#FFAB40', outer: '#E65100', dot: '#E65100' },
+    { key: 'other',     inner: '#FFCC80', outer: '#FF8F00', dot: '#FF8F00' },
+];
 
 function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
     const { t } = useTranslation();
