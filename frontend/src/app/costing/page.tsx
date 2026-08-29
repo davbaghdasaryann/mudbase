@@ -1190,8 +1190,17 @@ export default function CostingPage() {
         finally { setIsForkingEstimate(false); }
     };
 
-    const handleSummaryExport = () => {
-        if (!estimateSnapshot) return;
+    const handleSummaryExport = async () => {
+        if (!estimateSnapshot || !selected) return;
+        // Always fetch a fresh snapshot so group rows have childIds populated
+        let snap = estimateSnapshot;
+        try {
+            const snapshotArgs: Record<string, string> = { estimateId: String(selected.estimateId) };
+            if (localEstimateId) snapshotArgs.snapshotEstimateId = localEstimateId;
+            const fresh = await Api.requestSession<any>({ command: 'costing/fetch', args: snapshotArgs });
+            if (fresh?.estimateSnapshot) { snap = fresh.estimateSnapshot; setEstimateSnapshot(fresh.estimateSnapshot); }
+        } catch {}
+        const estimateSnapshot = snap;
         const toId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
         const fmtN = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
