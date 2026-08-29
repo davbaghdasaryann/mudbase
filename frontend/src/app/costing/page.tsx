@@ -1200,22 +1200,21 @@ export default function CostingPage() {
             const fresh = await Api.requestSession<any>({ command: 'costing/fetch', args: snapshotArgs });
             if (fresh?.estimateSnapshot) { snap = fresh.estimateSnapshot; setEstimateSnapshot(fresh.estimateSnapshot); }
         } catch {}
-        const estimateSnapshot = snap;
         const toId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
         const fmtN = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
         const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const fmtDate = () => new Date().toLocaleDateString('hy-AM');
         const COLS = 15;
 
-        const sections = [...estimateSnapshot.sections].sort((a, b) => a.displayIndex - b.displayIndex);
-        const subsections = estimateSnapshot.subsections;
+        const sections = [...snap.sections].sort((a, b) => a.displayIndex - b.displayIndex);
+        const subsections = snap.subsections;
         let counter = 0;
         let grandActTotal = 0;
         let tableBodyHtml = '';
 
         for (let si = 0; si < sections.length; si++) {
             const section = sections[si];
-            const secRows = estimateSnapshot.laborRows.filter(r => r.sectionName === section.name);
+            const secRows = snap.laborRows.filter(r => r.sectionName === section.name);
             if (secRows.length === 0) continue;
             const secSubs = subsections.filter(s => s.estimateSectionId === section._id).sort((a, b) => a.displayIndex - b.displayIndex);
             let secActTotal = 0;
@@ -1275,7 +1274,7 @@ export default function CostingPage() {
 
                 secActTotal += actTotal;
 
-                const matCodes = estimateSnapshot.materialFullCodes ?? {};
+                const matCodes = snap.materialFullCodes ?? {};
                 const laborCode = row.isGroupRow ? 'Խումբ' : (row.fullCode || 'N/A');
                 const groupRowStyle = row.isGroupRow ? ' style="background:#dff6f9;"' : '';
                 const groupNameStyle = row.isGroupRow ? ' style="text-align:left;font-weight:700;color:#0277bd;"' : ' style="text-align:left;"';
