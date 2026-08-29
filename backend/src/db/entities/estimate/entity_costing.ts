@@ -70,6 +70,7 @@ export interface SnapshotLaborRow {
     sectionName: string;
     isGroupRow?: boolean;
     parentGroupRowId?: string;
+    fullCode?: string;
 }
 
 export interface SnapshotSection {

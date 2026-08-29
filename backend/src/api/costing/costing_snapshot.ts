@@ -42,7 +42,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
                             },
                         },
                         { $unwind: { path: '$measurementUnitData', preserveNullAndEmptyArrays: true } },
-                        { $project: { name: 1, _id: 0, unitSymbol: '$measurementUnitData.representationSymbol' } },
+                        { $project: { name: 1, _id: 0, fullCode: 1, unitSymbol: '$measurementUnitData.representationSymbol' } },
                     ],
                     as: 'catalogItem',
                 },
@@ -65,6 +65,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
                     catalogName: '$catalogItem.name',
                     laborOfferItemName: 1,
                     unitSymbol: { $ifNull: ['$catalogItem.unitSymbol', '$directUnit.representationSymbol'] },
+                    fullCode: '$catalogItem.fullCode',
                     displayIndex: 1,
                     isGroupRow: 1,
                     parentGroupRowId: 1,
@@ -124,6 +125,7 @@ export async function buildEstimateSnapshot(estimateIdStr: string): Promise<Db.E
                 sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
                 isGroupRow: isGroup ? true : undefined,
                 parentGroupRowId: undefined,
+                fullCode: item.fullCode ?? undefined,
             };
         });
 

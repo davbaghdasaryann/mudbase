@@ -102,6 +102,8 @@ interface SnapshotLaborRow {
     materialTotalCost?: number;
     subsectionName: string;
     sectionName: string;
+    isGroupRow?: boolean;
+    fullCode?: string;
 }
 interface SnapshotSection { _id: string; name: string; displayIndex: number; totalCost?: number; }
 interface SnapshotSubsection { _id: string; estimateSectionId: string; name: string; displayIndex: number; }
@@ -1218,9 +1220,10 @@ export default function CostingPage() {
 
                 secActTotal += actTotal;
 
+                const laborCode = row.isGroupRow ? 'խumB' : (row.fullCode || 'N/A');
                 let html = `<tr>
                     <td rowspan="${rowspan}">${counter}</td>
-                    <td rowspan="${rowspan}"></td>
+                    <td rowspan="${rowspan}">${laborCode}</td>
                     <td rowspan="${rowspan}" style="text-align:left;">${esc(row.laborOfferItemName || row.catalogName)}</td>
                     <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
                     <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
