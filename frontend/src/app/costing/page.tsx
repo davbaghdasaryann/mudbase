@@ -427,12 +427,12 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
         ].filter(d => d.value > 0);
     })();
 
-    const donut = (data: typeof estData, gradPrefix: string) => (
+    const donut = (data: typeof estData, gradPrefix: string, segments = COST_SEGMENTS) => (
         <Box sx={{ flex: 1, minHeight: chartH }}>
             <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
                     <defs>
-                        {COST_SEGMENTS.map(s => (
+                        {segments.map(s => (
                             <radialGradient key={s.key} id={`${gradPrefix}-${s.key}`} cx='50%' cy='50%' r='50%'>
                                 <stop offset='0%' stopColor={s.inner} />
                                 <stop offset='100%' stopColor={s.outer} />
@@ -441,7 +441,7 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
                     </defs>
                     <Pie data={data} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={2} dataKey='value' strokeWidth={0} minAngle={6}>
                         {data.map(entry => {
-                            const seg = COST_SEGMENTS.find(s => s.key === entry.key);
+                            const seg = segments.find(s => s.key === entry.key);
                             return <Cell key={entry.key} fill={seg ? `url(#${gradPrefix}-${seg.key})` : '#ccc'} stroke={seg?.outer ?? '#ccc'} strokeWidth={0.5} />;
                         })}
                     </Pie>
@@ -461,10 +461,10 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
         </Box>
     );
 
-    const legend = (data: typeof estData) => (
+    const legend = (data: typeof estData, segments = COST_SEGMENTS) => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
             {data.map(d => {
-                const seg = COST_SEGMENTS.find(s => s.key === d.key);
+                const seg = segments.find(s => s.key === d.key);
                 return (
                     <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: seg?.dot ?? '#ccc', flexShrink: 0 }} />
@@ -492,9 +492,9 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
                     <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
                     {actData.length === 0
                         ? <Box sx={{ flex: 1, minHeight: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>—</Typography></Box>
-                        : donut(actData, 'act')
+                        : donut(actData, 'act', ACTUAL_SEGMENTS)
                     }
-                    {actData.length > 0 && legend(actData)}
+                    {actData.length > 0 && legend(actData, ACTUAL_SEGMENTS)}
                 </Box>
             </Box>
         </Paper>
