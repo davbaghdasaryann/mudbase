@@ -1322,7 +1322,8 @@ export default function CostingPage() {
                     const unitPrice = qty > 0 ? total / qty : 0;
                     const name = entries[0]?.workName ?? aylMatId;
                     const unit = entries[0]?.unit ?? '';
-                    if (total > 0) mats.push({ matId: aylMatId, name, unit, estimateQuantity: 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total), isAyl: true });
+                    const aylNorm = actQty > 0 ? qty / actQty : 0;
+                    if (total > 0) mats.push({ matId: aylMatId, name, unit, estimateQuantity: aylNorm, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total), isAyl: true });
                 }
                 const rowspan = mats.length || 1;
 
