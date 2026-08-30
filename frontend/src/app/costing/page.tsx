@@ -817,6 +817,7 @@ export default function CostingPage() {
     const [pahestEntries, setPahestEntries] = useState<PahestEntry[]>([]);
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
     const [overheadEntries, setOverheadEntries] = useState<OverheadEntry[]>([]);
+    const [mechanismEntries, setMechanismEntries] = useState<import('./MechanismCostsDialog').MechanismEntry[]>([]);
     const [overheadOpen, setOverheadOpen] = useState(false);
     const [mechanismOpen, setMechanismOpen] = useState(false);
     const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string; spent?: string }>>({});
@@ -933,6 +934,14 @@ export default function CostingPage() {
             oe.history.push({ id: c.id, amount: c.total, addedAt: c.addedAt });
         }
         setOverheadEntries([...overheadMap.values()]);
+        const mechanismMap = new Map<string, import('./MechanismCostsDialog').MechanismEntry>();
+        for (const c of ch.filter(c => c.paymentMethod === 'mechanism' && c.materialItemId)) {
+            if (!mechanismMap.has(c.materialItemId!)) mechanismMap.set(c.materialItemId!, { id: c.materialItemId!, name: c.workName, laborItemId: c.laborItemId, laborName: c.groupName, total: 0, history: [] });
+            const me = mechanismMap.get(c.materialItemId!)!;
+            me.total += c.total;
+            me.history.push({ id: c.id, amount: c.total, addedAt: c.addedAt });
+        }
+        setMechanismEntries([...mechanismMap.values()]);
         setPahestEntries((rec.pahestEntries ?? []).map(e => ({
             ...e,
             history: (e.history ?? []).map(r => ({ ...r, addedAt: new Date(r.addedAt) })),
@@ -2203,7 +2212,16 @@ ${tableBodyHtml}
                     stateFeesActual={stateFees}
                     onStateFeesActualChange={val => setStateFees(val)}
                 />
-                <MechanismCostsDialog open={mechanismOpen} onClose={() => setMechanismOpen(false)} laborRows={Array.from(new Map((estimateSnapshot?.laborRows ?? []).filter(r => !r.isGroupRow).map(r => [r._id, r])).values())} />
+                <MechanismCostsDialog
+                    open={mechanismOpen}
+                    onClose={() => setMechanismOpen(false)}
+                    laborRows={Array.from(new Map((estimateSnapshot?.laborRows ?? []).filter(r => !r.isGroupRow).map(r => [r._id, r])).values())}
+                    entries={mechanismEntries}
+                    onChange={setMechanismEntries}
+                    onHistoryEntry={e => setCostHistory(prev => [{ id: e.id, workName: e.workName, unit: '—', quantity: 1, unitPrice: e.amount, total: e.amount, addedAt: new Date(), paymentMethod: 'mechanism', materialItemId: e.mechanismEntryId, laborItemId: e.laborItemId, groupName: e.laborName }, ...prev])}
+                    onRemoveEntry={entryId => setCostHistory(prev => prev.filter(e => !(e.paymentMethod === 'mechanism' && e.materialItemId === entryId)))}
+                    onRemoveHistoryRecord={histId => setCostHistory(prev => prev.filter(e => e.id !== histId))}
+                />
                 <OverheadCostsDialog
                     open={overheadOpen}
                     onClose={() => setOverheadOpen(false)}

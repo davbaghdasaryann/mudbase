@@ -33,6 +33,11 @@ interface Props {
     open: boolean;
     onClose: () => void;
     laborRows?: MechanismLaborRow[];
+    entries: MechanismEntry[];
+    onChange: (entries: MechanismEntry[]) => void;
+    onHistoryEntry: (e: { id: string; workName: string; amount: number; mechanismEntryId: string; laborItemId?: string; laborName?: string }) => void;
+    onRemoveEntry: (entryId: string) => void;
+    onRemoveHistoryRecord: (histId: string) => void;
 }
 
 const ACCENT = '#795548';
@@ -41,8 +46,7 @@ const PRIMARY = '#00A390';
 const fmt = (n: number) => Math.round(n).toLocaleString('en-US').replace(/,/g, ' ');
 const parse = (s: string) => parseFloat(s.replace(/\s/g, '').replace(',', '.')) || 0;
 
-export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: Props) {
-    const [entries, setEntries] = useState<MechanismEntry[]>([]);
+export default function MechanismCostsDialog({ open, onClose, laborRows = [], entries, onChange, onHistoryEntry, onRemoveEntry, onRemoveHistoryRecord }: Props) {
     const [addOpen, setAddOpen] = useState(false);
     const [addName, setAddName] = useState('');
     const [addLabor, setAddLabor] = useState<MechanismLaborRow | null>(null);
@@ -62,7 +66,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
         const entryId = String(Date.now() + Math.random());
         const histId = String(Date.now() + Math.random() + 1);
         const now = new Date();
-        setEntries(prev => [...prev, {
+        onChange([...entries, {
             id: entryId,
             name: addName.trim(),
             laborItemId: addLabor?._id,
@@ -70,6 +74,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
             total: amount,
             history: [{ id: histId, amount, addedAt: now }],
         }]);
+        onHistoryEntry({ id: histId, workName: addName.trim(), amount, mechanismEntryId: entryId, laborItemId: addLabor?._id, laborName: addLabor?.laborOfferItemName });
         resetForm();
     };
 
@@ -78,16 +83,19 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
         if (amount <= 0) return;
         const histId = String(Date.now() + Math.random());
         const now = new Date();
-        setEntries(prev => prev.map(e => e.id === entryId
+        const entry = entries.find(e => e.id === entryId);
+        onChange(entries.map(e => e.id === entryId
             ? { ...e, total: e.total + amount, history: [...e.history, { id: histId, amount, addedAt: now }] }
             : e
         ));
+        onHistoryEntry({ id: histId, workName: entry?.name ?? '', amount, mechanismEntryId: entryId, laborItemId: entry?.laborItemId, laborName: entry?.laborName });
         setPlusEntryId(null);
         setPlusAmount('');
     };
 
     const handleDelete = (entryId: string) => {
-        setEntries(prev => prev.filter(e => e.id !== entryId));
+        onChange(entries.filter(e => e.id !== entryId));
+        onRemoveEntry(entryId);
     };
 
     const handleDeleteHistory = (entry: MechanismEntry, histId: string) => {
@@ -96,11 +104,13 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
         const newTotal = entry.total - rec.amount;
         const newHistory = entry.history.filter(h => h.id !== histId);
         if (newTotal <= 0 || newHistory.length === 0) {
-            setEntries(prev => prev.filter(e => e.id !== entry.id));
+            onChange(entries.filter(e => e.id !== entry.id));
+            onRemoveEntry(entry.id);
             setHistoryEntryId(null);
         } else {
-            setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, total: Math.max(0, newTotal), history: newHistory } : e));
+            onChange(entries.map(e => e.id === entry.id ? { ...e, total: Math.max(0, newTotal), history: newHistory } : e));
         }
+        onRemoveHistoryRecord(histId);
     };
 
     const inputSx = {
@@ -133,7 +143,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                 {histEntry.name}
                             </Typography>
                             <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.1 }}>
-                                Պատմություն · {fmt(histEntry.total)} AMD
+                                History &middot; {fmt(histEntry.total)} AMD
                             </Typography>
                         </Box>
                         <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
@@ -146,7 +156,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                             <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 20, color: ACCENT }} />
                         </Box>
                         <Box sx={{ flex: 1 }}>
-                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Մեխանիզմի ծախսագրում</Typography>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Mechanism Cost Recording</Typography>
                         </Box>
                         <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
                             <CloseIcon sx={{ fontSize: 18 }} />
@@ -161,12 +171,12 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                 {histEntry ? (
                     <Box sx={{ px: 3, py: 2 }}>
                         {histEntry.history.length === 0 ? (
-                            <Typography sx={{ color: '#bbb', textAlign: 'center', py: 6, fontSize: '0.88rem' }}>Պատմություն չկա</Typography>
+                            <Typography sx={{ color: '#bbb', textAlign: 'center', py: 6, fontSize: '0.88rem' }}>No history</Typography>
                         ) : (
                             <Box>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 140px 80px 40px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 1 }}>
-                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Ամսաթիվ</Typography>
-                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
+                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Date</Typography>
+                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Amount</Typography>
                                     <Box />
                                     <Box />
                                 </Box>
@@ -177,7 +187,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                         </Typography>
                                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: PRIMARY, textAlign: 'right' }}>{fmt(rec.amount)} AMD</Typography>
                                         <Box />
-                                        <Tooltip title='Հեռացնել'>
+                                        <Tooltip title='Remove'>
                                             <IconButton size='small' onClick={() => handleDeleteHistory(histEntry, rec.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.4 }}>
                                                 <DeleteOutlineIcon sx={{ fontSize: 16 }} />
                                             </IconButton>
@@ -186,7 +196,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                 ))}
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '1px solid #f0f0f0' }}>
                                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#444' }}>
-                                        Ընդամենը:&nbsp;
+                                        Total:&nbsp;
                                         <Box component='span' sx={{ color: PRIMARY }}>{fmt(histEntry.total)} AMD</Box>
                                     </Typography>
                                 </Box>
@@ -195,7 +205,6 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                     </Box>
                 ) : (
                     <Box sx={{ px: 3, pb: 3 }}>
-                        {/* Add form */}
                         <Box sx={{ pt: 2, pb: 1.5 }}>
                             {!addOpen ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -206,20 +215,19 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                         onClick={() => setAddOpen(true)}
                                         sx={{ borderRadius: '20px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2, fontSize: '0.8rem', boxShadow: 'none', '&:hover': { bgcolor: ACCENT, color: '#fff', borderColor: ACCENT, boxShadow: 'none' } }}
                                     >
-                                        Ավելացնել
+                                        Add
                                     </Button>
                                 </Box>
                             ) : (
                                 <Box sx={{ bgcolor: `${ACCENT}08`, border: `1px solid ${ACCENT}22`, borderRadius: 2.5, p: 2 }}>
                                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
-                                        Նոր ծախս
+                                        New entry
                                     </Typography>
-                                    {/* Row 1: name + amount */}
                                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
                                         <InputBase
                                             value={addName}
                                             onChange={e => setAddName(e.target.value)}
-                                            placeholder='Ծախսի անվանումը'
+                                            placeholder='Cost name'
                                             sx={{ ...inputSx, flex: 2 }}
                                             autoFocus
                                             onKeyDown={e => { if (e.key === 'Escape') resetForm(); }}
@@ -227,13 +235,12 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                         <InputBase
                                             value={addAmount}
                                             onChange={e => setAddAmount(e.target.value)}
-                                            placeholder='Գումար'
+                                            placeholder='Amount'
                                             type='number'
                                             sx={{ ...inputSx, flex: 1 }}
                                             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
                                         />
                                     </Box>
-                                    {/* Row 2: labor selector + actions */}
                                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
                                         <Autocomplete
                                             options={laborRows}
@@ -245,7 +252,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                             renderInput={params => (
                                                 <TextField
                                                     {...params}
-                                                    placeholder='Կապել աշխատատեսակի հետ (կամընտիր)'
+                                                    placeholder='Link to labor item (optional)'
                                                     variant='outlined'
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
@@ -270,9 +277,9 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                                     </Box>
                                                 </Box>
                                             )}
-                                            noOptionsText='Չի գտնվել'
+                                            noOptionsText='Not found'
                                         />
-                                        <Tooltip title='Հաստատել'>
+                                        <Tooltip title='Confirm'>
                                             <span>
                                                 <IconButton
                                                     onClick={handleAdd}
@@ -283,7 +290,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                                 </IconButton>
                                             </span>
                                         </Tooltip>
-                                        <Tooltip title='Չեղարկել'>
+                                        <Tooltip title='Cancel'>
                                             <IconButton onClick={resetForm} sx={{ color: '#aaa', '&:hover': { color: '#e53935' }, borderRadius: 2, p: 0.9 }}>
                                                 <CloseIcon sx={{ fontSize: 18 }} />
                                             </IconButton>
@@ -293,21 +300,19 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                             )}
                         </Box>
 
-                        {/* Column headers */}
                         {entries.length > 0 && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուն / Աշխ.</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>No</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name / Labor</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Amount</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}></Typography>
                             </Box>
                         )}
 
-                        {/* Entry list */}
                         {entries.length === 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8, gap: 1 }}>
                                 <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 40, color: '#e0e0e0' }} />
-                                <Typography sx={{ color: '#bbb', fontSize: '0.88rem' }}>ծախսեր դեռ չեն ավելացվել</Typography>
+                                <Typography sx={{ color: '#bbb', fontSize: '0.88rem' }}>No entries yet</Typography>
                             </Box>
                         ) : entries.map((e, idx) => (
                             <Box key={e.id}>
@@ -323,17 +328,17 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                                         {fmt(e.total)} AMD
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.25 }}>
-                                        <Tooltip title='Պատمություն'>
+                                        <Tooltip title='History'>
                                             <IconButton size='small' onClick={() => setHistoryEntryId(e.id)} sx={{ color: '#bbb', '&:hover': { color: ACCENT }, p: 0.5 }}>
                                                 <HistoryIcon sx={{ fontSize: 17 }} />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title='Ավելացնել'>
+                                        <Tooltip title='Add more'>
                                             <IconButton size='small' onClick={() => { setPlusEntryId(plusEntryId === e.id ? null : e.id); setPlusAmount(''); }} sx={{ color: '#bbb', '&:hover': { color: '#4caf50' }, p: 0.5 }}>
                                                 <AddCircleOutlineIcon sx={{ fontSize: 17 }} />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title='Հեռացնել'>
+                                        <Tooltip title='Remove'>
                                             <IconButton size='small' onClick={() => handleDelete(e.id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' }, p: 0.5 }}>
                                                 <DeleteOutlineIcon sx={{ fontSize: 17 }} />
                                             </IconButton>
@@ -343,17 +348,17 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
 
                                 {plusEntryId === e.id && (
                                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', px: 1.5, py: 1, bgcolor: '#f0f7f6', borderRadius: 1.5, mx: 0, mb: 0.5 }}>
-                                        <Typography sx={{ fontSize: '0.78rem', color: '#888', flexShrink: 0 }}>Ավելացել:</Typography>
+                                        <Typography sx={{ fontSize: '0.78rem', color: '#888', flexShrink: 0 }}>Add:</Typography>
                                         <InputBase
                                             value={plusAmount}
                                             onChange={ev => setPlusAmount(ev.target.value)}
-                                            placeholder='Գումար (AMD)'
+                                            placeholder='Amount (AMD)'
                                             type='number'
                                             sx={{ ...inputSx, flex: 1 }}
                                             autoFocus
                                             onKeyDown={ev => { if (ev.key === 'Enter') handlePlus(e.id); if (ev.key === 'Escape') { setPlusEntryId(null); setPlusAmount(''); } }}
                                         />
-                                        <Tooltip title='Հաστатել'>
+                                        <Tooltip title='Confirm'>
                                             <span>
                                                 <IconButton size='small' onClick={() => handlePlus(e.id)} disabled={parse(plusAmount) <= 0} sx={{ color: PRIMARY, '&.Mui-disabled': { color: '#e0e0e0' } }}>
                                                     <CheckIcon sx={{ fontSize: 18 }} />
@@ -368,11 +373,10 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: 
                             </Box>
                         ))}
 
-                        {/* Footer total */}
                         {entries.length > 0 && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
                                 <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>
-                                    Ընդամенը:&nbsp;
+                                    Total:&nbsp;
                                     <Box component='span' sx={{ color: PRIMARY, fontSize: '1rem' }}>{fmt(grandTotal)} AMD</Box>
                                 </Typography>
                             </Box>
