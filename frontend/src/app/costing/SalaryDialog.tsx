@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, CircularProgress, Radio, RadioGroup,
-    FormControlLabel, InputBase, IconButton,
+    FormControlLabel, InputBase, IconButton, Collapse,
 } from '@mui/material';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -85,6 +85,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const [loadingGroups, setLoadingGroups] = useState<Set<string>>(new Set());
     const [groupChildren, setGroupChildren] = useState<Record<string, LaborRow[]>>({});
+    const [collapsedSecs, setCollapsedSecs] = useState<Set<string>>(new Set());
+    const toggleSec = (id: string) => setCollapsedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
     const handleGroupToggle = async (e: React.MouseEvent, gid: string, row: LaborRow) => {
         e.stopPropagation();
@@ -240,10 +242,12 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                     const subsecNames = Array.from(new Set(secRows.map(r => r.subsectionName || '—')));
                                     const hasMultipleSubs = subsecNames.length > 1 || (subsecNames.length === 1 && subsecNames[0] !== '—');
                                     return (
-                                    <Box key={secName} sx={{ mb: 1 }}>
-                                        <Box sx={{ bgcolor: '#e6f7f9', px: 2, py: 1, borderLeft: `4px solid ${mainPrimaryColor}` }}>
-                                            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor }}>{secName}</Typography>
+                                    <Box key={secName} sx={{ mb: 1, borderRadius: 2, overflow: 'hidden', border: `1px solid ${mainPrimaryColor}22` }}>
+                                        <Box onClick={() => toggleSec(secName)} sx={{ display: 'flex', alignItems: 'center', bgcolor: '#e6f7f9', px: 2, py: 1.1, borderLeft: `4px solid ${mainPrimaryColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { filter: 'brightness(0.97)' } }}>
+                                            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: mainPrimaryColor, flex: 1 }}>{secName}</Typography>
+                                            <ExpandMoreIcon sx={{ fontSize: 18, color: mainPrimaryColor, transition: 'transform 0.2s', transform: collapsedSecs.has(secName) ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
                                         </Box>
+                                        <Collapse in={!collapsedSecs.has(secName)}>
                                         {subsecNames.map(subName => (
                                             <Box key={subName}>
                                                 {hasMultipleSubs && (
@@ -306,6 +310,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                 })}
                                             </Box>
                                         ))}
+                                        </Collapse>
                                     </Box>
                                     );
                                 })}
@@ -317,10 +322,12 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                         </Box>
                                         {Array.from(new Set(filteredUfRows.map(r => r.sectionName || '—'))).map(secName => (
-                                            <Box key={'uf-' + secName} sx={{ mb: 1 }}>
-                                                <Box sx={{ bgcolor: '#fff3ee', px: 2, py: 1, borderLeft: '4px solid #e65100' }}>
-                                                    <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#e65100' }}>{secName}</Typography>
+                                            <Box key={'uf-' + secName} sx={{ mb: 1, borderRadius: 2, overflow: 'hidden', border: '1px solid #e6510022' }}>
+                                                <Box onClick={() => toggleSec('uf-' + secName)} sx={{ display: 'flex', alignItems: 'center', bgcolor: '#fff3ee', px: 2, py: 1.1, borderLeft: '4px solid #e65100', cursor: 'pointer', userSelect: 'none', '&:hover': { filter: 'brightness(0.97)' } }}>
+                                                    <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#e65100', flex: 1 }}>{secName}</Typography>
+                                                    <ExpandMoreIcon sx={{ fontSize: 18, color: '#e65100', transition: 'transform 0.2s', transform: collapsedSecs.has('uf-' + secName) ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
                                                 </Box>
+                                                <Collapse in={!collapsedSecs.has('uf-' + secName)}>
                                                 {filteredUfRows.filter(r => (r.sectionName || '—') === secName).map(row => {
                                                     const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
                                                     const covered = getSalaryCoveredQty(row._id);
@@ -346,6 +353,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     </Box>
                                                     );
                                                 })}
+                                                </Collapse>
                                             </Box>
                                         ))}
                                     </>

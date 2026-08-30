@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase,
+    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase, Collapse,
 } from '@mui/material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -83,6 +83,8 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const [loadingGroups, setLoadingGroups] = useState<Set<string>>(new Set());
     const [groupChildren, setGroupChildren] = useState<Record<string, LaborRow[]>>({});
+    const [collapsedSecs, setCollapsedSecs] = useState<Set<string>>(new Set());
+    const toggleSec = (id: string) => setCollapsedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
     const getActualQty = (rowId: string) => parseFloat(actualData?.[rowId]?.quantity || '0') || 0;
 
@@ -171,16 +173,22 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
         {secs.map(sec => {
             const secSubs = subs.filter(sub => toId(sub.estimateSectionId) === toId(sec._id)).sort((a, b) => a.displayIndex - b.displayIndex);
             return (
-                <Box key={toId(sec._id)} sx={{ mb: 2 }}>
-                    <Box sx={{ bgcolor: secBg, px: 2, py: 1, borderRadius: '8px 8px 0 0', borderLeft: `4px solid ${accentColor}` }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: accentColor }}>{sec.name}</Typography>
+                <Box key={toId(sec._id)} sx={{ mb: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${accentColor}22` }}>
+                    <Box
+                        onClick={() => toggleSec(toId(sec._id))}
+                        sx={{ display: 'flex', alignItems: 'center', bgcolor: secBg, px: 2, py: 1.1, borderLeft: `4px solid ${accentColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { filter: 'brightness(0.97)' } }}
+                    >
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: accentColor, flex: 1 }}>{sec.name}</Typography>
+                        <ExpandMoreIcon sx={{ fontSize: 18, color: accentColor, transition: 'transform 0.2s', transform: collapsedSecs.has(toId(sec._id)) ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
                     </Box>
+                    <Collapse in={!collapsedSecs.has(toId(sec._id))}>
                     {secSubs.length === 0 ? (
                         <Box sx={{ px: 2, py: 1, borderLeft: '2px solid #e0f5f7', ml: 1 }}>
                             <Typography sx={{ fontSize: '0.8rem', color: '#bbb' }}>{t('No sections found')}</Typography>
                         </Box>
                     ) : secSubs.map(sub => {
                         const subRows = rws.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
+
                         return (
                             <Box key={toId(sub._id)} sx={{ borderLeft: `2px solid ${secBg}`, ml: 1, mb: 0.5 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.8, bgcolor: subBg }}>
@@ -244,6 +252,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                             </Box>
                         );
                     })}
+                    </Collapse>
                 </Box>
             );
         })}

@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase,
+    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase, Collapse,
 } from '@mui/material';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
@@ -91,6 +92,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [laborMatIds, setLaborMatIds] = useState<Map<string, Set<string>>>(new Map());
     const [laborMatIdsReady, setLaborMatIdsReady] = useState(false);
     const [matNameMap, setMatNameMap] = useState<Map<string, string>>(new Map());
+    const [collapsedSecs, setCollapsedSecs] = useState<Set<string>>(new Set());
+    const toggleSec = (id: string) => setCollapsedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     const confirmingRef = useRef(false);
     const aylConfirmingRef = useRef(false);
 
@@ -282,10 +285,12 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             const secHasVolume = secSubs.some(sub => withVolume.some(r => r.subsectionName === sub.name && r.sectionName === sec.name));
             if (!secHasVolume) return null;
             return (
-                <Box key={toId(sec._id)} sx={{ mb: 1 }}>
-                    <Box sx={{ bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 3, py: 1, borderLeft: `4px solid ${accentColor}` }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: accentColor }}>{sec.name}</Typography>
+                <Box key={toId(sec._id)} sx={{ mb: 1, borderRadius: 2, overflow: 'hidden', border: `1px solid ${accentColor}22` }}>
+                    <Box onClick={() => toggleSec(toId(sec._id))} sx={{ display: 'flex', alignItems: 'center', bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 3, py: 1.1, borderLeft: `4px solid ${accentColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { filter: 'brightness(0.97)' } }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: accentColor, flex: 1 }}>{sec.name}</Typography>
+                        <ExpandMoreIcon sx={{ fontSize: 18, color: accentColor, transition: 'transform 0.2s', transform: collapsedSecs.has(toId(sec._id)) ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
                     </Box>
+                    <Collapse in={!collapsedSecs.has(toId(sec._id))}>
                     {secSubs.map(sub => {
                         const subRows = withVolume.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
                         if (subRows.length === 0) return null;
@@ -306,6 +311,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                             </Box>
                         );
                     })}
+                    </Collapse>
                 </Box>
             );
         })}
