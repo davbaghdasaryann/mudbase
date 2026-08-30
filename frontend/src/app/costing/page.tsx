@@ -199,6 +199,7 @@ const HISTORY_TYPE_GROUPS: { key: string; label: string; match: (pm: string, isS
     { key: 'unforeseen',        label: 'Չնախատեսված աշխատանքներ', match: pm => pm === 'unforeseen' },
     { key: 'volume',            label: 'Ծավալի հաշվառում', match: pm => !pm || pm === '' || pm === 'salary_druqayin' },
     { key: 'overhead',          label: 'Վերադիր ծախսեր', match: pm => pm === 'overhead' },
+    { key: 'mechanism',         label: 'Մեխանիզմի ծախսագրում', match: pm => pm === 'mechanism' },
 ];
 
 const getHistoryTypeKey = (pm: string, isSub?: boolean): string => {
