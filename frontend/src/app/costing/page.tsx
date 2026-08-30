@@ -2203,7 +2203,7 @@ ${tableBodyHtml}
                     stateFeesActual={stateFees}
                     onStateFeesActualChange={val => setStateFees(val)}
                 />
-                <MechanismCostsDialog open={mechanismOpen} onClose={() => setMechanismOpen(false)} />
+                <MechanismCostsDialog open={mechanismOpen} onClose={() => setMechanismOpen(false)} laborRows={(estimateSnapshot?.laborRows ?? []).filter(r => !r.isGroupRow)} />
                 <OverheadCostsDialog
                     open={overheadOpen}
                     onClose={() => setOverheadOpen(false)}

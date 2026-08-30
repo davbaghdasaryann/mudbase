@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent,
-    Box, Button, Divider, Typography, IconButton, Tooltip, InputBase,
+    Box, Button, Divider, Typography, IconButton, Tooltip, InputBase, Autocomplete, TextField,
 } from '@mui/material';
 import PrecisionManufacturingOutlinedIcon from '@mui/icons-material/PrecisionManufacturingOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,9 +14,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+export interface MechanismLaborRow {
+    _id: string;
+    laborOfferItemName: string;
+    subsectionName?: string;
+}
+
 export interface MechanismEntry {
     id: string;
     name: string;
+    laborItemId?: string;
+    laborName?: string;
     total: number;
     history: { id: string; amount: number; addedAt: Date }[];
 }
@@ -24,6 +32,7 @@ export interface MechanismEntry {
 interface Props {
     open: boolean;
     onClose: () => void;
+    laborRows?: MechanismLaborRow[];
 }
 
 const ACCENT = '#795548';
@@ -32,10 +41,11 @@ const PRIMARY = '#00A390';
 const fmt = (n: number) => Math.round(n).toLocaleString('en-US').replace(/,/g, ' ');
 const parse = (s: string) => parseFloat(s.replace(/\s/g, '').replace(',', '.')) || 0;
 
-export default function MechanismCostsDialog({ open, onClose }: Props) {
+export default function MechanismCostsDialog({ open, onClose, laborRows = [] }: Props) {
     const [entries, setEntries] = useState<MechanismEntry[]>([]);
     const [addOpen, setAddOpen] = useState(false);
     const [addName, setAddName] = useState('');
+    const [addLabor, setAddLabor] = useState<MechanismLaborRow | null>(null);
     const [addAmount, setAddAmount] = useState('');
     const [plusEntryId, setPlusEntryId] = useState<string | null>(null);
     const [plusAmount, setPlusAmount] = useState('');
@@ -44,16 +54,23 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
     const histEntry = historyEntryId ? entries.find(e => e.id === historyEntryId) ?? null : null;
     const grandTotal = entries.reduce((s, e) => s + e.total, 0);
 
+    const resetForm = () => { setAddName(''); setAddLabor(null); setAddAmount(''); setAddOpen(false); };
+
     const handleAdd = () => {
         const amount = parse(addAmount);
         if (!addName.trim() || amount <= 0) return;
         const entryId = String(Date.now() + Math.random());
         const histId = String(Date.now() + Math.random() + 1);
         const now = new Date();
-        setEntries(prev => [...prev, { id: entryId, name: addName.trim(), total: amount, history: [{ id: histId, amount, addedAt: now }] }]);
-        setAddName('');
-        setAddAmount('');
-        setAddOpen(false);
+        setEntries(prev => [...prev, {
+            id: entryId,
+            name: addName.trim(),
+            laborItemId: addLabor?._id,
+            laborName: addLabor?.laborOfferItemName,
+            total: amount,
+            history: [{ id: histId, amount, addedAt: now }],
+        }]);
+        resetForm();
     };
 
     const handlePlus = (entryId: string) => {
@@ -197,22 +214,63 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
                                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
                                         Նոր ծախս
                                     </Typography>
-                                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                                    {/* Row 1: name + amount */}
+                                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
                                         <InputBase
                                             value={addName}
                                             onChange={e => setAddName(e.target.value)}
                                             placeholder='Ծախսի անվանումը'
                                             sx={{ ...inputSx, flex: 2 }}
                                             autoFocus
-                                            onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAddOpen(false); setAddName(''); setAddAmount(''); } }}
+                                            onKeyDown={e => { if (e.key === 'Escape') resetForm(); }}
                                         />
                                         <InputBase
                                             value={addAmount}
                                             onChange={e => setAddAmount(e.target.value)}
-                                            placeholder='0'
+                                            placeholder='Գումար'
                                             type='number'
                                             sx={{ ...inputSx, flex: 1 }}
                                             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
+                                        />
+                                    </Box>
+                                    {/* Row 2: labor selector + actions */}
+                                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                                        <Autocomplete
+                                            options={laborRows}
+                                            getOptionLabel={o => o.laborOfferItemName}
+                                            value={addLabor}
+                                            onChange={(_, v) => setAddLabor(v)}
+                                            size='small'
+                                            sx={{ flex: 1 }}
+                                            renderInput={params => (
+                                                <TextField
+                                                    {...params}
+                                                    placeholder='Կապել աշխատատեսակի հետ (կամընտիր)'
+                                                    variant='outlined'
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            borderRadius: 2,
+                                                            fontSize: '0.9rem',
+                                                            bgcolor: '#fff',
+                                                            '& fieldset': { borderColor: '#e0e0e0' },
+                                                            '&:hover fieldset': { borderColor: ACCENT },
+                                                            '&.Mui-focused fieldset': { borderColor: ACCENT, boxShadow: `0 0 0 2px ${ACCENT}18` },
+                                                        },
+                                                        '& .MuiInputBase-input': { py: 0.75 },
+                                                    }}
+                                                />
+                                            )}
+                                            renderOption={(props, option) => (
+                                                <Box component='li' {...props} key={option._id} sx={{ fontSize: '0.85rem', py: '6px !important' }}>
+                                                    <Box>
+                                                        <Typography sx={{ fontSize: '0.85rem', color: '#222', lineHeight: 1.3 }}>{option.laborOfferItemName}</Typography>
+                                                        {option.subsectionName && (
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', lineHeight: 1.2 }}>{option.subsectionName}</Typography>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            )}
+                                            noOptionsText='Չի գտնվել'
                                         />
                                         <Tooltip title='Հաստատել'>
                                             <span>
@@ -226,7 +284,7 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
                                             </span>
                                         </Tooltip>
                                         <Tooltip title='Չեղարկել'>
-                                            <IconButton onClick={() => { setAddOpen(false); setAddName(''); setAddAmount(''); }} sx={{ color: '#aaa', '&:hover': { color: '#e53935' }, borderRadius: 2, p: 0.9 }}>
+                                            <IconButton onClick={resetForm} sx={{ color: '#aaa', '&:hover': { color: '#e53935' }, borderRadius: 2, p: 0.9 }}>
                                                 <CloseIcon sx={{ fontSize: 18 }} />
                                             </IconButton>
                                         </Tooltip>
@@ -239,7 +297,7 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
                         {entries.length > 0 && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուն</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուն / Աշխ.</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}></Typography>
                             </Box>
@@ -255,12 +313,17 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
                             <Box key={e.id}>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, alignItems: 'center', px: 1.5, py: 1.1, borderRadius: 1.5, bgcolor: idx % 2 !== 0 ? '#fafafa' : '#fff', '&:hover': { bgcolor: '#f0f4f6' }, transition: 'background 0.12s' }}>
                                     <Typography sx={{ fontSize: '0.78rem', color: '#bbb', fontWeight: 600 }}>{idx + 1}</Typography>
-                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
+                                    <Box sx={{ minWidth: 0 }}>
+                                        <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
+                                        {e.laborName && (
+                                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mt: 0.1 }}>{e.laborName}</Typography>
+                                        )}
+                                    </Box>
                                     <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: PRIMARY, textAlign: 'right', whiteSpace: 'nowrap' }}>
                                         {fmt(e.total)} AMD
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.25 }}>
-                                        <Tooltip title='Պատմություն'>
+                                        <Tooltip title='Պատمություն'>
                                             <IconButton size='small' onClick={() => setHistoryEntryId(e.id)} sx={{ color: '#bbb', '&:hover': { color: ACCENT }, p: 0.5 }}>
                                                 <HistoryIcon sx={{ fontSize: 17 }} />
                                             </IconButton>
@@ -290,7 +353,7 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
                                             autoFocus
                                             onKeyDown={ev => { if (ev.key === 'Enter') handlePlus(e.id); if (ev.key === 'Escape') { setPlusEntryId(null); setPlusAmount(''); } }}
                                         />
-                                        <Tooltip title='Հաստատել'>
+                                        <Tooltip title='Հաστатել'>
                                             <span>
                                                 <IconButton size='small' onClick={() => handlePlus(e.id)} disabled={parse(plusAmount) <= 0} sx={{ color: PRIMARY, '&.Mui-disabled': { color: '#e0e0e0' } }}>
                                                     <CheckIcon sx={{ fontSize: 18 }} />
@@ -309,7 +372,7 @@ export default function MechanismCostsDialog({ open, onClose }: Props) {
                         {entries.length > 0 && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
                                 <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>
-                                    Ընդամենը:&nbsp;
+                                    Ընդամенը:&nbsp;
                                     <Box component='span' sx={{ color: PRIMARY, fontSize: '1rem' }}>{fmt(grandTotal)} AMD</Box>
                                 </Typography>
                             </Box>
