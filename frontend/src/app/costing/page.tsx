@@ -1320,7 +1320,8 @@ export default function CostingPage() {
                     const qty = entries.reduce((s, e) => s + e.quantity, 0);
                     const total = entries.reduce((s, e) => s + e.total, 0);
                     const unitPrice = qty > 0 ? total / qty : 0;
-                    const name = entries[0]?.workName ?? aylMatId;
+                    const aylEntryForName = aylEntries.find(a => a.id === aylMatId);
+                    const name = aylEntryForName?.name || entries[0]?.workName || aylMatId;
                     const unit = entries[0]?.unit ?? '';
                     const aylNorm = actQty > 0 ? qty / actQty : 0;
                     if (total > 0) mats.push({ matId: aylMatId, name, unit, estimateQuantity: aylNorm, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total), isAyl: true });
@@ -1889,7 +1890,7 @@ ${tableBodyHtml}
                                             <TableCell sx={{ fontSize: '0.82rem', color: '#555' }}>{actionType}</TableCell>
                                             <TableCell>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                                                    <span>{entry.workName}</span>
+                                                    <span>{(pm === 'pahest_ayl' || pm === 'pahest_ayl_cost') && entry.materialItemId ? (aylEntries.find(a => a.id === entry.materialItemId)?.name || entry.workName) : entry.workName}</span>
                                                     {entry.groupName && (
                                                         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, bgcolor: '#d6f5e0', color: '#2e7d32', borderRadius: '999px', px: 1, py: 0.25, fontSize: '0.7rem', fontWeight: 600, flexShrink: 0 }}>
                                                             <AccountTreeOutlinedIcon sx={{ fontSize: 11 }} />
