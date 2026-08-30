@@ -1984,7 +1984,16 @@ ${tableBodyHtml}
                         />
                         <Box sx={{ mt: 4, borderTop: '1px solid #e0f5f7', pt: 3 }}>
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: mainPrimaryColor, mb: 2 }}>Այլ նյութեր</Typography>
-                            <PahestAylMaterials entries={aylEntries} onChange={setAylEntries}
+                            <PahestAylMaterials entries={aylEntries} onChange={newEntries => {
+                                setCostHistory(prev => prev.map(e => {
+                                    if ((e.paymentMethod === 'pahest_ayl' || e.paymentMethod === 'pahest_ayl_cost') && e.materialItemId) {
+                                        const ae = newEntries.find(a => a.id === e.materialItemId);
+                                        if (ae && ae.name && ae.name !== e.workName) return { ...e, workName: ae.name };
+                                    }
+                                    return e;
+                                }));
+                                setAylEntries(newEntries);
+                            }}
                                 costedAylIds={new Set(costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' && e.materialItemId).map(e => e.materialItemId as string))}
                                 onHistoryEntry={e => setCostHistory(prev => [{ id: String(Date.now() + Math.random()), workName: e.workName, unit: e.unit, quantity: e.quantity, unitPrice: e.unitPrice, total: e.total, addedAt: new Date(), paymentMethod: 'pahest_ayl', materialItemId: e.aylEntryId }, ...prev])}
                                 onRemoveEntry={aylEntryId => setCostHistory(prev => prev.filter(e => !((e.paymentMethod === 'pahest_ayl' || e.paymentMethod === 'pahest_ayl_cost') && e.materialItemId === aylEntryId)))}
