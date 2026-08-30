@@ -137,7 +137,7 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, 
             ) : (
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 2, overflow: 'hidden' }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: COLS, bgcolor: '#edf9fb', px: 2, py: 1.5, columnGap: 2 }}>
-                        {[t('Material'), t('Unit'), 'Միավորի արժեք', 'Մուտքագրված', 'Ծախսագրված', 'Մնացորդ', ''].map((h, i) => (
+                        {[t('Material'), t('Unit'), 'Մուտքագրված', t('Total'), 'Ծախսագրված', 'Մնացորդ', ''].map((h, i) => (
                             <Typography key={i} sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#222', whiteSpace: 'nowrap', textAlign: i === 0 ? 'left' : 'center' }}>{h}</Typography>
                         ))}
                     </Box>
@@ -163,12 +163,14 @@ export default function PahestAylMaterials({ entries, onChange, onHistoryEntry, 
                                     <MenuItem key={u.value} value={u.value} sx={{ fontSize: '0.9rem' }}>{u.label}</MenuItem>
                                 ))}
                             </Select>
-                            <Typography sx={{ fontSize: '0.9rem', color: e.costPerUnit ? '#555' : '#bbb', textAlign: 'center' }}>
-                                {e.costPerUnit || '—'}
-                            </Typography>
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: e.mutq > 0 ? mainPrimaryColor : '#bbb', textAlign: 'center' }}>
                                 {e.mutq > 0 ? e.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                             </Typography>
+                            {(() => { const total = e.history.reduce((s, r) => s + r.quantity * (parseFloat(r.costPerUnit) || 0), 0); return (
+                            <Typography sx={{ fontSize: '0.9rem', color: total > 0 ? '#555' : '#bbb', fontWeight: total > 0 ? 600 : 400, textAlign: 'center' }}>
+                                {total > 0 ? total.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}
+                            </Typography>
+                            ); })()}
                             <Typography sx={{ fontSize: '0.9rem', fontWeight: (parseFloat(e.tsakh || '0') > 0) ? 700 : 400, color: parseFloat(e.tsakh || '0') > 0 ? mainPrimaryColor : '#aaa', textAlign: 'center' }}>
                                 {parseFloat(e.tsakh || '0') > 0 ? parseFloat(e.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                             </Typography>
