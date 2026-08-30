@@ -62,11 +62,22 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     const estimateLaborColl = Db.getEstimateLaborItemsCollection();
     const laborItems = await estimateLaborColl.find({estimateId: estimate._id}).toArray();
     const hiddenLaborIds = new Set(laborItems.filter((l) => l.isHidden).map((l) => l._id.toString()));
+
+    // Build group row quantity map so children costs can be scaled by parent group qty
+    const groupRowQtyMap = new Map<string, number>();
+    for (const labor of laborItems) {
+        if ((labor as any).isGroupRow) groupRowQtyMap.set(labor._id.toString(), labor.quantity ?? 1);
+    }
+
     let laborTotalWithoutMaterial: number = 0;
     for (let labor of laborItems) {
         if (labor.isHidden) continue;
+        // Group rows: their cost is captured via children — skip to avoid double-counting
+        if ((labor as any).isGroupRow) continue;
         if (labor.quantity && labor.changableAveragePrice) {
-            let laborCost = labor.quantity * labor.changableAveragePrice
+            const parentGroupId = (labor as any).parentGroupRowId?.toString();
+            const groupQty = parentGroupId ? (groupRowQtyMap.get(parentGroupId) ?? 1) : 1;
+            let laborCost = labor.quantity * labor.changableAveragePrice * groupQty;
             let subSection = subSectionsById.get(labor.estimateSubsectionId.toString());
             if (subSection) {
                 let section = sectionsById.get(subSection.estimateSectionId.toString());
@@ -81,12 +92,20 @@ export async function updateEstimateCost(estimate: Db.EntityEstimate) {
     }
 
 
+    // Map child labor ID → parent group qty (for materials belonging to group children)
+    const laborParentGroupQtyMap = new Map<string, number>();
+    for (const labor of laborItems) {
+        const parentGroupId = (labor as any).parentGroupRowId?.toString();
+        if (parentGroupId) laborParentGroupQtyMap.set(labor._id.toString(), groupRowQtyMap.get(parentGroupId) ?? 1);
+    }
+
     const estimateMaterialItemsColl = Db.getEstimateMaterialItemsCollection();
     const materialItems = await estimateMaterialItemsColl.find({estimateId: estimate._id}).toArray();
     for (let material of materialItems) {
         if (hiddenLaborIds.has(material.estimatedLaborId.toString())) continue;
         if (material.quantity && material.changableAveragePrice) {
-            let materialCost = material.quantity * material.changableAveragePrice;
+            const groupQty = laborParentGroupQtyMap.get(material.estimatedLaborId.toString()) ?? 1;
+            let materialCost = material.quantity * material.changableAveragePrice * groupQty;
 
             let subSection = subSectionsById.get(material.estimateSubsectionId.toString());
             if (subSection) {
