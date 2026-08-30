@@ -1264,8 +1264,9 @@ export default function CostingPage() {
                     }).reduce((s, e) => s + e.total, 0);
                     actTotal = salTotal + matActTotal;
                 }
-                // Use sum of salary entry quantities for unit price and display (avg across multiple payments)
-                const salaryQtyTotal = row.isGroupRow ? actQty : costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + (e.quantity ?? 0), 0);
+                // Use sum of gorcarqayin entry quantities for unit price (avg across multiple piecework payments)
+                const gorcarqayanQtyTotal = row.isGroupRow ? 0 : costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
+                const salaryQtyTotal = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
                 const salUP  = salaryQtyTotal > 0 ? Math.round(salTotal / salaryQtyTotal) : 0;
                 const actUP  = salaryQtyTotal > 0 ? Math.round(actTotal / salaryQtyTotal) : 0;
 

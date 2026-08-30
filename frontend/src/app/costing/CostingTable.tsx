@@ -434,7 +434,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const salaryQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + (e.quantity ?? 0), 0);
+        const gorcarqayanQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
+        const salaryQtyTotal = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : q;
         const matActTotal = calcMatActTotal(rowId);
         const { actTotal, hasData } = getRowActTotal(row);
         const estQty = Number(row.quantity ?? 0);
