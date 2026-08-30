@@ -1300,7 +1300,7 @@ export default function CostingPage() {
                 // Materials for this labor row (derived from cost history)
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
                 const matIds = [...new Set(nyuthForRow.map(e => e.materialItemId!))];
-                const mats = matIds.map(matId => {
+                const mats: { matId: string; name: string; unit: string; estimateQuantity: number; quantity: number; costPerUnit: number; total: number; isAyl?: boolean }[] = matIds.map(matId => {
                     // Match by both materialItemId + estimatedLaborId for accuracy; fall back to materialItemId only
                     const p = pahestEntries.find(pe => pe.materialItemId === matId && pe.estimatedLaborId === rowId)
                            ?? pahestEntries.find(pe => pe.materialItemId === matId);
@@ -1345,7 +1345,7 @@ export default function CostingPage() {
                     const mat0 = mats[0];
                     // mat0.total is pre-computed from cost history
                     html += `
-                    <td>${(mat0 as any).isAyl ? 'ՓՇՆ' : (matCodes[mat0.matId] || 'N/A')}</td>
+                    <td>${mat0.isAyl ? 'ՓՇՆ' : (matCodes[mat0.matId] || 'N/A')}</td>
                     <td style="text-align:left;">${esc(mat0.name)}</td>
                     <td>${esc(mat0.unit)}</td>
                     <td>${mat0.estimateQuantity > 0 ? mat0.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
@@ -1359,7 +1359,7 @@ export default function CostingPage() {
                         const mat = mats[mi];
                         // mat.total is pre-computed from cost history
                         html += `<tr>
-                    <td>${(mat as any).isAyl ? 'ՓՇՆ' : (matCodes[mat.matId] || 'N/A')}</td>
+                    <td>${mat.isAyl ? 'ՓՇՆ' : (matCodes[mat.matId] || 'N/A')}</td>
                     <td style="text-align:left;">${esc(mat.name)}</td>
                     <td>${esc(mat.unit)}</td>
                     <td>${mat.estimateQuantity > 0 ? mat.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
