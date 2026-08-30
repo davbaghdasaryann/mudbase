@@ -221,7 +221,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [], en
                             ) : (
                                 <Box sx={{ bgcolor: `${ACCENT}08`, border: `1px solid ${ACCENT}22`, borderRadius: 2.5, p: 2 }}>
                                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
-                                        Нор ծakhS
+                                        Նոր ծախս
                                     </Typography>
                                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
                                         <InputBase
@@ -252,7 +252,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [], en
                                             renderInput={params => (
                                                 <TextField
                                                     {...params}
-                                                    placeholder='Կapel labor (optional)'
+                                                    placeholder='Աշխ. (կամընտիր)'
                                                     variant='outlined'
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
@@ -302,8 +302,8 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [], en
 
                         {entries.length > 0 && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>No</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name / Labor</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անվ. / Աշխ.</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}></Typography>
                             </Box>
