@@ -252,7 +252,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [], en
                                             renderInput={params => (
                                                 <TextField
                                                     {...params}
-                                                    placeholder='Աշխ. (կամընտիր)'
+                                                    placeholder='Աշխ. (Ըստ ցանկութիուն)'
                                                     variant='outlined'
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
@@ -303,7 +303,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [], en
                         {entries.length > 0 && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անվ. / Աշխ.</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անվանում / Աշխատանքներ</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}></Typography>
                             </Box>
