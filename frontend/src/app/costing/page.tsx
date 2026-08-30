@@ -1856,6 +1856,7 @@ ${tableBodyHtml}
                                             : pm === 'subcontractor' ? 'Ենթակապալ'
                                             : pm === 'unforeseen' ? 'Չնախատեսված աշխատանքներ'
                                             : pm === 'overhead' ? 'Վերադիր ծախսեր'
+                                            : pm === 'mechanism' ? 'Մեխանիզմի ծախսագրում'
                                             : entry.isSubcontractor ? t('Subcontractor')
                                             : 'Ծավալի հաշվառում';
                                         return (
