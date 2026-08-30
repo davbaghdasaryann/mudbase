@@ -2160,10 +2160,13 @@ ${tableBodyHtml}
                         if (entry.laborItemId && entry.paymentMethod?.startsWith('salary_')) {
                             const vol = entry.workVolume ?? entry.quantity;
                             if (vol > 0) {
-                                setActualData(prev => ({
-                                    ...prev,
-                                    [entry.laborItemId!]: { ...(prev[entry.laborItemId!] ?? {}), quantity: String(vol) },
-                                }));
+                                setActualData(prev => {
+                                    const existing = prev[entry.laborItemId!];
+                                    const existingQty = parseFloat(existing?.quantity ?? '0') || 0;
+                                    // Only set volume if none is registered yet — never overwrite existing measurement
+                                    if (existingQty > 0) return prev;
+                                    return { ...prev, [entry.laborItemId!]: { ...(existing ?? {}), quantity: String(vol) } };
+                                });
                             }
                         }
                     }}
