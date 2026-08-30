@@ -1281,9 +1281,8 @@ export default function CostingPage() {
                     const qty = entries.reduce((s, e) => s + e.quantity, 0);
                     const total = entries.reduce((s, e) => s + e.total, 0);
                     const unitPrice = qty > 0 ? total / qty : (p?.costPerUnit ?? 0);
-                    // estimateQuantity in pahestEntries = norm × laborQty; divide by laborQty to get pure norm factor
-                    const estQtyTotal = p?.estimateQuantity ?? 0;
-                    const norm = row.quantity > 0 ? estQtyTotal / row.quantity : estQtyTotal;
+                    // actual norm = actual material qty / actual labor qty done
+                    const norm = actQty > 0 ? qty / actQty : 0;
                     return { matId, name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: norm, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
                 }).filter(m => m.quantity > 0);
                 const rowspan = mats.length || 1;
