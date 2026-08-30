@@ -252,7 +252,7 @@ export default function MechanismCostsDialog({ open, onClose, laborRows = [], en
                                             renderInput={params => (
                                                 <TextField
                                                     {...params}
-                                                    placeholder='Աշխ. (Ըստ ցանկութիուն)'
+                                                    placeholder='Ընտրել աշխատանք (ըստ ցանկության)'
                                                     variant='outlined'
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
