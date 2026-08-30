@@ -1322,7 +1322,7 @@ export default function CostingPage() {
                     const unitPrice = qty > 0 ? total / qty : 0;
                     const name = entries[0]?.workName ?? aylMatId;
                     const unit = entries[0]?.unit ?? '';
-                    if (total > 0) mats.push({ matId: aylMatId, name, unit, estimateQuantity: 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) });
+                    if (total > 0) mats.push({ matId: aylMatId, name, unit, estimateQuantity: 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total), isAyl: true });
                 }
                 const rowspan = mats.length || 1;
 
@@ -1344,7 +1344,7 @@ export default function CostingPage() {
                     const mat0 = mats[0];
                     // mat0.total is pre-computed from cost history
                     html += `
-                    <td>${matCodes[mat0.matId] || 'N/A'}</td>
+                    <td>${(mat0 as any).isAyl ? 'ՓՇՆ' : (matCodes[mat0.matId] || 'N/A')}</td>
                     <td style="text-align:left;">${esc(mat0.name)}</td>
                     <td>${esc(mat0.unit)}</td>
                     <td>${mat0.estimateQuantity > 0 ? mat0.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
@@ -1358,7 +1358,7 @@ export default function CostingPage() {
                         const mat = mats[mi];
                         // mat.total is pre-computed from cost history
                         html += `<tr>
-                    <td>${matCodes[mat.matId] || 'N/A'}</td>
+                    <td>${(mat as any).isAyl ? 'ՓՇՆ' : (matCodes[mat.matId] || 'N/A')}</td>
                     <td style="text-align:left;">${esc(mat.name)}</td>
                     <td>${esc(mat.unit)}</td>
                     <td>${mat.estimateQuantity > 0 ? mat.estimateQuantity.toLocaleString(undefined, { maximumFractionDigits: 3 }) : ''}</td>
