@@ -51,6 +51,7 @@ import SmallScaleDialog from './SmallScaleDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
 import OtherCostsDialog from './OtherCostsDialog';
 import OverheadCostsDialog, { type OverheadEntry } from './OverheadCostsDialog';
+import MechanismCostsDialog from './MechanismCostsDialog';
 import AnalysisTab from './AnalysisTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
@@ -817,6 +818,7 @@ export default function CostingPage() {
     const [aylEntries, setAylEntries] = useState<AylEntry[]>([]);
     const [overheadEntries, setOverheadEntries] = useState<OverheadEntry[]>([]);
     const [overheadOpen, setOverheadOpen] = useState(false);
+    const [mechanismOpen, setMechanismOpen] = useState(false);
     const [actualData, setActualData] = useState<Record<string, { quantity: string; unitPrice: string; spent?: string }>>({});
 
     const [editEntry, setEditEntry] = useState<CostHistoryEntry | null>(null);
@@ -1652,7 +1654,7 @@ ${tableBodyHtml}
                                 { icon: <StraightenIcon sx={{ fontSize: 24, color: '#E65100', opacity: 0.55 }} />, label: t('Volume Registration'), onClick: () => setVolumesOpen(true), accent: '#E65100', hoverBg: 'rgba(230,81,0,0.06)' },
                                 { icon: <CategoryOutlinedIcon sx={{ fontSize: 24, color: mainPrimaryColor, opacity: 0.55 }} />, label: t('Materials Cost Recording'), onClick: () => setMaterialsOpen(true), accent: mainPrimaryColor, hoverBg: 'rgba(0,171,190,0.06)' },
                                 { icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 24, color: '#1565c0', opacity: 0.55 }} />, label: t('Salary Cost Recording'), onClick: () => setSalaryOpen(true), accent: '#1565c0', hoverBg: 'rgba(21,101,192,0.06)' },
-                                { icon: <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 24, color: '#795548', opacity: 0.55 }} />, label: 'Մեխանիզմի ծախսագրում', onClick: () => {}, accent: '#795548', hoverBg: 'rgba(121,85,72,0.06)' },
+                                { icon: <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 24, color: '#795548', opacity: 0.55 }} />, label: 'Մեխանիզմի ծախսագրում', onClick: () => setMechanismOpen(true), accent: '#795548', hoverBg: 'rgba(121,85,72,0.06)' },
                                 { icon: <BuildIcon sx={{ fontSize: 24, color: '#4caf50', opacity: 0.55 }} />, label: 'Փոքրածավալ շինաշխատանք', onClick: () => setSmallScaleOpen(true), accent: '#4caf50', hoverBg: 'rgba(76,175,80,0.06)' },
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 24, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
@@ -2201,6 +2203,7 @@ ${tableBodyHtml}
                     stateFeesActual={stateFees}
                     onStateFeesActualChange={val => setStateFees(val)}
                 />
+                <MechanismCostsDialog open={mechanismOpen} onClose={() => setMechanismOpen(false)} />
                 <OverheadCostsDialog
                     open={overheadOpen}
                     onClose={() => setOverheadOpen(false)}
