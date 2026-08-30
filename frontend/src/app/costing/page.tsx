@@ -1312,6 +1312,18 @@ export default function CostingPage() {
                     const norm = actQty > 0 ? qty / actQty : 0;
                     return { matId, name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: norm, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
                 }).filter(m => m.quantity > 0);
+                // Also include other materials (pahest_ayl_cost) for this row
+                const aylForRow = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' && e.laborItemId === rowId && e.materialItemId);
+                const aylMatIds = [...new Set(aylForRow.map(e => e.materialItemId!))];
+                for (const aylMatId of aylMatIds) {
+                    const entries = aylForRow.filter(e => e.materialItemId === aylMatId);
+                    const qty = entries.reduce((s, e) => s + e.quantity, 0);
+                    const total = entries.reduce((s, e) => s + e.total, 0);
+                    const unitPrice = qty > 0 ? total / qty : 0;
+                    const name = entries[0]?.workName ?? aylMatId;
+                    const unit = entries[0]?.unit ?? '';
+                    if (total > 0) mats.push({ matId: aylMatId, name, unit, estimateQuantity: 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) });
+                }
                 const rowspan = mats.length || 1;
 
                 secActTotal += actTotal;
