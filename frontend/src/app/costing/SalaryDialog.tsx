@@ -174,7 +174,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             workVolume: type === 'miavorzham' && parseFloat(workVolume.replace(',', '.')) > 0 ? parseFloat(workVolume.replace(',', '.')) : undefined,
         };
         onEntrySaved(entry);
-        handleClose();
+        // Return to list instead of closing, so user can add more entries
+        setSelectedRow(null); setParentGroupRow(null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume('');
     };
 
     const allRows = rows;
