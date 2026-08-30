@@ -242,9 +242,8 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             }
             return { actQty: row.quantity ?? 0, actTotal: childActTotal, hasData: childActTotal > 0 };
         }
-        const a = actualData[rowId];
-        const actQty = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const salaryQtyTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + (e.quantity ?? 0), 0);
         const matActTotal = costHistory.filter(e => {
             if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
             if (e.laborItemId) return e.laborItemId === rowId;
@@ -252,8 +251,8 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
         }).reduce((s, e) => s + e.total, 0);
         const actTotal = salTotal + matActTotal;
-        const hasData  = actQty > 0 && actTotal > 0;
-        return { actQty, actTotal, hasData };
+        const hasData  = salaryQtyTotal > 0 && actTotal > 0;
+        return { actQty: salaryQtyTotal, actTotal, hasData };
     };
 
     const getEstimate = (row: LaborRow) => {
