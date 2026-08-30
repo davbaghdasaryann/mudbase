@@ -83,8 +83,10 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const [loadingGroups, setLoadingGroups] = useState<Set<string>>(new Set());
     const [groupChildren, setGroupChildren] = useState<Record<string, LaborRow[]>>({});
-    const [collapsedSecs, setCollapsedSecs] = useState<Set<string>>(new Set());
-    const toggleSec = (id: string) => setCollapsedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    const [openedSecs, setOpenedSecs] = useState<Set<string>>(new Set());
+    const [openedSubs, setOpenedSubs] = useState<Set<string>>(new Set());
+    const toggleSec = (id: string) => setOpenedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    const toggleSub = (id: string) => setOpenedSubs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
     const getActualQty = (rowId: string) => parseFloat(actualData?.[rowId]?.quantity || '0') || 0;
 
@@ -173,27 +175,29 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
         {secs.map(sec => {
             const secSubs = subs.filter(sub => toId(sub.estimateSectionId) === toId(sec._id)).sort((a, b) => a.displayIndex - b.displayIndex);
             return (
-                <Box key={toId(sec._id)} sx={{ mb: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${accentColor}22` }}>
+                <Box key={toId(sec._id)} sx={{ mb: 1.5, borderRadius: 1.5, overflow: 'hidden', border: '1px solid #e8e8e8' }}>
                     <Box
                         onClick={() => toggleSec(toId(sec._id))}
-                        sx={{ display: 'flex', alignItems: 'center', bgcolor: secBg, px: 2, py: 1.1, borderLeft: `4px solid ${accentColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { filter: 'brightness(0.97)' } }}
+                        sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', px: 2, py: 1, borderLeft: `3px solid ${accentColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#efefef' } }}
                     >
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: accentColor, flex: 1 }}>{sec.name}</Typography>
-                        <ExpandMoreIcon sx={{ fontSize: 18, color: accentColor, transition: 'transform 0.2s', transform: collapsedSecs.has(toId(sec._id)) ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#333', flex: 1 }}>{sec.name}</Typography>
+                        <ExpandMoreIcon sx={{ fontSize: 17, color: '#999', transition: 'transform 0.2s', transform: openedSecs.has(toId(sec._id)) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                     </Box>
-                    <Collapse in={!collapsedSecs.has(toId(sec._id))}>
+                    <Collapse in={openedSecs.has(toId(sec._id))}>
                     {secSubs.length === 0 ? (
-                        <Box sx={{ px: 2, py: 1, borderLeft: '2px solid #e0f5f7', ml: 1 }}>
+                        <Box sx={{ px: 2, py: 1 }}>
                             <Typography sx={{ fontSize: '0.8rem', color: '#bbb' }}>{t('No sections found')}</Typography>
                         </Box>
                     ) : secSubs.map(sub => {
                         const subRows = rws.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
-
+                        const subKey = toId(sec._id) + '|' + toId(sub._id);
                         return (
-                            <Box key={toId(sub._id)} sx={{ borderLeft: `2px solid ${secBg}`, ml: 1, mb: 0.5 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.8, bgcolor: subBg }}>
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: '#444', flex: 1 }}>{sub.name}</Typography>
+                            <Box key={toId(sub._id)} sx={{ borderTop: '1px solid #f0f0f0' }}>
+                                <Box onClick={() => toggleSub(subKey)} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.75, bgcolor: '#fafafa', cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#f3f3f3' } }}>
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.82rem', color: '#555', flex: 1 }}>{sub.name}</Typography>
+                                    <ExpandMoreIcon sx={{ fontSize: 15, color: '#bbb', transition: 'transform 0.2s', transform: openedSubs.has(subKey) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                                 </Box>
+                                <Collapse in={openedSubs.has(subKey)}>
                                 {subRows.length > 0 && (
                                     <Box>
                                         <Box sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7' }}>
@@ -201,7 +205,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                 <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: i <= 1 ? 'left' : 'center' }}>{i === 4 ? '' : h}</Typography>
                                             ))}
                                         </Box>
-                                        {subRows.map((row, i) => {
+                                        {subRows.length === 0 ? null : subRows.map((row, i) => {
                                             const gid = toId(row._id);
                                             const actualQty = getActualQty(gid);
                                             const isExpanded = expandedGroups.has(gid);
@@ -249,6 +253,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                         })}
                                     </Box>
                                 )}
+                                </Collapse>
                             </Box>
                         );
                     })}

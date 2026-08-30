@@ -92,8 +92,10 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
     const [laborMatIds, setLaborMatIds] = useState<Map<string, Set<string>>>(new Map());
     const [laborMatIdsReady, setLaborMatIdsReady] = useState(false);
     const [matNameMap, setMatNameMap] = useState<Map<string, string>>(new Map());
-    const [collapsedSecs, setCollapsedSecs] = useState<Set<string>>(new Set());
-    const toggleSec = (id: string) => setCollapsedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    const [openedSecs, setOpenedSecs] = useState<Set<string>>(new Set());
+    const [openedSubs, setOpenedSubs] = useState<Set<string>>(new Set());
+    const toggleSec = (id: string) => setOpenedSecs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    const toggleSub = (id: string) => setOpenedSubs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     const confirmingRef = useRef(false);
     const aylConfirmingRef = useRef(false);
 
@@ -285,20 +287,23 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             const secHasVolume = secSubs.some(sub => withVolume.some(r => r.subsectionName === sub.name && r.sectionName === sec.name));
             if (!secHasVolume) return null;
             return (
-                <Box key={toId(sec._id)} sx={{ mb: 1, borderRadius: 2, overflow: 'hidden', border: `1px solid ${accentColor}22` }}>
-                    <Box onClick={() => toggleSec(toId(sec._id))} sx={{ display: 'flex', alignItems: 'center', bgcolor: accentColor === mainPrimaryColor ? '#e6f7f9' : '#fff3ee', px: 3, py: 1.1, borderLeft: `4px solid ${accentColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { filter: 'brightness(0.97)' } }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: accentColor, flex: 1 }}>{sec.name}</Typography>
-                        <ExpandMoreIcon sx={{ fontSize: 18, color: accentColor, transition: 'transform 0.2s', transform: collapsedSecs.has(toId(sec._id)) ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
+                <Box key={toId(sec._id)} sx={{ mb: 1, borderRadius: 1.5, overflow: 'hidden', border: '1px solid #e8e8e8' }}>
+                    <Box onClick={() => toggleSec(toId(sec._id))} sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', px: 3, py: 1, borderLeft: `3px solid ${accentColor}`, cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#efefef' } }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#333', flex: 1 }}>{sec.name}</Typography>
+                        <ExpandMoreIcon sx={{ fontSize: 17, color: '#999', transition: 'transform 0.2s', transform: openedSecs.has(toId(sec._id)) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                     </Box>
-                    <Collapse in={!collapsedSecs.has(toId(sec._id))}>
+                    <Collapse in={openedSecs.has(toId(sec._id))}>
                     {secSubs.map(sub => {
                         const subRows = withVolume.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
                         if (subRows.length === 0) return null;
+                        const subKey = toId(sec._id) + '|' + toId(sub._id);
                         return (
-                            <Box key={toId(sub._id)}>
-                                <Box sx={{ px: 3, py: 0.6, bgcolor: subBg, borderTop: '1px solid #e8f9fb' }}>
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#666', fontStyle: 'italic' }}>{sub.name}</Typography>
+                            <Box key={toId(sub._id)} sx={{ borderTop: '1px solid #f0f0f0' }}>
+                                <Box onClick={() => toggleSub(subKey)} sx={{ display: 'flex', alignItems: 'center', px: 3, py: 0.7, bgcolor: '#fafafa', cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#f3f3f3' } }}>
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#555', flex: 1 }}>{sub.name}</Typography>
+                                    <ExpandMoreIcon sx={{ fontSize: 15, color: '#bbb', transition: 'transform 0.2s', transform: openedSubs.has(subKey) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                                 </Box>
+                                <Collapse in={openedSubs.has(subKey)}>
                                 {subRows.map(row => (
                                     <Box key={toId(row._id)} onClick={() => setSelectedRow(row)} sx={{ display: 'flex', alignItems: 'center', px: 3, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: accentColor === mainPrimaryColor ? '#f2fcfd' : '#fff8f4' } }}>
                                         <Box sx={{ flex: 1 }}>
@@ -308,6 +313,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                         <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
                                     </Box>
                                 ))}
+                                </Collapse>
                             </Box>
                         );
                     })}
