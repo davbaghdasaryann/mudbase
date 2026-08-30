@@ -684,10 +684,13 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, p
             for (const childId of row.childIds) {
                 const s = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((acc, e) => acc + e.total, 0);
                 const m = costHistory.filter(e => {
-                    if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                    if (e.laborItemId) return e.laborItemId === childId;
-                    if (!e.materialItemId) return false;
-                    return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
+                    if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+                        if (e.laborItemId) return e.laborItemId === childId;
+                        if (!e.materialItemId) return false;
+                        return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
+                    }
+                    if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === childId;
+                    return false;
                 }).reduce((acc, e) => acc + e.total, 0);
                 const v = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
                 childActTotal += v + s + m;
@@ -697,10 +700,13 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, p
             actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
             const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
             const matActTotal = costHistory.filter(e => {
-                if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                if (e.laborItemId) return e.laborItemId === rowId;
-                if (!e.materialItemId) return false;
-                return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+                    if (e.laborItemId) return e.laborItemId === rowId;
+                    if (!e.materialItemId) return false;
+                    return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                }
+                if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === rowId;
+                return false;
             }).reduce((s, e) => s + e.total, 0);
             actTotal = salTotal + matActTotal;
         }
@@ -1255,10 +1261,13 @@ export default function CostingPage() {
                     for (const childId of row.childIds) {
                         const cs = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                         const cm = costHistory.filter(e => {
-                            if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                            if (e.laborItemId) return e.laborItemId === childId;
-                            if (!e.materialItemId) return false;
-                            return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
+                            if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+                                if (e.laborItemId) return e.laborItemId === childId;
+                                if (!e.materialItemId) return false;
+                                return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
+                            }
+                            if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === childId;
+                            return false;
                         }).reduce((s, e) => s + e.total, 0);
                         const cv = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
                         salTotal += cv + cs;
@@ -1269,10 +1278,13 @@ export default function CostingPage() {
                     actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
                     salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                     matActTotal = costHistory.filter(e => {
-                        if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                        if (e.laborItemId) return e.laborItemId === rowId;
-                        if (!e.materialItemId) return false;
-                        return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                        if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+                            if (e.laborItemId) return e.laborItemId === rowId;
+                            if (!e.materialItemId) return false;
+                            return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                        }
+                        if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === rowId;
+                        return false;
                     }).reduce((s, e) => s + e.total, 0);
                     actTotal = salTotal + matActTotal;
                 }

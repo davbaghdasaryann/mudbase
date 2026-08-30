@@ -397,10 +397,13 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
     // Computes material actual total for a row, handling both new entries (laborItemId set) and
     // old entries (no laborItemId, look up via pahest estimatedLaborId)
     const calcMatActTotal = (rowId: string) => (costHistory ?? []).filter(e => {
-        if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-        if (e.laborItemId) return e.laborItemId === rowId;
-        if (!e.materialItemId) return false;
-        return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+        if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+            if (e.laborItemId) return e.laborItemId === rowId;
+            if (!e.materialItemId) return false;
+            return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+        }
+        if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === rowId;
+        return false;
     }).reduce((s, e) => s + e.total, 0);
 
     const getRowActTotal = (row: LaborRow) => {

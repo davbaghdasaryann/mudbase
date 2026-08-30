@@ -248,6 +248,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
         const e = aylModal.entry;
         onAylUpdate?.(e.id, qty);
         const unitPrice = parseFloat(e.costPerUnit) || 0;
+        const aylLaborId = selectedRow ? String(selectedRow._id) : undefined;
         onCostAdded?.({
             id: String(Date.now() + Math.random()),
             workName: e.name || '—',
@@ -258,6 +259,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             addedAt: new Date(),
             paymentMethod: 'pahest_ayl_cost',
             materialItemId: e.id,
+            laborItemId: aylLaborId,
         });
         setAylModal(null);
         setTimeout(() => { aylConfirmingRef.current = false; }, 600);
