@@ -434,6 +434,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const salaryQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + (e.quantity ?? 0), 0);
         const matActTotal = calcMatActTotal(rowId);
         const { actTotal, hasData } = getRowActTotal(row);
         const estQty = Number(row.quantity ?? 0);
@@ -442,7 +443,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const matCostRounded = Math.round(rawMatEst);
         const estTotal = laborCostRounded + matCostRounded;
         const estUP = estQty > 0 ? Math.round(estTotal / estQty) : (row.changableAveragePrice ?? 0);
-        const actUP = q > 0 ? actTotal / q : 0;
+        const actUP = salaryQtyTotal > 0 ? actTotal / salaryQtyTotal : 0;
         const rQty = q > 0 ? Math.max(0, estQty - q) : null;
         const rUp = q > 0 && estQty > q ? estUP : null;
         const rTot = q > 0 && estQty > q ? Math.round((estQty - q) * estUP) : null;
@@ -468,7 +469,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right' })}>{estQty.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                 <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{formatCurrencyRounded(estUP)}</td>
                 <td style={tdStyle({ textAlign: 'right', fontWeight: 600 })}>{formatCurrencyRounded(estTotal)}</td>
-                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: q > 0 ? '#222' : '#ccc' })}>{q > 0 ? q.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
+                <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: salaryQtyTotal > 0 ? '#222' : '#ccc' })}>{salaryQtyTotal > 0 ? salaryQtyTotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>
                 <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>
                     {hasData ? (
                         <span

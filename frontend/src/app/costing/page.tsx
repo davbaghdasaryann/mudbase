@@ -1264,11 +1264,13 @@ export default function CostingPage() {
                     }).reduce((s, e) => s + e.total, 0);
                     actTotal = salTotal + matActTotal;
                 }
-                const salUP  = actQty > 0 ? Math.round(salTotal / actQty) : 0;
-                const actUP  = actQty > 0 ? Math.round(actTotal / actQty) : 0;
+                // Use sum of salary entry quantities for unit price and display (avg across multiple payments)
+                const salaryQtyTotal = row.isGroupRow ? actQty : costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + (e.quantity ?? 0), 0);
+                const salUP  = salaryQtyTotal > 0 ? Math.round(salTotal / salaryQtyTotal) : 0;
+                const actUP  = salaryQtyTotal > 0 ? Math.round(actTotal / salaryQtyTotal) : 0;
 
                 // Skip rows with no actual data
-                if (actQty === 0 && actTotal === 0) return '';
+                if (salaryQtyTotal === 0 && actTotal === 0) return '';
 
                 // Materials for this labor row (derived from cost history)
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
@@ -1298,7 +1300,7 @@ export default function CostingPage() {
                     <td rowspan="${rowspan}">${laborCode}</td>
                     <td rowspan="${rowspan}"${groupNameStyle}>${esc(row.laborOfferItemName || row.catalogName)}</td>
                     <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
-                    <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td rowspan="${rowspan}">${salaryQtyTotal > 0 ? salaryQtyTotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
                     <td rowspan="${rowspan}">${salUP > 0 ? fmtN(salUP) : ''}</td>`;
 
                 if (mats.length > 0) {
