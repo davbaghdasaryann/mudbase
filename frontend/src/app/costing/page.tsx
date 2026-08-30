@@ -1264,14 +1264,14 @@ export default function CostingPage() {
                     }).reduce((s, e) => s + e.total, 0);
                     actTotal = salTotal + matActTotal;
                 }
-                // Use sum of gorcarqayin entry quantities for unit price (avg across multiple piecework payments)
+                // Use gorcarqayin qty sum for unit price (avg across multiple piecework payments); fall back to volume registration
                 const gorcarqayanQtyTotal = row.isGroupRow ? 0 : costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
-                const salaryQtyTotal = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
-                const salUP  = salaryQtyTotal > 0 ? Math.round(salTotal / salaryQtyTotal) : 0;
-                const actUP  = salaryQtyTotal > 0 ? Math.round(actTotal / salaryQtyTotal) : 0;
+                const upDivisor = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
+                const salUP  = upDivisor > 0 ? Math.round(salTotal / upDivisor) : 0;
+                const actUP  = upDivisor > 0 ? Math.round(actTotal / upDivisor) : 0;
 
                 // Skip rows with no actual data
-                if (salaryQtyTotal === 0 && actTotal === 0) return '';
+                if (actQty === 0 && actTotal === 0) return '';
 
                 // Materials for this labor row (derived from cost history)
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
@@ -1301,7 +1301,7 @@ export default function CostingPage() {
                     <td rowspan="${rowspan}">${laborCode}</td>
                     <td rowspan="${rowspan}"${groupNameStyle}>${esc(row.laborOfferItemName || row.catalogName)}</td>
                     <td rowspan="${rowspan}">${esc(row.unitSymbol)}</td>
-                    <td rowspan="${rowspan}">${salaryQtyTotal > 0 ? salaryQtyTotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
+                    <td rowspan="${rowspan}">${actQty > 0 ? actQty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : ''}</td>
                     <td rowspan="${rowspan}">${salUP > 0 ? fmtN(salUP) : ''}</td>`;
 
                 if (mats.length > 0) {

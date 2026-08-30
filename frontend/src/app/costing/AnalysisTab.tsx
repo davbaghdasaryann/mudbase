@@ -240,13 +240,12 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                 const childVol = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
                 childActTotal += childVol + salTotal + matActTotal;
             }
-            return { actQty: row.quantity ?? 0, actTotal: childActTotal, hasData: childActTotal > 0 };
+            return { actQty: row.quantity ?? 0, actTotal: childActTotal, hasData: childActTotal > 0, upDivisor: row.quantity ?? 0 };
         }
         const a = actualData[rowId];
-        const volumeActQty = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
+        const actQty = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const gorcarqayanQtyTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
-        const salaryQtyTotal = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : volumeActQty;
         const matActTotal = costHistory.filter(e => {
             if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
             if (e.laborItemId) return e.laborItemId === rowId;
@@ -254,8 +253,10 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
             return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
         }).reduce((s, e) => s + e.total, 0);
         const actTotal = salTotal + matActTotal;
-        const hasData  = (salaryQtyTotal > 0 || volumeActQty > 0) && actTotal > 0;
-        return { actQty: salaryQtyTotal, actTotal, hasData };
+        // Unit price uses gorcarqayin qty sum (avg across multiple payments); quantity display keeps volume registration
+        const upDivisor = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
+        const hasData  = actQty > 0 && actTotal > 0;
+        return { actQty, actTotal, hasData, upDivisor };
     };
 
     const getEstimate = (row: LaborRow) => {
@@ -272,9 +273,9 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
     let counter = 0;
 
     const renderRow = (row: LaborRow, idx: number, pl: number) => {
-        const { actQty, actTotal, hasData } = getActuals(row);
+        const { actQty, actTotal, hasData, upDivisor } = getActuals(row);
         const { estQty, estTotal, estUnitP } = getEstimate(row);
-        const actUnitP = hasData && actQty > 0 ? actTotal / actQty : null;
+        const actUnitP = hasData && upDivisor > 0 ? actTotal / upDivisor : null;
         const remQty   = hasData ? Math.max(0, estQty - actQty) : null;
         const remUnitP = hasData && actQty < estQty ? estUnitP : null;
         const remTotal = remUnitP !== null && remQty !== null ? Math.round(remQty * estUnitP!) : null;
