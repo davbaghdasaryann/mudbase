@@ -521,8 +521,19 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
         { name: "Փաստացի", value: actualValue, gradId: actId, dotColor: OE_ACT_GRAD.top, stroke: OE_ACT_GRAD.stroke },
     ];
 
+    const pctDiff = estimatedValue > 0 && actualValue > 0 ? ((actualValue - estimatedValue) / estimatedValue) * 100 : null;
+    const pctOver = pctDiff !== null && pctDiff > 0;
+    const pctUnder = pctDiff !== null && pctDiff < 0;
+
     return (
-        <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: height }}>
+        <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: height, position: 'relative' }}>
+            {pctDiff !== null && (
+                <Box sx={{ position: 'absolute', top: 8, right: 10, px: 0.9, py: 0.25, borderRadius: '10px', bgcolor: pctOver ? 'rgba(229,57,53,0.1)' : 'rgba(67,160,71,0.1)', display: 'flex', alignItems: 'center' }}>
+                    <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: pctOver ? '#e53935' : '#43a047', lineHeight: 1 }}>
+                        {pctOver ? '+' : ''}{pctDiff.toFixed(1)}%
+                    </Typography>
+                </Box>
+            )}
             <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{label}</Typography>
             <Box sx={{ flex: 1, minHeight: chartH }}>
                 <ResponsiveContainer width='100%' height='100%'>
