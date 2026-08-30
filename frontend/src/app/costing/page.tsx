@@ -1263,12 +1263,17 @@ export default function CostingPage() {
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
                 const matIds = [...new Set(nyuthForRow.map(e => e.materialItemId!))];
                 const mats = matIds.map(matId => {
-                    const p = pahestEntries.find(pe => pe.materialItemId === matId);
+                    // Match by both materialItemId + estimatedLaborId for accuracy; fall back to materialItemId only
+                    const p = pahestEntries.find(pe => pe.materialItemId === matId && pe.estimatedLaborId === rowId)
+                           ?? pahestEntries.find(pe => pe.materialItemId === matId);
                     const entries = nyuthForRow.filter(e => e.materialItemId === matId);
                     const qty = entries.reduce((s, e) => s + e.quantity, 0);
                     const total = entries.reduce((s, e) => s + e.total, 0);
                     const unitPrice = qty > 0 ? total / qty : (p?.costPerUnit ?? 0);
-                    return { matId, name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: p?.estimateQuantity ?? 0, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
+                    // estimateQuantity in pahestEntries = norm × laborQty; divide by laborQty to get pure norm factor
+                    const estQtyTotal = p?.estimateQuantity ?? 0;
+                    const norm = row.quantity > 0 ? estQtyTotal / row.quantity : estQtyTotal;
+                    return { matId, name: p?.name ?? matId, unit: p?.unit ?? '', estimateQuantity: norm, quantity: qty, costPerUnit: Math.round(unitPrice), total: Math.round(total) };
                 }).filter(m => m.quantity > 0);
                 const rowspan = mats.length || 1;
 
