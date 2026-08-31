@@ -1266,7 +1266,8 @@ export default function CostingPage() {
                     actQty = Number(row.quantity ?? 0);
                     salTotal = 0;
                     matActTotal = 0;
-                    for (const childId of row.childIds) {
+                    for (const rawChildId of row.childIds) {
+                        const childId = toId(rawChildId);
                         const cs = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                         const cm = costHistory.filter(e => {
                             if (e.paymentMethod === 'nyuth_tsakhsagrum') {
