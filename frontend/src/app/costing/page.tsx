@@ -1469,7 +1469,7 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 <div class="stackContainer">
 <div style="flex: 1; box-sizing: border-box">
     <table class="headerTable">
-        <tr><td class="headerTableName lightGreen">Նախահաշվի անվանումը</td><td class="headerTableValue bold">${esc(est?.name ?? '')}</td></tr>
+        <tr><td class="headerTableName lightGreen">Օբյեկտի անվանումը</td><td class="headerTableValue bold">${esc(est?.name ?? '')}</td></tr>
         <tr><td class="headerTableName lightGreen">Հասցե</td><td class="headerTableValue">${esc(est?.address ?? '')}</td></tr>
         <tr><td class="headerTableName lightGreen">Գեներացման ամսաթիվ</td><td class="headerTableValue bold">${fmtDate()}</td></tr>
     </table>
@@ -1480,16 +1480,6 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 </div>
 <div>&nbsp;</div>
 <div class="stackContainer">
-<div class="columnHalf">
-<table class="headerTable">
-    <tr><td class="headerTableName lightGray">Նախահաշվի անվանումը</td><td class="headerTableValue bold">${esc(est?.name ?? '')}</td></tr>
-</table>
-</div>
-<div class="columnHalf">
-<table class="headerTable">
-    <tr><td class="headerTableName lightGray">Ընդհանուր արժեքը</td><td class="headerTableValue center bold">${fmtN(grandActTotal)} AMD</td></tr>
-</table>
-</div>
 </div>
 <div>&nbsp;</div>
 <table class="estimateTable">
