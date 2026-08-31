@@ -1262,26 +1262,20 @@ export default function CostingPage() {
                 let salTotal: number;
                 let matActTotal: number;
                 let actTotal: number;
-                if (row.isGroupRow && row.childIds && row.childIds.length > 0) {
+                if (row.isGroupRow) {
+                    // Salary payments for group rows are stored under the group row's own ID (not children's IDs)
                     actQty = Number(row.quantity ?? 0);
-                    salTotal = 0;
-                    matActTotal = 0;
-                    for (const rawChildId of row.childIds) {
-                        const childId = toId(rawChildId);
-                        const cs = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-                        const cm = costHistory.filter(e => {
-                            if (e.paymentMethod === 'nyuth_tsakhsagrum') {
-                                if (e.laborItemId) return e.laborItemId === childId;
-                                if (!e.materialItemId) return false;
-                                return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
-                            }
-                            if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === childId;
-                            return false;
-                        }).reduce((s, e) => s + e.total, 0);
-                        const cv = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
-                        salTotal += cv + cs;
-                        matActTotal += cm;
-                    }
+                    const cvGroup = parseFloat((actualData[rowId]?.spent ?? '').replace(',', '.')) || 0;
+                    salTotal = cvGroup + costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+                    matActTotal = costHistory.filter(e => {
+                        if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+                            if (e.laborItemId) return e.laborItemId === rowId;
+                            if (!e.materialItemId) return false;
+                            return pahestEntries.some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+                        }
+                        if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === rowId;
+                        return false;
+                    }).reduce((s, e) => s + e.total, 0);
                     actTotal = salTotal + matActTotal;
                 } else {
                     actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
