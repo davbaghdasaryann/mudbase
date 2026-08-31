@@ -1423,7 +1423,7 @@ export default function CostingPage() {
             [t('stateDutiesAndFees'), stateFees],
         ].filter(([, v]) => (v as number) > 0) as [string, number][];
         if (overheadTotal > 0 || otherCostsList.length > 0) {
-            tableBodyHtml += `<tr><td class="lightBlue importantInfo" colspan="${COLS}" style="padding-left:8px;">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
+            tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
             if (overheadTotal > 0) {
                 tableBodyHtml += `<tr><td class="importantInfo" colspan="13">Վերադիր ծախսեր</td><td></td><td class="bold">${fmtN(overheadTotal)}</td></tr>`;
                 grandActTotal += overheadTotal;
@@ -1434,6 +1434,20 @@ export default function CostingPage() {
             }
         }
 
+        // Summary rows (above grand total)
+        const summaryRows = [
+            ['Ընդհ. արժեք (Նախ. / Փաստ.)', `${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD`],
+            ['Նյութ. արժեք (Նախ. / Փաստ.)', `${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD`],
+            ['Աշխ. ծախս (Նախ. / Փաստ.)', `${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD`],
+            ...(constructionSurface > 0 ? [['Շինարա. մակերես', `${constructionSurface.toLocaleString()} մ²`]] : []),
+            ...(completionPct > 0 ? [['Կատ. տոկոս', `${completionPct}%`]] : []),
+            ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`]] : []),
+        ];
+        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
+        tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՄՓՈՓ ՏՎՅԱԼՆԵՐ</td></tr>`;
+        for (const [label, value] of summaryRows) {
+            tableBodyHtml += `<tr><td colspan="10" style="text-align:left;font-weight:bold;padding:4px 8px;">${esc(label as string)}</td><td colspan="5" style="text-align:right;padding:4px 8px;">${esc(value as string)}</td></tr>`;
+        }
         tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
         tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
@@ -1455,7 +1469,6 @@ export default function CostingPage() {
             totalEstQ += eQ; totalActQ += Math.min(aQ, eQ);
         }
         const completionPct = totalEstQ > 0 ? Math.min(100, Math.round((totalActQ / totalEstQ) * 100)) : 0;
-        const summaryHtml = `<div style="margin-top:24px;max-width:500px;"><table style="border-collapse:collapse;width:100%;font-size:12px;font-family:inherit;"><tr><td colspan="2" style="background:#b4ccd6;font-weight:bold;padding:6px 8px;border:1px solid #999;">ԱՄՓՈՓ ՏՎՅԱԼՆԵՐ</td></tr><tr><td style="font-weight:bold;padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;width:250px;">Ընդհ. արժեք (Նախ. / Փաստ.)</td><td style="padding:4px 8px;border:1px solid #ccc;">${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD</td></tr><tr><td style="font-weight:bold;padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;">Նյութ. արժեք (Նախ. / Փաստ.)</td><td style="padding:4px 8px;border:1px solid #ccc;">${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD</td></tr><tr><td style="font-weight:bold;padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;">Աշխ. ծախս (Նախ. / Փաստ.)</td><td style="padding:4px 8px;border:1px solid #ccc;">${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD</td></tr>${constructionSurface > 0 ? '<tr><td style="font-weight:bold;padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;">Շինարա. մակերես</td><td style="padding:4px 8px;border:1px solid #ccc;">' + constructionSurface.toLocaleString() + ' մ²</td></tr>' : ''}${completionPct > 0 ? '<tr><td style="font-weight:bold;padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;">Կատ. տոկոս</td><td style="padding:4px 8px;border:1px solid #ccc;">' + completionPct + '%</td></tr>' : ''}${constructionSurface > 0 && costPerSqm > 0 ? '<tr><td style="font-weight:bold;padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;">Ծախս 1 մ²-ի համար</td><td style="padding:4px 8px;border:1px solid #ccc;">' + fmtN(costPerSqm) + ' AMD</td></tr>' : ''}</table></div>`;
 
         const full = `<!DOCTYPE html>
 <html>
@@ -1545,7 +1558,6 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 ${tableBodyHtml}
 </tbody>
 </table>
-${summaryHtml}
 </div>
 </body>
 </html>`;
