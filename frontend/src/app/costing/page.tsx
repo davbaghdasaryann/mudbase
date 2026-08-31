@@ -1429,11 +1429,11 @@ export default function CostingPage() {
         if (overheadTotal > 0 || otherCostsList.length > 0) {
             tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
             if (overheadTotal > 0) {
-                tableBodyHtml += `<tr><td class="importantInfo" colspan="13">Վերադիր ծախսեր</td><td></td><td>${fmtN(overheadTotal)}</td></tr>`;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13" style="text-align:left;font-weight:normal;">Վերադիր ծախսեր</td><td></td><td>${fmtN(overheadTotal)}</td></tr>`;
                 grandActTotal += overheadTotal;
             }
             for (const [label, val] of otherCostsList) {
-                tableBodyHtml += `<tr><td class="importantInfo" colspan="13">${esc(label)}</td><td></td><td>${fmtN(val as number)}</td></tr>`;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13" style="text-align:left;font-weight:normal;">${esc(label)}</td><td></td><td>${fmtN(val as number)}</td></tr>`;
                 grandActTotal += val as number;
             }
         }
