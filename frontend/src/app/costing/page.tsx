@@ -2073,8 +2073,8 @@ ${tableBodyHtml}
 
 
             {/* History export modal */}
-            <Dialog open={summaryExportModalOpen} onClose={() => setSummaryExportModalOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700 }}>Ամfop hashvark</DialogTitle>
+            <Dialog open={summaryExportModalOpen} onClose={() => setSummaryExportModalOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700 }}>Ամփոփ հաշվարկ</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, pt: 1, justifyContent: 'center' }}>
                         {([
