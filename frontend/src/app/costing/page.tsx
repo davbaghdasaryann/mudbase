@@ -1581,7 +1581,10 @@ ${tableBodyHtml}
                 const styleContent = styleMatch ? styleMatch[1] : '';
                 const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
                 const bodyContent = bodyMatch ? bodyMatch[1] : html;
-                const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta name="ProgId" content="Word.Document"><style>${styleContent}@page{size:A4 landscape;margin:1.5cm;}table{border-collapse:collapse;width:100%!important;table-layout:auto!important;}col{min-width:unset!important;max-width:unset!important;width:auto!important;}td,th{font-size:8.5pt!important;word-break:break-word;}</style></head><body>${bodyContent}</body></html>`;
+                let wordBody = bodyContent;
+                wordBody = wordBody.replace(/<colgroup[\s\S]*?<\/colgroup>/gi, '');
+                wordBody = wordBody.replace(/<img[^>]*(logo)[^>]*>/gi, '');
+                const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta name="ProgId" content="Word.Document"><style>${styleContent}@page{size:A4 landscape;margin:1.5cm;mso-page-orientation:landscape;}table{border-collapse:collapse;width:100%!important;table-layout:auto!important;}td,th{font-size:8pt!important;word-break:break-word;padding:2px 4px!important;}</style></head><body>${wordBody}</body></html>`;
                 const blob = new Blob(['﻿' + wordHtml], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = `${filename}.doc`; a.click();
