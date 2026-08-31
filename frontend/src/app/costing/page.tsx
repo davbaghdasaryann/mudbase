@@ -1390,9 +1390,8 @@ export default function CostingPage() {
                     for (const row of subRows) { counter++; subHtml += renderLaborRow(row); }
                     if (subHtml) {
                         const subActTotal = secActTotal - subStartTotal;
-                        sectionBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
+                        sectionBodyHtml += `<tr><td class="lightBlue subsection" colspan="13">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td><td class="lightBlue subsection" colspan="2">${fmtN(subActTotal)}</td></tr>`;
                         sectionBodyHtml += subHtml;
-                        sectionBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">${esc(`Ընդամենը ${si + 1}.${subI + 1}`)}</td><td class="subsection" colspan="2">${fmtN(subActTotal)}</td></tr>`;
                         sectionHasData = true;
                     }
                 }
