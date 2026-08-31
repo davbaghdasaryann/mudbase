@@ -1223,11 +1223,16 @@ export default function CostingPage() {
         if (!estimateSnapshot || !selected) return;
         // Always fetch a fresh snapshot so group rows have childIds populated
         let snap = estimateSnapshot;
+        let companyLogoUrl: string | undefined;
         try {
             const snapshotArgs: Record<string, string> = { estimateId: String(selected.estimateId) };
             if (localEstimateId) snapshotArgs.snapshotEstimateId = localEstimateId;
-            const fresh = await Api.requestSession<any>({ command: 'costing/fetch', args: snapshotArgs });
+            const [fresh, account] = await Promise.all([
+                Api.requestSession<any>({ command: 'costing/fetch', args: snapshotArgs }),
+                Api.requestSession<Api.ApiAccount>({ command: 'profile/get_account', args: {} }).catch(() => null),
+            ]);
             if (fresh?.estimateSnapshot) { snap = fresh.estimateSnapshot; setEstimateSnapshot(fresh.estimateSnapshot); }
+            companyLogoUrl = Api.makeCompanyLogoUrl(account ?? undefined);
         } catch {}
         const toId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
         const fmtN = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
@@ -1506,7 +1511,7 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
     <table class="headerTable">${summaryHeaderHtml}</table>
 </div>
 <div style="box-sizing: border-box">
-    <img src="/images/logo_wide.png" alt="Logo" style="height: 38px; width: auto; margin-right: 20px; margin-top: 5px;"/>
+    <img src="${companyLogoUrl ?? '/images/logo_wide.png'}" alt="Logo" style="height: 60px; width: auto; margin-right: 20px; margin-top: 5px; object-fit: contain;"/>
 </div>
 </div>
 <div>&nbsp;</div>
