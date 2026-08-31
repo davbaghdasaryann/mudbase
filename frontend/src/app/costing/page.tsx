@@ -35,6 +35,10 @@ import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined
 import ChangeCircleOutlinedIcon from '@mui/icons-material/ChangeCircleOutlined';
 import PrecisionManufacturingOutlinedIcon from '@mui/icons-material/PrecisionManufacturingOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
+import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -791,6 +795,8 @@ export default function CostingPage() {
     const [localEstimateId, setLocalEstimateId] = useState<string>('');
     const [estimationOpen, setEstimationOpen] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
+    const [summaryExportModalOpen, setSummaryExportModalOpen] = useState(false);
+    const [summaryExporting, setSummaryExporting] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
@@ -1219,8 +1225,8 @@ export default function CostingPage() {
         finally { setIsForkingEstimate(false); }
     };
 
-    const handleSummaryExport = async () => {
-        if (!estimateSnapshot || !selected) return;
+    const buildSummaryHtml = async (): Promise<string> => {
+        if (!estimateSnapshot || !selected) return '';
         // Always fetch a fresh snapshot so group rows have childIds populated
         let snap = estimateSnapshot;
         let companyLogoUrl: string | undefined;
@@ -1562,8 +1568,40 @@ ${tableBodyHtml}
 </div>
 </body>
 </html>`;
-        const win = window.open('', '_blank');
-        if (win) { win.document.write(full); win.document.close(); }
+        return full;
+    };
+
+    const handleSummaryExportAs = async (format: 'html' | 'word' | 'excel' | 'pdf') => {
+        setSummaryExporting(true);
+        try {
+            const html = await buildSummaryHtml();
+            const filename = 'amphop_hashvark';
+            if (format === 'html') {
+                const win = window.open('', '_blank');
+                if (win) { win.document.write(html); win.document.close(); }
+            } else if (format === 'word') {
+                const blob = new Blob(['﻿', html], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `${filename}.doc`; a.click();
+                URL.revokeObjectURL(url);
+            } else if (format === 'excel') {
+                const excelHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+                const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `${filename}.xls`; a.click();
+                URL.revokeObjectURL(url);
+            } else if (format === 'pdf') {
+                const win = window.open('', '_blank');
+                if (win) {
+                    win.document.write(html);
+                    win.document.close();
+                    win.addEventListener('load', () => { setTimeout(() => win.print(), 300); });
+                }
+            }
+            setSummaryExportModalOpen(false);
+        } finally {
+            setSummaryExporting(false);
+        }
     };
 
         const handleCostAdded = (entry: CostHistoryEntry) => {
@@ -1721,7 +1759,7 @@ ${tableBodyHtml}
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 24, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 24, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
-                                { icon: <SummarizeOutlinedIcon sx={{ fontSize: 24, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: handleSummaryExport, accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
+                                { icon: <SummarizeOutlinedIcon sx={{ fontSize: 24, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => setSummaryExportModalOpen(true), accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                     {icon}
@@ -2038,6 +2076,31 @@ ${tableBodyHtml}
 
 
             {/* History export modal */}
+            <Dialog open={summaryExportModalOpen} onClose={() => setSummaryExportModalOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700 }}>Ամfop hashvark — export format</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, pt: 1 }}>
+                        {([
+                            { format: 'html', label: 'HTML', color: '#0288d1', icon: <OpenInBrowserIcon sx={{ fontSize: 36 }} /> },
+                            { format: 'word', label: 'Word', color: '#2b5797', icon: <DescriptionOutlinedIcon sx={{ fontSize: 36 }} /> },
+                            { format: 'excel', label: 'Excel', color: '#217346', icon: <TableChartOutlinedIcon sx={{ fontSize: 36 }} /> },
+                            { format: 'pdf', label: 'PDF', color: '#c62828', icon: <PictureAsPdfOutlinedIcon sx={{ fontSize: 36 }} /> },
+                        ] as const).map(({ format, label, color, icon }) => (
+                            <Button key={format} variant='outlined' disabled={summaryExporting}
+                                onClick={() => handleSummaryExportAs(format)}
+                                sx={{ height: 100, flexDirection: 'column', gap: 0.5, borderColor: color, color, borderRadius: 2,
+                                    '&:hover': { borderColor: color, bgcolor: `${color}15` } }}>
+                                {icon}
+                                <Typography variant='subtitle1' fontWeight={700}>{label}</Typography>
+                            </Button>
+                        ))}
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setSummaryExportModalOpen(false)}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
+
             <Dialog open={exportOpen} onClose={() => setExportOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: mainPrimaryColor, display: 'flex', alignItems: 'center', gap: 1, pb: 1 }}>
                     <SaveAltIcon sx={{ fontSize: 22 }} />
