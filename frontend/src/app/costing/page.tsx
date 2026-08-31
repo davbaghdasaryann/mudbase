@@ -1386,10 +1386,13 @@ export default function CostingPage() {
                     const subRows = secRows.filter(r => r.subsectionName === sub.name);
                     if (subRows.length === 0) continue;
                     let subHtml = '';
+                    const subStartTotal = secActTotal;
                     for (const row of subRows) { counter++; subHtml += renderLaborRow(row); }
                     if (subHtml) {
+                        const subActTotal = secActTotal - subStartTotal;
                         sectionBodyHtml += `<tr><td class="lightBlue subsection" colspan="${COLS}">${esc(`${si + 1}.${subI + 1} ${sub.name}`)}</td></tr>`;
                         sectionBodyHtml += subHtml;
+                        sectionBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">${esc(`Ընդամենը ${si + 1}.${subI + 1}`)}</td><td class="subsection" colspan="2">${fmtN(subActTotal)}</td></tr>`;
                         sectionHasData = true;
                     }
                 }
