@@ -1434,23 +1434,6 @@ export default function CostingPage() {
             }
         }
 
-        // Summary rows (above grand total)
-        const summaryRows = [
-            ['Ընդհ. արժեք (Նախ. / Փաստ.)', `${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD`],
-            ['Նյութ. արժեք (Նախ. / Փաստ.)', `${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD`],
-            ['Աշխ. ծախս (Նախ. / Փաստ.)', `${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD`],
-            ...(constructionSurface > 0 ? [['Շինարա. մակերես', `${constructionSurface.toLocaleString()} մ²`]] : []),
-            ...(completionPct > 0 ? [['Կատ. տոկոս', `${completionPct}%`]] : []),
-            ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`]] : []),
-        ];
-        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
-        tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՄՓՈՓ ՏՎՅԱԼՆԵՐ</td></tr>`;
-        for (const [label, value] of summaryRows) {
-            tableBodyHtml += `<tr><td colspan="10" style="text-align:left;font-weight:bold;padding:4px 8px;">${esc(label as string)}</td><td colspan="5" style="text-align:right;padding:4px 8px;">${esc(value as string)}</td></tr>`;
-        }
-        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
-        tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
-
         const est = selectedEstimate as any;
 
         // Summary section data
@@ -1469,6 +1452,23 @@ export default function CostingPage() {
             totalEstQ += eQ; totalActQ += Math.min(aQ, eQ);
         }
         const completionPct = totalEstQ > 0 ? Math.min(100, Math.round((totalActQ / totalEstQ) * 100)) : 0;
+
+        // Summary rows (above grand total)
+        const summaryRows = [
+            ['Ընդհ. արժեք (Նախ. / Փաստ.)', `${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD`],
+            ['Նյութ. արժեք (Նախ. / Փաստ.)', `${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD`],
+            ['Աշխ. ծախս (Նախ. / Փաստ.)', `${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD`],
+            ...(constructionSurface > 0 ? [['Շինարա. մակերես', `${constructionSurface.toLocaleString()} մ²`]] : []),
+            ...(completionPct > 0 ? [['Կատ. տոկոս', `${completionPct}%`]] : []),
+            ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`]] : []),
+        ];
+        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
+        tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՄՓՈՓ ՏՎՅԱԼՆԵՐ</td></tr>`;
+        for (const [label, value] of summaryRows) {
+            tableBodyHtml += `<tr><td colspan="10" style="text-align:left;font-weight:bold;padding:4px 8px;">${esc(label as string)}</td><td colspan="5" style="text-align:right;padding:4px 8px;">${esc(value as string)}</td></tr>`;
+        }
+        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
+        tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
         const full = `<!DOCTYPE html>
 <html>
