@@ -1577,12 +1577,21 @@ ${tableBodyHtml}
                 const win = window.open('', '_blank');
                 if (win) { win.document.write(html); win.document.close(); }
             } else if (format === 'word') {
-                const blob = new Blob(['﻿', html], { type: 'application/msword' });
+                const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+                const styleContent = styleMatch ? styleMatch[1] : '';
+                const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                const bodyContent = bodyMatch ? bodyMatch[1] : html;
+                const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta name="ProgId" content="Word.Document"><style>${styleContent}@page{size:A3 landscape;margin:1cm;}table{border-collapse:collapse;width:100%;}td,th{font-size:10pt;}</style></head><body>${bodyContent}</body></html>`;
+                const blob = new Blob(['﻿' + wordHtml], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = `${filename}.doc`; a.click();
                 URL.revokeObjectURL(url);
             } else if (format === 'excel') {
-                const excelHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+                const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+                const styleContent = styleMatch ? styleMatch[1] : '';
+                const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                const bodyContent = bodyMatch ? bodyMatch[1] : html;
+                const excelHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/><style>${styleContent}</style></head><body>${bodyContent}</body></html>`;
                 const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = `${filename}.xls`; a.click();
