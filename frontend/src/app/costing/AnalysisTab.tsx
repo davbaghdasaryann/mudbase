@@ -227,19 +227,17 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
 
     const getActuals = (row: LaborRow) => {
         const rowId = toId(row._id);
-        if (row.isGroupRow && row.childIds && row.childIds.length > 0) {
-            let childActTotal = 0;
-            for (const childId of row.childIds) {
-                const salTotal = costHistory.filter(e => e.laborItemId === childId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-                const matActTotal = costHistory.filter(e => {
-                    if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                    if (e.laborItemId) return e.laborItemId === childId;
-                    if (!e.materialItemId) return false;
-                    return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === childId);
-                }).reduce((s, e) => s + e.total, 0);
-                const childVol = parseFloat((actualData[childId]?.spent ?? '').replace(',', '.')) || 0;
-                childActTotal += childVol + salTotal + matActTotal;
-            }
+        if (row.isGroupRow) {
+            // Salary payments for group rows are stored under the group row's own ID (not children's IDs)
+            const cvGroup = parseFloat((actualData[rowId]?.spent ?? '').replace(',', '.')) || 0;
+            const salTotal = cvGroup + costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+            const matActTotal = costHistory.filter(e => {
+                if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
+                if (e.laborItemId) return e.laborItemId === rowId;
+                if (!e.materialItemId) return false;
+                return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
+            }).reduce((s, e) => s + e.total, 0);
+            const childActTotal = salTotal + matActTotal;
             return { actQty: row.quantity ?? 0, actTotal: childActTotal, hasData: childActTotal > 0, upDivisor: row.quantity ?? 0 };
         }
         const a = actualData[rowId];
