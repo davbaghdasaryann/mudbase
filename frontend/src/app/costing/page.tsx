@@ -35,10 +35,7 @@ import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined
 import ChangeCircleOutlinedIcon from '@mui/icons-material/ChangeCircleOutlined';
 import PrecisionManufacturingOutlinedIcon from '@mui/icons-material/PrecisionManufacturingOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
-import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
-import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser';
+import ImgElement from '@/tsui/DomElements/ImgElement';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -2077,27 +2074,38 @@ ${tableBodyHtml}
 
             {/* History export modal */}
             <Dialog open={summaryExportModalOpen} onClose={() => setSummaryExportModalOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700 }}>Ամfop hashvark — export format</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 700 }}>Ամfop hashvark</DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, pt: 1 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, pt: 1, justifyContent: 'center' }}>
                         {([
-                            { format: 'html', label: 'HTML', color: '#0288d1', icon: <OpenInBrowserIcon sx={{ fontSize: 36 }} /> },
-                            { format: 'word', label: 'Word', color: '#2b5797', icon: <DescriptionOutlinedIcon sx={{ fontSize: 36 }} /> },
-                            { format: 'excel', label: 'Excel', color: '#217346', icon: <TableChartOutlinedIcon sx={{ fontSize: 36 }} /> },
-                            { format: 'pdf', label: 'PDF', color: '#c62828', icon: <PictureAsPdfOutlinedIcon sx={{ fontSize: 36 }} /> },
-                        ] as const).map(({ format, label, color, icon }) => (
-                            <Button key={format} variant='outlined' disabled={summaryExporting}
-                                onClick={() => handleSummaryExportAs(format)}
-                                sx={{ height: 100, flexDirection: 'column', gap: 0.5, borderColor: color, color, borderRadius: 2,
-                                    '&:hover': { borderColor: color, bgcolor: `${color}15` } }}>
-                                {icon}
-                                <Typography variant='subtitle1' fontWeight={700}>{label}</Typography>
-                            </Button>
+                            { format: 'html',  label: 'HTML',  icon: '/images/icons/toolbar/html.svg' },
+                            { format: 'word',  label: 'Word',  icon: '/images/icons/toolbar/word.svg' },
+                            { format: 'excel', label: 'Excel', icon: '/images/icons/toolbar/excel.svg' },
+                            { format: 'pdf',   label: 'PDF',   icon: '/images/icons/toolbar/pdf.svg' },
+                        ] as const).map(({ format, label, icon }) => (
+                            <Box key={format} onClick={() => !summaryExporting && handleSummaryExportAs(format)} sx={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                p: 1, backgroundColor: 'transparent', borderRadius: 2,
+                                cursor: summaryExporting ? 'default' : 'pointer',
+                                opacity: summaryExporting ? 0.5 : 1,
+                                width: 100, minHeight: 85,
+                                boxShadow: '0 4px 6px rgba(0,0,0,0.15), 2px 0 4px rgba(0,0,0,0.05), -2px 0 4px rgba(0,0,0,0.05)',
+                                transition: 'all 0.2s',
+                                '&:hover': summaryExporting ? {} : {
+                                    boxShadow: '0 6px 10px rgba(0,0,0,0.2), 3px 0 6px rgba(0,0,0,0.08), -3px 0 6px rgba(0,0,0,0.08)',
+                                    transform: 'translateY(-2px)',
+                                },
+                            }}>
+                                <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <ImgElement src={icon} sx={{ height: 36 }} />
+                                </Box>
+                                <Typography variant='caption' align='center' sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{label}</Typography>
+                            </Box>
                         ))}
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setSummaryExportModalOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setSummaryExportModalOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>Cancel</Button>
                 </DialogActions>
             </Dialog>
 
