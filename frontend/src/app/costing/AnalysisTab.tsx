@@ -321,12 +321,14 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                 </td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                     {pct !== null ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                            {cheaper ? <TrendingDownIcon sx={{ fontSize: 13, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 13, color: '#c62828' }} />}
-                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: cheaper ? '#2e7d32' : '#c62828' }}>
-                                {Math.abs(pct).toFixed(1)}%
-                            </span>
-                        </Box>
+                        Math.abs(pct) < 0.5
+                            ? <span style={{ fontSize: '0.8rem', color: '#aaa' }}>\u22480.0%</span>
+                            : <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                {cheaper ? <TrendingDownIcon sx={{ fontSize: 13, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 13, color: '#c62828' }} />}
+                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: cheaper ? '#2e7d32' : '#c62828' }}>
+                                    {Math.abs(pct).toFixed(1)}%
+                                </span>
+                            </Box>
                     ) : <span style={{ color: '#ddd' }}>{'\u2014'}</span>}
                 </td>
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: exQty !== null ? '#c62828' : '#ddd', fontWeight: exQty !== null ? 600 : 400 })}>
@@ -544,7 +546,9 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         </td>
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             {grandPct !== null
-                                ? <span style={{ fontWeight: 700, fontSize: '0.82rem', color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
+                                ? Math.abs(grandPct) < 0.5
+                                    ? <span style={{ fontWeight: 700, fontSize: '0.82rem', color: '#aaa' }}>\u22480.0%</span>
+                                    : <span style={{ fontWeight: 700, fontSize: '0.82rem', color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '\u2014'}
                         </td>
                         <td style={tdStyle({ borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}></td>
