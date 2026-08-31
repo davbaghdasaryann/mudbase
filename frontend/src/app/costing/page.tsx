@@ -1454,20 +1454,17 @@ export default function CostingPage() {
         const completionPct = totalEstQ > 0 ? Math.min(100, Math.round((totalActQ / totalEstQ) * 100)) : 0;
 
         // Summary rows (above grand total)
-        const summaryRows = [
+        const summaryRows: [string, string][] = [
             ['Ընդհ. արժեք (Նախ. / Փաստ.)', `${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD`],
             ['Նյութ. արժեք (Նախ. / Փաստ.)', `${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD`],
             ['Աշխ. ծախս (Նախ. / Փաստ.)', `${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD`],
-            ...(constructionSurface > 0 ? [['Շինարա. մակերես', `${constructionSurface.toLocaleString()} մ²`]] : []),
-            ...(completionPct > 0 ? [['Կատ. տոկոս', `${completionPct}%`]] : []),
-            ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`]] : []),
+            ...(constructionSurface > 0 ? [['Շինարա. մակերես', `${constructionSurface.toLocaleString()} մ²`] as [string, string]] : []),
+            ...(completionPct > 0 ? [['Կատ. տոկոս', `${completionPct}%`] as [string, string]] : []),
+            ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`] as [string, string]] : []),
         ];
-        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
-        tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՄՓՈՓ ՏՎՅԱԼՆԵՐ</td></tr>`;
-        for (const [label, value] of summaryRows) {
-            tableBodyHtml += `<tr><td colspan="10" style="text-align:left;font-weight:bold;padding:4px 8px;">${esc(label as string)}</td><td colspan="5" style="text-align:right;padding:4px 8px;">${esc(value as string)}</td></tr>`;
-        }
-        tableBodyHtml += `<tr><td style="border:none;">&nbsp;</td></tr>`;
+        const summaryHeaderHtml = summaryRows.map(([lbl, val]) =>
+            `<tr><td class="headerTableName lightGreen">${esc(lbl)}</td><td class="headerTableValue bold">${esc(val)}</td></tr>`
+        ).join('');
         tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
         const full = `<!DOCTYPE html>
@@ -1499,19 +1496,19 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 <body>
 <div class="container">
 <div class="stackContainer">
-<div style="flex: 1; box-sizing: border-box">
+<div style="flex: 1; box-sizing: border-box; padding-right: 16px;">
     <table class="headerTable">
         <tr><td class="headerTableName lightGreen">Օբյեկտի անվանումը</td><td class="headerTableValue bold">${esc(est?.name ?? '')}</td></tr>
         <tr><td class="headerTableName lightGreen">Հասցե</td><td class="headerTableValue">${esc(est?.address ?? '')}</td></tr>
         <tr><td class="headerTableName lightGreen">Գեներացման ամսաթիվ</td><td class="headerTableValue bold">${fmtDate()}</td></tr>
     </table>
 </div>
+<div style="flex: 1; box-sizing: border-box; padding-right: 16px;">
+    <table class="headerTable">${summaryHeaderHtml}</table>
+</div>
 <div style="box-sizing: border-box">
     <img src="/images/logo_wide.png" alt="Logo" style="height: 38px; width: auto; margin-right: 20px; margin-top: 5px;"/>
 </div>
-</div>
-<div>&nbsp;</div>
-<div class="stackContainer">
 </div>
 <div>&nbsp;</div>
 <table class="estimateTable">
