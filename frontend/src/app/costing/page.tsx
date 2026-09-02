@@ -38,8 +38,8 @@ import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
-import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
@@ -2115,10 +2115,10 @@ ${tableBodyHtml}
                             <DescriptionOutlinedIcon sx={{ fontSize: 22, color: '#3949ab', opacity: 0.7, flexShrink: 0 }} />
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Փահեստի մնացորդ</Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
-                                <IconButton size='small' title='PDF' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => {}}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
-                                <IconButton size='small' title='Excel' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => {}}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
-                                <IconButton size='small' title='Print' sx={{ color: '#546e7a', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(84,110,122,0.08)' } }} onClick={() => {}}><PrintOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
-                                <IconButton size='small' title='Download' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => {}}><FileDownloadOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
+                                <Tooltip title='HTML'><IconButton size='small' sx={{ color: '#e65100', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(230,81,0,0.08)' } }} onClick={() => {}}><CodeOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='Word'><IconButton size='small' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => {}}><ArticleOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='Excel'><IconButton size='small' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => {}}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='PDF'><IconButton size='small' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => {}}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
                             </Box>
                         </Box>
                     </Box>
