@@ -2113,7 +2113,7 @@ ${tableBodyHtml}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5, pb: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
                             <DescriptionOutlinedIcon sx={{ fontSize: 22, color: '#3949ab', opacity: 0.7, flexShrink: 0 }} />
-                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Փahestʿi mnacord</Typography>
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Փահեստի մնացորդ</Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
                                 <IconButton size='small' title='PDF' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => {}}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
                                 <IconButton size='small' title='Excel' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => {}}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
