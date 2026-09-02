@@ -801,6 +801,7 @@ export default function CostingPage() {
     const [summaryExportModalOpen, setSummaryExportModalOpen] = useState(false);
     const [summaryExporting, setSummaryExporting] = useState(false);
     const [warehouseExporting, setWarehouseExporting] = useState(false);
+    const [exportFormat, setExportFormat] = useState<'html' | 'word' | 'excel' | 'pdf'>('excel');
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
@@ -2028,13 +2029,6 @@ ${tableBodyHtml}
                         </Box>
                     ) : (
                         <Box sx={{ overflow: 'auto' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-                                <Button variant='outlined' size='small' startIcon={<SaveAltIcon />}
-                                    onClick={() => { setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); }}
-                                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                                    {t('Export')}
-                                </Button>
-                            </Box>
                             <Table size='small' sx={{ minWidth: 700 }}>
                                 <TableHead>
                                     <TableRow sx={{ backgroundColor: '#f0fbfc' }}>
@@ -2204,6 +2198,16 @@ ${tableBodyHtml}
                             </Box>
                         </Box>
                     </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                            <SaveAltIcon sx={{ fontSize: 22, color: '#00897b', opacity: 0.7, flexShrink: 0 }} />
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Ենդհանուր կատարողական</Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+                                <Tooltip title='HTML'><IconButton size='small' sx={{ color: '#e65100', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(230,81,0,0.08)' } }} onClick={() => { setExportFormat('html'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><CodeOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='Word'><IconButton size='small' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => { setExportFormat('word'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><ArticleOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='Excel'><IconButton size='small' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => { setExportFormat('excel'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='PDF'><IconButton size='small' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => { setExportFormat('pdf'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                            </Box>
+                        </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={() => setDocumentsOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>Cancel</Button>
@@ -2295,11 +2299,22 @@ ${tableBodyHtml}
                             `</tr>`;
                         }
                         html += '</table>';
-                        const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
-                        const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a'); a.href = url; a.download = 'history.xls'; a.click();
-                        URL.revokeObjectURL(url);
+                        const fmt = exportFormat;
+                        if (fmt === 'excel') {
+                            const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+                            const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'history.xls'; a.click(); URL.revokeObjectURL(url);
+                        } else if (fmt === 'html') {
+                            const win = window.open('', '_blank');
+                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${html}</body></html>`); win.document.close(); }
+                        } else if (fmt === 'word') {
+                            const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>table{border-collapse:collapse;}td,th{font-size:9pt;}</style></head><body>${html}</body></html>`;
+                            const blob = new Blob(['﻿' + wordHtml], { type: 'application/msword' });
+                            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'history.doc'; a.click(); URL.revokeObjectURL(url);
+                        } else if (fmt === 'pdf') {
+                            const win = window.open('', '_blank');
+                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${html}</body></html>`); win.document.close(); win.addEventListener('load', () => { setTimeout(() => win.print(), 300); }); }
+                        }
                         setExportOpen(false);
                     }} sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
                         {t('Export')}
