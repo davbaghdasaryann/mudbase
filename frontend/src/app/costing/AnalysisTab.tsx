@@ -322,7 +322,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                 <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                     {pct !== null ? (
                         Math.abs(pct) < 0.5
-                            ? <span style={{ fontSize: '0.8rem', color: '#aaa' }}>\u22480.0%</span>
+                            ? <span style={{ fontSize: '0.8rem', color: '#aaa' }}>≈0.0%</span>
                             : <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                 {cheaper ? <TrendingDownIcon sx={{ fontSize: 13, color: '#2e7d32' }} /> : <TrendingUpIcon sx={{ fontSize: 13, color: '#c62828' }} />}
                                 <span style={{ fontSize: '0.8rem', fontWeight: 600, color: cheaper ? '#2e7d32' : '#c62828' }}>
@@ -547,7 +547,7 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
                         <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, borderTop: `2px solid ${ACCENT}`, borderBottom: 'none' })}>
                             {grandPct !== null
                                 ? Math.abs(grandPct) < 0.5
-                                    ? <span style={{ fontWeight: 700, fontSize: '0.82rem', color: '#aaa' }}>\u22480.0%</span>
+                                    ? <span style={{ fontWeight: 700, fontSize: '0.82rem', color: '#aaa' }}>≈0.0%</span>
                                     : <span style={{ fontWeight: 700, fontSize: '0.82rem', color: grandPct >= 0 ? '#2e7d32' : '#c62828' }}>{grandPct >= 0 ? '+' : ''}{grandPct.toFixed(1)}%</span>
                                 : '\u2014'}
                         </td>
