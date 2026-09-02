@@ -227,30 +227,30 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
 
     const getActuals = (row: LaborRow) => {
         const rowId = toId(row._id);
+        // calcMatActTotal: mirrors CostingTable — nyuth_tsakhsagrum + pahest_ayl_cost
+        const calcMatActTotal = (id: string) => costHistory.filter(e => {
+            if (e.paymentMethod === 'nyuth_tsakhsagrum') {
+                if (e.laborItemId) return e.laborItemId === id;
+                if (!e.materialItemId) return false;
+                return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === id);
+            }
+            if (e.paymentMethod === 'pahest_ayl_cost') return !!e.laborItemId && e.laborItemId === id;
+            return false;
+        }).reduce((s, e) => s + e.total, 0);
+
         if (row.isGroupRow) {
             // Salary payments for group rows are stored under the group row's own ID (not children's IDs)
             const cvGroup = parseFloat((actualData[rowId]?.spent ?? '').replace(',', '.')) || 0;
-            const salTotal = cvGroup + costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-            const matActTotal = costHistory.filter(e => {
-                if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-                if (e.laborItemId) return e.laborItemId === rowId;
-                if (!e.materialItemId) return false;
-                return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
-            }).reduce((s, e) => s + e.total, 0);
-            const childActTotal = salTotal + matActTotal;
+            const salTotal = cvGroup + costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+            const childActTotal = salTotal + calcMatActTotal(rowId);
             return { actQty: row.quantity ?? 0, actTotal: childActTotal, hasData: childActTotal > 0, upDivisor: row.quantity ?? 0 };
         }
         const a = actualData[rowId];
         const actQty = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
-        const salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
+        const salTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const gorcarqayanQtyTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
-        const matActTotal = costHistory.filter(e => {
-            if (e.paymentMethod !== 'nyuth_tsakhsagrum') return false;
-            if (e.laborItemId) return e.laborItemId === rowId;
-            if (!e.materialItemId) return false;
-            return (pahestEntries ?? []).some(p => p.materialItemId === e.materialItemId && p.estimatedLaborId === rowId);
-        }).reduce((s, e) => s + e.total, 0);
-        const actTotal = salTotal + matActTotal;
+        const actTotal = volumeTotal + salTotal + calcMatActTotal(rowId);
         // Unit price uses gorcarqayin qty sum (avg across multiple payments); quantity display keeps volume registration
         const upDivisor = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
         const hasData  = actQty > 0 && actTotal > 0;
