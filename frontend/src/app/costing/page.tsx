@@ -2200,7 +2200,7 @@ ${tableBodyHtml}
                     </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
                             <SaveAltIcon sx={{ fontSize: 22, color: '#00897b', opacity: 0.7, flexShrink: 0 }} />
-                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Ենդհանուր կատարողական</Typography>
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Ընդհանուր կատարողական</Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
                                 <Tooltip title='HTML'><IconButton size='small' sx={{ color: '#e65100', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(230,81,0,0.08)' } }} onClick={() => { setExportFormat('html'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><CodeOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
                                 <Tooltip title='Word'><IconButton size='small' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => { setExportFormat('word'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><ArticleOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
