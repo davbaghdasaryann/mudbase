@@ -2187,7 +2187,7 @@ ${tableBodyHtml}
                 <DialogTitle sx={{ fontWeight: 700, color: '#3949ab' }}>Փաստաթղթեր</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5, pb: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2, transition: 'background-color 0.15s', '&:hover': { bgcolor: '#ebebeb' } }}>
                             <DescriptionOutlinedIcon sx={{ fontSize: 22, color: '#3949ab', opacity: 0.7, flexShrink: 0 }} />
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Փահեստի մնացորդ</Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
@@ -2198,7 +2198,7 @@ ${tableBodyHtml}
                             </Box>
                         </Box>
                     </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2, transition: 'background-color 0.15s', '&:hover': { bgcolor: '#ebebeb' } }}>
                             <SaveAltIcon sx={{ fontSize: 22, color: '#00897b', opacity: 0.7, flexShrink: 0 }} />
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Ընդհանուր կատարողական</Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
