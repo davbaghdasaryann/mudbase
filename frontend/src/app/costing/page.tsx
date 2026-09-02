@@ -800,6 +800,7 @@ export default function CostingPage() {
     const [exportOpen, setExportOpen] = useState(false);
     const [summaryExportModalOpen, setSummaryExportModalOpen] = useState(false);
     const [summaryExporting, setSummaryExporting] = useState(false);
+    const [warehouseExporting, setWarehouseExporting] = useState(false);
     const [exportTypes, setExportTypes] = useState<Set<string>>(new Set());
     const [unforeseenEstimate, setUnforeseenEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [unforeseenCostingId, setUnforeseenCostingId] = useState<string>('');
@@ -1226,6 +1227,87 @@ export default function CostingPage() {
             setMainEstimateEditOpen(true);
         } catch (e) { console.error(e); }
         finally { setIsForkingEstimate(false); }
+    };
+
+    const buildWarehouseBalanceHtml = (): string => {
+        // Deduplicate pahestEntries by materialItemId, aggregate quantities
+        const matMap = new Map<string, { name: string; unit: string; entered: number; costed: number }>();
+        for (const e of pahestEntries) {
+            if (!e.materialItemId) continue;
+            const existing = matMap.get(e.materialItemId);
+            if (existing) {
+                existing.entered += e.quantity;
+            } else {
+                matMap.set(e.materialItemId, {
+                    name: e.name,
+                    unit: e.unit,
+                    entered: e.quantity,
+                    costed: costedQuantityMap.get(e.materialItemId) ?? 0,
+                });
+            }
+        }
+        const rows = [...matMap.values()].map(m => ({ ...m, remaining: m.entered - m.costed }));
+        const projectName = selected?.name ?? '';
+        const rowsHtml = rows.map((r, i) => `
+            <tr style="background:${i % 2 === 0 ? '#fff' : '#f9f9f9'}">
+                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px">${i + 1}</td>
+                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px">${r.name}</td>
+                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:center">${r.unit}</td>
+                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:right">${r.entered.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:right">${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:right;color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:600">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+            </tr>`).join('');
+        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h2{margin-bottom:4px}p.sub{color:#666;font-size:12px;margin:0 0 16px}table{border-collapse:collapse;width:100%}th{background:#3949ab;color:#fff;padding:7px 8px;font-size:11px;border:1px solid #2c3e9e;text-align:left}th.num{text-align:right}</style></head><body>
+        <h2>Փահեստի մնացորդ</h2>
+        <p class="sub">${projectName}</p>
+        <table>
+            <thead><tr>
+                <th style="width:36px">#</th>
+                <th>Անուն</th>
+                <th style="width:60px;text-align:center">Միավոր</th>
+                <th class="num" style="width:110px">Մուտագրված</th>
+                <th class="num" style="width:110px">Ծախսագրած</th>
+                <th class="num" style="width:110px">Մնացորդ</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+        </table></body></html>`;
+    };
+
+    const handleWarehouseExportAs = (format: 'html' | 'word' | 'excel' | 'pdf') => {
+        setWarehouseExporting(true);
+        try {
+            const html = buildWarehouseBalanceHtml();
+            const filename = 'pahestʿi_mnacord';
+            if (format === 'html') {
+                const win = window.open('', '_blank');
+                if (win) { win.document.write(html); win.document.close(); }
+            } else if (format === 'word') {
+                const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+                const styleContent = styleMatch ? styleMatch[1] : '';
+                const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                const bodyContent = bodyMatch ? bodyMatch[1] : html;
+                const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta name="ProgId" content="Word.Document"><style>${styleContent}@page{size:A4;margin:2cm;}table{border-collapse:collapse;width:100%!important;}td,th{font-size:9pt!important;}</style></head><body>${bodyContent}</body></html>`;
+                const blob = new Blob(['﻿' + wordHtml], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `${filename}.doc`; a.click();
+                URL.revokeObjectURL(url);
+            } else if (format === 'excel') {
+                const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+                const styleContent = styleMatch ? styleMatch[1] : '';
+                const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                const bodyContent = bodyMatch ? bodyMatch[1] : html;
+                const excelHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/><style>${styleContent}</style></head><body>${bodyContent}</body></html>`;
+                const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `${filename}.xls`; a.click();
+                URL.revokeObjectURL(url);
+            } else if (format === 'pdf') {
+                const win = window.open('', '_blank');
+                if (win) { win.document.write(html); win.document.close(); win.addEventListener('load', () => { setTimeout(() => win.print(), 300); }); }
+            }
+        } finally {
+            setWarehouseExporting(false);
+        }
     };
 
     const buildSummaryHtml = async (): Promise<string> => {
@@ -2115,10 +2197,10 @@ ${tableBodyHtml}
                             <DescriptionOutlinedIcon sx={{ fontSize: 22, color: '#3949ab', opacity: 0.7, flexShrink: 0 }} />
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Փահեստի մնացորդ</Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
-                                <Tooltip title='HTML'><IconButton size='small' sx={{ color: '#e65100', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(230,81,0,0.08)' } }} onClick={() => {}}><CodeOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
-                                <Tooltip title='Word'><IconButton size='small' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => {}}><ArticleOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
-                                <Tooltip title='Excel'><IconButton size='small' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => {}}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
-                                <Tooltip title='PDF'><IconButton size='small' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => {}}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='HTML'><IconButton size='small' sx={{ color: '#e65100', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(230,81,0,0.08)' } }} onClick={() => handleWarehouseExportAs('html')}><CodeOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='Word'><IconButton size='small' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => handleWarehouseExportAs('word')}><ArticleOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='Excel'><IconButton size='small' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => handleWarehouseExportAs('excel')}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                <Tooltip title='PDF'><IconButton size='small' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => handleWarehouseExportAs('pdf')}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
                             </Box>
                         </Box>
                     </Box>
