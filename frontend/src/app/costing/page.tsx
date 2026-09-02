@@ -1793,14 +1793,25 @@ ${tableBodyHtml}
                             const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
                             const completedRowIds = new Set(estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
                                 const rid = toRowId(row._id);
+                                if ((row as any).isGroupRow) {
+                                    return costHistory.some(e => e.laborItemId === rid && !e.paymentMethod?.startsWith('pahest_'));
+                                }
                                 const actQty = parseFloat(actualData[rid]?.quantity || '0') || 0;
                                 const estQty = Number(row.quantity ?? 0);
                                 return estQty > 0 && actQty >= estQty;
                             }).map(row => toRowId(row._id)) : []);
                             const laborCompleted = completedRowIds.size;
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
-                            const materialCompleted = pahestEntries.filter(e => e.quantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) >= e.quantity).length;
-                            const materialCurrent = pahestEntries.filter(e => e.quantity > 0 && (costedQuantityMap.get(e.materialItemId) ?? 0) < e.quantity).length;
+                            const completedMaterialIds = new Set<string>();
+                            const currentMaterialIds = new Set<string>();
+                            pahestEntries.forEach(e => {
+                                if (e.quantity <= 0) return;
+                                const costed = costedQuantityMap.get(e.materialItemId) ?? 0;
+                                if (costed >= e.quantity) completedMaterialIds.add(e.materialItemId);
+                                else currentMaterialIds.add(e.materialItemId);
+                            });
+                            const materialCompleted = [...completedMaterialIds].filter(id => !currentMaterialIds.has(id)).length;
+                            const materialCurrent = currentMaterialIds.size;
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
                                     <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
