@@ -2183,7 +2183,7 @@ ${tableBodyHtml}
 
 
             {/* Documents dialog */}
-            <Dialog open={documentsOpen} onClose={() => setDocumentsOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog open={documentsOpen} onClose={() => setDocumentsOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 700, color: '#3949ab' }}>Փաստաթղթեր</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5, pb: 1 }}>
