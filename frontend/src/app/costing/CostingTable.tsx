@@ -494,14 +494,6 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
 
     return (
         <Box sx={{ mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mb: 1.5 }}>
-                <Button variant='outlined' size='small' disabled={exporting}
-                    startIcon={exporting ? <CircularProgress size={14} sx={{ color: '#888' }} /> : <SaveAltIcon />}
-                    onClick={handleExport}
-                    sx={{ borderRadius: '20px', borderColor: '#aaa', color: '#555', fontWeight: 600, '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#888' } }}>
-                    {exporting ? '...' : t('Export')}
-                </Button>
-            </Box>
 
             <Box ref={scrollRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
                 sx={{ overflow: 'auto', cursor: 'grab' }}>
