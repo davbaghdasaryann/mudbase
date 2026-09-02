@@ -1248,7 +1248,7 @@ export default function CostingPage() {
             }
         }
         const rows = [...matMap.values()].map(m => ({ ...m, remaining: m.entered - m.costed }));
-        const projectName = selected?.name ?? '';
+        const projectName = selected?.estimateName ?? '';
         const rowsHtml = rows.map((r, i) => `
             <tr style="background:${i % 2 === 0 ? '#fff' : '#f9f9f9'}">
                 <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px">${i + 1}</td>
