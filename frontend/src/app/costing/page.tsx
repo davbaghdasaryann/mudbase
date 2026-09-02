@@ -783,6 +783,7 @@ export default function CostingPage() {
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
     const [mainEstimateEditOpen, setMainEstimateEditOpen] = useState(false);
     const [otherCostsOpen, setOtherCostsOpen] = useState(false);
+    const [documentsOpen, setDocumentsOpen] = useState(false);
     const [vatDeduction, setVatDeduction] = useState(0);
     const [climateImpact, setClimateImpact] = useState(0);
     const [temporaryStructures, setTemporaryStructures] = useState(0);
@@ -1765,7 +1766,7 @@ ${tableBodyHtml}
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 24, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
                                 { icon: <SummarizeOutlinedIcon sx={{ fontSize: 24, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => setSummaryExportModalOpen(true), accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
-                                { icon: <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.55 }} />, label: 'Փաստաթղթեր', onClick: () => {}, accent: '#3949ab', hoverBg: 'rgba(57,73,171,0.06)' },
+                                { icon: <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.55 }} />, label: 'Փաստաթղթեր', onClick: () => setDocumentsOpen(true), accent: '#3949ab', hoverBg: 'rgba(57,73,171,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                     {icon}
@@ -2100,6 +2101,22 @@ ${tableBodyHtml}
                 )}
             </Box>
 
+
+            {/* Documents dialog */}
+            <Dialog open={documentsOpen} onClose={() => setDocumentsOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: '#3949ab' }}>Փաստաթղթեր</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5, pb: 1 }}>
+                        <Box onClick={() => {}} sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2, cursor: 'pointer', transition: 'background-color 0.15s', '&:hover': { bgcolor: 'rgba(57,73,171,0.08)' } }}>
+                            <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.7 }} />
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a' }}>Պahestʿi mnacord</Typography>
+                        </Box>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setDocumentsOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
 
             {/* History export modal */}
             <Dialog open={summaryExportModalOpen} onClose={() => setSummaryExportModalOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
