@@ -35,6 +35,7 @@ import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined
 import ChangeCircleOutlinedIcon from '@mui/icons-material/ChangeCircleOutlined';
 import PrecisionManufacturingOutlinedIcon from '@mui/icons-material/PrecisionManufacturingOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
@@ -1764,6 +1765,7 @@ ${tableBodyHtml}
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 24, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
                                 { icon: <SummarizeOutlinedIcon sx={{ fontSize: 24, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => setSummaryExportModalOpen(true), accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
+                                { icon: <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.55 }} />, label: 'Փաստաթղթեր', onClick: () => {}, accent: '#3949ab', hoverBg: 'rgba(57,73,171,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                     {icon}
