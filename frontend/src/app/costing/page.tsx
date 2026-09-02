@@ -1791,16 +1791,24 @@ ${tableBodyHtml}
                             const actualLabor = costHistory.filter(e => !e.paymentMethod || e.paymentMethod === '' || e.paymentMethod.startsWith('salary_')).reduce((s, e) => s + e.total, 0);
                             const actualTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
                             const toRowId = (id: unknown): string => typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id);
-                            const completedRowIds = new Set(estimateSnapshot ? estimateSnapshot.laborRows.filter(row => {
+                            const completedRowIds = new Set<string>();
+                            (estimateSnapshot?.laborRows ?? []).forEach(row => {
                                 const rid = toRowId(row._id);
-                                if ((row as any).isGroupRow) {
-                                    return costHistory.some(e => e.laborItemId === rid && !e.paymentMethod?.startsWith('pahest_'));
+                                let done = false;
+                                if (row.isGroupRow) {
+                                    done = costHistory.some(e => e.laborItemId === rid && !e.paymentMethod?.startsWith('pahest_'));
+                                } else {
+                                    const actQty = parseFloat(actualData[rid]?.quantity || '0') || 0;
+                                    const estQty = Number(row.quantity ?? 0);
+                                    done = estQty > 0 && actQty >= estQty;
                                 }
-                                const actQty = parseFloat(actualData[rid]?.quantity || '0') || 0;
-                                const estQty = Number(row.quantity ?? 0);
-                                return estQty > 0 && actQty >= estQty;
-                            }).map(row => toRowId(row._id)) : []);
+                                if (done) {
+                                    completedRowIds.add(rid);
+                                    (row.childIds ?? []).forEach(cid => completedRowIds.add(cid));
+                                }
+                            });
                             const laborCompleted = completedRowIds.size;
+                            const laborEstimate = estimateSnapshot ? estimateSnapshot.laborRows.reduce((n, row) => n + 1 + (row.childIds?.length ?? 0), 0) : (selectedEstimate.laborItemCount ?? 0);
                             const laborCurrent = new Set(costHistory.filter(e => e.laborItemId && !e.paymentMethod?.startsWith('pahest_') && !completedRowIds.has(e.laborItemId)).map(e => e.laborItemId)).size;
                             const completedMaterialIds = new Set<string>();
                             const currentMaterialIds = new Set<string>();
@@ -1812,10 +1820,11 @@ ${tableBodyHtml}
                             });
                             const materialCompleted = [...completedMaterialIds].filter(id => !currentMaterialIds.has(id)).length;
                             const materialCurrent = currentMaterialIds.size;
+                            const materialEstimate = new Set(pahestEntries.filter(e => e.quantity > 0).map(e => e.materialItemId)).size || (selectedEstimate.materialItemCount ?? 0);
                             return (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
-                                    <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.laborItemCount ?? 0} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
-                                    <TripleParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 22 }} />} estimate={selectedEstimate.materialItemCount ?? 0} current={materialCurrent} completed={materialCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
+                                    <TripleParamCard label={t('Quantity of Labor')} icon={<EngineeringIcon sx={{ fontSize: 22 }} />} estimate={laborEstimate} current={laborCurrent} completed={laborCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
+                                    <TripleParamCard label={t('Quantity of Materials')} icon={<BuildIcon sx={{ fontSize: 22 }} />} estimate={materialEstimate} current={materialCurrent} completed={materialCompleted} subLabel='Նախահաշիվ / Ընթացիկ / Ավարտված' />
                                     <MetricCard label={t('Total Cost')} value={selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0} actualValue={actualTotal > 0 ? actualTotal : undefined} />
                                     <MetricCard label={t('Materials Cost')} value={selectedEstimate.materialTotalCost ?? 0} actualValue={actualMaterials > 0 ? actualMaterials : undefined} />
                                     <MetricCard label={t('Labor Cost')} value={selectedEstimate.laborTotalCost ?? 0} actualValue={actualLabor > 0 ? actualLabor : undefined} />
