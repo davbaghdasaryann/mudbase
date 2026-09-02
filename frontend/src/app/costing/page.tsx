@@ -36,6 +36,10 @@ import ChangeCircleOutlinedIcon from '@mui/icons-material/ChangeCircleOutlined';
 import PrecisionManufacturingOutlinedIcon from '@mui/icons-material/PrecisionManufacturingOutlined';
 import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
+import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
@@ -2107,9 +2111,15 @@ ${tableBodyHtml}
                 <DialogTitle sx={{ fontWeight: 700, color: '#3949ab' }}>Փաստաթղթեր</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5, pb: 1 }}>
-                        <Box onClick={() => {}} sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2, cursor: 'pointer', transition: 'background-color 0.15s', '&:hover': { bgcolor: 'rgba(57,73,171,0.08)' } }}>
-                            <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.7 }} />
-                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a' }}>Պahestʿi mnacord</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                            <DescriptionOutlinedIcon sx={{ fontSize: 22, color: '#3949ab', opacity: 0.7, flexShrink: 0 }} />
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Փahestʿi mnacord</Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+                                <IconButton size='small' title='PDF' sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => {}}><PictureAsPdfOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
+                                <IconButton size='small' title='Excel' sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => {}}><TableChartOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
+                                <IconButton size='small' title='Print' sx={{ color: '#546e7a', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(84,110,122,0.08)' } }} onClick={() => {}}><PrintOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
+                                <IconButton size='small' title='Download' sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => {}}><FileDownloadOutlinedIcon sx={{ fontSize: 18 }} /></IconButton>
+                            </Box>
                         </Box>
                     </Box>
                 </DialogContent>
