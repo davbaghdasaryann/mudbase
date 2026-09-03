@@ -1249,30 +1249,33 @@ export default function CostingPage() {
         }
         const rows = [...matMap.values()].map(m => ({ ...m, remaining: m.entered - m.costed }));
         const projectName = selected?.estimateName ?? '';
-        const hdr = (label: string, extra = '') => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#c8e6c9;font-size:12px;${extra}">${label}</th>`;
         const rowsHtml = rows.map((r, i) => `
             <tr style="background:${i % 2 === 0 ? '#fff' : '#f9f9f9'}">
-                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;">${i + 1}</td>
-                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;">${r.name}</td>
-                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:center;">${r.unit}</td>
-                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;">${r.entered.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
-                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;">${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
-                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:bold;">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td>${i + 1}</td>
+                <td class="left">${r.name}</td>
+                <td>${r.unit}</td>
+                <td>${r.entered.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td>${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td style="color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:bold;">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
             </tr>`).join('');
-        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;padding:24px;color:#222;}h2{margin-bottom:4px;}p.sub{color:#666;font-size:12px;margin:0 0 16px;}table{border-collapse:collapse;width:100%;font-family:'Noto Sans Armenian', Arial, sans-serif;font-size:12px;}</style></head><body>
-        <h2>Փահեստի մնացորդ</h2>
-        <p class="sub">${projectName}</p>
-        <table>
-            <thead><tr>
-                ${hdr('#', 'width:36px;')}
-                ${hdr('Անուն')}
-                ${hdr('Միավոր', 'width:60px;text-align:center;')}
-                ${hdr('Մուտագրված', 'width:110px;text-align:right;')}
-                ${hdr('Ծախսագրած', 'width:110px;text-align:right;')}
-                ${hdr('Մնացորդ', 'width:110px;text-align:right;')}
-            </tr></thead>
-            <tbody>${rowsHtml}</tbody>
-        </table></body></html>`;
+        return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Փահեստի մնացորդ</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding: 0; font-size: 12px; }
+.container { padding-top: 10px; padding-left: 10px; padding-right: 10px; }
+.lightGreen { background-color: #e2efd9; }
+.lightGray { background-color: lightgray; }
+.headerTable { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
+.headerTableName { border: 1px solid black; font-style: italic; width: 200px; padding-left: 4px; padding-right: 4px; }
+.headerTableValue { padding-left: 4px; padding-right: 4px; font-weight: bolder; }
+.estimateTable { border-collapse: collapse; width: 100%; }
+.estimateTable td, .estimateTable th { border: 1px solid black; text-align: center; padding: 4px 6px; }
+.estimateTable th { font-weight: bold; }
+.left { text-align: left !important; }</style></head><body>
+<div class="container">
+<table class="headerTable"><tr><td class="headerTableName lightGreen">Օբյեկտի անվանումը</td><td class="headerTableValue">${projectName}</td></tr></table>
+<table class="estimateTable">
+<thead><tr class="lightGray"><th>${'#'}</th><th class="left">${'Անուն'}</th><th>${'Միավոր'}</th><th>${'Մուտագրված'}</th><th>${'Ծախսագրած'}</th><th>${'Մնացորդ'}</th></tr></thead>
+<tbody>${rowsHtml}</tbody>
+</table>
+</div></body></html>`;
     };
 
     const handleWarehouseExportAs = (format: 'html' | 'word' | 'excel' | 'pdf') => {
@@ -1555,7 +1558,7 @@ export default function CostingPage() {
             ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`] as [string, string]] : []),
         ];
         const summaryHeaderHtml = summaryRows.map(([lbl, val]) =>
-            `<tr><td class="headerTableName lightGreen">${esc(lbl)}</td><td class="headerTableValue bold">${esc(val)}</td></tr>`
+            `<tr><td class="headerTableName lightGreen">Օբյեկտի անվանումը</td><td class="headerTableValue bold">${esc(val)}</td></tr>`
         ).join('');
         tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
@@ -2290,40 +2293,53 @@ ${tableBodyHtml}
                         const filtered = costHistory.filter(e => exportTypes.has(getHistoryTypeKey(e.paymentMethod ?? '', e.isSubcontractor)));
                         const includeSalary = [...exportTypes].some(k => k.startsWith('salary_'));
                         const esc = (s: string | number | undefined) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        const hdr = (label: string) => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#e0f7fa;">${esc(label)}</th>`;
-                        let html = `<table border="1" style="border-collapse:collapse;font-family:'Noto Sans Armenian', Arial, sans-serif;font-size:12px;">`;
-                        html += `<tr>${hdr(t('Action Type'))}${hdr(t('Description of Work'))}${hdr(t('Unit'))}${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}${hdr(t('Date of Creation'))}${includeSalary ? hdr(t('Note')) : ''}</tr>`;
+                        const objName = selected?.estimateName ?? '';
+                        const hdrRow = `<tr class="lightGray"><th>${t('Action Type')}</th><th class="left">${t('Description of Work')}</th><th>${t('Unit')}</th><th>${t('Quantity')}</th><th>${t('Unit Price')}</th><th>${t('Total')}</th><th>${t('Date of Creation')}</th>${includeSalary ? `<th>${t('Note')}</th>` : ''}</tr>`;
+                        let tableRows = '';
                         for (const e of filtered) {
                             const g = HISTORY_TYPE_GROUPS.find(g => g.match(e.paymentMethod ?? '', e.isSubcontractor));
                             const label = g?.label ?? '';
                             const isSalaryRow = g?.key.startsWith('salary_') ?? false;
-                            html += `<tr>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(label)}</td>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;">${esc(e.workName)}</td>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(e.unit)}</td>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${Number(e.quantity).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;">${esc(e.unitPrice.toLocaleString(undefined, { maximumFractionDigits: 0 }))}</td>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:right;font-weight:bold;">${esc(e.total.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
-                                `<td style="border:1px solid #ccc;padding:5px 8px;text-align:center;">${esc(new Date(e.addedAt).toLocaleDateString())}</td>` +
-                                (includeSalary ? `<td style="border:1px solid #ccc;padding:5px 8px;">${isSalaryRow ? esc(e.note && e.note !== 'Գործարքային' && e.note !== 'Միավոր/ժամ' ? e.note : '') : ''}</td>` : '') +
+                            tableRows += `<tr>` +
+                                `<td>${esc(label)}</td>` +
+                                `<td class="left">${esc(e.workName)}</td>` +
+                                `<td>${esc(e.unit)}</td>` +
+                                `<td>${Number(e.quantity).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>` +
+                                `<td>${esc(e.unitPrice.toLocaleString(undefined, { maximumFractionDigits: 0 }))}</td>` +
+                                `<td style="font-weight:bold;">${esc(e.total.toLocaleString(undefined, { maximumFractionDigits: 0 }))} AMD</td>` +
+                                `<td>${esc(new Date(e.addedAt).toLocaleDateString())}</td>` +
+                                (includeSalary ? `<td>${isSalaryRow ? esc(e.note && e.note !== 'Գործarqayin' && e.note !== 'Miavord/jam' ? e.note : '') : ''}</td>` : '') +
                             `</tr>`;
                         }
-                        html += '</table>';
+                        const tableHtml = `<table class="estimateTable">${hdrRow}<tbody>${tableRows}</tbody></table>`;
+                        const headerSection = `<table class="headerTable"><tr><td class="headerTableName lightGreen">Օբյեկտի անվանումը</td><td class="headerTableValue">${objName}</td></tr></table>`;
+                        const css = `body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding: 0; font-size: 12px; }
+.container { padding-top: 10px; padding-left: 10px; padding-right: 10px; }
+.lightGreen { background-color: #e2efd9; }
+.lightGray { background-color: lightgray; }
+.headerTable { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
+.headerTableName { border: 1px solid black; font-style: italic; width: 200px; padding-left: 4px; padding-right: 4px; }
+.headerTableValue { padding-left: 4px; padding-right: 4px; font-weight: bolder; }
+.estimateTable { border-collapse: collapse; width: 100%; }
+.estimateTable td, .estimateTable th { border: 1px solid black; text-align: center; padding: 4px 6px; }
+.estimateTable th { font-weight: bold; }
+.left { text-align: left !important; }`;
+                        const fontLink = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet">';
                         const fmt = exportFormat;
                         if (fmt === 'excel') {
-                            const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}</style></head><body>${html}</body></html>`;
+                            const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/><style>${css}</style></head><body><div class="container">${headerSection}${tableHtml}</div></body></html>`;
                             const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
                             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'history.xls'; a.click(); URL.revokeObjectURL(url);
                         } else if (fmt === 'html') {
                             const win = window.open('', '_blank');
-                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}</style></head><body>${html}</body></html>`); win.document.close(); }
+                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">${fontLink}<style>${css}</style></head><body><div class="container">${headerSection}${tableHtml}</div></body></html>`); win.document.close(); }
                         } else if (fmt === 'word') {
-                            const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}table{border-collapse:collapse;}td,th{font-size:9pt;}</style></head><body>${html}</body></html>`;
-                            const blob = new Blob(['﻿' + wordHtml], { type: 'application/msword' });
+                            const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>${css}td,th{font-size:9pt;}</style></head><body><div class="container">${headerSection}${tableHtml}</div></body></html>`;
+                            const blob = new Blob(['\uFEFF' + wordHtml], { type: 'application/msword' });
                             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'history.doc'; a.click(); URL.revokeObjectURL(url);
                         } else if (fmt === 'pdf') {
                             const win = window.open('', '_blank');
-                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}</style></head><body>${html}</body></html>`); win.document.close(); win.addEventListener('load', () => { setTimeout(() => win.print(), 300); }); }
+                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">${fontLink}<style>${css}</style></head><body><div class="container">${headerSection}${tableHtml}</div></body></html>`); win.document.close(); win.addEventListener('load', () => { setTimeout(() => win.print(), 300); }); }
                         }
                         setExportOpen(false);
                     }} sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
