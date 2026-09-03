@@ -1249,26 +1249,27 @@ export default function CostingPage() {
         }
         const rows = [...matMap.values()].map(m => ({ ...m, remaining: m.entered - m.costed }));
         const projectName = selected?.estimateName ?? '';
+        const hdr = (label: string, extra = '') => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#c8e6c9;font-size:12px;${extra}">${label}</th>`;
         const rowsHtml = rows.map((r, i) => `
             <tr style="background:${i % 2 === 0 ? '#fff' : '#f9f9f9'}">
-                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px">${i + 1}</td>
-                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px">${r.name}</td>
-                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:center">${r.unit}</td>
-                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:right">${r.entered.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
-                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:right">${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
-                <td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;text-align:right;color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:600">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;">${i + 1}</td>
+                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;">${r.name}</td>
+                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:center;">${r.unit}</td>
+                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;">${r.entered.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;">${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
+                <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:bold;">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
             </tr>`).join('');
-        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h2{margin-bottom:4px}p.sub{color:#666;font-size:12px;margin:0 0 16px}table{border-collapse:collapse;width:100%}th{background:#3949ab;color:#fff;padding:7px 8px;font-size:11px;border:1px solid #2c3e9e;text-align:left}th.num{text-align:right}</style></head><body>
+        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#222;}h2{margin-bottom:4px;}p.sub{color:#666;font-size:12px;margin:0 0 16px;}table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:12px;}</style></head><body>
         <h2>Փահեստի մնացորդ</h2>
         <p class="sub">${projectName}</p>
         <table>
             <thead><tr>
-                <th style="width:36px">#</th>
-                <th>Անուն</th>
-                <th style="width:60px;text-align:center">Միավոր</th>
-                <th class="num" style="width:110px">Մուտագրված</th>
-                <th class="num" style="width:110px">Ծախսագրած</th>
-                <th class="num" style="width:110px">Մնացորդ</th>
+                ${hdr('#', 'width:36px;')}
+                ${hdr('Անուն')}
+                ${hdr('Միավոր', 'width:60px;text-align:center;')}
+                ${hdr('Մուտագրված', 'width:110px;text-align:right;')}
+                ${hdr('Ծախսագրած', 'width:110px;text-align:right;')}
+                ${hdr('Մնացորդ', 'width:110px;text-align:right;')}
             </tr></thead>
             <tbody>${rowsHtml}</tbody>
         </table></body></html>`;
