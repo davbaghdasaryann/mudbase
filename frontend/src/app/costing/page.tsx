@@ -1282,7 +1282,7 @@ export default function CostingPage() {
         setWarehouseExporting(true);
         try {
             const html = buildWarehouseBalanceHtml();
-            const filename = 'pahestʿi_mnacord';
+            const filename = 'pahesti_mnacord';
             if (format === 'html') {
                 const win = window.open('', '_blank');
                 if (win) { win.document.write(html); win.document.close(); }
@@ -2223,7 +2223,7 @@ ${tableBodyHtml}
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setDocumentsOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>Cancel</Button>
+                    <Button onClick={() => setDocumentsOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                 </DialogActions>
             </Dialog>
 
