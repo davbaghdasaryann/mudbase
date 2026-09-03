@@ -1259,7 +1259,7 @@ export default function CostingPage() {
                 <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;">${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
                 <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:bold;">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
             </tr>`).join('');
-        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{'Noto Sans Armenian', Arial, sans-serif;padding:24px;color:#222;}h2{margin-bottom:4px;}p.sub{color:#666;font-size:12px;margin:0 0 16px;}table{border-collapse:collapse;width:100%;font-family:'Noto Sans Armenian', Arial, sans-serif;font-size:12px;}</style></head><body>
+        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;padding:24px;color:#222;}h2{margin-bottom:4px;}p.sub{color:#666;font-size:12px;margin:0 0 16px;}table{border-collapse:collapse;width:100%;font-family:'Noto Sans Armenian', Arial, sans-serif;font-size:12px;}</style></head><body>
         <h2>Փահեստի մնացորդ</h2>
         <p class="sub">${projectName}</p>
         <table>
