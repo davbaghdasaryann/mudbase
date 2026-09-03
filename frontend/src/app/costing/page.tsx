@@ -1259,7 +1259,7 @@ export default function CostingPage() {
                 <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;">${r.costed.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
                 <td style="border:1px solid #ccc;padding:5px 8px;font-size:12px;text-align:right;color:${r.remaining < 0 ? '#c62828' : '#2e7d32'};font-weight:bold;">${r.remaining.toLocaleString('hy-AM', { maximumFractionDigits: 3 })}</td>
             </tr>`).join('');
-        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#222;}h2{margin-bottom:4px;}p.sub{color:#666;font-size:12px;margin:0 0 16px;}table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:12px;}</style></head><body>
+        return `<!DOCTYPE html><html lang="hy"><head><meta charset="UTF-8"><title>Փահեստի մնացորդ</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{'Noto Sans Armenian', Arial, sans-serif;padding:24px;color:#222;}h2{margin-bottom:4px;}p.sub{color:#666;font-size:12px;margin:0 0 16px;}table{border-collapse:collapse;width:100%;font-family:'Noto Sans Armenian', Arial, sans-serif;font-size:12px;}</style></head><body>
         <h2>Փահեստի մնացորդ</h2>
         <p class="sub">${projectName}</p>
         <table>
@@ -2282,7 +2282,7 @@ ${tableBodyHtml}
                         const includeSalary = [...exportTypes].some(k => k.startsWith('salary_'));
                         const esc = (s: string | number | undefined) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                         const hdr = (label: string) => `<th style="border:1px solid #ccc;padding:6px 8px;font-weight:bold;background:#e0f7fa;">${esc(label)}</th>`;
-                        let html = `<table border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">`;
+                        let html = `<table border="1" style="border-collapse:collapse;font-family:'Noto Sans Armenian', Arial, sans-serif;font-size:12px;">`;
                         html += `<tr>${hdr(t('Action Type'))}${hdr(t('Description of Work'))}${hdr(t('Unit'))}${hdr(t('Quantity'))}${hdr(t('Unit Price'))}${hdr(t('Total'))}${hdr(t('Date of Creation'))}${includeSalary ? hdr(t('Note')) : ''}</tr>`;
                         for (const e of filtered) {
                             const g = HISTORY_TYPE_GROUPS.find(g => g.match(e.paymentMethod ?? '', e.isSubcontractor));
@@ -2302,19 +2302,19 @@ ${tableBodyHtml}
                         html += '</table>';
                         const fmt = exportFormat;
                         if (fmt === 'excel') {
-                            const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body>${html}</body></html>`;
+                            const full = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}</style></head><body>${html}</body></html>`;
                             const blob = new Blob([full], { type: 'application/vnd.ms-excel;charset=utf-8' });
                             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'history.xls'; a.click(); URL.revokeObjectURL(url);
                         } else if (fmt === 'html') {
                             const win = window.open('', '_blank');
-                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${html}</body></html>`); win.document.close(); }
+                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}</style></head><body>${html}</body></html>`); win.document.close(); }
                         } else if (fmt === 'word') {
-                            const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>table{border-collapse:collapse;}td,th{font-size:9pt;}</style></head><body>${html}</body></html>`;
+                            const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}table{border-collapse:collapse;}td,th{font-size:9pt;}</style></head><body>${html}</body></html>`;
                             const blob = new Blob(['﻿' + wordHtml], { type: 'application/msword' });
                             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'history.doc'; a.click(); URL.revokeObjectURL(url);
                         } else if (fmt === 'pdf') {
                             const win = window.open('', '_blank');
-                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${html}</body></html>`); win.document.close(); win.addEventListener('load', () => { setTimeout(() => win.print(), 300); }); }
+                            if (win) { win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@100..900&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans Armenian', Arial, sans-serif;}</style></head><body>${html}</body></html>`); win.document.close(); win.addEventListener('load', () => { setTimeout(() => win.print(), 300); }); }
                         }
                         setExportOpen(false);
                     }} sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}>
