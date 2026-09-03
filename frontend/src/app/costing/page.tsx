@@ -1853,7 +1853,6 @@ ${tableBodyHtml}
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 24, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 24, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
-                                { icon: <SummarizeOutlinedIcon sx={{ fontSize: 24, color: '#0288d1', opacity: 0.55 }} />, label: 'Ամփոփ հաշվարկ', onClick: () => setSummaryExportModalOpen(true), accent: '#0288d1', hoverBg: 'rgba(2,136,209,0.06)' },
                                 { icon: <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.55 }} />, label: 'Փաստաթղթեր', onClick: () => setDocumentsOpen(true), accent: '#3949ab', hoverBg: 'rgba(57,73,171,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
@@ -2198,7 +2197,6 @@ ${tableBodyHtml}
                                 <Tooltip title='PDF'><IconButton sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => handleWarehouseExportAs('pdf')}><PictureAsPdfOutlinedIcon sx={{ fontSize: 24 }} /></IconButton></Tooltip>
                             </Box>
                         </Box>
-                    </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 2, bgcolor: '#f5f5f5', borderRadius: 2, transition: 'background-color 0.15s', '&:hover': { bgcolor: '#ebebeb' } }}>
                             <SaveAltIcon sx={{ fontSize: 22, color: '#00897b', opacity: 0.7, flexShrink: 0 }} />
                             <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Ընդհանուր կատարողական</Typography>
@@ -2209,6 +2207,17 @@ ${tableBodyHtml}
                                 <Tooltip title='PDF'><IconButton sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => { setExportFormat('pdf'); setExportTypes(new Set(HISTORY_TYPE_GROUPS.filter(g => costHistory.some(e => g.match(e.paymentMethod ?? '', e.isSubcontractor))).map(g => g.key))); setExportOpen(true); setDocumentsOpen(false); }}><PictureAsPdfOutlinedIcon sx={{ fontSize: 24 }} /></IconButton></Tooltip>
                             </Box>
                         </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 2, bgcolor: '#f5f5f5', borderRadius: 2, transition: 'background-color 0.15s', '&:hover': { bgcolor: '#ebebeb' } }}>
+                            <SummarizeOutlinedIcon sx={{ fontSize: 22, color: '#0288d1', opacity: 0.7, flexShrink: 0 }} />
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#1a1a1a', flex: 1 }}>Ամփոփ հաշվարկ</Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+                                <Tooltip title='HTML'><IconButton sx={{ color: '#e65100', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(230,81,0,0.08)' } }} onClick={() => { setDocumentsOpen(false); handleSummaryExportAs('html'); }}><CodeOutlinedIcon sx={{ fontSize: 24 }} /></IconButton></Tooltip>
+                                <Tooltip title='Word'><IconButton sx={{ color: '#1565c0', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(21,101,192,0.08)' } }} onClick={() => { setDocumentsOpen(false); handleSummaryExportAs('word'); }}><ArticleOutlinedIcon sx={{ fontSize: 24 }} /></IconButton></Tooltip>
+                                <Tooltip title='Excel'><IconButton sx={{ color: '#2e7d32', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(46,125,50,0.08)' } }} onClick={() => { setDocumentsOpen(false); handleSummaryExportAs('excel'); }}><TableChartOutlinedIcon sx={{ fontSize: 24 }} /></IconButton></Tooltip>
+                                <Tooltip title='PDF'><IconButton sx={{ color: '#e53935', opacity: 0.75, '&:hover': { opacity: 1, bgcolor: 'rgba(229,57,53,0.08)' } }} onClick={() => { setDocumentsOpen(false); handleSummaryExportAs('pdf'); }}><PictureAsPdfOutlinedIcon sx={{ fontSize: 24 }} /></IconButton></Tooltip>
+                            </Box>
+                        </Box>
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={() => setDocumentsOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>Cancel</Button>
