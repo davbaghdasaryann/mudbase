@@ -108,7 +108,7 @@ export default function SchedulePage() {
                     </Box>
                 ) : (
                     <>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', my: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0, mb: 3 }}>
                         <PageButton variant='outlined' label='Create' size='large' sx={{ borderRadius: '25px', height: '40px', '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor } }} onClick={() => setDialogOpen(true)} />
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -151,36 +151,28 @@ export default function SchedulePage() {
     return (
         <PageContents title='Schedule' sx={{ pb: 1 }}>
             {/* Back + header */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
-                <IconButton size='small' onClick={() => setSelected(null)} sx={{ color: mainPrimaryColor }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1.5 }}>
+                <IconButton size='small' onClick={() => setSelected(null)} sx={{ color: mainPrimaryColor, mt: 0.3 }}>
                     <ArrowBackIcon sx={{ fontSize: 20 }} />
                 </IconButton>
-                <Box sx={{ flex: 1 }}>
+                <Box>
                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{selected.estimateName}</Typography>
                     <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af' }}>
                         {selected.createdAt ? new Date(selected.createdAt).toLocaleDateString() : ''}
                     </Typography>
+                    <Button
+                        variant='outlined'
+                        size='large'
+                        onClick={handleChooseWork}
+                        sx={{
+                            borderRadius: '25px', height: '40px', mt: 1.5, textTransform: 'none',
+                            borderColor: mainPrimaryColor, color: mainPrimaryColor,
+                            '&:hover': { bgcolor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
+                        }}
+                    >
+                        {t('Choose a work')}
+                    </Button>
                 </Box>
-            </Box>
-
-            {/* Empty detail state */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
-                <WorkOutlineIcon sx={{ fontSize: 90, color: mainPrimaryColor, opacity: 0.25 }} />
-                <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
-                    {t('No works added yet')}
-                </Typography>
-                <Button
-                    variant='outlined'
-                    size='large'
-                    onClick={handleChooseWork}
-                    sx={{
-                        borderRadius: '25px', height: '40px', mt: 1, textTransform: 'none',
-                        borderColor: mainPrimaryColor, color: mainPrimaryColor,
-                        '&:hover': { bgcolor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
-                    }}
-                >
-                    {t('Choose a work')}
-                </Button>
             </Box>
 
             {/* Works modal */}
