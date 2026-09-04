@@ -66,14 +66,6 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                     <Box sx={{ flex: 1 }}>
                         <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Փոքրածավալ շինարարական աշխատանքներ</Typography>
                     </Box>
-                    <Button
-                        size='small'
-                        startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
-                        onClick={() => setCreateOpen(true)}
-                        sx={{ borderRadius: '20px', textTransform: 'none', color: ACCENT, border: `1px solid ${ACCENT}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}
-                    >
-                        {t('Create Estimate')}
-                    </Button>
                     <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
                         <CloseIcon sx={{ fontSize: 18 }} />
                     </IconButton>
@@ -82,6 +74,16 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
             <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
             <DialogContent sx={{ p: 0, pt: 1, pl: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: 3, pt: 1.5, pb: 0.5 }}>
+                    <Button
+                        size='small'
+                        startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => setCreateOpen(true)}
+                        sx={{ borderRadius: '20px', textTransform: 'none', color: ACCENT, border: `1px solid ${ACCENT}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}
+                    >
+                        {t('Create Estimate')}
+                    </Button>
+                </Box>
                 {estimates.length === 0 ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
                         <Typography variant='body2' color='text.secondary'>{t('No estimations found')}</Typography>
