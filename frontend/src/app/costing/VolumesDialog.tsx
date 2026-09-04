@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase, Collapse,
+    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase, Collapse, Divider,
 } from '@mui/material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import CloseIcon from '@mui/icons-material/Close';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -267,10 +268,20 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
     return (
         <>
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh' } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
-                <ListAltIcon sx={{ fontSize: 22 }} />
-                Ծավալների գրանցում
+            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(230,81,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <ListAltIcon sx={{ fontSize: 20, color: '#E65100' }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Ծավալների գրանցում</Typography>
+                    </Box>
+                    <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                        <CloseIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                </Box>
             </DialogTitle>
+            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
             <DialogContent sx={{ pt: 0, pb: 1 }}>
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>

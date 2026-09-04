@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, CircularProgress, Radio, RadioGroup,
-    FormControlLabel, InputBase, IconButton, Collapse,
+    FormControlLabel, InputBase, IconButton, Collapse, Divider,
 } from '@mui/material';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -201,9 +202,9 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
         <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh' } }}
         >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1, flexShrink: 0 }}>
+            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0, flexShrink: 0 }}>
                 {selectedRow ? (
-                    <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton size='small' onClick={() => { setSelectedRow(null); setParentGroupRow(null); }} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
@@ -219,14 +220,25 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                 </Box>
                             )}
                         </Box>
-                    </>
+                        <IconButton size='small' onClick={handleClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
                 ) : (
-                    <>
-                        <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 22, flexShrink: 0 }} />
-                        Աշխատավարձի ծախսագրում
-                    </>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(21,101,192,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 20, color: '#1565c0' }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Աշխատավարձի ծախսագրում</Typography>
+                        </Box>
+                        <IconButton size='small' onClick={handleClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
                 )}
             </DialogTitle>
+            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
             <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {!selectedRow ? (

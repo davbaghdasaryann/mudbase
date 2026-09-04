@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase, Collapse,
+    Button, Box, Typography, CircularProgress, IconButton, Tooltip, InputBase, Collapse, Divider,
 } from '@mui/material';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
@@ -335,23 +336,34 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', overflow: 'hidden' } }}
         >
             {/* Dynamic title */}
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1, minHeight: 56, flexShrink: 0 }}>
+            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0, flexShrink: 0 }}>
                 {onPage2 ? (
-                    <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
                         <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: mainPrimaryColor, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {selectedRow?.laborOfferItemName || selectedRow?.catalogName}
                         </Typography>
-                    </>
+                        <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
                 ) : (
-                    <>
-                        <ShoppingCartOutlinedIcon sx={{ fontSize: 22, flexShrink: 0 }} />
-                        Նյութերի ծախսագրում
-                    </>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${mainPrimaryColor}1a`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <ShoppingCartOutlinedIcon sx={{ fontSize: 20, color: mainPrimaryColor }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Նյութերի ծախսագրում</Typography>
+                        </Box>
+                        <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
                 )}
             </DialogTitle>
+            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
             {/* Sliding content */}
             <DialogContent sx={{ p: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>

@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, Box, Typography, Table, TableHead, TableBody,
-    TableRow, TableCell, Radio, IconButton,
+    TableRow, TableCell, Radio, IconButton, Divider,
 } from '@mui/material';
 import BuildIcon from '@mui/icons-material/Build';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CloseIcon from '@mui/icons-material/Close';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { useTranslation } from 'react-i18next';
 import * as EstimatesApi from '@/api/estimate';
@@ -57,18 +58,28 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
     return (
         <>
         <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, color: '#1a1a1a', pb: 1 }}>
-                <BuildIcon sx={{ fontSize: 22 }} />
-                Փոքրածավալ շինարարական աշխատանքներ
-                <Button
-                    size='small'
-                    startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => setCreateOpen(true)}
-                    sx={{ ml: 'auto', borderRadius: '20px', textTransform: 'none', color: ACCENT, border: `1px solid ${ACCENT}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}
-                >
-                    {t('Create Estimate')}
-                </Button>
+            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(76,175,80,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <BuildIcon sx={{ fontSize: 20, color: '#4caf50' }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Փոքրածավալ շինարարական աշխատանքներ</Typography>
+                    </Box>
+                    <Button
+                        size='small'
+                        startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => setCreateOpen(true)}
+                        sx={{ borderRadius: '20px', textTransform: 'none', color: ACCENT, border: `1px solid ${ACCENT}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}
+                    >
+                        {t('Create Estimate')}
+                    </Button>
+                    <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                        <CloseIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                </Box>
             </DialogTitle>
+            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
             <DialogContent sx={{ p: 0, pt: 1, pl: 3 }}>
                 {estimates.length === 0 ? (
