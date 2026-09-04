@@ -70,6 +70,10 @@ export default function SchedulePage() {
                 </Box>
             ) : (
                 <Box>
+                    {/* Create button above estimation header */}
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+                        <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
+                    </Box>
                     {/* Estimation header */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2.5, py: 1.5, bgcolor: '#f8f9fa', borderRadius: 2, border: '1px solid #e0e0e0', mb: 2 }}>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -89,7 +93,6 @@ export default function SchedulePage() {
                         >
                             {t('Choose a work')}
                         </Button>
-                        <PageButton variant='outlined' label='Change' size='small' sx={{ borderRadius: '20px', flexShrink: 0 }} onClick={() => setDialogOpen(true)} />
                     </Box>
                 </Box>
             )}
