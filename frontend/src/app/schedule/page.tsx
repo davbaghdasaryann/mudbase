@@ -161,16 +161,22 @@ export default function SchedulePage() {
                         {selected.createdAt ? new Date(selected.createdAt).toLocaleDateString() : ''}
                     </Typography>
                 </Box>
+            </Box>
+
+            {/* Empty detail state */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+                <WorkOutlineIcon sx={{ fontSize: 90, color: mainPrimaryColor, opacity: 0.25 }} />
+                <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
+                    {t('No works added yet')}
+                </Typography>
                 <Button
                     variant='outlined'
-                    startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
+                    size='large'
                     onClick={handleChooseWork}
                     sx={{
-                        borderRadius: '20px', textTransform: 'none', fontSize: '0.82rem', px: 2,
+                        borderRadius: '25px', height: '40px', mt: 1, textTransform: 'none',
                         borderColor: mainPrimaryColor, color: mainPrimaryColor,
-                        bgcolor: 'transparent',
                         '&:hover': { bgcolor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
-                        transition: 'background-color 0.2s, color 0.2s',
                     }}
                 >
                     {t('Choose a work')}
