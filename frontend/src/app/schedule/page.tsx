@@ -230,7 +230,7 @@ export default function SchedulePage() {
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
                                         {row.laborHours != null && row.laborHours > 0 && (
                                             <>
-                                                <Tooltip title={t('Man-Hours')} placement='top' arrow>
+                                                <Tooltip title={t('Labor Time')} placement='top' arrow>
                                                     <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
                                                         {(row.quantity / row.laborHours).toFixed(2)}
                                                     </Typography>
