@@ -3,28 +3,21 @@
 import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Box, Typography, IconButton, Divider, CircularProgress,
+    Button, Box, Typography, Table, TableHead, TableBody,
+    TableRow, TableCell, Radio, IconButton, Divider,
 } from '@mui/material';
 import BuildIcon from '@mui/icons-material/Build';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { useTranslation } from 'react-i18next';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api/api';
+import { formatDate } from '@/lib/format_date';
 import CreateEstimateDialog from '../estimates/CreateEstimateDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
 
 const ACCENT = '#1565c0';
-
-interface LaborRow {
-    _id: string;
-    laborOfferItemName: string;
-    quantity: number;
-    unitSymbol?: string;
-    sectionName?: string;
-    subsectionName?: string;
-}
 
 interface Props {
     open: boolean;
@@ -35,40 +28,31 @@ interface Props {
 
 export default function SmallScaleDialog({ open, onClose, onEstimateSelected, activeEstimateId }: Props) {
     const { t } = useTranslation();
+    const [estimates, setEstimates] = useState<EstimatesApi.ApiEstimate[]>([]);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [editingEstimate, setEditingEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
-    const [worksOpen, setWorksOpen] = useState(false);
-    const [laborRows, setLaborRows] = useState<LaborRow[]>([]);
-    const [laborLoading, setLaborLoading] = useState(false);
 
     useEffect(() => {
         if (!open) {
+            setEstimates([]);
             setSelectedEstimate(null);
-            setLaborRows([]);
             return;
         }
         if (!activeEstimateId) return;
         Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: activeEstimateId } })
-            .then(est => { if (est) setSelectedEstimate(est); })
-            .catch(() => {});
+            .then(est => {
+                if (est) {
+                    setEstimates([est]);
+                    setSelectedEstimate(est);
+                }
+            }).catch(() => {});
     }, [open]); // eslint-disable-line
 
-    const handleChooseWork = async () => {
+    const handleConfirm = () => {
         if (!selectedEstimate) return;
-        setWorksOpen(true);
-        setLaborLoading(true);
-        try {
-            const rows = await Api.requestSession<LaborRow[]>({
-                command: 'estimate/fetch_labor_for_analysis',
-                args: { estimateId: String(selectedEstimate._id) },
-            });
-            setLaborRows(rows ?? []);
-        } catch {
-            setLaborRows([]);
-        } finally {
-            setLaborLoading(false);
-        }
+        onEstimateSelected(selectedEstimate);
+        onClose();
     };
 
     return (
@@ -89,9 +73,8 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
             </DialogTitle>
             <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
-            <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-                {/* Create Estimate button */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <DialogContent sx={{ p: 0, pt: 1, pl: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: 3, pt: 1.5, pb: 0.5 }}>
                     <Button
                         size='small'
                         startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
@@ -101,98 +84,70 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                         {t('Create Estimate')}
                     </Button>
                 </Box>
-
-                {/* Estimation header row */}
-                {selectedEstimate && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.5, bgcolor: '#f8f9fa', borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography sx={{ fontWeight: 600, fontSize: '0.92rem', color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {selectedEstimate.name}
-                            </Typography>
-                            {activeEstimateId && String(selectedEstimate._id) === activeEstimateId && (
-                                <Typography sx={{ fontSize: '0.72rem', color: ACCENT, fontWeight: 600, mt: 0.2 }}>({t('Active')})</Typography>
-                            )}
-                        </Box>
-                        <Button
-                            size='small'
-                            startIcon={<WorkOutlineIcon sx={{ fontSize: 16 }} />}
-                            onClick={handleChooseWork}
-                            variant='contained'
-                            sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: ACCENT, '&:hover': { bgcolor: '#0d47a1' }, px: 2, fontSize: '0.82rem', flexShrink: 0 }}
-                        >
-                            {t('Choose a work')}
-                        </Button>
-                    </Box>
-                )}
-            </DialogContent>
-
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
-            </DialogActions>
-        </Dialog>
-
-        {/* Works modal */}
-        <Dialog open={worksOpen} onClose={() => setWorksOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${ACCENT}1a`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <WorkOutlineIcon sx={{ fontSize: 20, color: ACCENT }} />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Choose a work')}</Typography>
-                        {selectedEstimate && <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.1 }}>{selectedEstimate.name}</Typography>}
-                    </Box>
-                    <IconButton size='small' onClick={() => setWorksOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
-                        <CloseIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
-            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
-
-            <DialogContent sx={{ px: 3, pt: 1.5, pb: 1 }}>
-                {laborLoading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                        <CircularProgress size={32} sx={{ color: ACCENT }} />
-                    </Box>
-                ) : laborRows.length === 0 ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                        <Typography variant='body2' color='text.secondary'>{t('No works found')}</Typography>
+                {estimates.length === 0 ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
+                        <Typography variant='body2' color='text.secondary'>{t('No estimations found')}</Typography>
                     </Box>
                 ) : (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                        {laborRows.map((row, index) => (
-                            <Box
-                                key={row._id}
-                                sx={{
-                                    display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.2,
-                                    bgcolor: index % 2 === 0 ? '#fff' : '#f8f9fa',
-                                    borderRadius: 1.5, cursor: 'pointer',
-                                    border: '1px solid transparent',
-                                    '&:hover': { bgcolor: `${ACCENT}0d`, border: `1px solid ${ACCENT}33` },
-                                }}
-                            >
-                                <Typography sx={{ fontSize: '0.72rem', color: '#aaa', fontWeight: 600, minWidth: 24 }}>{index + 1}</Typography>
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {row.laborOfferItemName}
-                                    </Typography>
-                                    {(row.sectionName || row.subsectionName) && (
-                                        <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 0.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {[row.sectionName, row.subsectionName].filter(Boolean).join(' › ')}
-                                        </Typography>
-                                    )}
-                                </Box>
-                                <Typography sx={{ fontSize: '0.82rem', color: '#555', whiteSpace: 'nowrap' }}>
-                                    {row.quantity} {row.unitSymbol}
-                                </Typography>
-                            </Box>
-                        ))}
-                    </Box>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 600, width: 60 }}>{t('No.')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('Name')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Date of Creation')}</TableCell>
+                                <TableCell sx={{ width: 60 }} />
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {estimates.map((est, index) => {
+                                const isActive = activeEstimateId && String(est._id) === activeEstimateId;
+                                return (
+                                <TableRow
+                                    key={est._id}
+                                    onClick={() => setSelectedEstimate(est)}
+                                    hover
+                                    sx={{
+                                        cursor: 'pointer',
+                                        backgroundColor: selectedEstimate?._id === est._id ? `${ACCENT}22` : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
+                                        '&.MuiTableRow-hover:hover': { backgroundColor: `${ACCENT}15 !important` },
+                                    }}
+                                >
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>
+                                        {est.name}
+                                        {isActive && <Typography component='span' sx={{ ml: 1, fontSize: '0.75rem', color: ACCENT, fontWeight: 600 }}>({t('Active')})</Typography>}
+                                    </TableCell>
+                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(est.createdAt)}</TableCell>
+                                    <TableCell align='right' sx={{ pr: 1 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                            <IconButton
+                                                size='small'
+                                                onClick={e => { e.stopPropagation(); setEditingEstimate(est); }}
+                                                sx={{ color: '#aaa', '&:hover': { color: ACCENT } }}
+                                            >
+                                                <EditOutlinedIcon fontSize='small' />
+                                            </IconButton>
+                                            <Radio
+                                                checked={selectedEstimate?._id === est._id}
+                                                size='small'
+                                                sx={{ color: ACCENT, '&.Mui-checked': { color: ACCENT } }}
+                                            />
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
                 )}
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={() => setWorksOpen(false)} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+            <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                <Button onClick={onClose} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                <Button variant='contained' disabled={!selectedEstimate} onClick={handleConfirm}
+                    sx={{ borderRadius: '20px', backgroundColor: ACCENT, '&:hover': { backgroundColor: '#0d47a1' } }}>
+                    {t('Select')}
+                </Button>
             </DialogActions>
         </Dialog>
 
@@ -201,7 +156,11 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                 onClose={() => setCreateOpen(false)}
                 onConfirm={(est) => {
                     setCreateOpen(false);
-                    if (est) setSelectedEstimate(est as EstimatesApi.ApiEstimate);
+                    if (est) {
+                        const newEst = est as EstimatesApi.ApiEstimate;
+                        setEstimates(prev => [...prev, newEst]);
+                        setSelectedEstimate(newEst);
+                    }
                 }}
             />
         )}
@@ -214,8 +173,12 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                     const id = String(editingEstimate._id);
                     setEditingEstimate(null);
                     Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: id } })
-                        .then(updated => { if (updated) setSelectedEstimate(updated); })
-                        .catch(() => {});
+                        .then(updated => {
+                            if (updated) {
+                                setEstimates(prev => prev.map(e => String(e._id) === id ? updated : e));
+                                setSelectedEstimate(prev => prev && String(prev._id) === id ? updated : prev);
+                            }
+                        }).catch(() => {});
                 }}
             />
         )}
