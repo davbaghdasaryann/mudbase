@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
-    DialogActions, IconButton, Divider, CircularProgress,
+    DialogActions, IconButton, Divider, CircularProgress, Tooltip,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -30,6 +30,7 @@ interface LaborRow {
     _id: string;
     laborOfferItemName: string;
     quantity: number;
+    laborHours?: number;
     unitSymbol?: string;
     sectionName?: string;
     subsectionName?: string;
@@ -226,9 +227,23 @@ export default function SchedulePage() {
                                             </Typography>
                                         )}
                                     </Box>
-                                    <Typography sx={{ fontSize: '0.82rem', color: '#555', whiteSpace: 'nowrap' }}>
-                                        {row.quantity} {row.unitSymbol}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
+                                        {row.laborHours != null && row.laborHours > 0 && (
+                                            <>
+                                                <Tooltip title={t('Man-Hours')} placement='top' arrow>
+                                                    <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
+                                                        {(row.quantity / row.laborHours).toFixed(2)}
+                                                    </Typography>
+                                                </Tooltip>
+                                                <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
+                                            </>
+                                        )}
+                                        <Tooltip title={t('Quantity')} placement='top' arrow>
+                                            <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
+                                                {row.quantity} {row.unitSymbol}
+                                            </Typography>
+                                        </Tooltip>
+                                    </Box>
                                     <IconButton size='small' sx={{ color: mainPrimaryColor, '&:hover': { bgcolor: `${mainPrimaryColor}15` } }}>
                                         <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                     </IconButton>
