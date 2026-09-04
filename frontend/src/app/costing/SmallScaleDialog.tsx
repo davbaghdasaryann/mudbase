@@ -157,8 +157,9 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                 onConfirm={(est) => {
                     setCreateOpen(false);
                     if (est) {
-                        onEstimateSelected(est as EstimatesApi.ApiEstimate);
-                        onClose();
+                        const newEst = est as EstimatesApi.ApiEstimate;
+                        setEstimates(prev => [...prev, newEst]);
+                        setSelectedEstimate(newEst);
                     }
                 }}
             />
