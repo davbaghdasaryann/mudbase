@@ -88,11 +88,6 @@ export default function SchedulePage() {
     if (!selected) {
         return (
             <PageContents title='Schedule' sx={{ pb: 1 }}>
-                {/* Create button */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                    <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
-                </Box>
-
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
                         <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
@@ -103,8 +98,19 @@ export default function SchedulePage() {
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
                             {t('No schedules created yet')}
                         </Typography>
+                        <PageButton
+                            variant='outlined'
+                            label='Create'
+                            size='large'
+                            sx={{ borderRadius: '25px', height: '40px', mt: 1, '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor } }}
+                            onClick={() => setDialogOpen(true)}
+                        />
                     </Box>
                 ) : (
+                    <>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <PageButton variant='contained' label='Create' size='small' sx={{ borderRadius: '25px' }} onClick={() => setDialogOpen(true)} />
+                    </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         {records.map(rec => (
                             <Box
@@ -133,6 +139,7 @@ export default function SchedulePage() {
                             </Box>
                         ))}
                     </Box>
+                    </>
                 )}
 
                 <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleCreate} />
