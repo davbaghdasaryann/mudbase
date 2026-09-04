@@ -53,7 +53,7 @@ export default function SchedulePage() {
     };
 
     return (
-        <PageContents title='Schedule' sx={{ pt: 1, pb: 1 }}>
+        <PageContents title='Schedule' sx={{ pb: 1 }}>
             {!selectedEstimate ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
                     <CalendarMonthIcon sx={{ fontSize: 90, color: mainPrimaryColor, opacity: 0.25 }} />
