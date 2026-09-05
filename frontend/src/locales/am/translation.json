@@ -567,6 +567,8 @@
   "Rename group": "Վերանվանել խումբը",
   "Delete group": "Ջնջել խումբը",
   "Add task to group": "Ավելացնել աշխատանք խմբին",
+  "Move to group": "Ավելացնել խմբում",
+  "Remove from group": "Հեռացնել խմբից",
   "Add widget to this group": "Ավելացնել վիջեթ այս խմբին",
   "No widgets in this group yet.": "Այս խմբում դեռ վիջեթներ չկան։",
   "Delete this widget group and all its widgets?": "Ջնջե՞լ վիջեթների այս խումբը և դրա բոլոր վիջեթները։",
