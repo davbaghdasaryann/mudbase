@@ -163,6 +163,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                 flexDirection: 'column',
                 flex: 1,
                 minWidth: 0,
+                overflow: 'auto',
             }}
         >
             <AppHeaderNoAppBar {...props} />
@@ -171,11 +172,10 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    flex: 1,
-                    overflow: 'auto',
                     pt: { xs: 7, md: 9 },
                     pb: 1,
                     px: { xs: 2, sm: 3, md: 4 },
+                    flex: 1,
                     ...props.sx,
                 }}
             >
@@ -190,7 +190,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                     </Button>
                 )}
 
-                <Stack direction='column' spacing={2} minHeight='100%' justifyContent='flex-start'>
+                <Stack direction='column' spacing={2} justifyContent='flex-start'>
                     {props.children}
                 </Stack>
             </Box>
