@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip, TextField,
+    Menu, MenuItem, ListItemIcon, ListItemText,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -16,6 +17,8 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
+import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
+import FolderOffOutlinedIcon from '@mui/icons-material/FolderOffOutlined';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -96,7 +99,6 @@ interface GroupDragState {
 
 type FlatRow =
     | { type: 'group'; group: ScheduleGroup; items: ScheduleItem[] }
-    | { type: 'ungrouped_header' }
     | { type: 'item'; item: ScheduleItem; groupId: string | null };
 
 function itemDuration(item: ScheduleItem): number {
@@ -161,6 +163,7 @@ export default function SchedulePage() {
     const [groups, setGroups] = useState<ScheduleGroup[]>([]);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
     const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
+    const [moveGroupMenu, setMoveGroupMenu] = useState<{ anchor: HTMLElement; itemId: string } | null>(null);
 
     // Horizontal bar drag state
     const [dragging, setDragging] = useState<DragState | null>(null);
@@ -223,11 +226,20 @@ export default function SchedulePage() {
             .finally(() => setItemsLoading(false));
     }, [selected]);
 
-    // Build flat display list for Gantt rows
+    // Build flat display list for Gantt rows: ungrouped items first, then groups
     const displayList = useMemo<FlatRow[]>(() => {
         const result: FlatRow[] = [];
-        const sortedGroups = [...groups].sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
 
+        // Ungrouped items at top (no label — they're the default state)
+        const ungroupedItems = scheduleItems
+            .filter(i => !i.groupId)
+            .sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
+        for (const item of ungroupedItems) {
+            result.push({ type: 'item', item, groupId: null });
+        }
+
+        // Groups below
+        const sortedGroups = [...groups].sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
         for (const group of sortedGroups) {
             const groupItems = scheduleItems
                 .filter(i => i.groupId === group._id)
@@ -238,17 +250,6 @@ export default function SchedulePage() {
                     result.push({ type: 'item', item, groupId: group._id });
                 }
             }
-        }
-
-        const ungroupedItems = scheduleItems
-            .filter(i => !i.groupId)
-            .sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
-
-        if (groups.length > 0) {
-            result.push({ type: 'ungrouped_header' });
-        }
-        for (const item of ungroupedItems) {
-            result.push({ type: 'item', item, groupId: null });
         }
 
         return result;
@@ -317,13 +318,13 @@ export default function SchedulePage() {
             if (!d) return;
             const deltaRows = Math.round((e.clientY - d.mouseStartY) / ROW_H);
             let newTarget = Math.max(0, Math.min(d.totalRows - 1, d.fromFlatIndex + deltaRows));
-            // Snap away from non-item rows (group headers, ungrouped header)
+            // Snap away from group header rows
             const dl = displayListRef.current;
             let attempts = 0;
             while (
                 attempts++ < d.totalRows &&
                 newTarget >= 0 && newTarget < d.totalRows &&
-                (dl[newTarget]?.type === 'group' || dl[newTarget]?.type === 'ungrouped_header')
+                dl[newTarget]?.type === 'group'
             ) {
                 const dir = newTarget >= d.fromFlatIndex ? 1 : -1;
                 const next = newTarget + dir;
@@ -357,24 +358,19 @@ export default function SchedulePage() {
             arr.splice(insertAt, 0, draggedRow);
 
             // Extract group assignments from new order
+            // Ungrouped items appear before any group header (currentGroupId starts null)
             let currentGroupId: string | null = null;
-            let afterUngroupedHeader = false;
             const groupCounters: Record<string, number> = {};
             const updates: { id: string; groupId: string | null; displayIndex: number }[] = [];
 
             for (const row of arr) {
                 if (row.type === 'group') {
                     currentGroupId = row.group._id;
-                    afterUngroupedHeader = false;
-                } else if (row.type === 'ungrouped_header') {
-                    currentGroupId = null;
-                    afterUngroupedHeader = true;
                 } else if (row.type === 'item') {
-                    const gid = (afterUngroupedHeader || !currentGroupId) ? null : currentGroupId;
-                    const key = gid ?? '__ungrouped__';
+                    const key = currentGroupId ?? '__ungrouped__';
                     const idx = groupCounters[key] ?? 0;
                     groupCounters[key] = idx + 1;
-                    updates.push({ id: row.item._id, groupId: gid, displayIndex: idx });
+                    updates.push({ id: row.item._id, groupId: currentGroupId, displayIndex: idx });
                 }
             }
 
@@ -527,6 +523,24 @@ export default function SchedulePage() {
         setGroups(prev => prev.map(g => g._id === id ? { ...g, name: trimmed } : g));
         setEditingGroup(null);
         await Api.requestSession({ command: 'schedule/group_rename', args: { id, name: trimmed } });
+    };
+
+    const handleMoveToGroup = async (itemId: string, targetGroupId: string | null) => {
+        setMoveGroupMenu(null);
+        const item = scheduleItemsRef.current.find(i => i._id === itemId);
+        if (!item) return;
+        // Compute new displayIndex at end of target group
+        const targetItems = scheduleItemsRef.current.filter(i =>
+            targetGroupId ? i.groupId === targetGroupId : !i.groupId
+        );
+        const displayIndex = targetItems.filter(i => i._id !== itemId).length;
+        setScheduleItems(prev => prev.map(i =>
+            i._id === itemId ? { ...i, groupId: targetGroupId ?? undefined, displayIndex } : i
+        ));
+        await Api.requestSession({
+            command: 'schedule/item_reorder',
+            values: { items: [{ id: itemId, groupId: targetGroupId, displayIndex }] },
+        });
     };
 
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
@@ -904,34 +918,6 @@ export default function SchedulePage() {
                                     );
                                 }
 
-                                if (row.type === 'ungrouped_header') {
-                                    return (
-                                        <Box
-                                            key='ungrouped-header'
-                                            sx={{
-                                                display: 'flex', height: ROW_H * 0.7, alignItems: 'center',
-                                                background: 'rgba(144,164,174,0.06)',
-                                                borderTop: `1px solid #b0bec540`,
-                                                borderBottom: `1px solid #b0bec520`,
-                                            }}
-                                        >
-                                            <Box sx={{
-                                                width: NAME_COL_W, flexShrink: 0,
-                                                position: 'sticky', left: 0, zIndex: 2,
-                                                background: 'rgba(144,164,174,0.06)',
-                                                height: '100%', display: 'flex', alignItems: 'center',
-                                                borderRight: `1px solid ${mainPrimaryColor}15`,
-                                                px: 2,
-                                            }}>
-                                                <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#90a4ae', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                                                    {t('Ungrouped')}
-                                                </Typography>
-                                            </Box>
-                                            <Box sx={{ flex: 1, height: '100%' }} />
-                                        </Box>
-                                    );
-                                }
-
                                 // Item row
                                 const { item, groupId } = row;
                                 const isDraggingThis = dragging?.id === item._id;
@@ -993,6 +979,23 @@ export default function SchedulePage() {
                                             }}>
                                                 {item.laborOfferItemName || '—'}
                                             </Typography>
+                                            {/* Move to group — hover-revealed, only if groups exist */}
+                                            {groups.length > 0 && (
+                                                <Tooltip title={t('Move to group')} placement='top' arrow>
+                                                    <IconButton
+                                                        className='gantt-row-delete'
+                                                        size='small'
+                                                        onClick={e => setMoveGroupMenu({ anchor: e.currentTarget, itemId: item._id })}
+                                                        sx={{
+                                                            flexShrink: 0, color: groupId ? BAR_COLORS[sortedDisplayedGroups.findIndex(g => g._id === groupId) % BAR_COLORS.length] : '#ccc',
+                                                            transition: 'opacity 0.15s',
+                                                            p: '3px',
+                                                        }}
+                                                    >
+                                                        <FolderOutlinedIcon sx={{ fontSize: 13 }} />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
                                             {/* Delete — hover-revealed */}
                                             <IconButton
                                                 className='gantt-row-delete'
@@ -1145,6 +1148,39 @@ export default function SchedulePage() {
                     <Button onClick={() => { setWorksOpen(false); setAddWorkForGroupId(undefined); }} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Move-to-group menu */}
+            <Menu
+                anchorEl={moveGroupMenu?.anchor}
+                open={Boolean(moveGroupMenu)}
+                onClose={() => setMoveGroupMenu(null)}
+                PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
+            >
+                {sortedDisplayedGroups.map((g, gi) => (
+                    <MenuItem
+                        key={g._id}
+                        selected={moveGroupMenu ? scheduleItems.find(i => i._id === moveGroupMenu.itemId)?.groupId === g._id : false}
+                        onClick={() => moveGroupMenu && handleMoveToGroup(moveGroupMenu.itemId, g._id)}
+                        sx={{ fontSize: '0.82rem', py: 0.8 }}
+                    >
+                        <ListItemIcon sx={{ minWidth: 28 }}>
+                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: BAR_COLORS[gi % BAR_COLORS.length] }} />
+                        </ListItemIcon>
+                        <ListItemText primary={g.name} primaryTypographyProps={{ fontSize: '0.82rem' }} />
+                    </MenuItem>
+                ))}
+                {moveGroupMenu && scheduleItems.find(i => i._id === moveGroupMenu.itemId)?.groupId && (
+                    <MenuItem
+                        onClick={() => moveGroupMenu && handleMoveToGroup(moveGroupMenu.itemId, null)}
+                        sx={{ fontSize: '0.82rem', py: 0.8, borderTop: '1px solid #f0f0f0', mt: 0.5 }}
+                    >
+                        <ListItemIcon sx={{ minWidth: 28 }}>
+                            <FolderOffOutlinedIcon sx={{ fontSize: 14, color: '#90a4ae' }} />
+                        </ListItemIcon>
+                        <ListItemText primary={t('Remove from group')} primaryTypographyProps={{ fontSize: '0.82rem', color: '#90a4ae' }} />
+                    </MenuItem>
+                )}
+            </Menu>
         </PageContents>
     );
 }
