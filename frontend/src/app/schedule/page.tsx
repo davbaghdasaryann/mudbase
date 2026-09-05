@@ -329,7 +329,7 @@ export default function SchedulePage() {
             ) {
                 const dir = newTarget >= d.fromFlatIndex ? 1 : -1;
                 const next = newTarget + dir;
-                if (next < 0 || next >= d.totalRows) break;
+                if (next < 0 || next >= d.totalRows || dl[next]?.type === 'group') break;
                 newTarget = next;
             }
             newTarget = Math.max(0, Math.min(d.totalRows - 1, newTarget));

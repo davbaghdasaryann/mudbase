@@ -190,7 +190,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                     </Button>
                 )}
 
-                <Stack direction='column' spacing={2} height='100%' justifyContent='flex-start'>
+                <Stack direction='column' spacing={2} minHeight='100%' justifyContent='flex-start'>
                     {props.children}
                 </Stack>
             </Box>
