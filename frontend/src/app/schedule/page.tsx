@@ -25,7 +25,7 @@ const DAY_W = 38;
 const ROW_H = 38;
 const NAME_COL_W = 280;
 const DELETE_COL_W = 40;
-const BAR_COLORS = ['#00ABBE', '#0096a8', '#00c4d4', '#007f8c', '#00d4e8', '#006a78'];
+const BAR_COLORS = ['#00ABBE', '#0097a7', '#26c6da', '#00b8cc', '#4db6c4', '#0091a5'];
 
 const MONTH_NAMES_AM = ['Հնվ', 'Փտր', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Օգս', 'Սպտ', 'Հկտ', 'Նյմ', 'Դկտ'];
 
@@ -440,10 +440,10 @@ export default function SchedulePage() {
                                         <Box key={d} sx={{
                                             width: DAY_W, flexShrink: 0, textAlign: 'center', py: 0.8,
                                             borderRight: dayNum === 1 ? `1px solid ${mainPrimaryColor}44` : dayNum % 5 === 0 ? `1px solid ${mainPrimaryColor}22` : `1px solid rgba(0,0,0,0.04)`,
-                                            color: isWeekend ? '#f87171' : dayNum % 5 === 0 || dayNum === 1 ? mainPrimaryColor : '#bbb',
+                                            color: isWeekend ? '#94a3b8' : dayNum % 5 === 0 || dayNum === 1 ? mainPrimaryColor : '#bbb',
                                             fontSize: '0.63rem',
                                             fontWeight: dayNum === 1 || dayNum % 5 === 0 ? 700 : 400,
-                                            bgcolor: isWeekend ? 'rgba(248,113,113,0.06)' : 'transparent',
+                                            bgcolor: isWeekend ? 'rgba(148,163,184,0.07)' : 'transparent',
                                         }}>
                                             {show ? dayNum : ''}
                                         </Box>
@@ -477,7 +477,7 @@ export default function SchedulePage() {
                                                 const dayNum = date.getDate();
                                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                                                 return (
-                                                    <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: 1, background: dayNum === 1 ? `${mainPrimaryColor}44` : isWeekend ? 'rgba(248,113,113,0.15)' : dayNum % 5 === 0 ? `${mainPrimaryColor}20` : 'rgba(0,0,0,0.03)' }} />
+                                                    <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: dayNum === 1 ? `${mainPrimaryColor}30` : isWeekend ? 'rgba(148,163,184,0.08)' : dayNum % 5 === 0 ? `${mainPrimaryColor}15` : 'rgba(0,0,0,0.025)', zIndex: 0 }} />
                                                 );
                                             })}
                                             <Tooltip title={tooltipLabel} placement='top' arrow>
