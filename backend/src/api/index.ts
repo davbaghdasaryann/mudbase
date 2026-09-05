@@ -76,6 +76,7 @@ export * from "./schedule/schedule_item_add";
 export * from "./schedule/schedule_item_fetch_all";
 export * from "./schedule/schedule_item_delete";
 export * from "./schedule/schedule_item_update";
+export * from "./schedule/schedule_item_reorder";
 export * from "./schedule/schedule_update_start_date";
 export * from "./costing/costing_fetch";
 export * from "./costing/costing_save";

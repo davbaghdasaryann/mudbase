@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip,
@@ -12,6 +12,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -24,10 +25,9 @@ import { mainPrimaryColor } from '@/theme';
 const DAY_W = 38;
 const ROW_H = 38;
 const NAME_COL_W = 280;
-const DELETE_COL_W = 40;
 const BAR_COLORS = ['#00ABBE', '#0097a7', '#26c6da', '#00b8cc', '#4db6c4', '#0091a5'];
 
-const MONTH_NAMES_AM = ['Հնվ', 'Փտր', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Օգս', 'Սպտ', 'Հկտ', 'Նյմ', 'Դկտ'];
+const MONTH_NAMES_AM = ['Հնվ', 'Փտր', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Օгс', 'Սпт', 'Հкт', 'Нйм', 'Дкт'];
 
 interface ScheduleRecord {
     _id: string;
@@ -65,6 +65,14 @@ interface DragState {
     mouseStartX: number;
 }
 
+interface RowDragState {
+    id: string;
+    fromIndex: number;
+    toIndex: number;
+    mouseStartY: number;
+    maxIndex: number;
+}
+
 function itemDuration(item: ScheduleItem): number {
     const lh = item.laborHours ?? 0;
     const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
@@ -81,11 +89,6 @@ function toDateInputValue(date: Date): string {
     return date.toISOString().slice(0, 10);
 }
 
-function formatDayLabel(date: Date): string {
-    return String(date.getDate());
-}
-
-// Build month groups for the header
 interface MonthGroup {
     label: string;
     dayCount: number;
@@ -99,7 +102,6 @@ function buildMonthGroups(startDate: Date, totalDays: number): MonthGroup[] {
         const month = current.getMonth();
         const year = current.getFullYear();
         const label = `${MONTH_NAMES_AM[month]} ${year}`;
-        // Count days in this month from current date
         let count = 0;
         while (remaining > 0 && current.getMonth() === month) {
             count++;
@@ -128,9 +130,17 @@ export default function SchedulePage() {
     const [itemsLoading, setItemsLoading] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
 
+    // Horizontal bar drag state
     const [dragging, setDragging] = useState<DragState | null>(null);
     const draggingRef = useRef<DragState | null>(null);
     draggingRef.current = dragging;
+
+    // Vertical row reorder drag state
+    const [rowDragging, setRowDragging] = useState<RowDragState | null>(null);
+    const rowDraggingRef = useRef<RowDragState | null>(null);
+    rowDraggingRef.current = rowDragging;
+    const scheduleItemsRef = useRef<ScheduleItem[]>([]);
+    scheduleItemsRef.current = scheduleItems;
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,7 +177,7 @@ export default function SchedulePage() {
             .finally(() => setItemsLoading(false));
     }, [selected]);
 
-    // Global drag handlers
+    // Horizontal bar drag
     useEffect(() => {
         if (!dragging) return;
         const onMove = (e: MouseEvent) => {
@@ -194,6 +204,46 @@ export default function SchedulePage() {
             window.removeEventListener('mouseup', onUp);
         };
     }, [dragging]);
+
+    // Vertical row reorder drag
+    useEffect(() => {
+        if (!rowDragging) return;
+        document.body.style.cursor = 'grabbing';
+        const onMove = (e: MouseEvent) => {
+            const d = rowDraggingRef.current;
+            if (!d) return;
+            const deltaRows = Math.round((e.clientY - d.mouseStartY) / ROW_H);
+            const newToIndex = Math.max(0, Math.min(d.maxIndex, d.fromIndex + deltaRows));
+            if (newToIndex !== d.toIndex) setRowDragging(prev => prev ? { ...prev, toIndex: newToIndex } : null);
+        };
+        const onUp = async () => {
+            const d = rowDraggingRef.current;
+            if (!d) return;
+            const arr = [...scheduleItemsRef.current];
+            const [item] = arr.splice(d.fromIndex, 1);
+            arr.splice(d.toIndex, 0, item);
+            setScheduleItems(arr);
+            setRowDragging(null);
+            document.body.style.cursor = '';
+            await Api.requestSession({ command: 'schedule/item_reorder', values: { ids: arr.map(i => i._id) } });
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        return () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            document.body.style.cursor = '';
+        };
+    }, [rowDragging]);
+
+    // Live-reorder items during row drag
+    const displayedItems = useMemo(() => {
+        if (!rowDragging || rowDragging.fromIndex === rowDragging.toIndex) return scheduleItems;
+        const arr = [...scheduleItems];
+        const [item] = arr.splice(rowDragging.fromIndex, 1);
+        arr.splice(rowDragging.toIndex, 0, item);
+        return arr;
+    }, [scheduleItems, rowDragging]);
 
     const handleCreate = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -262,8 +312,15 @@ export default function SchedulePage() {
     };
 
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
+        if (rowDragging) return;
         e.preventDefault();
         setDragging({ id: item._id, origStart: item.startDay, currentStart: item.startDay, mouseStartX: e.clientX });
+    };
+
+    const handleRowDragStart = (e: React.MouseEvent, item: ScheduleItem, index: number) => {
+        if (dragging) return;
+        e.preventDefault();
+        setRowDragging({ id: item._id, fromIndex: index, toIndex: index, mouseStartY: e.clientY, maxIndex: scheduleItems.length - 1 });
     };
 
     const handleStartDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -360,7 +417,6 @@ export default function SchedulePage() {
                 </IconButton>
                 <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{selected.estimateName}</Typography>
-                    {/* Clickable start date */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
                         <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af' }}>{t('Start')}:</Typography>
                         <Box
@@ -409,7 +465,7 @@ export default function SchedulePage() {
                     userSelect: 'none',
                 }}>
                     <Box sx={{ overflowX: 'auto' }}>
-                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W + DELETE_COL_W }}>
+                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
 
                             {/* Month header row */}
                             <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.97)', borderBottom: `1px solid ${mainPrimaryColor}18` }}>
@@ -421,7 +477,6 @@ export default function SchedulePage() {
                                         </Typography>
                                     </Box>
                                 ))}
-                                <Box sx={{ width: DELETE_COL_W, flexShrink: 0 }} />
                             </Box>
 
                             {/* Day number header row */}
@@ -449,28 +504,84 @@ export default function SchedulePage() {
                                         </Box>
                                     );
                                 })}
-                                <Box sx={{ width: DELETE_COL_W, flexShrink: 0 }} />
                             </Box>
 
                             {/* Item rows */}
-                            {scheduleItems.map((item, ri) => {
+                            {displayedItems.map((item, ri) => {
                                 const isDraggingThis = dragging?.id === item._id;
+                                const isRowDraggingThis = rowDragging?.id === item._id;
                                 const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[ri % BAR_COLORS.length];
                                 const startOffset = (startDay - 1) * DAY_W;
                                 const barWidth = duration * DAY_W - 3;
-                                const rowBg = ri % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
+                                const rowBg = isRowDraggingThis
+                                    ? `rgba(0,171,190,0.06)`
+                                    : ri % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
                                 const startDate = addDays(projectStartDate, startDay - 1);
                                 const endDate = addDays(projectStartDate, startDay + duration - 2);
                                 const tooltipLabel = `${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
                                 return (
-                                    <Box key={item._id} sx={{ display: 'flex', height: ROW_H, alignItems: 'center', background: rowBg, borderBottom: `1px solid ${mainPrimaryColor}08`, '&:hover': { background: `rgba(0,171,190,0.04)` } }}>
-                                        <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, position: 'sticky', left: 0, zIndex: 2, background: rowBg, height: '100%', display: 'flex', alignItems: 'center', borderRight: `1px solid ${mainPrimaryColor}18` }}>
-                                            <Typography variant='caption' sx={{ color: '#444', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <Box
+                                        key={item._id}
+                                        sx={{
+                                            display: 'flex', height: ROW_H, alignItems: 'center',
+                                            background: rowBg,
+                                            borderBottom: `1px solid ${mainPrimaryColor}08`,
+                                            opacity: isRowDraggingThis ? 0.55 : 1,
+                                            transition: isRowDraggingThis ? 'none' : 'opacity 0.1s',
+                                            '& .gantt-row-delete': { opacity: 0 },
+                                            '&:hover .gantt-row-delete': { opacity: 1 },
+                                            '&:hover': { background: isRowDraggingThis ? rowBg : `rgba(0,171,190,0.04)` },
+                                        }}
+                                    >
+                                        {/* Sticky name column */}
+                                        <Box sx={{
+                                            width: NAME_COL_W, flexShrink: 0,
+                                            position: 'sticky', left: 0, zIndex: 2,
+                                            background: rowBg, height: '100%',
+                                            display: 'flex', alignItems: 'center',
+                                            borderRight: `1px solid ${mainPrimaryColor}18`,
+                                            overflow: 'hidden',
+                                            pl: 0.5, pr: 0.5,
+                                        }}>
+                                            {/* Drag handle */}
+                                            <Box
+                                                onMouseDown={e => handleRowDragStart(e, item, ri)}
+                                                sx={{
+                                                    display: 'flex', alignItems: 'center', flexShrink: 0,
+                                                    color: '#ccc', cursor: 'grab', px: 0.25,
+                                                    '&:hover': { color: '#aaa' },
+                                                    ...(isRowDraggingThis ? { cursor: 'grabbing', color: mainPrimaryColor } : {}),
+                                                }}
+                                            >
+                                                <DragIndicatorIcon sx={{ fontSize: 16 }} />
+                                            </Box>
+                                            {/* Name */}
+                                            <Typography variant='caption' sx={{
+                                                color: '#444', fontSize: '0.75rem',
+                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                flex: 1, mx: 0.75,
+                                            }}>
                                                 {item.laborOfferItemName || '—'}
                                             </Typography>
+                                            {/* Delete — hover-revealed */}
+                                            <IconButton
+                                                className='gantt-row-delete'
+                                                size='small'
+                                                onClick={() => handleDeleteItem(item._id)}
+                                                sx={{
+                                                    flexShrink: 0, color: '#ccc',
+                                                    transition: 'opacity 0.15s, color 0.15s',
+                                                    '&:hover': { color: '#e53935' },
+                                                    p: '3px',
+                                                }}
+                                            >
+                                                <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+                                            </IconButton>
                                         </Box>
+
+                                        {/* Bar area */}
                                         <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
                                             {days.map(d => {
                                                 const date = addDays(projectStartDate, d - 1);
@@ -504,11 +615,6 @@ export default function SchedulePage() {
                                                     </Typography>
                                                 </Box>
                                             </Tooltip>
-                                        </Box>
-                                        <Box sx={{ width: DELETE_COL_W, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <IconButton size='small' onClick={() => handleDeleteItem(item._id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
-                                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                                            </IconButton>
                                         </Box>
                                     </Box>
                                 );

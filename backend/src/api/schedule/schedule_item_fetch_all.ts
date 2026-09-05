@@ -9,7 +9,7 @@ registerApiSession('schedule/item_fetch_all', async (req, res, session) => {
     const col = Db.getScheduleItemsCollection();
     const items = await col
         .find({ scheduleId: new ObjectId(scheduleId), accountId: session.mongoAccountId })
-        .sort({ createdAt: 1 })
+        .sort({ displayIndex: 1, createdAt: 1 })
         .toArray();
     respondJsonData(res, items);
 });

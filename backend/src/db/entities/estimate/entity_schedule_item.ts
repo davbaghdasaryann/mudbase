@@ -11,6 +11,7 @@ export interface EntityScheduleItem {
     sectionName?: string;
     subsectionName?: string;
     startDay?: number;
+    displayIndex?: number;
     createdAt?: Date;
 }
 

@@ -16,6 +16,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
     const startDay = startDayParam ? parseInt(startDayParam) : 1;
 
     const col = Db.getScheduleItemsCollection();
+    const displayIndex = await col.countDocuments({ scheduleId: new ObjectId(scheduleId), accountId: session.mongoAccountId });
     const doc: Db.EntityScheduleItem = {
         scheduleId: new ObjectId(scheduleId),
         accountId: session.mongoAccountId,
@@ -26,6 +27,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         sectionName,
         subsectionName,
         startDay,
+        displayIndex,
         createdAt: new Date(),
     };
     const result = await col.insertOne(doc);
