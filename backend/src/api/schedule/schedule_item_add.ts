@@ -14,9 +14,18 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
     const subsectionName = getQueryParam(req, 'subsectionName') ?? '';
     const startDayParam = getQueryParam(req, 'startDay');
     const startDay = startDayParam ? parseInt(startDayParam) : 1;
+    const groupIdParam = getQueryParam(req, 'groupId');
 
     const col = Db.getScheduleItemsCollection();
-    const displayIndex = await col.countDocuments({ scheduleId: new ObjectId(scheduleId), accountId: session.mongoAccountId });
+    const groupFilter = groupIdParam
+        ? { groupId: new ObjectId(groupIdParam) }
+        : { groupId: { $exists: false } };
+    const displayIndex = await col.countDocuments({
+        scheduleId: new ObjectId(scheduleId),
+        accountId: session.mongoAccountId,
+        ...groupFilter,
+    });
+
     const doc: Db.EntityScheduleItem = {
         scheduleId: new ObjectId(scheduleId),
         accountId: session.mongoAccountId,
@@ -28,6 +37,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         subsectionName,
         startDay,
         displayIndex,
+        ...(groupIdParam ? { groupId: new ObjectId(groupIdParam) } : {}),
         createdAt: new Date(),
     };
     const result = await col.insertOne(doc);
