@@ -19,6 +19,11 @@ import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
 
+const DAY_W = 38;
+const ROW_H = 38;
+const NAME_COL_W = 280;
+const BAR_COLORS = ['#00ABBE', '#0096a8', '#00c4d4', '#007f8c', '#00d4e8', '#006a78'];
+
 interface ScheduleRecord {
     _id: string;
     estimateId: string;
@@ -36,15 +41,32 @@ interface LaborRow {
     subsectionName?: string;
 }
 
+interface ScheduleItem {
+    _id: string;
+    laborOfferItemName: string;
+    quantity: number;
+    laborHours?: number;
+    unitSymbol?: string;
+    sectionName?: string;
+    subsectionName?: string;
+}
+
 export default function SchedulePage() {
     const { t } = useTranslation();
     const [records, setRecords] = useState<ScheduleRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<ScheduleRecord | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+
+    // Labor modal state
     const [worksOpen, setWorksOpen] = useState(false);
     const [laborRows, setLaborRows] = useState<LaborRow[]>([]);
     const [laborLoading, setLaborLoading] = useState(false);
+
+    // Schedule items (added works) state
+    const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
+    const [itemsLoading, setItemsLoading] = useState(false);
+    const [addingId, setAddingId] = useState<string | null>(null);
 
     useEffect(() => {
         Api.requestSession<ScheduleRecord[]>({ command: 'schedule/fetch_all', args: {} })
@@ -52,6 +74,16 @@ export default function SchedulePage() {
             .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
+
+    // Fetch schedule items when entering detail view
+    useEffect(() => {
+        if (!selected) { setScheduleItems([]); return; }
+        setItemsLoading(true);
+        Api.requestSession<ScheduleItem[]>({ command: 'schedule/item_fetch_all', args: { scheduleId: selected._id } })
+            .then(data => setScheduleItems(data ?? []))
+            .catch(() => {})
+            .finally(() => setItemsLoading(false));
+    }, [selected]);
 
     const handleCreate = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -83,6 +115,33 @@ export default function SchedulePage() {
         } finally {
             setLaborLoading(false);
         }
+    };
+
+    const handleAddItem = async (row: LaborRow) => {
+        if (!selected || addingId === row._id) return;
+        setAddingId(row._id);
+        try {
+            const created = await Api.requestSession<ScheduleItem>({
+                command: 'schedule/item_add',
+                args: {
+                    scheduleId: selected._id,
+                    laborOfferItemName: row.laborOfferItemName,
+                    quantity: row.quantity,
+                    laborHours: row.laborHours ?? 0,
+                    unitSymbol: row.unitSymbol ?? '',
+                    sectionName: row.sectionName ?? '',
+                    subsectionName: row.subsectionName ?? '',
+                },
+            });
+            if (created) setScheduleItems(prev => [...prev, created]);
+        } finally {
+            setAddingId(null);
+        }
+    };
+
+    const handleDeleteItem = async (id: string) => {
+        await Api.requestSession({ command: 'schedule/item_delete', args: { id } });
+        setScheduleItems(prev => prev.filter(i => i._id !== id));
     };
 
     // ── LIST VIEW ─────────────────────────────────────────────────────────────
@@ -142,17 +201,29 @@ export default function SchedulePage() {
                     </Box>
                     </>
                 )}
-
                 <ChooseEstimationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSelect={handleCreate} />
             </PageContents>
         );
     }
 
     // ── DETAIL VIEW ───────────────────────────────────────────────────────────
+    // Build Gantt rows
+    let currentDay = 1;
+    const ganttRows = scheduleItems.map((item, i) => {
+        const lh = item.laborHours ?? 0;
+        const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
+        const duration = Math.max(1, Math.ceil(hours / 8));
+        const start = currentDay;
+        currentDay += duration;
+        return { item, start, duration, colorIndex: i };
+    });
+    const totalDays = Math.max(currentDay - 1, 1);
+    const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+
     return (
         <PageContents title='Schedule' sx={{ pb: 1 }}>
             {/* Back + header */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
                 <IconButton size='small' onClick={() => setSelected(null)} sx={{ color: mainPrimaryColor, mt: 0.3 }}>
                     <ArrowBackIcon sx={{ fontSize: 20 }} />
                 </IconButton>
@@ -175,6 +246,76 @@ export default function SchedulePage() {
                     </Button>
                 </Box>
             </Box>
+
+            {/* Gantt table */}
+            {itemsLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                    <CircularProgress size={28} sx={{ color: mainPrimaryColor }} />
+                </Box>
+            ) : scheduleItems.length > 0 && (
+                <Box sx={{
+                    background: 'rgba(255,255,255,0.72)',
+                    border: '1px solid rgba(0,171,190,0.18)',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                }}>
+                    {/* Scrollable area */}
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W + 40 }}>
+
+                            {/* Day header */}
+                            <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
+                                <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, py: 1, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }}>
+                                    <Typography variant='caption' sx={{ color: mainPrimaryColor, fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                                        {t('Task')}
+                                    </Typography>
+                                </Box>
+                                {days.map(d => (
+                                    <Box key={d} sx={{ width: DAY_W, flexShrink: 0, textAlign: 'center', py: 1, borderRight: d % 5 === 0 ? `1px solid ${mainPrimaryColor}33` : `1px solid rgba(0,0,0,0.04)`, color: d % 5 === 0 ? mainPrimaryColor : '#bbb', fontSize: '0.63rem', fontWeight: d % 5 === 0 ? 700 : 400 }}>
+                                        {d % 5 === 0 || d === 1 ? d : ''}
+                                    </Box>
+                                ))}
+                                <Box sx={{ width: 40, flexShrink: 0 }} />
+                            </Box>
+
+                            {/* Item rows */}
+                            {ganttRows.map(({ item, start, duration, colorIndex }, ri) => {
+                                const barColor = BAR_COLORS[colorIndex % BAR_COLORS.length];
+                                const startOffset = (start - 1) * DAY_W;
+                                const barWidth = duration * DAY_W - 3;
+                                const rowBg = ri % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
+                                return (
+                                    <Box key={item._id} sx={{ display: 'flex', height: ROW_H, alignItems: 'center', background: rowBg, borderBottom: `1px solid ${mainPrimaryColor}08`, '&:hover': { background: `rgba(0,171,190,0.04)` } }}>
+                                        {/* Sticky name */}
+                                        <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, position: 'sticky', left: 0, zIndex: 2, background: rowBg, height: '100%', display: 'flex', alignItems: 'center', borderRight: `1px solid ${mainPrimaryColor}18` }}>
+                                            <Typography variant='caption' sx={{ color: '#444', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {item.laborOfferItemName || '—'}
+                                            </Typography>
+                                        </Box>
+                                        {/* Bar area */}
+                                        <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
+                                            {days.map(d => (
+                                                <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: 1, background: d % 5 === 0 ? `${mainPrimaryColor}25` : 'rgba(0,0,0,0.035)' }} />
+                                            ))}
+                                            <Box sx={{ position: 'absolute', left: startOffset + 2, top: 6, height: ROW_H - 12, width: barWidth, background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`, borderRadius: '5px', display: 'flex', alignItems: 'center', px: 1, overflow: 'hidden', boxShadow: `0 2px 8px ${barColor}55` }}>
+                                                <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                                    {duration}d
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        {/* Delete */}
+                                        <Box sx={{ width: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <IconButton size='small' onClick={() => handleDeleteItem(item._id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                                            </IconButton>
+                                        </Box>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                    </Box>
+                </Box>
+            )}
 
             {/* Works modal */}
             <Dialog open={worksOpen} onClose={() => setWorksOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
@@ -244,8 +385,16 @@ export default function SchedulePage() {
                                             </Typography>
                                         </Tooltip>
                                     </Box>
-                                    <IconButton size='small' sx={{ color: mainPrimaryColor, '&:hover': { bgcolor: `${mainPrimaryColor}15` } }}>
-                                        <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
+                                    <IconButton
+                                        size='small'
+                                        onClick={() => handleAddItem(row)}
+                                        disabled={addingId === row._id}
+                                        sx={{ color: mainPrimaryColor, '&:hover': { bgcolor: `${mainPrimaryColor}15` } }}
+                                    >
+                                        {addingId === row._id
+                                            ? <CircularProgress size={16} sx={{ color: mainPrimaryColor }} />
+                                            : <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
+                                        }
                                     </IconButton>
                                 </Box>
                             ))}

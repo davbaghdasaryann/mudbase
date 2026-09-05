@@ -6,4 +6,5 @@ export * from './entity_estimates';
 export * from './entity_performance_act';
 export * from './entity_costing';
 export * from './entity_schedule';
+export * from './entity_schedule_item';
 export * from './offers';
