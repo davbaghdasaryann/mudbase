@@ -322,7 +322,7 @@ export default function SchedulePage() {
                                             ))}
                                             <Box sx={{ position: 'absolute', left: startOffset + 2, top: 6, height: ROW_H - 12, width: barWidth, background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`, borderRadius: '5px', display: 'flex', alignItems: 'center', px: 1, overflow: 'hidden', boxShadow: `0 2px 8px ${barColor}55` }}>
                                                 <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                                    {duration}d
+                                                    {duration}{t('day_short')}
                                                 </Typography>
                                             </Box>
                                         </Box>
