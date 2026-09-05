@@ -411,8 +411,8 @@ export default function SchedulePage() {
     return (
         <PageContents title='Schedule' sx={{ pb: 1 }}>
             {/* Back + header */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
-                <IconButton size='small' onClick={() => selectRecord(null)} sx={{ color: mainPrimaryColor, mt: 0.3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                <IconButton size='small' onClick={() => selectRecord(null)} sx={{ color: mainPrimaryColor }}>
                     <ArrowBackIcon sx={{ fontSize: 20 }} />
                 </IconButton>
                 <Box sx={{ flex: 1 }}>
@@ -436,19 +436,20 @@ export default function SchedulePage() {
                             style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
                         />
                     </Box>
-                    <Button
-                        variant='outlined'
-                        size='large'
-                        onClick={handleChooseWork}
-                        sx={{
-                            borderRadius: '25px', height: '40px', mt: 1.5, textTransform: 'none',
-                            borderColor: mainPrimaryColor, color: mainPrimaryColor,
-                            '&:hover': { bgcolor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
-                        }}
-                    >
-                        {t('Choose a work')}
-                    </Button>
                 </Box>
+                <Button
+                    variant='outlined'
+                    size='medium'
+                    startIcon={<WorkOutlineIcon sx={{ fontSize: 18 }} />}
+                    onClick={handleChooseWork}
+                    sx={{
+                        borderRadius: '25px', height: '38px', textTransform: 'none', flexShrink: 0,
+                        borderColor: mainPrimaryColor, color: mainPrimaryColor,
+                        '&:hover': { bgcolor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
+                    }}
+                >
+                    {t('Choose a work')}
+                </Button>
             </Box>
 
             {/* Gantt table */}
