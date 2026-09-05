@@ -163,7 +163,6 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                 flexDirection: 'column',
                 flex: 1,
                 minWidth: 0,
-                overflow: 'auto',
             }}
         >
             <AppHeaderNoAppBar {...props} />
@@ -172,10 +171,11 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
+                    flex: 1,
+                    overflow: 'auto',
                     pt: { xs: 7, md: 9 },
                     pb: 1,
                     px: { xs: 2, sm: 3, md: 4 },
-                    flex: 1,
                     ...props.sx,
                 }}
             >
