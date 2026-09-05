@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip,
@@ -13,8 +13,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -72,8 +70,7 @@ interface RowDragState {
     fromIndex: number;
     toIndex: number;
     mouseStartY: number;
-    sectionMin: number;
-    sectionMax: number;
+    maxIndex: number;
 }
 
 function itemDuration(item: ScheduleItem): number {
@@ -216,7 +213,7 @@ export default function SchedulePage() {
             const d = rowDraggingRef.current;
             if (!d) return;
             const deltaRows = Math.round((e.clientY - d.mouseStartY) / ROW_H);
-            const newToIndex = Math.max(d.sectionMin, Math.min(d.sectionMax, d.fromIndex + deltaRows));
+            const newToIndex = Math.max(0, Math.min(d.maxIndex, d.fromIndex + deltaRows));
             if (newToIndex !== d.toIndex) setRowDragging(prev => prev ? { ...prev, toIndex: newToIndex } : null);
         };
         const onUp = async () => {
@@ -239,13 +236,6 @@ export default function SchedulePage() {
         };
     }, [rowDragging]);
 
-    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
-    const toggleSection = (key: string) => setCollapsedSections(prev => {
-        const next = new Set(prev);
-        next.has(key) ? next.delete(key) : next.add(key);
-        return next;
-    });
-
     // Live-reorder items during row drag
     const displayedItems = useMemo(() => {
         if (!rowDragging || rowDragging.fromIndex === rowDragging.toIndex) return scheduleItems;
@@ -254,18 +244,6 @@ export default function SchedulePage() {
         arr.splice(rowDragging.toIndex, 0, item);
         return arr;
     }, [scheduleItems, rowDragging]);
-
-    // Group items by section for rendering
-    const sectionGroups = useMemo(() => {
-        const map = new Map<string, { items: ScheduleItem[]; flatIndices: number[] }>();
-        displayedItems.forEach((item, ri) => {
-            const key = item.sectionName || '—';
-            if (!map.has(key)) map.set(key, { items: [], flatIndices: [] });
-            map.get(key)!.items.push(item);
-            map.get(key)!.flatIndices.push(ri);
-        });
-        return Array.from(map.entries()).map(([sectionName, data]) => ({ sectionName, ...data }));
-    }, [displayedItems]);
 
     const handleCreate = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -339,16 +317,10 @@ export default function SchedulePage() {
         setDragging({ id: item._id, origStart: item.startDay, currentStart: item.startDay, mouseStartX: e.clientX });
     };
 
-    const handleRowDragStart = (e: React.MouseEvent, item: ScheduleItem, flatIndex: number) => {
+    const handleRowDragStart = (e: React.MouseEvent, item: ScheduleItem, index: number) => {
         if (dragging) return;
         e.preventDefault();
-        const sectionKey = item.sectionName || '—';
-        const sectionIndices = scheduleItems
-            .map((si, idx) => (si.sectionName || '—') === sectionKey ? idx : -1)
-            .filter(i => i >= 0);
-        const sectionMin = Math.min(...sectionIndices);
-        const sectionMax = Math.max(...sectionIndices);
-        setRowDragging({ id: item._id, fromIndex: flatIndex, toIndex: flatIndex, mouseStartY: e.clientY, sectionMin, sectionMax });
+        setRowDragging({ id: item._id, fromIndex: index, toIndex: index, mouseStartY: e.clientY, maxIndex: scheduleItems.length - 1 });
     };
 
     const handleStartDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -535,99 +507,117 @@ export default function SchedulePage() {
                                 })}
                             </Box>
 
-                            {/* Grouped item rows */}
-                            {sectionGroups.map(({ sectionName, items, flatIndices }) => {
-                                const isCollapsed = collapsedSections.has(sectionName);
-                                const sectionMinDay = items.reduce((min, item) => {
-                                    const sd = dragging?.id === item._id ? dragging.currentStart : (item.startDay ?? 1);
-                                    return Math.min(min, sd);
-                                }, Infinity);
-                                const sectionMaxDay = items.reduce((max, item) => {
-                                    const sd = dragging?.id === item._id ? dragging.currentStart : (item.startDay ?? 1);
-                                    return Math.max(max, sd + itemDuration(item) - 1);
-                                }, 0);
-                                const sectionBarLeft = (sectionMinDay - 1) * DAY_W;
-                                const sectionBarWidth = (sectionMaxDay - sectionMinDay + 1) * DAY_W - 4;
+                            {/* Item rows */}
+                            {displayedItems.map((item, ri) => {
+                                const isDraggingThis = dragging?.id === item._id;
+                                const isRowDraggingThis = rowDragging?.id === item._id;
+                                const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
+                                const duration = itemDuration(item);
+                                const barColor = BAR_COLORS[ri % BAR_COLORS.length];
+                                const startOffset = (startDay - 1) * DAY_W;
+                                const barWidth = duration * DAY_W - 3;
+                                const rowBg = isRowDraggingThis
+                                    ? `rgba(0,171,190,0.06)`
+                                    : ri % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
+                                const startDate = addDays(projectStartDate, startDay - 1);
+                                const endDate = addDays(projectStartDate, startDay + duration - 2);
+                                const tooltipLabel = `${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
                                 return (
-                                    <React.Fragment key={`section-${sectionName}`}>
-                                        {/* Section header */}
-                                        <Box sx={{ display: 'flex', height: 30, alignItems: 'center', background: `rgba(0,171,190,0.055)`, borderBottom: `1px solid ${mainPrimaryColor}22` }}>
-                                            <Box sx={{ width: NAME_COL_W, flexShrink: 0, pl: 0.5, pr: 1, position: 'sticky', left: 0, zIndex: 2, background: `rgba(0,171,190,0.055)`, height: '100%', display: 'flex', alignItems: 'center', borderRight: `1px solid ${mainPrimaryColor}22`, gap: 0.5 }}>
-                                                <IconButton size='small' onClick={() => toggleSection(sectionName)} sx={{ p: '2px', color: mainPrimaryColor, flexShrink: 0 }}>
-                                                    {isCollapsed ? <ChevronRightIcon sx={{ fontSize: 16 }} /> : <ExpandMoreIcon sx={{ fontSize: 16 }} />}
-                                                </IconButton>
-                                                <Typography sx={{ fontWeight: 700, fontSize: '0.72rem', color: mainPrimaryColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                                                    {sectionName}
-                                                </Typography>
-                                                <Typography sx={{ fontSize: '0.65rem', color: '#aaa', flexShrink: 0 }}>({items.length})</Typography>
+                                    <Box
+                                        key={item._id}
+                                        sx={{
+                                            display: 'flex', height: ROW_H, alignItems: 'center',
+                                            background: rowBg,
+                                            borderBottom: `1px solid ${mainPrimaryColor}08`,
+                                            opacity: isRowDraggingThis ? 0.55 : 1,
+                                            transition: isRowDraggingThis ? 'none' : 'opacity 0.1s',
+                                            '& .gantt-row-delete': { opacity: 0 },
+                                            '&:hover .gantt-row-delete': { opacity: 1 },
+                                            '&:hover': { background: isRowDraggingThis ? rowBg : `rgba(0,171,190,0.04)` },
+                                        }}
+                                    >
+                                        {/* Sticky name column */}
+                                        <Box sx={{
+                                            width: NAME_COL_W, flexShrink: 0,
+                                            position: 'sticky', left: 0, zIndex: 2,
+                                            background: rowBg, height: '100%',
+                                            display: 'flex', alignItems: 'center',
+                                            borderRight: `1px solid ${mainPrimaryColor}18`,
+                                            overflow: 'hidden',
+                                            pl: 0.5, pr: 0.5,
+                                        }}>
+                                            {/* Drag handle */}
+                                            <Box
+                                                onMouseDown={e => handleRowDragStart(e, item, ri)}
+                                                sx={{
+                                                    display: 'flex', alignItems: 'center', flexShrink: 0,
+                                                    color: '#ccc', cursor: 'grab', px: 0.25,
+                                                    '&:hover': { color: '#aaa' },
+                                                    ...(isRowDraggingThis ? { cursor: 'grabbing', color: mainPrimaryColor } : {}),
+                                                }}
+                                            >
+                                                <DragIndicatorIcon sx={{ fontSize: 16 }} />
                                             </Box>
-                                            <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
-                                                {sectionBarWidth > 0 && (
-                                                    <Box sx={{ position: 'absolute', left: sectionBarLeft + 2, top: 7, height: 16, width: sectionBarWidth, bgcolor: `${mainPrimaryColor}20`, border: `1.5px solid ${mainPrimaryColor}55`, borderRadius: '4px' }} />
-                                                )}
-                                            </Box>
+                                            {/* Name */}
+                                            <Typography variant='caption' sx={{
+                                                color: '#444', fontSize: '0.75rem',
+                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                flex: 1, mx: 0.75,
+                                            }}>
+                                                {item.laborOfferItemName || '—'}
+                                            </Typography>
+                                            {/* Delete — hover-revealed */}
+                                            <IconButton
+                                                className='gantt-row-delete'
+                                                size='small'
+                                                onClick={() => handleDeleteItem(item._id)}
+                                                sx={{
+                                                    flexShrink: 0, color: '#ccc',
+                                                    transition: 'opacity 0.15s, color 0.15s',
+                                                    '&:hover': { color: '#e53935' },
+                                                    p: '3px',
+                                                }}
+                                            >
+                                                <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+                                            </IconButton>
                                         </Box>
 
-                                        {/* Item rows */}
-                                        {!isCollapsed && items.map((item, itemIdx) => {
-                                            const ri = flatIndices[itemIdx];
-                                            const isDraggingThis = dragging?.id === item._id;
-                                            const isRowDraggingThis = rowDragging?.id === item._id;
-                                            const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
-                                            const duration = itemDuration(item);
-                                            const barColor = BAR_COLORS[ri % BAR_COLORS.length];
-                                            const startOffset = (startDay - 1) * DAY_W;
-                                            const barWidth = duration * DAY_W - 3;
-                                            const rowBg = isRowDraggingThis
-                                                ? `rgba(0,171,190,0.06)`
-                                                : itemIdx % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
-                                            const startDate = addDays(projectStartDate, startDay - 1);
-                                            const endDate = addDays(projectStartDate, startDay + duration - 2);
-                                            const tooltipLabel = `${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
-                                            return (
+                                        {/* Bar area */}
+                                        <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
+                                            {days.map(d => {
+                                                const date = addDays(projectStartDate, d - 1);
+                                                const dayNum = date.getDate();
+                                                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                                                return (
+                                                    <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: dayNum === 1 ? `${mainPrimaryColor}30` : isWeekend ? 'rgba(148,163,184,0.08)' : dayNum % 5 === 0 ? `${mainPrimaryColor}15` : 'rgba(0,0,0,0.025)', zIndex: 0 }} />
+                                                );
+                                            })}
+                                            <Tooltip title={tooltipLabel} placement='top' arrow>
                                                 <Box
-                                                    key={item._id}
+                                                    onMouseDown={e => handleBarMouseDown(e, item)}
                                                     sx={{
-                                                        display: 'flex', height: ROW_H, alignItems: 'center',
-                                                        background: rowBg,
-                                                        borderBottom: `1px solid ${mainPrimaryColor}08`,
-                                                        opacity: isRowDraggingThis ? 0.55 : 1,
-                                                        transition: isRowDraggingThis ? 'none' : 'opacity 0.1s',
-                                                        '& .gantt-row-delete': { opacity: 0 },
-                                                        '&:hover .gantt-row-delete': { opacity: 1 },
-                                                        '&:hover': { background: isRowDraggingThis ? rowBg : `rgba(0,171,190,0.04)` },
+                                                        position: 'absolute',
+                                                        left: startOffset + 2,
+                                                        top: 6, height: ROW_H - 12,
+                                                        width: barWidth,
+                                                        background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                        borderRadius: '5px',
+                                                        display: 'flex', alignItems: 'center',
+                                                        px: 1, overflow: 'hidden',
+                                                        boxShadow: isDraggingThis ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                        cursor: isDraggingThis ? 'grabbing' : 'grab',
+                                                        opacity: isDraggingThis ? 0.9 : 1,
+                                                        transition: isDraggingThis ? 'none' : 'box-shadow 0.15s',
+                                                        zIndex: isDraggingThis ? 10 : 1,
                                                     }}
                                                 >
-                                                    <Box sx={{ width: NAME_COL_W, flexShrink: 0, position: 'sticky', left: 0, zIndex: 2, background: rowBg, height: '100%', display: 'flex', alignItems: 'center', borderRight: `1px solid ${mainPrimaryColor}18`, overflow: 'hidden', pl: 2, pr: 0.5 }}>
-                                                        <Box onMouseDown={e => handleRowDragStart(e, item, ri)} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, color: '#ccc', cursor: 'grab', px: 0.25, '&:hover': { color: '#aaa' }, ...(isRowDraggingThis ? { cursor: 'grabbing', color: mainPrimaryColor } : {}) }}>
-                                                            <DragIndicatorIcon sx={{ fontSize: 16 }} />
-                                                        </Box>
-                                                        <Typography variant='caption' sx={{ color: '#444', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, mx: 0.75 }}>
-                                                            {item.laborOfferItemName || '—'}
-                                                        </Typography>
-                                                        <IconButton className='gantt-row-delete' size='small' onClick={() => handleDeleteItem(item._id)} sx={{ flexShrink: 0, color: '#ccc', transition: 'opacity 0.15s, color 0.15s', '&:hover': { color: '#e53935' }, p: '3px' }}>
-                                                            <DeleteOutlineIcon sx={{ fontSize: 14 }} />
-                                                        </IconButton>
-                                                    </Box>
-                                                    <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
-                                                        {days.map(d => {
-                                                            const date = addDays(projectStartDate, d - 1);
-                                                            const dayNum = date.getDate();
-                                                            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                                                            return (<Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: dayNum === 1 ? `${mainPrimaryColor}30` : isWeekend ? 'rgba(148,163,184,0.08)' : dayNum % 5 === 0 ? `${mainPrimaryColor}15` : 'rgba(0,0,0,0.025)', zIndex: 0 }} />);
-                                                        })}
-                                                        <Tooltip title={tooltipLabel} placement='top' arrow>
-                                                            <Box onMouseDown={e => handleBarMouseDown(e, item)} sx={{ position: 'absolute', left: startOffset + 2, top: 6, height: ROW_H - 12, width: barWidth, background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`, borderRadius: '5px', display: 'flex', alignItems: 'center', px: 1, overflow: 'hidden', boxShadow: isDraggingThis ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`, cursor: isDraggingThis ? 'grabbing' : 'grab', opacity: isDraggingThis ? 0.9 : 1, transition: isDraggingThis ? 'none' : 'box-shadow 0.15s', zIndex: isDraggingThis ? 10 : 1 }}>
-                                                                <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-                                                                    {duration}{t('day_short')}
-                                                                </Typography>
-                                                            </Box>
-                                                        </Tooltip>
-                                                    </Box>
+                                                    <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                                        {duration}{t('day_short')}
+                                                    </Typography>
                                                 </Box>
-                                            );
-                                        })}
-                                    </React.Fragment>
+                                            </Tooltip>
+                                        </Box>
+                                    </Box>
                                 );
                             })}
                         </Box>
