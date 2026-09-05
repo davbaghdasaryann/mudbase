@@ -9,10 +9,13 @@ registerApiSession('schedule/create', async (req, res, session) => {
     const estimateName = requireQueryParam(req, 'estimateName');
 
     const col = Db.getSchedulesCollection();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const doc: Db.EntitySchedule = {
         accountId: session.mongoAccountId,
         estimateId,
         estimateName,
+        projectStartDate: today,
         createdAt: new Date(),
         updatedAt: new Date(),
     };

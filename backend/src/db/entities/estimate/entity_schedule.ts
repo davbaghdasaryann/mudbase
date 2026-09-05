@@ -5,6 +5,7 @@ export interface EntitySchedule {
     accountId?: ObjectId;
     estimateId?: string;
     estimateName?: string;
+    projectStartDate?: Date;
     createdAt?: Date;
     updatedAt?: Date;
 }

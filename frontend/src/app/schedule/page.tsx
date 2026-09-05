@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -26,10 +27,13 @@ const NAME_COL_W = 280;
 const DELETE_COL_W = 40;
 const BAR_COLORS = ['#00ABBE', '#0096a8', '#00c4d4', '#007f8c', '#00d4e8', '#006a78'];
 
+const MONTH_NAMES_AM = ['Հնվ', 'Փտր', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Օգս', 'Սպտ', 'Հկտ', 'Նյմ', 'Դկտ'];
+
 interface ScheduleRecord {
     _id: string;
     estimateId: string;
     estimateName: string;
+    projectStartDate?: string;
     createdAt?: string;
 }
 
@@ -67,6 +71,46 @@ function itemDuration(item: ScheduleItem): number {
     return Math.max(1, Math.ceil(hours / 8));
 }
 
+function addDays(date: Date, days: number): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+}
+
+function toDateInputValue(date: Date): string {
+    return date.toISOString().slice(0, 10);
+}
+
+function formatDayLabel(date: Date): string {
+    return String(date.getDate());
+}
+
+// Build month groups for the header
+interface MonthGroup {
+    label: string;
+    dayCount: number;
+}
+
+function buildMonthGroups(startDate: Date, totalDays: number): MonthGroup[] {
+    const groups: MonthGroup[] = [];
+    let current = new Date(startDate);
+    let remaining = totalDays;
+    while (remaining > 0) {
+        const month = current.getMonth();
+        const year = current.getFullYear();
+        const label = `${MONTH_NAMES_AM[month]} ${year}`;
+        // Count days in this month from current date
+        let count = 0;
+        while (remaining > 0 && current.getMonth() === month) {
+            count++;
+            remaining--;
+            current = addDays(current, 1);
+        }
+        groups.push({ label, dayCount: count });
+    }
+    return groups;
+}
+
 export default function SchedulePage() {
     const { t } = useTranslation();
     const router = useRouter();
@@ -87,6 +131,8 @@ export default function SchedulePage() {
     const [dragging, setDragging] = useState<DragState | null>(null);
     const draggingRef = useRef<DragState | null>(null);
     draggingRef.current = dragging;
+
+    const dateInputRef = useRef<HTMLInputElement>(null);
 
     const selectRecord = useCallback((rec: ScheduleRecord | null) => {
         setSelected(rec);
@@ -188,7 +234,6 @@ export default function SchedulePage() {
         if (!selected || addingId === row._id) return;
         setAddingId(row._id);
         try {
-            // Calculate startDay: after the last existing item
             const startDay = scheduleItems.reduce((max, item) => {
                 return Math.max(max, item.startDay + itemDuration(item));
             }, 1);
@@ -219,6 +264,14 @@ export default function SchedulePage() {
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
         e.preventDefault();
         setDragging({ id: item._id, origStart: item.startDay, currentStart: item.startDay, mouseStartX: e.clientX });
+    };
+
+    const handleStartDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!selected) return;
+        const newDate = e.target.value;
+        setSelected(prev => prev ? { ...prev, projectStartDate: newDate } : null);
+        setRecords(prev => prev.map(r => r._id === selected._id ? { ...r, projectStartDate: newDate } : r));
+        await Api.requestSession({ command: 'schedule/update_start_date', args: { id: selected._id, projectStartDate: newDate } });
     };
 
     // ── LIST VIEW ─────────────────────────────────────────────────────────────
@@ -284,11 +337,19 @@ export default function SchedulePage() {
     }
 
     // ── DETAIL VIEW ───────────────────────────────────────────────────────────
-    const totalDays = scheduleItems.reduce((max, item) => {
+    const projectStartDate = selected.projectStartDate
+        ? new Date(selected.projectStartDate)
+        : new Date(new Date().toDateString());
+
+    const totalDays = Math.max(scheduleItems.reduce((max, item) => {
         const start = dragging?.id === item._id ? dragging.currentStart : (item.startDay ?? 1);
         return Math.max(max, start + itemDuration(item) - 1);
-    }, 20);
+    }, 20), 20);
+
     const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+    const monthGroups = buildMonthGroups(projectStartDate, totalDays);
+
+    const dateInputValue = toDateInputValue(projectStartDate);
 
     return (
         <PageContents title='Schedule' sx={{ pb: 1 }}>
@@ -297,11 +358,28 @@ export default function SchedulePage() {
                 <IconButton size='small' onClick={() => selectRecord(null)} sx={{ color: mainPrimaryColor, mt: 0.3 }}>
                     <ArrowBackIcon sx={{ fontSize: 20 }} />
                 </IconButton>
-                <Box>
+                <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{selected.estimateName}</Typography>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af' }}>
-                        {selected.createdAt ? new Date(selected.createdAt).toLocaleDateString() : ''}
-                    </Typography>
+                    {/* Clickable start date */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af' }}>{t('Start')}:</Typography>
+                        <Box
+                            onClick={() => dateInputRef.current?.showPicker?.()}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', '&:hover': { '& .edit-icon': { opacity: 1 } } }}
+                        >
+                            <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor, fontWeight: 600 }}>
+                                {projectStartDate.toLocaleDateString()}
+                            </Typography>
+                            <EditCalendarIcon className='edit-icon' sx={{ fontSize: 13, color: mainPrimaryColor, opacity: 0.4, transition: 'opacity 0.15s' }} />
+                        </Box>
+                        <input
+                            ref={dateInputRef}
+                            type='date'
+                            value={dateInputValue}
+                            onChange={handleStartDateChange}
+                            style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+                        />
+                    </Box>
                     <Button
                         variant='outlined'
                         size='large'
@@ -333,18 +411,44 @@ export default function SchedulePage() {
                     <Box sx={{ overflowX: 'auto' }}>
                         <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W + DELETE_COL_W }}>
 
-                            {/* Day header */}
-                            <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
-                                <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, py: 1, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }}>
+                            {/* Month header row */}
+                            <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.97)', borderBottom: `1px solid ${mainPrimaryColor}18` }}>
+                                <Box sx={{ width: NAME_COL_W, flexShrink: 0, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }} />
+                                {monthGroups.map((group, gi) => (
+                                    <Box key={gi} sx={{ width: group.dayCount * DAY_W, flexShrink: 0, px: 1, py: 0.6, borderRight: `1px solid ${mainPrimaryColor}22`, background: gi % 2 === 0 ? 'rgba(0,171,190,0.04)' : 'transparent' }}>
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: mainPrimaryColor, letterSpacing: '0.05em' }}>
+                                            {group.label}
+                                        </Typography>
+                                    </Box>
+                                ))}
+                                <Box sx={{ width: DELETE_COL_W, flexShrink: 0 }} />
+                            </Box>
+
+                            {/* Day number header row */}
+                            <Box sx={{ display: 'flex', position: 'sticky', top: 28, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
+                                <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }}>
                                     <Typography variant='caption' sx={{ color: mainPrimaryColor, fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                         {t('Task')}
                                     </Typography>
                                 </Box>
-                                {days.map(d => (
-                                    <Box key={d} sx={{ width: DAY_W, flexShrink: 0, textAlign: 'center', py: 1, borderRight: d % 5 === 0 ? `1px solid ${mainPrimaryColor}33` : `1px solid rgba(0,0,0,0.04)`, color: d % 5 === 0 ? mainPrimaryColor : '#bbb', fontSize: '0.63rem', fontWeight: d % 5 === 0 ? 700 : 400 }}>
-                                        {d % 5 === 0 || d === 1 ? d : ''}
-                                    </Box>
-                                ))}
+                                {days.map(d => {
+                                    const date = addDays(projectStartDate, d - 1);
+                                    const dayNum = date.getDate();
+                                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                                    const show = dayNum === 1 || d === 1 || dayNum % 5 === 0;
+                                    return (
+                                        <Box key={d} sx={{
+                                            width: DAY_W, flexShrink: 0, textAlign: 'center', py: 0.8,
+                                            borderRight: dayNum === 1 ? `1px solid ${mainPrimaryColor}44` : dayNum % 5 === 0 ? `1px solid ${mainPrimaryColor}22` : `1px solid rgba(0,0,0,0.04)`,
+                                            color: isWeekend ? '#f87171' : dayNum % 5 === 0 || dayNum === 1 ? mainPrimaryColor : '#bbb',
+                                            fontSize: '0.63rem',
+                                            fontWeight: dayNum === 1 || dayNum % 5 === 0 ? 700 : 400,
+                                            bgcolor: isWeekend ? 'rgba(248,113,113,0.06)' : 'transparent',
+                                        }}>
+                                            {show ? dayNum : ''}
+                                        </Box>
+                                    );
+                                })}
                                 <Box sx={{ width: DELETE_COL_W, flexShrink: 0 }} />
                             </Box>
 
@@ -357,6 +461,9 @@ export default function SchedulePage() {
                                 const startOffset = (startDay - 1) * DAY_W;
                                 const barWidth = duration * DAY_W - 3;
                                 const rowBg = ri % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
+                                const startDate = addDays(projectStartDate, startDay - 1);
+                                const endDate = addDays(projectStartDate, startDay + duration - 2);
+                                const tooltipLabel = `${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
                                 return (
                                     <Box key={item._id} sx={{ display: 'flex', height: ROW_H, alignItems: 'center', background: rowBg, borderBottom: `1px solid ${mainPrimaryColor}08`, '&:hover': { background: `rgba(0,171,190,0.04)` } }}>
                                         <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, position: 'sticky', left: 0, zIndex: 2, background: rowBg, height: '100%', display: 'flex', alignItems: 'center', borderRight: `1px solid ${mainPrimaryColor}18` }}>
@@ -365,31 +472,38 @@ export default function SchedulePage() {
                                             </Typography>
                                         </Box>
                                         <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
-                                            {days.map(d => (
-                                                <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: 1, background: d % 5 === 0 ? `${mainPrimaryColor}25` : 'rgba(0,0,0,0.035)' }} />
-                                            ))}
-                                            <Box
-                                                onMouseDown={e => handleBarMouseDown(e, item)}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    left: startOffset + 2,
-                                                    top: 6, height: ROW_H - 12,
-                                                    width: barWidth,
-                                                    background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
-                                                    borderRadius: '5px',
-                                                    display: 'flex', alignItems: 'center',
-                                                    px: 1, overflow: 'hidden',
-                                                    boxShadow: isDraggingThis ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                    cursor: isDraggingThis ? 'grabbing' : 'grab',
-                                                    opacity: isDraggingThis ? 0.9 : 1,
-                                                    transition: isDraggingThis ? 'none' : 'box-shadow 0.15s',
-                                                    zIndex: isDraggingThis ? 10 : 1,
-                                                }}
-                                            >
-                                                <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-                                                    {duration}{t('day_short')}
-                                                </Typography>
-                                            </Box>
+                                            {days.map(d => {
+                                                const date = addDays(projectStartDate, d - 1);
+                                                const dayNum = date.getDate();
+                                                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                                                return (
+                                                    <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: 1, background: dayNum === 1 ? `${mainPrimaryColor}44` : isWeekend ? 'rgba(248,113,113,0.15)' : dayNum % 5 === 0 ? `${mainPrimaryColor}20` : 'rgba(0,0,0,0.03)' }} />
+                                                );
+                                            })}
+                                            <Tooltip title={tooltipLabel} placement='top' arrow>
+                                                <Box
+                                                    onMouseDown={e => handleBarMouseDown(e, item)}
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        left: startOffset + 2,
+                                                        top: 6, height: ROW_H - 12,
+                                                        width: barWidth,
+                                                        background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                        borderRadius: '5px',
+                                                        display: 'flex', alignItems: 'center',
+                                                        px: 1, overflow: 'hidden',
+                                                        boxShadow: isDraggingThis ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                        cursor: isDraggingThis ? 'grabbing' : 'grab',
+                                                        opacity: isDraggingThis ? 0.9 : 1,
+                                                        transition: isDraggingThis ? 'none' : 'box-shadow 0.15s',
+                                                        zIndex: isDraggingThis ? 10 : 1,
+                                                    }}
+                                                >
+                                                    <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                                        {duration}{t('day_short')}
+                                                    </Typography>
+                                                </Box>
+                                            </Tooltip>
                                         </Box>
                                         <Box sx={{ width: DELETE_COL_W, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <IconButton size='small' onClick={() => handleDeleteItem(item._id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
