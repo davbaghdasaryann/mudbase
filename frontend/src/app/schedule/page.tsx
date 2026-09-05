@@ -4,7 +4,6 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip, TextField,
-    Menu, MenuItem, ListItemIcon, ListItemText,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -17,8 +16,6 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
-import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
-import FolderOffOutlinedIcon from '@mui/icons-material/FolderOffOutlined';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -163,7 +160,6 @@ export default function SchedulePage() {
     const [groups, setGroups] = useState<ScheduleGroup[]>([]);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
     const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
-    const [moveGroupMenu, setMoveGroupMenu] = useState<{ anchor: HTMLElement; itemId: string } | null>(null);
 
     // Horizontal bar drag state
     const [dragging, setDragging] = useState<DragState | null>(null);
@@ -523,24 +519,6 @@ export default function SchedulePage() {
         setGroups(prev => prev.map(g => g._id === id ? { ...g, name: trimmed } : g));
         setEditingGroup(null);
         await Api.requestSession({ command: 'schedule/group_rename', args: { id, name: trimmed } });
-    };
-
-    const handleMoveToGroup = async (itemId: string, targetGroupId: string | null) => {
-        setMoveGroupMenu(null);
-        const item = scheduleItemsRef.current.find(i => i._id === itemId);
-        if (!item) return;
-        // Compute new displayIndex at end of target group
-        const targetItems = scheduleItemsRef.current.filter(i =>
-            targetGroupId ? i.groupId === targetGroupId : !i.groupId
-        );
-        const displayIndex = targetItems.filter(i => i._id !== itemId).length;
-        setScheduleItems(prev => prev.map(i =>
-            i._id === itemId ? { ...i, groupId: targetGroupId ?? undefined, displayIndex } : i
-        ));
-        await Api.requestSession({
-            command: 'schedule/item_reorder',
-            values: { items: [{ id: itemId, groupId: targetGroupId, displayIndex }] },
-        });
     };
 
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
@@ -924,8 +902,7 @@ export default function SchedulePage() {
                                 const isRowDraggingThis = rowDragging?.id === item._id;
                                 const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
                                 const duration = itemDuration(item);
-                                const groupIdx = groupId ? sortedDisplayedGroups.findIndex(g => g._id === groupId) : -1;
-                                const barColor = groupId ? BAR_COLORS[groupIdx % BAR_COLORS.length] : UNGROUPED_COLOR;
+                                const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const startOffset = (startDay - 1) * DAY_W;
                                 const barWidth = duration * DAY_W - 3;
                                 const rowBg = isRowDraggingThis
@@ -979,23 +956,6 @@ export default function SchedulePage() {
                                             }}>
                                                 {item.laborOfferItemName || '—'}
                                             </Typography>
-                                            {/* Move to group — hover-revealed, only if groups exist */}
-                                            {groups.length > 0 && (
-                                                <Tooltip title={t('Move to group')} placement='top' arrow>
-                                                    <IconButton
-                                                        className='gantt-row-delete'
-                                                        size='small'
-                                                        onClick={e => setMoveGroupMenu({ anchor: e.currentTarget, itemId: item._id })}
-                                                        sx={{
-                                                            flexShrink: 0, color: groupId ? BAR_COLORS[sortedDisplayedGroups.findIndex(g => g._id === groupId) % BAR_COLORS.length] : '#ccc',
-                                                            transition: 'opacity 0.15s',
-                                                            p: '3px',
-                                                        }}
-                                                    >
-                                                        <FolderOutlinedIcon sx={{ fontSize: 13 }} />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
                                             {/* Delete — hover-revealed */}
                                             <IconButton
                                                 className='gantt-row-delete'
@@ -1149,38 +1109,6 @@ export default function SchedulePage() {
                 </DialogActions>
             </Dialog>
 
-            {/* Move-to-group menu */}
-            <Menu
-                anchorEl={moveGroupMenu?.anchor}
-                open={Boolean(moveGroupMenu)}
-                onClose={() => setMoveGroupMenu(null)}
-                PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
-            >
-                {sortedDisplayedGroups.map((g, gi) => (
-                    <MenuItem
-                        key={g._id}
-                        selected={moveGroupMenu ? scheduleItems.find(i => i._id === moveGroupMenu.itemId)?.groupId === g._id : false}
-                        onClick={() => moveGroupMenu && handleMoveToGroup(moveGroupMenu.itemId, g._id)}
-                        sx={{ fontSize: '0.82rem', py: 0.8 }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 28 }}>
-                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: BAR_COLORS[gi % BAR_COLORS.length] }} />
-                        </ListItemIcon>
-                        <ListItemText primary={g.name} primaryTypographyProps={{ fontSize: '0.82rem' }} />
-                    </MenuItem>
-                ))}
-                {moveGroupMenu && scheduleItems.find(i => i._id === moveGroupMenu.itemId)?.groupId && (
-                    <MenuItem
-                        onClick={() => moveGroupMenu && handleMoveToGroup(moveGroupMenu.itemId, null)}
-                        sx={{ fontSize: '0.82rem', py: 0.8, borderTop: '1px solid #f0f0f0', mt: 0.5 }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 28 }}>
-                            <FolderOffOutlinedIcon sx={{ fontSize: 14, color: '#90a4ae' }} />
-                        </ListItemIcon>
-                        <ListItemText primary={t('Remove from group')} primaryTypographyProps={{ fontSize: '0.82rem', color: '#90a4ae' }} />
-                    </MenuItem>
-                )}
-            </Menu>
         </PageContents>
     );
 }
