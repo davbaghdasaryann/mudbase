@@ -33,6 +33,7 @@ const ROW_H = 38;
 const GROUP_ROW_H = 38;
 const NAME_COL_W = 280;
 const BAR_COLORS = ['#26c6da', '#4dd0e1', '#4db6c4', '#80deea', '#00bcd4', '#b2ebf2'];
+const GROUP_COLORS = ['#f44336', '#4caf50', '#ffc107', '#2196f3', '#9c27b0', '#ff9800', '#009688', '#e91e63'];
 const UNGROUPED_COLOR = '#90a4ae';
 
 const MONTH_NAMES_AM = ['Հնվ', 'Փտր', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Ոգս', 'Սպտ', 'Հկտ', 'Նոյ', 'Դեկ'];
@@ -773,7 +774,7 @@ export default function SchedulePage() {
                                     const groupIdx = sortedDisplayedGroups.findIndex(g => g._id === group._id);
                                     const isCollapsed = collapsedGroups.has(group._id);
                                     const isGroupDragging = groupDragging?.id === group._id;
-                                    const groupColor = BAR_COLORS[groupIdx % BAR_COLORS.length];
+                                    const groupColor = GROUP_COLORS[groupIdx % GROUP_COLORS.length];
 
                                     // Summary bar for this group
                                     let summaryStart = 0;
@@ -822,13 +823,15 @@ export default function SchedulePage() {
                                                         if (next.has(group._id)) next.delete(group._id); else next.add(group._id);
                                                         return next;
                                                     })}
-                                                    sx={{ p: '2px', color: mainPrimaryColor, flexShrink: 0 }}
+                                                    sx={{ p: '2px', color: '#333', flexShrink: 0 }}
                                                 >
                                                     {isCollapsed
                                                         ? <ChevronRightIcon sx={{ fontSize: 16 }} />
                                                         : <ExpandMoreIcon sx={{ fontSize: 16 }} />
                                                     }
                                                 </IconButton>
+                                                {/* Group color dot */}
+                                                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: groupColor, flexShrink: 0, mr: 0.5 }} />
                                                 {/* Group name / edit */}
                                                 {editingGroup?.id === group._id ? (
                                                     <TextField
@@ -840,7 +843,7 @@ export default function SchedulePage() {
                                                         onKeyDown={e => { if (e.key === 'Enter') handleGroupRenameCommit(); if (e.key === 'Escape') setEditingGroup(null); }}
                                                         sx={{
                                                             flex: 1,
-                                                            '& .MuiInputBase-input': { fontSize: '0.78rem', fontWeight: 700, py: 0.3, px: 0.5, color: mainPrimaryColor },
+                                                            '& .MuiInputBase-input': { fontSize: '0.78rem', fontWeight: 700, py: 0.3, px: 0.5, color: '#1a1a1a' },
                                                             '& .MuiOutlinedInput-root': { borderRadius: 1 },
                                                         }}
                                                         inputProps={{ onClick: (e: React.MouseEvent) => e.stopPropagation() }}
@@ -850,7 +853,7 @@ export default function SchedulePage() {
                                                         onClick={() => setEditingGroup({ id: group._id, name: group.name })}
                                                         sx={{
                                                             flex: 1, fontSize: '0.78rem', fontWeight: 700,
-                                                            color: mainPrimaryColor, cursor: 'text',
+                                                            color: '#1a1a1a', cursor: 'text',
                                                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                             mx: 0.5,
                                                         }}
@@ -1151,7 +1154,7 @@ export default function SchedulePage() {
                         sx={{ fontSize: '0.82rem', py: 0.8 }}
                     >
                         <ListItemIcon sx={{ minWidth: 28 }}>
-                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: BAR_COLORS[gi % BAR_COLORS.length] }} />
+                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: GROUP_COLORS[gi % GROUP_COLORS.length] }} />
                         </ListItemIcon>
                         <ListItemText primary={g.name} primaryTypographyProps={{ fontSize: '0.82rem' }} />
                     </MenuItem>
