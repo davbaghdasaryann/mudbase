@@ -262,10 +262,12 @@ export default function SchedulePage() {
         if (!rowDragging || rowDragging.fromFlatIndex === rowDragging.toFlatIndex) return displayList;
         const arr = [...displayList];
         const [row] = arr.splice(rowDragging.fromFlatIndex, 1);
-        const insertAt = rowDragging.toFlatIndex > rowDragging.fromFlatIndex
+        let insertAt = rowDragging.toFlatIndex > rowDragging.fromFlatIndex
             ? rowDragging.toFlatIndex - 1
             : rowDragging.toFlatIndex;
-        arr.splice(Math.max(0, Math.min(arr.length, insertAt)), 0, row);
+        insertAt = Math.max(0, Math.min(arr.length, insertAt));
+        if (arr[insertAt]?.type === 'group') insertAt = Math.min(arr.length, insertAt + 1);
+        arr.splice(insertAt, 0, row);
         return arr;
     }, [displayList, rowDragging]);
 
@@ -315,13 +317,20 @@ export default function SchedulePage() {
             if (!d) return;
             const deltaRows = Math.round((e.clientY - d.mouseStartY) / ROW_H);
             let newTarget = Math.max(0, Math.min(d.totalRows - 1, d.fromFlatIndex + deltaRows));
-            // Skip ungrouped_header as target (snap past it)
+            // Snap away from non-item rows (group headers, ungrouped header)
             const dl = displayListRef.current;
-            if (dl[newTarget]?.type === 'ungrouped_header') {
-                newTarget = newTarget > d.fromFlatIndex
-                    ? Math.min(d.totalRows - 1, newTarget + 1)
-                    : Math.max(0, newTarget - 1);
+            let attempts = 0;
+            while (
+                attempts++ < d.totalRows &&
+                newTarget >= 0 && newTarget < d.totalRows &&
+                (dl[newTarget]?.type === 'group' || dl[newTarget]?.type === 'ungrouped_header')
+            ) {
+                const dir = newTarget >= d.fromFlatIndex ? 1 : -1;
+                const next = newTarget + dir;
+                if (next < 0 || next >= d.totalRows) break;
+                newTarget = next;
             }
+            newTarget = Math.max(0, Math.min(d.totalRows - 1, newTarget));
             if (newTarget !== d.toFlatIndex) setRowDragging(prev => prev ? { ...prev, toFlatIndex: newTarget } : null);
         };
         const onUp = async () => {
@@ -341,8 +350,11 @@ export default function SchedulePage() {
                 document.body.style.cursor = '';
                 return;
             }
-            const insertAt = d.toFlatIndex > d.fromFlatIndex ? d.toFlatIndex - 1 : d.toFlatIndex;
-            arr.splice(Math.max(0, Math.min(arr.length, insertAt)), 0, draggedRow);
+            let insertAt = d.toFlatIndex > d.fromFlatIndex ? d.toFlatIndex - 1 : d.toFlatIndex;
+            insertAt = Math.max(0, Math.min(arr.length, insertAt));
+            // If landing on a group header, insert after it (first slot in group)
+            if (arr[insertAt]?.type === 'group') insertAt = Math.min(arr.length, insertAt + 1);
+            arr.splice(insertAt, 0, draggedRow);
 
             // Extract group assignments from new order
             let currentGroupId: string | null = null;
