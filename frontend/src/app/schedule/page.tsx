@@ -867,7 +867,7 @@ export default function SchedulePage() {
                                                         <IconButton
                                                             size='small'
                                                             onClick={() => handleChooseWork(group._id)}
-                                                            sx={{ p: '3px', color: mainPrimaryColor, '&:hover': { bgcolor: `${mainPrimaryColor}18` } }}
+                                                            sx={{ p: '3px', color: '#ccc', '&:hover': { color: mainPrimaryColor } }}
                                                         >
                                                             <AddCircleOutlineIcon sx={{ fontSize: 14 }} />
                                                         </IconButton>
