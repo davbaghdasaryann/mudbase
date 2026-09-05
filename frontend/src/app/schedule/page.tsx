@@ -921,7 +921,7 @@ export default function SchedulePage() {
                                 const barWidth = duration * DAY_W - 3;
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
-                                    : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
+                                    : fi % 2 === 0 ? `${barColor}12` : `${barColor}1e`;
                                 const startDate = addDays(projectStartDate, startDay - 1);
                                 const endDate = addDays(projectStartDate, startDay + duration - 2);
                                 const tooltipLabel = `${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
