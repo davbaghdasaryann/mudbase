@@ -725,8 +725,8 @@ export default function SchedulePage() {
                     overflow: 'hidden',
                     userSelect: 'none',
                 }}>
-                    <Box sx={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 220px)' }}>
-                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
 
                             {/* Month header row */}
                             <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.97)', borderBottom: `1px solid ${mainPrimaryColor}18` }}>
