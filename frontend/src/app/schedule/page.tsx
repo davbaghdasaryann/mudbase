@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip,
@@ -13,6 +12,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useTranslation } from 'react-i18next';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
@@ -23,6 +23,7 @@ import { mainPrimaryColor } from '@/theme';
 const DAY_W = 38;
 const ROW_H = 38;
 const NAME_COL_W = 280;
+const DELETE_COL_W = 40;
 const BAR_COLORS = ['#00ABBE', '#0096a8', '#00c4d4', '#007f8c', '#00d4e8', '#006a78'];
 
 interface ScheduleRecord {
@@ -50,6 +51,20 @@ interface ScheduleItem {
     unitSymbol?: string;
     sectionName?: string;
     subsectionName?: string;
+    startDay: number;
+}
+
+interface DragState {
+    id: string;
+    origStart: number;
+    currentStart: number;
+    mouseStartX: number;
+}
+
+function itemDuration(item: ScheduleItem): number {
+    const lh = item.laborHours ?? 0;
+    const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
+    return Math.max(1, Math.ceil(hours / 8));
 }
 
 export default function SchedulePage() {
@@ -61,15 +76,17 @@ export default function SchedulePage() {
     const [selected, setSelected] = useState<ScheduleRecord | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    // Labor modal state
     const [worksOpen, setWorksOpen] = useState(false);
     const [laborRows, setLaborRows] = useState<LaborRow[]>([]);
     const [laborLoading, setLaborLoading] = useState(false);
 
-    // Schedule items (added works) state
     const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
     const [itemsLoading, setItemsLoading] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
+
+    const [dragging, setDragging] = useState<DragState | null>(null);
+    const draggingRef = useRef<DragState | null>(null);
+    draggingRef.current = dragging;
 
     const selectRecord = useCallback((rec: ScheduleRecord | null) => {
         setSelected(rec);
@@ -95,15 +112,42 @@ export default function SchedulePage() {
             .finally(() => setLoading(false));
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Fetch schedule items when entering detail view
     useEffect(() => {
         if (!selected) { setScheduleItems([]); return; }
         setItemsLoading(true);
         Api.requestSession<ScheduleItem[]>({ command: 'schedule/item_fetch_all', args: { scheduleId: selected._id } })
-            .then(data => setScheduleItems(data ?? []))
+            .then(data => setScheduleItems((data ?? []).map(i => ({ ...i, startDay: i.startDay ?? 1 }))))
             .catch(() => {})
             .finally(() => setItemsLoading(false));
     }, [selected]);
+
+    // Global drag handlers
+    useEffect(() => {
+        if (!dragging) return;
+        const onMove = (e: MouseEvent) => {
+            const d = draggingRef.current;
+            if (!d) return;
+            const deltaX = e.clientX - d.mouseStartX;
+            const deltaDays = Math.round(deltaX / DAY_W);
+            const newStart = Math.max(1, d.origStart + deltaDays);
+            if (newStart !== d.currentStart) {
+                setDragging(prev => prev ? { ...prev, currentStart: newStart } : null);
+            }
+        };
+        const onUp = async () => {
+            const d = draggingRef.current;
+            if (!d) return;
+            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: d.currentStart } : i));
+            setDragging(null);
+            await Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: d.currentStart } });
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        return () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+    }, [dragging]);
 
     const handleCreate = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -144,6 +188,10 @@ export default function SchedulePage() {
         if (!selected || addingId === row._id) return;
         setAddingId(row._id);
         try {
+            // Calculate startDay: after the last existing item
+            const startDay = scheduleItems.reduce((max, item) => {
+                return Math.max(max, item.startDay + itemDuration(item));
+            }, 1);
             const created = await Api.requestSession<ScheduleItem>({
                 command: 'schedule/item_add',
                 args: {
@@ -154,9 +202,10 @@ export default function SchedulePage() {
                     unitSymbol: row.unitSymbol ?? '',
                     sectionName: row.sectionName ?? '',
                     subsectionName: row.subsectionName ?? '',
+                    startDay,
                 },
             });
-            if (created) setScheduleItems(prev => [...prev, created]);
+            if (created) setScheduleItems(prev => [...prev, { ...created, startDay: created.startDay ?? startDay }]);
         } finally {
             setAddingId(null);
         }
@@ -165,6 +214,11 @@ export default function SchedulePage() {
     const handleDeleteItem = async (id: string) => {
         await Api.requestSession({ command: 'schedule/item_delete', args: { id } });
         setScheduleItems(prev => prev.filter(i => i._id !== id));
+    };
+
+    const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
+        e.preventDefault();
+        setDragging({ id: item._id, origStart: item.startDay, currentStart: item.startDay, mouseStartX: e.clientX });
     };
 
     // ── LIST VIEW ─────────────────────────────────────────────────────────────
@@ -230,17 +284,10 @@ export default function SchedulePage() {
     }
 
     // ── DETAIL VIEW ───────────────────────────────────────────────────────────
-    // Build Gantt rows
-    let currentDay = 1;
-    const ganttRows = scheduleItems.map((item, i) => {
-        const lh = item.laborHours ?? 0;
-        const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
-        const duration = Math.max(1, Math.ceil(hours / 8));
-        const start = currentDay;
-        currentDay += duration;
-        return { item, start, duration, colorIndex: i };
-    });
-    const totalDays = Math.max(currentDay - 1, 1);
+    const totalDays = scheduleItems.reduce((max, item) => {
+        const start = dragging?.id === item._id ? dragging.currentStart : (item.startDay ?? 1);
+        return Math.max(max, start + itemDuration(item) - 1);
+    }, 20);
     const days = Array.from({ length: totalDays }, (_, i) => i + 1);
 
     return (
@@ -281,10 +328,10 @@ export default function SchedulePage() {
                     border: '1px solid rgba(0,171,190,0.18)',
                     borderRadius: 3,
                     overflow: 'hidden',
+                    userSelect: 'none',
                 }}>
-                    {/* Scrollable area */}
                     <Box sx={{ overflowX: 'auto' }}>
-                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W + 40 }}>
+                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W + DELETE_COL_W }}>
 
                             {/* Day header */}
                             <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
@@ -298,36 +345,53 @@ export default function SchedulePage() {
                                         {d % 5 === 0 || d === 1 ? d : ''}
                                     </Box>
                                 ))}
-                                <Box sx={{ width: 40, flexShrink: 0 }} />
+                                <Box sx={{ width: DELETE_COL_W, flexShrink: 0 }} />
                             </Box>
 
                             {/* Item rows */}
-                            {ganttRows.map(({ item, start, duration, colorIndex }, ri) => {
-                                const barColor = BAR_COLORS[colorIndex % BAR_COLORS.length];
-                                const startOffset = (start - 1) * DAY_W;
+                            {scheduleItems.map((item, ri) => {
+                                const isDraggingThis = dragging?.id === item._id;
+                                const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
+                                const duration = itemDuration(item);
+                                const barColor = BAR_COLORS[ri % BAR_COLORS.length];
+                                const startOffset = (startDay - 1) * DAY_W;
                                 const barWidth = duration * DAY_W - 3;
                                 const rowBg = ri % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
                                 return (
                                     <Box key={item._id} sx={{ display: 'flex', height: ROW_H, alignItems: 'center', background: rowBg, borderBottom: `1px solid ${mainPrimaryColor}08`, '&:hover': { background: `rgba(0,171,190,0.04)` } }}>
-                                        {/* Sticky name */}
                                         <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, position: 'sticky', left: 0, zIndex: 2, background: rowBg, height: '100%', display: 'flex', alignItems: 'center', borderRight: `1px solid ${mainPrimaryColor}18` }}>
                                             <Typography variant='caption' sx={{ color: '#444', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {item.laborOfferItemName || '—'}
                                             </Typography>
                                         </Box>
-                                        {/* Bar area */}
                                         <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
                                             {days.map(d => (
                                                 <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: 1, background: d % 5 === 0 ? `${mainPrimaryColor}25` : 'rgba(0,0,0,0.035)' }} />
                                             ))}
-                                            <Box sx={{ position: 'absolute', left: startOffset + 2, top: 6, height: ROW_H - 12, width: barWidth, background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`, borderRadius: '5px', display: 'flex', alignItems: 'center', px: 1, overflow: 'hidden', boxShadow: `0 2px 8px ${barColor}55` }}>
-                                                <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                            <Box
+                                                onMouseDown={e => handleBarMouseDown(e, item)}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    left: startOffset + 2,
+                                                    top: 6, height: ROW_H - 12,
+                                                    width: barWidth,
+                                                    background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                    borderRadius: '5px',
+                                                    display: 'flex', alignItems: 'center',
+                                                    px: 1, overflow: 'hidden',
+                                                    boxShadow: isDraggingThis ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                    cursor: isDraggingThis ? 'grabbing' : 'grab',
+                                                    opacity: isDraggingThis ? 0.9 : 1,
+                                                    transition: isDraggingThis ? 'none' : 'box-shadow 0.15s',
+                                                    zIndex: isDraggingThis ? 10 : 1,
+                                                }}
+                                            >
+                                                <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
                                                     {duration}{t('day_short')}
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                        {/* Delete */}
-                                        <Box sx={{ width: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box sx={{ width: DELETE_COL_W, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <IconButton size='small' onClick={() => handleDeleteItem(item._id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
                                                 <DeleteOutlineIcon sx={{ fontSize: 16 }} />
                                             </IconButton>

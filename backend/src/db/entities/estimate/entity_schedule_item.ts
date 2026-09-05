@@ -10,6 +10,7 @@ export interface EntityScheduleItem {
     unitSymbol?: string;
     sectionName?: string;
     subsectionName?: string;
+    startDay?: number;
     createdAt?: Date;
 }
 

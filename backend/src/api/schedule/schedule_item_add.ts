@@ -12,6 +12,8 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
     const unitSymbol = getQueryParam(req, 'unitSymbol') ?? '';
     const sectionName = getQueryParam(req, 'sectionName') ?? '';
     const subsectionName = getQueryParam(req, 'subsectionName') ?? '';
+    const startDayParam = getQueryParam(req, 'startDay');
+    const startDay = startDayParam ? parseInt(startDayParam) : 1;
 
     const col = Db.getScheduleItemsCollection();
     const doc: Db.EntityScheduleItem = {
@@ -23,6 +25,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         unitSymbol,
         sectionName,
         subsectionName,
+        startDay,
         createdAt: new Date(),
     };
     const result = await col.insertOne(doc);
