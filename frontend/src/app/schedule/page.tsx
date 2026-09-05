@@ -32,7 +32,7 @@ const DAY_W = 38;
 const ROW_H = 38;
 const GROUP_ROW_H = 38;
 const NAME_COL_W = 280;
-const BAR_COLORS = ['#00ABBE', '#0097a7', '#26c6da', '#00b8cc', '#4db6c4', '#0091a5'];
+const BAR_COLORS = ['#26c6da', '#4dd0e1', '#4db6c4', '#80deea', '#00bcd4', '#b2ebf2'];
 const UNGROUPED_COLOR = '#90a4ae';
 
 const MONTH_NAMES_AM = ['Հնվ', 'Փտր', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Ոգս', 'Սպտ', 'Հկտ', 'Նոյ', 'Դեկ'];
