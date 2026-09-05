@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip,
@@ -53,6 +54,8 @@ interface ScheduleItem {
 
 export default function SchedulePage() {
     const { t } = useTranslation();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [records, setRecords] = useState<ScheduleRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<ScheduleRecord | null>(null);
@@ -68,12 +71,29 @@ export default function SchedulePage() {
     const [itemsLoading, setItemsLoading] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
 
+    const selectRecord = useCallback((rec: ScheduleRecord | null) => {
+        setSelected(rec);
+        if (rec) {
+            router.replace(`?scheduleId=${rec._id}`);
+        } else {
+            router.replace('?');
+        }
+    }, [router]);
+
     useEffect(() => {
+        const scheduleId = searchParams.get('scheduleId');
         Api.requestSession<ScheduleRecord[]>({ command: 'schedule/fetch_all', args: {} })
-            .then(data => setRecords(data ?? []))
+            .then(data => {
+                const list = data ?? [];
+                setRecords(list);
+                if (scheduleId) {
+                    const match = list.find(r => r._id === scheduleId);
+                    if (match) setSelected(match);
+                }
+            })
             .catch(() => {})
             .finally(() => setLoading(false));
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Fetch schedule items when entering detail view
     useEffect(() => {
@@ -91,7 +111,10 @@ export default function SchedulePage() {
             command: 'schedule/create',
             args: { estimateId: String(estimate._id), estimateName: estimate.name ?? '' },
         });
-        if (created) setRecords(prev => [created, ...prev]);
+        if (created) {
+            setRecords(prev => [created, ...prev]);
+            selectRecord(created);
+        }
     };
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -175,7 +198,7 @@ export default function SchedulePage() {
                         {records.map(rec => (
                             <Box
                                 key={rec._id}
-                                onClick={() => setSelected(rec)}
+                                onClick={() => selectRecord(rec)}
                                 sx={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     px: 2.5, py: 1.8, borderRadius: 2,
@@ -224,7 +247,7 @@ export default function SchedulePage() {
         <PageContents title='Schedule' sx={{ pb: 1 }}>
             {/* Back + header */}
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
-                <IconButton size='small' onClick={() => setSelected(null)} sx={{ color: mainPrimaryColor, mt: 0.3 }}>
+                <IconButton size='small' onClick={() => selectRecord(null)} sx={{ color: mainPrimaryColor, mt: 0.3 }}>
                     <ArrowBackIcon sx={{ fontSize: 20 }} />
                 </IconButton>
                 <Box>
