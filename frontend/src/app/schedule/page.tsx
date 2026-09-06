@@ -308,73 +308,6 @@ export default function SchedulePage() {
         return arr;
     }, [groups, groupDragging]);
 
-    // Horizontal bar drag — only re-runs when drag starts/stops, not on every deltaX update
-    const isDraggingBar = dragging !== null;
-    useEffect(() => {
-        if (!isDraggingBar) return;
-        const loop = () => {
-            const scroller = ganttScrollRef.current;
-            const d = draggingRef.current;
-            if (scroller && d) {
-                const rect = scroller.getBoundingClientRect();
-                const mx = mouseXRef.current;
-                const ZONE = 80;
-                let speed = 0;
-                if (mx < rect.left + ZONE) speed = -((rect.left + ZONE - mx) / ZONE) * 14;
-                else if (mx > rect.right - ZONE) speed = ((mx - (rect.right - ZONE)) / ZONE) * 14;
-                if (speed !== 0) {
-                    const before = scroller.scrollLeft;
-                    scroller.scrollLeft += speed;
-                    const actual = scroller.scrollLeft - before;
-                    if (actual !== 0) {
-                        dragDeltaRef.current += actual;
-                        setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
-                    }
-                }
-            }
-            autoScrollRafRef.current = requestAnimationFrame(loop);
-        };
-        autoScrollRafRef.current = requestAnimationFrame(loop);
-
-        const onMove = (e: MouseEvent) => {
-            mouseXRef.current = e.clientX;
-            const d = draggingRef.current;
-            if (!d) return;
-            const incr = e.clientX - prevMouseXRef.current;
-            prevMouseXRef.current = e.clientX;
-            if (Math.abs(e.clientX - d.mouseStartX) > 2) dragMovedRef.current = true;
-            if (incr !== 0) {
-                const origOffsetPx = (d.origStart - 1) * DAY_W + (d.origStartHour / 24) * DAY_W;
-                dragDeltaRef.current = Math.max(-origOffsetPx, dragDeltaRef.current + incr);
-                setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
-            }
-        };
-        const onUp = () => {
-            if (autoScrollRafRef.current !== null) {
-                cancelAnimationFrame(autoScrollRafRef.current);
-                autoScrollRafRef.current = null;
-            }
-            const d = draggingRef.current;
-            if (!d) return;
-            const origFrac = (d.origStart - 1) + d.origStartHour / 24;
-            const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
-            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: newStartDay } : i));
-            setDragging(null);
-            Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay } });
-        };
-        window.addEventListener('mousemove', onMove);
-        window.addEventListener('mouseup', onUp);
-        return () => {
-            window.removeEventListener('mousemove', onMove);
-            window.removeEventListener('mouseup', onUp);
-            if (autoScrollRafRef.current !== null) {
-                cancelAnimationFrame(autoScrollRafRef.current);
-                autoScrollRafRef.current = null;
-            }
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isDraggingBar]);
-
     // Vertical row reorder drag
     useEffect(() => {
         if (!rowDragging) return;
@@ -608,7 +541,67 @@ export default function SchedulePage() {
         dragDeltaRef.current = 0;
         prevMouseXRef.current = e.clientX;
         mouseXRef.current = e.clientX;
-        setDragging({ id: item._id, origStart: item.startDay, origStartHour: item.startHour ?? 0, deltaX: 0, mouseStartX: e.clientX });
+
+        // Capture in closure — draggingRef won't be set until after async React render
+        const origStart = item.startDay;
+        const origStartHour = item.startHour ?? 0;
+        const itemId = item._id;
+        const origOffsetPx = (origStart - 1) * DAY_W + (origStartHour / 24) * DAY_W;
+        const mouseDownX = e.clientX;
+
+        setDragging({ id: itemId, origStart, origStartHour, deltaX: 0, mouseStartX: mouseDownX });
+
+        // Start auto-scroll rAF loop immediately
+        const loop = () => {
+            const scroller = ganttScrollRef.current;
+            if (scroller) {
+                const rect = scroller.getBoundingClientRect();
+                const mx = mouseXRef.current;
+                const ZONE = 80;
+                let speed = 0;
+                if (mx < rect.left + ZONE) speed = -((rect.left + ZONE - mx) / ZONE) * 14;
+                else if (mx > rect.right - ZONE) speed = ((mx - (rect.right - ZONE)) / ZONE) * 14;
+                if (speed !== 0) {
+                    const before = scroller.scrollLeft;
+                    scroller.scrollLeft += speed;
+                    const actual = scroller.scrollLeft - before;
+                    if (actual !== 0) {
+                        dragDeltaRef.current += actual;
+                        setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
+                    }
+                }
+            }
+            autoScrollRafRef.current = requestAnimationFrame(loop);
+        };
+        autoScrollRafRef.current = requestAnimationFrame(loop);
+
+        const onMove = (ev: MouseEvent) => {
+            mouseXRef.current = ev.clientX;
+            const incr = ev.clientX - prevMouseXRef.current;
+            prevMouseXRef.current = ev.clientX;
+            if (Math.abs(ev.clientX - mouseDownX) > 2) dragMovedRef.current = true;
+            if (incr !== 0) {
+                dragDeltaRef.current = Math.max(-origOffsetPx, dragDeltaRef.current + incr);
+                setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
+            }
+        };
+
+        const onUp = () => {
+            if (autoScrollRafRef.current !== null) {
+                cancelAnimationFrame(autoScrollRafRef.current);
+                autoScrollRafRef.current = null;
+            }
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            const origFrac = (origStart - 1) + origStartHour / 24;
+            const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
+            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, startDay: newStartDay } : i));
+            setDragging(null);
+            Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, startDay: newStartDay } });
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
     };
 
     const handleBarClick = (e: React.MouseEvent, item: ScheduleItem) => {
