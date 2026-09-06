@@ -191,6 +191,8 @@ export default function SchedulePage() {
 
     const ganttScrollRef = useRef<HTMLDivElement | null>(null);
     const dragMovedRef = useRef(false);
+    const mouseXRef = useRef(0);
+    const autoScrollRafRef = useRef<number | null>(null);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
@@ -306,28 +308,47 @@ export default function SchedulePage() {
     // Horizontal bar drag
     useEffect(() => {
         if (!dragging) return;
+        // rAF loop: runs every frame during drag, handles smooth edge auto-scroll
+        const startAutoScroll = () => {
+            const loop = () => {
+                const scroller = ganttScrollRef.current;
+                const d = draggingRef.current;
+                if (scroller && d) {
+                    const rect = scroller.getBoundingClientRect();
+                    const mx = mouseXRef.current;
+                    const ZONE = 80;
+                    let speed = 0;
+                    if (mx < rect.left + ZONE) speed = -((rect.left + ZONE - mx) / ZONE) * 14;
+                    else if (mx > rect.right - ZONE) speed = ((mx - (rect.right - ZONE)) / ZONE) * 14;
+                    if (speed !== 0) {
+                        const before = scroller.scrollLeft;
+                        scroller.scrollLeft += speed;
+                        const actual = scroller.scrollLeft - before;
+                        // Update deltaX so bar visually follows the scroll
+                        if (actual !== 0) setDragging(prev => prev ? { ...prev, deltaX: prev.deltaX + actual } : null);
+                    }
+                }
+                autoScrollRafRef.current = requestAnimationFrame(loop);
+            };
+            autoScrollRafRef.current = requestAnimationFrame(loop);
+        };
+        startAutoScroll();
+
         const onMove = (e: MouseEvent) => {
+            mouseXRef.current = e.clientX;
             const d = draggingRef.current;
             if (!d) return;
             const rawDelta = e.clientX - d.mouseStartX;
             if (Math.abs(rawDelta) > 2) dragMovedRef.current = true;
-            // Clamp so bar can't go before day 1
             const origOffsetPx = (d.origStart - 1) * DAY_W + (d.origStartHour / 24) * DAY_W;
             const clampedDelta = Math.max(-origOffsetPx, rawDelta);
             setDragging(prev => prev ? { ...prev, deltaX: clampedDelta } : null);
-            // Auto-scroll when near left/right edge
-            const scroller = ganttScrollRef.current;
-            if (scroller) {
-                const rect = scroller.getBoundingClientRect();
-                const ZONE = 70;
-                if (e.clientX < rect.left + ZONE) {
-                    scroller.scrollLeft -= (rect.left + ZONE - e.clientX) * 0.4;
-                } else if (e.clientX > rect.right - ZONE) {
-                    scroller.scrollLeft += (e.clientX - (rect.right - ZONE)) * 0.4;
-                }
-            }
         };
         const onUp = async () => {
+            if (autoScrollRafRef.current !== null) {
+                cancelAnimationFrame(autoScrollRafRef.current);
+                autoScrollRafRef.current = null;
+            }
             const d = draggingRef.current;
             if (!d) return;
             const origFrac = (d.origStart - 1) + d.origStartHour / 24;
@@ -344,6 +365,10 @@ export default function SchedulePage() {
         return () => {
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
+            if (autoScrollRafRef.current !== null) {
+                cancelAnimationFrame(autoScrollRafRef.current);
+                autoScrollRafRef.current = null;
+            }
         };
     }, [dragging]);
 
