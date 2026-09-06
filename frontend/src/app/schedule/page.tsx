@@ -106,7 +106,7 @@ type FlatRow =
 function itemDuration(item: ScheduleItem): number {
     const lh = item.laborHours ?? 0;
     const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
-    return Math.max(1, Math.ceil(hours / 8));
+    return Math.max(0.125, hours / 8);
 }
 
 function addDays(date: Date, days: number): Date {
@@ -190,7 +190,7 @@ export default function SchedulePage() {
     const dragMovedRef = useRef(false);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
-    const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem } | null>(null);
+    const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -557,9 +557,17 @@ export default function SchedulePage() {
 
     const handleBarClick = (e: React.MouseEvent, item: ScheduleItem) => {
         if (dragMovedRef.current) return;
+        e.preventDefault();
+        setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item, anchorEl: e.currentTarget as HTMLElement });
+    };
+
+    const handleOpenTimePopover = () => {
+        if (!barContextMenu) return;
+        const item = barContextMenu.item;
         const h = item.startHour ?? 0;
         setPopoverTime(`${String(h).padStart(2, '0')}:00`);
-        setBarPopover({ itemId: item._id, anchorEl: e.currentTarget as HTMLElement, startHour: h });
+        setBarPopover({ itemId: item._id, anchorEl: barContextMenu.anchorEl, startHour: h });
+        setBarContextMenu(null);
     };
 
     const handleBarPopoverSave = async () => {
@@ -569,12 +577,6 @@ export default function SchedulePage() {
         setScheduleItems(prev => prev.map(i => i._id === barPopover.itemId ? { ...i, startHour: newHour } : i));
         setBarPopover(null);
         await Api.requestSession({ command: 'schedule/item_update', args: { id: barPopover.itemId, startHour: newHour } });
-    };
-
-    const handleBarContextMenu = (e: React.MouseEvent, item: ScheduleItem) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item });
     };
 
     const handleSplitItem = async () => {
@@ -950,7 +952,7 @@ export default function SchedulePage() {
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const startOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
-                                const barWidth = duration * DAY_W - 3;
+                                const barWidth = Math.max(duration * DAY_W - 3, 12);
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
@@ -1047,7 +1049,7 @@ export default function SchedulePage() {
                                                 <Box
                                                     onMouseDown={e => handleBarMouseDown(e, item)}
                                                     onClick={e => handleBarClick(e, item)}
-                                                    onContextMenu={e => handleBarContextMenu(e, item)}
+                                                    onContextMenu={e => e.preventDefault()}
                                                     sx={{
                                                         position: 'absolute',
                                                         left: startOffset + 2,
@@ -1065,7 +1067,7 @@ export default function SchedulePage() {
                                                     }}
                                                 >
                                                     <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-                                                        {duration}{t('day_short')}
+                                                        {duration >= 1 ? `${Math.round(duration * 10) / 10}${t('day_short')}` : `${Math.round(duration * 8)}h`}
                                                     </Typography>
                                                 </Box>
                                             </Tooltip>
@@ -1215,7 +1217,7 @@ export default function SchedulePage() {
             >
                 <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>Բաժանել</MenuItem>
                 <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>Կապել</MenuItem>
-                <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>Ժամանակ</MenuItem>
+                <MenuItem onClick={handleOpenTimePopover} sx={{ fontSize: '0.85rem', py: 0.9 }}>Ժամանակ</MenuItem>
             </Menu>
 
             {/* Bar time popover */}
