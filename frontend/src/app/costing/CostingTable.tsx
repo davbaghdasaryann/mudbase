@@ -148,7 +148,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
 
     const [groupDialog, setGroupDialog] = useState<{ open: boolean; groupName: string; items: any[]; loading: boolean }>({ open: false, groupName: '', items: [], loading: false });
     const [breakdownAnchor, setBreakdownAnchor] = useState<HTMLElement | null>(null);
-    const [breakdownData, setBreakdownData] = useState<{ salaryTotal: number; volumeTotal: number; matActTotal: number; actTotal: number; actUP: number; unitSymbol: string } | null>(null);
+    const [breakdownData, setBreakdownData] = useState<{ salaryTotal: number; volumeTotal: number; matActTotal: number; mechanismTotal: number; actTotal: number; actUP: number; unitSymbol: string } | null>(null);
 
     const handleGroupRowClick = useCallback(async (row: LaborRow) => {
         setGroupDialog({ open: true, groupName: row.laborOfferItemName || row.catalogName, items: [], loading: true });
@@ -436,7 +436,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const a = actualData[rowId];
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
-        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const mechanismTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'mechanism').reduce((s, e) => s + e.total, 0);
+        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism').reduce((s, e) => s + e.total, 0);
         const gorcarqayanQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
         const matActTotal = calcMatActTotal(rowId);
         const { actTotal, hasData } = getRowActTotal(row);
@@ -477,7 +478,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>
                     {hasData ? (
                         <span
-                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
+                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, mechanismTotal, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
                             style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
                         >
                             {formatCurrencyRounded(actUP)}
@@ -826,12 +827,13 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: 220, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
             >
                 {breakdownData && (() => {
-                    const { salaryTotal, volumeTotal, matActTotal, actTotal, actUP, unitSymbol } = breakdownData;
+                    const { salaryTotal, volumeTotal, matActTotal, mechanismTotal, actTotal, actUP, unitSymbol } = breakdownData;
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
                     const rows: { label: string; val: number }[] = [
                         { label: t('Labor Cost'), val: salaryTotal / q },
                         { label: 'Volume / Spent', val: volumeTotal / q },
+                        { label: 'Մeхaнизм', val: mechanismTotal / q },
                         { label: t('Materials Cost'), val: matActTotal / q },
                     ].filter(r => r.val > 0);
                     return (
