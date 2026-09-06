@@ -306,34 +306,30 @@ export default function SchedulePage() {
         return arr;
     }, [groups, groupDragging]);
 
-    // Horizontal bar drag
+    // Horizontal bar drag — only re-runs when drag starts/stops, not on every deltaX update
+    const isDraggingBar = dragging !== null;
     useEffect(() => {
-        if (!dragging) return;
-        // rAF loop: runs every frame during drag, handles smooth edge auto-scroll
-        const startAutoScroll = () => {
-            const loop = () => {
-                const scroller = ganttScrollRef.current;
-                const d = draggingRef.current;
-                if (scroller && d) {
-                    const rect = scroller.getBoundingClientRect();
-                    const mx = mouseXRef.current;
-                    const ZONE = 80;
-                    let speed = 0;
-                    if (mx < rect.left + ZONE) speed = -((rect.left + ZONE - mx) / ZONE) * 14;
-                    else if (mx > rect.right - ZONE) speed = ((mx - (rect.right - ZONE)) / ZONE) * 14;
-                    if (speed !== 0) {
-                        const before = scroller.scrollLeft;
-                        scroller.scrollLeft += speed;
-                        const actual = scroller.scrollLeft - before;
-                        // Update deltaX so bar visually follows the scroll
-                        if (actual !== 0) setDragging(prev => prev ? { ...prev, deltaX: prev.deltaX + actual } : null);
-                    }
+        if (!isDraggingBar) return;
+        const loop = () => {
+            const scroller = ganttScrollRef.current;
+            const d = draggingRef.current;
+            if (scroller && d) {
+                const rect = scroller.getBoundingClientRect();
+                const mx = mouseXRef.current;
+                const ZONE = 80;
+                let speed = 0;
+                if (mx < rect.left + ZONE) speed = -((rect.left + ZONE - mx) / ZONE) * 14;
+                else if (mx > rect.right - ZONE) speed = ((mx - (rect.right - ZONE)) / ZONE) * 14;
+                if (speed !== 0) {
+                    const before = scroller.scrollLeft;
+                    scroller.scrollLeft += speed;
+                    const actual = scroller.scrollLeft - before;
+                    if (actual !== 0) setDragging(prev => prev ? { ...prev, deltaX: prev.deltaX + actual } : null);
                 }
-                autoScrollRafRef.current = requestAnimationFrame(loop);
-            };
+            }
             autoScrollRafRef.current = requestAnimationFrame(loop);
         };
-        startAutoScroll();
+        autoScrollRafRef.current = requestAnimationFrame(loop);
 
         const onMove = (e: MouseEvent) => {
             mouseXRef.current = e.clientX;
@@ -347,7 +343,7 @@ export default function SchedulePage() {
                 setDragging(prev => prev ? { ...prev, deltaX: Math.max(-origOffsetPx, prev.deltaX + incr) } : null);
             }
         };
-        const onUp = async () => {
+        const onUp = () => {
             if (autoScrollRafRef.current !== null) {
                 cancelAnimationFrame(autoScrollRafRef.current);
                 autoScrollRafRef.current = null;
@@ -361,7 +357,7 @@ export default function SchedulePage() {
             const newStartHour = totalHours % 24;
             setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: newStartDay, startHour: newStartHour } : i));
             setDragging(null);
-            await Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay, startHour: newStartHour } });
+            Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay, startHour: newStartHour } });
         };
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
@@ -373,7 +369,8 @@ export default function SchedulePage() {
                 autoScrollRafRef.current = null;
             }
         };
-    }, [dragging]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDraggingBar]);
 
     // Vertical row reorder drag
     useEffect(() => {
