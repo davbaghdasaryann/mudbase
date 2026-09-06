@@ -2105,17 +2105,6 @@ ${tableBodyHtml}
                                                                 next[idx] = { ...next[idx], quantity: newQty };
                                                                 return next;
                                                             });
-                                                        } else if (entry.paymentMethod === 'overhead' && entry.materialItemId) {
-                                                            setOverheadEntries(prev => {
-                                                                const idx = prev.findIndex(e => e.id === entry.materialItemId);
-                                                                if (idx < 0) return prev;
-                                                                const newTotal = prev[idx].total - entry.total;
-                                                                const newHistory = prev[idx].history.filter(h => h.id !== entry.id);
-                                                                if (newTotal <= 0 || newHistory.length === 0) return prev.filter((_, i) => i !== idx);
-                                                                const next = [...prev];
-                                                                next[idx] = { ...next[idx], total: Math.max(0, newTotal), history: newHistory };
-                                                                return next;
-                                                            });
                                                         } else if (entry.laborItemId && !entry.paymentMethod?.startsWith('pahest_')) {
                                                             const remaining = costHistory.filter(e => e.id !== entry.id && e.laborItemId === entry.laborItemId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum');
                                                             const salaryCandidates = remaining.filter(e => e.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
