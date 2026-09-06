@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip, TextField,
-    Menu, MenuItem, ListItemIcon, ListItemText,
+    Menu, MenuItem, ListItemIcon, ListItemText, Popover,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -71,6 +71,7 @@ interface ScheduleItem {
     sectionName?: string;
     subsectionName?: string;
     startDay: number;
+    startHour?: number; // 0-23, hour within startDay
     displayIndex?: number;
     groupId?: string;
 }
@@ -186,6 +187,10 @@ export default function SchedulePage() {
     const groupsRef = useRef<ScheduleGroup[]>([]);
     groupsRef.current = groups;
 
+    const dragMovedRef = useRef(false);
+    const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
+    const [popoverTime, setPopoverTime] = useState('00:00');
+
     const dateInputRef = useRef<HTMLInputElement>(null);
 
     const selectRecord = useCallback((rec: ScheduleRecord | null) => {
@@ -289,6 +294,7 @@ export default function SchedulePage() {
             const d = draggingRef.current;
             if (!d) return;
             const deltaX = e.clientX - d.mouseStartX;
+            if (Math.abs(deltaX) > 4) dragMovedRef.current = true;
             const deltaDays = Math.round(deltaX / DAY_W);
             const newStart = Math.max(1, d.origStart + deltaDays);
             if (newStart !== d.currentStart) {
@@ -544,7 +550,24 @@ export default function SchedulePage() {
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
         if (rowDragging) return;
         e.preventDefault();
+        dragMovedRef.current = false;
         setDragging({ id: item._id, origStart: item.startDay, currentStart: item.startDay, mouseStartX: e.clientX });
+    };
+
+    const handleBarClick = (e: React.MouseEvent, item: ScheduleItem) => {
+        if (dragMovedRef.current) return;
+        const h = item.startHour ?? 0;
+        setPopoverTime(`${String(h).padStart(2, '0')}:00`);
+        setBarPopover({ itemId: item._id, anchorEl: e.currentTarget as HTMLElement, startHour: h });
+    };
+
+    const handleBarPopoverSave = async () => {
+        if (!barPopover) return;
+        const [hStr] = popoverTime.split(':');
+        const newHour = Math.min(23, Math.max(0, parseInt(hStr) || 0));
+        setScheduleItems(prev => prev.map(i => i._id === barPopover.itemId ? { ...i, startHour: newHour } : i));
+        setBarPopover(null);
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: barPopover.itemId, startHour: newHour } });
     };
 
     const handleRowDragStart = (e: React.MouseEvent, item: ScheduleItem, flatIndex: number) => {
@@ -887,16 +910,19 @@ export default function SchedulePage() {
                                 const isDraggingThis = dragging?.id === item._id;
                                 const isRowDraggingThis = rowDragging?.id === item._id;
                                 const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
+                                const startHour = isDraggingThis ? (item.startHour ?? 0) : (item.startHour ?? 0);
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
-                                const startOffset = (startDay - 1) * DAY_W;
+                                const startOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
                                 const barWidth = duration * DAY_W - 3;
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
                                 const startDate = addDays(projectStartDate, startDay - 1);
+                                if (startHour > 0) startDate.setHours(startHour);
                                 const endDate = addDays(projectStartDate, startDay + duration - 2);
-                                const tooltipLabel = `${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
+                                const timeLabel = startHour > 0 ? ` ${String(startHour).padStart(2, '0')}:00` : '';
+                                const tooltipLabel = `${startDate.toLocaleDateString()}${timeLabel} → ${endDate.toLocaleDateString()}`;
 
                                 return (
                                     <Box
@@ -984,6 +1010,7 @@ export default function SchedulePage() {
                                             <Tooltip title={tooltipLabel} placement='top' arrow>
                                                 <Box
                                                     onMouseDown={e => handleBarMouseDown(e, item)}
+                                                    onClick={e => handleBarClick(e, item)}
                                                     sx={{
                                                         position: 'absolute',
                                                         left: startOffset + 2,
@@ -1140,6 +1167,46 @@ export default function SchedulePage() {
                     </MenuItem>
                 )}
             </Menu>
+
+            {/* Bar time popover */}
+            <Popover
+                open={!!barPopover}
+                anchorEl={barPopover?.anchorEl}
+                onClose={() => setBarPopover(null)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                PaperProps={{ sx: { borderRadius: 2.5, p: 2, minWidth: 200, boxShadow: '0 4px 20px rgba(0,0,0,0.14)' } }}
+            >
+                {barPopover && (() => {
+                    const item = scheduleItems.find(i => i._id === barPopover.itemId);
+                    const startDay = item?.startDay ?? 1;
+                    const startDate = addDays(projectStartDate, startDay - 1);
+                    return (
+                        <Box>
+                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1.5 }}>
+                                {startDate.toLocaleDateString()}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.78rem', color: '#444', mb: 1.5, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+                                {item?.laborOfferItemName}
+                            </Typography>
+                            <TextField
+                                label={t('Start') + ' ' + t('Labor Time')}
+                                type='time'
+                                size='small'
+                                value={popoverTime}
+                                onChange={e => setPopoverTime(e.target.value)}
+                                inputProps={{ step: 3600 }}
+                                fullWidth
+                                sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                            />
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                <Button size='small' onClick={() => setBarPopover(null)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
+                                <Button size='small' variant='contained' onClick={handleBarPopoverSave} sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }}>{t('Save')}</Button>
+                            </Box>
+                        </Box>
+                    );
+                })()}
+            </Popover>
         </PageContents>
     );
 }
