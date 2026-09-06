@@ -16,7 +16,10 @@ registerApiSession('schedule/item_update', async (req, res, session) => {
     if (startHourParam !== null) update.startHour = parseInt(startHourParam);
 
     const quantityParam = getQueryParam(req, 'quantity');
-    if (quantityParam !== null) update.quantity = parseFloat(quantityParam);
+    if (quantityParam !== null) {
+        const qty = parseFloat(quantityParam);
+        if (isFinite(qty)) update.quantity = qty;
+    }
 
     await col.updateOne(
         { _id: new ObjectId(id), accountId: session.mongoAccountId },

@@ -7,8 +7,12 @@ import { requireQueryParam, getQueryParam } from '@/tsback/req/req_params';
 registerApiSession('schedule/item_add', async (req, res, session) => {
     const scheduleId = requireQueryParam(req, 'scheduleId');
     const laborOfferItemName = requireQueryParam(req, 'laborOfferItemName');
-    const quantity = parseFloat(requireQueryParam(req, 'quantity'));
-    const laborHours = parseFloat(getQueryParam(req, 'laborHours') ?? '0');
+    const quantityRaw = requireQueryParam(req, 'quantity');
+    const quantity = parseFloat(quantityRaw);
+    const laborHoursRaw = getQueryParam(req, 'laborHours') ?? '0';
+    const laborHours = parseFloat(laborHoursRaw);
+    console.log(`[item_add] name="${laborOfferItemName.substring(0,30)}" quantityRaw="${quantityRaw}" quantity=${quantity} laborHoursRaw="${laborHoursRaw}" laborHours=${laborHours}`);
+    if (!isFinite(quantity)) throw new Error(`Invalid quantity: "${quantityRaw}"`);
     const unitSymbol = getQueryParam(req, 'unitSymbol') ?? '';
     const sectionName = getQueryParam(req, 'sectionName') ?? '';
     const subsectionName = getQueryParam(req, 'subsectionName') ?? '';
