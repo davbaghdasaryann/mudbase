@@ -194,6 +194,7 @@ export default function SchedulePage() {
     const dragMovedRef = useRef(false);
     const mouseXRef = useRef(0);
     const prevMouseXRef = useRef(0);
+    const dragDeltaRef = useRef(0); // mutable, always in sync — avoids render-lag in onUp
     const autoScrollRafRef = useRef<number | null>(null);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
@@ -325,7 +326,10 @@ export default function SchedulePage() {
                     const before = scroller.scrollLeft;
                     scroller.scrollLeft += speed;
                     const actual = scroller.scrollLeft - before;
-                    if (actual !== 0) setDragging(prev => prev ? { ...prev, deltaX: prev.deltaX + actual } : null);
+                    if (actual !== 0) {
+                        dragDeltaRef.current += actual;
+                        setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
+                    }
                 }
             }
             autoScrollRafRef.current = requestAnimationFrame(loop);
@@ -341,7 +345,8 @@ export default function SchedulePage() {
             if (Math.abs(e.clientX - d.mouseStartX) > 2) dragMovedRef.current = true;
             if (incr !== 0) {
                 const origOffsetPx = (d.origStart - 1) * DAY_W + (d.origStartHour / 24) * DAY_W;
-                setDragging(prev => prev ? { ...prev, deltaX: Math.max(-origOffsetPx, prev.deltaX + incr) } : null);
+                dragDeltaRef.current = Math.max(-origOffsetPx, dragDeltaRef.current + incr);
+                setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
             }
         };
         const onUp = () => {
@@ -352,9 +357,7 @@ export default function SchedulePage() {
             const d = draggingRef.current;
             if (!d) return;
             const origFrac = (d.origStart - 1) + d.origStartHour / 24;
-            const newFrac = Math.max(0, origFrac + d.deltaX / DAY_W);
-            const totalHours = Math.round(newFrac * 24);
-            const newStartDay = Math.max(1, Math.round(origFrac + d.deltaX / DAY_W) + 1);
+            const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
             setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: newStartDay } : i));
             setDragging(null);
             Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay } });
@@ -602,6 +605,7 @@ export default function SchedulePage() {
         if (rowDragging) return;
         e.preventDefault();
         dragMovedRef.current = false;
+        dragDeltaRef.current = 0;
         prevMouseXRef.current = e.clientX;
         mouseXRef.current = e.clientX;
         setDragging({ id: item._id, origStart: item.startDay, origStartHour: item.startHour ?? 0, deltaX: 0, mouseStartX: e.clientX });
