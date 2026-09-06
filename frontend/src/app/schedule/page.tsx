@@ -732,17 +732,16 @@ export default function SchedulePage() {
                                     const date = addDays(projectStartDate, d - 1);
                                     const dayNum = date.getDate();
                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                                    const show = dayNum === 1 || d === 1 || dayNum % 5 === 0;
                                     return (
                                         <Box key={d} sx={{
                                             width: DAY_W, flexShrink: 0, textAlign: 'center', py: 0.8,
                                             borderRight: dayNum === 1 ? `1px solid ${mainPrimaryColor}44` : dayNum % 5 === 0 ? `1px solid ${mainPrimaryColor}22` : `1px solid rgba(0,0,0,0.04)`,
-                                            color: isWeekend ? '#94a3b8' : dayNum % 5 === 0 || dayNum === 1 ? mainPrimaryColor : '#bbb',
+                                            color: isWeekend ? '#94a3b8' : dayNum === 1 ? mainPrimaryColor : '#bbb',
                                             fontSize: '0.63rem',
-                                            fontWeight: dayNum === 1 || dayNum % 5 === 0 ? 700 : 400,
+                                            fontWeight: dayNum === 1 ? 700 : 400,
                                             bgcolor: isWeekend ? 'rgba(148,163,184,0.07)' : 'transparent',
                                         }}>
-                                            {show ? dayNum : ''}
+                                            {dayNum}
                                         </Box>
                                     );
                                 })}
@@ -812,7 +811,7 @@ export default function SchedulePage() {
                                                     }
                                                 </IconButton>
                                                 {/* Group color dot */}
-                                                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: groupColor, flexShrink: 0, mr: 0.5 }} />
+                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: groupColor, flexShrink: 0, mr: 0.5 }} />
                                                 {/* Group name / edit */}
                                                 {editingGroup?.id === group._id ? (
                                                     <TextField
@@ -878,17 +877,6 @@ export default function SchedulePage() {
                                                         <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: 'transparent', zIndex: 0 }} />
                                                     );
                                                 })}
-                                                {groupItems.length > 0 && isCollapsed && (
-                                                    <Box sx={{
-                                                        position: 'absolute',
-                                                        left: (summaryStart - 1) * DAY_W + 2,
-                                                        top: 8, height: GROUP_ROW_H - 16,
-                                                        width: (summaryEnd - summaryStart + 1) * DAY_W - 4,
-                                                        background: `linear-gradient(90deg, ${groupColor} 0%, ${groupColor}cc 100%)`,
-                                                        borderRadius: '4px',
-                                                        zIndex: 1,
-                                                    }} />
-                                                )}
                                             </Box>
                                         </Box>
                                     );
