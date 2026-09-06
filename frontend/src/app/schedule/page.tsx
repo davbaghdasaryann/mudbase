@@ -79,7 +79,9 @@ interface ScheduleItem {
 interface DragState {
     id: string;
     origStart: number;
+    origStartHour: number;
     currentStart: number;
+    currentStartHour: number;
     mouseStartX: number;
 }
 
@@ -296,18 +298,21 @@ export default function SchedulePage() {
             if (!d) return;
             const deltaX = e.clientX - d.mouseStartX;
             if (Math.abs(deltaX) > 4) dragMovedRef.current = true;
-            const deltaDays = Math.round(deltaX / DAY_W);
-            const newStart = Math.max(1, d.origStart + deltaDays);
-            if (newStart !== d.currentStart) {
-                setDragging(prev => prev ? { ...prev, currentStart: newStart } : null);
+            const origFrac = (d.origStart - 1) + d.origStartHour / 24;
+            const newFrac = Math.max(0, origFrac + deltaX / DAY_W);
+            const totalHours = Math.round(newFrac * 24);
+            const newStart = Math.floor(totalHours / 24) + 1;
+            const newStartHour = totalHours % 24;
+            if (newStart !== d.currentStart || newStartHour !== d.currentStartHour) {
+                setDragging(prev => prev ? { ...prev, currentStart: newStart, currentStartHour: newStartHour } : null);
             }
         };
         const onUp = async () => {
             const d = draggingRef.current;
             if (!d) return;
-            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: d.currentStart } : i));
+            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: d.currentStart, startHour: d.currentStartHour } : i));
             setDragging(null);
-            await Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: d.currentStart } });
+            await Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: d.currentStart, startHour: d.currentStartHour } });
         };
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
@@ -552,7 +557,7 @@ export default function SchedulePage() {
         if (rowDragging) return;
         e.preventDefault();
         dragMovedRef.current = false;
-        setDragging({ id: item._id, origStart: item.startDay, currentStart: item.startDay, mouseStartX: e.clientX });
+        setDragging({ id: item._id, origStart: item.startDay, origStartHour: item.startHour ?? 0, currentStart: item.startDay, currentStartHour: item.startHour ?? 0, mouseStartX: e.clientX });
     };
 
     const handleBarClick = (e: React.MouseEvent, item: ScheduleItem) => {
@@ -583,15 +588,16 @@ export default function SchedulePage() {
         if (!barContextMenu || !selected) return;
         const item = barContextMenu.item;
         setBarContextMenu(null);
-        const duration = itemDuration(item);
-        if (duration < 2) return;
-        const half1Days = Math.ceil(duration / 2);
-        const half2Days = duration - half1Days;
         const lh = item.laborHours ?? 0;
-        if (lh <= 0) return;
-        const q1 = half1Days * 8 * lh;
-        const q2 = half2Days * 8 * lh;
-        const startDay2 = item.startDay + half1Days;
+        if (lh <= 0 || (item.quantity ?? 0) <= 0) return;
+        const q1 = (item.quantity ?? 0) / 2;
+        const q2 = (item.quantity ?? 0) / 2;
+        // Second part starts where first part's bar ends (in fractional Gantt days)
+        const duration1 = q1 / lh / 8;
+        const origFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+        const endFrac = origFrac + duration1;
+        const startDay2 = Math.floor(endFrac) + 1;
+        const startHour2 = Math.round((endFrac % 1) * 24) % 24;
         setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i));
         const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
             scheduleId: selected._id,
@@ -602,9 +608,10 @@ export default function SchedulePage() {
             sectionName: item.sectionName ?? '',
             subsectionName: item.subsectionName ?? '',
             startDay: startDay2,
+            startHour: startHour2,
             ...(item.groupId ? { groupId: item.groupId } : {}),
         }});
-        setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay2 }]);
+        setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay2, startHour: newItem.startHour ?? startHour2 }]);
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: q1 } });
     };
 
@@ -948,7 +955,7 @@ export default function SchedulePage() {
                                 const isDraggingThis = dragging?.id === item._id;
                                 const isRowDraggingThis = rowDragging?.id === item._id;
                                 const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
-                                const startHour = isDraggingThis ? (item.startHour ?? 0) : (item.startHour ?? 0);
+                                const startHour = isDraggingThis ? dragging!.currentStartHour : (item.startHour ?? 0);
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const startOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;

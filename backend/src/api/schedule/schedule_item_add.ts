@@ -14,6 +14,8 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
     const subsectionName = getQueryParam(req, 'subsectionName') ?? '';
     const startDayParam = getQueryParam(req, 'startDay');
     const startDay = startDayParam ? parseInt(startDayParam) : 1;
+    const startHourParam = getQueryParam(req, 'startHour');
+    const startHour = startHourParam ? parseInt(startHourParam) : undefined;
     const groupIdParam = getQueryParam(req, 'groupId');
 
     const col = Db.getScheduleItemsCollection();
@@ -36,6 +38,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         sectionName,
         subsectionName,
         startDay,
+        ...(startHour !== undefined ? { startHour } : {}),
         displayIndex,
         ...(groupIdParam ? { groupId: new ObjectId(groupIdParam) } : {}),
         createdAt: new Date(),
