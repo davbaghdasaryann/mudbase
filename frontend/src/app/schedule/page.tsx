@@ -192,6 +192,7 @@ export default function SchedulePage() {
     const ganttScrollRef = useRef<HTMLDivElement | null>(null);
     const dragMovedRef = useRef(false);
     const mouseXRef = useRef(0);
+    const prevMouseXRef = useRef(0);
     const autoScrollRafRef = useRef<number | null>(null);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
@@ -338,11 +339,13 @@ export default function SchedulePage() {
             mouseXRef.current = e.clientX;
             const d = draggingRef.current;
             if (!d) return;
-            const rawDelta = e.clientX - d.mouseStartX;
-            if (Math.abs(rawDelta) > 2) dragMovedRef.current = true;
-            const origOffsetPx = (d.origStart - 1) * DAY_W + (d.origStartHour / 24) * DAY_W;
-            const clampedDelta = Math.max(-origOffsetPx, rawDelta);
-            setDragging(prev => prev ? { ...prev, deltaX: clampedDelta } : null);
+            const incr = e.clientX - prevMouseXRef.current;
+            prevMouseXRef.current = e.clientX;
+            if (Math.abs(e.clientX - d.mouseStartX) > 2) dragMovedRef.current = true;
+            if (incr !== 0) {
+                const origOffsetPx = (d.origStart - 1) * DAY_W + (d.origStartHour / 24) * DAY_W;
+                setDragging(prev => prev ? { ...prev, deltaX: Math.max(-origOffsetPx, prev.deltaX + incr) } : null);
+            }
         };
         const onUp = async () => {
             if (autoScrollRafRef.current !== null) {
@@ -602,6 +605,8 @@ export default function SchedulePage() {
         if (rowDragging) return;
         e.preventDefault();
         dragMovedRef.current = false;
+        prevMouseXRef.current = e.clientX;
+        mouseXRef.current = e.clientX;
         setDragging({ id: item._id, origStart: item.startDay, origStartHour: item.startHour ?? 0, deltaX: 0, mouseStartX: e.clientX });
     };
 
