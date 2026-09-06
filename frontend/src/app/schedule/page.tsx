@@ -107,8 +107,9 @@ type FlatRow =
 
 function itemDuration(item: ScheduleItem): number {
     const lh = item.laborHours ?? 0;
-    const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
-    return Math.max(0.125, hours / 8);
+    const qty = item.quantity;
+    if (!qty || !lh || !isFinite(qty / lh)) return 1;
+    return Math.max(0.125, (qty / lh) / 8);
 }
 
 function addDays(date: Date, days: number): Date {
@@ -353,11 +354,10 @@ export default function SchedulePage() {
             const origFrac = (d.origStart - 1) + d.origStartHour / 24;
             const newFrac = Math.max(0, origFrac + d.deltaX / DAY_W);
             const totalHours = Math.round(newFrac * 24);
-            const newStartDay = Math.floor(totalHours / 24) + 1;
-            const newStartHour = totalHours % 24;
-            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: newStartDay, startHour: newStartHour } : i));
+            const newStartDay = Math.max(1, Math.round(origFrac + d.deltaX / DAY_W) + 1);
+            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: newStartDay } : i));
             setDragging(null);
-            Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay, startHour: newStartHour } });
+            Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay } });
         };
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
