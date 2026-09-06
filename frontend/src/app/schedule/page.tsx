@@ -543,8 +543,8 @@ export default function SchedulePage() {
         mouseXRef.current = e.clientX;
 
         // Capture in closure — draggingRef won't be set until after async React render
-        const origStart = item.startDay;
-        const origStartHour = item.startHour ?? 0;
+        const origStart = (item.startDay != null && isFinite(item.startDay)) ? item.startDay : 1;
+        const origStartHour = (item.startHour != null && isFinite(item.startHour)) ? item.startHour : 0;
         const itemId = item._id;
         const origOffsetPx = (origStart - 1) * DAY_W + (origStartHour / 24) * DAY_W;
         const mouseDownX = e.clientX;
