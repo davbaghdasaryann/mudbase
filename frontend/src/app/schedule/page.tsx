@@ -758,11 +758,11 @@ export default function SchedulePage() {
                                     return (
                                         <Box key={d} sx={{
                                             width: DAY_W, flexShrink: 0, textAlign: 'center', py: 0.8,
-                                            borderRight: dayNum === 1 ? `1px solid ${mainPrimaryColor}44` : dayNum % 5 === 0 ? `1px solid ${mainPrimaryColor}22` : `1px solid rgba(0,0,0,0.09)`,
+                                            borderRight: dayNum === 1 ? `1px solid ${mainPrimaryColor}44` : dayNum % 5 === 0 ? `1px solid ${mainPrimaryColor}22` : `1px solid rgba(0,0,0,0.04)`,
                                             color: isWeekend ? '#94a3b8' : dayNum === 1 ? mainPrimaryColor : '#bbb',
                                             fontSize: '0.63rem',
                                             fontWeight: dayNum === 1 ? 700 : 400,
-                                            bgcolor: isWeekend ? 'rgba(148,163,184,0.14)' : 'transparent',
+                                            bgcolor: isWeekend ? 'rgba(148,163,184,0.07)' : 'transparent',
                                         }}>
                                             {dayNum}
                                         </Box>
@@ -897,7 +897,7 @@ export default function SchedulePage() {
                                                     const dayNum = date.getDate();
                                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                                                     return (
-                                                        <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: isWeekend ? 'rgba(148,163,184,0.10)' : 'rgba(0,0,0,0.05)', zIndex: 0 }} />
+                                                        <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: 'transparent', zIndex: 0 }} />
                                                     );
                                                 })}
                                             </Box>
