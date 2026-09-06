@@ -683,33 +683,14 @@ export default function SchedulePage() {
                         />
                     </Box>
                 </Box>
-                <Button
-                    variant='outlined'
-                    size='small'
-                    startIcon={<CreateNewFolderOutlinedIcon sx={{ fontSize: 16 }} />}
-                    onClick={handleGroupCreate}
-                    sx={{
-                        borderRadius: '25px', height: '34px', textTransform: 'none', flexShrink: 0,
-                        borderColor: '#b0bec5', color: '#607d8b', fontSize: '0.78rem',
-                        '&:hover': { bgcolor: '#607d8b', color: '#fff', borderColor: '#607d8b' },
-                        mr: 1,
-                    }}
-                >
-                    {t('Add Group')}
-                </Button>
-                <Button
-                    variant='outlined'
-                    size='medium'
-                    startIcon={<WorkOutlineIcon sx={{ fontSize: 18 }} />}
-                    onClick={() => handleChooseWork(null)}
-                    sx={{
-                        borderRadius: '25px', height: '38px', textTransform: 'none', flexShrink: 0,
-                        borderColor: mainPrimaryColor, color: mainPrimaryColor,
-                        '&:hover': { bgcolor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
-                    }}
-                >
-                    {t('Choose a work')}
-                </Button>
+                <Box onClick={handleGroupCreate} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 90, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <CreateNewFolderOutlinedIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Add Group')}</Typography>
+                </Box>
+                <Box onClick={() => handleChooseWork(null)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 90, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: `rgba(0,171,190,0.06)` }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <WorkOutlineIcon sx={{ fontSize: 22, color: mainPrimaryColor, opacity: 0.55 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Choose a work')}</Typography>
+                </Box>
             </Box>
 
             {/* Gantt table */}
