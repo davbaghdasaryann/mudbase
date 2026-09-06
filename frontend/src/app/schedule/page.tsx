@@ -80,8 +80,7 @@ interface DragState {
     id: string;
     origStart: number;
     origStartHour: number;
-    currentStart: number;
-    currentStartHour: number;
+    deltaX: number;
     mouseStartX: number;
 }
 
@@ -189,6 +188,7 @@ export default function SchedulePage() {
     const groupsRef = useRef<ScheduleGroup[]>([]);
     groupsRef.current = groups;
 
+    const ganttScrollRef = useRef<HTMLDivElement | null>(null);
     const dragMovedRef = useRef(false);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
@@ -296,23 +296,35 @@ export default function SchedulePage() {
         const onMove = (e: MouseEvent) => {
             const d = draggingRef.current;
             if (!d) return;
-            const deltaX = e.clientX - d.mouseStartX;
-            if (Math.abs(deltaX) > 4) dragMovedRef.current = true;
-            const origFrac = (d.origStart - 1) + d.origStartHour / 24;
-            const newFrac = Math.max(0, origFrac + deltaX / DAY_W);
-            const totalHours = Math.round(newFrac * 24);
-            const newStart = Math.floor(totalHours / 24) + 1;
-            const newStartHour = totalHours % 24;
-            if (newStart !== d.currentStart || newStartHour !== d.currentStartHour) {
-                setDragging(prev => prev ? { ...prev, currentStart: newStart, currentStartHour: newStartHour } : null);
+            const rawDelta = e.clientX - d.mouseStartX;
+            if (Math.abs(rawDelta) > 2) dragMovedRef.current = true;
+            // Clamp so bar can't go before day 1
+            const origOffsetPx = (d.origStart - 1) * DAY_W + (d.origStartHour / 24) * DAY_W;
+            const clampedDelta = Math.max(-origOffsetPx, rawDelta);
+            setDragging(prev => prev ? { ...prev, deltaX: clampedDelta } : null);
+            // Auto-scroll when near left/right edge
+            const scroller = ganttScrollRef.current;
+            if (scroller) {
+                const rect = scroller.getBoundingClientRect();
+                const ZONE = 70;
+                if (e.clientX < rect.left + ZONE) {
+                    scroller.scrollLeft -= (rect.left + ZONE - e.clientX) * 0.4;
+                } else if (e.clientX > rect.right - ZONE) {
+                    scroller.scrollLeft += (e.clientX - (rect.right - ZONE)) * 0.4;
+                }
             }
         };
         const onUp = async () => {
             const d = draggingRef.current;
             if (!d) return;
-            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: d.currentStart, startHour: d.currentStartHour } : i));
+            const origFrac = (d.origStart - 1) + d.origStartHour / 24;
+            const newFrac = Math.max(0, origFrac + d.deltaX / DAY_W);
+            const totalHours = Math.round(newFrac * 24);
+            const newStartDay = Math.floor(totalHours / 24) + 1;
+            const newStartHour = totalHours % 24;
+            setScheduleItems(prev => prev.map(i => i._id === d.id ? { ...i, startDay: newStartDay, startHour: newStartHour } : i));
             setDragging(null);
-            await Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: d.currentStart, startHour: d.currentStartHour } });
+            await Api.requestSession({ command: 'schedule/item_update', args: { id: d.id, startDay: newStartDay, startHour: newStartHour } });
         };
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
@@ -557,7 +569,7 @@ export default function SchedulePage() {
         if (rowDragging) return;
         e.preventDefault();
         dragMovedRef.current = false;
-        setDragging({ id: item._id, origStart: item.startDay, origStartHour: item.startHour ?? 0, currentStart: item.startDay, currentStartHour: item.startHour ?? 0, mouseStartX: e.clientX });
+        setDragging({ id: item._id, origStart: item.startDay, origStartHour: item.startHour ?? 0, deltaX: 0, mouseStartX: e.clientX });
     };
 
     const handleBarClick = (e: React.MouseEvent, item: ScheduleItem) => {
@@ -598,7 +610,6 @@ export default function SchedulePage() {
         const endFrac = origFrac + duration1;
         const startDay2 = Math.floor(endFrac) + 1;
         const startHour2 = Math.round((endFrac % 1) * 24) % 24;
-        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i));
         const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
             scheduleId: selected._id,
             laborOfferItemName: item.laborOfferItemName,
@@ -611,7 +622,13 @@ export default function SchedulePage() {
             startHour: startHour2,
             ...(item.groupId ? { groupId: item.groupId } : {}),
         }});
-        setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay2, startHour: newItem.startHour ?? startHour2 }]);
+        setScheduleItems(prev => {
+            const updated = prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i);
+            const origIdx = updated.findIndex(i => i._id === item._id);
+            const inserted = [...updated];
+            inserted.splice(origIdx + 1, 0, { ...newItem, startDay: newItem.startDay ?? startDay2, startHour: newItem.startHour ?? startHour2 });
+            return inserted;
+        });
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: q1 } });
     };
 
@@ -708,7 +725,9 @@ export default function SchedulePage() {
         : new Date(new Date().toDateString());
 
     const totalDays = Math.max(scheduleItems.reduce((max, item) => {
-        const start = dragging?.id === item._id ? dragging.currentStart : (item.startDay ?? 1);
+        const start = dragging?.id === item._id
+            ? Math.floor(((item.startDay - 1) + (item.startHour ?? 0) / 24 + dragging.deltaX / DAY_W)) + 1
+            : (item.startDay ?? 1);
         return Math.max(max, start + itemDuration(item) - 1);
     }, 20), 20);
 
@@ -774,7 +793,7 @@ export default function SchedulePage() {
                     overflow: 'hidden',
                     userSelect: 'none',
                 }}>
-                    <Box sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 155px)' }}>
+                    <Box ref={ganttScrollRef} sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 155px)' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
 
                             {/* Month header row */}
@@ -954,11 +973,12 @@ export default function SchedulePage() {
                                 const { item, groupId } = row;
                                 const isDraggingThis = dragging?.id === item._id;
                                 const isRowDraggingThis = rowDragging?.id === item._id;
-                                const startDay = isDraggingThis ? dragging!.currentStart : (item.startDay ?? 1);
-                                const startHour = isDraggingThis ? dragging!.currentStartHour : (item.startHour ?? 0);
+                                const startDay = item.startDay ?? 1;
+                                const startHour = item.startHour ?? 0;
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
-                                const startOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
+                                const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
+                                const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
                                 const barWidth = Math.max(duration * DAY_W - 3, 12);
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
