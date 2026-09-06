@@ -875,7 +875,7 @@ export default function SchedulePage() {
                                                     const dayNum = date.getDate();
                                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                                                     return (
-                                                        <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: dayNum === 1 ? `${mainPrimaryColor}20` : isWeekend ? 'rgba(148,163,184,0.06)' : dayNum % 5 === 0 ? `${mainPrimaryColor}10` : 'transparent', zIndex: 0 }} />
+                                                        <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: 'transparent', zIndex: 0 }} />
                                                     );
                                                 })}
                                                 {groupItems.length > 0 && isCollapsed && (
@@ -990,7 +990,7 @@ export default function SchedulePage() {
                                                 const dayNum = date.getDate();
                                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                                                 return (
-                                                    <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: dayNum === 1 ? `${mainPrimaryColor}12` : isWeekend ? 'rgba(148,163,184,0.04)' : dayNum % 5 === 0 ? `${mainPrimaryColor}07` : 'transparent', zIndex: 0 }} />
+                                                    <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: 'transparent', zIndex: 0 }} />
                                                 );
                                             })}
                                             <Tooltip title={tooltipLabel} placement='top' arrow>
