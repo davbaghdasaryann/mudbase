@@ -190,6 +190,7 @@ export default function SchedulePage() {
     const dragMovedRef = useRef(false);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
+    const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem } | null>(null);
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -568,6 +569,41 @@ export default function SchedulePage() {
         setScheduleItems(prev => prev.map(i => i._id === barPopover.itemId ? { ...i, startHour: newHour } : i));
         setBarPopover(null);
         await Api.requestSession({ command: 'schedule/item_update', args: { id: barPopover.itemId, startHour: newHour } });
+    };
+
+    const handleBarContextMenu = (e: React.MouseEvent, item: ScheduleItem) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item });
+    };
+
+    const handleSplitItem = async () => {
+        if (!barContextMenu || !selected) return;
+        const item = barContextMenu.item;
+        setBarContextMenu(null);
+        const duration = itemDuration(item);
+        if (duration < 2) return;
+        const half1Days = Math.ceil(duration / 2);
+        const half2Days = duration - half1Days;
+        const lh = item.laborHours ?? 0;
+        if (lh <= 0) return;
+        const q1 = half1Days * 8 * lh;
+        const q2 = half2Days * 8 * lh;
+        const startDay2 = item.startDay + half1Days;
+        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i));
+        const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
+            scheduleId: selected._id,
+            laborOfferItemName: item.laborOfferItemName,
+            quantity: q2,
+            laborHours: lh,
+            unitSymbol: item.unitSymbol ?? '',
+            sectionName: item.sectionName ?? '',
+            subsectionName: item.subsectionName ?? '',
+            startDay: startDay2,
+            ...(item.groupId ? { groupId: item.groupId } : {}),
+        }});
+        setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay2 }]);
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: q1 } });
     };
 
     const handleRowDragStart = (e: React.MouseEvent, item: ScheduleItem, flatIndex: number) => {
@@ -1011,6 +1047,7 @@ export default function SchedulePage() {
                                                 <Box
                                                     onMouseDown={e => handleBarMouseDown(e, item)}
                                                     onClick={e => handleBarClick(e, item)}
+                                                    onContextMenu={e => handleBarContextMenu(e, item)}
                                                     sx={{
                                                         position: 'absolute',
                                                         left: startOffset + 2,
@@ -1166,6 +1203,19 @@ export default function SchedulePage() {
                         <ListItemText primary={t('Remove from group')} primaryTypographyProps={{ fontSize: '0.82rem', color: '#90a4ae' }} />
                     </MenuItem>
                 )}
+            </Menu>
+
+            {/* Bar right-click context menu */}
+            <Menu
+                open={!!barContextMenu}
+                onClose={() => setBarContextMenu(null)}
+                anchorReference="anchorPosition"
+                anchorPosition={barContextMenu ? { top: barContextMenu.mouseY, left: barContextMenu.mouseX } : undefined}
+                PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
+            >
+                <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>Բաժանել</MenuItem>
+                <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>Կապել</MenuItem>
+                <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>Ժամանակ</MenuItem>
             </Menu>
 
             {/* Bar time popover */}
