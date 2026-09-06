@@ -14,6 +14,7 @@ export interface EntityScheduleItem {
     startHour?: number;
     displayIndex?: number;
     groupId?: ObjectId;
+    parentItemId?: ObjectId;
     createdAt?: Date;
 }
 

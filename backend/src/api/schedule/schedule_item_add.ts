@@ -17,6 +17,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
     const startHourParam = getQueryParam(req, 'startHour');
     const startHour = startHourParam ? parseInt(startHourParam) : undefined;
     const groupIdParam = getQueryParam(req, 'groupId');
+    const parentItemIdParam = getQueryParam(req, 'parentItemId');
 
     const col = Db.getScheduleItemsCollection();
     const groupFilter = groupIdParam
@@ -41,6 +42,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         ...(startHour !== undefined ? { startHour } : {}),
         displayIndex,
         ...(groupIdParam ? { groupId: new ObjectId(groupIdParam) } : {}),
+        ...(parentItemIdParam ? { parentItemId: new ObjectId(parentItemIdParam) } : {}),
         createdAt: new Date(),
     };
     const result = await col.insertOne(doc);

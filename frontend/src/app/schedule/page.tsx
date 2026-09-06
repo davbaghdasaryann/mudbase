@@ -74,6 +74,7 @@ interface ScheduleItem {
     startHour?: number; // 0-23, hour within startDay
     displayIndex?: number;
     groupId?: string;
+    parentItemId?: string; // set on segment items — they render within parent's row
 }
 
 interface DragState {
@@ -241,7 +242,7 @@ export default function SchedulePage() {
 
         // Ungrouped items at top (no label — they're the default state)
         const ungroupedItems = scheduleItems
-            .filter(i => !i.groupId)
+            .filter(i => !i.groupId && !i.parentItemId)
             .sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
         for (const item of ungroupedItems) {
             result.push({ type: 'item', item, groupId: null });
@@ -251,7 +252,7 @@ export default function SchedulePage() {
         const sortedGroups = [...groups].sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
         for (const group of sortedGroups) {
             const groupItems = scheduleItems
-                .filter(i => i.groupId === group._id)
+                .filter(i => i.groupId === group._id && !i.parentItemId)
                 .sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
             result.push({ type: 'group', group, items: groupItems });
             if (!collapsedGroups.has(group._id)) {
@@ -266,6 +267,18 @@ export default function SchedulePage() {
 
     const displayListRef = useRef<FlatRow[]>([]);
     displayListRef.current = displayList;
+
+    const segmentsByParent = useMemo(() => {
+        const map = new Map<string, ScheduleItem[]>();
+        for (const item of scheduleItems) {
+            if (item.parentItemId) {
+                const arr = map.get(item.parentItemId) ?? [];
+                arr.push(item);
+                map.set(item.parentItemId, arr);
+            }
+        }
+        return map;
+    }, [scheduleItems]);
 
     // Live preview during row drag
     const displayedFlatRows = useMemo<FlatRow[]>(() => {
@@ -610,6 +623,7 @@ export default function SchedulePage() {
         const endFrac = origFrac + duration1;
         const startDay2 = Math.floor(endFrac) + 1;
         const startHour2 = Math.round((endFrac % 1) * 24) % 24;
+        const parentItemId = item.parentItemId ?? item._id;
         const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
             scheduleId: selected._id,
             laborOfferItemName: item.laborOfferItemName,
@@ -620,15 +634,13 @@ export default function SchedulePage() {
             subsectionName: item.subsectionName ?? '',
             startDay: startDay2,
             startHour: startHour2,
+            parentItemId,
             ...(item.groupId ? { groupId: item.groupId } : {}),
         }});
-        setScheduleItems(prev => {
-            const updated = prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i);
-            const origIdx = updated.findIndex(i => i._id === item._id);
-            const inserted = [...updated];
-            inserted.splice(origIdx + 1, 0, { ...newItem, startDay: newItem.startDay ?? startDay2, startHour: newItem.startHour ?? startHour2 });
-            return inserted;
-        });
+        setScheduleItems(prev => [
+            ...prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i),
+            { ...newItem, startDay: newItem.startDay ?? startDay2, startHour: newItem.startHour ?? startHour2, parentItemId },
+        ]);
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: q1 } });
     };
 
@@ -1098,6 +1110,43 @@ export default function SchedulePage() {
                                                     </Typography>
                                                 </Box>
                                             </Tooltip>
+                                            {/* Segment bars (split parts) */}
+                                            {(segmentsByParent.get(item._id) ?? []).map(seg => {
+                                                const segIsDragging = dragging?.id === seg._id;
+                                                const segBaseOffset = (seg.startDay - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
+                                                const segOffset = segIsDragging ? Math.max(0, segBaseOffset + dragging!.deltaX) : segBaseOffset;
+                                                const segDuration = itemDuration(seg);
+                                                const segWidth = Math.max(segDuration * DAY_W - 3, 12);
+                                                const segLabel = segDuration >= 1 ? `${Math.round(segDuration * 10) / 10}${t('day_short')}` : `${Math.round(segDuration * 8)}h`;
+                                                return (
+                                                    <Tooltip key={seg._id} title={seg.laborOfferItemName} placement='top' arrow>
+                                                        <Box
+                                                            onMouseDown={e => handleBarMouseDown(e, seg)}
+                                                            onClick={e => handleBarClick(e, seg)}
+                                                            onContextMenu={e => e.preventDefault()}
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                left: segOffset + 2,
+                                                                top: 6, height: ROW_H - 12,
+                                                                width: segWidth,
+                                                                background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                                borderRadius: '5px',
+                                                                display: 'flex', alignItems: 'center',
+                                                                px: 1, overflow: 'hidden',
+                                                                boxShadow: segIsDragging ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                                cursor: segIsDragging ? 'grabbing' : 'grab',
+                                                                opacity: segIsDragging ? 0.9 : 1,
+                                                                transition: segIsDragging ? 'none' : 'box-shadow 0.15s',
+                                                                zIndex: segIsDragging ? 10 : 1,
+                                                            }}
+                                                        >
+                                                            <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                                                {segLabel}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Tooltip>
+                                                );
+                                            })}
                                         </Box>
                                     </Box>
                                 );
