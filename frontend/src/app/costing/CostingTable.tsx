@@ -833,8 +833,8 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const rows: { label: string; val: number }[] = [
                         { label: t('Labor Cost'), val: salaryTotal / q },
                         { label: 'Volume / Spent', val: volumeTotal / q },
-                        { label: 'Մeхaнизм', val: mechanismTotal / q },
                         { label: t('Materials Cost'), val: matActTotal / q },
+                        { label: 'Մեխանիզմ', val: mechanismTotal / q },
                     ].filter(r => r.val > 0);
                     return (
                         <Box>
