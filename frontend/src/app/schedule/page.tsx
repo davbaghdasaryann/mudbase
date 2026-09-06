@@ -498,12 +498,7 @@ export default function SchedulePage() {
         setAddingId(row._id);
         const targetGroupId = addWorkForGroupId;
         try {
-            const groupItems = scheduleItems.filter(i =>
-                targetGroupId ? i.groupId === targetGroupId : !i.groupId
-            );
-            const startDay = groupItems.reduce((max, item) => {
-                return Math.max(max, item.startDay + itemDuration(item));
-            }, 1);
+            const startDay = 1;
             const args: Record<string, unknown> = {
                 scheduleId: selected._id,
                 laborOfferItemName: row.laborOfferItemName,
