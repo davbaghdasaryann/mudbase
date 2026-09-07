@@ -896,7 +896,7 @@ export default function SchedulePage() {
 
                             {/* Day number header row */}
                             <Box sx={{ display: 'flex', position: 'sticky', top: 28, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
-                                <Box sx={{ width: nameColW, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22`, position: 'relative' }}>
+                                <Box sx={{ width: nameColW, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22`, overflow: 'visible' }}>
                                     <Typography variant='caption' sx={{ color: mainPrimaryColor, fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                         {t('Task')}
                                     </Typography>
