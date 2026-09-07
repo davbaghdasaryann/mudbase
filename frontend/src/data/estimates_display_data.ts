@@ -12,6 +12,7 @@ export class EstimatesDisplayData {
     accountId?: string;
     companyName?: string;
     inCosting?: boolean;
+    inPerformance?: boolean;
 
     constructor(est?: ApiEstimate) {
         if (!est)
@@ -26,5 +27,6 @@ export class EstimatesDisplayData {
         this.accountId = est.accountId;
         this.companyName = (est as any).companyName;
         this.inCosting = (est as any).inCosting ?? false;
+        this.inPerformance = (est as any).inPerformance ?? false;
     }
 }

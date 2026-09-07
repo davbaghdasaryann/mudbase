@@ -6,6 +6,7 @@ import {useTranslation} from 'react-i18next';
 
 import {Box, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
 
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -205,6 +206,11 @@ export default function AccountEstimatesTab() {
                                             {est.inCosting && (
                                                 <Tooltip title={t('In Costing')} placement='top' arrow>
                                                     <RequestQuoteOutlinedIcon sx={{ fontSize: 16, color: '#FF9D00', flexShrink: 0, cursor: 'default' }} />
+                                                </Tooltip>
+                                            )}
+                                            {est.inPerformance && (
+                                                <Tooltip title={t('In Performance')} placement='top' arrow>
+                                                    <AssessmentOutlinedIcon sx={{ fontSize: 16, color: '#7B1FA2', flexShrink: 0, cursor: 'default' }} />
                                                 </Tooltip>
                                             )}
                                         </Box>
