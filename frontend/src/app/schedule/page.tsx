@@ -206,8 +206,8 @@ export default function SchedulePage() {
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
-    const [splitModal, setSplitModal] = useState<{ item: ScheduleItem } | null>(null);
-    const [splitParts, setSplitParts] = useState('2');
+    const [splitMode, setSplitMode] = useState<{ item: ScheduleItem; markers: number[] } | null>(null);
+    const splitMarkerDragRef = useRef<{ index: number; startX: number; origOffset: number; hasMoved: boolean } | null>(null);
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -430,6 +430,12 @@ export default function SchedulePage() {
             document.body.style.cursor = '';
         };
     }, [groupDragging]);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSplitMode(null); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
     const handleCreate = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -674,43 +680,39 @@ export default function SchedulePage() {
         if (!barContextMenu) return;
         const item = barContextMenu.item;
         setBarContextMenu(null);
-        setSplitParts('2');
-        setSplitModal({ item });
+        setSplitMode({ item, markers: [] });
     };
 
     const handleSplitConfirm = async () => {
-        if (!splitModal || !selected) return;
-        const item = splitModal.item;
-        const n = Math.max(2, Math.min(20, parseInt(splitParts) || 2));
-        setSplitModal(null);
+        if (!splitMode || !selected) return;
+        const item = splitMode.item;
+        const sortedMarkers = [...splitMode.markers].sort((a, b) => a - b);
+        setSplitMode(null);
+        if (sortedMarkers.length === 0) return;
         const lh = item.laborHours ?? 0;
-        if (lh <= 0 || (item.quantity ?? 0) <= 0) return;
         const totalQ = item.quantity ?? 0;
-        const partQ = totalQ / n;
-        const partDuration = partQ / lh / 8;
+        if (lh <= 0 || totalQ <= 0) return;
+        const barWidthPx = Math.max(itemDuration(item) * DAY_W - 3, 12);
+        const totalDuration = itemDuration(item);
+        const fractions = [0, ...sortedMarkers.map(m => Math.max(0.001, Math.min(0.999, m / barWidthPx))), 1];
         const parentItemId = item.parentItemId ?? item._id;
-        let frac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
-
-        // Update first part in place
-        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: partQ } : i));
-        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: partQ } });
-
-        // Add remaining parts sequentially
-        for (let i = 1; i < n; i++) {
-            frac += partDuration;
-            const startDay = Math.floor(frac) + 1;
-            const startHour = Math.round((frac % 1) * 24) % 24;
+        const baseStartFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+        const firstQ = totalQ * (fractions[1] - fractions[0]);
+        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: firstQ } : i));
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: firstQ } });
+        for (let i = 1; i < fractions.length - 1; i++) {
+            const segQ = totalQ * (fractions[i + 1] - fractions[i]);
+            const startFracAbs = baseStartFrac + fractions[i] * totalDuration;
+            const startDay = Math.floor(startFracAbs) + 1;
+            const startHour = Math.round((startFracAbs % 1) * 24) % 24;
             const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
                 scheduleId: selected._id,
                 laborOfferItemName: item.laborOfferItemName,
-                quantity: partQ,
-                laborHours: lh,
+                quantity: segQ, laborHours: lh,
                 unitSymbol: item.unitSymbol ?? '',
                 sectionName: item.sectionName ?? '',
                 subsectionName: item.subsectionName ?? '',
-                startDay,
-                startHour,
-                parentItemId,
+                startDay, startHour, parentItemId,
                 ...(item.groupId ? { groupId: item.groupId } : {}),
             }});
             setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay, startHour: newItem.startHour ?? startHour, parentItemId }]);
@@ -1091,6 +1093,7 @@ export default function SchedulePage() {
                                 const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
                                 const baseBarWidth = Math.max(duration * DAY_W - 3, 12);
                                 const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
+                                const isSplitTarget = splitMode?.item._id === item._id;
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
@@ -1184,44 +1187,121 @@ export default function SchedulePage() {
                                                     <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: 'transparent', zIndex: 0 }} />
                                                 );
                                             })}
-                                            <Tooltip title={tooltipLabel} placement='top' arrow>
+                                            <Tooltip title={isSplitTarget ? '' : tooltipLabel} placement='top' arrow>
                                                 <Box
-                                                    onMouseDown={e => handleBarMouseDown(e, item)}
-                                                    onClick={e => handleBarClick(e, item)}
+                                                    onMouseDown={isSplitTarget ? (e => e.preventDefault()) : (e => handleBarMouseDown(e, item))}
+                                                    onClick={isSplitTarget ? (e => {
+                                                        e.stopPropagation();
+                                                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                                        const offset = Math.round(e.clientX - rect.left);
+                                                        setSplitMode(prev => prev ? { ...prev, markers: [...prev.markers, Math.max(2, Math.min(barWidth - 2, offset))] } : prev);
+                                                    }) : (e => handleBarClick(e, item))}
                                                     onContextMenu={e => e.preventDefault()}
                                                     sx={{
                                                         position: 'absolute',
                                                         left: startOffset + 2,
                                                         top: 6, height: ROW_H - 12,
                                                         width: barWidth,
-                                                        background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                        background: isSplitTarget
+                                                            ? `linear-gradient(90deg, ${barColor}bb 0%, ${barColor}88 100%)`
+                                                            : `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
                                                         borderRadius: '5px',
                                                         display: 'flex', alignItems: 'center',
-                                                        px: 1, overflow: 'hidden',
-                                                        boxShadow: (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                        cursor: isDraggingThis ? 'grabbing' : 'grab',
+                                                        px: 1, overflow: 'visible',
+                                                        boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                        cursor: isSplitTarget ? 'crosshair' : (isDraggingThis ? 'grabbing' : 'grab'),
                                                         opacity: (isDraggingThis || isResizingThis) ? 0.9 : 1,
                                                         transition: (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
-                                                        zIndex: (isDraggingThis || isResizingThis) ? 10 : 1,
+                                                        zIndex: isSplitTarget ? 10 : (isDraggingThis || isResizingThis) ? 10 : 1,
+                                                        outline: isSplitTarget ? '2px dashed rgba(255,255,255,0.7)' : 'none',
+                                                        outlineOffset: '0px',
                                                     }}
                                                 >
-                                                    <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
+                                                    <Typography sx={{ color: isSplitTarget ? 'rgba(255,255,255,0.6)' : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
                                                         {(() => { const d = isResizingThis ? Math.max(0.125, Math.max(12, resizing!.origBarWidth + resizing!.deltaX) / DAY_W) : duration; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
                                                     </Typography>
-                                                    {/* Resize handle */}
-                                                    <Box
-                                                        onMouseDown={e => handleResizeMouseDown(e, item)}
-                                                        onClick={e => e.stopPropagation()}
-                                                        sx={{
-                                                            position: 'absolute', right: 0, top: 0, bottom: 0,
-                                                            width: 10, cursor: 'ew-resize',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            borderRadius: '0 5px 5px 0',
-                                                            '&:hover': { background: 'rgba(255,255,255,0.15)' },
-                                                        }}
-                                                    >
-                                                        <Box sx={{ width: 2, height: '55%', background: 'rgba(255,255,255,0.55)', borderRadius: 1, pointerEvents: 'none' }} />
-                                                    </Box>
+                                                    {/* Resize handle — hidden in split mode */}
+                                                    {!isSplitTarget && (
+                                                        <Box
+                                                            onMouseDown={e => handleResizeMouseDown(e, item)}
+                                                            onClick={e => e.stopPropagation()}
+                                                            sx={{
+                                                                position: 'absolute', right: 0, top: 0, bottom: 0,
+                                                                width: 10, cursor: 'ew-resize',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                borderRadius: '0 5px 5px 0',
+                                                                '&:hover': { background: 'rgba(255,255,255,0.15)' },
+                                                            }}
+                                                        >
+                                                            <Box sx={{ width: 2, height: '55%', background: 'rgba(255,255,255,0.55)', borderRadius: 1, pointerEvents: 'none' }} />
+                                                        </Box>
+                                                    )}
+                                                    {/* Split markers */}
+                                                    {isSplitTarget && splitMode!.markers.map((m, mi) => (
+                                                        <Box
+                                                            key={mi}
+                                                            onMouseDown={e => {
+                                                                e.stopPropagation();
+                                                                splitMarkerDragRef.current = { index: mi, startX: e.clientX, origOffset: m, hasMoved: false };
+                                                                const onMove = (ev: MouseEvent) => {
+                                                                    if (!splitMarkerDragRef.current) return;
+                                                                    const delta = ev.clientX - splitMarkerDragRef.current.startX;
+                                                                    if (Math.abs(delta) > 3) splitMarkerDragRef.current.hasMoved = true;
+                                                                    const newOff = Math.max(2, Math.min(barWidth - 2, splitMarkerDragRef.current.origOffset + delta));
+                                                                    const idx = splitMarkerDragRef.current.index;
+                                                                    setSplitMode(prev => {
+                                                                        if (!prev) return prev;
+                                                                        const markers = [...prev.markers];
+                                                                        markers[idx] = newOff;
+                                                                        return { ...prev, markers };
+                                                                    });
+                                                                };
+                                                                const onUp = () => {
+                                                                    window.removeEventListener('mousemove', onMove);
+                                                                    window.removeEventListener('mouseup', onUp);
+                                                                    if (splitMarkerDragRef.current && !splitMarkerDragRef.current.hasMoved) {
+                                                                        const idx = splitMarkerDragRef.current.index;
+                                                                        setSplitMode(prev => prev ? { ...prev, markers: prev.markers.filter((_, i) => i !== idx) } : prev);
+                                                                    }
+                                                                    splitMarkerDragRef.current = null;
+                                                                };
+                                                                window.addEventListener('mousemove', onMove);
+                                                                window.addEventListener('mouseup', onUp);
+                                                            }}
+                                                            onClick={e => e.stopPropagation()}
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                left: m - 1,
+                                                                top: -4, bottom: -4,
+                                                                width: 3,
+                                                                background: '#fff',
+                                                                cursor: 'ew-resize',
+                                                                zIndex: 6,
+                                                                borderRadius: 1,
+                                                                boxShadow: '0 0 4px rgba(0,0,0,0.4)',
+                                                                '&::before': {
+                                                                    content: '""',
+                                                                    position: 'absolute',
+                                                                    top: 0, left: '50%',
+                                                                    transform: 'translateX(-50%)',
+                                                                    width: 0, height: 0,
+                                                                    borderLeft: '5px solid transparent',
+                                                                    borderRight: '5px solid transparent',
+                                                                    borderBottom: '6px solid #fff',
+                                                                },
+                                                                '&::after': {
+                                                                    content: '""',
+                                                                    position: 'absolute',
+                                                                    bottom: 0, left: '50%',
+                                                                    transform: 'translateX(-50%)',
+                                                                    width: 0, height: 0,
+                                                                    borderLeft: '5px solid transparent',
+                                                                    borderRight: '5px solid transparent',
+                                                                    borderTop: '6px solid #fff',
+                                                                },
+                                                            }}
+                                                        />
+                                                    ))}
                                                 </Box>
                                             </Tooltip>
                                             {/* Segment bars (split parts) */}
@@ -1450,27 +1530,36 @@ export default function SchedulePage() {
                 })()}
             </Popover>
 
-            {/* Split parts dialog */}
-            <Dialog open={!!splitModal} onClose={() => setSplitModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700, fontSize: '1rem', pb: 1 }}>Բաժանել</DialogTitle>
-                <DialogContent sx={{ pt: '8px !important' }}>
-                    <TextField
-                        label={t('Number of parts')}
-                        type='number'
-                        value={splitParts}
-                        onChange={e => setSplitParts(e.target.value)}
-                        inputProps={{ min: 2, max: 20 }}
-                        fullWidth
-                        autoFocus
+            {/* Split mode floating toolbar */}
+            {splitMode && (
+                <Box sx={{
+                    position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 9999, display: 'flex', alignItems: 'center', gap: 1.5,
+                    bgcolor: 'rgba(28,28,28,0.93)', borderRadius: 3,
+                    px: 3, py: 1.2, boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+                    backdropFilter: 'blur(10px)',
+                }}>
+                    <Typography sx={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', mr: 0.5 }}>
+                        {splitMode.markers.length === 0
+                            ? 'Click on the bar to add split points'
+                            : `${splitMode.markers.length} split point${splitMode.markers.length > 1 ? 's' : ''} · ${splitMode.markers.length + 1} parts`}
+                    </Typography>
+                    <Button onClick={() => setSplitMode(null)}
                         size='small'
-                        onKeyDown={e => { if (e.key === 'Enter') handleSplitConfirm(); }}
-                    />
-                </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setSplitModal(null)} sx={{ color: 'text.secondary', textTransform: 'none' }}>{t('Cancel')}</Button>
-                    <Button onClick={handleSplitConfirm} variant='contained' sx={{ borderRadius: '20px', textTransform: 'none', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor } }}>{t('Split')}</Button>
-                </DialogActions>
-            </Dialog>
+                        sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'none', fontSize: '0.8rem', minWidth: 0 }}>
+                        {t('Cancel')}
+                    </Button>
+                    <Button onClick={handleSplitConfirm}
+                        size='small'
+                        disabled={splitMode.markers.length === 0}
+                        variant='contained'
+                        sx={{ borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem',
+                            backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor },
+                            '&.Mui-disabled': { backgroundColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)' } }}>
+                        {t('Split')}
+                    </Button>
+                </Box>
+            )}
         </PageContents>
     );
 }
