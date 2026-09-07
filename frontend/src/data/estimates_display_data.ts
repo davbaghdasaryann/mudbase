@@ -14,6 +14,7 @@ export class EstimatesDisplayData {
     inCosting?: boolean;
     inPerformance?: boolean;
     inSchedule?: boolean;
+    isShared?: boolean;
 
     constructor(est?: ApiEstimate) {
         if (!est)
@@ -30,5 +31,6 @@ export class EstimatesDisplayData {
         this.inCosting = (est as any).inCosting ?? false;
         this.inPerformance = (est as any).inPerformance ?? false;
         this.inSchedule = (est as any).inSchedule ?? false;
+        this.isShared = (est as any).isShared ?? false;
     }
 }
