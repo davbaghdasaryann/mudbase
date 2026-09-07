@@ -146,7 +146,7 @@ export default function DashboardBuilderPage() {
                 {loading ? (
                     <Typography>{t('Loading...')}</Typography>
                 ) : groups.length === 0 ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 220px)', gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 180px)', gap: 2 }}>
                         <Typography variant='h6' color='textSecondary' sx={{ fontWeight: 400 }}>
                             {t('No widgets yet. Create your first widget to get started!')}
                         </Typography>
