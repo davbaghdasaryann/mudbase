@@ -1,12 +1,12 @@
 'use client';
 
-import React, {JSX, useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {useTranslation} from 'react-i18next';
 
-import {Toolbar} from '@mui/material';
-import {GridActionsCellItem} from '@mui/x-data-grid';
+import {Box, IconButton, Toolbar, Typography} from '@mui/material';
 
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 import * as Api from 'api';
@@ -18,8 +18,7 @@ import CreateEstimateDialog from './CreateEstimateDialog';
 import EstimateShareToAccountSelectionDialog from '../../components/estimates_shares/EstimateShareToAccount';
 import SearchComponent from '@/components/SearchComponent';
 import SpacerComponent from '@/components/SpacerComponent';
-import DataTableComponent from '@/components/DataTableComponent';
-import {actionColumnWidth5, mainIconColor, mainPrimaryColor} from '@/theme';
+import {mainPrimaryColor} from '@/theme';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import {PageButton} from '../../tsui/Buttons/PageButton';
 import {usePermissions} from '@/api/auth';
@@ -182,151 +181,67 @@ export default function AccountEstimatesTab() {
                 {permCreate && <PageButton variant='outlined' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }} />}
             </Toolbar>
 
-            <DataTableComponent
-                sx={{
-                    width: '100%',
-                    flex: 1,
-                    '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
-                }}
-                getRowHeight={() => 'auto'}
-                columns={[
-                    {field: 'estimateNumber', headerName: 'ID', align: 'center'},
-                    {
-                        field: 'name',
-                        headerName: t('Name'),
-                        flex: 2,
-                        renderCell: (params) => (
-                            <div style={{
-                                whiteSpace: 'normal',
-                                wordWrap: 'break-word',
-                                lineHeight: '1.5',
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '8px 0'
-                            }}>
-                                {params.value}
-                            </div>
-                        ),
-                    },
-                    {
-                        field: 'totalCostWithOtherExpenses',
-                        headerName: t('Cost'),
-                        align: 'center',
-                        flex: 0.4,
-                        valueFormatter: (value) => formatCurrency(value),
-                    },
-                    {
-                        field: 'createdAt',
-                        type: 'dateTime',
-                        headerName: t('Date'),
-                        align: 'center',
-                        flex: 0.3,
-                        valueFormatter: (value) => formatDate(value),
-                    },
-
-                    {
-                        field: 'actions',
-                        type: 'actions',
-                        width: actionColumnWidth5,
-                        getActions: (cell) => {
-                            if (!session?.user) return [];
-
-                            const actions: JSX.Element[] = [];
-
-                            if (permEdit) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='duplicate'
-                                        icon={<ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{height: {xs: 20, sm: 24}}} />}
-                                        label={t('Duplicate')}
-                                        onClick={() => onDuplicate(cell.row._id)}
-                                        showInMenu={false}
-                                    />
-                                );
-                            }
-
-                            if (permissionsSet.has('EST_SHR')) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='share'
-                                        icon={<ImgElement src='/images/icons/toolbar/share.svg' sx={{height: {xs: 20, sm: 24}}} />}
-                                        label={t('Share')}
-                                        onClick={() => {
-                                            setEstimateTitle(cell.row.name);
-                                            setEstimateIdForShare(cell.row._id);
-                                            setEstimateTotalCost(cell.row.totalCost);
-                                        }}
-                                        showInMenu={false}
-                                    />
-                                );
-                            }
-
-                            if (permEdit) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='edit'
-                                        icon={<ImgElement src='/images/icons/edit.svg' sx={{height: {xs: 20, sm: 24}}} />}
-                                        label={t('Edit')}
-                                        onClick={() => {
-                                            setEstimateTitle(cell.row.name);
-                                            setEstimateId(cell.row._id);
-                                            setEstimateTotalCost(cell.row.totalCost);
-                                        }}
-                                    />
-                                );
-                            } else {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='view'
-                                        icon={<VisibilityIcon />}
-                                        label={t('View')}
-                                        onClick={() => {
-                                            setEstimateTitle(cell.row.name);
-                                            setEstimateId(cell.row._id);
-                                            setEstimateTotalCost(cell.row.totalCost);
-                                        }}
-                                    />
-                                );
-                            }
-
-                            if (permEdit) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='archive'
-                                        icon={<ImgElement src='/images/icons/toolbar/archive.svg' sx={{height: {xs: 20, sm: 24}}} />}
-                                        label={t('Archive')}
-                                        onClick={() => onArchive(cell.row._id)}
-                                        showInMenu={false}
-                                    />
-                                );
-                            }
-
-                            if (permEdit) {
-                                actions.push(
-                                    <GridActionsCellItem
-                                        key='remove'
-                                        icon={<ImgElement src='/images/icons/delete.svg' sx={{height: {xs: 20, sm: 24}}} />}
-                                        label={t('Remove')}
-                                        onClick={() => onRemove(cell.row._id)}
-                                    />
-                                );
-                            }
-
-                            return actions;
-                        },
-                    },
-                ]}
-                rows={estimates ?? []}
-                autoPageSize={true}
-                disableRowSelectionOnClick
-                loading={progIndic}
-                getRowId={(row) => row._id}
-                onRowDoubleClick={(row) => {
-                    setEstimateId(row.row._id);
-                    setEstimateTitle(row.row.name);
-                    setEstimateTotalCost(row.row.totalCost);
-                }}
-            />
+            <Box sx={{ flex: 1, overflow: 'auto' }}>
+                {estimates && estimates.length === 0 && !progIndic && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, gap: 2 }}>
+                        <DescriptionOutlinedIcon sx={{ fontSize: 72, color: mainPrimaryColor, opacity: 0.2 }} />
+                        <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Estimates created yet')}</Typography>
+                    </Box>
+                )}
+                {estimates && estimates.length > 0 && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {estimates.map(est => (
+                            <Box
+                                key={est._id}
+                                onClick={() => { setEstimateId(est._id); setEstimateTitle(est.name); setEstimateTotalCost(est.totalCost); }}
+                                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.8, borderRadius: 2, border: '1px solid #e0f5f7', backgroundColor: '#fafeff', cursor: 'pointer', transition: 'box-shadow 0.15s, border-color 0.15s', '&:hover': { boxShadow: '0 2px 12px rgba(0,171,190,0.12)', borderColor: mainPrimaryColor } }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
+                                    <DescriptionOutlinedIcon sx={{ color: mainPrimaryColor, opacity: 0.7, fontSize: 22, flexShrink: 0 }} />
+                                    <Box sx={{ minWidth: 0 }}>
+                                        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.name}</Typography>
+                                        <Typography variant='caption' color='text.secondary'>#{est.estimateNumber} · {est.createdAt ? formatDate(est.createdAt) : '—'}</Typography>
+                                    </Box>
+                                </Box>
+                                <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: mainPrimaryColor, mx: 3, flexShrink: 0 }}>
+                                    {formatCurrency(est.totalCostWithOtherExpenses)}
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                                    {permEdit && (
+                                        <IconButton size='small' onClick={() => onDuplicate(est._id)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                            <ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{ height: 20 }} />
+                                        </IconButton>
+                                    )}
+                                    {permissionsSet?.has('EST_SHR') && (
+                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateIdForShare(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                            <ImgElement src='/images/icons/toolbar/share.svg' sx={{ height: 20 }} />
+                                        </IconButton>
+                                    )}
+                                    {permEdit ? (
+                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateId(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                            <ImgElement src='/images/icons/edit.svg' sx={{ height: 20 }} />
+                                        </IconButton>
+                                    ) : (
+                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateId(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                            <VisibilityIcon fontSize='small' />
+                                        </IconButton>
+                                    )}
+                                    {permEdit && (
+                                        <IconButton size='small' onClick={() => onArchive(est._id)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                            <ImgElement src='/images/icons/toolbar/archive.svg' sx={{ height: 20 }} />
+                                        </IconButton>
+                                    )}
+                                    {permEdit && (
+                                        <IconButton size='small' onClick={() => onRemove(est._id)} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                            <ImgElement src='/images/icons/delete.svg' sx={{ height: 20 }} />
+                                        </IconButton>
+                                    )}
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
+                )}
+            </Box>
 
             {estimateId &&
                 estimateTitle &&
