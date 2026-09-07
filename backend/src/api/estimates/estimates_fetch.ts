@@ -1,4 +1,5 @@
 import * as Db from '@/db';
+import {ObjectId} from 'mongodb';
 
 import {requireQueryParam} from '@/tsback/req/req_params';
 import {registerApiSession} from '@/server/register';
@@ -47,6 +48,18 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
     }
 
     const data = await cursor.toArray();
+
+    // Mark estimates that have an associated costing record
+    if (data.length > 0) {
+        const estimateIds = data.map(e => e._id);
+        const costings = await Db.getCostingsCollection()
+            .find({ estimateId: { $in: estimateIds }, deleted: { $ne: true } }, { projection: { estimateId: 1 } })
+            .toArray();
+        const usedIds = new Set(costings.map(c => c.estimateId?.toString()));
+        for (const est of data) {
+            (est as any).inCosting = usedIds.has(est._id.toString());
+        }
+    }
 
     respondJsonData(res, data);
 });

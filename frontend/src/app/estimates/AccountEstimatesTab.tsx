@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {useTranslation} from 'react-i18next';
 
-import {Box, IconButton, Toolbar, Typography} from '@mui/material';
+import {Box, Chip, IconButton, Toolbar, Typography} from '@mui/material';
 
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -199,7 +199,12 @@ export default function AccountEstimatesTab() {
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
                                     <DescriptionOutlinedIcon sx={{ color: mainPrimaryColor, opacity: 0.7, fontSize: 22, flexShrink: 0 }} />
                                     <Box sx={{ minWidth: 0 }}>
-                                        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.name}</Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                            <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.name}</Typography>
+                                            {est.inCosting && (
+                                                <Chip label={t('In Costing')} size='small' sx={{ height: 18, fontSize: '0.65rem', fontWeight: 600, backgroundColor: `${mainPrimaryColor}18`, color: mainPrimaryColor, borderRadius: '6px', '& .MuiChip-label': { px: 1 } }} />
+                                            )}
+                                        </Box>
                                         <Typography variant='caption' color='text.secondary'>#{est.estimateNumber} · {est.createdAt ? formatDate(est.createdAt) : '—'}</Typography>
                                     </Box>
                                 </Box>

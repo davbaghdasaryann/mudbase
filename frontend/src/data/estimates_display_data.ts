@@ -11,6 +11,7 @@ export class EstimatesDisplayData {
     totalCostWithOtherExpenses!: number;
     accountId?: string;
     companyName?: string;
+    inCosting?: boolean;
 
     constructor(est?: ApiEstimate) {
         if (!est)
@@ -24,5 +25,6 @@ export class EstimatesDisplayData {
         this.totalCostWithOtherExpenses = roundNumber(est.totalCostWithOtherExpenses ?? 0);
         this.accountId = est.accountId;
         this.companyName = (est as any).companyName;
+        this.inCosting = (est as any).inCosting ?? false;
     }
 }
