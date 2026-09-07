@@ -1090,7 +1090,7 @@ export default function SchedulePage() {
                                     <Box
                                         key={item._id}
                                         sx={{
-                                            display: 'flex', height: ROW_H, alignItems: 'center',
+                                            display: 'flex', minHeight: ROW_H, alignItems: 'stretch',
                                             background: rowBg,
                                             borderBottom: `1px solid ${mainPrimaryColor}08`,
                                             opacity: isRowDraggingThis ? 0.55 : 1,
@@ -1104,10 +1104,10 @@ export default function SchedulePage() {
                                         <Box sx={{
                                             width: nameColW, flexShrink: 0,
                                             position: 'sticky', left: 0, zIndex: 2,
-                                            background: rowBg, height: '100%',
+                                            background: rowBg,
                                             display: 'flex', alignItems: 'center',
                                             borderRight: `1px solid ${mainPrimaryColor}18`,
-                                            overflow: 'hidden',
+                                            overflow: 'hidden', py: 0.5,
                                             pl: groupId ? 2.5 : 0.5, pr: 0.5,
                                         }}>
                                             {/* Drag handle */}
@@ -1125,7 +1125,8 @@ export default function SchedulePage() {
                                             {/* Name */}
                                             <Typography variant='caption' sx={{
                                                 color: '#444', fontSize: '0.75rem',
-                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                overflow: 'hidden', whiteSpace: 'normal',
+                                                wordBreak: 'break-word', lineHeight: 1.25,
                                                 flex: 1, mx: 0.75,
                                             }}>
                                                 {item.laborOfferItemName || '—'}
