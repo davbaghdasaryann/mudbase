@@ -19,6 +19,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import FolderOffOutlinedIcon from '@mui/icons-material/FolderOffOutlined';
+import CallSplitIcon from '@mui/icons-material/CallSplit';
+import LinkIcon from '@mui/icons-material/Link';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import TuneIcon from '@mui/icons-material/Tune';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -1485,9 +1489,22 @@ export default function SchedulePage() {
                 anchorPosition={barContextMenu ? { top: barContextMenu.mouseY, left: barContextMenu.mouseX } : undefined}
                 PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
             >
-                <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>Բաժանել</MenuItem>
-                <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>Կապել</MenuItem>
-                <MenuItem onClick={handleOpenTimePopover} sx={{ fontSize: '0.85rem', py: 0.9 }}>Ժամանակ</MenuItem>
+                <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
+                </MenuItem>
+                <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}><LinkIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Կապել</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleOpenTimePopover} sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}><AccessTimeIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Ժամանակ</ListItemText>
+                </MenuItem>
+                <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}><TuneIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Կարգավորումներ</ListItemText>
+                </MenuItem>
             </Menu>
 
             {/* Bar time popover */}
