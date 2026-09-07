@@ -208,17 +208,17 @@ export default function AccountEstimatesTab() {
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                                     {permEdit && (
-                                        <IconButton size='small' onClick={() => onDuplicate(est._id)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                        <IconButton size='small' onClick={() => onDuplicate(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
                                             <ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{ height: 20 }} />
                                         </IconButton>
                                     )}
                                     {permissionsSet?.has('EST_SHR') && (
-                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateIdForShare(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateIdForShare(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
                                             <ImgElement src='/images/icons/toolbar/share.svg' sx={{ height: 20 }} />
                                         </IconButton>
                                     )}
                                     {permEdit ? (
-                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateId(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateId(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
                                             <ImgElement src='/images/icons/edit.svg' sx={{ height: 20 }} />
                                         </IconButton>
                                     ) : (
@@ -227,12 +227,12 @@ export default function AccountEstimatesTab() {
                                         </IconButton>
                                     )}
                                     {permEdit && (
-                                        <IconButton size='small' onClick={() => onArchive(est._id)} sx={{ color: '#bbb', '&:hover': { color: mainPrimaryColor } }}>
+                                        <IconButton size='small' onClick={() => onArchive(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
                                             <ImgElement src='/images/icons/toolbar/archive.svg' sx={{ height: 20 }} />
                                         </IconButton>
                                     )}
                                     {permEdit && (
-                                        <IconButton size='small' onClick={() => onRemove(est._id)} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                        <IconButton size='small' onClick={() => onRemove(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'sepia(1) saturate(5) hue-rotate(310deg)' } }}>
                                             <ImgElement src='/images/icons/delete.svg' sx={{ height: 20 }} />
                                         </IconButton>
                                     )}
