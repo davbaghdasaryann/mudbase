@@ -31,7 +31,7 @@ import { mainPrimaryColor } from '@/theme';
 const DAY_W = 38;
 const ROW_H = 46;
 const GROUP_ROW_H = 46;
-const NAME_COL_W = 280;
+const NAME_COL_W = 365;
 const BAR_COLORS = ['#26c6da', '#4dd0e1', '#4db6c4', '#80deea', '#00bcd4', '#b2ebf2'];
 const GROUP_COLORS = ['#f44336', '#4caf50', '#ffc107', '#2196f3', '#9c27b0', '#ff9800', '#009688', '#e91e63'];
 const UNGROUPED_COLOR = '#90a4ae';
