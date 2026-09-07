@@ -13,8 +13,6 @@ export default function SearchComponent(props: SeachComponentProps) {
     const [query, setQuery] = React.useState('');
     const {t} = useTranslation();
     const [debouncedQuery, setDebouncedQuery] = React.useState(query);
-    const [focused, setFocused] = React.useState(false);
-
     const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         // const value = event.target.value.trim();
         // setQuery(value);
@@ -47,8 +45,6 @@ export default function SearchComponent(props: SeachComponentProps) {
         <TextField
             value={query}
             onChange={handleChange}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
             placeholder={t('Search') + ' ...'}
             variant='outlined'
             slotProps={{
@@ -71,9 +67,7 @@ export default function SearchComponent(props: SeachComponentProps) {
 
             sx={{
                 minWidth: 160,
-                width: '100%',
-                maxWidth: focused ? 9999 : 300,
-                transition: 'max-width 0.6s ease',
+                width: 300,
                 '& .MuiInputBase-root': { height: '40px', borderRadius: '25px' },
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
             }}
