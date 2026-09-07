@@ -196,6 +196,10 @@ export default function SchedulePage() {
     const prevMouseXRef = useRef(0);
     const dragDeltaRef = useRef(0); // mutable, always in sync — avoids render-lag in onUp
     const autoScrollRafRef = useRef<number | null>(null);
+
+    // Bar resize state
+    const [resizing, setResizing] = useState<{ id: string; origBarWidth: number; deltaX: number } | null>(null);
+    const resizeDeltaRef = useRef(0);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
@@ -610,6 +614,39 @@ export default function SchedulePage() {
         setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item, anchorEl: e.currentTarget as HTMLElement });
     };
 
+    const handleResizeMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const lh = item.laborHours ?? 0;
+        const origBarWidth = Math.max(itemDuration(item) * DAY_W - 3, 12);
+        const mouseStartX = e.clientX;
+        const itemId = item._id;
+        resizeDeltaRef.current = 0;
+        setResizing({ id: itemId, origBarWidth, deltaX: 0 });
+
+        const onMove = (ev: MouseEvent) => {
+            const delta = ev.clientX - mouseStartX;
+            resizeDeltaRef.current = delta;
+            setResizing(prev => prev ? { ...prev, deltaX: delta } : null);
+        };
+
+        const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            const newWidth = Math.max(12, origBarWidth + resizeDeltaRef.current);
+            const newDuration = Math.max(0.125, newWidth / DAY_W);
+            const newQuantity = lh > 0 ? newDuration * lh * 8 : 0;
+            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, quantity: newQuantity } : i));
+            setResizing(null);
+            if (lh > 0) {
+                Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
+            }
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    };
+
     const handleOpenTimePopover = () => {
         if (!barContextMenu) return;
         const item = barContextMenu.item;
@@ -1004,13 +1041,15 @@ export default function SchedulePage() {
                                 const { item, groupId } = row;
                                 const isDraggingThis = dragging?.id === item._id;
                                 const isRowDraggingThis = rowDragging?.id === item._id;
+                                const isResizingThis = resizing?.id === item._id;
                                 const startDay = item.startDay ?? 1;
                                 const startHour = item.startHour ?? 0;
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
                                 const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
-                                const barWidth = Math.max(duration * DAY_W - 3, 12);
+                                const baseBarWidth = Math.max(duration * DAY_W - 3, 12);
+                                const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
@@ -1117,16 +1156,30 @@ export default function SchedulePage() {
                                                         borderRadius: '5px',
                                                         display: 'flex', alignItems: 'center',
                                                         px: 1, overflow: 'hidden',
-                                                        boxShadow: isDraggingThis ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                        boxShadow: (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
                                                         cursor: isDraggingThis ? 'grabbing' : 'grab',
-                                                        opacity: isDraggingThis ? 0.9 : 1,
-                                                        transition: isDraggingThis ? 'none' : 'box-shadow 0.15s',
-                                                        zIndex: isDraggingThis ? 10 : 1,
+                                                        opacity: (isDraggingThis || isResizingThis) ? 0.9 : 1,
+                                                        transition: (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
+                                                        zIndex: (isDraggingThis || isResizingThis) ? 10 : 1,
                                                     }}
                                                 >
-                                                    <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-                                                        {duration >= 1 ? `${Math.round(duration * 10) / 10}${t('day_short')}` : `${Math.round(duration * 8)}h`}
+                                                    <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
+                                                        {(() => { const d = isResizingThis ? Math.max(0.125, Math.max(12, resizing!.origBarWidth + resizing!.deltaX) / DAY_W) : duration; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
                                                     </Typography>
+                                                    {/* Resize handle */}
+                                                    <Box
+                                                        onMouseDown={e => handleResizeMouseDown(e, item)}
+                                                        onClick={e => e.stopPropagation()}
+                                                        sx={{
+                                                            position: 'absolute', right: 0, top: 0, bottom: 0,
+                                                            width: 10, cursor: 'ew-resize',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            borderRadius: '0 5px 5px 0',
+                                                            '&:hover': { background: 'rgba(255,255,255,0.15)' },
+                                                        }}
+                                                    >
+                                                        <Box sx={{ width: 2, height: '55%', background: 'rgba(255,255,255,0.55)', borderRadius: 1, pointerEvents: 'none' }} />
+                                                    </Box>
                                                 </Box>
                                             </Tooltip>
                                             {/* Segment bars (split parts) */}
