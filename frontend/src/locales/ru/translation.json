@@ -209,5 +209,7 @@
   "In Costing": "В смете расходов",
   "In Performance": "В исполнительном акте",
   "In Schedule": "В графике",
-  "Shared Estimate": "Представленная смета"
+  "Shared Estimate": "Представленная смета",
+  "Number of parts": "Количество частей",
+  "Split": "Разделить"
 }

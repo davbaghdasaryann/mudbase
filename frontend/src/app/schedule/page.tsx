@@ -206,6 +206,8 @@ export default function SchedulePage() {
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
+    const [splitModal, setSplitModal] = useState<{ item: ScheduleItem } | null>(null);
+    const [splitParts, setSplitParts] = useState('2');
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -668,39 +670,51 @@ export default function SchedulePage() {
         await Api.requestSession({ command: 'schedule/item_update', args: { id: barPopover.itemId, startHour: newHour } });
     };
 
-    const handleSplitItem = async () => {
-        if (!barContextMenu || !selected) return;
+    const handleSplitItem = () => {
+        if (!barContextMenu) return;
         const item = barContextMenu.item;
         setBarContextMenu(null);
+        setSplitParts('2');
+        setSplitModal({ item });
+    };
+
+    const handleSplitConfirm = async () => {
+        if (!splitModal || !selected) return;
+        const item = splitModal.item;
+        const n = Math.max(2, Math.min(20, parseInt(splitParts) || 2));
+        setSplitModal(null);
         const lh = item.laborHours ?? 0;
         if (lh <= 0 || (item.quantity ?? 0) <= 0) return;
-        const q1 = (item.quantity ?? 0) / 2;
-        const q2 = (item.quantity ?? 0) / 2;
-        // Second part starts where first part's bar ends (in fractional Gantt days)
-        const duration1 = q1 / lh / 8;
-        const origFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
-        const endFrac = origFrac + duration1;
-        const startDay2 = Math.floor(endFrac) + 1;
-        const startHour2 = Math.round((endFrac % 1) * 24) % 24;
+        const totalQ = item.quantity ?? 0;
+        const partQ = totalQ / n;
+        const partDuration = partQ / lh / 8;
         const parentItemId = item.parentItemId ?? item._id;
-        const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
-            scheduleId: selected._id,
-            laborOfferItemName: item.laborOfferItemName,
-            quantity: q2,
-            laborHours: lh,
-            unitSymbol: item.unitSymbol ?? '',
-            sectionName: item.sectionName ?? '',
-            subsectionName: item.subsectionName ?? '',
-            startDay: startDay2,
-            startHour: startHour2,
-            parentItemId,
-            ...(item.groupId ? { groupId: item.groupId } : {}),
-        }});
-        setScheduleItems(prev => [
-            ...prev.map(i => i._id === item._id ? { ...i, quantity: q1 } : i),
-            { ...newItem, startDay: newItem.startDay ?? startDay2, startHour: newItem.startHour ?? startHour2, parentItemId },
-        ]);
-        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: q1 } });
+        let frac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+
+        // Update first part in place
+        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: partQ } : i));
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: partQ } });
+
+        // Add remaining parts sequentially
+        for (let i = 1; i < n; i++) {
+            frac += partDuration;
+            const startDay = Math.floor(frac) + 1;
+            const startHour = Math.round((frac % 1) * 24) % 24;
+            const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
+                scheduleId: selected._id,
+                laborOfferItemName: item.laborOfferItemName,
+                quantity: partQ,
+                laborHours: lh,
+                unitSymbol: item.unitSymbol ?? '',
+                sectionName: item.sectionName ?? '',
+                subsectionName: item.subsectionName ?? '',
+                startDay,
+                startHour,
+                parentItemId,
+                ...(item.groupId ? { groupId: item.groupId } : {}),
+            }});
+            setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay, startHour: newItem.startHour ?? startHour, parentItemId }]);
+        }
     };
 
     const handleColDividerMouseDown = (e: React.MouseEvent) => {
@@ -1435,6 +1449,28 @@ export default function SchedulePage() {
                     );
                 })()}
             </Popover>
+
+            {/* Split parts dialog */}
+            <Dialog open={!!splitModal} onClose={() => setSplitModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '1rem', pb: 1 }}>Բաժանել</DialogTitle>
+                <DialogContent sx={{ pt: '8px !important' }}>
+                    <TextField
+                        label={t('Number of parts')}
+                        type='number'
+                        value={splitParts}
+                        onChange={e => setSplitParts(e.target.value)}
+                        inputProps={{ min: 2, max: 20 }}
+                        fullWidth
+                        autoFocus
+                        size='small'
+                        onKeyDown={e => { if (e.key === 'Enter') handleSplitConfirm(); }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setSplitModal(null)} sx={{ color: 'text.secondary', textTransform: 'none' }}>{t('Cancel')}</Button>
+                    <Button onClick={handleSplitConfirm} variant='contained' sx={{ borderRadius: '20px', textTransform: 'none', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor } }}>{t('Split')}</Button>
+                </DialogActions>
+            </Dialog>
         </PageContents>
     );
 }
