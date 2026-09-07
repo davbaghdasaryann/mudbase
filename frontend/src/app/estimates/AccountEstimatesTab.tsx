@@ -202,7 +202,7 @@ export default function AccountEstimatesTab() {
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                                             <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.name}</Typography>
                                             {est.inCosting && (
-                                                <Chip label={t('In Costing')} size='small' sx={{ height: 18, fontSize: '0.65rem', fontWeight: 600, backgroundColor: `${mainPrimaryColor}18`, color: mainPrimaryColor, borderRadius: '6px', '& .MuiChip-label': { px: 1 } }} />
+                                                <Chip label={t('In Costing')} size='small' sx={{ height: 18, fontSize: '0.65rem', fontWeight: 600, backgroundColor: 'rgba(255,157,0,0.12)', color: '#FF9D00', borderRadius: '6px', '& .MuiChip-label': { px: 1 } }} />
                                             )}
                                         </Box>
                                         <Typography variant='caption' color='text.secondary'>#{est.estimateNumber} · {est.createdAt ? formatDate(est.createdAt) : '—'}</Typography>
