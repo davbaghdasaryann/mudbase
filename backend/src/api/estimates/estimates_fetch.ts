@@ -52,19 +52,25 @@ registerApiSession('estimates/fetch', async (req, res, session) => {
     // Mark estimates that have an associated costing or performance record
     if (data.length > 0) {
         const estimateIds = data.map(e => e._id);
-        const [costings, performanceActs] = await Promise.all([
+        const estimateIdStrs = data.map(e => e._id.toString());
+        const [costings, performanceActs, schedules] = await Promise.all([
             Db.getCostingsCollection()
                 .find({ estimateId: { $in: estimateIds }, deleted: { $ne: true } }, { projection: { estimateId: 1 } })
                 .toArray(),
             Db.getPerformanceActsCollection()
                 .find({ estimateId: { $in: estimateIds }, deleted: { $ne: true } }, { projection: { estimateId: 1 } })
                 .toArray(),
+            Db.getSchedulesCollection()
+                .find({ estimateId: { $in: estimateIdStrs }, deleted: { $ne: true } }, { projection: { estimateId: 1 } })
+                .toArray(),
         ]);
         const costingIds = new Set(costings.map(c => c.estimateId?.toString()));
         const performanceIds = new Set(performanceActs.map(p => p.estimateId?.toString()));
+        const scheduleIds = new Set(schedules.map(s => s.estimateId?.toString()));
         for (const est of data) {
             (est as any).inCosting = costingIds.has(est._id.toString());
             (est as any).inPerformance = performanceIds.has(est._id.toString());
+            (est as any).inSchedule = scheduleIds.has(est._id.toString());
         }
     }
 

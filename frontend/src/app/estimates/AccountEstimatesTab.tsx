@@ -7,6 +7,7 @@ import {useTranslation} from 'react-i18next';
 import {Box, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
 
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -211,6 +212,11 @@ export default function AccountEstimatesTab() {
                                             {est.inPerformance && (
                                                 <Tooltip title={t('In Performance')} placement='top' arrow>
                                                     <AssessmentOutlinedIcon sx={{ fontSize: 16, color: '#7B1FA2', flexShrink: 0, cursor: 'default' }} />
+                                                </Tooltip>
+                                            )}
+                                            {est.inSchedule && (
+                                                <Tooltip title={t('In Schedule')} placement='top' arrow>
+                                                    <DateRangeOutlinedIcon sx={{ fontSize: 16, color: '#2E7D32', flexShrink: 0, cursor: 'default' }} />
                                                 </Tooltip>
                                             )}
                                         </Box>

@@ -13,6 +13,7 @@ export class EstimatesDisplayData {
     companyName?: string;
     inCosting?: boolean;
     inPerformance?: boolean;
+    inSchedule?: boolean;
 
     constructor(est?: ApiEstimate) {
         if (!est)
@@ -28,5 +29,6 @@ export class EstimatesDisplayData {
         this.companyName = (est as any).companyName;
         this.inCosting = (est as any).inCosting ?? false;
         this.inPerformance = (est as any).inPerformance ?? false;
+        this.inSchedule = (est as any).inSchedule ?? false;
     }
 }
