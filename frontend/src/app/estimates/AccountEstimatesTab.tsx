@@ -4,9 +4,10 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {useTranslation} from 'react-i18next';
 
-import {Box, Chip, IconButton, Toolbar, Typography} from '@mui/material';
+import {Box, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
 
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 import * as Api from 'api';
@@ -202,7 +203,9 @@ export default function AccountEstimatesTab() {
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                                             <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.name}</Typography>
                                             {est.inCosting && (
-                                                <Chip label={t('In Costing')} size='small' sx={{ height: 18, fontSize: '0.65rem', fontWeight: 600, backgroundColor: 'rgba(255,157,0,0.12)', color: '#FF9D00', borderRadius: '6px', '& .MuiChip-label': { px: 1 } }} />
+                                                <Tooltip title={t('In Costing')} placement='top' arrow>
+                                                    <RequestQuoteOutlinedIcon sx={{ fontSize: 16, color: '#FF9D00', flexShrink: 0, cursor: 'default' }} />
+                                                </Tooltip>
                                             )}
                                         </Box>
                                         <Typography variant='caption' color='text.secondary'>#{est.estimateNumber} · {est.createdAt ? formatDate(est.createdAt) : '—'}</Typography>
