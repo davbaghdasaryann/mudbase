@@ -29,8 +29,8 @@ import * as Api from '@/api';
 import { mainPrimaryColor } from '@/theme';
 
 const DAY_W = 38;
-const ROW_H = 38;
-const GROUP_ROW_H = 38;
+const ROW_H = 46;
+const GROUP_ROW_H = 46;
 const NAME_COL_W = 280;
 const BAR_COLORS = ['#26c6da', '#4dd0e1', '#4db6c4', '#80deea', '#00bcd4', '#b2ebf2'];
 const GROUP_COLORS = ['#f44336', '#4caf50', '#ffc107', '#2196f3', '#9c27b0', '#ff9800', '#009688', '#e91e63'];
@@ -200,6 +200,9 @@ export default function SchedulePage() {
     // Bar resize state
     const [resizing, setResizing] = useState<{ id: string; origBarWidth: number; deltaX: number } | null>(null);
     const resizeDeltaRef = useRef(0);
+
+    // Name column width (resizable)
+    const [nameColW, setNameColW] = useState(NAME_COL_W);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
@@ -700,6 +703,21 @@ export default function SchedulePage() {
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: q1 } });
     };
 
+    const handleColDividerMouseDown = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startW = nameColW;
+        const onMove = (ev: MouseEvent) => {
+            setNameColW(Math.max(140, Math.min(600, startW + ev.clientX - startX)));
+        };
+        const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    };
+
     const handleRowDragStart = (e: React.MouseEvent, item: ScheduleItem, flatIndex: number) => {
         if (dragging) return;
         e.preventDefault();
@@ -862,11 +880,11 @@ export default function SchedulePage() {
                     userSelect: 'none',
                 }}>
                     <Box ref={ganttScrollRef} sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 155px)' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: nameColW + totalDays * DAY_W }}>
 
                             {/* Month header row */}
                             <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.97)', borderBottom: `1px solid ${mainPrimaryColor}18` }}>
-                                <Box sx={{ width: NAME_COL_W, flexShrink: 0, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }} />
+                                <Box sx={{ width: nameColW, flexShrink: 0, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }} />
                                 {monthGroups.map((group, gi) => (
                                     <Box key={gi} sx={{ width: group.dayCount * DAY_W, flexShrink: 0, px: 1, py: 0.6, borderRight: `1px solid ${mainPrimaryColor}22`, background: gi % 2 === 0 ? 'rgba(0,171,190,0.04)' : 'transparent' }}>
                                         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: mainPrimaryColor, letterSpacing: '0.05em' }}>
@@ -878,10 +896,19 @@ export default function SchedulePage() {
 
                             {/* Day number header row */}
                             <Box sx={{ display: 'flex', position: 'sticky', top: 28, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
-                                <Box sx={{ width: NAME_COL_W, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }}>
+                                <Box sx={{ width: nameColW, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22`, position: 'relative' }}>
                                     <Typography variant='caption' sx={{ color: mainPrimaryColor, fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                         {t('Task')}
                                     </Typography>
+                                    {/* Column resize divider */}
+                                    <Box
+                                        onMouseDown={handleColDividerMouseDown}
+                                        sx={{
+                                            position: 'absolute', right: -3, top: 0, bottom: 0, width: 6,
+                                            cursor: 'col-resize', zIndex: 5,
+                                            '&:hover': { background: `${mainPrimaryColor}44` },
+                                        }}
+                                    />
                                 </Box>
                                 {days.map(d => {
                                     const date = addDays(projectStartDate, d - 1);
@@ -934,7 +961,7 @@ export default function SchedulePage() {
                                         >
                                             {/* Sticky name column */}
                                             <Box sx={{
-                                                width: NAME_COL_W, flexShrink: 0,
+                                                width: nameColW, flexShrink: 0,
                                                 position: 'sticky', left: 0, zIndex: 2,
                                                 background: isGroupDragging ? `rgba(0,171,190,0.08)` : `rgba(0,171,190,0.05)`,
                                                 height: '100%',
@@ -1075,7 +1102,7 @@ export default function SchedulePage() {
                                     >
                                         {/* Sticky name column */}
                                         <Box sx={{
-                                            width: NAME_COL_W, flexShrink: 0,
+                                            width: nameColW, flexShrink: 0,
                                             position: 'sticky', left: 0, zIndex: 2,
                                             background: rowBg, height: '100%',
                                             display: 'flex', alignItems: 'center',
