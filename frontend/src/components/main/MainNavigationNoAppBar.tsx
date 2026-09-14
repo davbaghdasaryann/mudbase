@@ -14,6 +14,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SpeedIcon from '@mui/icons-material/Speed';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -388,6 +389,7 @@ function useMainNavigation() {
                     {segment: 'structural', title: t('Structural'), icon: <AccountTreeIcon />},
                     {segment: 'comparative', title: t('Comparative'), icon: <CompareArrowsIcon />},
                     {segment: 'chronological', title: t('Chronological'), icon: <TimelineIcon />},
+                    {segment: 'rentayin', title: t('Rentayin'), icon: <TrendingUpIcon />},
                 ],
             });
             navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
