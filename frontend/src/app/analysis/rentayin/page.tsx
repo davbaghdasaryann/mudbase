@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip,
+    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip, Tab,
 } from '@mui/material';
+import { TabContext, TabList } from '@mui/lab';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
+import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -71,6 +73,7 @@ export default function RentayinPage() {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editValue, setEditValue] = useState('');
     const [saving, setSaving] = useState(false);
+    const [tab, setTab] = useState('table');
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -142,24 +145,30 @@ export default function RentayinPage() {
 
         return (
             <PageContents title={detail.estimateName}>
+                <TabContext value={tab}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <IconButton onClick={() => router.push('/analysis/rentayin')} size='small' sx={{ border: `1px solid ${mainPrimaryColor}33`, borderRadius: 2 }}>
-                            <ArrowBackIcon sx={{ fontSize: 18, color: mainPrimaryColor }} />
-                        </IconButton>
-                        <Typography variant='h6' sx={{ fontWeight: 600, flex: 1, fontSize: '1rem' }}>{detail.estimateName}</Typography>
-                        {overallProfit !== null && (
-                            <Chip
-                                label={`${overallProfit >= 0 ? '+' : ''}${overallProfit.toFixed(1)}% ${t('profitability')}`}
-                                sx={{ bgcolor: overallProfit >= 0 ? '#E8F5E9' : '#FFEBEE', color: overallProfit >= 0 ? '#2E7D32' : '#C62828', fontWeight: 600, fontSize: '0.78rem' }}
-                            />
-                        )}
-                        {pendingCount > 0 && (
-                            <Chip label={`${pendingCount} ${t('need manual entry')}`} sx={{ bgcolor: '#FFF3E0', color: '#E65100', fontSize: '0.78rem' }} />
-                        )}
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <IconButton onClick={() => router.push('/analysis/rentayin')} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
+                                <ArrowBackIcon fontSize='small' />
+                            </IconButton>
+                            <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{detail.estimateName}</Box>} value='table' />
+                            </TabList>
+                            <Box sx={{ flex: 1 }} />
+                            {overallProfit !== null && (
+                                <Chip
+                                    label={`${overallProfit >= 0 ? '+' : ''}${overallProfit.toFixed(1)}% ${t('profitability')}`}
+                                    sx={{ bgcolor: overallProfit >= 0 ? '#E8F5E9' : '#FFEBEE', color: overallProfit >= 0 ? '#2E7D32' : '#C62828', fontWeight: 600, fontSize: '0.78rem' }}
+                                />
+                            )}
+                            {pendingCount > 0 && (
+                                <Chip label={`${pendingCount} ${t('need manual entry')}`} sx={{ bgcolor: '#FFF3E0', color: '#E65100', fontSize: '0.78rem', ml: 1 }} />
+                            )}
+                        </Box>
                     </Box>
 
-                    <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
+                    {tab === 'table' && <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
                         <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 900 }}>
                             <colgroup>
                                 <col style={{ width: 44 }} />
@@ -280,8 +289,9 @@ export default function RentayinPage() {
                                 })}
                             </tbody>
                         </table>
-                    </Box>
+                    </Box>}
                 </Box>
+                </TabContext>
             </PageContents>
         );
     }
