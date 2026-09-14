@@ -11,6 +11,7 @@ import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
@@ -25,6 +26,9 @@ interface RentayinRow {
     unitSymbol: string;
     quantity: number;
     estimatedUnitCost: number;
+    estimatedMaterialUnitCost: number;
+    actualLaborUnitCost: number | null;
+    actualMaterialUnitCost: number | null;
     actualUnitCost: number | null;
     unitCostSource: 'actual' | 'library' | 'manual' | null;
     sectionName: string;
@@ -48,7 +52,7 @@ const GSEP = '1px solid #e8f4f6';
 const ROW_LINE = '1px solid #f0f2f4';
 
 const thBase: React.CSSProperties = {
-    padding: '8px 10px', whiteSpace: 'nowrap',
+    padding: '8px 10px', whiteSpace: 'nowrap', position: 'relative',
     fontWeight: 600, fontSize: '0.75rem', color: '#6b7280',
     backgroundColor: '#fff', letterSpacing: '0.03em',
     textTransform: 'uppercase', border: 'none',
@@ -74,7 +78,11 @@ export default function RentayinPage() {
     const [editValue, setEditValue] = useState('');
     const [saving, setSaving] = useState(false);
     const [tab, setTab] = useState('table');
+    const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
     const inputRef = useRef<HTMLInputElement>(null);
+    const resizingRef = useRef<{ ci: number; startX: number; startW: number } | null>(null);
+    const tableContainerRef = useRef<HTMLDivElement>(null);
+    const scrollDragRef = useRef<{ startX: number; scrollLeft: number } | null>(null);
 
     useEffect(() => {
         Api.requestSession<RentayinRecord[]>({ command: 'rentayin/fetch_all' })
@@ -124,6 +132,32 @@ export default function RentayinPage() {
         setSaving(false);
     };
 
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm(t('Delete this rentayin?'))) return;
+        await Api.requestSession({ command: 'rentayin/delete', args: { id } });
+        setRecords(prev => prev.filter(r => r._id !== id));
+    };
+
+    const startResize = (e: React.MouseEvent, ci: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resizingRef.current = { ci, startX: e.clientX, startW: colWidths[ci] };
+        const onMove = (ev: MouseEvent) => {
+            if (!resizingRef.current) return;
+            const { ci, startW, startX } = resizingRef.current;
+            const newW = Math.max(40, startW + ev.clientX - startX);
+            setColWidths(prev => { const n = [...prev]; n[ci] = newW; return n; });
+        };
+        const onUp = () => { resizingRef.current = null; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    };
+    const rh = (ci: number) => (
+        <div onMouseDown={(e) => startResize(e, ci)}
+            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', zIndex: 2, background: 'transparent' }} />
+    );
+
     const profitPct = (row: RentayinRow) => {
         if (!row.actualUnitCost || !row.estimatedUnitCost) return null;
         return ((row.estimatedUnitCost - row.actualUnitCost) / row.actualUnitCost) * 100;
@@ -153,6 +187,7 @@ export default function RentayinPage() {
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
                             <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><SavingsOutlinedIcon sx={{ fontSize: 18 }} />Ընդհանուր</Box>} value='general' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='table' />
                             </TabList>
                             <Box sx={{ flex: 1 }} />
@@ -183,38 +218,40 @@ export default function RentayinPage() {
                         const NCOLS = 11;
                         let rowCounter = 0;
                         return (
-                            <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
+                            <Box
+                                ref={tableContainerRef}
+                                onMouseDown={(e) => {
+                                    const t = e.target as HTMLElement;
+                                    if (t.style.cursor === 'col-resize' || t.closest('button,input,a')) return;
+                                    scrollDragRef.current = { startX: e.clientX, scrollLeft: tableContainerRef.current?.scrollLeft ?? 0 };
+                                }}
+                                onMouseMove={(e) => {
+                                    if (!scrollDragRef.current || !tableContainerRef.current) return;
+                                    tableContainerRef.current.scrollLeft = scrollDragRef.current.scrollLeft - (e.clientX - scrollDragRef.current.startX);
+                                }}
+                                onMouseUp={() => { scrollDragRef.current = null; }}
+                                onMouseLeave={() => { scrollDragRef.current = null; }}
+                                sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff', cursor: 'grab', '&:active': { cursor: 'grabbing' } }}>
                                 <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 1200 }}>
-                                    <colgroup>
-                                        <col style={{ width: 44 }} />
-                                        <col style={{ width: 300 }} />
-                                        <col style={{ width: 70 }} />
-                                        <col style={{ width: 80 }} />
-                                        <col style={{ width: 130 }} />
-                                        <col style={{ width: 120 }} />
-                                        <col style={{ width: 80 }} />
-                                        <col style={{ width: 130 }} />
-                                        <col style={{ width: 120 }} />
-                                        <col style={{ width: 110 }} />
-                                        <col style={{ width: 90 }} />
-                                    </colgroup>
+                                    <colgroup>{colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
                                     <thead>
                                         <tr>
-                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>#</th>
-                                            <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշխատանքի անվանումը</th>
-                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Միավոր</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>#
+                                            {rh(0)}</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշխատանքի անվանումը{rh(1)}</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Միավոր{rh(2)}</th>
                                             <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
                                             <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Հաշվարկային</th>
-                                            <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Շահութաբերություն</th>
-                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Աղբյուր</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, whiteSpace: 'normal' as const })}>Շահութաբերություն{rh(9)}</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>Աղբյուր{rh(10)}</th>
                                         </tr>
                                         <tr>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(3)}</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը{rh(4)}</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր{rh(5)}</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(6)}</th>
+                                                        <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը{rh(7)}</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր{rh(8)}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -315,7 +352,7 @@ export default function RentayinPage() {
                                                                                     </span>
                                                                                 ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'—'}</span>}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'center' })}>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
                                                                                 {src ? (
                                                                                     <Chip label={src.label} size='small' sx={{ fontSize: '0.68rem', bgcolor: `${src.color}18`, color: src.color, height: 20 }} />
                                                                                 ) : (
@@ -338,6 +375,57 @@ export default function RentayinPage() {
                             </Box>
                         );
                     })()}
+                {tab === 'general' && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {(() => {
+                            const totalEstLaborCost = rows.reduce((s, r) => s + r.estimatedUnitCost * r.quantity, 0);
+                            const totalEstMatCost = rows.reduce((s, r) => s + (r.estimatedMaterialUnitCost ?? 0) * r.quantity, 0);
+                            const totalEstCost = totalEstLaborCost + totalEstMatCost;
+                            const totalActLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? 0) * r.quantity), 0);
+                            const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
+                            const totalActCost = totalActLaborCost + totalActMatCost;
+                            const fmt = (n: number) => Math.round(n).toLocaleString() + ' 噌';
+                            const pct = (a: number, e: number) => e > 0 ? ((e - a) / e * 100) : null;
+                            const rowData = [
+                                { label: 'Նախահաշիվ Աշխատանկ', est: totalEstLaborCost, act: totalActLaborCost },
+                                { label: 'Նախահաշիվ Նյութ', est: totalEstMatCost, act: totalActMatCost },
+                                { label: 'Անիկունական Արժեկ', est: totalEstCost, act: totalActCost },
+                            ];
+                            return (
+                                <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
+                                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 500 }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={thStyle({ textAlign: 'left', verticalAlign: 'middle', width: 250 })}>Անվանում</th>
+                                                <th style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
+                                                <th style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>Հաշվարկայի坮</th>
+                                                <th style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Շահութաբերություն</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {rowData.map((d, i) => {
+                                                const p = pct(d.act, d.est);
+                                                const isTotalRow = i === rowData.length - 1;
+                                                return (
+                                                    <tr key={i} style={{ backgroundColor: isTotalRow ? '#f0fbfc' : '#fff', fontWeight: isTotalRow ? 600 : 400 }}>
+                                                        <td style={tdStyle({ fontWeight: isTotalRow ? 600 : 400 })}>{d.label}</td>
+                                                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: '#555' })}>{fmt(d.est)}</td>
+                                                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: d.act > 0 ? mainPrimaryColor : '#bbb' })}>{d.act > 0 ? fmt(d.act) : '—'}</td>
+                                                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
+                                                            {p !== null ? (
+                                                                <span style={{ fontWeight: 600, color: p >= 0 ? '#2E7D32' : '#C62828' }}>{p >= 0 ? '+' : ''}{p.toFixed(1)}%</span>
+                                                            ) : <span style={{ color: '#ccc' }}>—</span>}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </Box>
+                            );
+                        })()}
+                    </Box>
+                )}
                 </Box>
                 </TabContext>
             </PageContents>
@@ -405,6 +493,11 @@ export default function RentayinPage() {
                                     </Typography>
                                 </Box>
                             </Box>
+                            <Tooltip title={t('Delete')}>
+                                <IconButton size='small' onClick={(e) => handleDelete(rec._id, e)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                    <DeleteOutlineIcon fontSize='small' />
+                                </IconButton>
+                            </Tooltip>
                         </Box>
                     );
                 })}
