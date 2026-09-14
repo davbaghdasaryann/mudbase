@@ -15,6 +15,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import EngineeringIcon from '@mui/icons-material/Engineering';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
@@ -23,6 +24,7 @@ import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDi
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 interface RentayinRow {
     laborItemId: string;
@@ -453,11 +455,7 @@ export default function RentayinPage() {
                     })()}
                 {tab === 'general' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, p: 2 }}>
-                        <Box onClick={() => toggleSection('overview')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
-                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Overview</Typography>
-                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        </Box>
-                        {!collapsedSections.has('overview') && (() => {
+                        {(() => {
                             const rows = detail?.rows ?? [];
                             const totalEstLaborCost = rows.reduce((s, r) => s + r.estimatedUnitCost * r.quantity, 0);
                             const totalEstMatCost = rows.reduce((s, r) => s + (r.estimatedMaterialUnitCost ?? 0) * r.quantity, 0);
@@ -465,76 +463,223 @@ export default function RentayinPage() {
                             const totalActLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? 0) * r.quantity), 0);
                             const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
                             const totalActCost = totalActLaborCost + totalActMatCost;
+                            const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
+                            const completionPct = rows.length > 0 ? Math.min(100, Math.round((rowsWithActual / rows.length) * 100)) : null;
+                            const profitAmt = totalActCost > 0 && totalEstCost > 0 ? totalEstCost - totalActCost : null;
+                            const profitPct = profitAmt !== null && totalEstCost > 0 ? (profitAmt / totalEstCost) * 100 : null;
                             const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
-                            const cards: { label: string; est: number; act?: number }[] = [
-                                { label: 'Անկունական Արժևք', est: totalEstCost, act: totalActCost > 0 ? totalActCost : undefined },
-                                { label: 'Աշխատանկի Արժևք', est: totalEstLaborCost, act: totalActLaborCost > 0 ? totalActLaborCost : undefined },
-                                { label: 'Նյութի Արժևք', est: totalEstMatCost, act: totalActMatCost > 0 ? totalActMatCost : undefined },
-                            ];
+                            const compColor = completionPct === null ? '#bbb' : completionPct >= 80 ? '#2e7d32' : completionPct >= 40 ? '#e65100' : '#c62828';
+                            const profColor = profitPct === null ? '#bbb' : profitPct >= 0 ? '#2e7d32' : '#c62828';
+                            const estDonutData = [
+                                { name: t('Labor'), value: totalEstLaborCost, color: '#00ABBC' },
+                                { name: t('Materials'), value: totalEstMatCost, color: '#7b1fa2' },
+                            ].filter(d => d.value > 0);
+                            const actDonutData = [
+                                { name: t('Labor'), value: totalActLaborCost, color: '#00ABBC' },
+                                { name: t('Materials'), value: totalActMatCost, color: '#7b1fa2' },
+                            ].filter(d => d.value > 0);
+                            const emptyDonut = [{ name: '', value: 1, color: '#f0f0f0' }];
                             return (
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
-                                    {cards.map(({ label, est, act }) => (
-                                        <Paper key={label} elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s,border-color 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)', borderColor: mainPrimaryColor } }}>
-                                            <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{label}</Typography>
-                                            <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>Նախահաշիվ / Հա坾վակի</Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
-                                                <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(est)}</Typography>
-                                                <Typography sx={{ color: '#bbb', fontWeight: 400 }}>/</Typography>
-                                                {act !== undefined ? (
-                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: act > est ? '#e53935' : mainPrimaryColor }}>{fmtAMD(act)}</Typography>
+                                <Box>
+                                    <Box onClick={() => toggleSection('overview')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Overview')}</Typography>
+                                        <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                    </Box>
+                                    {!collapsedSections.has('overview') && <>
+                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                                            {/* Cost breakdown widget */}
+                                            <Paper elevation={0} sx={{ flex: 1.5, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Total Cost')}</Typography>
+                                                <Box sx={{ flex: 1, display: 'flex', gap: 2 }}>
+                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Estimated')}</Typography>
+                                                        <Box sx={{ flex: 1, width: '100%', minHeight: 120 }}>
+                                                            <ResponsiveContainer width='100%' height='100%'>
+                                                                <PieChart>
+                                                                    <Pie data={estDonutData.length ? estDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={estDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
+                                                                        {(estDonutData.length ? estDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
+                                                                    </Pie>
+                                                                    {estDonutData.length > 0 && <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} />}
+                                                                </PieChart>
+                                                            </ResponsiveContainer>
+                                                        </Box>
+                                                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#333', mt: 0.5 }}>{fmtAMD(totalEstCost)}</Typography>
+                                                    </Box>
+                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Actual')}</Typography>
+                                                        <Box sx={{ flex: 1, width: '100%', minHeight: 120 }}>
+                                                            <ResponsiveContainer width='100%' height='100%'>
+                                                                <PieChart>
+                                                                    <Pie data={actDonutData.length ? actDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={actDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
+                                                                        {(actDonutData.length ? actDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
+                                                                    </Pie>
+                                                                    {actDonutData.length > 0 && <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} />}
+                                                                </PieChart>
+                                                            </ResponsiveContainer>
+                                                        </Box>
+                                                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: totalActCost > 0 ? mainPrimaryColor : '#bbb', mt: 0.5 }}>{totalActCost > 0 ? fmtAMD(totalActCost) : '—'}</Typography>
+                                                    </Box>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1, flexWrap: 'wrap' }}>
+                                                    {[{ label: t('Labor'), color: '#00ABBC' }, { label: t('Materials'), color: '#7b1fa2' }].map(l => (
+                                                        <Box key={l.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: l.color }} />
+                                                            <Typography variant='caption' sx={{ color: '#666', fontSize: '0.68rem' }}>{l.label}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </Paper>
+                                            {/* Completion widget */}
+                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Completion percentage')}</Typography>
+                                                {completionPct === null ? (
+                                                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>{t('No data')}</Typography></Box>
                                                 ) : (
-                                                    <Typography variant='body1' sx={{ fontWeight: 400, color: '#bbb' }}>—</Typography>
+                                                    <>
+                                                        <Box sx={{ flex: 1, position: 'relative', minHeight: 120 }}>
+                                                            <ResponsiveContainer width='100%' height='100%'>
+                                                                <PieChart>
+                                                                    <defs>
+                                                                        <linearGradient id='rent-comp-grad' x1='0' y1='0' x2='1' y2='1'>
+                                                                            <stop offset='0%' stopColor={compColor} stopOpacity={0.35} />
+                                                                            <stop offset='100%' stopColor={compColor} stopOpacity={1} />
+                                                                        </linearGradient>
+                                                                    </defs>
+                                                                    <Pie data={[{ v: completionPct }, { v: 100 - completionPct }]} startAngle={90} endAngle={-270} cx='50%' cy='50%' innerRadius='48%' outerRadius='68%' paddingAngle={0} dataKey='v' strokeWidth={0}>
+                                                                        <Cell fill='url(#rent-comp-grad)' />
+                                                                        <Cell fill='#f0f0f0' />
+                                                                    </Pie>
+                                                                </PieChart>
+                                                            </ResponsiveContainer>
+                                                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color: compColor, lineHeight: 1 }}>{completionPct}%</Typography>
+                                                            </Box>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'center', pb: 1 }}>
+                                                            <Box sx={{ px: 2, py: 0.5, borderRadius: 5, bgcolor: completionPct >= 80 ? 'rgba(46,125,50,0.08)' : 'rgba(0,171,188,0.06)', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                                                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color: compColor }}>{rowsWithActual} / {rows.length}</Typography>
+                                                                <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{t('works completed')}</Typography>
+                                                            </Box>
+                                                        </Box>
+                                                    </>
                                                 )}
-                                            </Box>
-                                        </Paper>
-                                    ))}
-                                </Box>
-                            );
-                        })()}
-                        <Box onClick={() => toggleSection('details')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 1, userSelect: 'none' }}>
-                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Details</Typography>
-                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('details') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        </Box>
-                        {!collapsedSections.has('details') && (() => {
-                            const rows = detail?.rows ?? [];
-                            const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
-                            const rowData = rows.map(r => {
-                                const actUnitCost = r.actualUnitCost ?? r.estimatedUnitCost;
-                                const estTotal = r.estimatedUnitCost * r.quantity;
-                                const actTotal = actUnitCost > 0 ? actUnitCost * r.quantity : null;
-                                const pctDiff = actTotal !== null && estTotal > 0 ? ((actTotal - estTotal) / estTotal * 100) : null;
-                                return { name: r.laborOfferItemName, unit: r.unitSymbol, qty: r.quantity, estTotal, actTotal, pctDiff };
-                            });
-                            return (
-                                <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff', mb: 3 }}>
-                                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 560 }}>
-                                        <thead>
-                                            <tr style={{ background: '#f7fdfe' }}>
-                                                <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7' }}>Անվա坯ում</th>
-                                                <th style={{ padding: '8px 8px', textAlign: 'center', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Միավական</th>
-                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Անկ.</th>
-                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Նախ.Արժ.</th>
-                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Հա坾.Արժ.</th>
-                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>%</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {rowData.map((d, i) => (
-                                                <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fafcfc' }}>
-                                                    <td style={{ padding: '6px 12px', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4' }}>{d.name}</td>
-                                                    <td style={{ padding: '6px 8px', textAlign: 'center', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#888' }}>{d.unit}</td>
-                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#666' }}>{d.qty.toLocaleString()}</td>
-                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#444' }}>{d.estTotal > 0 ? fmtAMD(d.estTotal) : '—'}</td>
-                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: d.actTotal ? mainPrimaryColor : '#bbb', fontWeight: d.actTotal ? 600 : 400 }}>{d.actTotal ? fmtAMD(d.actTotal) : '—'}</td>
-                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6' }}>
-                                                        {d.pctDiff !== null ? (
-                                                            <span style={{ fontWeight: 600, color: d.pctDiff > 0 ? '#e53935' : '#2E7D32' }}>{d.pctDiff > 0 ? '+' : ''}{d.pctDiff.toFixed(1)}%</span>
-                                                        ) : <span style={{ color: '#ccc' }}>—</span>}
-                                                    </td>
+                                            </Paper>
+                                            {/* Profitability widget */}
+                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
+                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {profitPct === null ? (
+                                                        <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
+                                                    ) : (
+                                                        <>
+                                                            <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: profColor, lineHeight: 1.1, mb: 1.5 }}>
+                                                                {profitPct >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                                                            </Typography>
+                                                            <Box sx={{ width: '100%', px: 1 }}>
+                                                                <Box sx={{ position: 'relative', height: 8, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                                                    {(() => {
+                                                                        const RANGE = 60;
+                                                                        const clamped = Math.max(-RANGE, Math.min(RANGE, profitPct));
+                                                                        return <Box sx={{
+                                                                            position: 'absolute', height: '100%', borderRadius: 4,
+                                                                            background: profitPct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)',
+                                                                            left: profitPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
+                                                                            width: `${Math.abs(clamped / RANGE) * 50}%`,
+                                                                        }} />;
+                                                                    })()}
+                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
+                                                                </Box>
+                                                            </Box>
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
+                                                                {fmtAMD(Math.abs(profitAmt!))} {profitAmt! >= 0 ? t('savings') : t('overrun')}
+                                                            </Typography>
+                                                        </>
+                                                    )}
+                                                </Box>
+                                            </Paper>
+                                        </Box>
+                                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
+                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}><EngineeringIcon sx={{ fontSize: 22, color: mainPrimaryColor }} /><Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('Quantity of Labor')}</Typography></Box>
+                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Total')} / {t('With data')}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{rows.length}</Typography>
+                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
+                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{rowsWithActual}</Typography>
+                                                </Box>
+                                            </Paper>
+                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
+                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Total Cost')}</Typography>
+                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Estimated')} / {t('Actual')}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
+                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(totalEstCost)}</Typography>
+                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
+                                                    {totalActCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActCost > totalEstCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
+                                                </Box>
+                                            </Paper>
+                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
+                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Materials Cost')}</Typography>
+                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Estimated')} / {t('Actual')}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
+                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(totalEstMatCost)}</Typography>
+                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
+                                                    {totalActMatCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActMatCost > totalEstMatCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActMatCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
+                                                </Box>
+                                            </Paper>
+                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
+                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Labor Cost')}</Typography>
+                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Estimated')} / {t('Actual')}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
+                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(totalEstLaborCost)}</Typography>
+                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
+                                                    {totalActLaborCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActLaborCost > totalEstLaborCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActLaborCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
+                                                </Box>
+                                            </Paper>
+                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
+                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Estimate')}</Typography>
+                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{detail?.estimateName ?? '—'}</Typography>
+                                                <Typography variant='caption' sx={{ color: '#999' }}>{detail?.createdAt ? new Date(detail.createdAt).toLocaleDateString() : ''}</Typography>
+                                            </Paper>
+                                        </Box>
+                                    </>}
+                                    <Box onClick={() => toggleSection('details')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 1, userSelect: 'none' }}>
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Details</Typography>
+                                        <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('details') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                    </Box>
+                                    {!collapsedSections.has('details') && <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff', mb: 3 }}>
+                                        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 560 }}>
+                                            <thead>
+                                                <tr style={{ background: '#f7fdfe' }}>
+                                                    <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7' }}>{t('Name')}</th>
+                                                    <th style={{ padding: '8px 8px', textAlign: 'center', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Unit')}</th>
+                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Quantity')}</th>
+                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Estimated')}</th>
+                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Actual')}</th>
+                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>%</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {rows.map((r, i) => {
+                                                    const actUnitCost = r.actualUnitCost ?? r.estimatedUnitCost;
+                                                    const estTotal = r.estimatedUnitCost * r.quantity;
+                                                    const actTotal = actUnitCost > 0 ? actUnitCost * r.quantity : null;
+                                                    const pctDiff = actTotal !== null && estTotal > 0 ? ((actTotal - estTotal) / estTotal * 100) : null;
+                                                    return (
+                                                        <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fafcfc' }}>
+                                                            <td style={{ padding: '6px 12px', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4' }}>{r.laborOfferItemName}</td>
+                                                            <td style={{ padding: '6px 8px', textAlign: 'center', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#888' }}>{r.unitSymbol}</td>
+                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#666' }}>{r.quantity.toLocaleString()}</td>
+                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#444' }}>{estTotal > 0 ? fmtAMD(estTotal) : '—'}</td>
+                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: actTotal ? mainPrimaryColor : '#bbb', fontWeight: actTotal ? 600 : 400 }}>{actTotal ? fmtAMD(actTotal) : '—'}</td>
+                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6' }}>
+                                                                {pctDiff !== null ? <span style={{ fontWeight: 600, color: pctDiff > 0 ? '#e53935' : '#2E7D32' }}>{pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%</span> : <span style={{ color: '#ccc' }}>—</span>}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </Box>}
                                 </Box>
                             );
                         })()}
