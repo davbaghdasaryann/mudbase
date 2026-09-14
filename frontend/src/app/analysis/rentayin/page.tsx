@@ -40,10 +40,16 @@ interface RentayinRow {
 
 interface RentayinRecord {
     _id: string;
+    estimateId: string;
     estimateName: string;
     rows?: RentayinRow[];
     createdAt: string;
 }
+
+interface LaborRow { _id: string; laborItemId: string; isGroupRow: boolean; fullCode: string; catalogName: string; laborOfferItemName: string; unitSymbol: string; quantity: number; changableAveragePrice: number; cost: number; subsectionName: string; sectionName: string; }
+interface GroupedLabor { laborItemId: string; fullCode: string; name: string; unitSymbol: string; totalCost: number; totalQuantity: number; items: LaborRow[]; }
+interface MaterialRow { _id: string; materialItemId: string; laborCatalogName: string; laborFullCode: string; laborOfferItemName: string; materialCatalogName: string; materialCatalogFullCode: string; materialOfferItemName: string; unitSymbol: string; quantity: number; cost: number; }
+interface GroupedByMaterial { materialItemId: string; materialFullCode: string; materialName: string; unitSymbol: string; totalCost: number; totalQuantity: number; items: MaterialRow[]; }
 
 const SOURCE_CHIP: Record<string, { label: string; color: string }> = {
     actual: { label: 'Actual', color: '#2E7D32' },
@@ -83,6 +89,12 @@ export default function RentayinPage() {
     const [tab, setTab] = useState('table');
     const [worksExpanded, setWorksExpanded] = useState<Record<string, boolean>>({});
     const [matsExpanded, setMatsExpanded] = useState<Record<string, boolean>>({});
+    const [laborGroups, setLaborGroups] = useState<GroupedLabor[]>([]);
+    const [laborGroupsLoading, setLaborGroupsLoading] = useState(false);
+    const [matGroups, setMatGroups] = useState<GroupedByMaterial[]>([]);
+    const [matGroupsLoading, setMatGroupsLoading] = useState(false);
+    const [laborExpanded, setLaborExpanded] = useState<Record<string, boolean>>({});
+    const [matGroupExpanded, setMatGroupExpanded] = useState<Record<string, boolean>>({});
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
     const inputRef = useRef<HTMLInputElement>(null);
     const resizingRef = useRef<{ ci: number; startX: number; startW: number } | null>(null);
@@ -99,9 +111,49 @@ export default function RentayinPage() {
         if (!selectedId) { setDetail(null); return; }
         setDetailLoading(true);
         Api.requestSession<RentayinRecord>({ command: 'rentayin/fetch', args: { id: selectedId } })
-            .then(data => { setDetail(data); setDetailLoading(false); })
+            .then(data => { setDetail(data); setDetailLoading(false);
+ })
             .catch(() => setDetailLoading(false));
     }, [selectedId]);
+    useEffect(() => {
+        const estimateId = detail?.estimateId;
+        if (!estimateId) return;
+        if (tab === 'works' && laborGroups.length === 0) {
+            setLaborGroupsLoading(true);
+            Api.requestSession<LaborRow[]>({ command: 'estimate/fetch_labor_for_analysis', args: { estimateId } })
+                .then(rows_ => {
+                    const map = new Map<string, GroupedLabor>();
+                    for (const row of (rows_ ?? [])) {
+                        const key = String(row.laborItemId);
+                        const displayName = row.isGroupRow ? (row.laborOfferItemName || row.catalogName) : row.catalogName;
+                        if (!map.has(key)) map.set(key, { laborItemId: key, fullCode: row.fullCode, name: displayName, unitSymbol: row.unitSymbol ?? '', totalCost: 0, totalQuantity: 0, items: [] });
+                        const g = map.get(key)!;
+                        g.totalCost += row.cost;
+                        g.totalQuantity += Number(row.quantity ?? 0);
+                        g.items.push(row);
+                    }
+                    setLaborGroups(Array.from(map.values()));
+                })
+                .finally(() => setLaborGroupsLoading(false));
+        }
+        if (tab === 'materials' && matGroups.length === 0) {
+            setMatGroupsLoading(true);
+            Api.requestSession<MaterialRow[]>({ command: 'estimate/fetch_materials_for_analysis', args: { estimateId } })
+                .then(rows_ => {
+                    const map = new Map<string, GroupedByMaterial>();
+                    for (const row of (rows_ ?? [])) {
+                        const key = String(row.materialItemId);
+                        if (!map.has(key)) map.set(key, { materialItemId: key, materialFullCode: row.materialCatalogFullCode, materialName: row.materialCatalogName || row.materialOfferItemName, unitSymbol: row.unitSymbol ?? '', totalCost: 0, totalQuantity: 0, items: [] });
+                        const g = map.get(key)!;
+                        g.totalCost += row.cost;
+                        g.totalQuantity += Number(row.quantity ?? 0);
+                        g.items.push(row);
+                    }
+                    setMatGroups(Array.from(map.values()));
+                })
+                .finally(() => setMatGroupsLoading(false));
+        }
+    }, [tab, detail?.estimateId]);
 
     useEffect(() => {
         if (editingIndex !== null) inputRef.current?.focus();
@@ -435,136 +487,106 @@ export default function RentayinPage() {
                     </Box>
                 )}
                 </Box>
-{tab === 'works' && (() => {
-                    const sections: string[] = [];
-                    const sectionRowsMap: Record<string, typeof rows> = {};
-                    for (const row of rows) {
-                        if (!sectionRowsMap[row.sectionName]) { sections.push(row.sectionName); sectionRowsMap[row.sectionName] = []; }
-                        sectionRowsMap[row.sectionName].push(row);
-                    }
-                    const totalLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity), 0);
-                    const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(1) + '%' : '0%';
-                    return (
-                        <Box sx={{ px: 2, pb: 2 }}>
-                            <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
-                                <TableHead>
-                                    <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
+{tab === 'works' && (
+                    <Box sx={{ px: 2, pb: 2 }}>
+                        {laborGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
+                        {!laborGroupsLoading && laborGroups.length > 0 && (() => {
+                            const totalLaborCost = laborGroups.reduce((s, g) => s + g.totalCost, 0);
+                            const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
+                            return (
+                                <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
+                                    <TableHead><TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Ենդհանուր</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {sections.map(section => {
-                                        const sRows = sectionRowsMap[section];
-                                        const sectionCost = sRows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity), 0);
-                                        const isOpen = !!worksExpanded[section];
-                                        return (
-                                            <React.Fragment key={section}>
-                                                <TableRow onClick={() => setWorksExpanded(p => ({ ...p, [section]: !p[section] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
-                                                    <TableCell sx={{ pl: 1, py: 1.5 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
-                                                            <Typography variant='body2' sx={{ fontWeight: 500 }}>{section}</Typography>
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell /><TableCell /><TableCell />
-                                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(sectionCost).toLocaleString()} AMD</TableCell>
-                                                    <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(sectionCost)}</TableCell>
-                                                </TableRow>
-                                                {isOpen && sRows.map((row, i) => {
-                                                    const up = row.actualLaborUnitCost ?? row.estimatedUnitCost;
-                                                    const rowCost = up * row.quantity;
-                                                    return (
-                                                        <TableRow key={row.laborItemId + i} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                                            <TableCell sx={{ pl: 5, py: 1 }}>
-                                                                <Typography variant='body2' color='text.secondary'>{i + 1}. {row.laborOfferItemName}</Typography>
-                                                            </TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.unitSymbol}</TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.quantity.toLocaleString()}</TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(up).toLocaleString()}</TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(rowCost).toLocaleString()} AMD</TableCell>
-                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1 }}>{pct(rowCost)}</TableCell>
+                                    </TableRow></TableHead>
+                                    <TableBody>
+                                        {laborGroups.map(group => {
+                                            const isOpen = !!laborExpanded[group.laborItemId];
+                                            return (
+                                                <React.Fragment key={group.laborItemId}>
+                                                    <TableRow onClick={() => setLaborExpanded(p => ({ ...p, [group.laborItemId]: !p[group.laborItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                                        <TableCell sx={{ pl: 1, py: 1.5 }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
+                                                                <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.fullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.fullCode}</Box>}{group.name}</Typography>
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
+                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
+                                                    </TableRow>
+                                                    {isOpen && group.items.map((item, idx2) => (
+                                                        <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                            <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborOfferItemName || item.catalogName}</Typography></TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
                                                         </TableRow>
-                                                    );
-                                                })}
-                                            </React.Fragment>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </Box>
-                    );
-                })()}
-{tab === 'materials' && (() => {
-                    const matRows = rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0 || (r.actualMaterialUnitCost ?? 0) > 0);
-                    const sections: string[] = [];
-                    const sectionRowsMap: Record<string, typeof rows> = {};
-                    for (const row of matRows) {
-                        if (!sectionRowsMap[row.sectionName]) { sections.push(row.sectionName); sectionRowsMap[row.sectionName] = []; }
-                        sectionRowsMap[row.sectionName].push(row);
-                    }
-                    const totalMatCost = matRows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity), 0);
-                    const pct = (cost: number) => totalMatCost > 0 ? ((cost / totalMatCost) * 100).toFixed(1) + '%' : '0%';
-                    if (matRows.length === 0) return <Box sx={{ p: 4, textAlign: 'center', color: '#aaa' }}>Բացկական նյութեր չկան</Box>;
-                    return (
-                        <Box sx={{ px: 2, pb: 2 }}>
-                            <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
-                                <TableHead>
-                                    <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
+                                                    ))}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            );
+                        })()}
+                    </Box>
+                )}
+{tab === 'materials' && (
+                    <Box sx={{ px: 2, pb: 2 }}>
+                        {matGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
+                        {!matGroupsLoading && matGroups.length > 0 && (() => {
+                            const totalMatCost = matGroups.reduce((s, g) => s + g.totalCost, 0);
+                            const pct = (cost: number) => totalMatCost > 0 ? ((cost / totalMatCost) * 100).toFixed(2) + '%' : '0%';
+                            return (
+                                <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
+                                    <TableHead><TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Ենդհանուր</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {sections.map(section => {
-                                        const sRows = sectionRowsMap[section];
-                                        const sectionCost = sRows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity), 0);
-                                        const isOpen = !!matsExpanded[section];
-                                        return (
-                                            <React.Fragment key={section}>
-                                                <TableRow onClick={() => setMatsExpanded(p => ({ ...p, [section]: !p[section] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
-                                                    <TableCell sx={{ pl: 1, py: 1.5 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
-                                                            <Typography variant='body2' sx={{ fontWeight: 500 }}>{section}</Typography>
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell /><TableCell /><TableCell />
-                                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(sectionCost).toLocaleString()} AMD</TableCell>
-                                                    <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(sectionCost)}</TableCell>
-                                                </TableRow>
-                                                {isOpen && sRows.map((row, i) => {
-                                                    const up = row.actualMaterialUnitCost ?? row.estimatedMaterialUnitCost ?? 0;
-                                                    const rowCost = up * row.quantity;
-                                                    return (
-                                                        <TableRow key={row.laborItemId + i} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                                            <TableCell sx={{ pl: 5, py: 1 }}>
-                                                                <Typography variant='body2' color='text.secondary'>{i + 1}. {row.laborOfferItemName}</Typography>
-                                                            </TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.unitSymbol}</TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.quantity.toLocaleString()}</TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(up).toLocaleString()}</TableCell>
-                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(rowCost).toLocaleString()} AMD</TableCell>
-                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1 }}>{pct(rowCost)}</TableCell>
+                                    </TableRow></TableHead>
+                                    <TableBody>
+                                        {matGroups.map(group => {
+                                            const isOpen = !!matGroupExpanded[group.materialItemId];
+                                            return (
+                                                <React.Fragment key={group.materialItemId}>
+                                                    <TableRow onClick={() => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                                        <TableCell sx={{ pl: 1, py: 1.5 }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
+                                                                <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}{group.materialName}</Typography>
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
+                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
+                                                    </TableRow>
+                                                    {isOpen && group.items.map((item, idx2) => (
+                                                        <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                            <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
                                                         </TableRow>
-                                                    );
-                                                })}
-                                            </React.Fragment>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </Box>
-                    );
-                })()}
+                                                    ))}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            );
+                        })()}
+                    </Box>
+                )}
                 </TabContext>
             </PageContents>
         );
