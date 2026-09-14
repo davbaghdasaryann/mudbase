@@ -436,8 +436,8 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 ) : (
                                                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                                        <span style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : '#888' }}>
-                                                                                            {actUnitCost !== null && actUnitCost > 0 && row.unitCostSource === 'actual' ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
+                                                                                        <span style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888' }}>
+                                                                                            {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                         </span>
                                                                                         <Tooltip title={t('Edit')} placement='top' arrow>
                                                                                             <IconButton size='small'
@@ -450,7 +450,7 @@ export default function RentayinPage() {
                                                                                 )}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd' })}>
-                                                                                {actTotal !== null && row.unitCostSource === 'actual' ? actTotal.toLocaleString() : '\u2014'}
+                                                                                {actTotal !== null && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                                                                                 {pct !== null ? (
