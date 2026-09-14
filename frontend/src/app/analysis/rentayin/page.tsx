@@ -7,10 +7,17 @@ import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
 import { useTranslation } from 'react-i18next';
+import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
+import * as EstimatesApi from '@/api/estimate';
 
 export default function RentayinPage() {
     const { t } = useTranslation();
     const [dialogOpen, setDialogOpen] = useState(false);
+
+    const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
+        setDialogOpen(false);
+        // TODO: create rentayin from estimate
+    };
 
     return (
         <PageContents title={t('Rentayin')}>
@@ -25,6 +32,11 @@ export default function RentayinPage() {
                     sx={{ borderRadius: '25px', height: '40px', mt: 1, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}
                 />
             </Box>
+            <ChooseEstimationDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                onSelect={handleSelect}
+            />
         </PageContents>
     );
 }
