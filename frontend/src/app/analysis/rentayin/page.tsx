@@ -48,7 +48,7 @@ interface RentayinRecord {
 
 interface LaborRow { _id: string; laborItemId: string; isGroupRow: boolean; fullCode: string; catalogName: string; laborOfferItemName: string; unitSymbol: string; quantity: number; changableAveragePrice: number; cost: number; subsectionName: string; sectionName: string; }
 interface GroupedLabor { laborItemId: string; fullCode: string; name: string; unitSymbol: string; totalCost: number; totalQuantity: number; items: LaborRow[]; }
-interface MaterialRow { _id: string; materialItemId: string; laborCatalogName: string; laborFullCode: string; laborOfferItemName: string; materialCatalogName: string; materialCatalogFullCode: string; materialOfferItemName: string; unitSymbol: string; quantity: number; cost: number; }
+interface MaterialRow { _id: string; materialItemId: string; laborCatalogName: string; laborFullCode: string; laborOfferItemName: string; materialCatalogName: string; materialCatalogFullCode: string; materialOfferItemName: string; unitSymbol: string; quantity: number; changableAveragePrice: number; cost: number; }
 interface GroupedByMaterial { materialItemId: string; materialFullCode: string; materialName: string; unitSymbol: string; totalCost: number; totalQuantity: number; items: MaterialRow[]; }
 
 const SOURCE_CHIP: Record<string, { label: string; color: string }> = {
@@ -499,6 +499,7 @@ export default function RentayinPage() {
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
+                                        <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
@@ -516,6 +517,7 @@ export default function RentayinPage() {
                                                         </TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                        <TableCell />
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
                                                         <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
                                                     </TableRow>
@@ -524,6 +526,7 @@ export default function RentayinPage() {
                                                             <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborOfferItemName || item.catalogName}</Typography></TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.changableAveragePrice > 0 ? Math.round(item.changableAveragePrice).toLocaleString() : '—'}</TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
                                                             <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
                                                         </TableRow>
@@ -549,6 +552,7 @@ export default function RentayinPage() {
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
+                                        <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
@@ -566,6 +570,7 @@ export default function RentayinPage() {
                                                         </TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                        <TableCell />
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
                                                         <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
                                                     </TableRow>
@@ -574,6 +579,7 @@ export default function RentayinPage() {
                                                             <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.changableAveragePrice > 0 ? Math.round(item.changableAveragePrice).toLocaleString() : '—'}</TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
                                                             <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
                                                         </TableRow>
