@@ -289,7 +289,8 @@ export default function RentayinPage() {
                                                                 {subRows.map(row => {
                                                                     const globalIdx = rows.indexOf(row);
                                                                     const estTotal = row.estimatedUnitCost * row.quantity;
-                                                                    const actTotal = row.actualUnitCost !== null ? row.actualUnitCost * row.quantity : null;
+                                                                    const actUnitCost = row.actualUnitCost ?? row.estimatedUnitCost;
+                                    const actTotal = actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
                                                                     const isEditing = editingIndex === globalIdx;
                                                                     const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
@@ -329,8 +330,8 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 ) : (
                                                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                                        <span style={{ fontSize: '0.82rem', color: row.actualUnitCost ? '#111' : '#bbb' }}>
-                                                                                            {row.actualUnitCost ? row.actualUnitCost.toLocaleString() : '\u2014'}
+                                                                                        <span style={{ fontSize: '0.82rem', color: row.actualUnitCost !== null ? '#111' : '#888' }}>
+                                                                                            {actUnitCost > 0 ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                         </span>
                                                                                         <Tooltip title={t('Edit')} placement='top' arrow>
                                                                                             <IconButton size='small'
@@ -342,7 +343,7 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 )}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? mainPrimaryColor : '#ddd' })}>
+                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd' })}>
                                                                                 {actTotal !== null ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
