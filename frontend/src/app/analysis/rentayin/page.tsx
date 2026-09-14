@@ -189,6 +189,8 @@ export default function RentayinPage() {
                             <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><SavingsOutlinedIcon sx={{ fontSize: 18 }} />Ընդհանուր</Box>} value='general' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='table' />
+                                <Tab label='Աշխատանքներ' value='works' />
+                                <Tab label='Նյութեր' value='materials' />
                             </TabList>
                             <Box sx={{ flex: 1 }} />
                             {overallProfit !== null && (
@@ -428,6 +430,12 @@ export default function RentayinPage() {
                     </Box>
                 )}
                 </Box>
+                {tab === 'works' && (
+                    <Box sx={{ p: 4, textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>Աշխատանքներ</Box>
+                )}
+                {tab === 'materials' && (
+                    <Box sx={{ p: 4, textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>Նյութեր</Box>
+                )}
                 </TabContext>
             </PageContents>
         );
