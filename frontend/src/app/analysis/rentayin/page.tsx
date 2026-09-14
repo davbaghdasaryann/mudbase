@@ -13,6 +13,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EngineeringIcon from '@mui/icons-material/Engineering';
@@ -118,6 +119,7 @@ export default function RentayinPage() {
     const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
     const [editingPriceValue, setEditingPriceValue] = useState('');
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
+    const [refreshing, setRefreshing] = useState(false);
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
     const inputRef = useRef<HTMLInputElement>(null);
@@ -274,6 +276,20 @@ export default function RentayinPage() {
                             <IconButton onClick={() => router.push('/analysis/rentayin')} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
+                            <Tooltip title='Refresh from costing'>
+                                <span>
+                                    <IconButton size='small' disabled={refreshing} onClick={async () => {
+                                        if (!detail) return;
+                                        setRefreshing(true);
+                                        try {
+                                            const res = await Api.requestSession<{ ok: boolean; rows: any[] }>({ command: 'rentayin/refresh', args: { id: detail._id } });
+                                            setDetail(prev => prev ? { ...prev, rows: res.rows } : prev);
+                                        } finally { setRefreshing(false); }
+                                    }} sx={{ color: refreshing ? '#ccc' : mainPrimaryColor, '&:hover': { color: mainPrimaryColor } }}>
+                                        <RefreshIcon fontSize='small' sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }} />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
                             <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><SavingsOutlinedIcon sx={{ fontSize: 18 }} />Ընդհանուր</Box>} value='general' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='table' />
@@ -379,8 +395,8 @@ export default function RentayinPage() {
                                                                 {subRows.map(row => {
                                                                     const globalIdx = rows.indexOf(row);
                                                                     const estTotal = row.estimatedUnitCost * row.quantity;
-                                                                    const actUnitCost = row.actualUnitCost ?? row.estimatedUnitCost;
-                                    const actTotal = actUnitCost > 0 ? actUnitCost * row.quantity : null;
+                                                                    const actUnitCost = row.actualUnitCost;
+                                    const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
                                                                     const isEditing = editingIndex === globalIdx;
                                                                     const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
@@ -398,8 +414,8 @@ export default function RentayinPage() {
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
                                                                             <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.actualUnitCost !== null && row.estimatedUnitCost > 0 ? Math.round(row.estimatedUnitCost).toLocaleString() : '\u2014'}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{row.actualUnitCost !== null && estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.estimatedUnitCost > 0 ? Math.round(row.estimatedUnitCost).toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
                                                                             <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
                                                                             <td style={tdStyle({ textAlign: 'right' })}>
                                                                                 {isEditing ? (
@@ -420,8 +436,8 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 ) : (
                                                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                                        <span style={{ fontSize: '0.82rem', color: row.actualUnitCost !== null ? '#111' : '#888' }}>
-                                                                                            {actUnitCost > 0 ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
+                                                                                        <span style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : '#888' }}>
+                                                                                            {actUnitCost !== null && actUnitCost > 0 && row.unitCostSource === 'actual' ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                         </span>
                                                                                         <Tooltip title={t('Edit')} placement='top' arrow>
                                                                                             <IconButton size='small'
@@ -434,7 +450,7 @@ export default function RentayinPage() {
                                                                                 )}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd' })}>
-                                                                                {actTotal !== null ? actTotal.toLocaleString() : '\u2014'}
+                                                                                {actTotal !== null && row.unitCostSource === 'actual' ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                                                                                 {pct !== null ? (
