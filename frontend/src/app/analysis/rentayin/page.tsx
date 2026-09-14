@@ -642,44 +642,7 @@ export default function RentayinPage() {
                                             </Paper>
                                         </Box>
                                     </>}
-                                    <Box onClick={() => toggleSection('details')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 1, userSelect: 'none' }}>
-                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Details</Typography>
-                                        <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('details') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                                    </Box>
-                                    {!collapsedSections.has('details') && <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff', mb: 3 }}>
-                                        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 560 }}>
-                                            <thead>
-                                                <tr style={{ background: '#f7fdfe' }}>
-                                                    <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7' }}>{t('Name')}</th>
-                                                    <th style={{ padding: '8px 8px', textAlign: 'center', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Unit')}</th>
-                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Quantity')}</th>
-                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Estimated')}</th>
-                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>{t('Actual')}</th>
-                                                    <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6' }}>%</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {rows.map((r, i) => {
-                                                    const actUnitCost = r.actualUnitCost ?? r.estimatedUnitCost;
-                                                    const estTotal = r.estimatedUnitCost * r.quantity;
-                                                    const actTotal = actUnitCost > 0 ? actUnitCost * r.quantity : null;
-                                                    const pctDiff = actTotal !== null && estTotal > 0 ? ((actTotal - estTotal) / estTotal * 100) : null;
-                                                    return (
-                                                        <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fafcfc' }}>
-                                                            <td style={{ padding: '6px 12px', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4' }}>{r.laborOfferItemName}</td>
-                                                            <td style={{ padding: '6px 8px', textAlign: 'center', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#888' }}>{r.unitSymbol}</td>
-                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#666' }}>{r.quantity.toLocaleString()}</td>
-                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#444' }}>{estTotal > 0 ? fmtAMD(estTotal) : '—'}</td>
-                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: actTotal ? mainPrimaryColor : '#bbb', fontWeight: actTotal ? 600 : 400 }}>{actTotal ? fmtAMD(actTotal) : '—'}</td>
-                                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6' }}>
-                                                                {pctDiff !== null ? <span style={{ fontWeight: 600, color: pctDiff > 0 ? '#e53935' : '#2E7D32' }}>{pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%</span> : <span style={{ color: '#ccc' }}>—</span>}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </Box>}
+
                                 </Box>
                             );
                         })()}
