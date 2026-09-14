@@ -153,7 +153,7 @@ export default function RentayinPage() {
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
                             <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
-                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{detail.estimateName}</Box>} value='table' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='table' />
                             </TabList>
                             <Box sx={{ flex: 1 }} />
                             {overallProfit !== null && (
@@ -168,128 +168,176 @@ export default function RentayinPage() {
                         </Box>
                     </Box>
 
-                    {tab === 'table' && <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
-                        <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 900 }}>
-                            <colgroup>
-                                <col style={{ width: 44 }} />
-                                <col style={{ width: 320 }} />
-                                <col style={{ width: 70 }} />
-                                {/* Նakhahashiv */}
-                                <col style={{ width: 80 }} />
-                                <col style={{ width: 130 }} />
-                                <col style={{ width: 120 }} />
-                                {/* Փastaci */}
-                                <col style={{ width: 130 }} />
-                                <col style={{ width: 90 }} />
-                                <col style={{ width: 120 }} />
-                                {/* Profit */}
-                                <col style={{ width: 110 }} />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>#</th>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշխատանքի անվանումը</th>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Միավոր</th>
-                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
-                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Փաստացի</th>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Շահութաբերություն</th>
-                                </tr>
-                                <tr>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>Միավորի Արժեքը</th>
-                                    <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Աղբյուր</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row, i) => {
-                                    const estTotal = row.estimatedUnitCost * row.quantity;
-                                    const actTotal = row.actualUnitCost !== null ? row.actualUnitCost * row.quantity : null;
-                                    const pct = profitPct(row);
-                                    const isEditing = editingIndex === i;
-                                    const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
-                                    return (
-                                        <tr
-                                            key={i}
-                                            style={{ backgroundColor: '#fff' }}
-                                            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
-                                            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
-                                        >
-                                            <td style={tdStyle({ textAlign: 'center', color: '#bbb', fontSize: '0.74rem' })}>{i + 1}</td>
-                                            <td style={tdStyle({ whiteSpace: 'normal' })}>
-                                                <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#111' }}>{row.laborOfferItemName}</span>
-                                                {(row.sectionName || row.subsectionName) && (
-                                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#999' }}>
-                                                        {[row.sectionName, row.subsectionName].filter(Boolean).join(' › ')}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
-                                            {/* Նakhahashiv cols */}
-                                            <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
-                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.estimatedUnitCost > 0 ? row.estimatedUnitCost.toLocaleString() : '—'}</td>
-                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '—'}</td>
-                                            {/* Փastaci cols */}
-                                            <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
-                                                {isEditing ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                        <TextField
-                                                            inputRef={inputRef}
-                                                            size='small'
-                                                            type='number'
-                                                            value={editValue}
-                                                            onChange={e => setEditValue(e.target.value)}
-                                                            onKeyDown={e => { if (e.key === 'Enter') handleSaveManual(i); if (e.key === 'Escape') setEditingIndex(null); }}
-                                                            sx={{ width: 100 }}
-                                                            inputProps={{ min: 0 }}
-                                                        />
-                                                        <IconButton size='small' onClick={() => handleSaveManual(i)} disabled={saving} sx={{ color: mainPrimaryColor }}>
-                                                            {saving ? <CircularProgress size={14} /> : <CheckIcon sx={{ fontSize: 16 }} />}
-                                                        </IconButton>
-                                                    </Box>
-                                                ) : (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                        <span style={{ fontSize: '0.82rem', color: row.actualUnitCost ? '#111' : '#bbb' }}>
-                                                            {row.actualUnitCost ? row.actualUnitCost.toLocaleString() : '—'}
-                                                        </span>
-                                                        <Tooltip title={t('Edit')} placement='top' arrow>
-                                                            <IconButton size='small'
-                                                                onClick={() => { setEditingIndex(i); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
-                                                                sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
-                                                                <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </Box>
-                                                )}
-                                            </td>
-                                            <td style={tdStyle({ textAlign: 'center' })}>
-                                                {src ? (
-                                                    <Chip label={src.label} size='small' sx={{ fontSize: '0.68rem', bgcolor: `${src.color}18`, color: src.color, height: 20 }} />
-                                                ) : (
-                                                    <Chip label={t('Enter')} size='small'
-                                                        onClick={() => { setEditingIndex(i); setEditValue(''); }}
-                                                        sx={{ fontSize: '0.68rem', bgcolor: '#FFF3E0', color: '#E65100', height: 20, cursor: 'pointer' }} />
-                                                )}
-                                            </td>
-                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? mainPrimaryColor : '#ddd' })}>
-                                                {actTotal !== null ? actTotal.toLocaleString() : '—'}
-                                            </td>
-                                            {/* Profit */}
-                                            <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
-                                                {pct !== null ? (
-                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct >= 0 ? '#2E7D32' : '#C62828' }}>
-                                                        {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                    </span>
-                                                ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>—</span>}
-                                            </td>
+                    {tab === 'table' && (() => {
+                        // Build section/subsection order from row data
+                        const sections: string[] = [];
+                        const subsMap = new Map<string, string[]>();
+                        rows.forEach(row => {
+                            const sec = row.sectionName || '';
+                            const sub = row.subsectionName || '';
+                            if (!sections.includes(sec)) sections.push(sec);
+                            if (!subsMap.has(sec)) subsMap.set(sec, []);
+                            const subs = subsMap.get(sec)!;
+                            if (!subs.includes(sub)) subs.push(sub);
+                        });
+                        const NCOLS = 11;
+                        let rowCounter = 0;
+                        return (
+                            <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
+                                <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 1200 }}>
+                                    <colgroup>
+                                        <col style={{ width: 44 }} />
+                                        <col style={{ width: 300 }} />
+                                        <col style={{ width: 70 }} />
+                                        <col style={{ width: 80 }} />
+                                        <col style={{ width: 130 }} />
+                                        <col style={{ width: 120 }} />
+                                        <col style={{ width: 80 }} />
+                                        <col style={{ width: 130 }} />
+                                        <col style={{ width: 120 }} />
+                                        <col style={{ width: 110 }} />
+                                        <col style={{ width: 90 }} />
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>#</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշխատանքի անվանումը</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Միավոր</th>
+                                            <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
+                                            <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Հաշվարկային</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Շահութաբերություն</th>
+                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Աղբյուր</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </Box>}
+                                        <tr>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը</th>
+                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sections.map((sec, si) => {
+                                            const subs = subsMap.get(sec) ?? [];
+                                            return (
+                                                <React.Fragment key={`sec-${si}`}>
+                                                    {sec && (
+                                                        <tr>
+                                                            <td colSpan={NCOLS} style={tdStyle({
+                                                                fontWeight: 700, fontSize: '0.78rem', color: '#00818f',
+                                                                paddingLeft: 12, paddingTop: si > 0 ? 18 : 10, paddingBottom: 4,
+                                                                letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+                                                                borderBottom: '1px solid #d6eef1', backgroundColor: '#f9feff',
+                                                            })}>
+                                                                {si + 1}. {sec}
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    {subs.map((sub, subI) => {
+                                                        const subRows = rows.filter(r => (r.sectionName || '') === sec && (r.subsectionName || '') === sub);
+                                                        return (
+                                                            <React.Fragment key={`sub-${si}-${subI}`}>
+                                                                {sub && (
+                                                                    <tr>
+                                                                        <td colSpan={NCOLS} style={tdStyle({
+                                                                            paddingLeft: 24, paddingTop: 8, paddingBottom: 4,
+                                                                            color: '#6b7280', fontSize: '0.77rem', fontWeight: 500,
+                                                                            borderBottom: '1px solid #f0f2f4',
+                                                                        })}>
+                                                                            {si + 1}.{subI + 1}. {sub}
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+                                                                {subRows.map(row => {
+                                                                    const globalIdx = rows.indexOf(row);
+                                                                    const estTotal = row.estimatedUnitCost * row.quantity;
+                                                                    const actTotal = row.actualUnitCost !== null ? row.actualUnitCost * row.quantity : null;
+                                                                    const pct = profitPct(row);
+                                                                    const isEditing = editingIndex === globalIdx;
+                                                                    const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
+                                                                    rowCounter++;
+                                                                    return (
+                                                                        <tr
+                                                                            key={globalIdx}
+                                                                            style={{ backgroundColor: '#fff' }}
+                                                                            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
+                                                                            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
+                                                                        >
+                                                                            <td style={tdStyle({ textAlign: 'center', color: '#bbb', fontSize: '0.74rem' })}>{rowCounter}</td>
+                                                                            <td style={tdStyle({ whiteSpace: 'normal' })}>
+                                                                                <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#111' }}>{row.laborOfferItemName}</span>
+                                                                            </td>
+                                                                            <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.estimatedUnitCost > 0 ? row.estimatedUnitCost.toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right' })}>
+                                                                                {isEditing ? (
+                                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                                        <TextField
+                                                                                            inputRef={inputRef}
+                                                                                            size='small'
+                                                                                            type='number'
+                                                                                            value={editValue}
+                                                                                            onChange={e => setEditValue(e.target.value)}
+                                                                                            onKeyDown={e => { if (e.key === 'Enter') handleSaveManual(globalIdx); if (e.key === 'Escape') setEditingIndex(null); }}
+                                                                                            sx={{ width: 100 }}
+                                                                                            inputProps={{ min: 0 }}
+                                                                                        />
+                                                                                        <IconButton size='small' onClick={() => handleSaveManual(globalIdx)} disabled={saving} sx={{ color: mainPrimaryColor }}>
+                                                                                            {saving ? <CircularProgress size={14} /> : <CheckIcon sx={{ fontSize: 16 }} />}
+                                                                                        </IconButton>
+                                                                                    </Box>
+                                                                                ) : (
+                                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                                        <span style={{ fontSize: '0.82rem', color: row.actualUnitCost ? '#111' : '#bbb' }}>
+                                                                                            {row.actualUnitCost ? row.actualUnitCost.toLocaleString() : '\u2014'}
+                                                                                        </span>
+                                                                                        <Tooltip title={t('Edit')} placement='top' arrow>
+                                                                                            <IconButton size='small'
+                                                                                                onClick={() => { setEditingIndex(globalIdx); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
+                                                                                                sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
+                                                                                                <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
+                                                                                            </IconButton>
+                                                                                        </Tooltip>
+                                                                                    </Box>
+                                                                                )}
+                                                                            </td>
+                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? mainPrimaryColor : '#ddd' })}>
+                                                                                {actTotal !== null ? actTotal.toLocaleString() : '\u2014'}
+                                                                            </td>
+                                                                            <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
+                                                                                {pct !== null ? (
+                                                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct >= 0 ? '#2E7D32' : '#C62828' }}>
+                                                                                        {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
+                                                                                    </span>
+                                                                                ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'—'}</span>}
+                                                                            </td>
+                                                                            <td style={tdStyle({ textAlign: 'center' })}>
+                                                                                {src ? (
+                                                                                    <Chip label={src.label} size='small' sx={{ fontSize: '0.68rem', bgcolor: `${src.color}18`, color: src.color, height: 20 }} />
+                                                                                ) : (
+                                                                                    <Chip label={t('Enter')} size='small'
+                                                                                        onClick={() => { setEditingIndex(globalIdx); setEditValue(''); }}
+                                                                                        sx={{ fontSize: '0.68rem', bgcolor: '#FFF3E0', color: '#E65100', height: 20, cursor: 'pointer' }} />
+                                                                                )}
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </React.Fragment>
+                                                        );
+                                                    })}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </Box>
+                        );
+                    })()}
                 </Box>
                 </TabContext>
             </PageContents>
