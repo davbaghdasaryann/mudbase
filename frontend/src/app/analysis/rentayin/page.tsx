@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Box, Typography, CircularProgress, Table, TableHead, TableBody,
-    TableRow, TableCell, TableContainer, Paper, Chip, TextField, IconButton, Tooltip,
+    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip,
 } from '@mui/material';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import CheckIcon from '@mui/icons-material/Check';
@@ -42,6 +41,20 @@ const SOURCE_CHIP: Record<string, { label: string; color: string }> = {
     library: { label: 'Library', color: '#1565C0' },
     manual: { label: 'Manual', color: '#E65100' },
 };
+
+const GSEP = '1px solid #e8f4f6';
+const ROW_LINE = '1px solid #f0f2f4';
+
+const thBase: React.CSSProperties = {
+    padding: '8px 10px', whiteSpace: 'nowrap',
+    fontWeight: 600, fontSize: '0.75rem', color: '#6b7280',
+    backgroundColor: '#fff', letterSpacing: '0.03em',
+    textTransform: 'uppercase', border: 'none',
+    borderBottom: '2px solid #e8f7f9',
+};
+const thStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...thBase, ...extra });
+const tdBase: React.CSSProperties = { padding: '7px 10px', fontSize: '0.82rem', verticalAlign: 'middle', border: 'none', borderBottom: ROW_LINE };
+const tdStyle = (extra: React.CSSProperties = {}): React.CSSProperties => ({ ...tdBase, ...extra });
 
 export default function RentayinPage() {
     const { t } = useTranslation();
@@ -146,42 +159,71 @@ export default function RentayinPage() {
                         )}
                     </Box>
 
-                    <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                        <Table size='small'>
-                            <TableHead>
-                                <TableRow sx={{ bgcolor: `${mainPrimaryColor}0a` }}>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>#</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Works')}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Unit')}</TableCell>
-                                    <TableCell align='right' sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Quantity')}</TableCell>
-                                    <TableCell align='right' sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Estimated unit cost')}</TableCell>
-                                    <TableCell align='right' sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Actual unit cost')}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Source')}</TableCell>
-                                    <TableCell align='right' sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('Profit %')}</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
+                    <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
+                        <table style={{ tableLayout: 'fixed', borderCollapse: 'collapse', width: '100%', minWidth: 900 }}>
+                            <colgroup>
+                                <col style={{ width: 44 }} />
+                                <col style={{ width: 320 }} />
+                                <col style={{ width: 70 }} />
+                                {/* Նakhahashiv */}
+                                <col style={{ width: 80 }} />
+                                <col style={{ width: 130 }} />
+                                <col style={{ width: 120 }} />
+                                {/* Փastaci */}
+                                <col style={{ width: 130 }} />
+                                <col style={{ width: 90 }} />
+                                <col style={{ width: 120 }} />
+                                {/* Profit */}
+                                <col style={{ width: 110 }} />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>#</th>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշxatanqi anvanumы</th>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Mianor</th>
+                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նakhahashiv</th>
+                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Փastaci</th>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Shahutaberoution</th>
+                                </tr>
+                                <tr>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>Qaanakk</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Mianori Arzhekky</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Endhanur</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>Mianori Arzhekky</th>
+                                    <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Aghbyur</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Endhanur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                                 {rows.map((row, i) => {
+                                    const estTotal = row.estimatedUnitCost * row.quantity;
+                                    const actTotal = row.actualUnitCost !== null ? row.actualUnitCost * row.quantity : null;
                                     const pct = profitPct(row);
                                     const isEditing = editingIndex === i;
                                     const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
                                     return (
-                                        <TableRow key={i} sx={{ '&:hover': { bgcolor: `${mainPrimaryColor}05` } }}>
-                                            <TableCell sx={{ color: '#aaa', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                                            <TableCell>
-                                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 500 }}>{row.laborOfferItemName}</Typography>
+                                        <tr
+                                            key={i}
+                                            style={{ backgroundColor: '#fff' }}
+                                            onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f8fdfe'; }}
+                                            onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#fff'; }}
+                                        >
+                                            <td style={tdStyle({ textAlign: 'center', color: '#bbb', fontSize: '0.74rem' })}>{i + 1}</td>
+                                            <td style={tdStyle({ whiteSpace: 'normal' })}>
+                                                <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#111' }}>{row.laborOfferItemName}</span>
                                                 {(row.sectionName || row.subsectionName) && (
-                                                    <Typography sx={{ fontSize: '0.7rem', color: '#999' }}>
+                                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#999' }}>
                                                         {[row.sectionName, row.subsectionName].filter(Boolean).join(' › ')}
-                                                    </Typography>
+                                                    </span>
                                                 )}
-                                            </TableCell>
-                                            <TableCell sx={{ fontSize: '0.8rem', color: '#666' }}>{row.unitSymbol}</TableCell>
-                                            <TableCell align='right' sx={{ fontSize: '0.82rem' }}>{row.quantity.toLocaleString()}</TableCell>
-                                            <TableCell align='right' sx={{ fontSize: '0.82rem' }}>
-                                                {row.estimatedUnitCost > 0 ? row.estimatedUnitCost.toLocaleString() : '—'}
-                                            </TableCell>
-                                            <TableCell align='right'>
+                                            </td>
+                                            <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
+                                            {/* Նakhahashiv cols */}
+                                            <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
+                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.estimatedUnitCost > 0 ? row.estimatedUnitCost.toLocaleString() : '—'}</td>
+                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '—'}</td>
+                                            {/* Փastaci cols */}
+                                            <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                                                 {isEditing ? (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                         <TextField
@@ -200,20 +242,20 @@ export default function RentayinPage() {
                                                     </Box>
                                                 ) : (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                        <Typography sx={{ fontSize: '0.82rem', color: row.actualUnitCost ? 'inherit' : '#bbb' }}>
+                                                        <span style={{ fontSize: '0.82rem', color: row.actualUnitCost ? '#111' : '#bbb' }}>
                                                             {row.actualUnitCost ? row.actualUnitCost.toLocaleString() : '—'}
-                                                        </Typography>
+                                                        </span>
                                                         <Tooltip title={t('Edit')} placement='top' arrow>
                                                             <IconButton size='small'
                                                                 onClick={() => { setEditingIndex(i); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
-                                                                sx={{ opacity: 0, '.MuiTableRow-root:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
+                                                                sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
                                                                 <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
                                                             </IconButton>
                                                         </Tooltip>
                                                     </Box>
                                                 )}
-                                            </TableCell>
-                                            <TableCell>
+                                            </td>
+                                            <td style={tdStyle({ textAlign: 'center' })}>
                                                 {src ? (
                                                     <Chip label={src.label} size='small' sx={{ fontSize: '0.68rem', bgcolor: `${src.color}18`, color: src.color, height: 20 }} />
                                                 ) : (
@@ -221,20 +263,24 @@ export default function RentayinPage() {
                                                         onClick={() => { setEditingIndex(i); setEditValue(''); }}
                                                         sx={{ fontSize: '0.68rem', bgcolor: '#FFF3E0', color: '#E65100', height: 20, cursor: 'pointer' }} />
                                                 )}
-                                            </TableCell>
-                                            <TableCell align='right'>
+                                            </td>
+                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? mainPrimaryColor : '#ddd' })}>
+                                                {actTotal !== null ? actTotal.toLocaleString() : '—'}
+                                            </td>
+                                            {/* Profit */}
+                                            <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
                                                 {pct !== null ? (
-                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: pct >= 0 ? '#2E7D32' : '#C62828' }}>
+                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct >= 0 ? '#2E7D32' : '#C62828' }}>
                                                         {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                    </Typography>
-                                                ) : <Typography sx={{ fontSize: '0.82rem', color: '#ccc' }}>—</Typography>}
-                                            </TableCell>
-                                        </TableRow>
+                                                    </span>
+                                                ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>—</span>}
+                                            </td>
+                                        </tr>
                                     );
                                 })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                            </tbody>
+                        </table>
+                    </Box>
                 </Box>
             </PageContents>
         );
