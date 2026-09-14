@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip, Tab,
+    Table, TableHead, TableBody, TableRow, TableCell,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
@@ -12,6 +13,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
@@ -78,6 +81,8 @@ export default function RentayinPage() {
     const [editValue, setEditValue] = useState('');
     const [saving, setSaving] = useState(false);
     const [tab, setTab] = useState('table');
+    const [worksExpanded, setWorksExpanded] = useState<Record<string, boolean>>({});
+    const [matsExpanded, setMatsExpanded] = useState<Record<string, boolean>>({});
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
     const inputRef = useRef<HTMLInputElement>(null);
     const resizingRef = useRef<{ ci: number; startX: number; startW: number } | null>(null);
@@ -430,12 +435,136 @@ export default function RentayinPage() {
                     </Box>
                 )}
                 </Box>
-                {tab === 'works' && (
-                    <Box sx={{ p: 4, textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>Աշխատանքներ</Box>
-                )}
-                {tab === 'materials' && (
-                    <Box sx={{ p: 4, textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>Նյութեր</Box>
-                )}
+{tab === 'works' && (() => {
+                    const sections: string[] = [];
+                    const sectionRowsMap: Record<string, typeof rows> = {};
+                    for (const row of rows) {
+                        if (!sectionRowsMap[row.sectionName]) { sections.push(row.sectionName); sectionRowsMap[row.sectionName] = []; }
+                        sectionRowsMap[row.sectionName].push(row);
+                    }
+                    const totalLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity), 0);
+                    const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(1) + '%' : '0%';
+                    return (
+                        <Box sx={{ px: 2, pb: 2 }}>
+                            <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
+                                        <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Ենդհանուր</TableCell>
+                                        <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {sections.map(section => {
+                                        const sRows = sectionRowsMap[section];
+                                        const sectionCost = sRows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity), 0);
+                                        const isOpen = !!worksExpanded[section];
+                                        return (
+                                            <React.Fragment key={section}>
+                                                <TableRow onClick={() => setWorksExpanded(p => ({ ...p, [section]: !p[section] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                                    <TableCell sx={{ pl: 1, py: 1.5 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
+                                                            <Typography variant='body2' sx={{ fontWeight: 500 }}>{section}</Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell /><TableCell /><TableCell />
+                                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(sectionCost).toLocaleString()} AMD</TableCell>
+                                                    <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(sectionCost)}</TableCell>
+                                                </TableRow>
+                                                {isOpen && sRows.map((row, i) => {
+                                                    const up = row.actualLaborUnitCost ?? row.estimatedUnitCost;
+                                                    const rowCost = up * row.quantity;
+                                                    return (
+                                                        <TableRow key={row.laborItemId + i} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                            <TableCell sx={{ pl: 5, py: 1 }}>
+                                                                <Typography variant='body2' color='text.secondary'>{i + 1}. {row.laborOfferItemName}</Typography>
+                                                            </TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.unitSymbol}</TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.quantity.toLocaleString()}</TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(up).toLocaleString()}</TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(rowCost).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1 }}>{pct(rowCost)}</TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    );
+                })()}
+{tab === 'materials' && (() => {
+                    const matRows = rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0 || (r.actualMaterialUnitCost ?? 0) > 0);
+                    const sections: string[] = [];
+                    const sectionRowsMap: Record<string, typeof rows> = {};
+                    for (const row of matRows) {
+                        if (!sectionRowsMap[row.sectionName]) { sections.push(row.sectionName); sectionRowsMap[row.sectionName] = []; }
+                        sectionRowsMap[row.sectionName].push(row);
+                    }
+                    const totalMatCost = matRows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity), 0);
+                    const pct = (cost: number) => totalMatCost > 0 ? ((cost / totalMatCost) * 100).toFixed(1) + '%' : '0%';
+                    if (matRows.length === 0) return <Box sx={{ p: 4, textAlign: 'center', color: '#aaa' }}>Բացկական նյութեր չկան</Box>;
+                    return (
+                        <Box sx={{ px: 2, pb: 2 }}>
+                            <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
+                                        <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Ենդհանուր</TableCell>
+                                        <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {sections.map(section => {
+                                        const sRows = sectionRowsMap[section];
+                                        const sectionCost = sRows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity), 0);
+                                        const isOpen = !!matsExpanded[section];
+                                        return (
+                                            <React.Fragment key={section}>
+                                                <TableRow onClick={() => setMatsExpanded(p => ({ ...p, [section]: !p[section] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                                    <TableCell sx={{ pl: 1, py: 1.5 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
+                                                            <Typography variant='body2' sx={{ fontWeight: 500 }}>{section}</Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell /><TableCell /><TableCell />
+                                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(sectionCost).toLocaleString()} AMD</TableCell>
+                                                    <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(sectionCost)}</TableCell>
+                                                </TableRow>
+                                                {isOpen && sRows.map((row, i) => {
+                                                    const up = row.actualMaterialUnitCost ?? row.estimatedMaterialUnitCost ?? 0;
+                                                    const rowCost = up * row.quantity;
+                                                    return (
+                                                        <TableRow key={row.laborItemId + i} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                            <TableCell sx={{ pl: 5, py: 1 }}>
+                                                                <Typography variant='body2' color='text.secondary'>{i + 1}. {row.laborOfferItemName}</Typography>
+                                                            </TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.unitSymbol}</TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{row.quantity.toLocaleString()}</TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(up).toLocaleString()}</TableCell>
+                                                            <TableCell align='center' sx={{ color: 'text.secondary', py: 1 }}>{Math.round(rowCost).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1 }}>{pct(rowCost)}</TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    );
+                })()}
                 </TabContext>
             </PageContents>
         );
