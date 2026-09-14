@@ -493,8 +493,8 @@ export default function RentayinPage() {
                                                 <Box sx={{ flex: 1, display: 'flex', gap: 2 }}>
                                                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                                         <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Estimated')}</Typography>
-                                                        <Box sx={{ flex: 1, width: '100%', minHeight: 120 }}>
-                                                            <ResponsiveContainer width='100%' height='100%'>
+                                                        <Box sx={{ width: '100%', height: 160 }}>
+                                                            <ResponsiveContainer width='100%' height={160}>
                                                                 <PieChart>
                                                                     <Pie data={estDonutData.length ? estDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={estDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
                                                                         {(estDonutData.length ? estDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
@@ -507,8 +507,8 @@ export default function RentayinPage() {
                                                     </Box>
                                                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                                         <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Actual')}</Typography>
-                                                        <Box sx={{ flex: 1, width: '100%', minHeight: 120 }}>
-                                                            <ResponsiveContainer width='100%' height='100%'>
+                                                        <Box sx={{ width: '100%', height: 160 }}>
+                                                            <ResponsiveContainer width='100%' height={160}>
                                                                 <PieChart>
                                                                     <Pie data={actDonutData.length ? actDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={actDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
                                                                         {(actDonutData.length ? actDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
@@ -536,8 +536,8 @@ export default function RentayinPage() {
                                                     <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>{t('No data')}</Typography></Box>
                                                 ) : (
                                                     <>
-                                                        <Box sx={{ flex: 1, position: 'relative', minHeight: 120 }}>
-                                                            <ResponsiveContainer width='100%' height='100%'>
+                                                        <Box sx={{ position: 'relative', height: 160 }}>
+                                                            <ResponsiveContainer width='100%' height={160}>
                                                                 <PieChart>
                                                                     <defs>
                                                                         <linearGradient id='rent-comp-grad' x1='0' y1='0' x2='1' y2='1'>
