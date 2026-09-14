@@ -308,8 +308,8 @@ export default function RentayinPage() {
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
                                                                             <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.estimatedUnitCost > 0 ? row.estimatedUnitCost.toLocaleString() : '\u2014'}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.actualUnitCost !== null && row.estimatedUnitCost > 0 ? Math.round(row.estimatedUnitCost).toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{row.actualUnitCost !== null && estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
                                                                             <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
                                                                             <td style={tdStyle({ textAlign: 'right' })}>
                                                                                 {isEditing ? (
