@@ -43,6 +43,8 @@ interface RentayinRecord {
     estimateId: string;
     estimateName: string;
     rows?: RentayinRow[];
+    laborPriceOverrides?: Record<string, number>;
+    materialPriceOverrides?: Record<string, number>;
     createdAt: string;
 }
 
@@ -95,6 +97,10 @@ export default function RentayinPage() {
     const [matGroupsLoading, setMatGroupsLoading] = useState(false);
     const [laborExpanded, setLaborExpanded] = useState<Record<string, boolean>>({});
     const [matGroupExpanded, setMatGroupExpanded] = useState<Record<string, boolean>>({});
+    const [laborOverrides, setLaborOverrides] = useState<Record<string, number>>({});
+    const [matOverrides, setMatOverrides] = useState<Record<string, number>>({});
+    const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
+    const [editingPriceValue, setEditingPriceValue] = useState('');
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
     const inputRef = useRef<HTMLInputElement>(null);
     const resizingRef = useRef<{ ci: number; startX: number; startW: number } | null>(null);
@@ -115,6 +121,13 @@ export default function RentayinPage() {
  })
             .catch(() => setDetailLoading(false));
     }, [selectedId]);
+
+    useEffect(() => {
+        if (detail) {
+            setLaborOverrides(detail.laborPriceOverrides ?? {});
+            setMatOverrides(detail.materialPriceOverrides ?? {});
+        }
+    }, [detail?._id]);
     useEffect(() => {
         const estimateId = detail?.estimateId;
         if (!estimateId) return;
@@ -517,7 +530,50 @@ export default function RentayinPage() {
                                                         </TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
-                                                        <TableCell />
+                                                        <TableCell align='right' sx={{ py: 1.5, pr: 1 }}>
+                                                        {editingPriceKey === 'lg:' + group.laborItemId ? (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)}
+                                                                    onKeyDown={e => {
+                                                                        if (e.key === 'Enter') {
+                                                                            const p = parseFloat(editingPriceValue);
+                                                                            if (!isNaN(p) && p > 0 && detail) {
+                                                                                const newOvr: Record<string,number> = { ...laborOverrides };
+                                                                                group.items.forEach(it => { delete newOvr[it._id]; });
+                                                                                newOvr[group.laborItemId] = p;
+                                                                                setLaborOverrides(newOvr);
+                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: p } });
+                                                                                group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                            }
+                                                                            setEditingPriceKey(null);
+                                                                        } else if (e.key === 'Escape') { setEditingPriceKey(null); }
+                                                                    }}
+                                                                    sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                <IconButton size='small' onClick={() => {
+                                                                    const p = parseFloat(editingPriceValue);
+                                                                    if (!isNaN(p) && p > 0 && detail) {
+                                                                        const newOvr: Record<string,number> = { ...laborOverrides };
+                                                                        group.items.forEach(it => { delete newOvr[it._id]; });
+                                                                        newOvr[group.laborItemId] = p;
+                                                                        setLaborOverrides(newOvr);
+                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: p } });
+                                                                        group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                    }
+                                                                    setEditingPriceKey(null);
+                                                                }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                            </Box>
+                                                        ) : (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                <span style={{ fontSize: '0.82rem', color: laborOverrides[group.laborItemId] ? '#111' : '#aaa' }}>
+                                                                    {laborOverrides[group.laborItemId] ? Math.round(laborOverrides[group.laborItemId]).toLocaleString() : '—'}
+                                                                </span>
+                                                                <Tooltip title='Edit price for all' placement='top' arrow>
+                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('lg:' + group.laborItemId); setEditingPriceValue(laborOverrides[group.laborItemId]?.toString() ?? ''); }}
+                                                                        sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
+                                                                </Tooltip>
+                                                            </Box>
+                                                        )}
+                                                    </TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
                                                         <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
                                                     </TableRow>
@@ -526,7 +582,19 @@ export default function RentayinPage() {
                                                             <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborOfferItemName || item.catalogName}</Typography></TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
-                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.changableAveragePrice > 0 ? Math.round(item.changableAveragePrice).toLocaleString() : '—'}</TableCell>
+                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
+                                                            {editingPriceKey === 'li:' + item._id ? (
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setLaborOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: item._id, price: p } }); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setLaborOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: item._id, price: p } }); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                                </Box>
+                                                            ) : (
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                    <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
+                                                                    <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                </Box>
+                                                            )}
+                                                        </TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
                                                             <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
                                                         </TableRow>
@@ -570,7 +638,50 @@ export default function RentayinPage() {
                                                         </TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
-                                                        <TableCell />
+                                                        <TableCell align='right' sx={{ py: 1.5, pr: 1 }}>
+                                                        {editingPriceKey === 'mg:' + group.materialItemId ? (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)}
+                                                                    onKeyDown={e => {
+                                                                        if (e.key === 'Enter') {
+                                                                            const p = parseFloat(editingPriceValue);
+                                                                            if (!isNaN(p) && p > 0 && detail) {
+                                                                                const newOvr: Record<string,number> = { ...matOverrides };
+                                                                                group.items.forEach(it => { delete newOvr[it._id]; });
+                                                                                newOvr[group.materialItemId] = p;
+                                                                                setMatOverrides(newOvr);
+                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: p } });
+                                                                                group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                            }
+                                                                            setEditingPriceKey(null);
+                                                                        } else if (e.key === 'Escape') { setEditingPriceKey(null); }
+                                                                    }}
+                                                                    sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                <IconButton size='small' onClick={() => {
+                                                                    const p = parseFloat(editingPriceValue);
+                                                                    if (!isNaN(p) && p > 0 && detail) {
+                                                                        const newOvr: Record<string,number> = { ...matOverrides };
+                                                                        group.items.forEach(it => { delete newOvr[it._id]; });
+                                                                        newOvr[group.materialItemId] = p;
+                                                                        setMatOverrides(newOvr);
+                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: p } });
+                                                                        group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                    }
+                                                                    setEditingPriceKey(null);
+                                                                }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                            </Box>
+                                                        ) : (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                <span style={{ fontSize: '0.82rem', color: matOverrides[group.materialItemId] ? '#111' : '#aaa' }}>
+                                                                    {matOverrides[group.materialItemId] ? Math.round(matOverrides[group.materialItemId]).toLocaleString() : '—'}
+                                                                </span>
+                                                                <Tooltip title='Edit price for all' placement='top' arrow>
+                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('mg:' + group.materialItemId); setEditingPriceValue(matOverrides[group.materialItemId]?.toString() ?? ''); }}
+                                                                        sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
+                                                                </Tooltip>
+                                                            </Box>
+                                                        )}
+                                                    </TableCell>
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
                                                         <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
                                                     </TableRow>
@@ -579,7 +690,19 @@ export default function RentayinPage() {
                                                             <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
-                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.changableAveragePrice > 0 ? Math.round(item.changableAveragePrice).toLocaleString() : '—'}</TableCell>
+                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
+                                                            {editingPriceKey === 'mi:' + item._id ? (
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: item._id, price: p } }); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: item._id, price: p } }); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                                </Box>
+                                                            ) : (
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                    <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
+                                                                    <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                </Box>
+                                                            )}
+                                                        </TableCell>
                                                             <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
                                                             <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
                                                         </TableRow>

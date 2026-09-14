@@ -8,6 +8,9 @@ export interface RentayinRow {
     unitSymbol: string;
     quantity: number;
     estimatedUnitCost: number;
+    estimatedMaterialUnitCost: number;
+    actualLaborUnitCost: number | null;
+    actualMaterialUnitCost: number | null;
     actualUnitCost: number | null;
     unitCostSource: RentayinUnitCostSource | null;
     sectionName: string;
@@ -20,6 +23,9 @@ export interface EntityRentayin {
     estimateId?: ObjectId;
     estimateName?: string;
     rows?: RentayinRow[];
+    // price overrides for Labor/Materials tabs: key = laborItemId (group) or estimateRowId (item)
+    laborPriceOverrides?: Record<string, number>;
+    materialPriceOverrides?: Record<string, number>;
     deleted?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
