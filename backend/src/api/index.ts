@@ -88,3 +88,8 @@ export * from "./costing/costing_save";
 export * from "./costing/costing_delete";
 export * from "./costing/costing_fork_estimate";
 export * from "./costing/costing_refresh_local_snapshot";
+export * from "./rentayin/rentayin_create";
+export * from "./rentayin/rentayin_fetch_all";
+export * from "./rentayin/rentayin_fetch";
+export * from "./rentayin/rentayin_update_row";
+export * from "./rentayin/rentayin_delete";

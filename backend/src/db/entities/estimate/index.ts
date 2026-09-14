@@ -8,4 +8,5 @@ export * from './entity_costing';
 export * from './entity_schedule';
 export * from './entity_schedule_item';
 export * from './entity_schedule_group';
+export * from './entity_rentayin';
 export * from './offers';

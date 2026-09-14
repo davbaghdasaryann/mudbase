@@ -213,5 +213,13 @@
   "Number of parts": "Количество частей",
   "Split": "Разделить",
   "Rentayin": "Рентабельность",
-  "No rentayin created yet": "Рентабельностей ещё не создано"
+  "No rentayin created yet": "Рентабельностей ещё не создано",
+  "profitability": "доходность",
+  "need manual entry": "требует ввода",
+  "Estimated unit cost": "Сметная единичная стоимость",
+  "Actual unit cost": "Фактическая единичная стоимость",
+  "Profit %": "Доходность %",
+  "Source": "Источник",
+  "Enter": "Ввести",
+  "Unit": "Ед. изм."
 }

@@ -91,7 +91,7 @@
   "Confirm": "Հաստատել",
   "Reject": "Չեղարկել",
   "Accept": "Հաստատել",
-  "Enter": "Մուտքագրել",
+  "Enter": "Լնկագրել",
   "Select": "Ընտրել",
   "Select Company": "Ընտրել Կազմակերպություն",
   "Companies": "Կազմակերպություններ",
@@ -692,5 +692,10 @@
   "Number of parts": "Մասերի Քանակ",
   "Split": "Բաժանել",
   "Rentayin": "Ռենտային",
-  "No rentayin created yet": "Ռենտայիններ դեռ չեն ստեղծվել"
+  "No rentayin created yet": "Ռենտայիններ դեռ չեն ստեղծվել",
+  "profitability": "շահութաբերություն",
+  "need manual entry": "բանակագիր հաշվառկել են",
+  "Estimated unit cost": "Նխագիրված շահկի գին",
+  "Actual unit cost": "Իրավական շահկի գին",
+  "Profit %": "շահութաբերություն %"
 }
