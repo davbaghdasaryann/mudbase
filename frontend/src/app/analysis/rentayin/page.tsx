@@ -179,19 +179,19 @@ export default function RentayinPage() {
                             <thead>
                                 <tr>
                                     <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>#</th>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշxatanqi anvanumы</th>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Mianor</th>
-                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նakhahashiv</th>
-                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Փastaci</th>
-                                    <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Shahutaberoution</th>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'left', verticalAlign: 'middle' })}>Աշխատանքի անվանումը</th>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle' })}>Միավոր</th>
+                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
+                                    <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Փաստացի</th>
+                                    <th rowSpan={2} style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Շահութաբերություն</th>
                                 </tr>
                                 <tr>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>Qaanakk</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Mianori Arzhekky</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Endhanur</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>Mianori Arzhekky</th>
-                                    <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Aghbyur</th>
-                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Endhanur</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>Միավորի Արժեքը</th>
+                                    <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Աղբյուր</th>
+                                    <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր</th>
                                 </tr>
                             </thead>
                             <tbody>
