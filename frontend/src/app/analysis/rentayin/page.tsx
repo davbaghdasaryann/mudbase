@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip, Tab,
+    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip, Tab, Paper,
     Table, TableHead, TableBody, TableRow, TableCell,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
+import { formatCurrencyRounded } from '@/lib/format_currency';
 
 interface RentayinRow {
     laborItemId: string;
@@ -102,6 +103,8 @@ export default function RentayinPage() {
     const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
     const [editingPriceValue, setEditingPriceValue] = useState('');
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+    const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
     const inputRef = useRef<HTMLInputElement>(null);
     const resizingRef = useRef<{ ci: number; startX: number; startW: number } | null>(null);
     const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -449,49 +452,87 @@ export default function RentayinPage() {
                         );
                     })()}
                 {tab === 'general' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {(() => {
+                    <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, p: 2 }}>
+                        <Box onClick={() => toggleSection('overview')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Overview</Typography>
+                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                        </Box>
+                        {!collapsedSections.has('overview') && (() => {
+                            const rows = detail?.rows ?? [];
                             const totalEstLaborCost = rows.reduce((s, r) => s + r.estimatedUnitCost * r.quantity, 0);
                             const totalEstMatCost = rows.reduce((s, r) => s + (r.estimatedMaterialUnitCost ?? 0) * r.quantity, 0);
                             const totalEstCost = totalEstLaborCost + totalEstMatCost;
                             const totalActLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? 0) * r.quantity), 0);
                             const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
                             const totalActCost = totalActLaborCost + totalActMatCost;
-                            const fmt = (n: number) => Math.round(n).toLocaleString() + ' 噌';
-                            const pct = (a: number, e: number) => e > 0 ? ((e - a) / e * 100) : null;
-                            const rowData = [
-                                { label: 'Նախահաշիվ Աշխատանկ', est: totalEstLaborCost, act: totalActLaborCost },
-                                { label: 'Նախահաշիվ Նյութ', est: totalEstMatCost, act: totalActMatCost },
-                                { label: 'Անիկունական Արժեկ', est: totalEstCost, act: totalActCost },
+                            const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
+                            const cards: { label: string; est: number; act?: number }[] = [
+                                { label: 'Անկունական Արժևք', est: totalEstCost, act: totalActCost > 0 ? totalActCost : undefined },
+                                { label: 'Աշխատանկի Արժևք', est: totalEstLaborCost, act: totalActLaborCost > 0 ? totalActLaborCost : undefined },
+                                { label: 'Նյութի Արժևք', est: totalEstMatCost, act: totalActMatCost > 0 ? totalActMatCost : undefined },
                             ];
                             return (
-                                <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff' }}>
-                                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 500 }}>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
+                                    {cards.map(({ label, est, act }) => (
+                                        <Paper key={label} elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s,border-color 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)', borderColor: mainPrimaryColor } }}>
+                                            <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{label}</Typography>
+                                            <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>Նախահաշիվ / Հա坾վակի</Typography>
+                                            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
+                                                <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(est)}</Typography>
+                                                <Typography sx={{ color: '#bbb', fontWeight: 400 }}>/</Typography>
+                                                {act !== undefined ? (
+                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: act > est ? '#e53935' : mainPrimaryColor }}>{fmtAMD(act)}</Typography>
+                                                ) : (
+                                                    <Typography variant='body1' sx={{ fontWeight: 400, color: '#bbb' }}>—</Typography>
+                                                )}
+                                            </Box>
+                                        </Paper>
+                                    ))}
+                                </Box>
+                            );
+                        })()}
+                        <Box onClick={() => toggleSection('details')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 1, userSelect: 'none' }}>
+                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Details</Typography>
+                            <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('details') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                        </Box>
+                        {!collapsedSections.has('details') && (() => {
+                            const rows = detail?.rows ?? [];
+                            const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
+                            const rowData = rows.map(r => {
+                                const actUnitCost = r.actualUnitCost ?? r.estimatedUnitCost;
+                                const estTotal = r.estimatedUnitCost * r.quantity;
+                                const actTotal = actUnitCost > 0 ? actUnitCost * r.quantity : null;
+                                const pctDiff = actTotal !== null && estTotal > 0 ? ((actTotal - estTotal) / estTotal * 100) : null;
+                                return { name: r.laborOfferItemName, unit: r.unitSymbol, qty: r.quantity, estTotal, actTotal, pctDiff };
+                            });
+                            return (
+                                <Box sx={{ overflowX: 'auto', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', background: '#fff', mb: 3 }}>
+                                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 560 }}>
                                         <thead>
-                                            <tr>
-                                                <th style={thStyle({ textAlign: 'left', verticalAlign: 'middle', width: 250 })}>Անվանում</th>
-                                                <th style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
-                                                <th style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP, color: mainPrimaryColor })}>Հաշվարկայի坮</th>
-                                                <th style={thStyle({ textAlign: 'right', verticalAlign: 'middle', borderLeft: GSEP })}>Շահութաբերություն</th>
+                                            <tr style={{ background: '#f7fdfe' }}>
+                                                <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7' }}>Անվա坯ում</th>
+                                                <th style={{ padding: '8px 8px', textAlign: 'center', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Միավական</th>
+                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Անկ.</th>
+                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Նախ.Արժ.</th>
+                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: mainPrimaryColor, borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>Հա坾.Արժ.</th>
+                                                <th style={{ padding: '8px 8px', textAlign: 'right', fontSize: '0.76rem', fontWeight: 600, color: '#555', borderBottom: '1px solid #e0f4f7', borderLeft: '1px solid #e8f4f6', whiteSpace: 'nowrap' }}>%</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {rowData.map((d, i) => {
-                                                const p = pct(d.act, d.est);
-                                                const isTotalRow = i === rowData.length - 1;
-                                                return (
-                                                    <tr key={i} style={{ backgroundColor: isTotalRow ? '#f0fbfc' : '#fff', fontWeight: isTotalRow ? 600 : 400 }}>
-                                                        <td style={tdStyle({ fontWeight: isTotalRow ? 600 : 400 })}>{d.label}</td>
-                                                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: '#555' })}>{fmt(d.est)}</td>
-                                                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP, color: d.act > 0 ? mainPrimaryColor : '#bbb' })}>{d.act > 0 ? fmt(d.act) : '—'}</td>
-                                                        <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
-                                                            {p !== null ? (
-                                                                <span style={{ fontWeight: 600, color: p >= 0 ? '#2E7D32' : '#C62828' }}>{p >= 0 ? '+' : ''}{p.toFixed(1)}%</span>
-                                                            ) : <span style={{ color: '#ccc' }}>—</span>}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
+                                            {rowData.map((d, i) => (
+                                                <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fafcfc' }}>
+                                                    <td style={{ padding: '6px 12px', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4' }}>{d.name}</td>
+                                                    <td style={{ padding: '6px 8px', textAlign: 'center', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#888' }}>{d.unit}</td>
+                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#666' }}>{d.qty.toLocaleString()}</td>
+                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: '#444' }}>{d.estTotal > 0 ? fmtAMD(d.estTotal) : '—'}</td>
+                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6', color: d.actTotal ? mainPrimaryColor : '#bbb', fontWeight: d.actTotal ? 600 : 400 }}>{d.actTotal ? fmtAMD(d.actTotal) : '—'}</td>
+                                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontSize: '0.8rem', borderBottom: '1px solid #f0f4f4', borderLeft: '1px solid #e8f4f6' }}>
+                                                        {d.pctDiff !== null ? (
+                                                            <span style={{ fontWeight: 600, color: d.pctDiff > 0 ? '#e53935' : '#2E7D32' }}>{d.pctDiff > 0 ? '+' : ''}{d.pctDiff.toFixed(1)}%</span>
+                                                        ) : <span style={{ color: '#ccc' }}>—</span>}
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </Box>
