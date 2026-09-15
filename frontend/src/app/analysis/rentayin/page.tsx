@@ -581,41 +581,6 @@ export default function RentayinPage() {
                                                     ))}
                                                 </Box>
                                             </Paper>
-                                            {/* Completion widget */}
-                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Completion percentage')}</Typography>
-                                                {completionPct === null ? (
-                                                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant='body2' color='text.secondary'>{t('No data')}</Typography></Box>
-                                                ) : (
-                                                    <>
-                                                        <Box sx={{ position: 'relative', height: 160 }}>
-                                                            <ResponsiveContainer width='100%' height={160}>
-                                                                <PieChart>
-                                                                    <defs>
-                                                                        <linearGradient id='rent-comp-grad' x1='0' y1='0' x2='1' y2='1'>
-                                                                            <stop offset='0%' stopColor={compColor} stopOpacity={0.35} />
-                                                                            <stop offset='100%' stopColor={compColor} stopOpacity={1} />
-                                                                        </linearGradient>
-                                                                    </defs>
-                                                                    <Pie data={[{ v: completionPct }, { v: 100 - completionPct }]} startAngle={90} endAngle={-270} cx='50%' cy='50%' innerRadius='48%' outerRadius='68%' paddingAngle={0} dataKey='v' strokeWidth={0}>
-                                                                        <Cell fill='url(#rent-comp-grad)' />
-                                                                        <Cell fill='#f0f0f0' />
-                                                                    </Pie>
-                                                                </PieChart>
-                                                            </ResponsiveContainer>
-                                                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Typography sx={{ fontSize: '1.55rem', fontWeight: 800, color: compColor, lineHeight: 1 }}>{completionPct}%</Typography>
-                                                            </Box>
-                                                        </Box>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'center', pb: 1 }}>
-                                                            <Box sx={{ px: 2, py: 0.5, borderRadius: 5, bgcolor: completionPct >= 80 ? 'rgba(46,125,50,0.08)' : 'rgba(0,171,188,0.06)', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                                                                <Typography sx={{ fontSize: '0.73rem', fontWeight: 700, color: compColor }}>{rowsWithActual} / {rows.length}</Typography>
-                                                                <Typography sx={{ fontSize: '0.73rem', color: '#888' }}>{t('works completed')}</Typography>
-                                                            </Box>
-                                                        </Box>
-                                                    </>
-                                                )}
-                                            </Paper>
                                             {/* Profitability widget */}
                                             <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
