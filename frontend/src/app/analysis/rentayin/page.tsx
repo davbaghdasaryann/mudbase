@@ -22,6 +22,17 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 
+const RENT_EST_SEGS = [
+    { key: 'labor',     inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
+    { key: 'materials', inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
+    { key: 'other',     inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
+];
+const RENT_ACT_SEGS = [
+    { key: 'labor',     inner: '#FF7043', outer: '#BF360C', dot: '#E64A19' },
+    { key: 'materials', inner: '#FFB300', outer: '#E65100', dot: '#F57C00' },
+    { key: 'other',     inner: '#FFE57F', outer: '#FF8F00', dot: '#FFA000' },
+];
+
 const OE_BAR_GRADS = [
     { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
     { top: '#4EE89A', bottom: '#1CA461', stroke: '#148048' },
@@ -501,20 +512,76 @@ export default function RentayinPage() {
                             const totalActCost = totalActLaborCost + totalActMatCost;
                             const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
                             const completionPct = rows.length > 0 ? Math.min(100, Math.round((rowsWithActual / rows.length) * 100)) : null;
+                            const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
+                            const totalEstOther = estExpenses.reduce((s, e) => { const k = Object.keys(e)[0]; return s + (k && k !== 'typeOfCost' ? ((e[k] ?? 0) / 100) * totalEstCost : 0); }, 0);
+                            const costingActualsForDonut: Record<string, number> = (detail as any)?.costingOtherActuals ?? {};
+                            const actPctsForDonut: Record<string, number> = otherCostPercentages;
+                            const totalActOther = Object.keys({ ...costingActualsForDonut, ...actPctsForDonut }).reduce((s, key) => {
+                                const p = actPctsForDonut[key] ?? 0;
+                                return s + (p > 0 ? (p / 100) * totalActCost : (costingActualsForDonut[key] ?? 0));
+                            }, 0);
                             const profitAmt = totalActCost > 0 && totalEstCost > 0 ? totalEstCost - totalActCost : null;
                             const profitPct = profitAmt !== null && totalEstCost > 0 ? (profitAmt / totalEstCost) * 100 : null;
                             const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
-                            const compColor = completionPct === null ? '#bbb' : completionPct >= 80 ? '#2e7d32' : completionPct >= 40 ? '#e65100' : '#c62828';
                             const profColor = profitPct === null ? '#bbb' : profitPct >= 0 ? '#2e7d32' : '#c62828';
-                            const estDonutData = [
-                                { name: t('Labor'), value: totalEstLaborCost, color: '#00ABBC' },
-                                { name: t('Materials'), value: totalEstMatCost, color: '#7b1fa2' },
-                            ].filter(d => d.value > 0);
-                            const actDonutData = [
-                                { name: t('Labor'), value: totalActLaborCost, color: '#00ABBC' },
-                                { name: t('Materials'), value: totalActMatCost, color: '#7b1fa2' },
-                            ].filter(d => d.value > 0);
-                            const emptyDonut = [{ name: '', value: 1, color: '#f0f0f0' }];
+                            const buildDonutData = (labor: number, materials: number, other: number) => {
+                                const total = labor + materials + other;
+                                return [
+                                    { key: 'labor',     name: t('Labor'),          value: labor,     pct: total > 0 ? ((labor / total) * 100).toFixed(1) : '0.0' },
+                                    { key: 'materials', name: t('Materials'),       value: materials, pct: total > 0 ? ((materials / total) * 100).toFixed(1) : '0.0' },
+                                    { key: 'other',     name: t('Other Expenses'),  value: other,     pct: total > 0 ? ((other / total) * 100).toFixed(1) : '0.0' },
+                                ];
+                            };
+                            const estDonutData = buildDonutData(totalEstLaborCost, totalEstMatCost, totalEstOther);
+                            const actDonutData = buildDonutData(totalActLaborCost, totalActMatCost, totalActOther);
+                            const renderDonut = (data: ReturnType<typeof buildDonutData>, prefix: string, segs: typeof RENT_EST_SEGS) => {
+                                const hasAny = data.some(d => d.value > 0);
+                                return (
+                                    <Box sx={{ flex: 1, minHeight: 128 }}>
+                                        <ResponsiveContainer width='100%' height={128}>
+                                            <PieChart>
+                                                <defs>{segs.map(s => (
+                                                    <radialGradient key={s.key} id={`${prefix}-${s.key}`} cx='50%' cy='50%' r='50%'>
+                                                        <stop offset='0%' stopColor={s.inner} />
+                                                        <stop offset='100%' stopColor={s.outer} />
+                                                    </radialGradient>
+                                                ))}</defs>
+                                                <Pie data={hasAny ? data : [{ key: 'empty', name: '', value: 1, pct: '0' }]} cx='50%' cy='50%' innerRadius={32} outerRadius={54} paddingAngle={hasAny ? 2 : 0} dataKey='value' strokeWidth={0} minAngle={hasAny ? 6 : 0}>
+                                                    {hasAny ? data.map(entry => {
+                                                        const seg = segs.find(s => s.key === entry.key);
+                                                        return <Cell key={entry.key} fill={entry.value > 0 ? (seg ? `url(#${prefix}-${seg.key})` : '#ccc') : 'transparent'} stroke={entry.value > 0 ? (seg?.outer ?? '#ccc') : 'none'} strokeWidth={entry.value > 0 ? 0.5 : 0} />;
+                                                    }) : [<Cell key='empty' fill='#f0f0f0' stroke='none' />]}
+                                                </Pie>
+                                                {hasAny && <RechartsTooltip content={({ active, payload }: any) => {
+                                                    if (!active || !payload?.length || !payload[0].value) return null;
+                                                    const e = payload[0];
+                                                    return (
+                                                        <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
+                                                            <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{e.name}</Typography>
+                                                            <Typography variant='body2' sx={{ color: '#00A390' }}>{Number(e.value).toLocaleString()} AMD</Typography>
+                                                            <Typography variant='caption' sx={{ color: 'text.secondary' }}>{e.payload.pct}%</Typography>
+                                                        </Paper>
+                                                    );
+                                                }} />}
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                );
+                            };
+                            const renderLegend = (data: ReturnType<typeof buildDonutData>, segs: typeof RENT_EST_SEGS) => (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                                    {data.map(d => {
+                                        const seg = segs.find(s => s.key === d.key);
+                                        return (
+                                            <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: d.value > 0 ? (seg?.dot ?? '#ccc') : '#e0e0e0', flexShrink: 0 }} />
+                                                <Typography variant='caption' sx={{ color: d.value > 0 ? 'text.secondary' : '#bdbdbd', fontSize: '0.68rem' }}>{d.name} {d.value > 0 ? `${d.pct}%` : '—'}</Typography>
+                                                <Typography variant='caption' sx={{ color: '#aaa', fontSize: '0.65rem', ml: 'auto' }}>{d.value > 0 ? Math.round(d.value).toLocaleString() : ''}</Typography>
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+                            );
                             return (
                                 <Box>
                                     <Box onClick={() => toggleSection('quick')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
@@ -541,44 +608,18 @@ export default function RentayinPage() {
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                                             {/* Cost breakdown widget */}
                                             <Paper elevation={0} sx={{ flex: 1.5, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Total Cost')}</Typography>
-                                                <Box sx={{ flex: 1, display: 'flex', gap: 2 }}>
-                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                        <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Estimated')}</Typography>
-                                                        <Box sx={{ width: '100%', height: 160 }}>
-                                                            <ResponsiveContainer width='100%' height={160}>
-                                                                <PieChart>
-                                                                    <Pie data={estDonutData.length ? estDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={estDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
-                                                                        {(estDonutData.length ? estDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
-                                                                    </Pie>
-                                                                    {estDonutData.length > 0 && <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} />}
-                                                                </PieChart>
-                                                            </ResponsiveContainer>
-                                                        </Box>
-                                                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#333', mt: 0.5 }}>{fmtAMD(totalEstCost)}</Typography>
+                                                <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
+                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
+                                                        {renderDonut(estDonutData, 'rent-est', RENT_EST_SEGS)}
+                                                        {renderLegend(estDonutData, RENT_EST_SEGS)}
                                                     </Box>
-                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                        <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Actual')}</Typography>
-                                                        <Box sx={{ width: '100%', height: 160 }}>
-                                                            <ResponsiveContainer width='100%' height={160}>
-                                                                <PieChart>
-                                                                    <Pie data={actDonutData.length ? actDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={actDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
-                                                                        {(actDonutData.length ? actDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
-                                                                    </Pie>
-                                                                    {actDonutData.length > 0 && <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} />}
-                                                                </PieChart>
-                                                            </ResponsiveContainer>
-                                                        </Box>
-                                                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: totalActCost > 0 ? mainPrimaryColor : '#bbb', mt: 0.5 }}>{totalActCost > 0 ? fmtAMD(totalActCost) : '—'}</Typography>
+                                                    <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
+                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
+                                                        {renderDonut(actDonutData, 'rent-act', RENT_ACT_SEGS)}
+                                                        {renderLegend(actDonutData, RENT_ACT_SEGS)}
                                                     </Box>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1, flexWrap: 'wrap' }}>
-                                                    {[{ label: t('Labor'), color: '#00ABBC' }, { label: t('Materials'), color: '#7b1fa2' }].map(l => (
-                                                        <Box key={l.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: l.color }} />
-                                                            <Typography variant='caption' sx={{ color: '#666', fontSize: '0.68rem' }}>{l.label}</Typography>
-                                                        </Box>
-                                                    ))}
                                                 </Box>
                                             </Paper>
                                             {/* Profitability widget */}
