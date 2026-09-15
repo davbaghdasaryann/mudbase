@@ -68,6 +68,8 @@ interface RentayinRecord {
     rows?: RentayinRow[];
     laborPriceOverrides?: Record<string, number>;
     materialPriceOverrides?: Record<string, number>;
+    otherCostPercentages?: Record<string, number>;
+    estimateOtherExpenses?: Record<string, number>[];
     createdAt: string;
 }
 
@@ -769,6 +771,93 @@ export default function RentayinPage() {
                                                     );
                                                 })}
                                             </Box>
+                                        );
+                                    })()}
+
+                                    {/* Other Costs bar charts */}
+                                    {(() => {
+                                        const rows = detail?.rows ?? [];
+                                        const totalEstCost = rows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
+                                        const totalActCost = rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0);
+                                        const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
+                                        const actPcts: Record<string, number> = otherCostPercentages;
+                                        const allKeys = Array.from(new Set([
+                                            ...estExpenses.map(e => Object.keys(e)[0]).filter(Boolean),
+                                            ...Object.keys(actPcts),
+                                        ])).filter(k => k && k !== 'typeOfCost');
+                                        if (allKeys.length === 0) return null;
+                                        const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
+                                        const OC_LABELS: Record<string, string> = {
+                                            valueAddedTax: 'Ավելացված արժեքի հարկ',
+                                            climaticImpactCosts: 'Կլիմայական ազդեցության ծախսեր',
+                                            temporaryStructures: 'Ժամանակավոր կառույցներ',
+                                            transportationCosts: 'Տրանսպորտային ծախսեր',
+                                            operationHandoverCosts: 'Շահագործման հանձնման ծախսեր',
+                                            stateDutiesAndFees: 'Պետական տուրքեր և վճարներ',
+                                        };
+                                        return (
+                                            <>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 2, userSelect: 'none' }} onClick={() => toggleSection('othercosts')}>
+                                                    <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Այլ ծախսեր</Typography>
+                                                    <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('othercosts') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                                </Box>
+                                                {!collapsedSections.has('othercosts') && (
+                                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
+                                                        {allKeys.map((key, i) => {
+                                                            const estPct = estExpenses.find(e => Object.keys(e)[0] === key)?.[key] ?? 0;
+                                                            const estimatedValue = Math.round((estPct / 100) * totalEstCost);
+                                                            const actPct = actPcts[key] ?? 0;
+                                                            const actualValue = Math.round((actPct / 100) * totalActCost);
+                                                            if (estimatedValue === 0 && actualValue === 0) return null;
+                                                            const grad = OE_BAR_GRADS[i % OE_BAR_GRADS.length];
+                                                            const estId = `oc-est-${key}`;
+                                                            const actId = `oc-act-${key}`;
+                                                            const pctDiff = estimatedValue > 0 && actualValue > 0 ? ((actualValue - estimatedValue) / estimatedValue) * 100 : null;
+                                                            const chartData = [
+                                                                { name: t('Estimated'), value: estimatedValue, gradId: estId },
+                                                                { name: t('Actual'), value: actualValue, gradId: actId },
+                                                            ].filter(d => d.value > 0);
+                                                            return (
+                                                                <Paper key={key} elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: 200, position: 'relative' }}>
+                                                                    {pctDiff !== null && (
+                                                                        <Box sx={{ position: 'absolute', top: 8, right: 10, px: 0.9, py: 0.25, borderRadius: '10px', bgcolor: pctDiff > 0 ? 'rgba(229,57,53,0.1)' : 'rgba(67,160,71,0.1)' }}>
+                                                                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: pctDiff > 0 ? '#e53935' : '#43a047', lineHeight: 1 }}>{pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%</Typography>
+                                                                        </Box>
+                                                                    )}
+                                                                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{OC_LABELS[key] ?? key}</Typography>
+                                                                    <Box sx={{ minHeight: 128 }}>
+                                                                        <ResponsiveContainer width='100%' height={128}>
+                                                                            <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap='40%'>
+                                                                                <defs>
+                                                                                    <linearGradient id={estId} x1='0' y1='0' x2='0' y2='1'>
+                                                                                        <stop offset='0%' stopColor={grad.top} />
+                                                                                        <stop offset='100%' stopColor={grad.bottom} />
+                                                                                    </linearGradient>
+                                                                                    <linearGradient id={actId} x1='0' y1='0' x2='0' y2='1'>
+                                                                                        <stop offset='0%' stopColor={OE_ACT_GRAD.top} />
+                                                                                        <stop offset='100%' stopColor={OE_ACT_GRAD.bottom} />
+                                                                                    </linearGradient>
+                                                                                </defs>
+                                                                                <CartesianGrid vertical={false} strokeDasharray='3 3' stroke='#f0f0f0' />
+                                                                                <XAxis dataKey='name' tick={{ fontSize: 10, fill: '#888' }} axisLine={false} tickLine={false} />
+                                                                                <YAxis tick={{ fontSize: 10, fill: '#aaa' }} axisLine={false} tickLine={false} tickFormatter={oeFormatY} width={36} />
+                                                                                <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
+                                                                                <Bar dataKey='value' radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                                                                                    {chartData.map((d, ci) => <Cell key={ci} fill={`url(#${d.gradId})`} />)}
+                                                                                </Bar>
+                                                                            </BarChart>
+                                                                        </ResponsiveContainer>
+                                                                    </Box>
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                                                        <Typography variant='caption' sx={{ color: '#555', fontSize: '0.68rem' }}>{oeFormatY(estimatedValue)}</Typography>
+                                                                        {actualValue > 0 && <Typography variant='caption' sx={{ color: OE_ACT_GRAD.top, fontWeight: 600, fontSize: '0.68rem' }}>{oeFormatY(actualValue)}</Typography>}
+                                                                    </Box>
+                                                                </Paper>
+                                                            );
+                                                        })}
+                                                    </Box>
+                                                )}
+                                            </>
                                         );
                                     })()}
 

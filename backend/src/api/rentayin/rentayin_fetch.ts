@@ -11,5 +11,16 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
         accountId: session.mongoAccountId,
         deleted: { $ne: true },
     });
-    respondJsonData(res, doc ?? null);
+    if (!doc) { respondJsonData(res, null); return; }
+
+    let estimateOtherExpenses: Record<string, number>[] = [];
+    if (doc.estimateId) {
+        const est = await Db.getEstimatesCollection().findOne(
+            { _id: doc.estimateId },
+            { projection: { otherExpenses: 1 } }
+        );
+        estimateOtherExpenses = (est?.otherExpenses ?? []) as Record<string, number>[];
+    }
+
+    respondJsonData(res, { ...doc, estimateOtherExpenses });
 });
