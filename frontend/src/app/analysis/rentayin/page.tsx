@@ -17,6 +17,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EngineeringIcon from '@mui/icons-material/Engineering';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 
 const OE_BAR_GRADS = [
     { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
@@ -510,6 +511,21 @@ export default function RentayinPage() {
                             const emptyDonut = [{ name: '', value: 1, color: '#f0f0f0' }];
                             return (
                                 <Box>
+                                    <Box onClick={() => toggleSection('quick')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Quick actions')}</Typography>
+                                        <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('quick') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                    </Box>
+                                    {!collapsedSections.has('quick') && <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 4 }}>
+                                        {[
+                                            { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: '#7b1fa2', opacity: 0.55 }} />, label: 'Նախահաշիվ', onClick: () => {}, hoverBg: 'rgba(123,31,162,0.06)' },
+                                            { icon: <RefreshIcon sx={{ fontSize: 24, color: '#1565c0', opacity: 0.55 }} />, label: 'Թարմացնել', onClick: () => {}, hoverBg: 'rgba(21,101,192,0.06)' },
+                                        ].map(({ icon, label, onClick, hoverBg }) => (
+                                            <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
+                                                {icon}
+                                                <Typography sx={{ fontSize: '0.68rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{label}</Typography>
+                                            </Box>
+                                        ))}
+                                    </Box>}
                                     <Box onClick={() => toggleSection('overview')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, userSelect: 'none' }}>
                                         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Overview')}</Typography>
                                         <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
