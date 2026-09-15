@@ -512,9 +512,16 @@ export default function RentayinPage() {
                             const totalActLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? 0) * r.quantity), 0);
                             const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
                             const totalActCost = totalActLaborCost + totalActMatCost;
-                            const costingActualTotals: { labor: number; materials: number } = (detail as any)?.costingActualTotals ?? { labor: 0, materials: 0 };
-                            const donutActLabor = costingActualTotals.labor > 0 ? costingActualTotals.labor : totalActLaborCost;
-                            const donutActMat = costingActualTotals.materials;
+                            // Per-row donut split: actual rows use actualLaborTotal/actualMaterialTotal;
+                            // library/manual rows fall back to estimated split (same as Հashvarkayan column logic)
+                            const donutActLabor = rows.reduce((s, r) => {
+                                if (r.unitCostSource === 'actual') return s + (r.actualLaborTotal ?? r.estimatedUnitCost * r.quantity);
+                                return s + r.estimatedUnitCost * r.quantity;
+                            }, 0);
+                            const donutActMat = rows.reduce((s, r) => {
+                                if (r.unitCostSource === 'actual') return s + (r.actualMaterialTotal ?? 0);
+                                return s + (r.estimatedMaterialUnitCost ?? 0) * r.quantity;
+                            }, 0);
                             const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
                             const completionPct = rows.length > 0 ? Math.min(100, Math.round((rowsWithActual / rows.length) * 100)) : null;
                             const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
