@@ -373,12 +373,12 @@ export default function RentayinPage() {
                                             <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, whiteSpace: 'normal' as const })}>Շահութաբերություն{rh(9)}</th>
                                         </tr>
                                         <tr>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(3)}</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը{rh(4)}</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր{rh(5)}</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(6)}</th>
-                                                        <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը{rh(7)}</th>
-                                            <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր{rh(8)}</th>
+                                            <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(3)}</th>
+                                            <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը{rh(4)}</th>
+                                            <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր{rh(5)}</th>
+                                            <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(6)}</th>
+                                                        <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Միավորի Արժեքը{rh(7)}</th>
+                                            <th style={thStyle({ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af' })}>Ընդհանուր{rh(8)}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -434,11 +434,11 @@ export default function RentayinPage() {
                                                                                 <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#111' }}>{row.laborOfferItemName}</span>
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', color: '#555' })}>{row.estimatedUnitCost > 0 ? Math.round(row.estimatedUnitCost).toLocaleString() : '\u2014'}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
-                                                                            <td style={tdStyle({ textAlign: 'right' })}>
+                                                                            <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', color: '#555' })}>{row.estimatedUnitCost > 0 ? Math.round(row.estimatedUnitCost).toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center' })}>
                                                                                 {isEditing ? (
                                                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                                         <TextField
@@ -475,10 +475,10 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 )}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
+                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
                                                                                 {actTotal !== null && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
                                                                                 {pct !== null ? (
                                                                                     <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct >= 0 ? '#2E7D32' : '#C62828' }}>
                                                                                         {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
