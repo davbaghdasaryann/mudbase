@@ -695,7 +695,7 @@ export default function RentayinPage() {
                                     </>}
                                     {/* Cost Breakdown bar charts section */}
                                     <Box onClick={() => toggleSection('costs')} sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 2, userSelect: 'none' }}>
-                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Other Expenses')}</Typography>
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('Cost Breakdown')}</Typography>
                                         <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('costs') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                                     </Box>
                                     {!collapsedSections.has('costs') && (() => {
