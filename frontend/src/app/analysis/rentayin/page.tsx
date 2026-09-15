@@ -514,34 +514,26 @@ export default function RentayinPage() {
                         const fmtAMD = (n: number) => Math.round(n).toLocaleString() + ' ֏';
                         return (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                {src && <Chip label={src.label} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
+                                {src && <Chip label={t(breakdownRow.unitCostSource === 'actual' ? 'Actual' : breakdownRow.unitCostSource === 'library' ? 'Library' : 'Manual entry')} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
                                     {breakdownRow.unitCostSource === 'actual' && (
                                         <>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>Labor</Typography>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
                                                 <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualLaborTotal != null ? fmtAMD(breakdownRow.actualLaborTotal) : '—'}</Typography>
                                             </Box>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>Materials</Typography>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
                                                 <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualMaterialTotal != null ? fmtAMD(breakdownRow.actualMaterialTotal) : '—'}</Typography>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, borderTop: '1px solid #eee', pt: 0.5, mt: 0.5 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>Unit price</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
                                             </Box>
                                         </>
                                     )}
                                     {(breakdownRow.unitCostSource === 'library' || breakdownRow.unitCostSource === 'manual') && (
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                            <Typography variant='caption' sx={{ color: '#555' }}>{breakdownRow.unitCostSource === 'library' ? 'Catalog rate' : 'Manual entry'}</Typography>
+                                            <Typography variant='caption' sx={{ color: '#555' }}>{t(breakdownRow.unitCostSource === 'library' ? 'Catalog rate' : 'Manual entry')}</Typography>
                                             <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
                                         </Box>
                                     )}
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, borderTop: '1px solid #eee', pt: 0.5, mt: 0.5 }}>
-                                        <Typography variant='caption' sx={{ color: '#555' }}>Total ({breakdownRow.quantity} {breakdownRow.unitSymbol})</Typography>
-                                        <Typography variant='caption' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost * breakdownRow.quantity) : '—'}</Typography>
-                                    </Box>
                                 </Box>
                             </Box>
                         );

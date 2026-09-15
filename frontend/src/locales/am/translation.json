@@ -699,5 +699,8 @@
   "Actual unit cost": "Իրավական շահկի գին",
   "Profit %": "շահութաբերություն %",
   "operationHandoverCosts": "Շահագործման հանձնման ծախսեր",
-  "stateDutiesAndFees": "Պետական տուրքեր և վճարներ"
+  "stateDutiesAndFees": "Պետական տուրքեր և վճարներ",
+  "Library": "Շտեմարանային",
+  "Catalog rate": "Շտեմարանային արժեք",
+  "Manual entry": "Ձեռքով մուտք"
 }
