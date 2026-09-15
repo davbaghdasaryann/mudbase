@@ -40,6 +40,7 @@ import { mainPrimaryColor } from '@/theme';
 import { useTranslation } from 'react-i18next';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import EstimatePageDialog from '@/app/estimates/EstimateDialog';
+import RentayinOtherCostsDialog from './RentayinOtherCostsDialog';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -126,6 +127,8 @@ export default function RentayinPage() {
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
     const [refreshing, setRefreshing] = useState(false);
     const [estimateEditOpen, setEstimateEditOpen] = useState(false);
+    const [otherCostsOpen, setOtherCostsOpen] = useState(false);
+    const [otherCostPercentages, setOtherCostPercentages] = useState<Record<string, number>>({});
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
     const handleRefresh = async (d: RentayinRecord) => {
@@ -159,6 +162,7 @@ export default function RentayinPage() {
         if (detail) {
             setLaborOverrides(detail.laborPriceOverrides ?? {});
             setMatOverrides(detail.materialPriceOverrides ?? {});
+            setOtherCostPercentages((detail as any).otherCostPercentages ?? {});
         }
     }, [detail?._id]);
     useEffect(() => {
@@ -518,7 +522,7 @@ export default function RentayinPage() {
                                         {[
                                             { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: '#7b1fa2', opacity: 0.55 }} />, label: 'Նախահաշիվ', onClick: () => setEstimateEditOpen(true), hoverBg: 'rgba(123,31,162,0.06)' },
                                             { icon: <RefreshIcon sx={{ fontSize: 24, color: '#1565c0', opacity: 0.55 }} />, label: 'Թարմացնել', onClick: () => handleRefresh(detail), hoverBg: 'rgba(21,101,192,0.06)' },
-                                            { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => {}, hoverBg: 'rgba(229,57,53,0.06)' },
+                                            { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), hoverBg: 'rgba(229,57,53,0.06)' },
                                         ].map(({ icon, label, onClick, hoverBg }) => (
                                             <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                                 {icon}
@@ -999,6 +1003,18 @@ export default function RentayinPage() {
                     onClose={() => setEstimateEditOpen(false)}
                 />
             )}
+            <RentayinOtherCostsDialog
+                open={otherCostsOpen}
+                onClose={() => setOtherCostsOpen(false)}
+                percentages={otherCostPercentages}
+                totalActualCost={(() => { const rows = detail?.rows ?? []; return rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0); })()}
+                onSave={async (pcts) => {
+                    setOtherCostPercentages(pcts);
+                    if (detail) {
+                        await Api.requestSession({ command: 'rentayin/save_other_costs', args: { id: detail._id, percentages: pcts } });
+                    }
+                }}
+            />
         </>
         );
     }

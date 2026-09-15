@@ -26,6 +26,8 @@ export interface EntityRentayin {
     // price overrides for Labor/Materials tabs: key = laborItemId (group) or estimateRowId (item)
     laborPriceOverrides?: Record<string, number>;
     materialPriceOverrides?: Record<string, number>;
+    // other cost percentages: key = cost type, value = percentage (0-100)
+    otherCostPercentages?: Record<string, number>;
     deleted?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
