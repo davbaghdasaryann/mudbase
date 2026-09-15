@@ -14,13 +14,30 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
     if (!doc) { respondJsonData(res, null); return; }
 
     let estimateOtherExpenses: Record<string, number>[] = [];
+    let costingOtherActuals: Record<string, number> = {};
     if (doc.estimateId) {
-        const est = await Db.getEstimatesCollection().findOne(
-            { _id: doc.estimateId },
-            { projection: { otherExpenses: 1 } }
-        );
+        const [est, latestCosting] = await Promise.all([
+            Db.getEstimatesCollection().findOne(
+                { _id: doc.estimateId },
+                { projection: { otherExpenses: 1 } }
+            ),
+            Db.getCostingsCollection().findOne(
+                { accountId: session.mongoAccountId, estimateId: doc.estimateId, deleted: { $ne: true }, isUnforeseen: { $ne: true } },
+                { sort: { createdAt: -1 }, projection: { vatDeduction: 1, climateImpact: 1, temporaryStructures: 1, transportationCosts: 1, commissioningCosts: 1, stateFees: 1 } }
+            ),
+        ]);
         estimateOtherExpenses = (est?.otherExpenses ?? []) as Record<string, number>[];
+        if (latestCosting) {
+            costingOtherActuals = {
+                valueAddedTax: latestCosting.vatDeduction ?? 0,
+                climaticImpactCosts: latestCosting.climateImpact ?? 0,
+                temporaryStructures: latestCosting.temporaryStructures ?? 0,
+                transportationCosts: latestCosting.transportationCosts ?? 0,
+                operationHandoverCosts: latestCosting.commissioningCosts ?? 0,
+                stateDutiesAndFees: latestCosting.stateFees ?? 0,
+            };
+        }
     }
 
-    respondJsonData(res, { ...doc, estimateOtherExpenses });
+    respondJsonData(res, { ...doc, estimateOtherExpenses, costingOtherActuals });
 });

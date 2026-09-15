@@ -70,6 +70,7 @@ interface RentayinRecord {
     materialPriceOverrides?: Record<string, number>;
     otherCostPercentages?: Record<string, number>;
     estimateOtherExpenses?: Record<string, number>[];
+    costingOtherActuals?: Record<string, number>;
     createdAt: string;
 }
 
@@ -700,9 +701,11 @@ export default function RentayinPage() {
                                         const totalActCost = rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0);
                                         const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
                                         const actPcts: Record<string, number> = otherCostPercentages;
+                                        const costingActuals: Record<string, number> = (detail as any)?.costingOtherActuals ?? {};
                                         const allKeys = Array.from(new Set([
                                             ...estExpenses.map(e => Object.keys(e)[0]).filter(Boolean),
                                             ...Object.keys(actPcts),
+                                            ...Object.keys(costingActuals).filter(k => (costingActuals[k] ?? 0) > 0),
                                         ])).filter(k => k && k !== 'typeOfCost');
                                         if (allKeys.length === 0) return null;
                                         const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
@@ -726,7 +729,9 @@ export default function RentayinPage() {
                                                             const estPct = estExpenses.find(e => Object.keys(e)[0] === key)?.[key] ?? 0;
                                                             const estimatedValue = Math.round((estPct / 100) * totalEstCost);
                                                             const actPct = actPcts[key] ?? 0;
-                                                            const actualValue = Math.round((actPct / 100) * totalActCost);
+                                                            const actualValue = actPct > 0
+                                                                ? Math.round((actPct / 100) * totalActCost)
+                                                                : Math.round(costingActuals[key] ?? 0);
                                                             if (estimatedValue === 0 && actualValue === 0) return null;
                                                             const grad = OE_BAR_GRADS[i % OE_BAR_GRADS.length];
                                                             const estId = `oc-est-${key}`;
