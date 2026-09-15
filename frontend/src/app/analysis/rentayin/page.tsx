@@ -515,22 +515,22 @@ export default function RentayinPage() {
                         return (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 {src && <Chip label={t(breakdownRow.unitCostSource === 'actual' ? 'Actual' : breakdownRow.unitCostSource === 'library' ? 'Library' : 'Manual entry')} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2, mt: 0.5, justifyContent: 'center' }}>
                                     {breakdownRow.unitCostSource === 'actual' && (
                                         <>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}>
+                                                <Typography variant='caption' sx={{ color: '#888', fontSize: '0.7rem' }}>{t('Labor')}</Typography>
                                                 <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualLaborTotal != null ? fmtAMD(breakdownRow.actualLaborTotal) : '—'}</Typography>
                                             </Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}>
+                                                <Typography variant='caption' sx={{ color: '#888', fontSize: '0.7rem' }}>{t('Materials')}</Typography>
                                                 <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualMaterialTotal != null ? fmtAMD(breakdownRow.actualMaterialTotal) : '—'}</Typography>
                                             </Box>
                                         </>
                                     )}
                                     {(breakdownRow.unitCostSource === 'library' || breakdownRow.unitCostSource === 'manual') && (
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                            <Typography variant='caption' sx={{ color: '#555' }}>{t(breakdownRow.unitCostSource === 'library' ? 'Catalog rate' : 'Manual entry')}</Typography>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}>
+                                            <Typography variant='caption' sx={{ color: '#888', fontSize: '0.7rem' }}>{t(breakdownRow.unitCostSource === 'library' ? 'Catalog rate' : 'Manual entry')}</Typography>
                                             <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
                                         </Box>
                                     )}
