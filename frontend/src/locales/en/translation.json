@@ -360,5 +360,7 @@
   "Profit %": "Profit %",
   "Source": "Source",
   "Enter": "Enter",
-  "Unit": "Unit"
+  "Unit": "Unit",
+  "operationHandoverCosts": "Operation handover costs",
+  "stateDutiesAndFees": "State duties and fees"
 }

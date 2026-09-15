@@ -697,5 +697,7 @@
   "need manual entry": "բանակագիր հաշվառկել են",
   "Estimated unit cost": "Նխագիրված շահկի գին",
   "Actual unit cost": "Իրավական շահկի գին",
-  "Profit %": "շահութաբերություն %"
+  "Profit %": "շահութաբերություն %",
+  "operationHandoverCosts": "Շահագործման հանձնման ծախսեր",
+  "stateDutiesAndFees": "Պետական տուրքեր և վճարներ"
 }

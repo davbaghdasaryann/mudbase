@@ -709,14 +709,6 @@ export default function RentayinPage() {
                                         ])).filter(k => k && k !== 'typeOfCost');
                                         if (allKeys.length === 0) return null;
                                         const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
-                                        const OC_LABELS: Record<string, string> = {
-                                            valueAddedTax: 'Ավելացված արժեքի հարկ',
-                                            climaticImpactCosts: 'Կլիմայական ազդեցության ծախսեր',
-                                            temporaryStructures: 'Ժամանակավոր կառույցներ',
-                                            transportationCosts: 'Տրանսպորտային ծախսեր',
-                                            operationHandoverCosts: 'Շահագործման հանձնման ծախսեր',
-                                            stateDutiesAndFees: 'Պետական տուրքեր և վճարներ',
-                                        };
                                         return (
                                             <>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 2, userSelect: 'none' }} onClick={() => toggleSection('othercosts')}>
@@ -748,7 +740,7 @@ export default function RentayinPage() {
                                                                             <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: pctDiff > 0 ? '#e53935' : '#43a047', lineHeight: 1 }}>{pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%</Typography>
                                                                         </Box>
                                                                     )}
-                                                                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{OC_LABELS[key] ?? key}</Typography>
+                                                                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{t(key)}</Typography>
                                                                     <Box sx={{ minHeight: 128 }}>
                                                                         <ResponsiveContainer width='100%' height={128}>
                                                                             <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap='40%'>
