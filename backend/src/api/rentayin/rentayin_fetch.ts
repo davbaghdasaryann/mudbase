@@ -15,6 +15,7 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
 
     let estimateOtherExpenses: Record<string, number>[] = [];
     let costingOtherActuals: Record<string, number> = {};
+    let costingActualTotals: { labor: number; materials: number } = { labor: 0, materials: 0 };
     if (doc.estimateId) {
         const [est, latestCosting] = await Promise.all([
             Db.getEstimatesCollection().findOne(
@@ -23,7 +24,7 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
             ),
             Db.getCostingsCollection().findOne(
                 { accountId: session.mongoAccountId, estimateId: doc.estimateId, deleted: { $ne: true }, isUnforeseen: { $ne: true } },
-                { sort: { createdAt: -1 }, projection: { vatDeduction: 1, climateImpact: 1, temporaryStructures: 1, transportationCosts: 1, commissioningCosts: 1, stateFees: 1 } }
+                { sort: { createdAt: -1 }, projection: { vatDeduction: 1, climateImpact: 1, temporaryStructures: 1, transportationCosts: 1, commissioningCosts: 1, stateFees: 1, costHistory: 1 } }
             ),
         ]);
         estimateOtherExpenses = (est?.otherExpenses ?? []) as Record<string, number>[];
@@ -36,8 +37,13 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
                 operationHandoverCosts: latestCosting.commissioningCosts ?? 0,
                 stateDutiesAndFees: latestCosting.stateFees ?? 0,
             };
+            const ch = (latestCosting.costHistory ?? []) as any[];
+            costingActualTotals = {
+                materials: ch.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s: number, e: any) => s + (e.total ?? 0), 0),
+                labor: ch.filter(e => !e.paymentMethod || e.paymentMethod === '' || (e.paymentMethod as string).startsWith('salary_')).reduce((s: number, e: any) => s + (e.total ?? 0), 0),
+            };
         }
     }
 
-    respondJsonData(res, { ...doc, estimateOtherExpenses, costingOtherActuals });
+    respondJsonData(res, { ...doc, estimateOtherExpenses, costingOtherActuals, costingActualTotals });
 });
