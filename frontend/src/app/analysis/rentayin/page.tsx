@@ -67,6 +67,8 @@ interface RentayinRow {
     actualLaborUnitCost: number | null;
     actualMaterialUnitCost: number | null;
     actualUnitCost: number | null;
+    actualLaborTotal: number | null;
+    actualMaterialTotal: number | null;
     unitCostSource: 'actual' | 'library' | 'manual' | null;
     sectionName: string;
     subsectionName: string;
@@ -510,6 +512,8 @@ export default function RentayinPage() {
                             const totalActLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? 0) * r.quantity), 0);
                             const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
                             const totalActCost = totalActLaborCost + totalActMatCost;
+                            const donutActLabor = rows.reduce((s, r) => s + (r.actualLaborTotal ?? 0), 0);
+                            const donutActMat = rows.reduce((s, r) => s + (r.actualMaterialTotal ?? 0), 0);
                             const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
                             const completionPct = rows.length > 0 ? Math.min(100, Math.round((rowsWithActual / rows.length) * 100)) : null;
                             const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
@@ -533,7 +537,7 @@ export default function RentayinPage() {
                                 ];
                             };
                             const estDonutData = buildDonutData(totalEstLaborCost, totalEstMatCost, totalEstOther);
-                            const actDonutData = buildDonutData(totalActLaborCost, totalActMatCost, totalActOther);
+                            const actDonutData = buildDonutData(donutActLabor, donutActMat, totalActOther);
                             const renderDonut = (data: ReturnType<typeof buildDonutData>, prefix: string, segs: typeof RENT_EST_SEGS) => {
                                 const hasAny = data.some(d => d.value > 0);
                                 return (

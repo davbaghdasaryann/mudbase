@@ -99,6 +99,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             const hasActual = actualUnitCostFromHistory !== null;
             if (hasActual) {
                 const actualUnitCost = actualUnitCostFromHistory!;
+                const laborTotal = adSpent + salaryTotal;
                 return {
                     laborItemId,
                     laborOfferItemName: r.laborOfferItemName,
@@ -109,6 +110,8 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     actualLaborUnitCost: actualUnitCost,
                     actualMaterialUnitCost: null,
                     actualUnitCost: actualUnitCost > 0 ? actualUnitCost : null,
+                    actualLaborTotal: laborTotal,
+                    actualMaterialTotal: matActTotal,
                     unitCostSource: 'actual' as const,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
@@ -127,6 +130,8 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     actualLaborUnitCost: estimatedUnitCost,
                     actualMaterialUnitCost: null,
                     actualUnitCost: estimatedUnitCost,
+                    actualLaborTotal: null,
+                    actualMaterialTotal: null,
                     unitCostSource: 'library' as const,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
@@ -144,6 +149,8 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                 actualLaborUnitCost: null,
                 actualMaterialUnitCost: null,
                 actualUnitCost: null,
+                actualLaborTotal: null,
+                actualMaterialTotal: null,
                 unitCostSource: null,
                 sectionName: r.sectionName,
                 subsectionName: r.subsectionName,

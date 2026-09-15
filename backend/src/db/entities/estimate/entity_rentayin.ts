@@ -12,6 +12,8 @@ export interface RentayinRow {
     actualLaborUnitCost: number | null;
     actualMaterialUnitCost: number | null;
     actualUnitCost: number | null;
+    actualLaborTotal: number | null;
+    actualMaterialTotal: number | null;
     unitCostSource: RentayinUnitCostSource | null;
     sectionName: string;
     subsectionName: string;
