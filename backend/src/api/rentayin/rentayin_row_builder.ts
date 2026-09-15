@@ -5,21 +5,40 @@ import { buildEstimateSnapshot } from '../costing/costing_snapshot';
 export async function buildRentayinRows(estimateId: string, accountId: ObjectId): Promise<Db.RentayinRow[]> {
     const estimateObjId = new ObjectId(estimateId);
 
-    // Fetch costing first so we can use localEstimateId (fork) for the snapshot
+    // Fetch costing to get actualData/costHistory and localEstimateId (fork)
     const latestCosting = await Db.getCostingsCollection().findOne(
         { accountId, estimateId: estimateObjId, deleted: { $ne: true }, isUnforeseen: { $ne: true } },
         { sort: { createdAt: -1 }, projection: { actualData: 1, costHistory: 1, pahestEntries: 1, localEstimateId: 1 } }
     );
 
-    // If the costing was forked, use the local (forked) estimate's snapshot so IDs match actualData/costHistory keys
-    const snapshotEstimateId = (latestCosting as any)?.localEstimateId ?? estimateId;
-    const snapshot = await buildEstimateSnapshot(snapshotEstimateId);
+    // Always build snapshot from the ORIGINAL estimate — Նախահաշիվ column must reflect
+    // the original estimate so edits via the Նախահաշիվ button flow in after Refresh.
+    const snapshot = await buildEstimateSnapshot(estimateId);
 
-    const snapshotEstimateObjId = new ObjectId(snapshotEstimateId);
-    const estimateLaborItems = await Db.getEstimateLaborItemsCollection()
-        .find({ estimateId: snapshotEstimateObjId }, { projection: { _id: 1, laborItemId: 1 } })
+    const localEstimateId = (latestCosting as any)?.localEstimateId as string | undefined;
+
+    // Build laborItemId (catalog ID) lookup for the original estimate rows
+    const origLaborItems = await Db.getEstimateLaborItemsCollection()
+        .find({ estimateId: estimateObjId }, { projection: { _id: 1, laborItemId: 1 } })
         .toArray();
-    const laborItemIdByRowId = new Map(estimateLaborItems.map(i => [i._id.toString(), i.laborItemId?.toString()]));
+    const laborItemIdByOrigRowId = new Map(origLaborItems.map(i => [i._id.toString(), i.laborItemId?.toString()]));
+
+    // If the costing was forked, build a mapping: originalRowId → forkedRowId
+    // Costing data (actualData, costHistory) is keyed by forked row IDs.
+    // Both estimates share the same laborItemId (catalog ID) per row, so we can cross-reference.
+    let costingKeyFor: (origRowId: string) => string;
+    if (localEstimateId) {
+        const forkLaborItems = await Db.getEstimateLaborItemsCollection()
+            .find({ estimateId: new ObjectId(localEstimateId) }, { projection: { _id: 1, laborItemId: 1 } })
+            .toArray();
+        const forkedRowIdByCatalogId = new Map(forkLaborItems.map(i => [i.laborItemId?.toString(), i._id.toString()]));
+        costingKeyFor = (origRowId) => {
+            const catId = laborItemIdByOrigRowId.get(origRowId);
+            return (catId && forkedRowIdByCatalogId.get(catId)) ?? origRowId;
+        };
+    } else {
+        costingKeyFor = (origRowId) => origRowId;
+    }
 
     // Replicate CostingTable's actTotal/actUP formula exactly:
     // salaryTotal   = sum of costHistory entries (not nyuth_tsakhsagrum) per laborItemId
@@ -50,18 +69,21 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
     return snapshot.laborRows
         .filter(r => !r.isGroupRow)
         .map(r => {
-            const laborItemId = laborItemIdByRowId.get(r._id) ?? '';
+            const laborItemId = laborItemIdByOrigRowId.get(r._id) ?? '';
             const estimatedUnitCost = r.changableAveragePrice ?? 0;
             const estimatedMaterialUnitCost = r.quantity > 0 ? (r.materialTotalCost ?? 0) / r.quantity : 0;
 
+            // Use forked row ID for costing data lookup (actualData/costHistory keyed by forked IDs)
+            const ck = costingKeyFor(r._id);
+
             // Replicate CostingTable's actUP formula
-            const ad = latestCosting?.actualData?.[r._id] as any;
+            const ad = latestCosting?.actualData?.[ck] as any;
             const adQty = ad?.quantity ? parseFloat(String(ad.quantity).replace(',', '.')) : 0;
             const adUnitPrice = ad?.unitPrice ? parseFloat(String(ad.unitPrice).replace(',', '.')) : 0;
             const adSpent = ad?.spent ? parseFloat(String(ad.spent).replace(',', '.')) : 0;
-            const salaryTotal = salaryTotalByRowId.get(r._id) ?? 0;
-            const matActTotal = matActTotalByRowId.get(r._id) ?? 0;
-            const gorqty = gorqtyByRowId.get(r._id) ?? 0;
+            const salaryTotal = salaryTotalByRowId.get(ck) ?? 0;
+            const matActTotal = matActTotalByRowId.get(ck) ?? 0;
+            const gorqty = gorqtyByRowId.get(ck) ?? 0;
             const actTotal = adSpent + salaryTotal + matActTotal;
             const actUP = gorqty > 0 ? actTotal / gorqty : (adQty > 0 ? actTotal / adQty : 0);
 
@@ -77,8 +99,6 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             const hasActual = actualUnitCostFromHistory !== null;
             if (hasActual) {
                 const actualUnitCost = actualUnitCostFromHistory!;
-                const laborActualUnitCost = actualUnitCost;
-                const actualMaterialUnitCost = null;
                 return {
                     laborItemId,
                     laborOfferItemName: r.laborOfferItemName,
@@ -86,8 +106,8 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     quantity: r.quantity,
                     estimatedUnitCost,
                     estimatedMaterialUnitCost,
-                    actualLaborUnitCost: laborActualUnitCost,
-                    actualMaterialUnitCost,
+                    actualLaborUnitCost: actualUnitCost,
+                    actualMaterialUnitCost: null,
                     actualUnitCost: actualUnitCost > 0 ? actualUnitCost : null,
                     unitCostSource: 'actual' as const,
                     sectionName: r.sectionName,
