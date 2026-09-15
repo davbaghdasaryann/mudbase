@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip, Tab, Paper,
+    Box, Typography, CircularProgress, Chip, TextField, IconButton, Tooltip, Tab, Paper, Popover,
     Table, TableHead, TableBody, TableRow, TableCell,
 } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
@@ -140,10 +140,12 @@ export default function RentayinPage() {
     const [matOverrides, setMatOverrides] = useState<Record<string, number>>({});
     const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
     const [editingPriceValue, setEditingPriceValue] = useState('');
-    const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160, 90]);
+    const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160]);
     const [refreshing, setRefreshing] = useState(false);
     const [estimateEditOpen, setEstimateEditOpen] = useState(false);
     const [otherCostsOpen, setOtherCostsOpen] = useState(false);
+    const [breakdownAnchor, setBreakdownAnchor] = useState<HTMLElement | null>(null);
+    const [breakdownRow, setBreakdownRow] = useState<RentayinRow | null>(null);
     const [otherCostPercentages, setOtherCostPercentages] = useState<Record<string, number>>({});
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
@@ -341,7 +343,7 @@ export default function RentayinPage() {
                             const subs = subsMap.get(sec)!;
                             if (!subs.includes(sub)) subs.push(sub);
                         });
-                        const NCOLS = 11;
+                        const NCOLS = 10;
                         let rowCounter = 0;
                         return (
                             <Box
@@ -369,7 +371,6 @@ export default function RentayinPage() {
                                             <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Նախահաշիվ</th>
                                             <th colSpan={3} style={thStyle({ textAlign: 'center', borderLeft: GSEP, color: mainPrimaryColor })}>Հաշվարկային</th>
                                             <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP, whiteSpace: 'normal' as const })}>Շահութաբերություն{rh(9)}</th>
-                                            <th rowSpan={2} style={thStyle({ textAlign: 'center', verticalAlign: 'middle', borderLeft: GSEP })}>Աղբյուր{rh(10)}</th>
                                         </tr>
                                         <tr>
                                             <th style={thStyle({ textAlign: 'right', fontSize: '0.7rem', color: '#9ca3af', borderLeft: GSEP })}>քանակ{rh(3)}</th>
@@ -456,7 +457,10 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 ) : (
                                                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                                        <span style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888' }}>
+                                                                                        <span
+                                                                                            style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
+                                                                                            onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
+                                                                                        >
                                                                                             {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                         </span>
                                                                                         {row.unitCostSource !== 'actual' && (
@@ -471,7 +475,7 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 )}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd' })}>
+                                                                            <td style={tdStyle({ textAlign: 'right', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
                                                                                 {actTotal !== null && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'right', borderLeft: GSEP })}>
@@ -481,15 +485,7 @@ export default function RentayinPage() {
                                                                                     </span>
                                                                                 ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'—'}</span>}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
-                                                                                {src ? (
-                                                                                    <Chip label={src.label} size='small' sx={{ fontSize: '0.68rem', bgcolor: `${src.color}18`, color: src.color, height: 20 }} />
-                                                                                ) : (
-                                                                                    <Chip label={t('Enter')} size='small'
-                                                                                        onClick={() => { setEditingIndex(globalIdx); setEditValue(''); }}
-                                                                                        sx={{ fontSize: '0.68rem', bgcolor: '#FFF3E0', color: '#E65100', height: 20, cursor: 'pointer' }} />
-                                                                                )}
-                                                                            </td>
+
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -504,6 +500,53 @@ export default function RentayinPage() {
                             </Box>
                         );
                     })()}
+                {/* Հashvarkayan cost breakdown popover */}
+                <Popover
+                    open={Boolean(breakdownAnchor)}
+                    anchorEl={breakdownAnchor}
+                    onClose={() => { setBreakdownAnchor(null); setBreakdownRow(null); }}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    PaperProps={{ sx: { p: 2, minWidth: 220, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' } }}
+                >
+                    {breakdownRow && (() => {
+                        const src = breakdownRow.unitCostSource ? SOURCE_CHIP[breakdownRow.unitCostSource] : null;
+                        const fmtAMD = (n: number) => Math.round(n).toLocaleString() + ' ֏';
+                        return (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                {src && <Chip label={src.label} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                                    {breakdownRow.unitCostSource === 'actual' && (
+                                        <>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>Labor</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualLaborTotal != null ? fmtAMD(breakdownRow.actualLaborTotal) : '—'}</Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>Materials</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualMaterialTotal != null ? fmtAMD(breakdownRow.actualMaterialTotal) : '—'}</Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, borderTop: '1px solid #eee', pt: 0.5, mt: 0.5 }}>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>Unit price</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
+                                            </Box>
+                                        </>
+                                    )}
+                                    {(breakdownRow.unitCostSource === 'library' || breakdownRow.unitCostSource === 'manual') && (
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
+                                            <Typography variant='caption' sx={{ color: '#555' }}>{breakdownRow.unitCostSource === 'library' ? 'Catalog rate' : 'Manual entry'}</Typography>
+                                            <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
+                                        </Box>
+                                    )}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, borderTop: '1px solid #eee', pt: 0.5, mt: 0.5 }}>
+                                        <Typography variant='caption' sx={{ color: '#555' }}>Total ({breakdownRow.quantity} {breakdownRow.unitSymbol})</Typography>
+                                        <Typography variant='caption' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost * breakdownRow.quantity) : '—'}</Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        );
+                    })()}
+                </Popover>
                 {tab === 'general' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, p: 2 }}>
                         {(() => {
