@@ -539,6 +539,48 @@ export default function RentayinPage() {
                                     </Box>
                                     {!collapsedSections.has('overview') && <>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                                            {/* Cost breakdown widget */}
+                                            <Paper elevation={0} sx={{ flex: 1.5, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Total Cost')}</Typography>
+                                                <Box sx={{ flex: 1, display: 'flex', gap: 2 }}>
+                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Estimated')}</Typography>
+                                                        <Box sx={{ width: '100%', height: 160 }}>
+                                                            <ResponsiveContainer width='100%' height={160}>
+                                                                <PieChart>
+                                                                    <Pie data={estDonutData.length ? estDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={estDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
+                                                                        {(estDonutData.length ? estDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
+                                                                    </Pie>
+                                                                    {estDonutData.length > 0 && <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} />}
+                                                                </PieChart>
+                                                            </ResponsiveContainer>
+                                                        </Box>
+                                                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#333', mt: 0.5 }}>{fmtAMD(totalEstCost)}</Typography>
+                                                    </Box>
+                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <Typography variant='caption' sx={{ color: '#aaa', mb: 0.5, fontSize: '0.68rem' }}>{t('Actual')}</Typography>
+                                                        <Box sx={{ width: '100%', height: 160 }}>
+                                                            <ResponsiveContainer width='100%' height={160}>
+                                                                <PieChart>
+                                                                    <Pie data={actDonutData.length ? actDonutData : emptyDonut} cx='50%' cy='50%' innerRadius='40%' outerRadius='65%' paddingAngle={actDonutData.length > 1 ? 2 : 0} dataKey='value' strokeWidth={0}>
+                                                                        {(actDonutData.length ? actDonutData : emptyDonut).map((d, i) => <Cell key={i} fill={d.color} />)}
+                                                                    </Pie>
+                                                                    {actDonutData.length > 0 && <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} />}
+                                                                </PieChart>
+                                                            </ResponsiveContainer>
+                                                        </Box>
+                                                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: totalActCost > 0 ? mainPrimaryColor : '#bbb', mt: 0.5 }}>{totalActCost > 0 ? fmtAMD(totalActCost) : '—'}</Typography>
+                                                    </Box>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 1, flexWrap: 'wrap' }}>
+                                                    {[{ label: t('Labor'), color: '#00ABBC' }, { label: t('Materials'), color: '#7b1fa2' }].map(l => (
+                                                        <Box key={l.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: l.color }} />
+                                                            <Typography variant='caption' sx={{ color: '#666', fontSize: '0.68rem' }}>{l.label}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </Paper>
                                             {/* Profitability widget */}
                                             <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
@@ -609,11 +651,6 @@ export default function RentayinPage() {
                                                     <Typography sx={{ color: '#bbb' }}>/</Typography>
                                                     {totalActLaborCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActLaborCost > totalEstLaborCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActLaborCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
                                                 </Box>
-                                            </Paper>
-                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
-                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Estimate')}</Typography>
-                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{detail?.estimateName ?? '—'}</Typography>
-                                                <Typography variant='caption' sx={{ color: '#999' }}>{detail?.createdAt ? new Date(detail.createdAt).toLocaleDateString() : ''}</Typography>
                                             </Paper>
                                         </Box>
                                     </>}
