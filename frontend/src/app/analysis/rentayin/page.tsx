@@ -512,8 +512,12 @@ export default function RentayinPage() {
                             const totalActLaborCost = rows.reduce((s, r) => s + ((r.actualLaborUnitCost ?? 0) * r.quantity), 0);
                             const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
                             const totalActCost = totalActLaborCost + totalActMatCost;
-                            const donutActLabor = rows.reduce((s, r) => s + (r.actualLaborTotal ?? 0), 0);
-                            const donutActMat = rows.reduce((s, r) => s + (r.actualMaterialTotal ?? 0), 0);
+                            const rawActLabor = rows.reduce((s, r) => s + (r.actualLaborTotal ?? 0), 0);
+                            const rawActMat = rows.reduce((s, r) => s + (r.actualMaterialTotal ?? 0), 0);
+                            // Fallback for rows built before actualLaborTotal/actualMaterialTotal were added:
+                            // actualLaborUnitCost holds the combined actual unit cost, so use it as labor total
+                            const donutActLabor = rawActLabor > 0 || rawActMat > 0 ? rawActLabor : totalActLaborCost;
+                            const donutActMat = rawActLabor > 0 || rawActMat > 0 ? rawActMat : 0;
                             const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
                             const completionPct = rows.length > 0 ? Math.min(100, Math.round((rowsWithActual / rows.length) * 100)) : null;
                             const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
@@ -620,7 +624,7 @@ export default function RentayinPage() {
                                                     </Box>
                                                     <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
                                                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Փաստացի</Typography>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Հաշվարկային</Typography>
                                                         {renderDonut(actDonutData, 'rent-act', RENT_ACT_SEGS)}
                                                         {renderLegend(actDonutData, RENT_ACT_SEGS)}
                                                     </Box>
