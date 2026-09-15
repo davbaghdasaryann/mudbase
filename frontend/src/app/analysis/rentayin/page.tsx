@@ -18,6 +18,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
 const OE_BAR_GRADS = [
     { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
@@ -288,10 +290,10 @@ export default function RentayinPage() {
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
                             <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
-                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><SavingsOutlinedIcon sx={{ fontSize: 18 }} />Ընդհանուր</Box>} value='general' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />Ընդհանուր</Box>} value='general' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='table' />
-                                <Tab label='Աշխատանքներ' value='works' />
-                                <Tab label='Նյութեր' value='materials' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><EngineeringIcon sx={{ fontSize: 18 }} />Աշխատանքներ</Box>} value='works' />
+                                <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><CategoryOutlinedIcon sx={{ fontSize: 18 }} />Նյութեր</Box>} value='materials' />
                             </TabList>
                             <Box sx={{ flex: 1 }} />
                             {overallProfit !== null && (
