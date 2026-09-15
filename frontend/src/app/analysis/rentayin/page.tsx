@@ -418,7 +418,7 @@ export default function RentayinPage() {
                                                                     const actUnitCost = row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
-                                                                    const isEditing = editingIndex === globalIdx;
+                                                                    const isEditing = editingIndex === globalIdx && row.unitCostSource !== 'actual';
                                                                     const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
                                                                     rowCounter++;
                                                                     return (
@@ -459,6 +459,7 @@ export default function RentayinPage() {
                                                                                         <span style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888' }}>
                                                                                             {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                         </span>
+                                                                                        {row.unitCostSource !== 'actual' && (
                                                                                         <Tooltip title={t('Edit')} placement='top' arrow>
                                                                                             <IconButton size='small'
                                                                                                 onClick={() => { setEditingIndex(globalIdx); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
@@ -466,6 +467,7 @@ export default function RentayinPage() {
                                                                                                 <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
                                                                                             </IconButton>
                                                                                         </Tooltip>
+                                                                                        )}
                                                                                     </Box>
                                                                                 )}
                                                                             </td>
