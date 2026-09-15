@@ -1031,11 +1031,11 @@ export default function RentayinPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <PageButton
-                        variant='contained'
+                        variant='outlined'
                         label={creating ? t('Loading...') : t('Create')}
                         onClick={() => setDialogOpen(true)}
                         disabled={creating}
-                        sx={{ borderRadius: '25px', height: '36px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor } }}
+                        sx={{ borderRadius: '25px', height: '36px', '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}
                     />
                 </Box>
                 {records.map(rec => {
