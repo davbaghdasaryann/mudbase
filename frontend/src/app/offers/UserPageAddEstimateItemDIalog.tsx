@@ -410,9 +410,11 @@ export default function UserPageAddEstimateItemDialog(props: Props) {
                             '& .MuiDataGrid-row': { backgroundColor: '#FFFFFF' },
                             '& .MuiDataGrid-row:hover': { backgroundColor: '#E8EFEF !important' },
                             '& .editableCell': { boxShadow: 'inset 0 0 0 1px #00BFFF', borderRadius: '5px' },
+                            '& .MuiDataGrid-cell[data-field="itemChangableName"]': { whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.4, py: 1 },
                         }}>
                             <DataTableComponent
                                 sx={{ width: '100%' }}
+                                getRowHeight={() => 'auto'}
                                 processRowUpdate={handleGroupRowUpdate}
                                 columns={[
                                     { field: 'itemFullCode', headerName: t('ID'), align: 'center', width: 90, disableColumnMenu: true },
