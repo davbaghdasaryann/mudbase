@@ -416,7 +416,9 @@ export default function RentayinPage() {
                                                                 {subRows.map(row => {
                                                                     const globalIdx = rows.indexOf(row);
                                                                     const estTotal = row.estimatedUnitCost * row.quantity;
-                                                                    const actUnitCost = row.actualUnitCost;
+                                                                    const actUnitCost = row.unitCostSource === 'library'
+                                                                        ? row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0)
+                                                                        : row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
                                                                     const isEditing = editingIndex === globalIdx && row.unitCostSource !== 'actual';
