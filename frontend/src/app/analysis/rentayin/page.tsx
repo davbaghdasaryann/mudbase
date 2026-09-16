@@ -486,7 +486,7 @@ export default function RentayinPage() {
                         const fmtAMD = (n: number) => Math.round(n).toLocaleString() + ' ֏';
                         return (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                {src && <Chip label={t(breakdownRow.unitCostSource === 'actual' ? 'Actual' : breakdownRow.unitCostSource === 'library' ? 'Library' : 'Manual entry')} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
+                                {src && breakdownRow.unitCostSource !== 'actual' && <Chip label={t(breakdownRow.unitCostSource === 'library' ? 'Library' : 'Manual entry')} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
                                     {breakdownRow.unitCostSource === 'actual' && (() => {
                                         const hasActLabor = breakdownRow.actualLaborTotal != null && breakdownRow.actualLaborTotal > 0;
