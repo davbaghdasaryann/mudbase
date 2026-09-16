@@ -284,8 +284,9 @@ export default function RentayinPage() {
     );
 
     const profitPct = (row: RentayinRow) => {
-        if (!row.actualUnitCost || !row.estimatedUnitCost) return null;
-        return ((row.estimatedUnitCost - row.actualUnitCost) / row.actualUnitCost) * 100;
+        const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
+        if (!row.actualUnitCost || !estFull) return null;
+        return ((estFull - row.actualUnitCost) / row.actualUnitCost) * 100;
     };
 
     // Detail view
@@ -297,7 +298,7 @@ export default function RentayinPage() {
         );
 
         const rows = detail.rows ?? [];
-        const totalEstimated = rows.reduce((s, r) => s + (r.estimatedUnitCost * r.quantity), 0);
+        const totalEstimated = rows.reduce((s, r) => s + ((r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity), 0);
         const totalActual = rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0);
         const overallProfit = totalActual > 0 ? ((totalEstimated - totalActual) / totalActual) * 100 : null;
         const pendingCount = rows.filter(r => r.actualUnitCost === null).length;
@@ -415,7 +416,8 @@ export default function RentayinPage() {
                                                                 )}
                                                                 {subRows.map(row => {
                                                                     const globalIdx = rows.indexOf(row);
-                                                                    const estTotal = row.estimatedUnitCost * row.quantity;
+                                                                    const estUnitFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
+                                                                    const estTotal = estUnitFull * row.quantity;
                                                                     const actUnitCost = row.unitCostSource === 'library'
                                                                         ? row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0)
                                                                         : row.actualUnitCost;
@@ -436,7 +438,7 @@ export default function RentayinPage() {
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#888', fontSize: '0.78rem' })}>{row.unitSymbol}</td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
-                                                                            <td style={tdStyle({ textAlign: 'center', color: '#555' })}>{row.estimatedUnitCost > 0 ? Math.round(row.estimatedUnitCost).toLocaleString() : '\u2014'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', color: '#555' })}>{estUnitFull > 0 ? Math.round(estUnitFull).toLocaleString() : '\u2014'}</td>
                                                                             <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
                                                                             <td style={tdStyle({ textAlign: 'center' })}>
