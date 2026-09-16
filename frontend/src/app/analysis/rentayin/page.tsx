@@ -284,9 +284,11 @@ export default function RentayinPage() {
     );
 
     const profitPct = (row: RentayinRow) => {
+        if (row.unitCostSource !== 'actual') return null;
         const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
-        if (!row.actualUnitCost || !estFull) return null;
-        return ((estFull - row.actualUnitCost) / row.actualUnitCost) * 100;
+        const actFull = row.actualUnitCost ?? 0;
+        if (!actFull || !estFull) return null;
+        return ((estFull - actFull) / actFull) * 100;
     };
 
     // Detail view
@@ -299,8 +301,18 @@ export default function RentayinPage() {
 
         const rows = detail.rows ?? [];
         const totalEstimated = rows.reduce((s, r) => s + ((r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity), 0);
-        const totalActual = rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0);
-        const overallProfit = totalActual > 0 ? ((totalEstimated - totalActual) / totalActual) * 100 : null;
+        const totalActual = rows.reduce((s, r) => {
+            const actFull = r.unitCostSource === 'library'
+                ? r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)
+                : (r.actualUnitCost ?? 0);
+            return s + actFull * r.quantity;
+        }, 0);
+        const actualOnlyRows = rows.filter(r => r.unitCostSource === 'actual');
+        const overallProfit = (() => {
+            const estSum = actualOnlyRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
+            const actSum = actualOnlyRows.reduce((s, r) => s + (r.actualUnitCost ?? 0) * r.quantity, 0);
+            return actSum > 0 ? ((estSum - actSum) / actSum) * 100 : null;
+        })();
         const pendingCount = rows.filter(r => r.actualUnitCost === null).length;
 
         return (
