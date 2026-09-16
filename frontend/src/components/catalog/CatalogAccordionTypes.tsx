@@ -24,6 +24,7 @@ export interface AccordionItem {
     updatedAt?: Date;
 
     childrenQuantity?: number;
+    hasEstimations?: boolean;
 
     estimateId?: string;
 }

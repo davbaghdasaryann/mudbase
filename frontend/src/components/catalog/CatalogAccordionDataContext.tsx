@@ -126,6 +126,7 @@ export function CatalogDataProvider({
                         label: D.name,
                         name: D.name,
                         childrenQuantity: D.childrenQuantity,
+                        hasEstimations: (cat as any).hasEstimations ?? false,
                         children: [],
                     };
                 });

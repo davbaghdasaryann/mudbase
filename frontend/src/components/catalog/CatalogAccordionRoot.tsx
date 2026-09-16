@@ -44,6 +44,8 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
     const [addChild, setAddChild] = useState(false);
 
 
+    const isDisabledForUser = !isSuperAdmin && props.catalogType === 'aggregated' && !props.item.hasEstimations;
+
     const item = props.item;
 
     useEffect(() => {
@@ -128,8 +130,8 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
     return (
         <EstimateRootAccordion
             expanded={ctx.isExpanded(item.code)}
-            onChange={(event, isExpanded) => handleAccordionChange(isExpanded)}
-            sx={{ backgroundColor: '#ffffff' }}
+            onChange={(event, isExpanded) => !isDisabledForUser && handleAccordionChange(isExpanded)}
+            sx={{ backgroundColor: '#ffffff', ...(isDisabledForUser && { pointerEvents: 'none', opacity: 0.45 }) }}
         >
             <EstimateRootAccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Stack direction='row' spacing={{ xs: 0.5, sm: 1 }} justifyContent='space-between' alignItems='center' width='100%'>

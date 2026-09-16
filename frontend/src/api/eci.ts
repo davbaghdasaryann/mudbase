@@ -3,6 +3,7 @@ export interface ApiEciCategory {
     code: string;
     name: string;
     childrenQuantity?: number;
+    hasEstimations?: boolean;
 }
 
 export interface ApiEciSubcategory {

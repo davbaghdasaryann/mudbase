@@ -95,10 +95,16 @@ registerApiSession('eci/fetch_categories', async (req, res, session) => {
         });
     }
 
-    // Compute childrenQuantity
+    // Compute childrenQuantity and hasEstimations
     pipeline.push({
         $addFields: {
-            childrenQuantity: { $size: "$children" }
+            childrenQuantity: { $size: "$children" },
+            hasEstimations: {
+                $gt: [
+                    { $size: { $filter: { input: '$children', as: 'c', cond: { $gt: [{ $size: { $ifNull: ['$$c.items', []] } }, 0] } } } },
+                    0
+                ]
+            }
         }
     });
 
