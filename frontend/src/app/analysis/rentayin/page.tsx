@@ -463,15 +463,17 @@ export default function RentayinPage() {
                                                                                         >
                                                                                             {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                         </span>
-                                                                                        {row.unitCostSource !== 'actual' && (
-                                                                                        <Tooltip title={t('Edit')} placement='top' arrow>
-                                                                                            <IconButton size='small'
-                                                                                                onClick={() => { setEditingIndex(globalIdx); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
-                                                                                                sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
-                                                                                                <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
-                                                                                            </IconButton>
-                                                                                        </Tooltip>
-                                                                                        )}
+                                                                                        <Box sx={{ width: 22, flexShrink: 0 }}>
+                                                                                            {row.unitCostSource !== 'actual' && (
+                                                                                            <Tooltip title={t('Edit')} placement='top' arrow>
+                                                                                                <IconButton size='small'
+                                                                                                    onClick={() => { setEditingIndex(globalIdx); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
+                                                                                                    sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
+                                                                                                    <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
+                                                                                                </IconButton>
+                                                                                            </Tooltip>
+                                                                                            )}
+                                                                                        </Box>
                                                                                     </Box>
                                                                                 )}
                                                                             </td>
