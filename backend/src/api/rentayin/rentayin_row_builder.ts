@@ -63,7 +63,6 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
     }
 
     return snapshot.laborRows
-        .filter(r => !r.isGroupRow)
         .map(r => {
             const laborItemId = laborItemIdByOrigRowId.get(r._id) ?? '';
             const estimatedUnitCost = r.changableAveragePrice ?? 0;
