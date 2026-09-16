@@ -479,7 +479,7 @@ export default function RentayinPage() {
                                                                                     </Box>
                                                                                 )}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? mainPrimaryColor : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
+                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? '#111' : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
                                                                                 {actTotal !== null && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
