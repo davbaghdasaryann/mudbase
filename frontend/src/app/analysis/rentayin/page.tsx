@@ -482,61 +482,44 @@ export default function RentayinPage() {
                     PaperProps={{ sx: { p: 2, minWidth: 220, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' } }}
                 >
                     {breakdownRow && (() => {
-                        const src = breakdownRow.unitCostSource ? SOURCE_CHIP[breakdownRow.unitCostSource] : null;
                         const fmtAMD = (n: number) => Math.round(n).toLocaleString() + ' ֏';
-                        return (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                {src && breakdownRow.unitCostSource !== 'actual' && <Chip label={t(breakdownRow.unitCostSource === 'library' ? 'Library' : 'Manual entry')} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
-                                    {breakdownRow.unitCostSource === 'actual' && (() => {
-                                        const hasActLabor = breakdownRow.actualLaborTotal != null && breakdownRow.actualLaborTotal > 0;
-                                        const hasActMat = breakdownRow.actualMaterialTotal != null && breakdownRow.actualMaterialTotal > 0;
-                                        const hasLibLabor = breakdownRow.estimatedUnitCost > 0;
-                                        const hasLibMat = (breakdownRow.estimatedMaterialUnitCost ?? 0) > 0;
-                                        const laborVal = hasActLabor ? breakdownRow.actualLaborTotal! : hasLibLabor ? breakdownRow.estimatedUnitCost * breakdownRow.quantity : null;
-                                        const laborSrc = hasActLabor ? 'actual' : hasLibLabor ? 'library' : null;
-                                        const matVal = hasActMat ? breakdownRow.actualMaterialTotal! : hasLibMat ? (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity : null;
-                                        const matSrc = hasActMat ? 'actual' : hasLibMat ? 'library' : null;
-                                        const srcColor = (s: string | null) => s === 'actual' ? '#2e7d32' : s === 'library' ? '#1565C0' : '#aaa';
-                                        const srcLabel = (s: string | null) => s === 'actual' ? t('Actual') : s === 'library' ? t('Library') : null;
-                                        return (
-                                            <>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                        <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
-                                                        {laborSrc && <Chip label={srcLabel(laborSrc)} size='small' sx={{ fontSize: '0.65rem', height: 16, bgcolor: `${srcColor(laborSrc)}18`, color: srcColor(laborSrc), fontWeight: 700, '& .MuiChip-label': { px: 0.5 } }} />}
-                                                    </Box>
-                                                    <Typography variant='caption' sx={{ fontWeight: 600 }}>{laborVal != null ? fmtAMD(laborVal) : '—'}</Typography>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                        <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
-                                                        {matSrc && <Chip label={srcLabel(matSrc)} size='small' sx={{ fontSize: '0.65rem', height: 16, bgcolor: `${srcColor(matSrc)}18`, color: srcColor(matSrc), fontWeight: 700, '& .MuiChip-label': { px: 0.5 } }} />}
-                                                    </Box>
-                                                    <Typography variant='caption' sx={{ fontWeight: 600 }}>{matVal != null ? fmtAMD(matVal) : '—'}</Typography>
-                                                </Box>
-                                            </>
-                                        );
-                                    })()}
-                                    {breakdownRow.unitCostSource === 'library' && (
-                                        <>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD(breakdownRow.estimatedUnitCost)}</Typography>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD(breakdownRow.estimatedMaterialUnitCost ?? 0)}</Typography>
-                                            </Box>
-                                        </>
-                                    )}
-                                    {breakdownRow.unitCostSource === 'manual' && (
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                            <Typography variant='caption' sx={{ color: '#555' }}>{t('Manual entry')}</Typography>
-                                            <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
-                                        </Box>
-                                    )}
+                        const SRC_COLOR: Record<string, string> = { actual: '#2e7d32', library: '#1565C0', manual: '#757575' };
+                        const SRC_LABEL: Record<string, string> = { actual: t('Actual'), library: t('Library'), manual: t('Manual entry') };
+                        const badge = (src: string) => (
+                            <Chip label={SRC_LABEL[src]} size='small' sx={{ fontSize: '0.62rem', height: 15, bgcolor: `${SRC_COLOR[src]}15`, color: SRC_COLOR[src], fontWeight: 700, '& .MuiChip-label': { px: 0.6 } }} />
+                        );
+                        const row = (label: string, src: string | null, value: string) => (
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Typography variant='caption' sx={{ color: '#555' }}>{label}</Typography>
+                                    {src && badge(src)}
                                 </Box>
+                                <Typography variant='caption' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{value}</Typography>
+                            </Box>
+                        );
+
+                        let lines: React.ReactNode;
+                        if (breakdownRow.unitCostSource === 'actual') {
+                            const hasActLabor = (breakdownRow.actualLaborTotal ?? 0) > 0;
+                            const hasActMat = (breakdownRow.actualMaterialTotal ?? 0) > 0;
+                            const hasLibLabor = breakdownRow.estimatedUnitCost > 0;
+                            const hasLibMat = (breakdownRow.estimatedMaterialUnitCost ?? 0) > 0;
+                            const laborVal = hasActLabor ? breakdownRow.actualLaborTotal! : hasLibLabor ? breakdownRow.estimatedUnitCost * breakdownRow.quantity : null;
+                            const laborSrc = hasActLabor ? 'actual' : hasLibLabor ? 'library' : null;
+                            const matVal = hasActMat ? breakdownRow.actualMaterialTotal! : hasLibMat ? (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity : null;
+                            const matSrc = hasActMat ? 'actual' : hasLibMat ? 'library' : null;
+                            lines = <>{row(t('Labor'), laborSrc, laborVal != null ? fmtAMD(laborVal) : '—')}{row(t('Materials'), matSrc, matVal != null ? fmtAMD(matVal) : '—')}</>;
+                        } else if (breakdownRow.unitCostSource === 'library') {
+                            lines = <>{row(t('Labor'), 'library', fmtAMD(breakdownRow.estimatedUnitCost))}{row(t('Materials'), 'library', fmtAMD(breakdownRow.estimatedMaterialUnitCost ?? 0))}</>;
+                        } else {
+                            lines = row(t('Unit price'), 'manual', breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—');
+                        }
+                        return (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 210 }}>
+                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#333', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', borderBottom: '1px solid #eee', pb: 0.75, mb: 0.25 }}>
+                                    {t('Cost breakdown')}
+                                </Typography>
+                                {lines}
                             </Box>
                         );
                     })()}

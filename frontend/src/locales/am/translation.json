@@ -204,7 +204,7 @@
   "Material Cost": "Նյութերի արժեք",
   "Price with material": "Արժեքը ներառյալ նյութերը",
   "Price With Material": "Արժեքը ներառյալ նյութերը",
-  "Unit price": "Միավորի արժեքը",
+  "Unit price": "Միավոր արժեք",
   "Unit Price": "Միավորի արժեքը",
   "Edit Labor": "Խմբագրել աշխատանքը",
   "Edit Labor:": "Խմբագրել աշխատանքը:",
@@ -702,5 +702,6 @@
   "stateDutiesAndFees": "Պետական տուրքեր և վճարներ",
   "Library": "Շտեմարանային",
   "Catalog rate": "Շտեմարանային արժեք",
-  "Manual entry": "Ձեռքով մուտք"
+  "Manual entry": "Ձեռքով մուտք",
+  "Cost breakdown": "Արժեքի բաշխում"
 }
