@@ -17,6 +17,7 @@ import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import * as Api from 'api';
 import ImgElement from '@/tsui/DomElements/ImgElement';
+import { usePermissions } from '@/api/auth';
 
 interface CatalogRootAccordionProps {
     catalogType: CatalogType;
@@ -29,6 +30,8 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
     const ctx = useCatalogData();
     const { t } = useTranslation();
     const mounted = useRef(false);
+    const { permissionsSet } = usePermissions();
+    const isSuperAdmin = permissionsSet?.has('ALL') || permissionsSet?.has('USR_FCH_ALL') || permissionsSet?.has('ACC_FCH');
 
     const [items, setItems] = useState<AccordionItem[]>([]);
 
@@ -210,7 +213,9 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
                     {items.length === 1 && (items[0] as any).isLoading ? (
                         <CircularProgress size={24} sx={{ ml: 4 }} />
                     ) : items.length > 0 ? (
-                        items.map(child => (
+                        items
+                            .filter(child => isSuperAdmin || props.catalogType !== 'aggregated' || (child.childrenQuantity ?? 0) > 0)
+                            .map(child => (
                             <CatalogSubAccordion
                                 key={child._id}
                                 item={child}
