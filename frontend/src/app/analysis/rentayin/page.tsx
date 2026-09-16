@@ -530,9 +530,21 @@ export default function RentayinPage() {
                                             </Box>
                                         </>
                                     )}
-                                    {(breakdownRow.unitCostSource === 'library' || breakdownRow.unitCostSource === 'manual') && (
+                                    {breakdownRow.unitCostSource === 'library' && (
+                                        <>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD(breakdownRow.estimatedUnitCost * breakdownRow.quantity)}</Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
+                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD((breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity)}</Typography>
+                                            </Box>
+                                        </>
+                                    )}
+                                    {breakdownRow.unitCostSource === 'manual' && (
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                            <Typography variant='caption' sx={{ color: '#555' }}>{t(breakdownRow.unitCostSource === 'library' ? 'Catalog rate' : 'Manual entry')}</Typography>
+                                            <Typography variant='caption' sx={{ color: '#555' }}>{t('Manual entry')}</Typography>
                                             <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—'}</Typography>
                                         </Box>
                                     )}
