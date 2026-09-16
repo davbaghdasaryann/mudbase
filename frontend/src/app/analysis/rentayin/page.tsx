@@ -421,7 +421,6 @@ export default function RentayinPage() {
                                                                         : row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
-                                                                    const isEditing = editingIndex === globalIdx && row.unitCostSource !== 'actual';
                                                                     const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
                                                                     rowCounter++;
                                                                     return (
@@ -441,43 +440,12 @@ export default function RentayinPage() {
                                                                             <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: '#333' })}>{estTotal > 0 ? estTotal.toLocaleString() : '\u2014'}</td>
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
                                                                             <td style={tdStyle({ textAlign: 'center' })}>
-                                                                                {isEditing ? (
-                                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'center' }}>
-                                                                                        <TextField
-                                                                                            inputRef={inputRef}
-                                                                                            size='small'
-                                                                                            type='number'
-                                                                                            value={editValue}
-                                                                                            onChange={e => setEditValue(e.target.value)}
-                                                                                            onKeyDown={e => { if (e.key === 'Enter') handleSaveManual(globalIdx); if (e.key === 'Escape') setEditingIndex(null); }}
-                                                                                            sx={{ width: 100 }}
-                                                                                            inputProps={{ min: 0 }}
-                                                                                        />
-                                                                                        <IconButton size='small' onClick={() => handleSaveManual(globalIdx)} disabled={saving} sx={{ color: mainPrimaryColor }}>
-                                                                                            {saving ? <CircularProgress size={14} /> : <CheckIcon sx={{ fontSize: 16 }} />}
-                                                                                        </IconButton>
-                                                                                    </Box>
-                                                                                ) : (
-                                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'center' }}>
-                                                                                        <span
-                                                                                            style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
-                                                                                            onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
-                                                                                        >
-                                                                                            {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
-                                                                                        </span>
-                                                                                        <Box sx={{ width: 22, flexShrink: 0 }}>
-                                                                                            {row.unitCostSource !== 'actual' && (
-                                                                                            <Tooltip title={t('Edit')} placement='top' arrow>
-                                                                                                <IconButton size='small'
-                                                                                                    onClick={() => { setEditingIndex(globalIdx); setEditValue(row.actualUnitCost?.toString() ?? ''); }}
-                                                                                                    sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}>
-                                                                                                    <EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} />
-                                                                                                </IconButton>
-                                                                                            </Tooltip>
-                                                                                            )}
-                                                                                        </Box>
-                                                                                    </Box>
-                                                                                )}
+                                                                                <span
+                                                                                    style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
+                                                                                    onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
+                                                                                >
+                                                                                    {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
+                                                                                </span>
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? '#111' : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
                                                                                 {actTotal !== null && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? actTotal.toLocaleString() : '\u2014'}
