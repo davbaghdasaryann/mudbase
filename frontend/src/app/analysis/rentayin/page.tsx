@@ -485,20 +485,16 @@ export default function RentayinPage() {
                         const fmtAMD = (n: number) => Math.round(n).toLocaleString() + ' ֏';
                         const SRC_COLOR: Record<string, string> = { actual: '#2e7d32', library: '#1565C0', manual: '#757575' };
                         const SRC_LABEL: Record<string, string> = { actual: t('Actual'), library: t('Library'), manual: t('Manual entry') };
-                        const badge = (src: string) => (
-                            <Chip label={SRC_LABEL[src]} size='small' sx={{ fontSize: '0.62rem', height: 15, bgcolor: `${SRC_COLOR[src]}15`, color: SRC_COLOR[src], fontWeight: 700, '& .MuiChip-label': { px: 0.6 } }} />
-                        );
-                        const row = (label: string, src: string | null, value: string) => (
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <Typography variant='caption' sx={{ color: '#555' }}>{label}</Typography>
-                                    {src && badge(src)}
-                                </Box>
-                                <Typography variant='caption' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{value}</Typography>
-                            </Box>
-                        );
+                        const badge = (src: string | null) => src
+                            ? <Chip label={SRC_LABEL[src]} size='small' sx={{ fontSize: '0.62rem', height: 16, bgcolor: `${SRC_COLOR[src]}15`, color: SRC_COLOR[src], fontWeight: 700, '& .MuiChip-label': { px: 0.6 } }} />
+                            : <Box />;
 
-                        let lines: React.ReactNode;
+                        // grid: label | badge | value — 3 strict columns per row
+                        const gridSx = { display: 'grid', gridTemplateColumns: 'max-content max-content 1fr', columnGap: '10px', rowGap: '8px', alignItems: 'center' };
+                        const lbl = (s: string) => <Typography variant='caption' sx={{ color: '#666', whiteSpace: 'nowrap' }}>{s}</Typography>;
+                        const val = (s: string) => <Typography variant='caption' sx={{ fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>{s}</Typography>;
+
+                        let grid: React.ReactNode;
                         if (breakdownRow.unitCostSource === 'actual') {
                             const hasActLabor = (breakdownRow.actualLaborTotal ?? 0) > 0;
                             const hasActMat = (breakdownRow.actualMaterialTotal ?? 0) > 0;
@@ -508,18 +504,26 @@ export default function RentayinPage() {
                             const laborSrc = hasActLabor ? 'actual' : hasLibLabor ? 'library' : null;
                             const matVal = hasActMat ? breakdownRow.actualMaterialTotal! : hasLibMat ? (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity : null;
                             const matSrc = hasActMat ? 'actual' : hasLibMat ? 'library' : null;
-                            lines = <>{row(t('Labor'), laborSrc, laborVal != null ? fmtAMD(laborVal) : '—')}{row(t('Materials'), matSrc, matVal != null ? fmtAMD(matVal) : '—')}</>;
+                            grid = <Box sx={gridSx}>
+                                {lbl(t('Labor'))}{badge(laborSrc)}{val(laborVal != null ? fmtAMD(laborVal) : '—')}
+                                {lbl(t('Materials'))}{badge(matSrc)}{val(matVal != null ? fmtAMD(matVal) : '—')}
+                            </Box>;
                         } else if (breakdownRow.unitCostSource === 'library') {
-                            lines = <>{row(t('Labor'), 'library', fmtAMD(breakdownRow.estimatedUnitCost))}{row(t('Materials'), 'library', fmtAMD(breakdownRow.estimatedMaterialUnitCost ?? 0))}</>;
+                            grid = <Box sx={gridSx}>
+                                {lbl(t('Labor'))}{badge('library')}{val(fmtAMD(breakdownRow.estimatedUnitCost))}
+                                {lbl(t('Materials'))}{badge('library')}{val(fmtAMD(breakdownRow.estimatedMaterialUnitCost ?? 0))}
+                            </Box>;
                         } else {
-                            lines = row(t('Unit price'), 'manual', breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—');
+                            grid = <Box sx={gridSx}>
+                                {lbl(t('Unit price'))}{badge('manual')}{val(breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—')}
+                            </Box>;
                         }
                         return (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 210 }}>
-                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#333', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', borderBottom: '1px solid #eee', pb: 0.75, mb: 0.25 }}>
+                            <Box sx={{ minWidth: 230 }}>
+                                <Typography variant='caption' sx={{ display: 'block', fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.67rem', borderBottom: '1px solid #eee', pb: 0.75, mb: 1 }}>
                                     {t('Cost breakdown')}
                                 </Typography>
-                                {lines}
+                                {grid}
                             </Box>
                         );
                     })()}
