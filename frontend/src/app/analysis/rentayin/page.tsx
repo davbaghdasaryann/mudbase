@@ -520,18 +520,36 @@ export default function RentayinPage() {
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 {src && <Chip label={t(breakdownRow.unitCostSource === 'actual' ? 'Actual' : breakdownRow.unitCostSource === 'library' ? 'Library' : 'Manual entry')} size='small' sx={{ alignSelf: 'flex-start', fontSize: '0.72rem', bgcolor: `${src.color}18`, color: src.color, fontWeight: 700 }} />}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
-                                    {breakdownRow.unitCostSource === 'actual' && (
-                                        <>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualLaborTotal != null ? fmtAMD(breakdownRow.actualLaborTotal) : '—'}</Typography>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-                                                <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{breakdownRow.actualMaterialTotal != null ? fmtAMD(breakdownRow.actualMaterialTotal) : '—'}</Typography>
-                                            </Box>
-                                        </>
-                                    )}
+                                    {breakdownRow.unitCostSource === 'actual' && (() => {
+                                        const hasActLabor = breakdownRow.actualLaborTotal != null && breakdownRow.actualLaborTotal > 0;
+                                        const hasActMat = breakdownRow.actualMaterialTotal != null && breakdownRow.actualMaterialTotal > 0;
+                                        const hasLibLabor = breakdownRow.estimatedUnitCost > 0;
+                                        const hasLibMat = (breakdownRow.estimatedMaterialUnitCost ?? 0) > 0;
+                                        const laborVal = hasActLabor ? breakdownRow.actualLaborTotal! : hasLibLabor ? breakdownRow.estimatedUnitCost * breakdownRow.quantity : null;
+                                        const laborSrc = hasActLabor ? 'actual' : hasLibLabor ? 'library' : null;
+                                        const matVal = hasActMat ? breakdownRow.actualMaterialTotal! : hasLibMat ? (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity : null;
+                                        const matSrc = hasActMat ? 'actual' : hasLibMat ? 'library' : null;
+                                        const srcColor = (s: string | null) => s === 'actual' ? '#2e7d32' : s === 'library' ? '#1565C0' : '#aaa';
+                                        const srcLabel = (s: string | null) => s === 'actual' ? t('Actual') : s === 'library' ? t('Library') : null;
+                                        return (
+                                            <>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
+                                                        {laborSrc && <Chip label={srcLabel(laborSrc)} size='small' sx={{ fontSize: '0.65rem', height: 16, bgcolor: `${srcColor(laborSrc)}18`, color: srcColor(laborSrc), fontWeight: 700, '& .MuiChip-label': { px: 0.5 } }} />}
+                                                    </Box>
+                                                    <Typography variant='caption' sx={{ fontWeight: 600 }}>{laborVal != null ? fmtAMD(laborVal) : '—'}</Typography>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
+                                                        {matSrc && <Chip label={srcLabel(matSrc)} size='small' sx={{ fontSize: '0.65rem', height: 16, bgcolor: `${srcColor(matSrc)}18`, color: srcColor(matSrc), fontWeight: 700, '& .MuiChip-label': { px: 0.5 } }} />}
+                                                    </Box>
+                                                    <Typography variant='caption' sx={{ fontWeight: 600 }}>{matVal != null ? fmtAMD(matVal) : '—'}</Typography>
+                                                </Box>
+                                            </>
+                                        );
+                                    })()}
                                     {breakdownRow.unitCostSource === 'library' && (
                                         <>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
