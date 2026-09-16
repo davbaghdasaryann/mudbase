@@ -31,6 +31,9 @@ export interface EntityEstimateLaborItem {
     /** 'market' = from catalog average (Update), 'my_offer' = from this account's offer (Import from Library), null = manual edit */
     priceSource?: 'market' | 'my_offer' | null;
 
+    /** Set on forked estimate rows — the original estimate's labor item ID this row was created from. */
+    originalLaborItemId?: ObjectId;
+
     estimateLaborItemData?: any;
     estimateLaborOffersData?: any;
     estimateAccountMadeOfferData?: any;

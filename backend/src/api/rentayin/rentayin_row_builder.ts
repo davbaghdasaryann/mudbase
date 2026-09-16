@@ -23,19 +23,15 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         .toArray();
     const laborItemIdByOrigRowId = new Map(origLaborItems.map(i => [i._id.toString(), i.laborItemId?.toString()]));
 
-    // If the costing was forked, build a mapping: originalRowId → forkedRowId
+    // If the costing was forked, build a direct originalLaborItemId → forkedRowId mapping.
     // Costing data (actualData, costHistory) is keyed by forked row IDs.
-    // Both estimates share the same laborItemId (catalog ID) per row, so we can cross-reference.
     let costingKeyFor: (origRowId: string) => string;
     if (localEstimateId) {
         const forkLaborItems = await Db.getEstimateLaborItemsCollection()
-            .find({ estimateId: new ObjectId(localEstimateId) }, { projection: { _id: 1, laborItemId: 1 } })
+            .find({ estimateId: new ObjectId(localEstimateId), originalLaborItemId: { $exists: true } }, { projection: { _id: 1, originalLaborItemId: 1 } })
             .toArray();
-        const forkedRowIdByCatalogId = new Map(forkLaborItems.map(i => [i.laborItemId?.toString(), i._id.toString()]));
-        costingKeyFor = (origRowId) => {
-            const catId = laborItemIdByOrigRowId.get(origRowId);
-            return (catId && forkedRowIdByCatalogId.get(catId)) ?? origRowId;
-        };
+        const forkedRowIdByOrigId = new Map(forkLaborItems.map(i => [(i as any).originalLaborItemId?.toString(), i._id.toString()]));
+        costingKeyFor = (origRowId) => forkedRowIdByOrigId.get(origRowId) ?? origRowId;
     } else {
         costingKeyFor = (origRowId) => origRowId;
     }
@@ -79,7 +75,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             // Replicate CostingTable's actUP formula
             const ad = latestCosting?.actualData?.[ck] as any;
             const adQty = ad?.quantity ? parseFloat(String(ad.quantity).replace(',', '.')) : 0;
-            const adUnitPrice = ad?.unitPrice ? parseFloat(String(ad.unitPrice).replace(',', '.')) : 0;
+            const adUnitPrice = (ad?.unitPrice != null && ad.unitPrice !== '') ? parseFloat(String(ad.unitPrice).replace(',', '.')) : 0;
             const adSpent = ad?.spent ? parseFloat(String(ad.spent).replace(',', '.')) : 0;
             const salaryTotal = salaryTotalByRowId.get(ck) ?? 0;
             const matActTotal = matActTotalByRowId.get(ck) ?? 0;

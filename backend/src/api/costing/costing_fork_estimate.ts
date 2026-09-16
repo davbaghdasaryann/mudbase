@@ -99,6 +99,7 @@ registerApiSession('costing/fork_estimate', async (req, res, session) => {
                     displayIndex: li.displayIndex,
                     priceSource: li.priceSource,
                     isGroupRow: li.isGroupRow,
+                    originalLaborItemId: li._id,
                 };
                 const newLiResult = await laborItemsCol.insertOne(newLi);
                 const newLiId = newLiResult.insertedId;
@@ -142,6 +143,7 @@ registerApiSession('costing/fork_estimate', async (req, res, session) => {
                     displayIndex: li.displayIndex,
                     priceSource: li.priceSource,
                     parentGroupRowId: newParentId,
+                    originalLaborItemId: li._id,
                 };
                 const newLiResult = await laborItemsCol.insertOne(newLi);
                 const newLiId = newLiResult.insertedId;
