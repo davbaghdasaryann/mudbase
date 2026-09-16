@@ -534,11 +534,11 @@ export default function RentayinPage() {
                                         <>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
                                                 <Typography variant='caption' sx={{ color: '#555' }}>{t('Labor')}</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD(breakdownRow.estimatedUnitCost * breakdownRow.quantity)}</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD(breakdownRow.estimatedUnitCost)}</Typography>
                                             </Box>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
                                                 <Typography variant='caption' sx={{ color: '#555' }}>{t('Materials')}</Typography>
-                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD((breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity)}</Typography>
+                                                <Typography variant='caption' sx={{ fontWeight: 600 }}>{fmtAMD(breakdownRow.estimatedMaterialUnitCost ?? 0)}</Typography>
                                             </Box>
                                         </>
                                     )}
