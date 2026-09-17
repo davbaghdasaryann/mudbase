@@ -574,13 +574,16 @@ export default function RentayinPage() {
                             const totalActMatCost = rows.reduce((s, r) => s + ((r.actualMaterialUnitCost ?? 0) * r.quantity), 0);
                             const totalActCost = totalActLaborCost + totalActMatCost;
                             // Per-row donut split: actual rows use actualLaborTotal/actualMaterialTotal;
-                            // library/manual rows fall back to estimated split (same as Հashvarkayan column logic)
+                            // manual rows use actualLaborUnitCost/actualMaterialUnitCost (override values);
+                            // library rows fall back to estimated
                             const donutActLabor = rows.reduce((s, r) => {
                                 if (r.unitCostSource === 'actual') return s + (r.actualLaborTotal ?? r.estimatedUnitCost * r.quantity);
+                                if (r.unitCostSource === 'manual') return s + (r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity;
                                 return s + r.estimatedUnitCost * r.quantity;
                             }, 0);
                             const donutActMat = rows.reduce((s, r) => {
                                 if (r.unitCostSource === 'actual') return s + (r.actualMaterialTotal ?? 0);
+                                if (r.unitCostSource === 'manual') return s + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity;
                                 return s + (r.estimatedMaterialUnitCost ?? 0) * r.quantity;
                             }, 0);
                             const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
@@ -731,46 +734,43 @@ export default function RentayinPage() {
                                             {/* Profitability by category widget */}
                                             {(() => {
                                                 const cats = [
-                                                    { key: 'labor',    label: t('Labor'),          est: totalEstLaborCost, act: donutActLabor, dot: '#00899B' },
-                                                    { key: 'mat',      label: t('Materials'),       est: totalEstMatCost,   act: donutActMat,   dot: '#1CA461' },
-                                                    { key: 'other',    label: t('Other Expenses'),  est: totalEstOther,     act: totalActOther, dot: '#5CB8B0' },
+                                                    { key: 'labor',  label: t('Labor'),         est: totalEstLaborCost, act: donutActLabor, dot: '#00899B' },
+                                                    { key: 'mat',    label: t('Materials'),      est: totalEstMatCost,   act: donutActMat,   dot: '#1CA461' },
+                                                    { key: 'other',  label: t('Other Expenses'), est: totalEstOther,     act: totalActOther, dot: '#5CB8B0' },
                                                 ];
                                                 return (
                                                     <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5 }}>{t('Profitability by category')}</Typography>
-                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
-                                                            {cats.map(c => {
+                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+                                                            {cats.map((c, i) => {
                                                                 const hasData = c.est > 0 && c.act > 0;
                                                                 const amt = hasData ? c.est - c.act : null;
                                                                 const pct = amt !== null && c.est > 0 ? (amt / c.est) * 100 : null;
                                                                 const color = pct === null ? '#bbb' : pct >= 0 ? '#2e7d32' : '#c62828';
+                                                                const RANGE = 60;
                                                                 return (
-                                                                    <Box key={c.key}>
+                                                                    <Box key={c.key} sx={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none', pt: i > 0 ? 1 : 0 }}>
+                                                                        {/* Row: dot + label | big % | amount */}
                                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                                                                            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: c.dot, flexShrink: 0 }} />
-                                                                            <Typography variant='caption' sx={{ color: '#6b7280', fontWeight: 600, fontSize: '0.7rem', flex: 1 }}>{c.label}</Typography>
-                                                                            {pct !== null && (
-                                                                                <Typography variant='caption' sx={{ fontWeight: 800, color, fontSize: '0.75rem' }}>
-                                                                                    {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                                                </Typography>
-                                                                            )}
+                                                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.dot, flexShrink: 0 }} />
+                                                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280', flex: 1 }}>{c.label}</Typography>
+                                                                            <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color, lineHeight: 1 }}>
+                                                                                {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
+                                                                            </Typography>
                                                                         </Box>
-                                                                        {pct !== null ? (
+                                                                        {pct !== null && (
                                                                             <>
-                                                                                <Box sx={{ position: 'relative', height: 5, bgcolor: '#f0f0f0', borderRadius: 3, overflow: 'hidden', mb: 0.4 }}>
+                                                                                <Box sx={{ position: 'relative', height: 5, bgcolor: '#f0f0f0', borderRadius: 3, overflow: 'hidden', mb: 0.4, mx: 0.25 }}>
                                                                                     {(() => {
-                                                                                        const RANGE = 60;
                                                                                         const clamped = Math.max(-RANGE, Math.min(RANGE, pct));
-                                                                                        return <Box sx={{ position: 'absolute', height: '100%', borderRadius: 3, background: pct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)', left: pct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`, width: `${Math.abs(clamped / RANGE) * 50}%` }} />;
+                                                                                        return <Box sx={{ position: 'absolute', height: '100%', borderRadius: 3, background: pct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.3))' : 'linear-gradient(to right, rgba(198,40,40,0.3), #c62828)', left: pct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`, width: `${Math.max(2, Math.abs(clamped / RANGE) * 50)}%` }} />;
                                                                                     })()}
-                                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1.5, bgcolor: '#d0d0d0', transform: 'translateX(-50%)' }} />
+                                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1.5, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
                                                                                 </Box>
-                                                                                <Typography sx={{ fontSize: '0.65rem', color: '#999', textAlign: 'right' }}>
+                                                                                <Typography sx={{ fontSize: '0.67rem', color: '#999', textAlign: 'right' }}>
                                                                                     {fmtAMD(Math.abs(amt!))} {amt! >= 0 ? t('savings') : t('overrun')}
                                                                                 </Typography>
                                                                             </>
-                                                                        ) : (
-                                                                            <Typography sx={{ fontSize: '0.65rem', color: '#bbb', pl: 1.75 }}>—</Typography>
                                                                         )}
                                                                     </Box>
                                                                 );
