@@ -832,7 +832,8 @@ export default function RentayinPage() {
                     <Box sx={{ px: 2, pb: 2 }}>
                         {laborGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
                         {!laborGroupsLoading && laborGroups.length > 0 && (() => {
-                            const totalLaborCost = laborGroups.reduce((s, g) => s + g.totalCost, 0);
+                            const effectiveLaborItemCost = (item: any) => (laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
+                            const totalLaborCost = laborGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveLaborItemCost(it), 0), 0);
                             const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
                             return (
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
@@ -841,12 +842,13 @@ export default function RentayinPage() {
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Միավորի Արժեքը</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Ընդհանուր</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
                                     <TableBody>
                                         {laborGroups.map(group => {
                                             const isOpen = !!laborExpanded[group.laborItemId];
+                                            const groupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveLaborItemCost(it), 0);
                                             return (
                                                 <React.Fragment key={group.laborItemId}>
                                                     <TableRow onClick={() => setLaborExpanded(p => ({ ...p, [group.laborItemId]: !p[group.laborItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
@@ -860,7 +862,7 @@ export default function RentayinPage() {
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
                                                         <TableCell align='right' sx={{ py: 1.5, pr: 1 }}>
                                                         {editingPriceKey === 'lg:' + group.laborItemId ? (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                            <Box onClick={e => e.stopPropagation()} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                 <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)}
                                                                     onKeyDown={e => {
                                                                         if (e.key === 'Enter') {
@@ -877,7 +879,8 @@ export default function RentayinPage() {
                                                                         } else if (e.key === 'Escape') { setEditingPriceKey(null); }
                                                                     }}
                                                                     sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
-                                                                <IconButton size='small' onClick={() => {
+                                                                <IconButton size='small' onClick={e => {
+                                                                    e.stopPropagation();
                                                                     const p = parseFloat(editingPriceValue);
                                                                     if (!isNaN(p) && p > 0 && detail) {
                                                                         const newOvr: Record<string,number> = { ...laborOverrides };
@@ -900,8 +903,8 @@ export default function RentayinPage() {
                                                             </Box>
                                                         )}
                                                     </TableCell>
-                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
-                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(groupDisplayCost).toLocaleString()} AMD</TableCell>
+                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(groupDisplayCost)}</TableCell>
                                                     </TableRow>
                                                     {isOpen && group.items.map((item, idx2) => (
                                                         <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
@@ -921,8 +924,8 @@ export default function RentayinPage() {
                                                                 </Box>
                                                             )}
                                                         </TableCell>
-                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
-                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(effectiveLaborItemCost(item)).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(effectiveLaborItemCost(item))}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </React.Fragment>
@@ -938,7 +941,8 @@ export default function RentayinPage() {
                     <Box sx={{ px: 2, pb: 2 }}>
                         {matGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
                         {!matGroupsLoading && matGroups.length > 0 && (() => {
-                            const totalMatCost = matGroups.reduce((s, g) => s + g.totalCost, 0);
+                            const effectiveMatItemCost = (item: any) => (matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
+                            const totalMatCost = matGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveMatItemCost(it), 0), 0);
                             const pct = (cost: number) => totalMatCost > 0 ? ((cost / totalMatCost) * 100).toFixed(2) + '%' : '0%';
                             return (
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
@@ -947,12 +951,13 @@ export default function RentayinPage() {
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Միավորի Արժեքը</TableCell>
-                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
+                                        <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Ընդհանուր</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
                                     <TableBody>
                                         {matGroups.map(group => {
                                             const isOpen = !!matGroupExpanded[group.materialItemId];
+                                            const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
                                             return (
                                                 <React.Fragment key={group.materialItemId}>
                                                     <TableRow onClick={() => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
@@ -966,7 +971,7 @@ export default function RentayinPage() {
                                                         <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
                                                         <TableCell align='right' sx={{ py: 1.5, pr: 1 }}>
                                                         {editingPriceKey === 'mg:' + group.materialItemId ? (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                            <Box onClick={e => e.stopPropagation()} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                 <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)}
                                                                     onKeyDown={e => {
                                                                         if (e.key === 'Enter') {
@@ -983,7 +988,8 @@ export default function RentayinPage() {
                                                                         } else if (e.key === 'Escape') { setEditingPriceKey(null); }
                                                                     }}
                                                                     sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
-                                                                <IconButton size='small' onClick={() => {
+                                                                <IconButton size='small' onClick={e => {
+                                                                    e.stopPropagation();
                                                                     const p = parseFloat(editingPriceValue);
                                                                     if (!isNaN(p) && p > 0 && detail) {
                                                                         const newOvr: Record<string,number> = { ...matOverrides };
@@ -1006,8 +1012,8 @@ export default function RentayinPage() {
                                                             </Box>
                                                         )}
                                                     </TableCell>
-                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(group.totalCost).toLocaleString()} AMD</TableCell>
-                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(group.totalCost)}</TableCell>
+                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(matGroupDisplayCost).toLocaleString()} AMD</TableCell>
+                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(matGroupDisplayCost)}</TableCell>
                                                     </TableRow>
                                                     {isOpen && group.items.map((item, idx2) => (
                                                         <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
@@ -1027,8 +1033,8 @@ export default function RentayinPage() {
                                                                 </Box>
                                                             )}
                                                         </TableCell>
-                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(item.cost).toLocaleString()} AMD</TableCell>
-                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
+                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(effectiveMatItemCost(item)).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(effectiveMatItemCost(item))}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </React.Fragment>
