@@ -70,6 +70,8 @@ interface RentayinRow {
     actualLaborTotal: number | null;
     actualMaterialTotal: number | null;
     unitCostSource: 'actual' | 'library' | 'manual' | null;
+    laborUnitCostSource?: 'actual' | 'library' | 'manual' | null;
+    materialUnitCostSource?: 'actual' | 'library' | 'manual' | null;
     sectionName: string;
     subsectionName: string;
 }
@@ -509,28 +511,46 @@ export default function RentayinPage() {
                         const lbl = (s: string) => <Typography variant='caption' sx={{ color: '#666', whiteSpace: 'nowrap' }}>{s}</Typography>;
                         const val = (s: string) => <Typography variant='caption' sx={{ fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>{s}</Typography>;
 
+                        // Per-line sources — new fields with backward-compat fallback
+                        const laborSrc = breakdownRow.laborUnitCostSource !== undefined
+                            ? breakdownRow.laborUnitCostSource
+                            : breakdownRow.unitCostSource;
+                        const matSrc = breakdownRow.materialUnitCostSource !== undefined
+                            ? breakdownRow.materialUnitCostSource
+                            : (breakdownRow.unitCostSource === 'actual' || breakdownRow.unitCostSource === 'library' ? breakdownRow.unitCostSource : null);
+
+                        // Labor total (AMD)
+                        let laborTotal: number | null = null;
+                        if ((breakdownRow.actualLaborTotal ?? 0) > 0) {
+                            laborTotal = breakdownRow.actualLaborTotal!;
+                        } else if ((breakdownRow.actualLaborUnitCost ?? 0) > 0) {
+                            laborTotal = breakdownRow.actualLaborUnitCost! * breakdownRow.quantity;
+                        } else if (breakdownRow.estimatedUnitCost > 0) {
+                            laborTotal = breakdownRow.estimatedUnitCost * breakdownRow.quantity;
+                        }
+
+                        // Materials total (AMD)
+                        let matTotal: number | null = null;
+                        if ((breakdownRow.actualMaterialTotal ?? 0) > 0) {
+                            matTotal = breakdownRow.actualMaterialTotal!;
+                        } else if ((breakdownRow.actualMaterialUnitCost ?? 0) > 0) {
+                            matTotal = breakdownRow.actualMaterialUnitCost! * breakdownRow.quantity;
+                        } else if ((breakdownRow.estimatedMaterialUnitCost ?? 0) > 0 && matSrc != null) {
+                            matTotal = (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity;
+                        }
+
+                        const showLabor = laborSrc != null && laborTotal != null && laborTotal > 0;
+                        const showMat = matSrc != null && matTotal != null && matTotal > 0;
+
                         let grid: React.ReactNode;
-                        if (breakdownRow.unitCostSource === 'actual') {
-                            const hasActLabor = (breakdownRow.actualLaborTotal ?? 0) > 0;
-                            const hasActMat = (breakdownRow.actualMaterialTotal ?? 0) > 0;
-                            const hasLibLabor = breakdownRow.estimatedUnitCost > 0;
-                            const hasLibMat = (breakdownRow.estimatedMaterialUnitCost ?? 0) > 0;
-                            const laborVal = hasActLabor ? breakdownRow.actualLaborTotal! : hasLibLabor ? breakdownRow.estimatedUnitCost * breakdownRow.quantity : null;
-                            const laborSrc = hasActLabor ? 'actual' : hasLibLabor ? 'library' : null;
-                            const matVal = hasActMat ? breakdownRow.actualMaterialTotal! : hasLibMat ? (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity : null;
-                            const matSrc = hasActMat ? 'actual' : hasLibMat ? 'library' : null;
+                        if (showLabor || showMat) {
                             grid = <Box sx={gridSx}>
-                                {lbl(t('Labor'))}{badge(laborSrc)}{val(laborVal != null ? fmtAMD(laborVal) : '—')}
-                                {lbl(t('Materials'))}{badge(matSrc)}{val(matVal != null ? fmtAMD(matVal) : '—')}
-                            </Box>;
-                        } else if (breakdownRow.unitCostSource === 'library') {
-                            grid = <Box sx={gridSx}>
-                                {lbl(t('Labor'))}{badge('library')}{val(fmtAMD(breakdownRow.estimatedUnitCost))}
-                                {lbl(t('Materials'))}{badge('library')}{val(fmtAMD(breakdownRow.estimatedMaterialUnitCost ?? 0))}
+                                {showLabor && <>{lbl(t('Labor'))}{badge(laborSrc)}{val(fmtAMD(laborTotal!))}</>}
+                                {showMat && <>{lbl(t('Materials'))}{badge(matSrc)}{val(fmtAMD(matTotal!))}</>}
                             </Box>;
                         } else {
                             grid = <Box sx={gridSx}>
-                                {lbl(t('Unit price'))}{badge('manual')}{val(breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—')}
+                                {lbl(t('Unit price'))}{badge(laborSrc ?? 'manual')}{val(breakdownRow.actualUnitCost != null ? fmtAMD(breakdownRow.actualUnitCost) : '—')}
                             </Box>;
                         }
                         return (

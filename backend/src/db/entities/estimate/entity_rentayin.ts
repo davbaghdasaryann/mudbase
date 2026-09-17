@@ -17,6 +17,8 @@ export interface RentayinRow {
     actualLaborTotal: number | null;
     actualMaterialTotal: number | null;
     unitCostSource: RentayinUnitCostSource | null;
+    laborUnitCostSource?: RentayinUnitCostSource | null;
+    materialUnitCostSource?: RentayinUnitCostSource | null;
     sectionName: string;
     subsectionName: string;
 }

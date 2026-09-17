@@ -30,20 +30,37 @@ registerApiSession('rentayin/set_price_override', async (req, res, session) => {
         return;
     }
 
-    // price > 0: set override and atomically update the matching rentayin row
-    // Use positional operator so concurrent writes don't overwrite each other's rows
+    // price > 0: set override and atomically update the matching rentayin row.
+    // For labor: use an aggregation pipeline so we can preserve actualMaterialUnitCost
+    // (actualUnitCost = override + existing material cost, not just the labor override alone).
     if (type === 'labor') {
         await col.updateOne(
             { _id: docId, accountId: session.mongoAccountId, 'rows.estimateRowId': key },
-            { $set: {
-                [`${field}.${key}`]: price,
-                'rows.$.actualUnitCost': price,
-                'rows.$.actualLaborUnitCost': price,
-                'rows.$.unitCostSource': 'manual',
-                updatedAt: new Date(),
-            } }
+            [{
+                $set: {
+                    updatedAt: '$$NOW',
+                    rows: {
+                        $map: {
+                            input: '$rows',
+                            as: 'row',
+                            in: {
+                                $cond: [
+                                    { $eq: ['$$row.estimateRowId', key] },
+                                    { $mergeObjects: ['$$row', {
+                                        actualLaborUnitCost: price,
+                                        laborUnitCostSource: 'manual',
+                                        unitCostSource: 'manual',
+                                        actualUnitCost: { $add: [price, { $ifNull: ['$$row.actualMaterialUnitCost', 0] }] },
+                                    }] },
+                                    '$$row',
+                                ]
+                            }
+                        }
+                    }
+                }
+            }] as any
         );
-        // If no row matched (estimateRowId not yet on rows), just store the override
+        // Store the override key (dynamic field — must be a separate regular update)
         await col.updateOne(
             { _id: docId, accountId: session.mongoAccountId },
             { $set: { [`${field}.${key}`]: price, updatedAt: new Date() } }

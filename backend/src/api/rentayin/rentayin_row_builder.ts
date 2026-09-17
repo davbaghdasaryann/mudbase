@@ -94,7 +94,16 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             const hasActual = actualUnitCostFromHistory !== null;
             if (hasActual) {
                 const actualUnitCost = actualUnitCostFromHistory!;
-                const laborTotal = adSpent + salaryTotal;
+                const laborTotalAmt = adSpent + salaryTotal;
+                // Compute per-unit labor and material costs separately for the breakdown popup.
+                // If actUP came from adUnitPrice directly (no qty breakdown), we can't split.
+                const effectiveQty = gorqty > 0 ? gorqty : adQty;
+                const actualLaborUP = adUnitPrice > 0
+                    ? adUnitPrice  // can't split — full unit price is labeled as labor
+                    : (effectiveQty > 0 ? laborTotalAmt / effectiveQty : 0);
+                const actualMaterialUP = adUnitPrice > 0 || effectiveQty === 0
+                    ? null
+                    : (matActTotal > 0 ? matActTotal / effectiveQty : null);
                 return {
                     laborItemId,
                     estimateRowId: r._id,
@@ -103,12 +112,14 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     quantity: r.quantity,
                     estimatedUnitCost,
                     estimatedMaterialUnitCost,
-                    actualLaborUnitCost: actualUnitCost,
-                    actualMaterialUnitCost: null,
+                    actualLaborUnitCost: actualLaborUP,
+                    actualMaterialUnitCost: actualMaterialUP,
                     actualUnitCost: actualUnitCost > 0 ? actualUnitCost : null,
-                    actualLaborTotal: laborTotal,
+                    actualLaborTotal: laborTotalAmt,
                     actualMaterialTotal: matActTotal,
                     unitCostSource: 'actual' as const,
+                    laborUnitCostSource: 'actual' as const,
+                    materialUnitCostSource: matActTotal > 0 ? 'actual' as const : null,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
                 };
@@ -125,11 +136,13 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     estimatedUnitCost,
                     estimatedMaterialUnitCost,
                     actualLaborUnitCost: estimatedUnitCost,
-                    actualMaterialUnitCost: null,
+                    actualMaterialUnitCost: estimatedMaterialUnitCost > 0 ? estimatedMaterialUnitCost : null,
                     actualUnitCost: estimatedUnitCost,
                     actualLaborTotal: null,
                     actualMaterialTotal: null,
                     unitCostSource: 'library' as const,
+                    laborUnitCostSource: 'library' as const,
+                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? 'library' as const : null,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
                 };
@@ -145,11 +158,13 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                 estimatedUnitCost,
                 estimatedMaterialUnitCost,
                 actualLaborUnitCost: null,
-                actualMaterialUnitCost: null,
+                actualMaterialUnitCost: estimatedMaterialUnitCost > 0 ? estimatedMaterialUnitCost : null,
                 actualUnitCost: null,
                 actualLaborTotal: null,
                 actualMaterialTotal: null,
                 unitCostSource: null,
+                laborUnitCostSource: null,
+                materialUnitCostSource: estimatedMaterialUnitCost > 0 ? 'library' as const : null,
                 sectionName: r.sectionName,
                 subsectionName: r.subsectionName,
             };
