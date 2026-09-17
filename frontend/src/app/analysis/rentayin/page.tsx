@@ -500,7 +500,7 @@ export default function RentayinPage() {
                 >
                     {breakdownRow && (() => {
                         const fmtAMD = (n: number) => Math.round(n).toLocaleString() + ' ֏';
-                        const SRC_COLOR: Record<string, string> = { actual: '#2e7d32', library: '#1565C0', manual: '#ff9d00' };
+                        const SRC_COLOR: Record<string, string> = { actual: '#2e7d32', library: '#1565C0', manual: '#2e7d32' };
                         const SRC_LABEL: Record<string, string> = { actual: t('Actual'), library: t('Library'), manual: t('Manual entry') };
                         const badge = (src: string | null) => src
                             ? <Chip label={SRC_LABEL[src]} size='small' sx={{ fontSize: '0.62rem', height: 16, bgcolor: `${SRC_COLOR[src]}15`, color: SRC_COLOR[src], fontWeight: 700, '& .MuiChip-label': { px: 0.6 } }} />
