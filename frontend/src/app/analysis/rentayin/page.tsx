@@ -527,32 +527,31 @@ export default function RentayinPage() {
                             ? breakdownRow.materialUnitCostSource
                             : (breakdownRow.unitCostSource === 'actual' || breakdownRow.unitCostSource === 'library' ? breakdownRow.unitCostSource : null);
 
-                        // Always compute from unit cost × quantity so the breakdown totals
-                        // are consistent with the hashvarkayin column (actualUnitCost × qty).
-                        // actualLaborTotal/actualMaterialTotal are raw costing amounts that can
-                        // differ when actual qty done ≠ estimated qty — never use them here.
-                        let laborTotal: number | null = null;
+                        // Show unit prices (not totals) — the popup opens from the unit price
+                        // column, so all values should be per-unit to match that context.
+                        let laborUP: number | null = null;
                         if ((breakdownRow.actualLaborUnitCost ?? 0) > 0) {
-                            laborTotal = breakdownRow.actualLaborUnitCost! * breakdownRow.quantity;
+                            laborUP = breakdownRow.actualLaborUnitCost!;
                         } else if (breakdownRow.estimatedUnitCost > 0) {
-                            laborTotal = breakdownRow.estimatedUnitCost * breakdownRow.quantity;
+                            laborUP = breakdownRow.estimatedUnitCost;
                         }
 
-                        let matTotal: number | null = null;
+                        let matUP: number | null = null;
                         if ((breakdownRow.actualMaterialUnitCost ?? 0) > 0) {
-                            matTotal = breakdownRow.actualMaterialUnitCost! * breakdownRow.quantity;
+                            matUP = breakdownRow.actualMaterialUnitCost!;
                         } else if ((breakdownRow.estimatedMaterialUnitCost ?? 0) > 0 && matSrc != null) {
-                            matTotal = (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity;
+                            matUP = breakdownRow.estimatedMaterialUnitCost ?? null;
                         }
 
-                        const showLabor = laborSrc != null && laborTotal != null && laborTotal > 0;
-                        const showMat = matSrc != null && matTotal != null && matTotal > 0;
+                        const showLabor = laborSrc != null && laborUP != null && laborUP > 0;
+                        const showMat = matSrc != null && matUP != null && matUP > 0;
 
                         let grid: React.ReactNode;
                         if (showLabor || showMat) {
                             grid = <Box sx={gridSx}>
-                                {showLabor && <>{lbl(t('Labor'))}{badge(laborSrc)}{val(fmtAMD(laborTotal!))}</>}
-                                {showMat && <>{lbl(t('Materials'))}{badge(matSrc)}{val(fmtAMD(matTotal!))}</>}
+                                {showLabor && <>{lbl(t('Labor'))}{badge(laborSrc)}{val(fmtAMD(laborUP!))}</>}
+                                {showMat && <>{lbl(t('Materials'))}{badge(matSrc)}{val(fmtAMD(matUP!))}</>}
+                                <>{lbl(t('Total'))}{<span/>}{val(fmtAMD((laborUP ?? 0) + (matUP ?? 0)))}</>
                             </Box>;
                         } else {
                             grid = <Box sx={gridSx}>
