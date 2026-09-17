@@ -59,6 +59,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, B
 
 interface RentayinRow {
     laborItemId: string;
+    estimateRowId?: string;
     laborOfferItemName: string;
     unitSymbol: string;
     quantity: number;
@@ -237,6 +238,13 @@ export default function RentayinPage() {
     useEffect(() => {
         if (editingIndex !== null) inputRef.current?.focus();
     }, [editingIndex]);
+
+    // Keep breakdown popup in sync when rows refresh after an override
+    useEffect(() => {
+        if (!breakdownRow || !detail?.rows) return;
+        const fresh = detail.rows.find(r => r.estimateRowId && r.estimateRowId === breakdownRow.estimateRowId);
+        if (fresh) setBreakdownRow(fresh);
+    }, [detail?.rows]);
 
     const handleSelect = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
@@ -519,9 +527,11 @@ export default function RentayinPage() {
                             ? breakdownRow.materialUnitCostSource
                             : (breakdownRow.unitCostSource === 'actual' || breakdownRow.unitCostSource === 'library' ? breakdownRow.unitCostSource : null);
 
-                        // Labor total (AMD)
+                        // Labor total (AMD).
+                        // Skip actualLaborTotal for manual rows — it holds stale costing data
+                        // from before the override was applied.
                         let laborTotal: number | null = null;
-                        if ((breakdownRow.actualLaborTotal ?? 0) > 0) {
+                        if (laborSrc !== 'manual' && (breakdownRow.actualLaborTotal ?? 0) > 0) {
                             laborTotal = breakdownRow.actualLaborTotal!;
                         } else if ((breakdownRow.actualLaborUnitCost ?? 0) > 0) {
                             laborTotal = breakdownRow.actualLaborUnitCost! * breakdownRow.quantity;
@@ -529,9 +539,10 @@ export default function RentayinPage() {
                             laborTotal = breakdownRow.estimatedUnitCost * breakdownRow.quantity;
                         }
 
-                        // Materials total (AMD)
+                        // Materials total (AMD).
+                        // Skip actualMaterialTotal for manual rows — same stale-data reason.
                         let matTotal: number | null = null;
-                        if ((breakdownRow.actualMaterialTotal ?? 0) > 0) {
+                        if (matSrc !== 'manual' && (breakdownRow.actualMaterialTotal ?? 0) > 0) {
                             matTotal = breakdownRow.actualMaterialTotal!;
                         } else if ((breakdownRow.actualMaterialUnitCost ?? 0) > 0) {
                             matTotal = breakdownRow.actualMaterialUnitCost! * breakdownRow.quantity;
