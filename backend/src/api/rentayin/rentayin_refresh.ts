@@ -4,6 +4,7 @@ import * as Db from '@/db';
 import { respondJsonData } from '@tsback/req/req_response';
 import { requireQueryParam } from '@/tsback/req/req_params';
 import { buildRentayinRows } from './rentayin_row_builder';
+import { applyMaterialOverridesToRows } from './rentayin_apply_material_overrides';
 
 // Re-reads costing actual data and refreshes the rows of an existing rentayin.
 // Manual overrides (actualUnitCost with source 'manual') are preserved.
@@ -38,10 +39,14 @@ registerApiSession('rentayin/refresh', async (req, res, session) => {
         return r;
     });
 
+    // Apply material price overrides
+    const materialOverrides = doc.materialPriceOverrides ?? {};
+    const finalRows = await applyMaterialOverridesToRows(mergedRows as Db.RentayinRow[], doc.estimateId!, materialOverrides);
+
     await Db.getRentayinsCollection().updateOne(
         { _id: new ObjectId(id) },
-        { $set: { rows: mergedRows, updatedAt: new Date() } }
+        { $set: { rows: finalRows, updatedAt: new Date() } }
     );
 
-    respondJsonData(res, { ok: true, rows: mergedRows });
+    respondJsonData(res, { ok: true, rows: finalRows });
 });
