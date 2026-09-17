@@ -840,7 +840,7 @@ export default function RentayinPage() {
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
-                                        <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
+                                        <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Միավորի Արժեքը</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
@@ -867,11 +867,11 @@ export default function RentayinPage() {
                                                                             const p = parseFloat(editingPriceValue);
                                                                             if (!isNaN(p) && p > 0 && detail) {
                                                                                 const newOvr: Record<string,number> = { ...laborOverrides };
-                                                                                group.items.forEach(it => { delete newOvr[it._id]; });
-                                                                                newOvr[group.laborItemId] = p;
+                                                                                delete newOvr[group.laborItemId];
+                                                                                group.items.forEach(it => { newOvr[it._id] = p; });
                                                                                 setLaborOverrides(newOvr);
-                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: p } });
-                                                                                group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: -1 } });
+                                                                                group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: p } }));
                                                                             }
                                                                             setEditingPriceKey(null);
                                                                         } else if (e.key === 'Escape') { setEditingPriceKey(null); }
@@ -881,22 +881,20 @@ export default function RentayinPage() {
                                                                     const p = parseFloat(editingPriceValue);
                                                                     if (!isNaN(p) && p > 0 && detail) {
                                                                         const newOvr: Record<string,number> = { ...laborOverrides };
-                                                                        group.items.forEach(it => { delete newOvr[it._id]; });
-                                                                        newOvr[group.laborItemId] = p;
+                                                                        delete newOvr[group.laborItemId];
+                                                                        group.items.forEach(it => { newOvr[it._id] = p; });
                                                                         setLaborOverrides(newOvr);
-                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: p } });
-                                                                        group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: -1 } });
+                                                                        group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: p } }));
                                                                     }
                                                                     setEditingPriceKey(null);
                                                                 }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
                                                             </Box>
                                                         ) : (
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                <span style={{ fontSize: '0.82rem', color: laborOverrides[group.laborItemId] ? '#111' : '#aaa' }}>
-                                                                    {laborOverrides[group.laborItemId] ? Math.round(laborOverrides[group.laborItemId]).toLocaleString() : '—'}
-                                                                </span>
+                                                                <span style={{ fontSize: '0.82rem', color: '#aaa' }}>{'—'}</span>
                                                                 <Tooltip title='Edit price for all' placement='top' arrow>
-                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('lg:' + group.laborItemId); setEditingPriceValue(laborOverrides[group.laborItemId]?.toString() ?? ''); }}
+                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('lg:' + group.laborItemId); setEditingPriceValue(''); }}
                                                                         sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
                                                                 </Tooltip>
                                                             </Box>
@@ -948,7 +946,7 @@ export default function RentayinPage() {
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit')}</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Quantity')}</TableCell>
-                                        <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Արժևկի</TableCell>
+                                        <TableCell align='right' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Միավորի Արժեքը</TableCell>
                                         <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Cost')}</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
@@ -975,11 +973,11 @@ export default function RentayinPage() {
                                                                             const p = parseFloat(editingPriceValue);
                                                                             if (!isNaN(p) && p > 0 && detail) {
                                                                                 const newOvr: Record<string,number> = { ...matOverrides };
-                                                                                group.items.forEach(it => { delete newOvr[it._id]; });
-                                                                                newOvr[group.materialItemId] = p;
+                                                                                delete newOvr[group.materialItemId];
+                                                                                group.items.forEach(it => { newOvr[it._id] = p; });
                                                                                 setMatOverrides(newOvr);
-                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: p } });
-                                                                                group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
+                                                                                group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: it._id, price: p } }));
                                                                             }
                                                                             setEditingPriceKey(null);
                                                                         } else if (e.key === 'Escape') { setEditingPriceKey(null); }
@@ -989,22 +987,20 @@ export default function RentayinPage() {
                                                                     const p = parseFloat(editingPriceValue);
                                                                     if (!isNaN(p) && p > 0 && detail) {
                                                                         const newOvr: Record<string,number> = { ...matOverrides };
-                                                                        group.items.forEach(it => { delete newOvr[it._id]; });
-                                                                        newOvr[group.materialItemId] = p;
+                                                                        delete newOvr[group.materialItemId];
+                                                                        group.items.forEach(it => { newOvr[it._id] = p; });
                                                                         setMatOverrides(newOvr);
-                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: p } });
-                                                                        group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: -1 } }));
+                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
+                                                                        group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: it._id, price: p } }));
                                                                     }
                                                                     setEditingPriceKey(null);
                                                                 }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
                                                             </Box>
                                                         ) : (
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                <span style={{ fontSize: '0.82rem', color: matOverrides[group.materialItemId] ? '#111' : '#aaa' }}>
-                                                                    {matOverrides[group.materialItemId] ? Math.round(matOverrides[group.materialItemId]).toLocaleString() : '—'}
-                                                                </span>
+                                                                <span style={{ fontSize: '0.82rem', color: '#aaa' }}>{'—'}</span>
                                                                 <Tooltip title='Edit price for all' placement='top' arrow>
-                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('mg:' + group.materialItemId); setEditingPriceValue(matOverrides[group.materialItemId]?.toString() ?? ''); }}
+                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('mg:' + group.materialItemId); setEditingPriceValue(''); }}
                                                                         sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
                                                                 </Tooltip>
                                                             </Box>
