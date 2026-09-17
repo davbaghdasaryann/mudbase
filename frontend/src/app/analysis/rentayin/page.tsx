@@ -728,6 +728,57 @@ export default function RentayinPage() {
                                                     )}
                                                 </Box>
                                             </Paper>
+                                            {/* Profitability by category widget */}
+                                            {(() => {
+                                                const cats = [
+                                                    { key: 'labor',    label: t('Labor'),          est: totalEstLaborCost, act: donutActLabor, dot: '#00899B' },
+                                                    { key: 'mat',      label: t('Materials'),       est: totalEstMatCost,   act: donutActMat,   dot: '#1CA461' },
+                                                    { key: 'other',    label: t('Other Expenses'),  est: totalEstOther,     act: totalActOther, dot: '#5CB8B0' },
+                                                ];
+                                                return (
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5 }}>{t('Profitability by category')}</Typography>
+                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
+                                                            {cats.map(c => {
+                                                                const hasData = c.est > 0 && c.act > 0;
+                                                                const amt = hasData ? c.est - c.act : null;
+                                                                const pct = amt !== null && c.est > 0 ? (amt / c.est) * 100 : null;
+                                                                const color = pct === null ? '#bbb' : pct >= 0 ? '#2e7d32' : '#c62828';
+                                                                return (
+                                                                    <Box key={c.key}>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                                                                            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: c.dot, flexShrink: 0 }} />
+                                                                            <Typography variant='caption' sx={{ color: '#6b7280', fontWeight: 600, fontSize: '0.7rem', flex: 1 }}>{c.label}</Typography>
+                                                                            {pct !== null && (
+                                                                                <Typography variant='caption' sx={{ fontWeight: 800, color, fontSize: '0.75rem' }}>
+                                                                                    {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
+                                                                                </Typography>
+                                                                            )}
+                                                                        </Box>
+                                                                        {pct !== null ? (
+                                                                            <>
+                                                                                <Box sx={{ position: 'relative', height: 5, bgcolor: '#f0f0f0', borderRadius: 3, overflow: 'hidden', mb: 0.4 }}>
+                                                                                    {(() => {
+                                                                                        const RANGE = 60;
+                                                                                        const clamped = Math.max(-RANGE, Math.min(RANGE, pct));
+                                                                                        return <Box sx={{ position: 'absolute', height: '100%', borderRadius: 3, background: pct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)', left: pct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`, width: `${Math.abs(clamped / RANGE) * 50}%` }} />;
+                                                                                    })()}
+                                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1.5, bgcolor: '#d0d0d0', transform: 'translateX(-50%)' }} />
+                                                                                </Box>
+                                                                                <Typography sx={{ fontSize: '0.65rem', color: '#999', textAlign: 'right' }}>
+                                                                                    {fmtAMD(Math.abs(amt!))} {amt! >= 0 ? t('savings') : t('overrun')}
+                                                                                </Typography>
+                                                                            </>
+                                                                        ) : (
+                                                                            <Typography sx={{ fontSize: '0.65rem', color: '#bbb', pl: 1.75 }}>—</Typography>
+                                                                        )}
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                        </Box>
+                                                    </Paper>
+                                                );
+                                            })()}
                                         </Box>
                                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
                                             <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
