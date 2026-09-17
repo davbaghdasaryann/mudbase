@@ -284,6 +284,7 @@ export default function RentayinPage() {
     );
 
     const profitPct = (row: RentayinRow) => {
+        if (row.unitCostSource === 'library') return 0;
         if (row.unitCostSource !== 'actual') return null;
         const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
         const actFull = row.actualUnitCost ?? 0;
@@ -332,15 +333,6 @@ export default function RentayinPage() {
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><CategoryOutlinedIcon sx={{ fontSize: 18 }} />Նյութեր</Box>} value='materials' />
                             </TabList>
                             <Box sx={{ flex: 1 }} />
-                            {overallProfit !== null && (
-                                <Chip
-                                    label={`${overallProfit >= 0 ? '+' : ''}${overallProfit.toFixed(1)}% ${t('profitability')}`}
-                                    sx={{ bgcolor: overallProfit >= 0 ? '#E8F5E9' : '#FFEBEE', color: overallProfit >= 0 ? '#2E7D32' : '#C62828', fontWeight: 600, fontSize: '0.78rem' }}
-                                />
-                            )}
-                            {pendingCount > 0 && (
-                                <Chip label={`${pendingCount} ${t('need manual entry')}`} sx={{ bgcolor: '#FFF3E0', color: '#E65100', fontSize: '0.78rem', ml: 1 }} />
-                            )}
                         </Box>
                     </Box>
 
@@ -466,8 +458,8 @@ export default function RentayinPage() {
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
                                                                                 {pct !== null ? (
-                                                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct >= 0 ? '#2E7D32' : '#C62828' }}>
-                                                                                        {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
+                                                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888' }}>
+                                                                                        {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
                                                                                     </span>
                                                                                 ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'—'}</span>}
                                                                             </td>
