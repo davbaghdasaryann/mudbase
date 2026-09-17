@@ -551,7 +551,6 @@ export default function RentayinPage() {
                             grid = <Box sx={gridSx}>
                                 {showLabor && <>{lbl(t('Labor'))}{badge(laborSrc)}{val(fmtAMD(laborUP!))}</>}
                                 {showMat && <>{lbl(t('Materials'))}{badge(matSrc)}{val(fmtAMD(matUP!))}</>}
-                                <>{lbl(t('Total'))}{<span/>}{val(fmtAMD((laborUP ?? 0) + (matUP ?? 0)))}</>
                             </Box>;
                         } else {
                             grid = <Box sx={gridSx}>
