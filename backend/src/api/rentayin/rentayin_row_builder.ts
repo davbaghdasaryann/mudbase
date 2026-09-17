@@ -97,6 +97,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                 const laborTotal = adSpent + salaryTotal;
                 return {
                     laborItemId,
+                    estimateRowId: r._id,
                     laborOfferItemName: r.laborOfferItemName,
                     unitSymbol: r.unitSymbol,
                     quantity: r.quantity,
@@ -117,6 +118,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             if (estimatedUnitCost > 0) {
                 return {
                     laborItemId,
+                    estimateRowId: r._id,
                     laborOfferItemName: r.laborOfferItemName,
                     unitSymbol: r.unitSymbol,
                     quantity: r.quantity,
@@ -136,6 +138,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             // No library price either — manual entry allowed
             return {
                 laborItemId,
+                estimateRowId: r._id,
                 laborOfferItemName: r.laborOfferItemName,
                 unitSymbol: r.unitSymbol,
                 quantity: r.quantity,

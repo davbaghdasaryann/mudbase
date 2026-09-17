@@ -19,18 +19,13 @@ registerApiSession('rentayin/refresh', async (req, res, session) => {
 
     const freshRows = await buildRentayinRows(doc.estimateId.toString(), session.mongoAccountId);
 
-    // Preserve manual overrides
-    const manualByLaborItemId = new Map<string, number>();
-    for (const r of doc.rows ?? []) {
-        if (r.unitCostSource === 'manual' && r.actualUnitCost != null) {
-            manualByLaborItemId.set(r.laborItemId, r.actualUnitCost);
-        }
-    }
-
+    // Reapply labor price overrides from the overrides map (keyed by estimateRowId)
+    const laborOverrides = doc.laborPriceOverrides ?? {};
     const mergedRows = freshRows.map(r => {
-        const manual = manualByLaborItemId.get(r.laborItemId);
-        if (manual != null && r.actualUnitCost === null) {
-            return { ...r, actualUnitCost: manual, actualLaborUnitCost: manual, unitCostSource: 'manual' as const };
+        const estimateRowId = (r as any).estimateRowId as string | undefined;
+        const override = estimateRowId ? laborOverrides[estimateRowId] : undefined;
+        if (override != null && override > 0) {
+            return { ...r, actualUnitCost: override, actualLaborUnitCost: override, unitCostSource: 'manual' as const };
         }
         return r;
     });

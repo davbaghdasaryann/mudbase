@@ -4,6 +4,8 @@ export type RentayinUnitCostSource = 'actual' | 'library' | 'manual';
 
 export interface RentayinRow {
     laborItemId: string;
+    /** Estimate labor item _id — used to map Labors-tab price overrides back to this row. */
+    estimateRowId?: string;
     laborOfferItemName: string;
     unitSymbol: string;
     quantity: number;

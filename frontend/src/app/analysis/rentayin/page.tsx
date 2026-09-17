@@ -160,6 +160,15 @@ export default function RentayinPage() {
     const resizingRef = useRef<{ ci: number; startX: number; startW: number } | null>(null);
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const scrollDragRef = useRef<{ startX: number; scrollLeft: number } | null>(null);
+    const refreshRowsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const scheduleDetailRefresh = () => {
+        if (refreshRowsTimerRef.current) clearTimeout(refreshRowsTimerRef.current);
+        refreshRowsTimerRef.current = setTimeout(() => {
+            if (!selectedId) return;
+            Api.requestSession<RentayinRecord>({ command: 'rentayin/fetch', args: { id: selectedId } })
+                .then((data: any) => { if (data?.rows) setDetail(prev => prev ? { ...prev, rows: data.rows } : prev); });
+        }, 600);
+    };
 
     useEffect(() => {
         Api.requestSession<RentayinRecord[]>({ command: 'rentayin/fetch_all' })
@@ -450,11 +459,11 @@ export default function RentayinPage() {
                                                                                     style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
                                                                                     onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
                                                                                 >
-                                                                                    {actUnitCost !== null && actUnitCost > 0 && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
+                                                                                    {actUnitCost !== null && actUnitCost > 0 && row.unitCostSource ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                 </span>
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? '#111' : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
-                                                                                {actTotal !== null && (row.unitCostSource === 'actual' || row.unitCostSource === 'library') ? actTotal.toLocaleString() : '\u2014'}
+                                                                                {actTotal !== null && row.unitCostSource ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
                                                                                 {pct !== null ? (
@@ -874,6 +883,7 @@ export default function RentayinPage() {
                                                                                 setLaborOverrides(newOvr);
                                                                                 Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: -1 } });
                                                                                 group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: p } }));
+                                                                                scheduleDetailRefresh();
                                                                             }
                                                                             setEditingPriceKey(null);
                                                                         } else if (e.key === 'Escape') { setEditingPriceKey(null); }
@@ -889,6 +899,7 @@ export default function RentayinPage() {
                                                                         setLaborOverrides(newOvr);
                                                                         Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: group.laborItemId, price: -1 } });
                                                                         group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: it._id, price: p } }));
+                                                                        scheduleDetailRefresh();
                                                                     }
                                                                     setEditingPriceKey(null);
                                                                 }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
@@ -914,8 +925,8 @@ export default function RentayinPage() {
                                                             <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
                                                             {editingPriceKey === 'li:' + item._id ? (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setLaborOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: item._id, price: p } }); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
-                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setLaborOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: item._id, price: p } }); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setLaborOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: item._id, price: p } }); scheduleDetailRefresh(); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setLaborOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'labor', key: item._id, price: p } }); scheduleDetailRefresh(); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
                                                                 </Box>
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
@@ -983,6 +994,7 @@ export default function RentayinPage() {
                                                                                 setMatOverrides(newOvr);
                                                                                 Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
                                                                                 group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: it._id, price: p } }));
+                                                                                scheduleDetailRefresh();
                                                                             }
                                                                             setEditingPriceKey(null);
                                                                         } else if (e.key === 'Escape') { setEditingPriceKey(null); }
@@ -998,6 +1010,7 @@ export default function RentayinPage() {
                                                                         setMatOverrides(newOvr);
                                                                         Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
                                                                         group.items.forEach(it => Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: it._id, price: p } }));
+                                                                        scheduleDetailRefresh();
                                                                     }
                                                                     setEditingPriceKey(null);
                                                                 }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
@@ -1023,8 +1036,8 @@ export default function RentayinPage() {
                                                             <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
                                                             {editingPriceKey === 'mi:' + item._id ? (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: item._id, price: p } }); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
-                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: item._id, price: p } }); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: item._id, price: p } }); scheduleDetailRefresh(); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: item._id, price: p } }); scheduleDetailRefresh(); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
                                                                 </Box>
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
