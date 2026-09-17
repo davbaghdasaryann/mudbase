@@ -296,7 +296,7 @@ export default function RentayinPage() {
 
     const profitPct = (row: RentayinRow) => {
         if (row.unitCostSource === 'library') return 0;
-        if (row.unitCostSource !== 'actual') return null;
+        if (row.unitCostSource !== 'actual' && row.unitCostSource !== 'manual') return null;
         const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
         const actFull = row.actualUnitCost ?? 0;
         if (!actFull || !estFull) return null;
@@ -319,7 +319,7 @@ export default function RentayinPage() {
                 : (r.actualUnitCost ?? 0);
             return s + actFull * r.quantity;
         }, 0);
-        const actualOnlyRows = rows.filter(r => r.unitCostSource === 'actual');
+        const actualOnlyRows = rows.filter(r => r.unitCostSource === 'actual' || r.unitCostSource === 'manual');
         const overallProfit = (() => {
             const estSum = actualOnlyRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
             const actSum = actualOnlyRows.reduce((s, r) => s + (r.actualUnitCost ?? 0) * r.quantity, 0);
