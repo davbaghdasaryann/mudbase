@@ -527,24 +527,19 @@ export default function RentayinPage() {
                             ? breakdownRow.materialUnitCostSource
                             : (breakdownRow.unitCostSource === 'actual' || breakdownRow.unitCostSource === 'library' ? breakdownRow.unitCostSource : null);
 
-                        // Labor total (AMD).
-                        // Skip actualLaborTotal for manual rows — it holds stale costing data
-                        // from before the override was applied.
+                        // Always compute from unit cost × quantity so the breakdown totals
+                        // are consistent with the hashvarkayin column (actualUnitCost × qty).
+                        // actualLaborTotal/actualMaterialTotal are raw costing amounts that can
+                        // differ when actual qty done ≠ estimated qty — never use them here.
                         let laborTotal: number | null = null;
-                        if (laborSrc !== 'manual' && (breakdownRow.actualLaborTotal ?? 0) > 0) {
-                            laborTotal = breakdownRow.actualLaborTotal!;
-                        } else if ((breakdownRow.actualLaborUnitCost ?? 0) > 0) {
+                        if ((breakdownRow.actualLaborUnitCost ?? 0) > 0) {
                             laborTotal = breakdownRow.actualLaborUnitCost! * breakdownRow.quantity;
                         } else if (breakdownRow.estimatedUnitCost > 0) {
                             laborTotal = breakdownRow.estimatedUnitCost * breakdownRow.quantity;
                         }
 
-                        // Materials total (AMD).
-                        // Skip actualMaterialTotal for manual rows — same stale-data reason.
                         let matTotal: number | null = null;
-                        if (matSrc !== 'manual' && (breakdownRow.actualMaterialTotal ?? 0) > 0) {
-                            matTotal = breakdownRow.actualMaterialTotal!;
-                        } else if ((breakdownRow.actualMaterialUnitCost ?? 0) > 0) {
+                        if ((breakdownRow.actualMaterialUnitCost ?? 0) > 0) {
                             matTotal = breakdownRow.actualMaterialUnitCost! * breakdownRow.quantity;
                         } else if ((breakdownRow.estimatedMaterialUnitCost ?? 0) > 0 && matSrc != null) {
                             matTotal = (breakdownRow.estimatedMaterialUnitCost ?? 0) * breakdownRow.quantity;
