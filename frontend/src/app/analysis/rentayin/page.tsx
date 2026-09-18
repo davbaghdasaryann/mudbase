@@ -786,44 +786,6 @@ export default function RentayinPage() {
                                                 );
                                             })()}
                                         </Box>
-                                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
-                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}><EngineeringIcon sx={{ fontSize: 22, color: mainPrimaryColor }} /><Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('Quantity of Labor')}</Typography></Box>
-                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Total')} / {t('With data')}</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{rows.length}</Typography>
-                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
-                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: mainPrimaryColor }}>{rowsWithActual}</Typography>
-                                                </Box>
-                                            </Paper>
-                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
-                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Total Cost')}</Typography>
-                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Estimated')} / {t('Actual')}</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
-                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(totalEstCost)}</Typography>
-                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
-                                                    {totalActCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActCost > totalEstCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
-                                                </Box>
-                                            </Paper>
-                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
-                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Materials Cost')}</Typography>
-                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Estimated')} / {t('Actual')}</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
-                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(totalEstMatCost)}</Typography>
-                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
-                                                    {totalActMatCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActMatCost > totalEstMatCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActMatCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
-                                                </Box>
-                                            </Paper>
-                                            <Paper elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2.5, background: 'linear-gradient(135deg,#ffffff 0%,#edfbfc 100%)', transition: 'transform 0.2s,box-shadow 0.2s', '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,171,190,0.18)' } }}>
-                                                <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 600, mb: 1.5 }}>{t('Labor Cost')}</Typography>
-                                                <Typography variant='caption' sx={{ color: '#aaa', display: 'block', mb: 0.4 }}>{t('Estimated')} / {t('Actual')}</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexWrap: 'wrap' }}>
-                                                    <Typography variant='body1' sx={{ fontWeight: 700, color: '#333' }}>{fmtAMD(totalEstLaborCost)}</Typography>
-                                                    <Typography sx={{ color: '#bbb' }}>/</Typography>
-                                                    {totalActLaborCost > 0 ? <Typography variant='body1' sx={{ fontWeight: 700, color: totalActLaborCost > totalEstLaborCost ? '#e53935' : mainPrimaryColor }}>{fmtAMD(totalActLaborCost)}</Typography> : <Typography variant='body1' sx={{ color: '#bbb' }}>—</Typography>}
-                                                </Box>
-                                            </Paper>
-                                        </Box>
                                     </>}
                                     {/* Other Costs bar charts */}
                                     {(() => {
