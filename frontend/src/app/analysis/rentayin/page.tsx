@@ -891,6 +891,55 @@ export default function RentayinPage() {
                                         );
                                     })()}
 
+                                    {/* Overhead entries bar charts */}
+                                    {overheadEntries.length > 0 && (() => {
+                                        const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
+                                        return (
+                                            <>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mb: 1, mt: 2, userSelect: 'none' }} onClick={() => toggleSection('overhead')}>
+                                                    <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Վերադիր ծախսեր</Typography>
+                                                    <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overhead') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                                </Box>
+                                                {!collapsedSections.has('overhead') && (
+                                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
+                                                        {overheadEntries.map((entry, i) => {
+                                                            const grad = OE_BAR_GRADS[i % OE_BAR_GRADS.length];
+                                                            const gradId = `oh-act-${entry.id}`;
+                                                            const chartData = [{ name: t('Actual'), value: entry.total, gradId }];
+                                                            return (
+                                                                <Paper key={entry.id} elevation={0} sx={{ border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: 200 }}>
+                                                                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5, display: 'block' }}>{entry.name}</Typography>
+                                                                    <Box sx={{ minHeight: 128 }}>
+                                                                        <ResponsiveContainer width='100%' height={128}>
+                                                                            <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap='40%'>
+                                                                                <defs>
+                                                                                    <linearGradient id={gradId} x1='0' y1='0' x2='0' y2='1'>
+                                                                                        <stop offset='0%' stopColor={grad.top} />
+                                                                                        <stop offset='100%' stopColor={grad.bottom} />
+                                                                                    </linearGradient>
+                                                                                </defs>
+                                                                                <CartesianGrid vertical={false} strokeDasharray='3 3' stroke='#f0f0f0' />
+                                                                                <XAxis dataKey='name' tick={{ fontSize: 10, fill: '#888' }} axisLine={false} tickLine={false} />
+                                                                                <YAxis tick={{ fontSize: 10, fill: '#aaa' }} axisLine={false} tickLine={false} tickFormatter={oeFormatY} width={36} />
+                                                                                <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
+                                                                                <Bar dataKey='value' radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                                                                                    <Cell fill={`url(#${gradId})`} />
+                                                                                </Bar>
+                                                                            </BarChart>
+                                                                        </ResponsiveContainer>
+                                                                    </Box>
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                                        <Typography variant='caption' sx={{ color: OE_ACT_GRAD.top, fontWeight: 600, fontSize: '0.68rem' }}>{oeFormatY(entry.total)}</Typography>
+                                                                    </Box>
+                                                                </Paper>
+                                                            );
+                                                        })}
+                                                    </Box>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+
                                 </Box>
                             );
                         })()}
