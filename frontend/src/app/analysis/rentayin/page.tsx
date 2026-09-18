@@ -134,7 +134,10 @@ export default function RentayinPage() {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editValue, setEditValue] = useState('');
     const [saving, setSaving] = useState(false);
-    const [tab, setTab] = useState('table');
+    const [tab, setTab] = useState(() => {
+        const t = searchParams.get('tab');
+        return t && ['table', 'general', 'works', 'materials'].includes(t) ? t : 'table';
+    });
     const [worksExpanded, setWorksExpanded] = useState<Record<string, boolean>>({});
     const [matsExpanded, setMatsExpanded] = useState<Record<string, boolean>>({});
     const [laborGroups, setLaborGroups] = useState<GroupedLabor[]>([]);
@@ -366,7 +369,7 @@ export default function RentayinPage() {
                             <IconButton onClick={() => router.push('/analysis/rentayin')} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
                                 <ArrowBackIcon fontSize='small' />
                             </IconButton>
-                            <TabList onChange={(_, v) => setTab(v)} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
+                            <TabList onChange={(_, v) => { setTab(v); router.replace(`?tab=${v}`, { scroll: false }); }} sx={{ '& .MuiTabs-indicator': { backgroundColor: '#00A390' }, '& .MuiTab-root.Mui-selected': { color: '#00A390' } }}>
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />Ընդհանուր</Box>} value='general' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><TableChartOutlinedIcon sx={{ fontSize: 18 }} />{t('Analysis')}</Box>} value='table' />
                                 <Tab label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><EngineeringIcon sx={{ fontSize: 18 }} />Աշխատանքներ</Box>} value='works' />
