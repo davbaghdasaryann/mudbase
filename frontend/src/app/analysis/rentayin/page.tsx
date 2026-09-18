@@ -984,7 +984,7 @@ export default function RentayinPage() {
                                                         ) : (
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                 <span style={{ fontSize: '0.82rem', color: '#aaa' }}>{'—'}</span>
-                                                                <Tooltip title='Edit price for all' placement='top' arrow>
+                                                                <Tooltip title={t('Edit price for all')} placement='top' arrow>
                                                                     <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('lg:' + group.laborItemId); setEditingPriceValue(''); }}
                                                                         sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
                                                                 </Tooltip>
@@ -1008,7 +1008,7 @@ export default function RentayinPage() {
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
-                                                                    <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                    <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
                                                                 </Box>
                                                             )}
                                                         </TableCell>
@@ -1095,7 +1095,7 @@ export default function RentayinPage() {
                                                         ) : (
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                 <span style={{ fontSize: '0.82rem', color: '#aaa' }}>{'—'}</span>
-                                                                <Tooltip title='Edit price for all' placement='top' arrow>
+                                                                <Tooltip title={t('Edit price for all')} placement='top' arrow>
                                                                     <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('mg:' + group.materialItemId); setEditingPriceValue(''); }}
                                                                         sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
                                                                 </Tooltip>
@@ -1119,6 +1119,7 @@ export default function RentayinPage() {
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
+                                                                    <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
                                                                 </Box>
                                                             )}
                                                         </TableCell>
