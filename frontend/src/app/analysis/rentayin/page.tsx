@@ -71,9 +71,9 @@ interface RentayinRow {
     actualUnitCost: number | null;
     actualLaborTotal: number | null;
     actualMaterialTotal: number | null;
-    unitCostSource: 'actual' | 'library' | 'manual' | null;
-    laborUnitCostSource?: 'actual' | 'library' | 'manual' | null;
-    materialUnitCostSource?: 'actual' | 'library' | 'manual' | null;
+    unitCostSource: 'actual' | 'library' | 'market' | 'manual' | null;
+    laborUnitCostSource?: 'actual' | 'library' | 'market' | 'manual' | null;
+    materialUnitCostSource?: 'actual' | 'library' | 'market' | 'manual' | null;
     sectionName: string;
     subsectionName: string;
 }
@@ -99,6 +99,7 @@ interface GroupedByMaterial { materialItemId: string; materialFullCode: string; 
 const SOURCE_CHIP: Record<string, { label: string; color: string }> = {
     actual: { label: 'Actual', color: '#2E7D32' },
     library: { label: 'Library', color: '#1565C0' },
+    market: { label: 'Market', color: '#7b1fa2' },
     manual: { label: 'Manual', color: '#E65100' },
 };
 
@@ -304,7 +305,7 @@ export default function RentayinPage() {
     );
 
     const profitPct = (row: RentayinRow) => {
-        if (row.unitCostSource === 'library') return 0;
+        if (row.unitCostSource === 'library' || row.unitCostSource === 'market') return 0;
         if (row.unitCostSource !== 'actual' && row.unitCostSource !== 'manual') return null;
         const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
         const actFull = row.actualUnitCost ?? 0;
@@ -323,7 +324,7 @@ export default function RentayinPage() {
         const rows = detail.rows ?? [];
         const totalEstimated = rows.reduce((s, r) => s + ((r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity), 0);
         const totalActual = rows.reduce((s, r) => {
-            const actFull = r.unitCostSource === 'library'
+            const actFull = (r.unitCostSource === 'library' || r.unitCostSource === 'market')
                 ? r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)
                 : (r.actualUnitCost ?? 0);
             return s + actFull * r.quantity;
@@ -442,7 +443,7 @@ export default function RentayinPage() {
                                                                     const globalIdx = rows.indexOf(row);
                                                                     const estUnitFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
                                                                     const estTotal = estUnitFull * row.quantity;
-                                                                    const actUnitCost = row.unitCostSource === 'library'
+                                                                    const actUnitCost = (row.unitCostSource === 'library' || row.unitCostSource === 'market')
                                                                         ? row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0)
                                                                         : row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
@@ -467,7 +468,7 @@ export default function RentayinPage() {
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
                                                                             <td style={tdStyle({ textAlign: 'center' })}>
                                                                                 <span
-                                                                                    style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
+                                                                                    style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : row.unitCostSource === 'market' ? '#7b1fa2' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
                                                                                     onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
                                                                                 >
                                                                                     {actUnitCost !== null && actUnitCost > 0 && row.unitCostSource ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
