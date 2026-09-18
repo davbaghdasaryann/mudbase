@@ -146,6 +146,7 @@ export default function RentayinPage() {
     const [matGroupsLoading, setMatGroupsLoading] = useState(false);
     const [laborExpanded, setLaborExpanded] = useState<Record<string, boolean>>({});
     const [matGroupExpanded, setMatGroupExpanded] = useState<Record<string, boolean>>({});
+    const [unclassifiedMatOpen, setUnclassifiedMatOpen] = useState(false);
     const [laborOverrides, setLaborOverrides] = useState<Record<string, number>>({});
     const [matOverrides, setMatOverrides] = useState<Record<string, number>>({});
     const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
@@ -1039,99 +1040,115 @@ export default function RentayinPage() {
                                     </TableRow></TableHead>
                                     <TableBody>
                                         {(() => {
-                                            let unclassifiedHeaderShown = false;
-                                            return matGroups.map(group => {
-                                            const isOpen = !!matGroupExpanded[group.materialItemId];
-                                            const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
-                                            const showHeader = !group.materialFullCode && !unclassifiedHeaderShown;
-                                            if (showHeader) unclassifiedHeaderShown = true;
-                                            return (
-                                                <React.Fragment key={group.materialItemId}>
-                                                    {showHeader && (
-                                                        <TableRow><TableCell colSpan={6} sx={{ pt: 2, pb: 0.5, pl: 1.5, border: 0 }}>
-                                                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Չդասակարգված Նյութեր</Typography>
-                                                        </TableCell></TableRow>
-                                                    )}
-                                                    <TableRow onClick={() => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
-                                                        <TableCell sx={{ pl: 1, py: 1.5 }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
-                                                                <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}{group.materialName}</Typography>
-                                                            </Box>
-                                                        </TableCell>
-                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
-                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
-                                                        <TableCell align='right' sx={{ py: 1.5, pr: 1 }}>
-                                                        {editingPriceKey === 'mg:' + group.materialItemId ? (
-                                                            <Box onClick={e => e.stopPropagation()} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)}
-                                                                    onKeyDown={e => {
-                                                                        if (e.key === 'Enter') {
-                                                                            const p = parseFloat(editingPriceValue);
-                                                                            if (!isNaN(p) && p > 0 && detail) {
-                                                                                const newOvr: Record<string,number> = { ...matOverrides };
-                                                                                delete newOvr[group.materialItemId];
-                                                                                group.items.forEach(it => { newOvr[it._id] = p; });
-                                                                                setMatOverrides(newOvr);
-                                                                                Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
-                                                                                group.items.forEach(it => savePriceOverride(detail._id, 'material', it._id, p));
-                                                                            }
-                                                                            setEditingPriceKey(null);
-                                                                        } else if (e.key === 'Escape') { setEditingPriceKey(null); }
-                                                                    }}
-                                                                    sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
-                                                                <IconButton size='small' onClick={e => {
-                                                                    e.stopPropagation();
-                                                                    const p = parseFloat(editingPriceValue);
-                                                                    if (!isNaN(p) && p > 0 && detail) {
-                                                                        const newOvr: Record<string,number> = { ...matOverrides };
-                                                                        delete newOvr[group.materialItemId];
-                                                                        group.items.forEach(it => { newOvr[it._id] = p; });
-                                                                        setMatOverrides(newOvr);
-                                                                        Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
-                                                                        group.items.forEach(it => savePriceOverride(detail._id, 'material', it._id, p));
-                                                                    }
-                                                                    setEditingPriceKey(null);
-                                                                }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
-                                                            </Box>
-                                                        ) : (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                <span style={{ fontSize: '0.82rem', color: '#aaa' }}>{'—'}</span>
-                                                                <Tooltip title={t('Edit price for all')} placement='top' arrow>
-                                                                    <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('mg:' + group.materialItemId); setEditingPriceValue(''); }}
-                                                                        sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
-                                                                </Tooltip>
-                                                            </Box>
-                                                        )}
-                                                    </TableCell>
-                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(matGroupDisplayCost).toLocaleString()} AMD</TableCell>
-                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(matGroupDisplayCost)}</TableCell>
-                                                    </TableRow>
-                                                    {isOpen && group.items.map((item, idx2) => (
-                                                        <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                                            <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
-                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
-                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
-                                                            <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
-                                                            {editingPriceKey === 'mi:' + item._id ? (
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); savePriceOverride(detail._id, 'material', item._id, p); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
-                                                                    <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); savePriceOverride(detail._id, 'material', item._id, p); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                            const classifiedGroups = matGroups.filter(g => !!g.materialFullCode);
+                                            const unclassifiedGroups = matGroups.filter(g => !g.materialFullCode);
+                                            const unclassifiedTotal = unclassifiedGroups.reduce((s, g) => s + g.items.reduce((ss: number, it: any) => ss + effectiveMatItemCost(it), 0), 0);
+                                            const renderGroup = (group: GroupedByMaterial, indent?: boolean) => {
+                                                const isOpen = !!matGroupExpanded[group.materialItemId];
+                                                const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
+                                                return (
+                                                    <React.Fragment key={group.materialItemId}>
+                                                        <TableRow onClick={() => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                                            <TableCell sx={{ pl: indent ? 3 : 1, py: 1.5 }}>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                    {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
+                                                                    <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}{group.materialName}</Typography>
+                                                                </Box>
+                                                            </TableCell>
+                                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>
+                                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                            <TableCell align='right' sx={{ py: 1.5, pr: 1 }}>
+                                                            {editingPriceKey === 'mg:' + group.materialItemId ? (
+                                                                <Box onClick={e => e.stopPropagation()} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                    <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)}
+                                                                        onKeyDown={e => {
+                                                                            if (e.key === 'Enter') {
+                                                                                const p = parseFloat(editingPriceValue);
+                                                                                if (!isNaN(p) && p > 0 && detail) {
+                                                                                    const newOvr: Record<string,number> = { ...matOverrides };
+                                                                                    delete newOvr[group.materialItemId];
+                                                                                    group.items.forEach(it => { newOvr[it._id] = p; });
+                                                                                    setMatOverrides(newOvr);
+                                                                                    Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
+                                                                                    group.items.forEach(it => savePriceOverride(detail._id, 'material', it._id, p));
+                                                                                }
+                                                                                setEditingPriceKey(null);
+                                                                            } else if (e.key === 'Escape') { setEditingPriceKey(null); }
+                                                                        }}
+                                                                        sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                    <IconButton size='small' onClick={e => {
+                                                                        e.stopPropagation();
+                                                                        const p = parseFloat(editingPriceValue);
+                                                                        if (!isNaN(p) && p > 0 && detail) {
+                                                                            const newOvr: Record<string,number> = { ...matOverrides };
+                                                                            delete newOvr[group.materialItemId];
+                                                                            group.items.forEach(it => { newOvr[it._id] = p; });
+                                                                            setMatOverrides(newOvr);
+                                                                            Api.requestSession({ command: 'rentayin/set_price_override', args: { id: detail._id, type: 'material', key: group.materialItemId, price: -1 } });
+                                                                            group.items.forEach(it => savePriceOverride(detail._id, 'material', it._id, p));
+                                                                        }
+                                                                        setEditingPriceKey(null);
+                                                                    }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
                                                                 </Box>
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                    <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
-                                                                    <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                    <span style={{ fontSize: '0.82rem', color: '#aaa' }}>{'\u2014'}</span>
+                                                                    <Tooltip title={t('Edit price for all')} placement='top' arrow>
+                                                                        <IconButton size='small' onClick={e => { e.stopPropagation(); setEditingPriceKey('mg:' + group.materialItemId); setEditingPriceValue(''); }}
+                                                                            sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton>
+                                                                    </Tooltip>
                                                                 </Box>
                                                             )}
                                                         </TableCell>
-                                                            <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(effectiveMatItemCost(item)).toLocaleString()} AMD</TableCell>
-                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(effectiveMatItemCost(item))}</TableCell>
+                                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(matGroupDisplayCost).toLocaleString()} AMD</TableCell>
+                                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(matGroupDisplayCost)}</TableCell>
                                                         </TableRow>
-                                                    ))}
-                                                </React.Fragment>
+                                                        {isOpen && group.items.map((item, idx2) => (
+                                                            <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                                <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
+                                                                <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
+                                                                <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                                <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
+                                                                {editingPriceKey === 'mi:' + item._id ? (
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                        <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); savePriceOverride(detail._id, 'material', item._id, p); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                        <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); savePriceOverride(detail._id, 'material', item._id, p); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                                    </Box>
+                                                                ) : (
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                        <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '\u2014'}</span>
+                                                                        <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                    </Box>
+                                                                )}
+                                                            </TableCell>
+                                                                <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(effectiveMatItemCost(item)).toLocaleString()} AMD</TableCell>
+                                                                <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(effectiveMatItemCost(item))}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </React.Fragment>
+                                                );
+                                            };
+                                            return (
+                                                <>
+                                                    {classifiedGroups.map(g => renderGroup(g))}
+                                                    {unclassifiedGroups.length > 0 && (
+                                                        <>
+                                                            <TableRow onClick={() => setUnclassifiedMatOpen(p => !p)} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                                                <TableCell sx={{ pl: 1, py: 1.5 }}>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                        {unclassifiedMatOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
+                                                                        <Typography variant='body2' sx={{ fontWeight: 500 }}>Չդասակարգված Նյութեր</Typography>
+                                                                    </Box>
+                                                                </TableCell>
+                                                                <TableCell /><TableCell /><TableCell />
+                                                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(unclassifiedTotal).toLocaleString()} AMD</TableCell>
+                                                                <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(unclassifiedTotal)}</TableCell>
+                                                            </TableRow>
+                                                            {unclassifiedMatOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
+                                                        </>
+                                                    )}
+                                                </>
                                             );
-                                        });
                                         })()}
                                     </TableBody>
                                 </Table>

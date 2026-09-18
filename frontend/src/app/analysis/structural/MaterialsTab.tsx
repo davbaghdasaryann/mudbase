@@ -44,6 +44,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    const [unclassifiedOpen, setUnclassifiedOpen] = useState(false);
     const [exportModalOpen, setExportModalOpen] = useState(false);
     const [useLibraryNames, setUseLibraryNames] = useState(true);
 
@@ -156,73 +157,95 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
             </TableHead>
             <TableBody>
                 {(() => {
-                    let unclassifiedHeaderShown = false;
-                    return groups.map((group) => {
-                    const isOpen = !!expanded[group.materialItemId];
-                    const showHeader = !group.materialFullCode && !unclassifiedHeaderShown;
-                    if (showHeader) unclassifiedHeaderShown = true;
-
-                    return (
-                        <React.Fragment key={group.materialItemId}>
-                            {showHeader && (
-                                <TableRow><TableCell colSpan={5} sx={{ pt: 2, pb: 0.5, pl: 1.5, border: 0 }}>
-                                    <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Չդասակարգված Նյութեր</Typography>
-                                </TableCell></TableRow>
-                            )}
-                            <TableRow
-                                onClick={() => toggle(group.materialItemId)}
-                                sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
-                            >
-                                <TableCell sx={{ pl: 1, py: 1.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        {isOpen
-                                            ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
-                                            : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
-                                        }
-                                        <Typography variant='body2' sx={{ fontWeight: 500 }}>
-                                            {group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}
-                                            {group.materialName}
-                                        </Typography>
-                                    </Box>
-                                </TableCell>
-                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>
-                                    {group.unitSymbol}
-                                </TableCell>
-                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
-                                    {group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                                </TableCell>
-                                <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
-                                    {formatCurrencyRounded(group.totalCost)} AMD
-                                </TableCell>
-                                <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
-                                    {pct(group.totalCost)}
-                                </TableCell>
-                            </TableRow>
-
-                            {isOpen && group.items.map((item, i) => (
-                                <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
-                                    <TableCell sx={{ pl: 5, py: 1.5 }}>
-                                        <Typography variant='body2' color='text.secondary'>
-                                            {i + 1}. {item.laborCatalogName || item.laborOfferItemName}
-                                        </Typography>
+                    const classifiedGroups = groups.filter(g => !!g.materialFullCode);
+                    const unclassifiedGroups = groups.filter(g => !g.materialFullCode);
+                    const unclassifiedTotal = unclassifiedGroups.reduce((s, g) => s + g.totalCost, 0);
+                    const renderGroup = (group: GroupedByMaterial, indent?: boolean) => {
+                        const isOpen = !!expanded[group.materialItemId];
+                        return (
+                            <React.Fragment key={group.materialItemId}>
+                                <TableRow
+                                    onClick={() => toggle(group.materialItemId)}
+                                    sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
+                                >
+                                    <TableCell sx={{ pl: indent ? 3 : 1, py: 1.5 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                            {isOpen
+                                                ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
+                                                : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
+                                            }
+                                            <Typography variant='body2' sx={{ fontWeight: 500 }}>
+                                                {group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}
+                                                {group.materialName}
+                                            </Typography>
+                                        </Box>
                                     </TableCell>
-                                    <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        {item.unitSymbol}
+                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>
+                                        {group.unitSymbol}
                                     </TableCell>
-                                    <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        {Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
+                                        {group.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                                     </TableCell>
-                                    <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
-                                        {formatCurrencyRounded(item.cost)} AMD
+                                    <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
+                                        {formatCurrencyRounded(group.totalCost)} AMD
                                     </TableCell>
                                     <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
-                                        {pct(item.cost)}
+                                        {pct(group.totalCost)}
                                     </TableCell>
                                 </TableRow>
-                            ))}
-                        </React.Fragment>
+
+                                {isOpen && group.items.map((item, i) => (
+                                    <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                        <TableCell sx={{ pl: 5, py: 1.5 }}>
+                                            <Typography variant='body2' color='text.secondary'>
+                                                {i + 1}. {item.laborCatalogName || item.laborOfferItemName}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
+                                            {item.unitSymbol}
+                                        </TableCell>
+                                        <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
+                                            {Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                        </TableCell>
+                                        <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>
+                                            {formatCurrencyRounded(item.cost)} AMD
+                                        </TableCell>
+                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
+                                            {pct(item.cost)}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </React.Fragment>
+                        );
+                    };
+                    return (
+                        <>
+                            {classifiedGroups.map(g => renderGroup(g))}
+                            {unclassifiedGroups.length > 0 && (
+                                <>
+                                    <TableRow onClick={() => setUnclassifiedOpen(p => !p)} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
+                                        <TableCell sx={{ pl: 1, py: 1.5 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                {unclassifiedOpen
+                                                    ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
+                                                    : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
+                                                }
+                                                <Typography variant='body2' sx={{ fontWeight: 500 }}>Չդասակարգված Նյութեր</Typography>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell /><TableCell />
+                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
+                                            {formatCurrencyRounded(unclassifiedTotal)} AMD
+                                        </TableCell>
+                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>
+                                            {pct(unclassifiedTotal)}
+                                        </TableCell>
+                                    </TableRow>
+                                    {unclassifiedOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
+                                </>
+                            )}
+                        </>
                     );
-                    });
                 })()}
             </TableBody>
         </Table>
