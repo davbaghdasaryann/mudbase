@@ -1038,11 +1038,20 @@ export default function RentayinPage() {
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
                                     <TableBody>
-                                        {matGroups.map(group => {
+                                        {(() => {
+                                            let unclassifiedHeaderShown = false;
+                                            return matGroups.map(group => {
                                             const isOpen = !!matGroupExpanded[group.materialItemId];
                                             const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
+                                            const showHeader = !group.materialFullCode && !unclassifiedHeaderShown;
+                                            if (showHeader) unclassifiedHeaderShown = true;
                                             return (
                                                 <React.Fragment key={group.materialItemId}>
+                                                    {showHeader && (
+                                                        <TableRow><TableCell colSpan={6} sx={{ pt: 2, pb: 0.5, pl: 1.5, border: 0 }}>
+                                                            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Չդասակարգված Նյութեր</Typography>
+                                                        </TableCell></TableRow>
+                                                    )}
                                                     <TableRow onClick={() => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
                                                         <TableCell sx={{ pl: 1, py: 1.5 }}>
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -1122,7 +1131,8 @@ export default function RentayinPage() {
                                                     ))}
                                                 </React.Fragment>
                                             );
-                                        })}
+                                        });
+                                        })()}
                                     </TableBody>
                                 </Table>
                             );
