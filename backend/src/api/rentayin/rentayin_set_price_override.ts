@@ -45,7 +45,7 @@ registerApiSession('rentayin/set_price_override', async (req, res, session) => {
     // For labor: use an aggregation pipeline so we can preserve actualMaterialUnitCost
     // (actualUnitCost = override + existing material cost, not just the labor override alone).
     if (type === 'labor') {
-        await col.updateOne(
+        const updateResult = await col.updateOne(
             { _id: docId, accountId: session.mongoAccountId, 'rows.estimateRowId': key },
             [{
                 $set: {
