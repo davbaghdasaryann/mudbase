@@ -22,6 +22,7 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 
 const RENT_EST_SEGS = [
     { key: 'labor',     inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
@@ -53,6 +54,7 @@ import { useTranslation } from 'react-i18next';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import EstimatePageDialog from '@/app/estimates/EstimateDialog';
 import RentayinOtherCostsDialog from './RentayinOtherCostsDialog';
+import OverheadCostsDialog, { type OverheadEntry } from '@/app/costing/OverheadCostsDialog';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
@@ -149,6 +151,8 @@ export default function RentayinPage() {
     const [refreshing, setRefreshing] = useState(false);
     const [estimateEditOpen, setEstimateEditOpen] = useState(false);
     const [otherCostsOpen, setOtherCostsOpen] = useState(false);
+    const [overheadOpen, setOverheadOpen] = useState(false);
+    const [overheadEntries, setOverheadEntries] = useState<OverheadEntry[]>([]);
     const [breakdownAnchor, setBreakdownAnchor] = useState<HTMLElement | null>(null);
     const [breakdownRow, setBreakdownRow] = useState<RentayinRow | null>(null);
     const [otherCostPercentages, setOtherCostPercentages] = useState<Record<string, number>>({});
@@ -182,6 +186,9 @@ export default function RentayinPage() {
             else scheduleDetailRefresh();
         });
     };
+    const saveOverheadEntries = (id: string, entries: OverheadEntry[]) => {
+        Api.requestSession({ command: 'rentayin/save_overhead_entries', json: { id, entries } });
+    };
 
     useEffect(() => {
         Api.requestSession<RentayinRecord[]>({ command: 'rentayin/fetch_all' })
@@ -203,6 +210,10 @@ export default function RentayinPage() {
             setLaborOverrides(detail.laborPriceOverrides ?? {});
             setMatOverrides(detail.materialPriceOverrides ?? {});
             setOtherCostPercentages((detail as any).otherCostPercentages ?? {});
+            setOverheadEntries(((detail as any).overheadEntries ?? []).map((e: any) => ({
+                ...e,
+                history: (e.history ?? []).map((h: any) => ({ ...h, addedAt: new Date(h.addedAt) })),
+            })));
         }
     }, [detail?._id]);
     useEffect(() => {
@@ -683,6 +694,7 @@ export default function RentayinPage() {
                                             { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: '#7b1fa2', opacity: 0.55 }} />, label: 'Նախահաշիվ', onClick: () => setEstimateEditOpen(true), hoverBg: 'rgba(123,31,162,0.06)' },
                                             { icon: <RefreshIcon sx={{ fontSize: 24, color: '#1565c0', opacity: 0.55 }} />, label: 'Թարմացնել', onClick: () => handleRefresh(detail), hoverBg: 'rgba(21,101,192,0.06)' },
                                             { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), hoverBg: 'rgba(229,57,53,0.06)' },
+                                            { icon: <TuneOutlinedIcon sx={{ fontSize: 24, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), hoverBg: 'rgba(84,110,122,0.06)' },
                                             { icon: <LibraryBooksOutlinedIcon sx={{ fontSize: 24, color: '#2e7d32', opacity: 0.55 }} />, label: 'Շտեմարանի թարմացում', onClick: () => { if (detail) Api.requestSession({ command: 'rentayin/push_all_to_library', args: { id: detail._id } }); }, hoverBg: 'rgba(46,125,50,0.06)' },
                                         ].map(({ icon, label, onClick, hoverBg }) => (
                                             <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
@@ -1122,6 +1134,26 @@ export default function RentayinPage() {
                     if (detail) {
                         await Api.requestSession({ command: 'rentayin/save_other_costs', args: { id: detail._id, percentages: pcts } });
                     }
+                }}
+            />
+            <OverheadCostsDialog
+                open={overheadOpen}
+                onClose={() => setOverheadOpen(false)}
+                entries={overheadEntries}
+                onChange={entries => {
+                    setOverheadEntries(entries);
+                    if (detail) saveOverheadEntries(detail._id, entries);
+                }}
+                onHistoryEntry={() => {}}
+                onRemoveEntry={() => {}}
+                onRemoveHistoryRecord={histId => {
+                    const updated = overheadEntries.map(e => ({
+                        ...e,
+                        history: e.history.filter(h => h.id !== histId),
+                        total: e.history.filter(h => h.id !== histId).reduce((s, h) => s + h.amount, 0),
+                    })).filter(e => e.history.length > 0);
+                    setOverheadEntries(updated);
+                    if (detail) saveOverheadEntries(detail._id, updated);
                 }}
             />
         </>

@@ -23,6 +23,19 @@ export interface RentayinRow {
     subsectionName: string;
 }
 
+export interface RentayinOverheadHistoryRecord {
+    id: string;
+    amount: number;
+    addedAt: Date;
+}
+
+export interface RentayinOverheadEntry {
+    id: string;
+    name: string;
+    total: number;
+    history: RentayinOverheadHistoryRecord[];
+}
+
 export interface EntityRentayin {
     _id?: ObjectId;
     accountId?: ObjectId;
@@ -34,6 +47,8 @@ export interface EntityRentayin {
     materialPriceOverrides?: Record<string, number>;
     // other cost percentages: key = cost type, value = percentage (0-100)
     otherCostPercentages?: Record<string, number>;
+    // free-form overhead cost entries
+    overheadEntries?: RentayinOverheadEntry[];
     deleted?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
