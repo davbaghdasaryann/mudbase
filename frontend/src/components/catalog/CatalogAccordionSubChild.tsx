@@ -446,7 +446,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                                     command: 'eci/copy_estimate',
                                                     args: { eciEstimateId: item._id }
                                                 });
-                                                await confirmDialog(t('catalog.eci_copy_success'), t('Success'));
+                                                await confirmDialog(t('catalog.eci_copy_success'), t('Success'), { confirmColor: '#e53935' });
                                             } catch (error) {
                                                 console.error('Error copying ECI estimate:', error);
                                             }
