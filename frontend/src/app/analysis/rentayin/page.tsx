@@ -845,7 +845,7 @@ export default function RentayinPage() {
                                                             const estId = `oc-est-${key}`;
                                                             const actId = `oc-act-${key}`;
                                                             const ohId = `oc-oh-${key}`;
-                                                            const actualBarName = 'Հաշվառկային';
+                                                            const actualBarName = 'Հաշվարկային';
                                                             const actualBarGradId = key === 'overheadCosts' ? ohId : actId;
                                                             const pctDiff = estimatedValue > 0 && compareActual > 0 ? ((compareActual - estimatedValue) / estimatedValue) * 100 : null;
                                                             const chartData = [
