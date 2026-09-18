@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
@@ -14,7 +15,16 @@ export default function HaymnaditsPage() {
 
     return (
         <PageContents title={t('Haymnadits')}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+                <Button
+                    variant='contained'
+                    startIcon={<AddIcon />}
+                    sx={{ borderRadius: '25px', height: '40px', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#007a6e' } }}
+                >
+                    {t('Create Widget')}
+                </Button>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 2 }}>
                 <CorporateFareOutlinedIcon sx={{ fontSize: 100, color: mainPrimaryColor, opacity: 0.2 }} />
                 <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No Founders created yet')}</Typography>
                 <PageButton
