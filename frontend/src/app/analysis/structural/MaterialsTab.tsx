@@ -241,7 +241,21 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                             {pct(unclassifiedTotal)}
                                         </TableCell>
                                     </TableRow>
-                                    {unclassifiedOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
+                                    {unclassifiedOpen && unclassifiedGroups.map(g => (
+                                        <TableRow key={g.materialItemId} sx={{ backgroundColor: '#fafafa' }}>
+                                            <TableCell sx={{ pl: 3, py: 1.5 }}>
+                                                <Typography variant='body2' sx={{ fontWeight: 500 }}>{g.materialName}</Typography>
+                                            </TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{g.unitSymbol}</TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
+                                                {g.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                            </TableCell>
+                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
+                                                {formatCurrencyRounded(g.totalCost)} AMD
+                                            </TableCell>
+                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(g.totalCost)}</TableCell>
+                                        </TableRow>
+                                    ))}
                                 </>
                             )}
                         </>

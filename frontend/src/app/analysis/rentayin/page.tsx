@@ -1144,7 +1144,21 @@ export default function RentayinPage() {
                                                                 <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(unclassifiedTotal).toLocaleString()} AMD</TableCell>
                                                                 <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(unclassifiedTotal)}</TableCell>
                                                             </TableRow>
-                                                            {unclassifiedMatOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
+                                                            {unclassifiedMatOpen && unclassifiedGroups.map(g => {
+                                                                const matGroupDisplayCost = g.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
+                                                                return (
+                                                                    <TableRow key={g.materialItemId} sx={{ backgroundColor: '#fafafa' }}>
+                                                                        <TableCell sx={{ pl: 3, py: 1.5 }}>
+                                                                            <Typography variant='body2' sx={{ fontWeight: 500 }}>{g.materialName}</Typography>
+                                                                        </TableCell>
+                                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{g.unitSymbol}</TableCell>
+                                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{g.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                                        <TableCell />
+                                                                        <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(matGroupDisplayCost).toLocaleString()} AMD</TableCell>
+                                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(matGroupDisplayCost)}</TableCell>
+                                                                    </TableRow>
+                                                                );
+                                                            })}
                                                         </>
                                                     )}
                                                 </>
