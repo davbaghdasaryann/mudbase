@@ -1044,13 +1044,13 @@ export default function RentayinPage() {
                                             const unclassifiedGroups = matGroups.filter(g => !g.materialFullCode);
                                             const unclassifiedTotal = unclassifiedGroups.reduce((s, g) => s + g.items.reduce((ss: number, it: any) => ss + effectiveMatItemCost(it), 0), 0);
                                             const renderGroup = (group: GroupedByMaterial, indent?: boolean) => {
-                                                                                                const isOpen = !indent && !!matGroupExpanded[group.materialItemId]; const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
+                                                                                                const isOpen = !!matGroupExpanded[group.materialItemId]; const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
                                                 return (
                                                     <React.Fragment key={group.materialItemId}>
-                                                        <TableRow onClick={indent ? undefined : () => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: indent ? 'default' : 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: indent ? '#fafafa' : '#f0f9fb' } }}>
+                                                        <TableRow onClick={() => setMatGroupExpanded(p => ({ ...p, [group.materialItemId]: !p[group.materialItemId] }))} sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}>
                                                             <TableCell sx={{ pl: indent ? 3 : 1, py: 1.5 }}>
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                    {!indent && (isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />)}
+                                                                    {isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />}
                                                                     <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}{group.materialName || '—'}</Typography>
                                                                 </Box>
                                                             </TableCell>
@@ -1102,7 +1102,7 @@ export default function RentayinPage() {
                                                             <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(matGroupDisplayCost).toLocaleString()} AMD</TableCell>
                                                             <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(matGroupDisplayCost)}</TableCell>
                                                         </TableRow>
-                                                        {isOpen && !indent && group.items.map((item, idx2) => (
+                                                        {isOpen && group.items.map((item, idx2) => (
                                                             <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                                                 <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{idx2 + 1}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
                                                                 <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
