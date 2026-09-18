@@ -17,11 +17,13 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
 
     const localEstimateId = (latestCosting as any)?.localEstimateId as string | undefined;
 
-    // Build laborItemId (catalog ID) lookup for the original estimate rows
+    // Build laborItemId (catalog ID) and priceSource lookup for the original estimate rows
     const origLaborItems = await Db.getEstimateLaborItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { _id: 1, laborItemId: 1 } })
+        .find({ estimateId: estimateObjId }, { projection: { _id: 1, laborItemId: 1, priceSource: 1 } })
         .toArray();
     const laborItemIdByOrigRowId = new Map(origLaborItems.map(i => [i._id.toString(), i.laborItemId?.toString()]));
+    // priceSource: 'my_offer' = company's own library offer, 'market' = catalog average, null = manual/unknown
+    const priceSourceByOrigRowId = new Map(origLaborItems.map(i => [i._id.toString(), (i as any).priceSource as string | null | undefined]));
 
     // If the costing was forked, build a direct originalLaborItemId → forkedRowId mapping.
     // Costing data (actualData, costHistory) is keyed by forked row IDs.
@@ -61,23 +63,6 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             gorqtyByRowId.set(rowId, (gorqtyByRowId.get(rowId) ?? 0) + qty);
         }
     }
-
-    // Pre-fetch which labor items the company has their own library offer for.
-    const laborItemIds = origLaborItems.map(i => i.laborItemId).filter(Boolean) as ObjectId[];
-    const companyLaborOffers = await Db.getLaborOffersCollection()
-        .find({ accountId, itemId: { $in: laborItemIds } }, { projection: { itemId: 1 } })
-        .toArray();
-    const companyLaborOfferItemIds = new Set(companyLaborOffers.map(o => o.itemId.toString()));
-
-    // Fetch estimate material items to get materialItemIds for pre-fetch
-    const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1 } })
-        .toArray();
-    const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
-    const companyMaterialOffers = await Db.getMaterialOffersCollection()
-        .find({ accountId, itemId: { $in: materialItemIds } }, { projection: { itemId: 1 } })
-        .toArray();
-    const companyMaterialOfferItemIds = new Set(companyMaterialOffers.map(o => o.itemId.toString()));
 
     return snapshot.laborRows
         .map(r => {
@@ -142,8 +127,11 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                 };
             }
 
-            // No actual data — fall back to library (catalog) labor rate only, no materials
-            const laborSrcTag = companyLaborOfferItemIds.has(laborItemId) ? 'library' as const : 'market' as const;
+            // No actual data — fall back to library/market depending on how the price was set.
+            // priceSource 'my_offer' = company's own library offer → show Շtemaranayin (library)
+            // priceSource 'market' or unknown = catalog average → show Շukayakan (market)
+            const ps = priceSourceByOrigRowId.get(r._id);
+            const laborSrcTag = ps === 'my_offer' ? 'library' as const : 'market' as const;
             if (estimatedUnitCost > 0) {
                 return {
                     laborItemId,
