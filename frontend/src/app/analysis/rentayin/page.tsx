@@ -1143,7 +1143,36 @@ export default function RentayinPage() {
                                                                 <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>{Math.round(unclassifiedTotal).toLocaleString()} AMD</TableCell>
                                                                 <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(unclassifiedTotal)}</TableCell>
                                                             </TableRow>
-                                                            {unclassifiedMatOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
+                                                            {unclassifiedMatOpen && (() => {
+                                                                let n = 0;
+                                                                return unclassifiedGroups.flatMap(g =>
+                                                                    g.items.map(item => {
+                                                                        n++;
+                                                                        return (
+                                                                            <TableRow key={String(item._id)} sx={{ '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                                                <TableCell sx={{ pl: 5, py: 1.5 }}><Typography variant='body2' color='text.secondary'>{n}. {item.laborCatalogName || item.laborOfferItemName}</Typography></TableCell>
+                                                                                <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
+                                                                                <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                                                <TableCell align='right' sx={{ whiteSpace: 'nowrap', py: 1.5, pr: 1 }}>
+                                                                                {editingPriceKey === 'mi:' + item._id ? (
+                                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                                        <TextField size='small' type='number' value={editingPriceValue} onChange={e => setEditingPriceValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); savePriceOverride(detail._id, 'material', item._id, p); } setEditingPriceKey(null); } else if (e.key === 'Escape') { setEditingPriceKey(null); } }} sx={{ width: 90 }} inputProps={{ min: 0 }} autoFocus />
+                                                                                        <IconButton size='small' onClick={() => { const p = parseFloat(editingPriceValue); if (!isNaN(p) && p > 0 && detail) { setMatOverrides(prev => ({ ...prev, [item._id]: p })); savePriceOverride(detail._id, 'material', item._id, p); } setEditingPriceKey(null); }} sx={{ color: mainPrimaryColor, p: '2px' }}><CheckIcon sx={{ fontSize: 14 }} /></IconButton>
+                                                                                    </Box>
+                                                                                ) : (
+                                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                                                        <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
+                                                                                        <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                                    </Box>
+                                                                                )}
+                                                                                </TableCell>
+                                                                                <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Math.round(effectiveMatItemCost(item)).toLocaleString()} AMD</TableCell>
+                                                                                <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(effectiveMatItemCost(item))}</TableCell>
+                                                                            </TableRow>
+                                                                        );
+                                                                    })
+                                                                );
+                                                            })()}
                                                         </>
                                                     )}
                                                 </>

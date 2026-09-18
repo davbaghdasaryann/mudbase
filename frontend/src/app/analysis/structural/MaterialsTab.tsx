@@ -240,7 +240,25 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                             {pct(unclassifiedTotal)}
                                         </TableCell>
                                     </TableRow>
-                                    {unclassifiedOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
+                                    {unclassifiedOpen && (() => {
+                                        let n = 0;
+                                        return unclassifiedGroups.flatMap(g =>
+                                            g.items.map(item => {
+                                                n++;
+                                                return (
+                                                    <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
+                                                        <TableCell sx={{ pl: 5, py: 1.5 }}>
+                                                            <Typography variant='body2' color='text.secondary'>{n}. {item.laborCatalogName || item.laborOfferItemName}</Typography>
+                                                        </TableCell>
+                                                        <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
+                                                        <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{Number(item.quantity ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
+                                                        <TableCell align='center' sx={{ whiteSpace: 'nowrap', color: 'text.secondary', py: 1.5 }}>{formatCurrencyRounded(item.cost)} AMD</TableCell>
+                                                        <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(item.cost)}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                        );
+                                    })()}
                                 </>
                             )}
                         </>
