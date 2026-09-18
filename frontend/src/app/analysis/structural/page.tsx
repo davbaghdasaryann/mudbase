@@ -115,9 +115,8 @@ export default function StructuralAnalysisPage() {
     };
 
     return (
-        <PageContents title='Structural Analytics' sx={{ overflow: 'hidden', pb: 0 }}>
-            {/* Single flex-column wrapper that fills the Stack height */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <PageContents title='Structural Analytics' sx={{ pb: 0 }}>
+            <Box>
                 {hasData && (
                     <>
                         {/* Back button + estimate title — fixed, doesn't scroll */}
@@ -145,8 +144,7 @@ export default function StructuralAnalysisPage() {
                                 </TabList>
                             </Box>
 
-                            {/* Scrollable tab content only */}
-                            <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                            <Box>
                                 <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
                                     {/* Top row: pie placeholder | bar chart | param cards */}
                                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
