@@ -144,7 +144,6 @@ export default function RentayinPage() {
     const [matOverrides, setMatOverrides] = useState<Record<string, number>>({});
     const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
     const [editingPriceValue, setEditingPriceValue] = useState('');
-    const [libPushed, setLibPushed] = useState<Set<string>>(new Set());
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160]);
     const [refreshing, setRefreshing] = useState(false);
     const [estimateEditOpen, setEstimateEditOpen] = useState(false);
@@ -675,6 +674,7 @@ export default function RentayinPage() {
                                             { icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: '#7b1fa2', opacity: 0.55 }} />, label: 'Նախահաշիվ', onClick: () => setEstimateEditOpen(true), hoverBg: 'rgba(123,31,162,0.06)' },
                                             { icon: <RefreshIcon sx={{ fontSize: 24, color: '#1565c0', opacity: 0.55 }} />, label: 'Թարմացնել', onClick: () => handleRefresh(detail), hoverBg: 'rgba(21,101,192,0.06)' },
                                             { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), hoverBg: 'rgba(229,57,53,0.06)' },
+                                            { icon: <LibraryBooksOutlinedIcon sx={{ fontSize: 24, color: '#2e7d32', opacity: 0.55 }} />, label: 'Շտեմարանի թարմացում', onClick: () => { if (detail) Api.requestSession({ command: 'rentayin/push_all_to_library', args: { id: detail._id } }); }, hoverBg: 'rgba(46,125,50,0.06)' },
                                         ].map(({ icon, label, onClick, hoverBg }) => (
                                             <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
                                                 {icon}
@@ -1009,7 +1009,6 @@ export default function RentayinPage() {
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
                                                                     <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
-                                                                    {laborOverrides[item._id] != null && <Tooltip title='Շտեմարանի թարմացում' placement='top' arrow><IconButton size='small' onClick={() => { if (detail) { Api.requestSession({ command: 'rentayin/push_to_library', args: { id: detail._id, type: 'labor', key: item._id, price: laborOverrides[item._id] } }); setLibPushed(prev => { const s = new Set(prev); s.add('li:' + item._id); return s; }); setTimeout(() => setLibPushed(prev => { const s = new Set(prev); s.delete('li:' + item._id); return s; }), 2000); } }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px', color: libPushed.has('li:' + item._id) ? '#2e7d32' : '#aaa' }}><LibraryBooksOutlinedIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>}
                                                                 </Box>
                                                             )}
                                                         </TableCell>
@@ -1120,8 +1119,6 @@ export default function RentayinPage() {
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
-                                                                    <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
-                                                                    {matOverrides[item._id] != null && <Tooltip title='Շտեմարանի թարմացում' placement='top' arrow><IconButton size='small' onClick={() => { if (detail) { Api.requestSession({ command: 'rentayin/push_to_library', args: { id: detail._id, type: 'material', key: item._id, price: matOverrides[item._id] } }); setLibPushed(prev => { const s = new Set(prev); s.add('mi:' + item._id); return s; }); setTimeout(() => setLibPushed(prev => { const s = new Set(prev); s.delete('mi:' + item._id); return s; }), 2000); } }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px', color: libPushed.has('mi:' + item._id) ? '#2e7d32' : '#aaa' }}><LibraryBooksOutlinedIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>}
                                                                 </Box>
                                                             )}
                                                         </TableCell>
