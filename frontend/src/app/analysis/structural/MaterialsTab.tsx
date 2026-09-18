@@ -161,19 +161,19 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                     const unclassifiedGroups = groups.filter(g => !g.materialFullCode);
                     const unclassifiedTotal = unclassifiedGroups.reduce((s, g) => s + g.totalCost, 0);
                     const renderGroup = (group: GroupedByMaterial, indent?: boolean) => {
-                        const isOpen = !!expanded[group.materialItemId];
+                        const isOpen = !indent && !!expanded[group.materialItemId];
                         return (
                             <React.Fragment key={group.materialItemId}>
                                 <TableRow
-                                    onClick={() => toggle(group.materialItemId)}
-                                    sx={{ cursor: 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: '#f0f9fb' } }}
+                                    onClick={indent ? undefined : () => toggle(group.materialItemId)}
+                                    sx={{ cursor: indent ? 'default' : 'pointer', backgroundColor: '#fafafa', '&:hover': { backgroundColor: indent ? '#fafafa' : '#f0f9fb' } }}
                                 >
                                     <TableCell sx={{ pl: indent ? 3 : 1, py: 1.5 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            {isOpen
+                                            {!indent && (isOpen
                                                 ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
                                                 : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />
-                                            }
+                                            )}
                                             <Typography variant='body2' sx={{ fontWeight: 500 }}>
                                                 {group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}
                                                 {group.materialName}
@@ -194,7 +194,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                     </TableCell>
                                 </TableRow>
 
-                                {isOpen && group.items.map((item, i) => (
+                                {isOpen && !indent && group.items.map((item, i) => (
                                     <TableRow key={String(item._id)} sx={{ backgroundColor: '#ffffff', '&:hover': { backgroundColor: '#f5fdfe' } }}>
                                         <TableCell sx={{ pl: 5, py: 1.5 }}>
                                             <Typography variant='body2' color='text.secondary'>
@@ -241,21 +241,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                             {pct(unclassifiedTotal)}
                                         </TableCell>
                                     </TableRow>
-                                    {unclassifiedOpen && unclassifiedGroups.map(g => (
-                                        <TableRow key={g.materialItemId} sx={{ backgroundColor: '#fafafa' }}>
-                                            <TableCell sx={{ pl: 3, py: 1.5 }}>
-                                                <Typography variant='body2' sx={{ fontWeight: 500 }}>{g.materialName}</Typography>
-                                            </TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{g.unitSymbol}</TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
-                                                {g.totalQuantity.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                                            </TableCell>
-                                            <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5 }}>
-                                                {formatCurrencyRounded(g.totalCost)} AMD
-                                            </TableCell>
-                                            <TableCell align='right' sx={{ color: 'text.secondary', fontSize: '0.8rem', py: 1.5 }}>{pct(g.totalCost)}</TableCell>
-                                        </TableRow>
-                                    ))}
+                                    {unclassifiedOpen && unclassifiedGroups.map(g => renderGroup(g, true))}
                                 </>
                             )}
                         </>
