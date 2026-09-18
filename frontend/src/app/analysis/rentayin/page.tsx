@@ -1051,7 +1051,7 @@ export default function RentayinPage() {
                                                             <TableCell sx={{ pl: indent ? 3 : 1, py: 1.5 }}>
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                                     {!indent && (isOpen ? <ExpandLessIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} /> : <ExpandMoreIcon fontSize='small' sx={{ color: 'text.secondary', fontSize: 18 }} />)}
-                                                                    <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}{group.materialName}</Typography>
+                                                                    <Typography variant='body2' sx={{ fontWeight: 500 }}>{group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}{group.materialName || '—'}</Typography>
                                                                 </Box>
                                                             </TableCell>
                                                             <TableCell align='center' sx={{ fontWeight: 500, whiteSpace: 'nowrap', py: 1.5, color: 'text.secondary' }}>{group.unitSymbol}</TableCell>

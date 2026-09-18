@@ -176,7 +176,7 @@ export default function MaterialsTab({ estimate }: { estimate: EstimatesApi.ApiE
                                             )}
                                             <Typography variant='body2' sx={{ fontWeight: 500 }}>
                                                 {group.materialFullCode && <Box component='span' sx={{ color: mainPrimaryColor, mr: 1 }}>{group.materialFullCode}</Box>}
-                                                {group.materialName}
+                                                {group.materialName || '—'}
                                             </Typography>
                                         </Box>
                                     </TableCell>
