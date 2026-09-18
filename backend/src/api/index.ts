@@ -96,3 +96,4 @@ export * from "./rentayin/rentayin_delete";
 export * from "./rentayin/rentayin_set_price_override";
 export * from "./rentayin/rentayin_refresh";
 export * from "./rentayin/rentayin_save_other_costs";
+export * from "./rentayin/rentayin_push_to_library";

@@ -21,6 +21,7 @@ import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
+import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
 
 const RENT_EST_SEGS = [
     { key: 'labor',     inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
@@ -143,6 +144,7 @@ export default function RentayinPage() {
     const [matOverrides, setMatOverrides] = useState<Record<string, number>>({});
     const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
     const [editingPriceValue, setEditingPriceValue] = useState('');
+    const [libPushed, setLibPushed] = useState<Set<string>>(new Set());
     const [colWidths, setColWidths] = useState([44, 360, 70, 80, 130, 120, 80, 130, 120, 160]);
     const [refreshing, setRefreshing] = useState(false);
     const [estimateEditOpen, setEstimateEditOpen] = useState(false);
@@ -1007,6 +1009,7 @@ export default function RentayinPage() {
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
                                                                     <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                    {laborOverrides[item._id] != null && <Tooltip title='Շտեմարանի թարմացում' placement='top' arrow><IconButton size='small' onClick={() => { if (detail) { Api.requestSession({ command: 'rentayin/push_to_library', args: { id: detail._id, type: 'labor', key: item._id, price: laborOverrides[item._id] } }); setLibPushed(prev => { const s = new Set(prev); s.add('li:' + item._id); return s; }); setTimeout(() => setLibPushed(prev => { const s = new Set(prev); s.delete('li:' + item._id); return s; }), 2000); } }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px', color: libPushed.has('li:' + item._id) ? '#2e7d32' : '#aaa' }}><LibraryBooksOutlinedIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>}
                                                                 </Box>
                                                             )}
                                                         </TableCell>
@@ -1118,6 +1121,7 @@ export default function RentayinPage() {
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice) || 0) || '—'}</span>
                                                                     <Tooltip title='Edit' placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('mi:' + item._id); setEditingPriceValue(String(matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                    {matOverrides[item._id] != null && <Tooltip title='Շտեմարանի թարմացում' placement='top' arrow><IconButton size='small' onClick={() => { if (detail) { Api.requestSession({ command: 'rentayin/push_to_library', args: { id: detail._id, type: 'material', key: item._id, price: matOverrides[item._id] } }); setLibPushed(prev => { const s = new Set(prev); s.add('mi:' + item._id); return s; }); setTimeout(() => setLibPushed(prev => { const s = new Set(prev); s.delete('mi:' + item._id); return s; }), 2000); } }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px', color: libPushed.has('mi:' + item._id) ? '#2e7d32' : '#aaa' }}><LibraryBooksOutlinedIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>}
                                                                 </Box>
                                                             )}
                                                         </TableCell>
