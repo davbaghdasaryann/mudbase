@@ -1,6 +1,6 @@
 import { Collection, ObjectId } from 'mongodb';
 
-export type RentayinUnitCostSource = 'actual' | 'library' | 'manual';
+export type RentayinUnitCostSource = 'actual' | 'library' | 'market' | 'manual';
 
 export interface RentayinRow {
     laborItemId: string;

@@ -62,6 +62,23 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         }
     }
 
+    // Pre-fetch which labor items the company has their own library offer for.
+    const laborItemIds = origLaborItems.map(i => i.laborItemId).filter(Boolean) as ObjectId[];
+    const companyLaborOffers = await Db.getLaborOffersCollection()
+        .find({ accountId, itemId: { $in: laborItemIds } }, { projection: { itemId: 1 } })
+        .toArray();
+    const companyLaborOfferItemIds = new Set(companyLaborOffers.map(o => o.itemId.toString()));
+
+    // Fetch estimate material items to get materialItemIds for pre-fetch
+    const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
+        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1 } })
+        .toArray();
+    const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
+    const companyMaterialOffers = await Db.getMaterialOffersCollection()
+        .find({ accountId, itemId: { $in: materialItemIds } }, { projection: { itemId: 1 } })
+        .toArray();
+    const companyMaterialOfferItemIds = new Set(companyMaterialOffers.map(o => o.itemId.toString()));
+
     return snapshot.laborRows
         .map(r => {
             const laborItemId = laborItemIdByOrigRowId.get(r._id) ?? '';
@@ -126,6 +143,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             }
 
             // No actual data — fall back to library (catalog) labor rate only, no materials
+            const laborSrcTag = companyLaborOfferItemIds.has(laborItemId) ? 'library' as const : 'market' as const;
             if (estimatedUnitCost > 0) {
                 return {
                     laborItemId,
@@ -140,9 +158,9 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     actualUnitCost: estimatedUnitCost,
                     actualLaborTotal: null,
                     actualMaterialTotal: null,
-                    unitCostSource: 'library' as const,
-                    laborUnitCostSource: 'library' as const,
-                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? 'library' as const : null,
+                    unitCostSource: laborSrcTag,
+                    laborUnitCostSource: laborSrcTag,
+                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? laborSrcTag : null,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
                 };
@@ -164,7 +182,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                 actualMaterialTotal: null,
                 unitCostSource: null,
                 laborUnitCostSource: null,
-                materialUnitCostSource: estimatedMaterialUnitCost > 0 ? 'library' as const : null,
+                materialUnitCostSource: estimatedMaterialUnitCost > 0 ? laborSrcTag : null,
                 sectionName: r.sectionName,
                 subsectionName: r.subsectionName,
             };
