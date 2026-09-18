@@ -27,10 +27,11 @@ registerApiSession('rentayin/push_to_library', async (req, res, session) => {
             _id: new ObjectId(key),
             estimateId: rentayin.estimateId,
         });
-        if (!laborItem?.laborOfferId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
+        if (!laborItem?.laborItemId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
 
+        // One account can only have one offer per labor item — look up by itemId + accountId.
         const result = await Db.getLaborOffersCollection().updateOne(
-            { _id: laborItem.laborOfferId, accountId: session.mongoAccountId },
+            { itemId: laborItem.laborItemId, accountId: session.mongoAccountId },
             { $set: { price, updatedAt: new Date() } }
         );
         respondJsonData(res, { ok: true, updated: result.modifiedCount });
@@ -39,10 +40,10 @@ registerApiSession('rentayin/push_to_library', async (req, res, session) => {
             _id: new ObjectId(key),
             estimateId: rentayin.estimateId,
         });
-        if (!matItem?.materialOfferId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
+        if (!matItem?.materialItemId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
 
         const result = await Db.getMaterialOffersCollection().updateOne(
-            { _id: matItem.materialOfferId, accountId: session.mongoAccountId },
+            { itemId: matItem.materialItemId, accountId: session.mongoAccountId },
             { $set: { price, updatedAt: new Date() } }
         );
         respondJsonData(res, { ok: true, updated: result.modifiedCount });
