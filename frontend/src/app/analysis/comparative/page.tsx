@@ -166,7 +166,7 @@ export default function ComparativeAnalysisPage() {
                     </TabContext>
                 </Box>
             ) : (
-                <Box sx={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', pb: 8 }}>
+                <Box sx={{ display: 'flex', minHeight: '65vh', alignItems: 'center', justifyContent: 'center' }}>
                 <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ width: '100%' }}>
                     {cards.map((card) => (
                         <Box
