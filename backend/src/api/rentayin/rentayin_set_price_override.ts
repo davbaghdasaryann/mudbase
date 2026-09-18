@@ -76,6 +76,10 @@ registerApiSession('rentayin/set_price_override', async (req, res, session) => {
             { _id: docId, accountId: session.mongoAccountId },
             { $set: { [`${field}.${key}`]: price, updatedAt: new Date() } }
         );
+        // Return updated rows so the frontend can update immediately without a separate fetch
+        const updatedDoc = await col.findOne({ _id: docId, accountId: session.mongoAccountId });
+        respondJsonData(res, { ok: true, rows: updatedDoc?.rows ?? null });
+        return;
     } else {
         // Material override: store the key then recompute affected rows
         await col.updateOne(
@@ -90,6 +94,8 @@ registerApiSession('rentayin/set_price_override', async (req, res, session) => {
                 doc.materialPriceOverrides ?? {},
             );
             await col.updateOne({ _id: docId }, { $set: { rows: updatedRows, updatedAt: new Date() } });
+            respondJsonData(res, { ok: true, rows: updatedRows });
+            return;
         }
     }
 
