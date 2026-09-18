@@ -168,7 +168,7 @@ export default function ChronologicalAnalysisPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 3, pb: 4 }}>
                 {/* Empty state */}
                 {showEmpty && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 2 }}>
                         <TimelineIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
                             {t('No analytics created yet')}

@@ -192,9 +192,8 @@ export default function StructuralAnalysisPage() {
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            flex: 1,
+                            minHeight: '65vh',
                             gap: 2,
-                            pb: 8,
                         }}
                     >
                         <AccountTreeIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
