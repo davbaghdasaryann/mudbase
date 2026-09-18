@@ -4,9 +4,9 @@ import * as Db from '@/db';
 import { respondJsonData } from '@tsback/req/req_response';
 import { requireQueryParam } from '@/tsback/req/req_params';
 
-// Push a rentayin price override back to the user's favorites library.
-// For labor: updates changableAveragePrice on all favorite_labor_items with the matching laborItemId.
-// For material: updates changableAveragePrice on nested materials[] with the matching materialItemId.
+// Push a rentayin price override to the company's library offer (labor_offers / material_offers).
+// For labor: updates labor_offers.price for the offer that was imported into this estimate row.
+// For material: updates material_offers.price for the offer linked to this estimate material item.
 registerApiSession('rentayin/push_to_library', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
     const type = requireQueryParam(req, 'type') as 'labor' | 'material';
@@ -22,18 +22,16 @@ registerApiSession('rentayin/push_to_library', async (req, res, session) => {
     });
     if (!rentayin) { res.status(404).json({ error: 'Not found' }); return; }
 
-    const favCol = Db.getFavoriteLaborItemsCollection();
-
     if (type === 'labor') {
         const laborItem = await Db.getEstimateLaborItemsCollection().findOne({
             _id: new ObjectId(key),
             estimateId: rentayin.estimateId,
         });
-        if (!laborItem?.laborItemId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
+        if (!laborItem?.laborOfferId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
 
-        const result = await favCol.updateMany(
-            { accountId: session.mongoAccountId, laborItemId: laborItem.laborItemId },
-            { $set: { changableAveragePrice: price } }
+        const result = await Db.getLaborOffersCollection().updateOne(
+            { _id: laborItem.laborOfferId, accountId: session.mongoAccountId },
+            { $set: { price, updatedAt: new Date() } }
         );
         respondJsonData(res, { ok: true, updated: result.modifiedCount });
     } else {
@@ -41,12 +39,11 @@ registerApiSession('rentayin/push_to_library', async (req, res, session) => {
             _id: new ObjectId(key),
             estimateId: rentayin.estimateId,
         });
-        if (!matItem?.materialItemId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
+        if (!matItem?.materialOfferId) { respondJsonData(res, { ok: true, updated: 0 }); return; }
 
-        const result = await favCol.updateMany(
-            { accountId: session.mongoAccountId, 'materials.materialItemId': matItem.materialItemId },
-            { $set: { 'materials.$[elem].changableAveragePrice': price } },
-            { arrayFilters: [{ 'elem.materialItemId': matItem.materialItemId }] }
+        const result = await Db.getMaterialOffersCollection().updateOne(
+            { _id: matItem.materialOfferId, accountId: session.mongoAccountId },
+            { $set: { price, updatedAt: new Date() } }
         );
         respondJsonData(res, { ok: true, updated: result.modifiedCount });
     }
