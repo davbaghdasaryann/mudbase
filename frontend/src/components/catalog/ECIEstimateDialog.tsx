@@ -14,6 +14,9 @@ import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterials
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import FormatPaintIcon from '@mui/icons-material/FormatPaint';
+import HomeIcon from '@mui/icons-material/Home';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
 import { confirmDialog, successDialog } from '@/components/ConfirmationDialog';
@@ -409,11 +412,17 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
 
                                 <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
 
-                                {['Ներքին Հարդարում', 'Արտաքին Հարդարում', 'Ջեռուցում'].map((lbl, i) => (
-                                    <Button key={i} variant="text" onClick={() => {}} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
-                                        {lbl}
+                                {
+                                [
+                                    { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
+                                    { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
+                                    { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
+                                ].map((item, i) => (
+                                    <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
+                                        {item.label}
                                     </Button>
-                                ))}
+                                ))
+                                }
                             </Box>
                         </Box>
                     )}
