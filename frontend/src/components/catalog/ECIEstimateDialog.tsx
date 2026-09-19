@@ -376,7 +376,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     {activeTab === 1 && (
                         <Box sx={{ ...panelSx, pt: 0, px: 3, pb: 2 }}>
                             {hasLinkedEstimate ? (
-                                <EstimateInfoAccordionContent estimateId={linkedEstimateId!} />
+                                <EstimateInfoAccordionContent estimateId={linkedEstimateId!} readOnly={!isAdmin} />
                             ) : noDataMessage}
                         </Box>
                     )}
