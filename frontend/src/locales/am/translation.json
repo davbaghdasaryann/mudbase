@@ -14,7 +14,7 @@
   "Confirm password": "Հաստատել գաղտնաբառը",
   "Remember me": "Հիշել ինձ",
   "Remember Me": "Հիշել ինձ",
-  "Remove": "Ջնջել",
+  "Remove": "Հեռացնել",
   "Sign In": "Մուտք",
   "Sign Up": "Գրանցվել",
   "Change password": "Փոխել գաղտնաբառը",
@@ -712,5 +712,7 @@
   "estimation": "Նախահաշիվ",
   "Success": "Կատարված է",
   "Estimate copied to your estimates successfully": "Հաջողությամբ պատճենված է Ձեր նախահաշիվների մեջ։",
-  "catalog.eci_copy_success": "Հաջողությամբ ավելացված է ձեր շտեմարանում"
+  "catalog.eci_copy_success": "Հաջողությամբ ավելացված է ձեր շտեմարանում",
+  "Budget": "Բյուջե",
+  "Spent": "Ծախսված"
 }
