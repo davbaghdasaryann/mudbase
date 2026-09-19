@@ -79,7 +79,15 @@ export function confirmDialog(message: string, title?: string, options?: Confirm
     return promise;
 }
 
+let successDialogStyleInjected = false;
+
 export function successDialog(message: string, title?: string) {
+    if (!successDialogStyleInjected) {
+        const style = document.createElement('style');
+        style.textContent = `.swal2-actions.swal-actions-right { justify-content: flex-end !important; padding-right: 1.5rem !important; width: 100% !important; }`;
+        document.head.appendChild(style);
+        successDialogStyleInjected = true;
+    }
     return ReactSwal.fire({
         theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
         title: title ? getI18n().t(title) : getI18n().t(message),
@@ -92,12 +100,8 @@ export function successDialog(message: string, title?: string) {
         confirmButtonText: getI18n().t('Close'),
         confirmButtonColor: '#9e9e9e',
         backdrop: true,
+        customClass: { actions: 'swal-actions-right' },
         didOpen: (popup) => {
-            const actions = popup.querySelector('.swal2-actions') as HTMLElement | null;
-            if (actions) {
-                actions.style.justifyContent = 'flex-end';
-                actions.style.paddingRight = '1.5rem';
-            }
             const btn = popup.querySelector('.swal2-confirm') as HTMLElement | null;
             if (btn) {
                 btn.style.transition = 'background-color 0.2s';
