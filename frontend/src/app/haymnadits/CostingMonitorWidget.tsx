@@ -108,13 +108,13 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                     >
                         {estimateName}
                     </Typography>
-                    {!loading && (budget ?? 0) > 0 && pct > 0 && (
+                    {!loading && (budget ?? 0) > 0 && (
                         <Chip
                             size="small"
                             icon={isOver
                                 ? <TrendingDownIcon sx={{ fontSize: 13 }} />
                                 : <TrendingUpIcon sx={{ fontSize: 13 }} />}
-                            label={`${pct.toFixed(0)}%`}
+                            label={`${pct === 0 ? '0' : pct < 0.1 ? pct.toFixed(2) : pct < 1 ? pct.toFixed(1) : pct.toFixed(0)}%`}
                             sx={{
                                 flexShrink: 0, height: 20, fontSize: '0.72rem', fontWeight: 500,
                                 bgcolor: isOver ? 'rgba(244,67,54,0.13)' : BADGE_GREEN_BG,
