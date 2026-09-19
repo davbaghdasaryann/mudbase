@@ -7,6 +7,7 @@ import { getReqParam, requireQueryParam } from '@/tsback/req/req_params';
 import { respondJsonData } from '@/tsback/req/req_response';
 import { verify } from '@/tslib/verify';
 import { requireMongoIdParam } from '@/tsback/mongodb/mongodb_params';
+import { Permissions } from '@/tsmudbase/permissions_setup';
 
 
 registerApiSession('eci/fetch_estimates', async (req, res, session) => {
@@ -146,6 +147,7 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
 
 
 registerApiSession('eci/add_estimate', async (req, res, session) => {
+    session.assertPermission(Permissions.CatalogsEdit);
     let subcategoryId = requireMongoIdParam(req, 'entityMongoId');
     let estimateName = requireQueryParam(req, 'entityName');
     let estimateCode = requireQueryParam(req, 'entityCode');
@@ -184,6 +186,7 @@ registerApiSession('eci/add_estimate', async (req, res, session) => {
 
 
 registerApiSession('eci/update_estimate', async (req, res, session) => {
+    session.assertPermission(Permissions.CatalogsEdit);
     const estimateItemId = requireMongoIdParam(req, 'entityMongoId');
     const estimateName = requireQueryParam(req, 'entityName');
     const estimateCode = requireQueryParam(req, 'entityCode');
@@ -227,6 +230,7 @@ registerApiSession('eci/update_estimate', async (req, res, session) => {
 
 
 registerApiSession('eci/delete_estimate', async (req, res, session) => {
+    session.assertPermission(Permissions.CatalogsEdit);
     const estimateItemId = requireMongoIdParam(req, 'entityMongoId');
 
     const estimatesColl = Db.getEciEstimatesCollection();
@@ -241,6 +245,7 @@ registerApiSession('eci/delete_estimate', async (req, res, session) => {
 
 // Superadmin: create a new estimate and link it to the ECI entry
 registerApiSession('eci/create_linked_estimate', async (req, res, session) => {
+    session.assertPermission(Permissions.CatalogsEdit);
     const eciEstimateId = requireMongoIdParam(req, 'eciEstimateId');
 
     const eciEstimatesColl = Db.getEciEstimatesCollection();
