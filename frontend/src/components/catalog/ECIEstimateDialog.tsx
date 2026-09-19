@@ -228,10 +228,10 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
         ]
         : [
             { labelKey: 'Copy', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateEstimation, disabled: !hasLinkedEstimate },
-            { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate, disabled: !hasLinkedEstimate },
+            { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => {}, disabled: true },
             { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick, disabled: !hasLinkedEstimate },
-            { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick, isSelect: true },
+            { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: () => {}, disabled: true },
         ];
 
     return (
@@ -356,8 +356,8 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
 
                                 {/* Hide/Unhide button */}
                                 <Box
-                                    onClick={() => { if (selectedLaborIds.length > 0) handleHideUnhide(); }}
-                                    sx={{ ...toolButtonSx(selectedLaborIds.length === 0) }}
+                                    onClick={() => { if (isAdmin && selectedLaborIds.length > 0) handleHideUnhide(); }}
+                                    sx={{ ...toolButtonSx(!isAdmin || selectedLaborIds.length === 0) }}
                                 >
                                     <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         {anySelectedHidden
