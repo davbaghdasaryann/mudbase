@@ -92,7 +92,7 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                 </Tooltip>
             )}
 
-            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+            <CardContent sx={{ p: 3, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', '&:last-child': { pb: 3 } }}>
                 {/* Title */}
                 <Typography
                     sx={{ fontSize: 14, fontWeight: 400, color: TEXT_DARK, mb: 1.5,
