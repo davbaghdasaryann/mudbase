@@ -160,8 +160,10 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                                     ))}
                                 </Pie>
                                 <ReTooltip
-                                    formatter={(val: any) => [formatCurrencyRounded(val) + ' AMD', '']}
-                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', fontSize: 12 }}
+                                    formatter={(val: any, name: any) => [formatCurrencyRounded(val) + ' AMD', name]}
+                                    contentStyle={{ borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 12px rgba(0,0,0,0.12)', fontSize: 12, backgroundColor: '#fff', color: '#212121' }}
+                                    itemStyle={{ color: '#424242' }}
+                                    labelStyle={{ color: '#212121', fontWeight: 600 }}
                                 />
                             </PieChart>
                         </Box>
