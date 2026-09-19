@@ -1471,8 +1471,8 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Materials'),
                                                     width: 140,
                                                     renderCell: (cell) => {
-                                                        if (props.isOnlyEstInfo) return null;
                                                         const isGroup = (cell.row as AccordionItem).isGroupRow;
+                                                        if (props.isOnlyEstInfo && isGroup) return null;
                                                         return (
                                                             <>
                                                                 {isGroup ? (
@@ -1491,7 +1491,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         </IconButton>
                                                                     </Tooltip>
                                                                 ) : (
-                                                                    <Tooltip title="Ավելացնել նյութ" arrow placement='top'>
+                                                                    <Tooltip title={props.isOnlyEstInfo ? t('Materials') : "Ավելացնել նյութ"} arrow placement='top'>
                                                                         <IconButton
                                                                             onClick={(event: React.MouseEvent<HTMLElement>) => {
                                                                                 setEstimatedLaborItemId(cell.row._id);
@@ -1942,10 +1942,11 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerName: t('Materials'),
                                                                         width: 140,
                                                                         renderCell: (cell) => {
-                                                                            if (props.isOnlyEstInfo) return null;
+                                                                            const isGroup = (cell.row as AccordionItem).isGroupRow;
+                                                                            if (props.isOnlyEstInfo && isGroup) return null;
                                                                             return (
                                                                                 <>
-                                                                                    {(cell.row as AccordionItem).isGroupRow ? (
+                                                                                    {isGroup ? (
                                                                                         <Tooltip title="Ավելացնել խմբի մեջ" arrow placement='top'>
                                                                                             <IconButton
                                                                                                 onClick={() => {
@@ -1961,7 +1962,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                             </IconButton>
                                                                                         </Tooltip>
                                                                                     ) : (
-                                                                                        <Tooltip title="Ավելացնել նյութ" arrow placement='top'>
+                                                                                        <Tooltip title={props.isOnlyEstInfo ? t('Materials') : "Ավելացնել նյութ"} arrow placement='top'>
                                                                                             <IconButton
                                                                                                 onClick={() => {
                                                                                                     setSelectedChildId(child._id);
@@ -2141,6 +2142,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             estimatedLaborName={estimatedLaborItemName}
                             estimateSubsectionId={currentSubsectionId}
                             estimatedLaborId={estimatedLaborItemId}
+                            readOnly={props.isOnlyEstInfo}
                             onConfirm={() => {
                                 refreshEverything(false);
                             }}
@@ -2183,6 +2185,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             estimateSubsectionId={currentSubsectionId}
                             estimatedLaborId={estimatedLaborItemId}
                             estimatedLaborName={estimatedLaborItemName}
+                            readOnly={props.isOnlyEstInfo}
                             onConfirm={() => {
                                 refreshEverything(false);
                             }}

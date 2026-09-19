@@ -28,7 +28,7 @@ interface Props {
     estimatedLaborName: string;
     onClose: () => void;
     onConfirm: () => void;
-
+    readOnly?: boolean;
 }
 
 export function MaterialsRightPaneContent(props: Props) {
@@ -248,16 +248,15 @@ export function MaterialsRightPaneContent(props: Props) {
                             );
                         }
                     },
-                    { field: 'materialOfferItemName', headerName: t('Material'), headerAlign: 'left', editable: true, flex: 0.5, disableColumnMenu: true },
-                    { field: 'estimatedMaterialMeasurementUnitId', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true, type: 'singleSelect', editable: true, valueOptions: measurementUnits, cellClassName: 'editableCell' },
-                    { field: 'materialConsumptionNorm', headerName: t('Material consumption norm'), headerAlign: 'left', flex: 0.2, editable: true, cellClassName: 'editableCell', disableColumnMenu: true },
+                    { field: 'materialOfferItemName', headerName: t('Material'), headerAlign: 'left', editable: !props.readOnly, flex: 0.5, disableColumnMenu: true },
+                    { field: 'estimatedMaterialMeasurementUnitId', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true, type: 'singleSelect', editable: !props.readOnly, valueOptions: measurementUnits, cellClassName: props.readOnly ? undefined : 'editableCell' },
+                    { field: 'materialConsumptionNorm', headerName: t('Material consumption norm'), headerAlign: 'left', flex: 0.2, editable: !props.readOnly, cellClassName: props.readOnly ? undefined : 'editableCell', disableColumnMenu: true },
                     { field: 'quantity', headerName: t('Quantity'), headerAlign: 'left', flex: 0.15, disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
-                    { field: 'changableAveragePrice', headerName: t('Price'), headerAlign: 'left', flex: 0.23, editable: true, cellClassName: 'editableCell', disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
+                    { field: 'changableAveragePrice', headerName: t('Price'), headerAlign: 'left', flex: 0.23, editable: !props.readOnly, cellClassName: props.readOnly ? undefined : 'editableCell', disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
                     { field: 'materialTotalCost', headerName: t('Total Cost'), headerAlign: 'center', align: 'center', flex: 0.23, valueFormatter: (value) => formatCurrency(value) },
 
-
-                    {
-                        field: 'info', type: 'actions', headerName: t('Edit'), flex: 0.1, renderCell: (cell) => {
+                    ...(!props.readOnly ? [{
+                        field: 'info', type: 'actions' as const, headerName: t('Edit'), flex: 0.1, renderCell: (cell: any) => {
                             return <>
                                 <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
                                     setEstimatedMaterialName(cell.row.materialOfferItemName as string)
@@ -269,7 +268,7 @@ export function MaterialsRightPaneContent(props: Props) {
                         }
                     },
                     {
-                        field: 'remove', type: 'actions', headerName: t('Remove'), flex: 0.15, renderCell: (cell) => {
+                        field: 'remove', type: 'actions' as const, headerName: t('Remove'), flex: 0.15, renderCell: (cell: any) => {
                             return <>
                                 <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
                                     setEstimatedMaterialName(cell.row.materialOfferItemName as string)
@@ -281,12 +280,13 @@ export function MaterialsRightPaneContent(props: Props) {
                                 </IconButton>
                             </>;
                         }
-                    },
+                    }] : []),
 
                 ]}
                 rows={estimatedMaterialsData}
                 // autoPageSize={true}
                 isCellEditable={(params) => {
+                    if (props.readOnly) return false;
                     if (params.field === 'estimatedMaterialMeasurementUnitId') {
                         return !params.row.estimatedMaterialFullCode;
                     }

@@ -15,6 +15,7 @@ interface Props {
     estimatedLaborId?: string | null;
     estimatedLaborName?: string | null;
     onConfirm: () => void;
+    readOnly?: boolean;
 }
 
 export default function MaterialsTwoPartDialog(props: Props) {
@@ -53,7 +54,7 @@ export default function MaterialsTwoPartDialog(props: Props) {
             sx={{ '& .MuiDialog-container': { alignItems: 'center', justifyContent: 'center', padding: 5 } }}
         >
             <DialogTitle sx={{m: 0, px: 2, py: 0.75, fontWeight: 700}}>
-                {t('Add / Edit Materials')}
+                {props.readOnly ? t('Materials') : t('Add / Edit Materials')}
                 <IconButton
                     aria-label='close'
                     onClick={props.onClose}
@@ -68,53 +69,57 @@ export default function MaterialsTwoPartDialog(props: Props) {
                     ref={containerRef}
                     sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
                 >
-                    {/* Top pane — Add materials */}
-                    <Box sx={{
-                        height: `${splitPct}%`,
-                        minHeight: 0,
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}>
-                        <MaterialsLeftPaneContent
-                            offerType='material'
-                            isEstimation={true}
-                            estimateSubsectionId={props.estimateSubsectionId}
-                            estimateSectionId={props.estimateSectionId}
-                            estimatedLaborId={props.estimatedLaborId}
-                            onBack={props.onClose}
-                            onConfirm={() => {
-                                props.onConfirm();
-                                GD.pubsub_.dispatch(GD.estimateMaterialDataChangedId);
-                            }}
-                        />
-                    </Box>
+                    {/* Top pane — Add materials (hidden in readOnly mode) */}
+                    {!props.readOnly && (
+                        <>
+                            <Box sx={{
+                                height: `${splitPct}%`,
+                                minHeight: 0,
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}>
+                                <MaterialsLeftPaneContent
+                                    offerType='material'
+                                    isEstimation={true}
+                                    estimateSubsectionId={props.estimateSubsectionId}
+                                    estimateSectionId={props.estimateSectionId}
+                                    estimatedLaborId={props.estimatedLaborId}
+                                    onBack={props.onClose}
+                                    onConfirm={() => {
+                                        props.onConfirm();
+                                        GD.pubsub_.dispatch(GD.estimateMaterialDataChangedId);
+                                    }}
+                                />
+                            </Box>
 
-                    {/* Drag handle */}
-                    <Box
-                        onMouseDown={onMouseDown}
-                        sx={{
-                            flexShrink: 0,
-                            height: '8px',
-                            cursor: 'row-resize',
-                            bgcolor: theme.palette.divider,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            '&:hover': { bgcolor: theme.palette.primary.light },
-                            transition: 'background-color 0.15s',
-                            userSelect: 'none',
-                        }}
-                    >
-                        {/* three-dot grip indicator */}
-                        <Box sx={{ display: 'flex', gap: '4px' }}>
-                            {[0, 1, 2].map(i => (
-                                <Box key={i} sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#aaa' }} />
-                            ))}
-                        </Box>
-                    </Box>
+                            {/* Drag handle */}
+                            <Box
+                                onMouseDown={onMouseDown}
+                                sx={{
+                                    flexShrink: 0,
+                                    height: '8px',
+                                    cursor: 'row-resize',
+                                    bgcolor: theme.palette.divider,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    '&:hover': { bgcolor: theme.palette.primary.light },
+                                    transition: 'background-color 0.15s',
+                                    userSelect: 'none',
+                                }}
+                            >
+                                {/* three-dot grip indicator */}
+                                <Box sx={{ display: 'flex', gap: '4px' }}>
+                                    {[0, 1, 2].map(i => (
+                                        <Box key={i} sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#aaa' }} />
+                                    ))}
+                                </Box>
+                            </Box>
+                        </>
+                    )}
 
-                    {/* Bottom pane — Edit materials */}
+                    {/* Bottom pane — View/Edit materials */}
                     <Box sx={{
                         flex: 1,
                         minHeight: 0,
@@ -129,6 +134,7 @@ export default function MaterialsTwoPartDialog(props: Props) {
                                 estimatedLaborId={props.estimatedLaborId}
                                 onConfirm={props.onConfirm}
                                 onClose={() => {}}
+                                readOnly={props.readOnly}
                             />
                         )}
                     </Box>
