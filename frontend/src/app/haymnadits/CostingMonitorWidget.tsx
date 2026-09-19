@@ -108,7 +108,7 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                     >
                         {estimateName}
                     </Typography>
-                    {!loading && (budget ?? 0) > 0 && (
+                    {!loading && (budget ?? 0) > 0 && pct > 0 && (
                         <Chip
                             size="small"
                             icon={isOver

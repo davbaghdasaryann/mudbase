@@ -51,7 +51,7 @@ export default function HaymnaditsPage() {
                             {t('Create Widget')}
                         </Button>
                     </Box>
-                    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))' }}>
+                    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))' }}>
                         {widgets.map((cfg, idx) => (
                             <CostingMonitorWidget
                                 key={idx}
