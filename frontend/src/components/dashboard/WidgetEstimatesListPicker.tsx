@@ -20,9 +20,10 @@ import { formatDate } from '@/lib/format_date';
 interface Props {
     selectedIds: string[];
     onSelect: (items: any[]) => void;
+    disabledIds?: string[];
 }
 
-export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Props) {
+export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disabledIds = [] }: Props) {
     const { t } = useTranslation();
     const [items, setItems] = useState<any[]>([]);
     const [allItems, setAllItems] = useState<any[]>([]);
@@ -99,17 +100,21 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Pro
                     {items.map((item, index) => {
                         const id = getId(item);
                         const selected = selectedIds.includes(id);
+                        const disabled = disabledIds.includes(id);
                         const label = item.name ?? item.estimateNumber ?? t('Unnamed');
                         return (
                             <TableRow
                                 key={id}
-                                onClick={() => handleToggle(item)}
-                                hover
+                                onClick={() => !disabled && handleToggle(item)}
+                                hover={!disabled}
                                 sx={{
-                                    cursor: 'pointer',
-                                    backgroundColor: selected
-                                        ? `${mainPrimaryColor}22`
-                                        : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
+                                    cursor: disabled ? 'not-allowed' : 'pointer',
+                                    opacity: disabled ? 0.45 : 1,
+                                    backgroundColor: disabled
+                                        ? (index % 2 === 1 ? '#F0F0F0' : '#F8F8F8')
+                                        : selected
+                                            ? `${mainPrimaryColor}22`
+                                            : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
                                     '&.MuiTableRow-hover:hover': {
                                         backgroundColor: `${mainPrimaryColor}15 !important`,
                                     },
@@ -122,11 +127,12 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Pro
                                 </TableCell>
                                 <TableCell align="right" sx={{ pr: 1 }}>
                                     <Checkbox
-                                        checked={selected}
+                                        checked={selected || disabled}
+                                        disabled={disabled}
                                         size="small"
                                         sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, p: 0.5 }}
                                         onClick={e => e.stopPropagation()}
-                                        onChange={() => handleToggle(item)}
+                                        onChange={() => !disabled && handleToggle(item)}
                                     />
                                 </TableCell>
                             </TableRow>

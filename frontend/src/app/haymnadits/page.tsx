@@ -68,6 +68,7 @@ export default function HaymnaditsPage() {
                 <FounderWidgetBuilderDialog
                     onClose={() => setBuilderOpen(false)}
                     onConfirm={handleConfirm}
+                    existingIds={widgets.map(w => w.estimateId)}
                 />
             )}
         </PageContents>

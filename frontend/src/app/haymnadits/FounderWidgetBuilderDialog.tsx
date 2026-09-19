@@ -19,13 +19,14 @@ export interface FounderWidgetConfig {
 interface Props {
     onClose: () => void;
     onConfirm: (configs: FounderWidgetConfig[]) => void;
+    existingIds?: string[];
 }
 
 const WIDGET_TYPES = [
     { id: 'costing_monitor', label: 'Ծաքսագրման մոնիտորինգ', icon: AssessmentIcon, iconColor: TEAL },
 ];
 
-export default function FounderWidgetBuilderDialog({ onClose, onConfirm }: Props) {
+export default function FounderWidgetBuilderDialog({ onClose, onConfirm, existingIds = [] }: Props) {
     const { t } = useTranslation();
     const [step, setStep] = useState(0);
     const [widgetType, setWidgetType] = useState('');
@@ -87,6 +88,7 @@ export default function FounderWidgetBuilderDialog({ onClose, onConfirm }: Props
                         <WidgetEstimatesListPicker
                             selectedIds={selectedItems.map(i => typeof i._id === 'string' ? i._id : String(i._id))}
                             onSelect={setSelectedItems}
+                            disabledIds={existingIds}
                         />
                     </Box>
                 )}
