@@ -55,8 +55,8 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
     const remaining = Math.max((budget ?? 0) - (spent ?? 0), 0);
 
     const pieData = [
-        { name: t('Spent'),     value: Math.min(spent ?? 0, budget ?? 0) },
-        { name: t('Remaining'), value: remaining },
+        { name: t('Tsakhsagrvats'), value: Math.min(spent ?? 0, budget ?? 0) },
+        { name: t('Mnatsord'),      value: remaining },
     ];
     const pieColors = [isOver ? RED : TEAL, 'rgba(0,0,0,0.07)'];
 

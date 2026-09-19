@@ -686,7 +686,7 @@
   "Haymnadits": "Հիմնադիր",
   "Karavarium": "Կառավարում",
   "Delete cost history first": "Ծախսագրումը նախ պետք է ջնջել պատմությունից",
-  "No Founders created yet": "Հիմնադիրներ դեռ չեն ստեղծվել",
+  "No Founders created yet": "Վիդջեթներ դեռ չեն ստեղծվել",
   "In Costing": "Ծախսագրում",
   "In Performance": "Կատարողական",
   "In Schedule": "Ժամանակացույց",
@@ -715,5 +715,7 @@
   "catalog.eci_copy_success": "Հաջողությամբ ավելացված է ձեր շտեմարանում",
   "Budget": "Բյուջե",
   "Spent": "Ծախսված",
-  "No budget data available": "Բյուջետային տեղեկատվություն չկա"
+  "No budget data available": "Բյուջետային տեղեկատվություն չկա",
+  "Mnatsord": "Մնացորդ",
+  "Tsakhsagrvats": "Ծախսագրված"
 }
