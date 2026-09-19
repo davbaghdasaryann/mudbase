@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
@@ -12,8 +12,17 @@ import CostingMonitorWidget from './CostingMonitorWidget';
 
 export default function HaymnaditsPage() {
     const { t } = useTranslation();
-    const [widgets, setWidgets] = useState<FounderWidgetConfig[]>([]);
+    const [widgets, setWidgets] = useState<FounderWidgetConfig[]>(() => {
+        try {
+            const saved = localStorage.getItem('founder_widgets');
+            return saved ? JSON.parse(saved) : [];
+        } catch { return []; }
+    });
     const [builderOpen, setBuilderOpen] = useState(false);
+
+    useEffect(() => {
+        try { localStorage.setItem('founder_widgets', JSON.stringify(widgets)); } catch {}
+    }, [widgets]);
 
     const handleConfirm = (cfgs: FounderWidgetConfig[]) => {
         setWidgets(prev => [...prev, ...cfgs]);
