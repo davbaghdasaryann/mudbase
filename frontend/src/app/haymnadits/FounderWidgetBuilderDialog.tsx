@@ -18,33 +18,33 @@ export interface FounderWidgetConfig {
 
 interface Props {
     onClose: () => void;
-    onConfirm: (config: FounderWidgetConfig) => void;
+    onConfirm: (configs: FounderWidgetConfig[]) => void;
 }
 
 const WIDGET_TYPES = [
-    { id: 'costing_monitor', label: 'Ծախսագրում monitoring', icon: AssessmentIcon, iconColor: TEAL },
+    { id: 'costing_monitor', label: 'Ծաքսագրման մոնիտորինգ', icon: AssessmentIcon, iconColor: TEAL },
 ];
 
 export default function FounderWidgetBuilderDialog({ onClose, onConfirm }: Props) {
     const { t } = useTranslation();
     const [step, setStep] = useState(0);
     const [widgetType, setWidgetType] = useState('');
-    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
-    const canProceed = step === 0 ? !!widgetType : selectedItem != null;
+    const canProceed = step === 0 ? !!widgetType : selectedItems.length > 0;
 
     const handleFinish = () => {
-        if (!selectedItem) return;
-        const id = typeof selectedItem._id === 'string' ? selectedItem._id : String(selectedItem._id);
-        onConfirm({
+        if (selectedItems.length === 0) return;
+        const configs: FounderWidgetConfig[] = selectedItems.map(item => ({
             type: 'costing_monitor',
-            estimateId: id,
-            estimateName: selectedItem.name ?? selectedItem.estimateNumber ?? '—',
-        });
+            estimateId: typeof item._id === 'string' ? item._id : String(item._id),
+            estimateName: item.name ?? item.estimateNumber ?? '—',
+        }));
+        onConfirm(configs);
     };
 
     return (
-        <Dialog open onClose={onClose} maxWidth='sm' fullWidth
+        <Dialog open onClose={onClose} maxWidth='md' fullWidth
             PaperProps={{ sx: { borderRadius: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', minHeight: step === 1 ? 520 : undefined } }}>
             <Box sx={{ position: 'relative', pt: 2.5, px: 3, pb: 1 }}>
                 <IconButton onClick={onClose} size='small' sx={{ position: 'absolute', right: 12, top: 12, color: 'grey.500' }}>
@@ -85,8 +85,8 @@ export default function FounderWidgetBuilderDialog({ onClose, onConfirm }: Props
                 {step === 1 && (
                     <Box sx={{ minHeight: 360 }}>
                         <WidgetEstimatesListPicker
-                            selectedId={selectedItem ? (typeof selectedItem._id === 'string' ? selectedItem._id : String(selectedItem._id)) : null}
-                            onSelect={setSelectedItem}
+                            selectedIds={selectedItems.map(i => typeof i._id === 'string' ? i._id : String(i._id))}
+                            onSelect={setSelectedItems}
                         />
                     </Box>
                 )}

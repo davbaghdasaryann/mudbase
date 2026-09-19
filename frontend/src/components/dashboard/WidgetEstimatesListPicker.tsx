@@ -5,7 +5,7 @@ import {
     Box,
     Typography,
     CircularProgress,
-    Radio,
+    Checkbox,
     List,
     ListItemButton,
     ListItemText,
@@ -17,14 +17,15 @@ const TEAL = '#00ABBE';
 const TEAL_LIGHT = 'rgba(0, 171, 190, 0.08)';
 
 interface Props {
-    selectedId: string | null;
-    onSelect: (item: { _id: string; name?: string; estimateNumber?: string;[k: string]: any }) => void;
+    selectedIds: string[];
+    onSelect: (items: any[]) => void;
 }
 
-export default function WidgetEstimatesListPicker({ selectedId, onSelect }: Props) {
+export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Props) {
     const { t } = useTranslation();
     const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [allItems, setAllItems] = useState<any[]>([]);
 
     useEffect(() => {
         let mounted = true;
@@ -35,16 +36,37 @@ export default function WidgetEstimatesListPicker({ selectedId, onSelect }: Prop
                     command: 'estimates/fetch',
                     args: { searchVal: 'empty' },
                 });
-                if (mounted) setItems(Array.isArray(data) ? data : []);
+                if (mounted) {
+                    const all = Array.isArray(data) ? data : [];
+                    setAllItems(all);
+                    setItems(all.filter(e => e.inCosting === true));
+                }
             } catch (e) {
                 console.error('Failed to fetch estimates', e);
-                if (mounted) setItems([]);
+                if (mounted) { setAllItems([]); setItems([]); }
             } finally {
                 if (mounted) setLoading(false);
             }
         })();
         return () => { mounted = false; };
     }, []);
+
+    const handleToggle = (item: any) => {
+        const id = typeof item._id === 'string' ? item._id : (item._id?.$oid ?? String(item._id));
+        const isSelected = selectedIds.includes(id);
+        const currentSelected = allItems.filter(i => {
+            const iid = typeof i._id === 'string' ? i._id : (i._id?.$oid ?? String(i._id));
+            return selectedIds.includes(iid);
+        });
+        if (isSelected) {
+            onSelect(currentSelected.filter(i => {
+                const iid = typeof i._id === 'string' ? i._id : (i._id?.$oid ?? String(i._id));
+                return iid !== id;
+            }));
+        } else {
+            onSelect([...currentSelected, item]);
+        }
+    };
 
     if (loading) {
         return (
@@ -59,13 +81,13 @@ export default function WidgetEstimatesListPicker({ selectedId, onSelect }: Prop
             <List disablePadding>
                 {items.map((item) => {
                     const id = typeof item._id === 'string' ? item._id : (item._id?.$oid ?? String(item._id));
-                    const selected = selectedId === id;
+                    const selected = selectedIds.includes(id);
                     const label = item.name ?? item.estimateNumber ?? item.title ?? t('Unnamed');
                     return (
                         <ListItemButton
                             key={id}
                             selected={selected}
-                            onClick={() => onSelect(item)}
+                            onClick={() => handleToggle(item)}
                             sx={{
                                 borderBottom: '1px solid',
                                 borderColor: 'divider',
@@ -74,14 +96,14 @@ export default function WidgetEstimatesListPicker({ selectedId, onSelect }: Prop
                                 '&.Mui-selected': { bgcolor: TEAL_LIGHT },
                             }}
                         >
+                            <Checkbox
+                                checked={selected}
+                                sx={{ color: TEAL, '&.Mui-checked': { color: TEAL }, mr: 1, p: 0 }}
+                            />
                             <ListItemText
                                 primary={label}
                                 secondary={item.estimateNumber ? (item.name ? item.estimateNumber : undefined) : undefined}
                                 primaryTypographyProps={{ fontWeight: selected ? 600 : 400 }}
-                            />
-                            <Radio
-                                checked={selected}
-                                sx={{ color: TEAL, '&.Mui-checked': { color: TEAL } }}
                             />
                         </ListItemButton>
                     );

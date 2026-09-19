@@ -15,8 +15,8 @@ export default function HaymnaditsPage() {
     const [widgets, setWidgets] = useState<FounderWidgetConfig[]>([]);
     const [builderOpen, setBuilderOpen] = useState(false);
 
-    const handleConfirm = (cfg: FounderWidgetConfig) => {
-        setWidgets(prev => [...prev, cfg]);
+    const handleConfirm = (cfgs: FounderWidgetConfig[]) => {
+        setWidgets(prev => [...prev, ...cfgs]);
         setBuilderOpen(false);
     };
 

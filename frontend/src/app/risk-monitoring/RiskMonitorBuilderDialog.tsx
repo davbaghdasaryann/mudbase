@@ -188,8 +188,8 @@ export default function RiskMonitorBuilderDialog({ onClose, onConfirm, presetGro
                         )}
                         {dataSource === 'estimates' && (
                             <WidgetEstimatesListPicker
-                                selectedId={selectedItem?._id ?? null}
-                                onSelect={setSelectedItem}
+                                selectedIds={selectedItem ? [String(selectedItem._id)] : []}
+                                onSelect={(items) => setSelectedItem(items[0] ?? null)}
                             />
                         )}
                         {dataSource === 'eci' && (
