@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
@@ -396,9 +396,6 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {[
                                     { label: t('Project'), icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
                                     { label: t('Specification'), icon: `${TOOLBAR_ICON}/works.svg`, onClick: () => {} },
-                                    { label: 'Ներքին Հարդարում', icon: `${TOOLBAR_ICON}/tools.svg`, onClick: () => {} },
-                                    { label: 'Արտաքին Հարդարում', icon: `${TOOLBAR_ICON}/export.svg`, onClick: () => {} },
-                                    { label: 'Ջեռուցում', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: () => {} },
                                 ].map((tool, index) => (
                                     <Box key={index} onClick={tool.onClick} sx={toolButtonSx()}>
                                         <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -408,6 +405,14 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                             {tool.label}
                                         </Typography>
                                     </Box>
+                                ))}
+
+                                <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
+
+                                {['Ներquin Հardarm', 'Արtaqin Հardarm', 'Ջerowcum'].map((lbl, i) => (
+                                    <Button key={i} variant="text" onClick={() => {}} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
+                                        {lbl}
+                                    </Button>
                                 ))}
                             </Box>
                         </Box>
