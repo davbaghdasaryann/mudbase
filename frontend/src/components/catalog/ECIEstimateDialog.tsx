@@ -29,7 +29,7 @@ interface ECIEstimateDialogProps {
 
 export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const { t } = useTranslation();
-    const { permissionsSet } = usePermissions();
+    const { permissionsSet, status } = usePermissions();
     const [activeTab, setActiveTab] = useState(0);
 
     const [linkedEstimateId, setLinkedEstimateId] = useState<string | undefined>(props.estimateId);
@@ -40,7 +40,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
 
-    const isAdmin = permissionsSet?.has('CAT_EDT');
+    const isAdmin = status === 'loading' ? true : (permissionsSet?.has('CAT_EDT') ?? false);
     const hasLinkedEstimate = !!linkedEstimateId;
 
     // Superadmin: create or open linked estimate
