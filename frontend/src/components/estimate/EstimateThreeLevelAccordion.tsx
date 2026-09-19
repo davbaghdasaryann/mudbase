@@ -1168,7 +1168,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                     <Typography sx={{ whiteSpace: 'nowrap', fontWeight: 'bold' }}>{formatCurrencyRoundedSymbol(item.totalCost)}</Typography>
                                 </Tooltip>
 
-                                {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
+                                {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && !props.isOnlyEstInfo && (
                                     <>
                                         {item.children != null &&
                                             (item.children.length === 0 || item.children[0]?.label === '') &&
@@ -1241,6 +1241,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                     <>
                                         <DataTableComponent
                                             isCellEditable={(params) => {
+                                                if (props.isOnlyEstInfo) return false;
                                                 const row = params.row as AccordionItem;
                                                 if (params.field === 'itemMeasurementUnit') {
                                                     return row.itemFullCode === 'N/A';
@@ -1637,7 +1638,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         <Tooltip title={t('Total Cost')} arrow placement='top'>
                                                             <Typography sx={{ whiteSpace: 'nowrap', fontWeight: 'bold' }}>{formatCurrencyRoundedSymbol(child.totalCost)}</Typography>
                                                         </Tooltip>
-                                                        {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && (
+                                                        {session?.user && permissionsSet?.has?.('EST_EDT_INFO') && !props.isOnlyEstInfo && (
                                                             <>
                                                                 {(permAddFields || !props.isOnlyEstInfo) &&
                                                                     expandedAccordions.includes(child._id) && (
@@ -1687,6 +1688,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                         <>
                                                             <DataTableComponent
                                                                 isCellEditable={(params) => {
+                                                                    if (props.isOnlyEstInfo) return false;
                                                                     const row = params.row as AccordionItem;
                                                                     if (params.field === 'itemMeasurementUnit') {
                                                                         return row.itemFullCode === 'N/A';
