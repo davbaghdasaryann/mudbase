@@ -213,9 +213,11 @@ export function MaterialsRightPaneContent(props: Props) {
     >
         {/* (Optional) A heading at the top of this pane:
           You can remove or replace with whatever you like. */}
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
-            {t("Edit Materials")}
-        </Typography>
+        {!props.readOnly && (
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+                {t("Edit Materials")}
+            </Typography>
+        )}
 
         {/* DataTable takes all remaining space */}
         <Box sx={{ flex: 1, overflow: "auto" }}>
