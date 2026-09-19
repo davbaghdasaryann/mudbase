@@ -16,7 +16,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
-import { confirmDialog } from '@/components/ConfirmationDialog';
+import { confirmDialog, successDialog } from '@/components/ConfirmationDialog';
 
 const TOOLBAR_ICON = '/images/icons/toolbar';
 
@@ -69,7 +69,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     command: 'eci/copy_estimate',
                     args: { eciEstimateId: props.eciEstimateId }
                 });
-                await confirmDialog(t('Estimate copied to your estimates successfully'), t('Success'));
+                await successDialog(t('Estimate copied to your estimates successfully'), t('Success'));
             } catch (error) {
                 console.error('Error copying estimate:', error);
             }

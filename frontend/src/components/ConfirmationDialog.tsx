@@ -78,3 +78,32 @@ export function confirmDialog(message: string, title?: string, options?: Confirm
 
     return promise;
 }
+
+export function successDialog(message: string, title?: string) {
+    return ReactSwal.fire({
+        theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
+        title: title ? getI18n().t(title) : getI18n().t(message),
+        text: title ? getI18n().t(message) : undefined,
+        icon: 'success',
+        target: document.body,
+        allowOutsideClick: true,
+        showDenyButton: false,
+        showConfirmButton: true,
+        confirmButtonText: getI18n().t('Close'),
+        confirmButtonColor: '#9e9e9e',
+        backdrop: true,
+        didOpen: (popup) => {
+            const actions = popup.querySelector('.swal2-actions') as HTMLElement | null;
+            if (actions) {
+                actions.style.justifyContent = 'flex-end';
+                actions.style.paddingRight = '1.5rem';
+            }
+            const btn = popup.querySelector('.swal2-confirm') as HTMLElement | null;
+            if (btn) {
+                btn.style.transition = 'background-color 0.2s';
+                btn.addEventListener('mouseover', () => { btn.style.backgroundColor = '#616161'; });
+                btn.addEventListener('mouseout', () => { btn.style.backgroundColor = '#9e9e9e'; });
+            }
+        },
+    });
+}
