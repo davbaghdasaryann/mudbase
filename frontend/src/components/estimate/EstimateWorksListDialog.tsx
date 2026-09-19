@@ -60,6 +60,7 @@ interface EstimateWorksListDialogProps {
     estimateId: string;
     onClose: () => void;
     onSave: () => void;
+    readOnly?: boolean;
 }
 
 /** Normalize API _id (string or { $oid: string }) to string for query params. */
@@ -306,6 +307,7 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                             value={edited?.laborHours ?? work.itemLaborHours}
                                                                             onChange={(val) => handleLaborHoursChange(work.laborItemId, String(val))}
                                                                             width={100}
+                                                                            disabled={props.readOnly}
                                                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
@@ -315,6 +317,7 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                                                                             value={displayPrice}
                                                                             onChange={(val) => handlePriceChange(work.laborItemId, String(val))}
                                                                             width={100}
+                                                                            disabled={props.readOnly}
                                                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: work.itemMarketPrice != null && Math.abs(displayPrice - work.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
@@ -337,9 +340,11 @@ export default function EstimateWorksListDialog(props: EstimateWorksListDialogPr
                 <Button onClick={props.onClose} color="primary">
                     {t('Cancel')}
                 </Button>
-                <Button onClick={handleSave} variant="contained" color="primary" disabled={loading}>
-                    {t('Save')}
-                </Button>
+                {!props.readOnly && (
+                    <Button onClick={handleSave} variant="contained" color="primary" disabled={loading}>
+                        {t('Save')}
+                    </Button>
+                )}
             </DialogActions>
         </Dialog>
     );

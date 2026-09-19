@@ -21,9 +21,10 @@ interface FormulaTextFieldProps {
     onChange: (value: number) => void;
     sx?: SxProps<Theme>;
     width?: number | string;
+    disabled?: boolean;
 }
 
-export default function FormulaTextField({ value, onChange, sx, width = 120 }: FormulaTextFieldProps) {
+export default function FormulaTextField({ value, onChange, sx, width = 120, disabled }: FormulaTextFieldProps) {
     const [raw, setRaw] = React.useState(String(value));
 
     React.useEffect(() => {
@@ -53,7 +54,7 @@ export default function FormulaTextField({ value, onChange, sx, width = 120 }: F
         <TextField
             size="small"
             value={raw}
-            onChange={(e) => setRaw(e.target.value)}
+            onChange={(e) => { if (!disabled) setRaw(e.target.value); }}
             onBlur={commit}
             onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -61,6 +62,7 @@ export default function FormulaTextField({ value, onChange, sx, width = 120 }: F
                     (e.target as HTMLElement).blur();
                 }
             }}
+            disabled={disabled}
             sx={{ width, ...sx }}
         />
     );

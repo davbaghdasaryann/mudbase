@@ -64,6 +64,7 @@ interface EstimateMaterialsListDialogProps {
     estimateId: string;
     onClose: () => void;
     onSave: () => void;
+    readOnly?: boolean;
 }
 
 function toIdString(id: unknown): string {
@@ -266,6 +267,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                                             value={displayPrice}
                                                                             onChange={(val) => handlePriceChange(mat.materialItemId, String(val))}
                                                                             width={120}
+                                                                            disabled={props.readOnly}
                                                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: mat.itemMarketPrice != null && Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
                                                                         />
                                                                     </TableCell>
@@ -287,9 +289,11 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                 <Button onClick={props.onClose} color="primary">
                     {t('Cancel')}
                 </Button>
-                <Button onClick={handleSave} variant="contained" color="primary" disabled={loading}>
-                    {t('Save')}
-                </Button>
+                {!props.readOnly && (
+                    <Button onClick={handleSave} variant="contained" color="primary" disabled={loading}>
+                        {t('Save')}
+                    </Button>
+                )}
             </DialogActions>
         </Dialog>
     );

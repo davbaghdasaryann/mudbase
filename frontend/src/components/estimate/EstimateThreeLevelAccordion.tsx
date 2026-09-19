@@ -1471,6 +1471,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     headerName: t('Materials'),
                                                     width: 140,
                                                     renderCell: (cell) => {
+                                                        if (props.isOnlyEstInfo) return null;
                                                         const isGroup = (cell.row as AccordionItem).isGroupRow;
                                                         return (
                                                             <>
@@ -1514,6 +1515,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     // headerName: t('Details'),
                                                     width: 40,
                                                     renderCell: (cell) => {
+                                                        if (props.isOnlyEstInfo) return null;
                                                         return (
                                                             <>
                                                                 {/* <IconButton onClick={() => setCompanyDetailsId(cell.id as string)}> */}
@@ -1940,6 +1942,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         headerName: t('Materials'),
                                                                         width: 140,
                                                                         renderCell: (cell) => {
+                                                                            if (props.isOnlyEstInfo) return null;
                                                                             return (
                                                                                 <>
                                                                                     {(cell.row as AccordionItem).isGroupRow ? (
@@ -1981,6 +1984,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         // headerName: t('Details'),
                                                                         width: 40,
                                                                         renderCell: (cell) => {
+                                                                            if (props.isOnlyEstInfo) return null;
                                                                             return (
                                                                                 <>
                                                                                     <IconButton

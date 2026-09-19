@@ -476,6 +476,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     estimateId={linkedEstimateId}
                     onClose={() => setShowWorksListDialog(false)}
                     onSave={() => {}}
+                    readOnly={!isAdmin}
                 />
             )}
 
@@ -485,6 +486,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     estimateId={linkedEstimateId}
                     onClose={() => setShowMaterialsListDialog(false)}
                     onSave={() => {}}
+                    readOnly={!isAdmin}
                 />
             )}
         </>
