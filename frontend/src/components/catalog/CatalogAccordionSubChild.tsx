@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import CatalogAccordionItems from '@/components/catalog/CatalogAccordionItems';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import AddOrEditEntityDialog from '@/components/EditAddCategoryDialog';
-import { confirmDialog } from '@/components/ConfirmationDialog';
+import { confirmDialog, successDialog } from '@/components/ConfirmationDialog';
 import * as Api from 'api';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { usePermissions } from '@/api/auth';
@@ -446,7 +446,7 @@ export default function CatalogAccordionSubChild(props: CatalogSubAccordionProps
                                                     command: 'eci/copy_estimate',
                                                     args: { eciEstimateId: item._id }
                                                 });
-                                                await confirmDialog(t('catalog.eci_copy_success'), t('Success'), { confirmColor: '#e53935' });
+                                                await successDialog(t('Estimate copied to your estimates successfully'), t('Success'));
                                             } catch (error) {
                                                 console.error('Error copying ECI estimate:', error);
                                             }
