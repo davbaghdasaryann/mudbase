@@ -394,15 +394,18 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 pl: '35px',
                             }}>
                                 {[
-                                    { labelKey: 'Project', icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
-                                    { labelKey: 'Specification', icon: `${TOOLBAR_ICON}/works.svg`, onClick: () => {} },
+                                    { label: t('Project'), icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
+                                    { label: t('Specification'), icon: `${TOOLBAR_ICON}/works.svg`, onClick: () => {} },
+                                    { label: 'Ներքին Հարդարում', icon: `${TOOLBAR_ICON}/tools.svg`, onClick: () => {} },
+                                    { label: 'Արտաքին Հարդարում', icon: `${TOOLBAR_ICON}/export.svg`, onClick: () => {} },
+                                    { label: 'Ջեռուցում', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: () => {} },
                                 ].map((tool, index) => (
                                     <Box key={index} onClick={tool.onClick} sx={toolButtonSx()}>
                                         <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                             <ImgElement src={tool.icon} sx={{ height: 22 }} />
                                         </Box>
                                         <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-                                            {t(tool.labelKey)}
+                                            {tool.label}
                                         </Typography>
                                     </Box>
                                 ))}
