@@ -714,5 +714,6 @@
   "Estimate copied to your estimates successfully": "Հաջողությամբ պատճենված է Ձեր նախահաշիվների մեջ։",
   "catalog.eci_copy_success": "Հաջողությամբ ավելացված է ձեր շտեմարանում",
   "Budget": "Բյուջե",
-  "Spent": "Ծախսված"
+  "Spent": "Ծախսված",
+  "No budget data available": "Բյուիլային տեղեկություն չկա"
 }

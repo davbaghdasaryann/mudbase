@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { PieChart, Pie, Cell, Tooltip as ReTooltip } from 'recharts';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 import { useTranslation } from 'react-i18next';
@@ -107,7 +108,7 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                     >
                         {estimateName}
                     </Typography>
-                    {!loading && (
+                    {!loading && (budget ?? 0) > 0 && (
                         <Chip
                             size="small"
                             icon={isOver
@@ -129,6 +130,14 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, py: 4 }}>
                         <CircularProgress size={36} sx={{ color: TEAL }} />
                     </Box>
+                ) : (budget ?? 0) === 0 ? (
+                    /* Empty state — no budget configured */
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, py: 3, gap: 1 }}>
+                        <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 42, color: 'rgba(0,171,190,0.25)' }} />
+                        <Typography sx={{ fontSize: '0.8rem', color: '#bbb', textAlign: 'center' }}>
+                            {t('No budget data available')}
+                        </Typography>
+                    </Box>
                 ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                         {/* Donut chart */}
@@ -144,6 +153,7 @@ export default function CostingMonitorWidget({ estimateId, estimateName, onDelet
                                     endAngle={-270}
                                     dataKey="value"
                                     strokeWidth={0}
+                                    minAngle={(spent ?? 0) > 0 ? 8 : 0}
                                 >
                                     {pieData.map((_, i) => (
                                         <Cell key={i} fill={pieColors[i]} />
