@@ -410,19 +410,19 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     </Box>
                                 ))}
 
-                                <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
+                                {isAdmin && (<>
+                                    <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
 
-                                {
-                                [
-                                    { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
-                                    { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
-                                    { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
-                                ].map((item, i) => (
-                                    <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
-                                        {item.label}
-                                    </Button>
-                                ))
-                                }
+                                    {[
+                                        { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
+                                        { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
+                                        { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
+                                    ].map((item, i) => (
+                                        <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
+                                            {item.label}
+                                        </Button>
+                                    ))}
+                                </>)}
                             </Box>
                         </Box>
                     )}
