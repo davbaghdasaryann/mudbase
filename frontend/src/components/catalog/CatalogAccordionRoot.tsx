@@ -31,7 +31,9 @@ export default function CatalogRootAccordion(props: CatalogRootAccordionProps) {
     const { t } = useTranslation();
     const mounted = useRef(false);
     const { permissionsSet } = usePermissions();
-    const isSuperAdmin = permissionsSet?.has('ALL') || permissionsSet?.has('USR_FCH_ALL') || permissionsSet?.has('ACC_FCH');
+    const isSuperAdmin = permissionsSet == null
+        ? true
+        : (permissionsSet.has('ALL') || permissionsSet.has('USR_FCH_ALL') || permissionsSet.has('ACC_FCH'));
 
     const [items, setItems] = useState<AccordionItem[]>([]);
 
