@@ -409,7 +409,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
 
                                 <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
 
-                                {['Ներquin Հardarm', 'Արtaqin Հardarm', 'Ջerowcum'].map((lbl, i) => (
+                                {['Ներքին Հարդարում', 'Արտաքին Հարդարում', 'Ջեռուցում'].map((lbl, i) => (
                                     <Button key={i} variant="text" onClick={() => {}} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
                                         {lbl}
                                     </Button>
