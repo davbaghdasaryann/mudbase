@@ -56,6 +56,18 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
     const getId = (item: any) =>
         typeof item._id === 'string' ? item._id : (item._id?.$oid ?? String(item._id));
 
+    const selectableItems = items.filter(i => !disabledIds.includes(getId(i)));
+    const allSelected = selectableItems.length > 0 && selectableItems.every(i => selectedIds.includes(getId(i)));
+    const someSelected = selectableItems.some(i => selectedIds.includes(getId(i)));
+
+    const handleToggleAll = () => {
+        if (allSelected) {
+            onSelect([]);
+        } else {
+            onSelect(selectableItems);
+        }
+    };
+
     const handleToggle = (item: any) => {
         const id = getId(item);
         const isSelected = selectedIds.includes(id);
@@ -93,7 +105,16 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
                         <TableCell sx={{ fontWeight: 600, width: 48, color: 'text.secondary' }}>{t('No.')}</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>{t('Name')}</TableCell>
                         <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', color: 'text.secondary' }}>{t('Date of Creation')}</TableCell>
-                        <TableCell sx={{ width: 48 }} />
+                        <TableCell align="right" sx={{ width: 48, pr: 1 }}>
+                            <Checkbox
+                                checked={allSelected}
+                                indeterminate={someSelected && !allSelected}
+                                size="small"
+                                disabled={selectableItems.length === 0}
+                                onChange={handleToggleAll}
+                                sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, '&.MuiCheckbox-indeterminate': { color: mainPrimaryColor }, p: 0.5 }}
+                            />
+                        </TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
