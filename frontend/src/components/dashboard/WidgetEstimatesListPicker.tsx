@@ -6,15 +6,16 @@ import {
     Typography,
     CircularProgress,
     Checkbox,
-    List,
-    ListItemButton,
-    ListItemText,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
 } from '@mui/material';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
-
-const TEAL = '#00ABBE';
-const TEAL_LIGHT = 'rgba(0, 171, 190, 0.08)';
+import { mainPrimaryColor } from '@/theme';
+import { formatDate } from '@/lib/format_date';
 
 interface Props {
     selectedIds: string[];
@@ -24,8 +25,8 @@ interface Props {
 export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Props) {
     const { t } = useTranslation();
     const [items, setItems] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
     const [allItems, setAllItems] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let mounted = true;
@@ -51,18 +52,15 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Pro
         return () => { mounted = false; };
     }, []);
 
+    const getId = (item: any) =>
+        typeof item._id === 'string' ? item._id : (item._id?.$oid ?? String(item._id));
+
     const handleToggle = (item: any) => {
-        const id = typeof item._id === 'string' ? item._id : (item._id?.$oid ?? String(item._id));
+        const id = getId(item);
         const isSelected = selectedIds.includes(id);
-        const currentSelected = allItems.filter(i => {
-            const iid = typeof i._id === 'string' ? i._id : (i._id?.$oid ?? String(i._id));
-            return selectedIds.includes(iid);
-        });
+        const currentSelected = allItems.filter(i => selectedIds.includes(getId(i)));
         if (isSelected) {
-            onSelect(currentSelected.filter(i => {
-                const iid = typeof i._id === 'string' ? i._id : (i._id?.$oid ?? String(i._id));
-                return iid !== id;
-            }));
+            onSelect(currentSelected.filter(i => getId(i) !== id));
         } else {
             onSelect([...currentSelected, item]);
         }
@@ -70,52 +68,72 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect }: Pro
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress sx={{ color: TEAL }} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
+            </Box>
+        );
+    }
+
+    if (items.length === 0) {
+        return (
+            <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                    {t('No estimates found')}
+                </Typography>
             </Box>
         );
     }
 
     return (
         <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 2, overflow: 'hidden' }}>
-            <List disablePadding>
-                {items.map((item) => {
-                    const id = typeof item._id === 'string' ? item._id : (item._id?.$oid ?? String(item._id));
-                    const selected = selectedIds.includes(id);
-                    const label = item.name ?? item.estimateNumber ?? item.title ?? t('Unnamed');
-                    return (
-                        <ListItemButton
-                            key={id}
-                            selected={selected}
-                            onClick={() => handleToggle(item)}
-                            sx={{
-                                borderBottom: '1px solid',
-                                borderColor: 'divider',
-                                bgcolor: selected ? TEAL_LIGHT : undefined,
-                                '&:last-child': { borderBottom: 'none' },
-                                '&.Mui-selected': { bgcolor: TEAL_LIGHT },
-                            }}
-                        >
-                            <Checkbox
-                                checked={selected}
-                                sx={{ color: TEAL, '&.Mui-checked': { color: TEAL }, mr: 1, p: 0 }}
-                            />
-                            <ListItemText
-                                primary={label}
-                                secondary={item.estimateNumber ? (item.name ? item.estimateNumber : undefined) : undefined}
-                                primaryTypographyProps={{ fontWeight: selected ? 600 : 400 }}
-                            />
-                        </ListItemButton>
-                    );
-                })}
-            </List>
-            {items.length === 0 && (
-                <Box sx={{ py: 4, textAlign: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        {t('No estimates found')}
-                    </Typography>
-                </Box>
-            )}
+            <Table size="small">
+                <TableHead>
+                    <TableRow sx={{ bgcolor: 'grey.50' }}>
+                        <TableCell sx={{ fontWeight: 600, width: 48, color: 'text.secondary' }}>{t('No.')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>{t('Name')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', color: 'text.secondary' }}>{t('Date of Creation')}</TableCell>
+                        <TableCell sx={{ width: 48 }} />
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {items.map((item, index) => {
+                        const id = getId(item);
+                        const selected = selectedIds.includes(id);
+                        const label = item.name ?? item.estimateNumber ?? t('Unnamed');
+                        return (
+                            <TableRow
+                                key={id}
+                                onClick={() => handleToggle(item)}
+                                hover
+                                sx={{
+                                    cursor: 'pointer',
+                                    backgroundColor: selected
+                                        ? `${mainPrimaryColor}22`
+                                        : index % 2 === 1 ? '#F5F5F5' : '#ffffff',
+                                    '&.MuiTableRow-hover:hover': {
+                                        backgroundColor: `${mainPrimaryColor}15 !important`,
+                                    },
+                                }}
+                            >
+                                <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>{index + 1}</TableCell>
+                                <TableCell sx={{ fontWeight: selected ? 600 : 400 }}>{label}</TableCell>
+                                <TableCell sx={{ whiteSpace: 'nowrap', color: 'text.secondary', fontSize: '0.82rem' }}>
+                                    {item.createdAt ? formatDate(item.createdAt) : '—'}
+                                </TableCell>
+                                <TableCell align="right" sx={{ pr: 1 }}>
+                                    <Checkbox
+                                        checked={selected}
+                                        size="small"
+                                        sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, p: 0.5 }}
+                                        onClick={e => e.stopPropagation()}
+                                        onChange={() => handleToggle(item)}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
         </Box>
     );
 }
