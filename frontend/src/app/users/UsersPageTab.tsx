@@ -3,6 +3,8 @@
 import React from 'react';
 
 import { Box, Button, IconButton, Toolbar, Tooltip } from '@mui/material';
+import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -137,41 +139,30 @@ export default function UsersPageTab() {
                         field: 'actions',
                         type: 'actions',
                         // headerName: '',
-                        width: 90,
+                        width: 130,
                         renderCell: (cell) => {
+                            const isActive = cell.row.isActive === true;
                             return (
                                 <>
-                                    <IconButton onClick={() => handleEditUser(cell.row)} color='primary'>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => onDeleteUser(cell.row._id)} color='error'>
-                                        <DeleteOutlineIcon />
-                                    </IconButton>
+                                    <Tooltip title={t('Edit')} placement='top'>
+                                        <IconButton onClick={() => handleEditUser(cell.row)} color='primary'>
+                                            <EditIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={isActive ? t('DEACTIVATE') : t('ACTIVATE')} placement='top'>
+                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id, !isActive)} color={isActive ? 'warning' : 'success'}>
+                                            {isActive ? <BlockOutlinedIcon /> : <CheckCircleOutlineIcon />}
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={t('Delete')} placement='top'>
+                                        <IconButton onClick={() => onDeleteUser(cell.row._id)} color='error'>
+                                            <DeleteOutlineIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </>
                             );
                         },
-                    }, // width: 600 },
-
-                    {
-                        field: 'isActive',
-                        type: 'actions',
-                        // headerName: '',
-                        // width: 80,
-                        flex: 0.7,
-                        renderCell: (cell) => {
-
-                            return (
-                                <>
-                                    <Button
-                                        onClick={() => onIsActiveStatusChange(cell.row._id, !cell.row.isActive)}
-                                        color='primary'
-                                    >
-                                        {cell.row.isActive === true ? t('DEACTIVATE') : t('ACTIVATE')}
-                                    </Button>
-                                </>
-                            );
-                        },
-                    }, // width: 600 },
+                    },
 
                     // {
                     //     field: 'actions',
