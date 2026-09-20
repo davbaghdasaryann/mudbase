@@ -74,10 +74,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const { permissionsSet } = usePermissions();
     const isSuperAdmin = permissionsSet?.has('ALL') || permissionsSet?.has('USR_FCH_ALL') || permissionsSet?.has('ACC_FCH');
 
-    const [iconColor, setIconColor] = React.useState(theme.palette.mode === 'dark' ? 'white' : 'black');
+    const [iconColor, setIconColor] = React.useState(theme.palette.mode === 'dark' ? 'white' : '#00A390');
 
     React.useEffect(() => {
-        setIconColor(theme.palette.mode === 'dark' ? 'white' : 'black');
+        setIconColor(theme.palette.mode === 'dark' ? 'white' : '#00A390');
     }, [theme]);
 
     const handleToggle = React.useCallback((segment: string) => {
