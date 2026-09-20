@@ -137,8 +137,7 @@ export default function UsersPageTab() {
                         field: 'actions',
                         type: 'actions',
                         // headerName: '',
-                        flex: 0.1,
-                        // width: 80,
+                        width: 90,
                         renderCell: (cell) => {
                             return (
                                 <>
