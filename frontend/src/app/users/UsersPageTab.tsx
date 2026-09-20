@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, IconButton, Toolbar } from '@mui/material';
+import { Box, Button, IconButton, Toolbar, Tooltip } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
@@ -13,7 +13,6 @@ import * as Api from '@/api';
 import { useApiFetchMany } from '../../components/ApiDataFetch';
 import SearchComponent from '../../components/SearchComponent';
 import { UsersPageUserDetails } from './UsersPageUserDetails';
-import { PageButton } from '@/tsui/Buttons/PageButton';
 import SpacerComponent from '@/components/SpacerComponent';
 import UserInviteDialog from '../../components/UserInviteDialog';
 import DataTableComponent from '@/components/DataTableComponent';
@@ -25,6 +24,13 @@ export default function UsersPageTab() {
 
     const [editedUser, setEditedUser] = React.useState<Api.ApiUser | null>(null);
     const [inviteActive, setInviteActive] = React.useState(false);
+    const [inviteLimited, setInviteLimited] = React.useState(false);
+
+    React.useEffect(() => {
+        Api.requestSession<{ limited: boolean }>({ command: 'users/check_limit' })
+            .then(r => setInviteLimited(r.limited))
+            .catch(() => {});
+    }, []);
 
     const [userActivity, setUserActivity] = React.useState<any[]>([]);
     const { t } = useTranslation();
@@ -88,7 +94,13 @@ export default function UsersPageTab() {
             <Toolbar disableGutters sx={{ backgroundColor: 'inherit' }}>
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
-                <PageButton variant='outlined' label='Invite' size='large' startIcon={<PersonAddAlt1Icon />} onClickTrue={setInviteActive} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }} />
+                <Tooltip title={inviteLimited ? 'Ապաակտիվ' : ''} placement='top'>
+                    <Box component='span'>
+                        <Button variant='outlined' size='large' startIcon={<PersonAddAlt1Icon />} disabled={inviteLimited} onClick={() => setInviteActive(true)} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}>
+                            {t('Invite')}
+                        </Button>
+                    </Box>
+                </Tooltip>
             </Toolbar>
 
             <DataTableComponent
