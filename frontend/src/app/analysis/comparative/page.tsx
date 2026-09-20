@@ -13,7 +13,8 @@ import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import ComparativeCreateDialog from './ComparativeCreateDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
-import EnteredDataGrid from './EnteredDataGrid';
+import EnteredDataGrid, { EnteredCompany } from './EnteredDataGrid';
+import AddEnteredCompanyDialog from './AddEnteredCompanyDialog';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
 import SelectSharedEstimationDialog, { SharedEstimationSelection } from './SelectSharedEstimationDialog';
 import SubmittedEstimationsGrid from './SubmittedEstimationsGrid';
@@ -35,6 +36,8 @@ export default function ComparativeAnalysisPage() {
     const [selectedCompanies, setSelectedCompanies] = useState<CompanyOption[]>([]);
     const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
     const [submittedSelection, setSubmittedSelection] = useState<SharedEstimationSelection | null>(null);
+    const [enteredDataCompanies, setEnteredDataCompanies] = useState<EnteredCompany[]>([]);
+    const [addEnteredCompanyOpen, setAddEnteredCompanyOpen] = useState(false);
 
     const hasData = !!selectedEstimate || !!submittedSelection;
 
@@ -120,7 +123,7 @@ export default function ComparativeAnalysisPage() {
                                 )}
                                 {analysisType === 'entered_data' && !submittedSelection && (
                                     <Box sx={{ display: 'flex', alignItems: 'center', px: 1, pb: '4px' }}>
-                                        <Button variant='text' size='small' sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
+                                        <Button variant='text' size='small' onClick={() => setAddEnteredCompanyOpen(true)} sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
                                             {t('Add')} +
                                         </Button>
                                     </Box>
@@ -157,13 +160,13 @@ export default function ComparativeAnalysisPage() {
                             ) : analysisType === 'entered_data' ? (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' companies={enteredDataCompanies} />
                                     </TabPanel>
                                     <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' companies={enteredDataCompanies} />
                                     </TabPanel>
                                     <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' companies={enteredDataCompanies} />
                                     </TabPanel>
                                 </>
                             ) : (
@@ -232,6 +235,12 @@ export default function ComparativeAnalysisPage() {
                     setSelectedEstimate(null);
                     setAnalysisType('market');
                 }}
+            />
+
+            <AddEnteredCompanyDialog
+                open={addEnteredCompanyOpen}
+                onClose={() => setAddEnteredCompanyOpen(false)}
+                onAdd={(name) => setEnteredDataCompanies(prev => [...prev, { id: `${Date.now()}`, name }])}
             />
         </PageContents>
     );

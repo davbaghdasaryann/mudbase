@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, InputBase } from '@mui/material';
 import { useGrabScroll } from '@/hooks/useGrabScroll';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -9,6 +9,11 @@ import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded } from '@/lib/format_currency';
 
 type GridMode = 'general' | 'labor' | 'materials';
+
+export interface EnteredCompany {
+    id: string;
+    name: string;
+}
 
 interface Row {
     _id: string;
@@ -28,14 +33,17 @@ interface SectionGroup {
 interface Props {
     estimate: EstimatesApi.ApiEstimate;
     mode?: GridMode;
+    companies?: EnteredCompany[];
 }
 
-export default function EnteredDataGrid({ estimate, mode = 'general' }: Props) {
+export default function EnteredDataGrid({ estimate, mode = 'general', companies = [] }: Props) {
     const { t } = useTranslation();
     const grab = useGrabScroll();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // cellValues[itemId][companyId] = entered string
+    const [cellValues, setCellValues] = useState<Record<string, Record<string, string>>>({});
 
     const estimateId = String(estimate._id);
     const isMaterials = mode === 'materials';
@@ -78,6 +86,13 @@ export default function EnteredDataGrid({ estimate, mode = 'general' }: Props) {
             .finally(() => setLoading(false));
     }, [estimateId, mode]);
 
+    const handleCellChange = (itemId: string, companyId: string, value: string) => {
+        setCellValues(prev => ({
+            ...prev,
+            [itemId]: { ...prev[itemId], [companyId]: value },
+        }));
+    };
+
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={28} />
@@ -90,6 +105,8 @@ export default function EnteredDataGrid({ estimate, mode = 'general' }: Props) {
 
     if (groups.length === 0) return null;
 
+    const colSpan = 3 + Math.max(companies.length, 1);
+
     return (
         <Box ref={grab.ref} onMouseDown={grab.onMouseDown} onMouseMove={grab.onMouseMove} onMouseUp={grab.onMouseUp} onMouseLeave={grab.onMouseLeave} sx={{ overflowX: 'auto', cursor: 'grab' }}>
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
@@ -98,9 +115,15 @@ export default function EnteredDataGrid({ estimate, mode = 'general' }: Props) {
                     <TableCell align='left' sx={{ fontWeight: 600 }}>{descriptionHeader}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit of Measure')}</TableCell>
                     <TableCell align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Unit Cost')}</TableCell>
-                    <TableCell align='center' sx={{ fontWeight: 600, color: 'text.disabled', whiteSpace: 'nowrap' }}>
-                        {t('Entered Data')}
-                    </TableCell>
+                    {companies.length === 0 ? (
+                        <TableCell align='center' sx={{ fontWeight: 600, color: 'text.disabled', whiteSpace: 'nowrap' }}>
+                            {t('Company')}
+                        </TableCell>
+                    ) : companies.map((c) => (
+                        <TableCell key={c.id} align='center' sx={{ fontWeight: 600, whiteSpace: 'nowrap', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {c.name}
+                        </TableCell>
+                    ))}
                 </TableRow>
             </TableHead>
             <TableBody>
@@ -110,7 +133,7 @@ export default function EnteredDataGrid({ estimate, mode = 'general' }: Props) {
                     <React.Fragment key={group.sectionName || si}>
                         {!isMaterials && (
                             <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                                <TableCell colSpan={4} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
+                                <TableCell colSpan={colSpan} sx={{ pl: 1, fontWeight: 600, py: 1.5 }}>
                                     {String(si + 1).padStart(2, '0')}. {group.sectionName}
                                 </TableCell>
                             </TableRow>
@@ -124,7 +147,28 @@ export default function EnteredDataGrid({ estimate, mode = 'general' }: Props) {
                                     </TableCell>
                                     <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
                                     <TableCell align='center' sx={{ py: 1.5 }}>{formatCurrencyRounded(item.unitCost)}</TableCell>
-                                    <TableCell align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
+                                    {companies.length === 0 ? (
+                                        <TableCell align='center' sx={{ color: 'text.disabled', py: 1.5 }}>—</TableCell>
+                                    ) : companies.map((c) => (
+                                        <TableCell key={c.id} align='center' sx={{ py: 0.5 }}>
+                                            <InputBase
+                                                value={cellValues[String(item._id)]?.[c.id] ?? ''}
+                                                onChange={e => handleCellChange(String(item._id), c.id, e.target.value)}
+                                                inputProps={{ style: { textAlign: 'center', fontSize: 13 } }}
+                                                sx={{
+                                                    width: 100,
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                    borderRadius: 1,
+                                                    px: 1,
+                                                    py: 0.25,
+                                                    fontSize: 13,
+                                                    '&:hover': { borderColor: 'text.secondary' },
+                                                    '&.Mui-focused': { borderColor: 'primary.main', borderWidth: '1.5px' },
+                                                }}
+                                            />
+                                        </TableCell>
+                                    ))}
                                 </TableRow>
                             );
                         })}
