@@ -55,16 +55,17 @@ const TYPE_COLOR: Record<string, string> = {
     entered_data: '#E67E22',
     submitted: '#1CA461',
 };
-const TYPE_LABEL: Record<string, string> = {
-    market: 'By Market Value',
-    base_proposals: 'By Base Proposals',
-    entered_data: 'Ըստ մուտքագրված տվյալների',
-    submitted: 'By Submitted Estimations',
-};
+
 
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
     const router = useRouter();
+    const TYPE_LABEL: Record<string, string> = {
+        market: t('By Market Value'),
+        base_proposals: t('By Base Proposals'),
+        entered_data: 'Ըստ մուտքագրված տվյալների',
+        submitted: t('By Submitted Estimations'),
+    };
     const searchParams = useSearchParams();
     const selectedId = searchParams.get('id');
 
