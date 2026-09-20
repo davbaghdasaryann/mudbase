@@ -41,7 +41,7 @@ const CARD_SHADOW = '0 2px 12px rgba(0,0,0,0.08)';
 const TEXT_DARK = '#424242';
 const GRID_STROKE = 'rgba(0,0,0,0.05)';
 const HIGH_LINE = '#26a69a';
-const MEDIUM_LINE = '#7b1fa2';
+const MEDIUM_LINE = '#F57C00';
 const LOW_LINE = '#66bb6a';
 const BADGE_GREEN_BG = '#c8e6c9';
 const BADGE_GREEN_TEXT = '#2e7d32';
@@ -267,7 +267,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                             <stop offset="100%" stopColor={HIGH_LINE} stopOpacity={1} />
                                         </linearGradient>
                                         <linearGradient id="w15dMedGrad" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#e1bee7" stopOpacity={0.3} />
+                                            <stop offset="0%" stopColor="#FFCC80" stopOpacity={0.3} />
                                             <stop offset="100%" stopColor={MEDIUM_LINE} stopOpacity={1} />
                                         </linearGradient>
                                         <linearGradient id="w15dLowGrad" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
@@ -425,7 +425,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
                                     <stop offset="100%" stopColor={HIGH_LINE} stopOpacity={1} />
                                 </linearGradient>
                                 <linearGradient id="w15dMedGradM" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
-                                    <stop offset="0%" stopColor="#e1bee7" stopOpacity={0.3} />
+                                    <stop offset="0%" stopColor="#FFCC80" stopOpacity={0.3} />
                                     <stop offset="100%" stopColor={MEDIUM_LINE} stopOpacity={1} />
                                 </linearGradient>
                                 <linearGradient id="w15dLowGradM" x1="0" y1="0" x2={width} y2="0" gradientUnits="userSpaceOnUse">
