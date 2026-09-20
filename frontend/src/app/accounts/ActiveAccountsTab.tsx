@@ -176,22 +176,22 @@ export default function ActiveAccountsTab() {
                             return (
                                 <>
                                     <Tooltip title={t('Edit')} placement='top'>
-                                        <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
+                                        <IconButton onClick={() => setEditedAccount(cell.row)} sx={{ color: 'action.active', '&:hover': { color: 'primary.main' } }}>
                                             <EditIcon />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('Assign Package')} placement='top'>
-                                        <IconButton onClick={() => setAssignPackageAccount(cell.row)}>
+                                        <IconButton onClick={() => setAssignPackageAccount(cell.row)} sx={{ color: 'action.active', '&:hover': { color: 'primary.main' } }}>
                                             <Inventory2OutlinedIcon fontSize='small' />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('DEACTIVATE')} placement='top'>
-                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id)} color='warning'>
+                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id)} sx={{ color: 'action.active', '&:hover': { color: 'warning.main' } }}>
                                             <BlockOutlinedIcon />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('Delete')} placement='top'>
-                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
+                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)} sx={{ color: 'action.active', '&:hover': { color: 'error.main' } }}>
                                             <DeleteOutlineIcon />
                                         </IconButton>
                                     </Tooltip>
