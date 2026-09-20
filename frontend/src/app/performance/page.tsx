@@ -13,6 +13,7 @@ import PerformanceActTable from './PerformanceActTable';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
+import PackageLock from '@/components/PackageLock';
 
 interface PerformanceActRecord {
     _id: string;
@@ -34,7 +35,7 @@ const outlinedCreateSx = {
     },
 };
 
-export default function PerformancePage() {
+function PerformancePageInner() {
     const { t } = useTranslation();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [records, setRecords] = useState<PerformanceActRecord[]>([]);
@@ -190,4 +191,8 @@ export default function PerformancePage() {
             />
         </PageContents>
     );
+}
+
+export default function PerformancePage() {
+    return <PackageLock feature="performance"><PerformancePageInner /></PackageLock>;
 }

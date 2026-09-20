@@ -26,6 +26,7 @@ import SubmittedEstimationsGrid from './SubmittedEstimationsGrid';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { mainPrimaryColor } from '@/theme';
+import PackageLock from '@/components/PackageLock';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
 
@@ -57,7 +58,7 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 
-export default function ComparativeAnalysisPage() {
+function ComparativeAnalysisPageInner() {
     const { t } = useTranslation();
     const router = useRouter();
     const TYPE_LABEL: Record<string, string> = {
@@ -438,4 +439,8 @@ export default function ComparativeAnalysisPage() {
             />
         </PageContents>
     );
+}
+
+export default function ComparativeAnalysisPage() {
+    return <PackageLock feature="analysis"><ComparativeAnalysisPageInner /></PackageLock>;
 }

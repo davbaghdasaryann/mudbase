@@ -67,6 +67,7 @@ import CostBreakdownChart from '@/app/analysis/structural/CostBreakdownChart';
 import { estimateOtherExpensesItems } from '@/data/estimate_manual';
 import OtherExpensesChart from '@/app/analysis/structural/OtherExpensesChart';
 import BreakdownTable from '@/app/analysis/structural/BreakdownTable';
+import PackageLock from '@/components/PackageLock';
 
 export interface SectionRow {
     id: string;
@@ -770,7 +771,7 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, p
     );
 }
 
-export default function CostingPage() {
+function CostingPageInner() {
     const { t } = useTranslation();
     const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen'];
     const [tab, setTab] = useState<TabValue>('general');
@@ -2643,4 +2644,8 @@ ${tableBodyHtml}
             )}
         </PageContents>
     );
+}
+
+export default function CostingPage() {
+    return <PackageLock feature="costing"><CostingPageInner /></PackageLock>;
 }

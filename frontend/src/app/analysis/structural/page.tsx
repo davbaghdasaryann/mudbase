@@ -24,6 +24,7 @@ import { mainPrimaryColor } from '@/theme';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
+import PackageLock from '@/components/PackageLock';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
 
@@ -64,7 +65,7 @@ const ParamCard = ({ label, icon, value }: { label: string; icon: React.ReactNod
     </Paper>
 );
 
-export default function StructuralAnalysisPage() {
+function StructuralAnalysisPageInner() {
     const { t } = useTranslation();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -265,4 +266,8 @@ export default function StructuralAnalysisPage() {
             </Box>
         </PageContents>
     );
+}
+
+export default function StructuralAnalysisPage() {
+    return <PackageLock feature="analysis"><StructuralAnalysisPageInner /></PackageLock>;
 }

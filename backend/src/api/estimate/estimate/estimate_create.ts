@@ -10,6 +10,19 @@ import { Permissions } from '@src/tsmudbase/permissions_setup';
 registerApiSession('estimate/create', async (req, res, session) => {
     session.assertPermission(Permissions.EstimateCreate);
 
+    // Check estimation limit from package
+    const account = await Db.getAccountsCollection().findOne({ _id: session.mongoAccountId });
+    if (account?.packageId) {
+        const pkg = await Db.getPackagesCollection().findOne({ _id: account.packageId });
+        if (pkg?.numberOfEstimations) {
+            const count = await Db.getEstimatesCollection().countDocuments({
+                accountId: session.mongoAccountId,
+                isArchived: { $ne: true },
+            });
+            verify(count < pkg.numberOfEstimations, req.t('estimationsLimit.limitReached') || 'Estimation limit reached for your package');
+        }
+    }
+
     let createEstimateData = req.body as Db.EntityEstimate ?? {};
 
     if (createEstimateData.name !== undefined) {
