@@ -69,6 +69,7 @@ export default function ComparativeAnalysisPage() {
     // Detail state
     const [detail, setDetail] = useState<ComparativeRecord | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [estimateLoading, setEstimateLoading] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
     const [selectedCompanies, setSelectedCompanies] = useState<CompanyOption[]>([]);
@@ -95,7 +96,7 @@ export default function ComparativeAnalysisPage() {
 
     // Load detail when id changes
     useEffect(() => {
-        if (!selectedId) { setDetail(null); setSelectedEstimate(null); return; }
+        if (!selectedId) { setDetail(null); setSelectedEstimate(null); setEstimateLoading(false); return; }
         setDetailLoading(true);
         Api.requestSession<ComparativeRecord>({ command: 'comparative/fetch', args: { id: selectedId } })
             .then(data => {
@@ -107,11 +108,14 @@ export default function ComparativeAnalysisPage() {
                 setEnteredDataCellValues(data.enteredDataCellValues ?? {});
                 // Re-fetch full estimate object if needed
                 if (data.estimateId) {
+                    setEstimateLoading(true);
                     Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: data.estimateId } })
                         .then(full => { if (full) setSelectedEstimate(full); })
-                        .catch(() => {});
+                        .catch(() => {})
+                        .finally(() => setEstimateLoading(false));
                 } else {
                     setSelectedEstimate(null);
+                    setEstimateLoading(false);
                 }
             })
             .catch(() => {})
@@ -314,7 +318,7 @@ export default function ComparativeAnalysisPage() {
     }
 
     // ── Detail view ────────────────────────────────────────────────────────
-    if (detailLoading || (selectedId && !detail && !detailLoading)) return (
+    if (detailLoading || estimateLoading || (selectedId && !detail && !detailLoading)) return (
         <PageContents title='Comparative Analytics'>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>
         </PageContents>
