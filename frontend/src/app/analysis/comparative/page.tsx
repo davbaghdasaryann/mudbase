@@ -160,13 +160,13 @@ export default function ComparativeAnalysisPage() {
                             ) : analysisType === 'entered_data' ? (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' companies={enteredDataCompanies} />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} />
                                     </TabPanel>
                                     <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' companies={enteredDataCompanies} />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} />
                                     </TabPanel>
                                     <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' companies={enteredDataCompanies} />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} />
                                     </TabPanel>
                                 </>
                             ) : (
