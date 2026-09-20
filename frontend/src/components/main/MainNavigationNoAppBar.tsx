@@ -111,8 +111,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                             onClick={handleClick}
                             sx={{
                                 textDecoration: 'none',
-                                color: iconColor,
-                                // Force icon container and SVG icons to be black at rest
                                 '& .MuiListItemIcon-root': { color: iconColor },
                                 '& .MuiSvgIcon-root': { color: iconColor },
                                 // Active state: teal text, icon, svg, and img
@@ -157,7 +155,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 onClick={() => handleToggle(segment)}
                                 selected={isPathnameEqual(pathname, href)}
                                 sx={{
-                                    color: iconColor,
                                     '& .MuiListItemIcon-root': { color: iconColor },
                                     '& .MuiSvgIcon-root': { color: iconColor },
                                     '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
@@ -241,8 +238,8 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 opacity: 0.38,
                                 cursor: 'default',
                                 borderRadius: 1,
-                                color: iconColor,
                                 '& .MuiListItemIcon-root': { color: iconColor },
+                                '& .MuiSvgIcon-root': { color: iconColor },
                                 '&:hover': { backgroundColor: 'transparent' },
                             }}
                         >
