@@ -113,7 +113,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 textDecoration: 'none',
                                 '& .MuiListItemIcon-root': { color: iconColor },
                                 '& .MuiSvgIcon-root': { color: iconColor },
-                                '& img': { filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(96%) contrast(101%)' },
                                 // Active state: teal text, icon, svg, and img
                                 '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
                                 '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
@@ -158,7 +157,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 sx={{
                                     '& .MuiListItemIcon-root': { color: iconColor },
                                     '& .MuiSvgIcon-root': { color: iconColor },
-                                    '& img': { filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(96%) contrast(101%)' },
                                     '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
                                     '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
                                     '&.Mui-selected .MuiSvgIcon-root': { color: '#00abbe' },
@@ -282,16 +280,16 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 <Divider />
                 <Stack direction='row' justifyContent='center' alignItems='center' spacing={4} sx={{width: '100%'}}>
                     <Link href={facebookUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/facebook_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(78%) contrast(101%)'}}} />
+                        <ImgElement src='/images/icons/facebook_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(75%) contrast(100%)'}}} />
                     </Link>
                     <Link href={telegramUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/telegram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(78%) contrast(101%)'}}} />
+                        <ImgElement src='/images/icons/telegram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(75%) contrast(100%)'}}} />
                     </Link>
                     <Link href={instagramUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(78%) contrast(101%)'}}} />
+                        <ImgElement src='/images/icons/instagram_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(75%) contrast(100%)'}}} />
                     </Link>
                     <Link href={youtubeChannelUrl} target='_blank' rel='noopener noreferrer'>
-                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(96%) contrast(101%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(200%) hue-rotate(161deg) brightness(78%) contrast(101%)'}}} />
+                        <ImgElement src='/images/icons/youtube_nav_bar.svg' sx={{height: 25, transition: 'filter 0.2s', filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)', '&:hover': {filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(75%) contrast(100%)'}}} />
                     </Link>
                 </Stack>
             </Stack>
@@ -377,11 +375,11 @@ function useMainNavigation() {
         navigation.push({
             segment: 'catalog',
             title: t('Catalogs'),
-            icon: <ImgElement src='/images/icons/libraries.svg' sx={{height: 30}} />,
+            icon: <ImgElement src='/images/icons/libraries.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />,
         });
 
         if (session?.user && permissionsSet?.has('EST_USE')) {
-            navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30}} />});
+            navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />});
             navigation.push({
                 segment: 'analysis',
                 title: t('Analytics'),
@@ -399,11 +397,11 @@ function useMainNavigation() {
         }
 
         if (isSuperAdmin) {
-            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30}} />});
+            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />});
         }
 
         if (session?.user && permissionsSet?.has('USR_FCH')) {
-            navigation.push({segment: 'users', title: t('Users'), icon: <ImgElement src='/images/icons/users.svg' sx={{height: 30}} />});
+            navigation.push({segment: 'users', title: t('Users'), icon: <ImgElement src='/images/icons/users.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />});
         }
 
         navigation.push({segment: 'account', title: t('My Company'), icon: <BusinessOutlinedIcon /> });
