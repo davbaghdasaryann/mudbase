@@ -11,10 +11,11 @@ export interface ComparativeSubmittedSelection {
     companies: ComparativeCompany[];
 }
 
-export interface EntityComparativeState {
+export interface EntityComparativeAnalysis {
     _id?: ObjectId;
     accountId: ObjectId;
     userId: ObjectId;
+    name: string;
     analysisType: 'market' | 'base_proposals' | 'entered_data';
     estimateId: string | null;
     activeTab: string;
@@ -22,9 +23,10 @@ export interface EntityComparativeState {
     submittedSelection: ComparativeSubmittedSelection | null;
     enteredDataCompanies: ComparativeCompany[];
     enteredDataCellValues: Record<string, Record<string, { unitCost: string; qty: string }>>;
+    createdAt: Date;
     updatedAt: Date;
 }
 
-export function getComparativeStateCollection(): Collection<EntityComparativeState> {
-    return mongoDb_.collection('comparative_analysis_state');
+export function getComparativeAnalysesCollection(): Collection<EntityComparativeAnalysis> {
+    return mongoDb_.collection('comparative_analyses');
 }
