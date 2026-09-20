@@ -55,6 +55,12 @@ const TYPE_COLOR: Record<string, string> = {
     entered_data: '#E67E22',
     submitted: '#1CA461',
 };
+const TYPE_LABEL: Record<string, string> = {
+    market: 'By Market Value',
+    base_proposals: 'By Base Proposals',
+    entered_data: 'Ըստ մուտքագրված տվյալների',
+    submitted: 'By Submitted Estimations',
+};
 
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
@@ -293,7 +299,9 @@ export default function ComparativeAnalysisPage() {
                                     '&:hover': { boxShadow: '0 2px 12px rgba(0,171,190,0.12)', borderColor: color },
                                 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <Icon sx={{ fontSize: 20, color, opacity: 0.7 }} />
+                                    <Tooltip title={TYPE_LABEL[type] ?? type} placement='top'>
+                                        <Icon sx={{ fontSize: 20, color, opacity: 0.7 }} />
+                                    </Tooltip>
                                     <Box>
                                         <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{rec.name}</Typography>
                                         <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
