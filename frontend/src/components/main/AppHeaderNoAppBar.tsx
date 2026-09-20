@@ -30,6 +30,9 @@ import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -74,6 +77,12 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <SpeedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'costing':
                 return <RequestQuoteOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'haymnadits':
+                return <CorporateFareOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'karavarium':
+                return <ManageAccountsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'risk-monitoring':
+                return <MonitorHeartOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'settings':
                 if (pathname === '/settings/packages') return <Inventory2OutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
                 if (pathname === '/settings/payments') return <PaymentsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
