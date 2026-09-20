@@ -13,13 +13,6 @@ registerApiSession('user/delete', async (req, res, session) => {
     const userToDelete = await users.findOne({ _id: userId });
     verify(userToDelete, 'User not found');
 
-    // Only allow deleting users within the same account
-    const requestingUser = await users.findOne({ _id: session.mongoUserId });
-    verify(
-        String(userToDelete.accountId) === String(requestingUser?.accountId),
-        'Cannot delete user from a different account'
-    );
-
     // Prevent self-deletion
     verify(
         String(userId) !== String(session.mongoUserId),
