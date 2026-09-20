@@ -441,6 +441,7 @@ registerApiSession('estimate/fetch_material_market_comparison', async (req, res,
                     materialItemId: 1,
                     estimateSubsectionId: 1,
                     changableAveragePrice: 1,
+                    quantity: 1,
                     fullCode: '$catalogItem.fullCode',
                     catalogName: '$catalogItem.name',
                     materialOfferItemName: 1,
@@ -470,6 +471,7 @@ registerApiSession('estimate/fetch_material_market_comparison', async (req, res,
             marketMaxPrice: item.marketMaxPrice ?? null,
             sectionName: sectionInfo?.name ?? '',
             sectionDisplayIndex: sectionInfo?.displayIndex ?? 0,
+            quantity: item.quantity ?? 0,
         };
     });
 

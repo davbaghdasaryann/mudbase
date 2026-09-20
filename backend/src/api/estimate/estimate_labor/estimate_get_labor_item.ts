@@ -857,6 +857,7 @@ registerApiSession('estimate/fetch_labor_market_comparison', async (req, res, se
             marketMaxPrice,
             sectionName: sectionInfo?.name ?? '',
             sectionDisplayIndex: sectionInfo?.displayIndex ?? 0,
+            quantity: qty,
         };
     });
 

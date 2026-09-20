@@ -19,7 +19,7 @@ interface Row {
     itemName: string;
     unitSymbol: string;
     unitCost: number;
-    qty?: number;
+    quantity?: number;
     sectionName: string;
     sectionDisplayIndex: number;
 }
@@ -172,7 +172,7 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
                         )}
                         {group.items.map((item, i) => {
                             const itemId = String(item._id);
-                            const estQty = item.qty ?? 0;
+                            const estQty = item.quantity ?? 0;
                             const estTotal = item.unitCost * estQty;
                             const label = isMaterials
                                 ? `${++flatIndex}. ${item.itemName}`
