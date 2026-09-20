@@ -13,6 +13,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import PageContents from '@/components/PageContents';
+import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
 import ChronologicalCreateDialog, { ChronologicalSourceType } from './ChronologicalCreateDialog';
 import ChronologicalListDialog from './ChronologicalListDialog';
@@ -173,20 +174,18 @@ export default function ChronologicalAnalysisPage() {
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
                             {t('No analytics created yet')}
                         </Typography>
-                        <Button
+                        <PageButton
                             variant='outlined'
+                            label='Create'
+                            size='large'
                             onClick={() => setDialog('create')}
                             sx={{
                                 borderRadius: '25px',
                                 height: '40px',
                                 mt: 1,
-                                borderColor: mainPrimaryColor,
-                                color: mainPrimaryColor,
-                                '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor },
+                                '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
                             }}
-                        >
-                            {t('Create')}
-                        </Button>
+                        />
                     </Box>
                 )}
 
