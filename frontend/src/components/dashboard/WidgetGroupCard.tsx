@@ -141,30 +141,33 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                                 mb: 2,
                             }}>
                                 {localWidgets.filter((w: any) => w.widgetType === '1-day').map((widget: any, idx: number, arr: any[]) => (
-                                    <Tooltip key={widget._id} title={t('Drag to reorder')} placement="top" arrow>
-                                        <Box
-                                            draggable
-                                            onDragStart={() => handleDragStart(widget._id)}
-                                            onDragOver={e => handleDragOver(e, widget._id)}
-                                            onDrop={() => handleDrop(widget._id)}
-                                            onDragEnd={handleDragEnd}
-                                            sx={{
-                                                borderBottom: idx < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                                                cursor: 'grab',
-                                                opacity: dragId === widget._id ? 0.4 : 1,
-                                                outline: dragOverId === widget._id && dragId !== widget._id ? '2px solid #00ABBE' : 'none',
-                                                transition: 'opacity 0.15s, outline 0.15s',
-                                            }}
-                                        >
-                                            <Widget1Day
-                                                widget={widget}
-                                                onUpdate={onUpdate}
-                                                liveSnapshots={liveSnapshots}
-                                                onClearLiveSnapshot={onClearLiveSnapshot}
-                                                grouped
-                                            />
-                                        </Box>
-                                    </Tooltip>
+                                    <Box
+                                        key={widget._id}
+                                        draggable
+                                        onDragStart={() => handleDragStart(widget._id)}
+                                        onDragOver={e => handleDragOver(e, widget._id)}
+                                        onDrop={() => handleDrop(widget._id)}
+                                        onDragEnd={handleDragEnd}
+                                        sx={{
+                                            borderBottom: idx < arr.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                                            cursor: 'grab',
+                                            opacity: dragId === widget._id ? 0.4 : 1,
+                                            outline: dragOverId === widget._id && dragId !== widget._id ? '2px solid #00ABBE' : 'none',
+                                            transition: 'opacity 0.15s, outline 0.15s',
+                                            '&:hover .drag-hint': { opacity: 1 },
+                                        }}
+                                    >
+                                        <Widget1Day
+                                            widget={widget}
+                                            onUpdate={onUpdate}
+                                            liveSnapshots={liveSnapshots}
+                                            onClearLiveSnapshot={onClearLiveSnapshot}
+                                            grouped
+                                        />
+                                        <Typography className="drag-hint" sx={{ opacity: 0, transition: 'opacity 0.15s', textAlign: 'center', fontSize: 11, color: '#aaa', pb: 0.5, userSelect: 'none', pointerEvents: 'none' }}>
+                                            {t('Drag to reorder')}
+                                        </Typography>
+                                    </Box>
                                 ))}
                             </Box>
                         )}
@@ -172,35 +175,38 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                         {/* Chart widgets: draggable grid */}
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2, '@media (min-width: 600px)': { gridTemplateColumns: 'repeat(2, 1fr)' }, '@media (min-width: 1670px)': { gridTemplateColumns: 'repeat(3, 1fr)' } }}>
                             {localWidgets.filter((w: any) => w.widgetType !== '1-day').map((widget: any) => (
-                                <Tooltip key={widget._id} title={t('Drag to reorder')} placement="top" arrow>
-                                    <Box
-                                        draggable
-                                        onDragStart={() => handleDragStart(widget._id)}
-                                        onDragOver={e => handleDragOver(e, widget._id)}
-                                        onDrop={() => handleDrop(widget._id)}
-                                        onDragEnd={handleDragEnd}
-                                        sx={{
-                                            overflow: 'visible', pt: '8px', pr: '8px',
-                                            cursor: 'grab',
-                                            opacity: dragId === widget._id ? 0.4 : 1,
-                                            outline: dragOverId === widget._id && dragId !== widget._id ? '2px solid #00ABBE' : 'none',
-                                            borderRadius: 2,
-                                            transition: 'opacity 0.15s, outline 0.15s',
-                                        }}
-                                    >
-                                        {widget.widgetType === '15-day' && (
-                                            <Widget15Day widget={widget} onUpdate={onUpdate} />
-                                        )}
-                                        {widget.widgetType === '30-day' && (
-                                            <Widget30Day
-                                                widget={widget}
-                                                onUpdate={onUpdate}
-                                                liveSnapshots={liveSnapshots}
-                                                onClearLiveSnapshot={onClearLiveSnapshot}
-                                            />
-                                        )}
-                                    </Box>
-                                </Tooltip>
+                                <Box
+                                    key={widget._id}
+                                    draggable
+                                    onDragStart={() => handleDragStart(widget._id)}
+                                    onDragOver={e => handleDragOver(e, widget._id)}
+                                    onDrop={() => handleDrop(widget._id)}
+                                    onDragEnd={handleDragEnd}
+                                    sx={{
+                                        overflow: 'visible', pt: '8px', pr: '8px',
+                                        cursor: 'grab',
+                                        opacity: dragId === widget._id ? 0.4 : 1,
+                                        outline: dragOverId === widget._id && dragId !== widget._id ? '2px solid #00ABBE' : 'none',
+                                        borderRadius: 2,
+                                        transition: 'opacity 0.15s, outline 0.15s',
+                                        '&:hover .drag-hint': { opacity: 1 },
+                                    }}
+                                >
+                                    {widget.widgetType === '15-day' && (
+                                        <Widget15Day widget={widget} onUpdate={onUpdate} />
+                                    )}
+                                    {widget.widgetType === '30-day' && (
+                                        <Widget30Day
+                                            widget={widget}
+                                            onUpdate={onUpdate}
+                                            liveSnapshots={liveSnapshots}
+                                            onClearLiveSnapshot={onClearLiveSnapshot}
+                                        />
+                                    )}
+                                    <Typography className="drag-hint" sx={{ opacity: 0, transition: 'opacity 0.15s', textAlign: 'center', fontSize: 11, color: '#aaa', pt: 0.5, pb: 0.5, userSelect: 'none', pointerEvents: 'none' }}>
+                                        {t('Drag to reorder')}
+                                    </Typography>
+                                </Box>
                             ))}
                         </Box>
                     </>
