@@ -27,6 +27,9 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import SpeedIcon from '@mui/icons-material/Speed';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -50,11 +53,12 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
             case 'dashboard-builder':
                 return <DashboardIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'catalog':
-                return <ImgElement src='/images/icons/libraries.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
+                return <MenuBookIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'estimates':
-                return <ImgElement src='/images/icons/estimates.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
+            case 'admin-estimates':
+                return <StackedLineChartIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'users':
-                return <ImgElement src='/images/icons/users.svg' sx={{ height: 30, filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' }} />;
+                return <PeopleOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'account':
             case 'account_view':
                 return <BusinessOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
