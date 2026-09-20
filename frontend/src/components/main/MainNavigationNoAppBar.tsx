@@ -113,6 +113,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 textDecoration: 'none',
                                 '& .MuiListItemIcon-root': { color: iconColor },
                                 '& .MuiSvgIcon-root': { color: iconColor },
+                                '& img': { filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(147deg) brightness(93%) contrast(101%)' },
                                 // Active state: teal text, icon, svg, and img
                                 '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
                                 '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
@@ -157,9 +158,11 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 sx={{
                                     '& .MuiListItemIcon-root': { color: iconColor },
                                     '& .MuiSvgIcon-root': { color: iconColor },
+                                    '& img': { filter: 'brightness(0) saturate(100%) invert(44%) sepia(87%) saturate(534%) hue-rotate(147deg) brightness(93%) contrast(101%)' },
                                     '&.Mui-selected': { backgroundColor: 'transparent', color: '#00abbe' },
                                     '&.Mui-selected .MuiListItemIcon-root': { color: '#00abbe' },
                                     '&.Mui-selected .MuiSvgIcon-root': { color: '#00abbe' },
+                                    '&.Mui-selected img': { filter: 'brightness(0) saturate(100%) invert(56%) sepia(63%) saturate(1127%) hue-rotate(149deg) brightness(91%) contrast(103%)' },
                                     '&.Mui-selected:hover': { backgroundColor: 'rgba(0, 171, 190, 0.08)' },
                                 }}
                             >
