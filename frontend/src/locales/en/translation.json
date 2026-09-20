@@ -371,5 +371,9 @@
   "Unit price": "Unit price",
   "Drag to reorder": "Drag to reorder",
   "This feature is not included in your package": "This feature is not included in your package",
-  "Contact your administrator to upgrade": "Contact your administrator to upgrade"
+  "Contact your administrator to upgrade": "Contact your administrator to upgrade",
+  "estimationsLimit": {
+    "limitReached": "Your organization has reached the estimation limit included in your package. To create more estimations, please contact the Mudbase support center at support@mudbase.am."
+  },
+  "Estimation Limit Reached": "Estimation Limit Reached"
 }

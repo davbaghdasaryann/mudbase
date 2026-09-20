@@ -720,5 +720,9 @@
   "Tsakhsagrvats": "Ծախսագրված",
   "Drag to reorder": "Քաշել՝ վերադասավորելու համար",
   "This feature is not included in your package": "Այս գործառույթը ներառված չէ ձեր փաթեթում",
-  "Contact your administrator to upgrade": "Փաթեթը փոխելու համար կապ հաստատեք ձեր ադմինիստրատորի հետ"
+  "Contact your administrator to upgrade": "Փաթեթը փոխելու համար կապ հաստատեք ձեր ադմինիստրատորի հետ",
+  "estimationsLimit": {
+    "limitReached": "Ձեր կազմակերպությունը հասել է փաթեթում ներառված հաշվարկների սահմանաչափին: Լրացուցիչ հաշվարկներ ստեղծելու համար խնդրում ենք կապ հաստատել Մադբեյզ-ի հետ support@mudbase.am հասցեով:"
+  },
+  "Estimation Limit Reached": "Հաշվարկների սահմանաչափ"
 }
