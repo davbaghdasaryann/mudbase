@@ -42,14 +42,15 @@ const AM_UCOST    = 'Միավորի արժեք';
 const AM_QTY      = 'Քանակ';
 const AM_TOTAL    = 'Ընդհանուր';
 
-const SUB_SX   = { fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap' as const, bgcolor: '#f4f4f4', borderBottom: '2px solid #e0e0e0', position: 'relative' as const };
-const GROUP_SX = { fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' as const, textAlign: 'center' as const, bgcolor: '#f9f9f9', borderBottom: '1px solid #e0e0e0', position: 'relative' as const };
-
+// min-widths (px) — table is width:100% so desc expands to fill remaining space
 const DEFAULT_WIDTHS: Record<string, number> = {
-    desc: 360, unit: 145,
-    est_uc: 130, est_qty: 100, est_total: 130,
+    desc: 240, unit: 130,
+    est_uc: 120, est_qty: 90, est_total: 120,
 };
-const compColWidth = (suffix: string) => suffix === 'uc' ? 110 : suffix === 'qty' ? 90 : 130;
+const compDefWidth = (suffix: string) => suffix === 'qty' ? 90 : suffix === 'uc' ? 110 : 130;
+
+const SUB_SX   = { fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap' as const, bgcolor: '#f4f4f4', borderBottom: '2px solid #e0e0e0', position: 'relative' as const };
+const GROUP_SX = { fontWeight: 700, fontSize: 12, textAlign: 'center' as const, bgcolor: '#f9f9f9', borderBottom: '1px solid #e0e0e0', position: 'relative' as const };
 
 interface Props {
     estimate: EstimatesApi.ApiEstimate;
@@ -72,59 +73,43 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
     useEffect(() => {
         setLoading(true);
         setGroups([]);
-        const baseRequest: Promise<any[]> = isMaterials
+        const req: Promise<any[]> = isMaterials
             ? Api.requestSession<any[]>({ command: 'estimate/fetch_material_market_comparison', args: { estimateId } })
                 .then(rows => (rows ?? []).map(r => ({ ...r, itemName: r.materialOfferItemName || r.catalogName })))
             : Api.requestSession<any[]>({ command: 'estimate/fetch_labor_market_comparison', args: mode === 'general' ? { estimateId, includeMaterials: 'true' } : { estimateId } })
                 .then(rows => (rows ?? []).map(r => ({ ...r, itemName: r.laborOfferItemName || r.catalogName })));
-        baseRequest
-            .then(rows => {
-                const seen = new Set<string>();
-                const unique = rows.filter(row => {
-                    const key = `${row.itemName}|${row.unitSymbol}|${row.unitCost}`;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                });
-                const map = new Map<string, SectionGroup>();
-                for (const row of unique) {
-                    if (!map.has(row.sectionName))
-                        map.set(row.sectionName, { sectionName: row.sectionName, sectionDisplayIndex: row.sectionDisplayIndex, items: [] });
-                    map.get(row.sectionName)!.items.push(row);
-                }
-                setGroups(Array.from(map.values()).sort((a, b) => a.sectionDisplayIndex - b.sectionDisplayIndex));
-            })
-            .catch(e => setError(String(e)))
-            .finally(() => setLoading(false));
+        req.then(rows => {
+            const seen = new Set<string>();
+            const unique = rows.filter(r => {
+                const k = `${r.itemName}|${r.unitSymbol}|${r.unitCost}`;
+                if (seen.has(k)) return false; seen.add(k); return true;
+            });
+            const map = new Map<string, SectionGroup>();
+            for (const r of unique) {
+                if (!map.has(r.sectionName))
+                    map.set(r.sectionName, { sectionName: r.sectionName, sectionDisplayIndex: r.sectionDisplayIndex, items: [] });
+                map.get(r.sectionName)!.items.push(r);
+            }
+            setGroups(Array.from(map.values()).sort((a, b) => a.sectionDisplayIndex - b.sectionDisplayIndex));
+        }).catch(e => setError(String(e))).finally(() => setLoading(false));
     }, [estimateId, mode]);
 
-    const getCell = (itemId: string, companyId: string): CellState =>
-        cellValues[itemId]?.[companyId] ?? { unitCost: '', qty: '' };
-
-    const updateCell = (itemId: string, companyId: string, field: keyof CellState, value: string) =>
-        setCellValues(prev => ({
-            ...prev,
-            [itemId]: { ...prev[itemId], [companyId]: { ...getCell(itemId, companyId), [field]: value } },
-        }));
-
-    const calcTotalNum = (itemId: string, companyId: string): number | null => {
-        const { unitCost, qty } = getCell(itemId, companyId);
+    const getCell = (itemId: string, cid: string): CellState => cellValues[itemId]?.[cid] ?? { unitCost: '', qty: '' };
+    const updateCell = (itemId: string, cid: string, field: keyof CellState, val: string) =>
+        setCellValues(prev => ({ ...prev, [itemId]: { ...prev[itemId], [cid]: { ...getCell(itemId, cid), [field]: val } } }));
+    const calcTotalNum = (itemId: string, cid: string): number | null => {
+        const { unitCost, qty } = getCell(itemId, cid);
         const uc = parseFloat(unitCost), q = parseFloat(qty);
         return isNaN(uc) || isNaN(q) ? null : uc * q;
     };
 
-    // Column resize
     const startResize = useCallback((key: string, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         const startX = e.clientX;
         const startW = colWidths[key] ?? 100;
         const onMove = (me: MouseEvent) =>
             setColWidths(prev => ({ ...prev, [key]: Math.max(60, startW + me.clientX - startX) }));
-        const onUp = () => {
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('mouseup', onUp);
-        };
+        const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     }, [colWidths]);
@@ -135,39 +120,26 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
 
     const totalCols = 2 + 3 + companies.length * 3;
 
+    const rh = (key: string) => <ResizeHandle onMouseDown={e => startResize(key, e)} />;
+
     return (
         <Box ref={grab.ref} onMouseDown={grab.onMouseDown} onMouseMove={grab.onMouseMove} onMouseUp={grab.onMouseUp} onMouseLeave={grab.onMouseLeave}
             sx={{ overflowX: 'auto', cursor: 'grab' }}>
-        <Table size='small' sx={{ mt: 2, tableLayout: 'fixed', width: 'auto', '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
-            <colgroup>
-                <col style={{ width: colWidths.desc }} />
-                <col style={{ width: colWidths.unit }} />
-                <col style={{ width: colWidths.est_uc }} />
-                <col style={{ width: colWidths.est_qty }} />
-                <col style={{ width: colWidths.est_total }} />
-                {companies.flatMap(c => [
-                    <col key={c.id+'_uc'}  style={{ width: colWidths[c.id+'_uc']    ?? compColWidth('uc') }} />,
-                    <col key={c.id+'_qty'} style={{ width: colWidths[c.id+'_qty']   ?? compColWidth('qty') }} />,
-                    <col key={c.id+'_tot'} style={{ width: colWidths[c.id+'_tot']   ?? compColWidth('tot') }} />,
-                ])}
-            </colgroup>
+        <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
-                {/* Row 1: group headers */}
                 <TableRow>
-                    <TableCell rowSpan={2} sx={{ ...GROUP_SX, verticalAlign: 'middle', textAlign: 'left', bgcolor: '#f9f9f9' }}>
-                        <ResizeHandle onMouseDown={e => startResize('desc', e)} />
+                    <TableCell rowSpan={2} sx={{ ...GROUP_SX, textAlign: 'left', verticalAlign: 'middle', minWidth: colWidths.desc }}>
+                        {rh('desc')}
                     </TableCell>
-                    <TableCell rowSpan={2} align='center' sx={{ ...GROUP_SX, verticalAlign: 'middle', whiteSpace: 'normal' }}>
-                        {AM_UNIT}
-                        <ResizeHandle onMouseDown={e => startResize('unit', e)} />
+                    <TableCell rowSpan={2} align='center' sx={{ ...GROUP_SX, verticalAlign: 'middle', minWidth: colWidths.unit }}>
+                        {AM_UNIT}{rh('unit')}
                     </TableCell>
                     <TableCell colSpan={3} align='center' sx={{ ...GROUP_SX, borderLeft: '2px solid #e0e0e0' }}>
-                        {AM_ESTIMATE}
-                        <ResizeHandle onMouseDown={e => startResize('est_total', e)} />
+                        {AM_ESTIMATE}{rh('est_total')}
                     </TableCell>
                     {companies.map(c => (
                         <TableCell key={c.id} colSpan={3} align='center' sx={{ ...GROUP_SX, borderLeft: '2px solid #e0e0e0' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
                                 {c.name}
                                 {onDeleteCompany && (
                                     <IconButton size='small' onClick={() => onDeleteCompany(c.id)}
@@ -176,30 +148,29 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
                                     </IconButton>
                                 )}
                             </Box>
-                            <ResizeHandle onMouseDown={e => startResize(c.id+'_tot', e)} />
+                            {rh(c.id + '_tot')}
                         </TableCell>
                     ))}
                 </TableRow>
-                {/* Row 2: sub-column headers */}
                 <TableRow>
-                    <TableCell align='center' sx={{ ...SUB_SX, borderLeft: '2px solid #e0e0e0' }}>
-                        {AM_UCOST}<ResizeHandle onMouseDown={e => startResize('est_uc', e)} />
+                    <TableCell align='center' sx={{ ...SUB_SX, borderLeft: '2px solid #e0e0e0', minWidth: colWidths.est_uc }}>
+                        {AM_UCOST}{rh('est_uc')}
                     </TableCell>
-                    <TableCell align='center' sx={SUB_SX}>
-                        {AM_QTY}<ResizeHandle onMouseDown={e => startResize('est_qty', e)} />
+                    <TableCell align='center' sx={{ ...SUB_SX, minWidth: colWidths.est_qty }}>
+                        {AM_QTY}{rh('est_qty')}
                     </TableCell>
-                    <TableCell align='center' sx={SUB_SX}>
-                        {AM_TOTAL}<ResizeHandle onMouseDown={e => startResize('est_total', e)} />
+                    <TableCell align='center' sx={{ ...SUB_SX, minWidth: colWidths.est_total }}>
+                        {AM_TOTAL}{rh('est_total')}
                     </TableCell>
                     {companies.flatMap(c => [
-                        <TableCell key={c.id+'_uc'} align='center' sx={{ ...SUB_SX, borderLeft: '2px solid #e0e0e0' }}>
-                            {AM_UCOST}<ResizeHandle onMouseDown={e => startResize(c.id+'_uc', e)} />
+                        <TableCell key={c.id+'_uc'} align='center' sx={{ ...SUB_SX, borderLeft: '2px solid #e0e0e0', minWidth: colWidths[c.id+'_uc'] ?? compDefWidth('uc') }}>
+                            {AM_UCOST}{rh(c.id+'_uc')}
                         </TableCell>,
-                        <TableCell key={c.id+'_qty'} align='center' sx={SUB_SX}>
-                            {AM_QTY}<ResizeHandle onMouseDown={e => startResize(c.id+'_qty', e)} />
+                        <TableCell key={c.id+'_qty'} align='center' sx={{ ...SUB_SX, minWidth: colWidths[c.id+'_qty'] ?? compDefWidth('qty') }}>
+                            {AM_QTY}{rh(c.id+'_qty')}
                         </TableCell>,
-                        <TableCell key={c.id+'_tot'} align='center' sx={SUB_SX}>
-                            {AM_TOTAL}<ResizeHandle onMouseDown={e => startResize(c.id+'_tot', e)} />
+                        <TableCell key={c.id+'_tot'} align='center' sx={{ ...SUB_SX, minWidth: colWidths[c.id+'_tot'] ?? compDefWidth('tot') }}>
+                            {AM_TOTAL}{rh(c.id+'_tot')}
                         </TableCell>,
                     ])}
                 </TableRow>
@@ -220,9 +191,7 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
                             const itemId = String(item._id);
                             const estQty = item.quantity ?? 0;
                             const estTotal = item.unitCost * estQty;
-                            const label = isMaterials
-                                ? `${++flatIndex}. ${item.itemName}`
-                                : `${si + 1}.${i + 1} ${item.itemName}`;
+                            const label = isMaterials ? `${++flatIndex}. ${item.itemName}` : `${si + 1}.${i + 1} ${item.itemName}`;
                             return (
                                 <TableRow key={itemId} sx={{ bgcolor: '#fff', '&:hover': { bgcolor: '#f5fdfe' } }}>
                                     <TableCell align='left' sx={{ py: 1.5 }}>
@@ -261,14 +230,11 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
 
 function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => void }) {
     return (
-        <Box
-            onMouseDown={onMouseDown}
-            sx={{
-                position: 'absolute', right: 0, top: 0, bottom: 0, width: 5,
-                cursor: 'col-resize', zIndex: 1,
-                '&:hover': { bgcolor: 'rgba(0,171,190,0.3)' },
-            }}
-        />
+        <Box onMouseDown={onMouseDown} sx={{
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: 5,
+            cursor: 'col-resize', zIndex: 1,
+            '&:hover': { bgcolor: 'rgba(0,171,190,0.3)' },
+        }} />
     );
 }
 
