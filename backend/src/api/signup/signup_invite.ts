@@ -124,7 +124,7 @@ registerApiSession('signup/local_invite', async (req, res, session) => {
     });
 
     const pendingInviteCount = await pendingUsers.countDocuments({
-        whoSentInvite: whoSentInvite._id
+        accountId: fromUserAccount?._id
     });
 
     const totalCount = activeUserCount + pendingInviteCount;
