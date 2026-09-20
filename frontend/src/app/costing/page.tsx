@@ -2647,5 +2647,5 @@ ${tableBodyHtml}
 }
 
 export default function CostingPage() {
-    return <PackageLock feature="costing"><CostingPageInner /></PackageLock>;
+    return <PackageLock feature="costing" pageTitle="Costing"><CostingPageInner /></PackageLock>;
 }

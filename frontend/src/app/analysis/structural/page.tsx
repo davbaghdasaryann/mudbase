@@ -269,5 +269,5 @@ function StructuralAnalysisPageInner() {
 }
 
 export default function StructuralAnalysisPage() {
-    return <PackageLock feature="analysis"><StructuralAnalysisPageInner /></PackageLock>;
+    return <PackageLock feature="analysis" pageTitle="Structural Analysis"><StructuralAnalysisPageInner /></PackageLock>;
 }

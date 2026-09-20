@@ -341,5 +341,5 @@ function ChronologicalAnalysisPageInner() {
 }
 
 export default function ChronologicalAnalysisPage() {
-    return <PackageLock feature="analysis"><ChronologicalAnalysisPageInner /></PackageLock>;
+    return <PackageLock feature="analysis" pageTitle="Chronological Analysis"><ChronologicalAnalysisPageInner /></PackageLock>;
 }

@@ -718,5 +718,7 @@
   "No budget data available": "Բյուջետային տեղեկատվություն չկա",
   "Mnatsord": "Մնացորդ",
   "Tsakhsagrvats": "Ծախսագրված",
-  "Drag to reorder": "Քաշել՝ վերադասավորելու համար"
+  "Drag to reorder": "Քաշել՝ վերադասավորելու համար",
+  "This feature is not included in your package": "Այս գործառույթը ներառված չէ ձեր փաթեթում",
+  "Contact your administrator to upgrade": "Փաթեթը փոխելու համար կապ հաստատեք ձեր ադմինիստրատորի հետ"
 }

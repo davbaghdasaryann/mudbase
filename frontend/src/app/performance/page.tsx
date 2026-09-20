@@ -194,5 +194,5 @@ function PerformancePageInner() {
 }
 
 export default function PerformancePage() {
-    return <PackageLock feature="performance"><PerformancePageInner /></PackageLock>;
+    return <PackageLock feature="performance" pageTitle="Performance"><PerformancePageInner /></PackageLock>;
 }

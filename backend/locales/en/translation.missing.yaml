@@ -78,3 +78,5 @@ required:
 smallScaleConstructionMaterials: smallScaleConstructionMaterials
 climaticImpactCosts: climaticImpactCosts
 smallScaleConstructionWork: smallScaleConstructionWork
+estimationsLimit:
+  limitReached: estimationsLimit.limitReached

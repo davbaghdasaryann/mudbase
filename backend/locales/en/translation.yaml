@@ -85,5 +85,7 @@ univsersalEmail:
 usersLimit:
   pendingInviteCountMoreThanZero: "The limit of allowed users has been reached. Your organization already has 3 active users or pending invitations. Please cancel existing invitations to add new users. In case of problems, you can contact the Mudbase electronic system support and service center. You can contact the center by sending an email to support@mudbase.am"
   activeUserCountMoreThanThree: "Dear user, we inform you that each organization can register up to three user accounts in the Mudbase electronic system for free within the framework of the subscription package. To add an additional user account, please contact the Mudbase electronic system support and service center. You can contact the center by sending an email to support@mudbase.am."
+estimationsLimit:
+  limitReached: "Your organization has reached the estimation limit included in your package. To create more estimations, please contact the Mudbase support center at support@mudbase.am."
 
   

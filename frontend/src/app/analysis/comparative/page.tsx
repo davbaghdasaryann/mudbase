@@ -442,5 +442,5 @@ function ComparativeAnalysisPageInner() {
 }
 
 export default function ComparativeAnalysisPage() {
-    return <PackageLock feature="analysis"><ComparativeAnalysisPageInner /></PackageLock>;
+    return <PackageLock feature="analysis" pageTitle="Comparative Analysis"><ComparativeAnalysisPageInner /></PackageLock>;
 }
