@@ -722,7 +722,7 @@
   "This feature is not included in your package": "Այս գործառույթը ներառված չէ ձեր փաթեթում",
   "Contact your administrator to upgrade": "Փաթեթը փոխելու համար կապ հաստատեք ձեր ադմինիստրատորի հետ",
   "estimationsLimit": {
-    "limitReached": "Ձեր կազմակերպությունը հասել է փաթեթում ներառված հաշվարկների սահմանաչափին:"
+    "limitReached": "Ձեր կազմակերպությունը հասել է փաթեթում ներառված նախահաշիվների սահմանաչափին:"
   },
-  "Estimation Limit Reached": "Հաշվարկների սահմանաչափ"
+  "Estimation Limit Reached": "Նախահաշիվների սահմանաչափ"
 }
