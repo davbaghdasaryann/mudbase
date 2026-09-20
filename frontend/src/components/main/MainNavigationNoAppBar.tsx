@@ -16,7 +16,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -382,7 +382,7 @@ function useMainNavigation() {
         });
 
         if (session?.user && permissionsSet?.has('EST_USE')) {
-            navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ShowChartIcon />});
+            navigation.push({segment: 'estimates', title: t('Estimates'), icon: <StackedLineChartIcon />});
             navigation.push({
                 segment: 'analysis',
                 title: t('Analytics'),
@@ -400,7 +400,7 @@ function useMainNavigation() {
         }
 
         if (isSuperAdmin) {
-            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <ShowChartIcon />});
+            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <StackedLineChartIcon />});
         }
 
         if (session?.user && permissionsSet?.has('USR_FCH')) {
