@@ -8,3 +8,4 @@ export * from './estimates_shares';
 export * from './favorites';
 export * from './dashboard';
 export * from './comparative';
+export * from './chronological';
