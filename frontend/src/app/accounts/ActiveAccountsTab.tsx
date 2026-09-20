@@ -4,6 +4,7 @@ import React from 'react';
 import { Button, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
 import * as Api from '@/api';
@@ -82,6 +83,14 @@ export default function ActiveAccountsTab() {
         }
     }, [shouldSearch, performSearch]);
 
+
+    const onDeleteAccount = React.useCallback(async (accountId: string) => {
+        const result = await confirmDialog('Ջնջե՞լ', undefined, { confirmColor: '#DC3741' });
+        if (result.isConfirmed) {
+            await Api.requestSession<any>({ command: 'account/delete', args: { accountId } });
+            apiData.setApi({ command: 'accounts/fetch_active' });
+        }
+    }, []);
 
     const onIsActiveStatusChange = React.useCallback(async (accountId: string) => {
         confirmDialog(t('Are you sure?')).then((result) => {
@@ -170,6 +179,9 @@ export default function ActiveAccountsTab() {
                                     </IconButton>
                                     <IconButton onClick={() => setAssignPackageAccount(cell.row)} title={t('Assign Package')}>
                                         <Inventory2OutlinedIcon fontSize='small' />
+                                    </IconButton>
+                                    <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
+                                        <DeleteOutlineIcon />
                                     </IconButton>
                                 </>
                             );

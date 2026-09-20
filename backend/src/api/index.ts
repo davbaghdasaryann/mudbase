@@ -4,6 +4,7 @@
 
 export * from "./static";
 export * from "./account/account_active_status_change";
+export * from "./account/account_delete";
 export * from "./account/account_get";
 export * from "./account/account_update";
 export * from "./account/account_upload";

@@ -8,6 +8,7 @@ import { Button, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, useThem
 
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 import * as Api from 'api';
 import SearchComponent from '../../components/SearchComponent';
@@ -81,6 +82,14 @@ export default function ActiveAccountsTab() {
 
 
 
+
+    const onDeleteAccount = React.useCallback(async (accountId: string) => {
+        const result = await confirmDialog('Ջնջե՞լ', undefined, { confirmColor: '#DC3741' });
+        if (result.isConfirmed) {
+            await Api.requestSession<any>({ command: 'account/delete', args: { accountId } });
+            apiData.setApi({ command: 'accounts/fetch_inactive' });
+        }
+    }, []);
 
     const onIsActiveStatusChange = React.useCallback(async (accountId: string) => {
         confirmDialog(t('Are you sure?')).then((result) => {
@@ -156,6 +165,9 @@ export default function ActiveAccountsTab() {
                                 <>
                                     <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
                                         <EditIcon />
+                                    </IconButton>
+                                    <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
+                                        <DeleteOutlineIcon />
                                     </IconButton>
                                 </>
                             );
