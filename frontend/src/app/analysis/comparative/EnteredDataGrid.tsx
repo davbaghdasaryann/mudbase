@@ -64,7 +64,12 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [cellValues, setCellValues] = useState<Record<string, Record<string, CellState>>>({});
+    const [cellValues, setCellValues] = useState<Record<string, Record<string, CellState>>>(() => {
+        try {
+            const raw = localStorage.getItem(`entered_cells_${String(estimate._id)}`);
+            return raw ? JSON.parse(raw) : {};
+        } catch { return {}; }
+    });
     const [colWidths, setColWidths] = useState<Record<string, number>>(DEFAULT_WIDTHS);
 
     const estimateId = String(estimate._id);
@@ -93,6 +98,11 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
             setGroups(Array.from(map.values()).sort((a, b) => a.sectionDisplayIndex - b.sectionDisplayIndex));
         }).catch(e => setError(String(e))).finally(() => setLoading(false));
     }, [estimateId, mode]);
+
+    // Persist cell values whenever they change
+    useEffect(() => {
+        try { localStorage.setItem(`entered_cells_${estimateId}`, JSON.stringify(cellValues)); } catch {}
+    }, [estimateId, cellValues]);
 
     const getCell = (itemId: string, cid: string): CellState => cellValues[itemId]?.[cid] ?? { unitCost: '', qty: '' };
     const updateCell = (itemId: string, cid: string, field: keyof CellState, val: string) =>

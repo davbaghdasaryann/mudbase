@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Box, Button, Typography, Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -24,6 +24,8 @@ import { mainPrimaryColor } from '@/theme';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
 
+const STORAGE_KEY = 'comparative_analysis_state';
+
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
     const searchParams = useSearchParams();
@@ -40,6 +42,45 @@ export default function ComparativeAnalysisPage() {
     const [addEnteredCompanyOpen, setAddEnteredCompanyOpen] = useState(false);
 
     const hasData = !!selectedEstimate || !!submittedSelection;
+    const restoredRef = useRef(false);
+
+    // Restore from localStorage on mount (URL params take priority)
+    useEffect(() => {
+        if (restoredRef.current) return;
+        restoredRef.current = true;
+        if (searchParams.get('type')) return;
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const saved = JSON.parse(raw);
+            setAnalysisType(saved.analysisType ?? 'market');
+            setActiveTab(saved.activeTab ?? 'general');
+            setSelectedCompanies(saved.selectedCompanies ?? []);
+            setEnteredDataCompanies(saved.enteredDataCompanies ?? []);
+            if (saved.submittedSelection) {
+                setSubmittedSelection(saved.submittedSelection);
+            } else if (saved.estimateId) {
+                Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: saved.estimateId } })
+                    .then(full => { if (full) setSelectedEstimate(full); })
+                    .catch(() => { localStorage.removeItem(STORAGE_KEY); });
+            }
+        } catch { localStorage.removeItem(STORAGE_KEY); }
+    }, []);
+
+    // Persist state whenever key values change
+    useEffect(() => {
+        if (!hasData) { localStorage.removeItem(STORAGE_KEY); return; }
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                analysisType,
+                estimateId: selectedEstimate ? String(selectedEstimate._id) : null,
+                activeTab,
+                selectedCompanies,
+                submittedSelection,
+                enteredDataCompanies,
+            }));
+        } catch {}
+    }, [analysisType, selectedEstimate, activeTab, selectedCompanies, submittedSelection, enteredDataCompanies, hasData]);
 
     useEffect(() => {
         const type = searchParams.get('type');
@@ -100,7 +141,7 @@ export default function ComparativeAnalysisPage() {
                             <Button
                                 startIcon={<ArrowBackIcon fontSize='small' />}
                                 size='small'
-                                onClick={() => { setSelectedEstimate(null); setSubmittedSelection(null); }}
+                                onClick={() => { setSelectedEstimate(null); setSubmittedSelection(null); setEnteredDataCompanies([]); setSelectedCompanies([]); }}
                                 sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
                             >
                                 {t('Back')}
