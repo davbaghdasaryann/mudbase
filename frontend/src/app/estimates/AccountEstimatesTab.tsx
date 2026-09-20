@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {useTranslation} from 'react-i18next';
 
-import {Box, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
+import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
 
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
@@ -26,6 +26,7 @@ import {mainPrimaryColor} from '@/theme';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import {PageButton} from '../../tsui/Buttons/PageButton';
 import {usePermissions} from '@/api/auth';
+import {useMyPackage} from '@/hooks/useMyPackage';
 
 import EstimateOnlyForViewDialog from './EstimateOnlyForViewDialog';
 import {confirmDialog} from '../../components/ConfirmationDialog';
@@ -35,9 +36,12 @@ import ProgressIndicator from '@/tsui/ProgressIndicator';
 
 export default function AccountEstimatesTab() {
     const {session, permissionsSet} = usePermissions();
+    const myPkg = useMyPackage();
 
     const permCreate = permissionsSet?.has?.('EST_CRT');
     const permEdit = permissionsSet?.has?.('EST_EDT');
+
+    const [limitDialogOpen, setLimitDialogOpen] = useState(false);
 
     const [t] = useTranslation();
 
@@ -182,7 +186,13 @@ export default function AccountEstimatesTab() {
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 
-                {permCreate && <PageButton variant='outlined' label='Create Estimate' size='large' onClick={() => setOpenCreateEstimateDialog(true)} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }} />}
+                {permCreate && <PageButton variant='outlined' label='Create Estimate' size='large' onClick={() => {
+                    if (myPkg?.numberOfEstimations && estimates && estimates.length >= myPkg.numberOfEstimations) {
+                        setLimitDialogOpen(true);
+                        return;
+                    }
+                    setOpenCreateEstimateDialog(true);
+                }} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }} />}
             </Toolbar>
 
             <Box sx={{ flex: 1, overflow: 'auto' }}>
@@ -234,14 +244,22 @@ export default function AccountEstimatesTab() {
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                                     {permEdit && (
-                                        <IconButton size='small' onClick={() => onDuplicate(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
-                                            <ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{ height: 20 }} />
-                                        </IconButton>
+                                        <Tooltip title={myPkg && !myPkg.duplicateEstimation ? 'Ապաakտիվ' : ''} placement='top'>
+                                            <span>
+                                                <IconButton size='small' disabled={!!(myPkg && !myPkg.duplicateEstimation)} onClick={() => onDuplicate(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: myPkg && !myPkg.duplicateEstimation ? 'grayscale(1) opacity(0.4)' : 'none' } }}>
+                                                    <ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{ height: 20 }} />
+                                                </IconButton>
+                                            </span>
+                                        </Tooltip>
                                     )}
                                     {permissionsSet?.has('EST_SHR') && (
-                                        <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateIdForShare(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
-                                            <ImgElement src='/images/icons/toolbar/share.svg' sx={{ height: 20 }} />
-                                        </IconButton>
+                                        <Tooltip title={myPkg && !myPkg.shareEstimations ? 'Ապաakտիվ' : ''} placement='top'>
+                                            <span>
+                                                <IconButton size='small' disabled={!!(myPkg && !myPkg.shareEstimations)} onClick={() => { setEstimateTitle(est.name); setEstimateIdForShare(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: myPkg && !myPkg.shareEstimations ? 'grayscale(1) opacity(0.4)' : 'none' } }}>
+                                                    <ImgElement src='/images/icons/toolbar/share.svg' sx={{ height: 20 }} />
+                                                </IconButton>
+                                            </span>
+                                        </Tooltip>
                                     )}
                                     {permEdit ? (
                                         <IconButton size='small' onClick={() => { setEstimateTitle(est.name); setEstimateId(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
@@ -253,9 +271,13 @@ export default function AccountEstimatesTab() {
                                         </IconButton>
                                     )}
                                     {permEdit && (
-                                        <IconButton size='small' onClick={() => onArchive(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'none' } }}>
-                                            <ImgElement src='/images/icons/toolbar/archive.svg' sx={{ height: 20 }} />
-                                        </IconButton>
+                                        <Tooltip title={myPkg && !myPkg.archiveEstimations ? 'Ապաakտիվ' : ''} placement='top'>
+                                            <span>
+                                                <IconButton size='small' disabled={!!(myPkg && !myPkg.archiveEstimations)} onClick={() => onArchive(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: myPkg && !myPkg.archiveEstimations ? 'grayscale(1) opacity(0.4)' : 'none' } }}>
+                                                    <ImgElement src='/images/icons/toolbar/archive.svg' sx={{ height: 20 }} />
+                                                </IconButton>
+                                            </span>
+                                        </Tooltip>
                                     )}
                                     {permEdit && (
                                         <IconButton size='small' onClick={() => onRemove(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: 'sepia(1) saturate(5) hue-rotate(310deg)' } }}>
@@ -304,6 +326,20 @@ export default function AccountEstimatesTab() {
             {openCreateEstimateDialog && <CreateEstimateDialog onClose={() => setOpenCreateEstimateDialog(false)} onConfirm={() => setDataRequested(false)} />}
 
             <ProgressIndicator show={bigProgIndic} background='backdrop' />
+
+            <Dialog open={limitDialogOpen} onClose={() => setLimitDialogOpen(false)} maxWidth='sm' fullWidth>
+                <DialogTitle>{t('Estimation Limit Reached')}</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        {t('estimationsLimit.limitReached')}
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setLimitDialogOpen(false)} variant='contained' sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor }}>
+                        {t('Close')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }

@@ -45,6 +45,7 @@ import {isPathnameEqual} from '../../lib/urllib';
 import ImgElement from '../../tsui/DomElements/ImgElement';
 import {facebookUrl, instagramUrl, telegramUrl, youtubeChannelUrl} from '@/theme';
 import {useMobileDrawer} from './MobileDrawerContext';
+import {useMyPackage} from '@/hooks/useMyPackage';
 
 export const drawerWidth = 300;
 const listItemIconSize = 34;
@@ -76,6 +77,15 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const {nav} = useMainNavigation();
     const { permissionsSet } = usePermissions();
     const isSuperAdmin = permissionsSet?.has('ALL') || permissionsSet?.has('USR_FCH_ALL') || permissionsSet?.has('ACC_FCH');
+    const myPkg = useMyPackage();
+
+    const isNavLocked = React.useCallback((href: string): boolean => {
+        if (!myPkg) return false; // no package = full access
+        if (href.startsWith('/costing')) return !myPkg.costing;
+        if (href.startsWith('/performance')) return !myPkg.performance;
+        if (href.startsWith('/analysis')) return !myPkg.analysis;
+        return false;
+    }, [myPkg]);
 
     const [iconColor, setIconColor] = React.useState(theme.palette.mode === 'dark' ? 'white' : '#006EA0');
 
@@ -95,7 +105,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 const isActive = isPathnameEqual(pathname, href);
 
 
+                const locked = isNavLocked(href);
+
                 const handleClick = (e: React.MouseEvent) => {
+                    if (locked) { e.preventDefault(); return; }
                     if (isActive) {
                         // Already on this page — force full reload to reset to initial state
                         e.preventDefault();
@@ -114,6 +127,9 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                             onClick={handleClick}
                             sx={{
                                 textDecoration: 'none',
+                                opacity: locked ? 0.4 : 1,
+                                pointerEvents: locked ? 'none' : undefined,
+                                cursor: locked ? 'default' : undefined,
                                 '& .MuiListItemIcon-root': { color: iconColor },
                                 '& .MuiSvgIcon-root': { color: iconColor },
                                 // Active state: teal text, icon, svg, and img

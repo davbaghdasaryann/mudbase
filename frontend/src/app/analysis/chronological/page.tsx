@@ -20,7 +20,7 @@ import ChronologicalListDialog from './ChronologicalListDialog';
 import ChronologicalDateRangeDialog from './ChronologicalDateRangeDialog';
 import ChronologicalBreakdownTable, { BreakdownItem } from './ChronologicalBreakdownTable';
 import * as Api from '@/api';
-import PackageLock from '@/components/PackageLock';
+
 
 type DialogState = 'none' | 'create' | ChronologicalSourceType | 'daterange';
 
@@ -58,7 +58,7 @@ const formatMonth = (m: string) => { const [y, mo] = m.split('-'); return `${AM_
 const formatMonthTooltip = (m: string) => { const [y, mo] = m.split('-'); return `${AM_MONTHS[Number(mo) - 1]} ${y}`; };
 const formatY = (v: number) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v / 1_000).toFixed(0)}k` : String(Math.round(v));
 
-function ChronologicalAnalysisPageInner() {
+export default function ChronologicalAnalysisPage() {
     const { t } = useTranslation();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -340,6 +340,3 @@ function ChronologicalAnalysisPageInner() {
     );
 }
 
-export default function ChronologicalAnalysisPage() {
-    return <PackageLock feature="analysis" pageTitle="Chronological Analysis"><ChronologicalAnalysisPageInner /></PackageLock>;
-}
