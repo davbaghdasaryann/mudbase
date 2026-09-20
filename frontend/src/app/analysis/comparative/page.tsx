@@ -13,6 +13,7 @@ import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import ComparativeCreateDialog from './ComparativeCreateDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
+import EnteredDataGrid from './EnteredDataGrid';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
 import SelectSharedEstimationDialog, { SharedEstimationSelection } from './SelectSharedEstimationDialog';
 import SubmittedEstimationsGrid from './SubmittedEstimationsGrid';
@@ -29,7 +30,7 @@ export default function ComparativeAnalysisPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
-    const [analysisType, setAnalysisType] = useState<'market' | 'base_proposals'>('market');
+    const [analysisType, setAnalysisType] = useState<'market' | 'base_proposals' | 'entered_data'>('market');
     const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
     const [selectedCompanies, setSelectedCompanies] = useState<CompanyOption[]>([]);
     const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
@@ -77,6 +78,7 @@ export default function ComparativeAnalysisPage() {
         if (key === 'By Market Value') { setSubmittedSelection(null); setAnalysisType('market'); setDialogOpen(true); }
         if (key === 'By Base Proposals') { setSubmittedSelection(null); setAnalysisType('base_proposals'); setDialogOpen(true); }
         if (key === 'By Submitted Estimations') { setSharedEstimationDialogOpen(true); }
+        if (key === 'By Entered Data') { setSubmittedSelection(null); setAnalysisType('entered_data'); setDialogOpen(true); }
     };
 
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
@@ -116,6 +118,13 @@ export default function ComparativeAnalysisPage() {
                                         </Button>
                                     </Box>
                                 )}
+                                {analysisType === 'entered_data' && !submittedSelection && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', px: 1, pb: '4px' }}>
+                                        <Button variant='text' size='small' sx={{ fontWeight: 600, color: 'primary.main', whiteSpace: 'nowrap' }}>
+                                            {t('Add')} +
+                                        </Button>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
 
@@ -143,6 +152,18 @@ export default function ComparativeAnalysisPage() {
                                     </TabPanel>
                                     <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
                                         <ComparativeLaborGrid estimate={selectedEstimate!} materialsOnly />
+                                    </TabPanel>
+                                </>
+                            ) : analysisType === 'entered_data' ? (
+                                <>
+                                    <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' />
+                                    </TabPanel>
+                                    <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' />
+                                    </TabPanel>
+                                    <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' />
                                     </TabPanel>
                                 </>
                             ) : (
