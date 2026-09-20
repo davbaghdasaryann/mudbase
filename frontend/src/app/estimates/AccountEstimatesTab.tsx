@@ -244,7 +244,7 @@ export default function AccountEstimatesTab() {
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                                     {permEdit && (
-                                        <Tooltip title={myPkg && !myPkg.duplicateEstimation ? 'Ապաakտիվ' : ''} placement='top'>
+                                        <Tooltip title={myPkg && !myPkg.duplicateEstimation ? 'Ապաակտիվ' : ''} placement='top'>
                                             <span>
                                                 <IconButton size='small' disabled={!!(myPkg && !myPkg.duplicateEstimation)} onClick={() => onDuplicate(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: myPkg && !myPkg.duplicateEstimation ? 'grayscale(1) opacity(0.4)' : 'none' } }}>
                                                     <ImgElement src='/images/icons/toolbar/duplicate.svg' sx={{ height: 20 }} />
@@ -253,7 +253,7 @@ export default function AccountEstimatesTab() {
                                         </Tooltip>
                                     )}
                                     {permissionsSet?.has('EST_SHR') && (
-                                        <Tooltip title={myPkg && !myPkg.shareEstimations ? 'Ապաakտիվ' : ''} placement='top'>
+                                        <Tooltip title={myPkg && !myPkg.shareEstimations ? 'Ապաակտիվ' : ''} placement='top'>
                                             <span>
                                                 <IconButton size='small' disabled={!!(myPkg && !myPkg.shareEstimations)} onClick={() => { setEstimateTitle(est.name); setEstimateIdForShare(est._id); setEstimateTotalCost(est.totalCost); }} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: myPkg && !myPkg.shareEstimations ? 'grayscale(1) opacity(0.4)' : 'none' } }}>
                                                     <ImgElement src='/images/icons/toolbar/share.svg' sx={{ height: 20 }} />
@@ -271,7 +271,7 @@ export default function AccountEstimatesTab() {
                                         </IconButton>
                                     )}
                                     {permEdit && (
-                                        <Tooltip title={myPkg && !myPkg.archiveEstimations ? 'Ապաakտիվ' : ''} placement='top'>
+                                        <Tooltip title={myPkg && !myPkg.archiveEstimations ? 'Ապաակտիվ' : ''} placement='top'>
                                             <span>
                                                 <IconButton size='small' disabled={!!(myPkg && !myPkg.archiveEstimations)} onClick={() => onArchive(est._id)} sx={{ '& img': { filter: 'grayscale(1) opacity(0.4)', transition: 'filter 0.15s' }, '&:hover img': { filter: myPkg && !myPkg.archiveEstimations ? 'grayscale(1) opacity(0.4)' : 'none' } }}>
                                                     <ImgElement src='/images/icons/toolbar/archive.svg' sx={{ height: 20 }} />

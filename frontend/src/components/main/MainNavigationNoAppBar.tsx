@@ -80,7 +80,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const myPkg = useMyPackage();
 
     const isNavLocked = React.useCallback((href: string): boolean => {
-        if (!myPkg) return false; // no package = full access
+        const isRestrictable = href.startsWith('/costing') || href.startsWith('/performance') || href.startsWith('/analysis');
+        if (!isRestrictable) return false;
+        if (myPkg === undefined) return true; // still loading — keep locked to avoid flash
+        if (myPkg === null) return false; // no package = full access
         if (href.startsWith('/costing')) return !myPkg.costing;
         if (href.startsWith('/performance')) return !myPkg.performance;
         if (href.startsWith('/analysis')) return !myPkg.analysis;
@@ -118,7 +121,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                     if (isMobile) closeDrawer();
                 };
 
-                return (
+                const listItemContent = (
                     <ListItem sx={{px: 1, py: 0, overflowX: 'hidden'}}>
                         <ListItemButton
                             selected={isActive}
@@ -162,6 +165,15 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                         </ListItemButton>
                     </ListItem>
                 );
+
+                if (locked) {
+                    return (
+                        <Tooltip title="Ապաակտիվ" placement="right" key={href}>
+                            <Box sx={{ display: 'block' }}>{listItemContent}</Box>
+                        </Tooltip>
+                    );
+                }
+                return listItemContent;
             };
 
             const renderPageItemChildren = (item: NavigationPageItem, path: string, depth: number) => {
