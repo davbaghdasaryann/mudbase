@@ -186,10 +186,15 @@ export default function AccountEstimatesTab() {
                 <SearchComponent onSearch={onSearch} />
                 <SpacerComponent />
 
-                {permCreate && <PageButton variant='outlined' label='Create Estimate' size='large' onClick={() => {
-                    if (myPkg?.numberOfEstimations && estimates && estimates.length >= myPkg.numberOfEstimations) {
-                        setLimitDialogOpen(true);
-                        return;
+                {permCreate && <PageButton variant='outlined' label='Create Estimate' size='large' onClick={async () => {
+                    if (myPkg?.numberOfEstimations) {
+                        try {
+                            const result = await Api.requestSession<{limited: boolean}>({ command: 'estimates/check_limit' });
+                            if (result.limited) {
+                                setLimitDialogOpen(true);
+                                return;
+                            }
+                        } catch {}
                     }
                     setOpenCreateEstimateDialog(true);
                 }} sx={{ borderRadius: '25px', height: '40px', borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }} />}
