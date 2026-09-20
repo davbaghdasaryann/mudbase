@@ -342,6 +342,12 @@ export default function AccountEstimatesTab() {
                         backgroundColor: 'rgba(0,171,190,0.08)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         mx: 'auto', mb: 3,
+                        animation: 'popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        '@keyframes popIn': {
+                            '0%': { transform: 'scale(0)', opacity: 0 },
+                            '60%': { transform: 'scale(1.18)', opacity: 1 },
+                            '100%': { transform: 'scale(1)', opacity: 1 },
+                        },
                     }}>
                         <DoDisturbAltOutlinedIcon sx={{ fontSize: 48, color: mainPrimaryColor }} />
                     </Box>
