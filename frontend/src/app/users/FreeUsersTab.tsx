@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { IconButton, Toolbar } from '@mui/material';
+import { IconButton, Toolbar, Tooltip } from '@mui/material';
 
 import { useTranslation, getI18n } from 'react-i18next';
 
@@ -152,13 +152,11 @@ export default function FreeUsersTab() {
                                         ?
                                         <></>
                                         : */}
-                                    <IconButton onClick={(event: React.MouseEvent<HTMLElement>) => {
-                                        onRemove(cell.row._id);
-                                    }
-                                    }
-                                    >
-                                        <DeleteForeverIcon />
-                                    </IconButton>
+                                    <Tooltip title={t('Delete')} placement='top'>
+                                        <IconButton onClick={() => onRemove(cell.row._id)} sx={{ color: 'grey.400', '&:hover': { color: 'error.main' } }}>
+                                            <DeleteForeverIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                     {/* } */}
 
                                 </>

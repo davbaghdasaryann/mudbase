@@ -2,12 +2,13 @@
 
 import React from 'react';
 
-import { IconButton, Toolbar } from '@mui/material';
+import { IconButton, Toolbar, Tooltip } from '@mui/material';
 
 import { useTranslation, getI18n } from 'react-i18next';
 
 import EditIcon from '@mui/icons-material/Edit';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import { useApiFetchMany } from '@/components/ApiDataFetch';
 import SearchComponent from '@/components/SearchComponent';
@@ -56,6 +57,11 @@ export default function PendingUsersPageTab() {
         setEditedUser(user);
     }, []);
 
+    const onDelete = React.useCallback(async (pendingUserId: string) => {
+        await Api.requestSession<any>({ command: 'pending_user/delete', args: { pendingUserId } });
+        apiData.setApi({ command: 'signup/pending_users' });
+    }, []);
+
     const [inviteActive, setInviteActive] = React.useState(false);
 
     return (
@@ -89,23 +95,19 @@ export default function PendingUsersPageTab() {
                     { field: 'phoneNumber', headerName: t('Phone'), headerAlign: 'center', flex: 0.3, disableColumnMenu: true },
                     { field: 'displayStatus', headerName: t('Status'), headerAlign: 'center', flex: 0.2, minWidth: 130, align: 'center', disableColumnMenu: true },
 
-                    // {
-                    //     field: 'actions',
-                    //     type: 'actions',
-                    //     headerName: t('Actions'),
-                    //     flex: 0.2,
-                    //     minWidth: 30,
-                    //     renderCell: (cell) => {
-                    //         // console.log(cell);
-                    //         return (
-                    //             <>
-                    //                 <IconButton onClick={() => onEdit(cell.row)} color='primary'>
-                    //                     <EditIcon />
-                    //                 </IconButton>
-                    //             </>
-                    //         );
-                    //     },
-                    // },
+                    {
+                        field: 'actions',
+                        type: 'actions',
+                        headerName: '',
+                        width: 60,
+                        renderCell: (cell) => (
+                            <Tooltip title={t('Delete')} placement='top'>
+                                <IconButton onClick={() => onDelete(cell.row._id)} sx={{ color: 'grey.400', '&:hover': { color: 'error.main' } }}>
+                                    <DeleteForeverIcon />
+                                </IconButton>
+                            </Tooltip>
+                        ),
+                    },
                 ]}
             />
 

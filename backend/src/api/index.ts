@@ -63,6 +63,7 @@ export * from "./signup/signup_submit";
 export * from "./user/user_get";
 export * from "./user/user_update";
 export * from "./user/user_delete";
+export * from "./user/pending_user_delete";
 export * from "./users/users_active_status_change";
 export * from "./users/users_activity_change";
 export * from "./users/users_fetch";
