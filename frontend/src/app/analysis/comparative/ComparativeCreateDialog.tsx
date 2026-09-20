@@ -8,12 +8,10 @@ import { useTranslation } from 'react-i18next';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { mainPrimaryColor } from '@/theme';
 
-const TEAL = '#00ABBE';
-
 const cards = [
-    { key: 'By Market Value',          icon: ShowChartIcon     },
-    { key: 'By Submitted Estimations', icon: FactCheckIcon     },
-    { key: 'By Base Proposals',        icon: AccountBalanceIcon },
+    { key: 'By Market Value',          icon: ShowChartIcon,      color: '#00ABBE' },
+    { key: 'By Submitted Estimations', icon: FactCheckIcon,      color: '#1CA461' },
+    { key: 'By Base Proposals',        icon: AccountBalanceIcon, color: '#0288D1' },
 ];
 
 interface Props {
@@ -63,9 +61,9 @@ export default function ComparativeCreateDialog({ open, onClose, onSelect }: Pro
                                     transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.15s',
                                     '&:hover': {
                                         transform: 'translateY(-2px)',
-                                        boxShadow: `0 8px 24px ${TEAL}22`,
-                                        borderColor: TEAL,
-                                        background: `${TEAL}08`,
+                                        boxShadow: `0 8px 24px ${card.color}22`,
+                                        borderColor: card.color,
+                                        background: `${card.color}08`,
                                     },
                                 }}
                             >
@@ -73,9 +71,9 @@ export default function ComparativeCreateDialog({ open, onClose, onSelect }: Pro
                                     width: 56, height: 56,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     borderRadius: 2,
-                                    bgcolor: `${TEAL}14`,
+                                    bgcolor: `${card.color}14`,
                                 }}>
-                                    <Icon sx={{ fontSize: 30, color: TEAL }} />
+                                    <Icon sx={{ fontSize: 30, color: card.color }} />
                                 </Box>
                                 <Typography variant='body2' align='center' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: 1.3 }}>
                                     {t(card.key)}
