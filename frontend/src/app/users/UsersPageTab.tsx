@@ -5,6 +5,7 @@ import React from 'react';
 import { Box, Button, IconButton, Toolbar, Tooltip } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 
 import { useTranslation } from 'react-i18next';
@@ -66,6 +67,19 @@ export default function UsersPageTab() {
     //     }
     // }, []);
 
+
+    const { data: session } = useSession();
+
+    const onDeleteUser = React.useCallback(async (userId: string) => {
+        const result = await confirmDialog(t('Are you sure?'));
+        if (result.isConfirmed) {
+            await Api.requestSession<any>({ command: 'user/delete', args: { userId } });
+            apiData.setApi({ command: 'users/fetch' });
+            Api.requestSession<{ limited: boolean }>({ command: 'users/check_limit' })
+                .then(r => setInviteLimited(r.limited))
+                .catch(() => {});
+        }
+    }, []);
 
     const onIsActiveStatusChange = React.useCallback(async (userId: string, activeStatus: boolean) => {
         const result = await confirmDialog(t('Are you sure?'));
@@ -130,6 +144,9 @@ export default function UsersPageTab() {
                                 <>
                                     <IconButton onClick={() => handleEditUser(cell.row)} color='primary'>
                                         <EditIcon />
+                                    </IconButton>
+                                    <IconButton onClick={() => onDeleteUser(cell.row._id)} color='error'>
+                                        <DeleteOutlineIcon />
                                     </IconButton>
                                 </>
                             );
