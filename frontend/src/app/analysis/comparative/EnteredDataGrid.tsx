@@ -34,7 +34,7 @@ interface SectionGroup {
     items: Row[];
 }
 
-type CellState = { unitCost: string; qty: string };
+export type CellState = { unitCost: string; qty: string };
 
 const AM_UNIT     = 'Չափման միավոր';
 const AM_ESTIMATE = 'Նախահաշիվ';
@@ -57,20 +57,22 @@ interface Props {
     mode?: GridMode;
     companies?: EnteredCompany[];
     onDeleteCompany?: (id: string) => void;
+    cellValues?: Record<string, Record<string, CellState>>;
+    onCellChange?: (itemId: string, cid: string, field: keyof CellState, val: string) => void;
 }
 
-export default function EnteredDataGrid({ estimate, mode = 'general', companies = [], onDeleteCompany }: Props) {
+export default function EnteredDataGrid({ estimate, mode = 'general', companies = [], onDeleteCompany, cellValues: externalCellValues, onCellChange }: Props) {
     const grab = useGrabScroll();
     const [groups, setGroups] = useState<SectionGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [cellValues, setCellValues] = useState<Record<string, Record<string, CellState>>>(() => {
-        try {
-            const raw = localStorage.getItem(`entered_cells_${String(estimate._id)}`);
-            return raw ? JSON.parse(raw) : {};
-        } catch { return {}; }
-    });
+    const [localCellValues, setLocalCellValues] = useState<Record<string, Record<string, CellState>>>({});
     const [colWidths, setColWidths] = useState<Record<string, number>>(DEFAULT_WIDTHS);
+
+    const cellValues = externalCellValues ?? localCellValues;
+    const setCellValues = onCellChange
+        ? undefined
+        : setLocalCellValues;
 
     const estimateId = String(estimate._id);
     const isMaterials = mode === 'materials';
@@ -99,14 +101,14 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
         }).catch(e => setError(String(e))).finally(() => setLoading(false));
     }, [estimateId, mode]);
 
-    // Persist cell values whenever they change
-    useEffect(() => {
-        try { localStorage.setItem(`entered_cells_${estimateId}`, JSON.stringify(cellValues)); } catch {}
-    }, [estimateId, cellValues]);
-
     const getCell = (itemId: string, cid: string): CellState => cellValues[itemId]?.[cid] ?? { unitCost: '', qty: '' };
-    const updateCell = (itemId: string, cid: string, field: keyof CellState, val: string) =>
-        setCellValues(prev => ({ ...prev, [itemId]: { ...prev[itemId], [cid]: { ...getCell(itemId, cid), [field]: val } } }));
+    const updateCell = (itemId: string, cid: string, field: keyof CellState, val: string) => {
+        if (onCellChange) {
+            onCellChange(itemId, cid, field, val);
+        } else {
+            setLocalCellValues(prev => ({ ...prev, [itemId]: { ...prev[itemId], [cid]: { ...getCell(itemId, cid), [field]: val } } }));
+        }
+    };
     const calcTotalNum = (itemId: string, cid: string): number | null => {
         const { unitCost, qty } = getCell(itemId, cid);
         const uc = parseFloat(unitCost), q = parseFloat(qty);

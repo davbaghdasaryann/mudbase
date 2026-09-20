@@ -13,7 +13,7 @@ import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
 import ComparativeCreateDialog from './ComparativeCreateDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
-import EnteredDataGrid, { EnteredCompany } from './EnteredDataGrid';
+import EnteredDataGrid, { EnteredCompany, CellState } from './EnteredDataGrid';
 import AddEnteredCompanyDialog from './AddEnteredCompanyDialog';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
 import SelectSharedEstimationDialog, { SharedEstimationSelection } from './SelectSharedEstimationDialog';
@@ -23,8 +23,6 @@ import * as EstimatesApi from '@/api/estimate';
 import { mainPrimaryColor } from '@/theme';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
-
-const STORAGE_KEY = 'comparative_analysis_state';
 
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
@@ -39,48 +37,54 @@ export default function ComparativeAnalysisPage() {
     const [sharedEstimationDialogOpen, setSharedEstimationDialogOpen] = useState(false);
     const [submittedSelection, setSubmittedSelection] = useState<SharedEstimationSelection | null>(null);
     const [enteredDataCompanies, setEnteredDataCompanies] = useState<EnteredCompany[]>([]);
+    const [enteredDataCellValues, setEnteredDataCellValues] = useState<Record<string, Record<string, CellState>>>({});
     const [addEnteredCompanyOpen, setAddEnteredCompanyOpen] = useState(false);
 
     const hasData = !!selectedEstimate || !!submittedSelection;
     const restoredRef = useRef(false);
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Restore from localStorage on mount (URL params take priority)
+    // Load saved state from DB on mount (URL params take priority)
     useEffect(() => {
         if (restoredRef.current) return;
         restoredRef.current = true;
         if (searchParams.get('type')) return;
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return;
-            const saved = JSON.parse(raw);
-            setAnalysisType(saved.analysisType ?? 'market');
-            setActiveTab(saved.activeTab ?? 'general');
-            setSelectedCompanies(saved.selectedCompanies ?? []);
-            setEnteredDataCompanies(saved.enteredDataCompanies ?? []);
-            if (saved.submittedSelection) {
-                setSubmittedSelection(saved.submittedSelection);
-            } else if (saved.estimateId) {
-                Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: saved.estimateId } })
-                    .then(full => { if (full) setSelectedEstimate(full); })
-                    .catch(() => { localStorage.removeItem(STORAGE_KEY); });
-            }
-        } catch { localStorage.removeItem(STORAGE_KEY); }
+        Api.requestSession<any>({ command: 'comparative/load_state', args: {} })
+            .then(saved => {
+                if (!saved) return;
+                setAnalysisType(saved.analysisType ?? 'market');
+                setActiveTab(saved.activeTab ?? 'general');
+                setSelectedCompanies(saved.selectedCompanies ?? []);
+                setEnteredDataCompanies(saved.enteredDataCompanies ?? []);
+                setEnteredDataCellValues(saved.enteredDataCellValues ?? {});
+                if (saved.submittedSelection) {
+                    setSubmittedSelection(saved.submittedSelection);
+                } else if (saved.estimateId) {
+                    Api.requestSession<EstimatesApi.ApiEstimate>({ command: 'estimate/get', args: { estimateId: saved.estimateId } })
+                        .then(full => { if (full) setSelectedEstimate(full); })
+                        .catch(() => {});
+                }
+            })
+            .catch(() => {});
     }, []);
 
-    // Persist state whenever key values change
+    // Debounced DB save whenever state changes
     useEffect(() => {
-        if (!hasData) { localStorage.removeItem(STORAGE_KEY); return; }
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        if (!hasData) return;
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(() => {
+            Api.requestSession({ command: 'comparative/save_state', json: {
                 analysisType,
                 estimateId: selectedEstimate ? String(selectedEstimate._id) : null,
                 activeTab,
                 selectedCompanies,
                 submittedSelection,
                 enteredDataCompanies,
-            }));
-        } catch {}
-    }, [analysisType, selectedEstimate, activeTab, selectedCompanies, submittedSelection, enteredDataCompanies, hasData]);
+                enteredDataCellValues,
+            } }).catch(() => {});
+        }, 800);
+        return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+    }, [analysisType, selectedEstimate, activeTab, selectedCompanies, submittedSelection, enteredDataCompanies, enteredDataCellValues, hasData]);
 
     useEffect(() => {
         const type = searchParams.get('type');
@@ -141,7 +145,7 @@ export default function ComparativeAnalysisPage() {
                             <Button
                                 startIcon={<ArrowBackIcon fontSize='small' />}
                                 size='small'
-                                onClick={() => { setSelectedEstimate(null); setSubmittedSelection(null); setEnteredDataCompanies([]); setSelectedCompanies([]); }}
+                                onClick={() => { setSelectedEstimate(null); setSubmittedSelection(null); setEnteredDataCompanies([]); setSelectedCompanies([]); setEnteredDataCellValues({}); }}
                                 sx={{ color: 'text.secondary', pl: 0, mb: 0.5, '&:hover': { background: 'transparent', color: 'primary.main' } }}
                             >
                                 {t('Back')}
@@ -201,13 +205,13 @@ export default function ComparativeAnalysisPage() {
                             ) : analysisType === 'entered_data' ? (
                                 <>
                                     <TabPanel value='general' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='general' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} cellValues={enteredDataCellValues} onCellChange={(itemId, cid, field, val) => setEnteredDataCellValues(prev => ({ ...prev, [itemId]: { ...prev[itemId], [cid]: { ...(prev[itemId]?.[cid] ?? { unitCost: '', qty: '' }), [field]: val } } }))} />
                                     </TabPanel>
                                     <TabPanel value='labor' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='labor' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} cellValues={enteredDataCellValues} onCellChange={(itemId, cid, field, val) => setEnteredDataCellValues(prev => ({ ...prev, [itemId]: { ...prev[itemId], [cid]: { ...(prev[itemId]?.[cid] ?? { unitCost: '', qty: '' }), [field]: val } } }))} />
                                     </TabPanel>
                                     <TabPanel value='materials' sx={{ px: 0, pt: 2 }}>
-                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} />
+                                        <EnteredDataGrid estimate={selectedEstimate!} mode='materials' companies={enteredDataCompanies} onDeleteCompany={id => setEnteredDataCompanies(prev => prev.filter(c => c.id !== id))} cellValues={enteredDataCellValues} onCellChange={(itemId, cid, field, val) => setEnteredDataCellValues(prev => ({ ...prev, [itemId]: { ...prev[itemId], [cid]: { ...(prev[itemId]?.[cid] ?? { unitCost: '', qty: '' }), [field]: val } } }))} />
                                     </TabPanel>
                                 </>
                             ) : (
