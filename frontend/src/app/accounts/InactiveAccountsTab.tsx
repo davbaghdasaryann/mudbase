@@ -4,11 +4,12 @@ import React from 'react';
 
 import * as F from 'tsui/Form';
 
-import { Button, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
+import { IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, useTheme } from '@mui/material';
 
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import * as Api from 'api';
 import SearchComponent from '../../components/SearchComponent';
@@ -159,36 +160,29 @@ export default function ActiveAccountsTab() {
                         field: 'actions',
                         type: 'actions',
                         headerName: '',
-                        // width: 80,
+                        width: 130,
                         renderCell: (cell) => {
                             return (
                                 <>
-                                    <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
-                                        <DeleteOutlineIcon />
-                                    </IconButton>
+                                    <Tooltip title={t('Edit')} placement='top'>
+                                        <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
+                                            <EditIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={t('ACTIVATE')} placement='top'>
+                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id)} color='success'>
+                                            <CheckCircleOutlineIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={t('Delete')} placement='top'>
+                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
+                                            <DeleteOutlineIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </>
                             );
                         },
                     },
-                    {
-                        field: 'activate',
-                        type: 'actions',
-                        headerName: '',
-                        // width: 80,
-                        flex: 0.5,
-                        renderCell: (cell) => {
-                            return (
-                                <>
-                                    <Button onClick={() => onIsActiveStatusChange(cell.row._id)} color='primary'>
-                                        {t('ACTIVATE')}
-                                    </Button>
-                                </>
-                            );
-                        },
-                    }, // width: 600 },
                 ]}
             />
 

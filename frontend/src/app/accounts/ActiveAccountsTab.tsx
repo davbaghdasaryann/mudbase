@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Button, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
+import { IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 
 import * as Api from '@/api';
 import SearchComponent from '../../components/SearchComponent';
@@ -170,39 +171,34 @@ export default function ActiveAccountsTab() {
                         field: 'actions',
                         type: 'actions',
                         headerName: '',
-                        // width: 80,
+                        width: 170,
                         renderCell: (cell) => {
                             return (
                                 <>
-                                    <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => setAssignPackageAccount(cell.row)} title={t('Assign Package')}>
-                                        <Inventory2OutlinedIcon fontSize='small' />
-                                    </IconButton>
-                                    <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
-                                        <DeleteOutlineIcon />
-                                    </IconButton>
+                                    <Tooltip title={t('Edit')} placement='top'>
+                                        <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
+                                            <EditIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={t('Assign Package')} placement='top'>
+                                        <IconButton onClick={() => setAssignPackageAccount(cell.row)}>
+                                            <Inventory2OutlinedIcon fontSize='small' />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={t('DEACTIVATE')} placement='top'>
+                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id)} color='warning'>
+                                            <BlockOutlinedIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={t('Delete')} placement='top'>
+                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)} color='error'>
+                                            <DeleteOutlineIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </>
                             );
                         },
-                    }, // width: 600 },
-                    {
-                        field: 'activate',
-                        type: 'actions',
-                        headerName: '',
-                        flex: 0.5,
-                        // width: 80,
-                        renderCell: (cell) => {
-                            return (
-                                <>
-                                    <Button onClick={() => onIsActiveStatusChange(cell.row._id)} color='primary'>
-                                        {t('DEACTIVATE')}
-                                    </Button>
-                                </>
-                            );
-                        },
-                    }, // width: 600 },
+                    },
                 ]}
             />
 
