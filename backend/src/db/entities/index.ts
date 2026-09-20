@@ -9,3 +9,4 @@ export * from './favorites';
 export * from './dashboard';
 export * from './comparative';
 export * from './chronological';
+export * from './structural';
