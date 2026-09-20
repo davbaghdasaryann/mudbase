@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Table, TableBody, TableRow, TableCell, TableHead, InputBase } from '@mui/material';
+import NorthEastIcon from '@mui/icons-material/NorthEast';
+import SouthWestIcon from '@mui/icons-material/SouthWest';
+import CheckIcon from '@mui/icons-material/Check';
 import { useGrabScroll } from '@/hooks/useGrabScroll';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
@@ -108,12 +111,12 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
         }));
     };
 
-    const calcTotal = (itemId: string, companyId: string): string => {
+    const calcTotalNum = (itemId: string, companyId: string): number | null => {
         const { unitCost, qty } = getCellState(itemId, companyId);
         const uc = parseFloat(unitCost);
         const q = parseFloat(qty);
-        if (isNaN(uc) || isNaN(q)) return '—';
-        return formatCurrencyRounded(uc * q);
+        if (isNaN(uc) || isNaN(q)) return null;
+        return uc * q;
     };
 
     if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>;
@@ -206,8 +209,8 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
                                                     onChange={v => updateCell(itemId, c.id, 'qty', v)}
                                                 />
                                             </TableCell>
-                                            <TableCell align='center' sx={{ py: 1.5, color: 'text.secondary', fontSize: 13 }}>
-                                                {calcTotal(itemId, c.id)}
+                                            <TableCell align='center' sx={{ py: 1.5 }}>
+                                                <TrendCell companyTotal={calcTotalNum(itemId, c.id)} estTotal={estTotal} />
                                             </TableCell>
                                         </React.Fragment>
                                     ))}
@@ -219,6 +222,23 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
                 })()}
             </TableBody>
         </Table>
+        </Box>
+    );
+}
+
+function TrendCell({ companyTotal, estTotal }: { companyTotal: number | null; estTotal: number }) {
+    if (companyTotal === null) return <Typography variant='body2' color='text.disabled'>—</Typography>;
+    const a = Math.round(estTotal);
+    const b = Math.round(companyTotal);
+    const icon = a === b
+        ? <CheckIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+        : companyTotal > estTotal
+            ? <NorthEastIcon sx={{ fontSize: 16, color: 'error.main' }} />
+            : <SouthWestIcon sx={{ fontSize: 16, color: 'success.main' }} />;
+    return (
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: 13 }}>
+            {icon}
+            {formatCurrencyRounded(companyTotal)}
         </Box>
     );
 }
