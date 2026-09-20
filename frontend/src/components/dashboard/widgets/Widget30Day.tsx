@@ -48,9 +48,9 @@ const GRID_STROKE = 'rgba(0,0,0,0.05)';
 const BAR_BLUE_TOP = '#a8e6df';
 const BAR_BLUE_BOTTOM = '#007a6e';
 const BAR_BLUE_STROKE = '#005f56';
-const BAR_PURPLE_TOP = '#e1bee7';
-const BAR_PURPLE_BOTTOM = '#6a1b9a';
-const BAR_PURPLE_STROKE = '#4a148c';
+const BAR_PURPLE_TOP = '#FFCC80';
+const BAR_PURPLE_BOTTOM = '#F57C00';
+const BAR_PURPLE_STROKE = '#E65100';
 const BADGE_GREEN_BG = '#c8e6c9';
 const BADGE_GREEN_TEXT = '#2e7d32';
 
