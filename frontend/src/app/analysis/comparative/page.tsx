@@ -87,7 +87,7 @@ export default function ComparativeAnalysisPage() {
     const handleSelect = (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         setSelectedEstimate(estimate);
-        setActiveTab(analysisType === 'base_proposals' ? 'labor' : 'general');
+        setActiveTab((analysisType === 'base_proposals' || analysisType === 'entered_data') ? 'labor' : 'general');
     };
 
     return (
