@@ -5,11 +5,8 @@ import { requireQueryParam } from '../../tsback/req/req_params';
 import { registerApiSession } from '../../server/register';
 import { respondJsonData } from '../../tsback/req/req_response';
 import { verify } from '../../tslib/verify';
-import { Permissions } from '../../tsmudbase/permissions_setup';
 
 registerApiSession('user/delete', async (req, res, session) => {
-    session.assertPermission(Permissions.UserManageAccount);
-
     const userId = new ObjectId(requireQueryParam(req, 'userId'));
     const users = Db.getUsersCollection();
 
