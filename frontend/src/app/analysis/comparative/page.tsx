@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Box, Button, Stack, Typography, Tab } from '@mui/material';
+import { Box, Button, Typography, Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import ExtensionIcon from '@mui/icons-material/Extension';
-import AddIcon from '@mui/icons-material/Add';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import ChooseEstimationDialog from '../structural/ChooseEstimationDialog';
+import ComparativeCreateDialog from './ComparativeCreateDialog';
 import ComparativeLaborGrid from './ComparativeLaborGrid';
 import BaseProposalsGrid from './BaseProposalsGrid';
 import SelectCompanyDialog, { CompanyOption } from './SelectCompanyDialog';
@@ -18,18 +18,14 @@ import SelectSharedEstimationDialog, { SharedEstimationSelection } from './Selec
 import SubmittedEstimationsGrid from './SubmittedEstimationsGrid';
 import * as Api from '@/api';
 import * as EstimatesApi from '@/api/estimate';
+import { mainPrimaryColor } from '@/theme';
 
 type AnalyticsTab = 'general' | 'labor' | 'materials';
-
-const cards = [
-    { key: 'By Market Value', gradientId: 'comparativeGradientGreen' },
-    { key: 'By Submitted Estimations', gradientId: 'comparativeGradientBlue' },
-    { key: 'By Base Proposals', gradientId: 'comparativeGradientTeal' },
-];
 
 export default function ComparativeAnalysisPage() {
     const { t } = useTranslation();
     const searchParams = useSearchParams();
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<EstimatesApi.ApiEstimate | null>(null);
     const [activeTab, setActiveTab] = useState<AnalyticsTab>('general');
@@ -166,80 +162,31 @@ export default function ComparativeAnalysisPage() {
                     </TabContext>
                 </Box>
             ) : (
-                <Box sx={{ display: 'flex', minHeight: '65vh', alignItems: 'center', justifyContent: 'center' }}>
-                <Stack direction='row' spacing={3} flexWrap='wrap' useFlexGap justifyContent='center' sx={{ width: '100%' }}>
-                    {cards.map((card) => (
-                        <Box
-                            key={card.key}
-                            role='button'
-                            tabIndex={0}
-                            onClick={() => handleCardClick(card.key)}
-                            sx={{
-                                position: 'relative',
-                                width: 180,
-                                minHeight: 160,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 1.5,
-                                px: 2,
-                                py: 3,
-                                cursor: 'pointer',
-                                borderRadius: 3,
-                                background: 'rgba(255, 255, 255, 0.55)',
-                                backdropFilter: 'blur(12px)',
-                                WebkitBackdropFilter: 'blur(12px)',
-                                border: '1px solid rgba(255, 255, 255, 0.4)',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                                '&:hover': {
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.12)',
-                                },
-                            }}
-                        >
-                            <AddIcon
-                                sx={{
-                                    position: 'absolute',
-                                    top: 12,
-                                    left: 12,
-                                    fontSize: 20,
-                                    color: 'text.primary',
-                                }}
-                            />
-                            <ExtensionIcon
-                                sx={{
-                                    fontSize: 56,
-                                    fill: `url(#${card.gradientId})`,
-                                }}
-                            />
-                            <Typography variant='body2' align='center' sx={{ fontWeight: 600, color: 'text.primary' }}>
-                                {t(card.key)}
-                            </Typography>
-                        </Box>
-                    ))}
-                </Stack>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 2 }}>
+                    <CompareArrowsIcon sx={{ fontSize: 90, color: '#00ABBE', opacity: 0.25 }} />
+                    <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
+                        {t('No analytics created yet')}
+                    </Typography>
+                    <PageButton
+                        variant='outlined'
+                        label='Create'
+                        size='large'
+                        onClick={() => setCreateDialogOpen(true)}
+                        sx={{
+                            borderRadius: '25px',
+                            height: '40px',
+                            mt: 1,
+                            '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor },
+                        }}
+                    />
                 </Box>
             )}
 
-            {/* SVG gradient defs — kept after main content so it's not the first Stack child */}
-            <Box component='svg' width={0} height={0} sx={{ position: 'absolute' }}>
-                <defs>
-                    <linearGradient id='comparativeGradientGreen' x1='0%' y1='0%' x2='100%' y2='100%'>
-                        <stop offset='0%' stopColor='#2ECC71' />
-                        <stop offset='100%' stopColor='#1CA461' />
-                    </linearGradient>
-                    <linearGradient id='comparativeGradientBlue' x1='0%' y1='0%' x2='100%' y2='100%'>
-                        <stop offset='0%' stopColor='#29B6F6' />
-                        <stop offset='100%' stopColor='#0288D1' />
-                    </linearGradient>
-                    <linearGradient id='comparativeGradientTeal' x1='0%' y1='0%' x2='100%' y2='100%'>
-                        <stop offset='0%' stopColor='#1CA461' />
-                        <stop offset='100%' stopColor='#00ABBE' />
-                    </linearGradient>
-                </defs>
-            </Box>
+            <ComparativeCreateDialog
+                open={createDialogOpen}
+                onClose={() => setCreateDialogOpen(false)}
+                onSelect={handleCardClick}
+            />
 
             <ChooseEstimationDialog
                 open={dialogOpen}
