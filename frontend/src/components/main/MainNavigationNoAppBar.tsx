@@ -15,6 +15,9 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import SpeedIcon from '@mui/icons-material/Speed';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -375,11 +378,11 @@ function useMainNavigation() {
         navigation.push({
             segment: 'catalog',
             title: t('Catalogs'),
-            icon: <ImgElement src='/images/icons/libraries.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />,
+            icon: <MenuBookIcon />,
         });
 
         if (session?.user && permissionsSet?.has('EST_USE')) {
-            navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />});
+            navigation.push({segment: 'estimates', title: t('Estimates'), icon: <ShowChartIcon />});
             navigation.push({
                 segment: 'analysis',
                 title: t('Analytics'),
@@ -397,11 +400,11 @@ function useMainNavigation() {
         }
 
         if (isSuperAdmin) {
-            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <ImgElement src='/images/icons/estimates.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />});
+            navigation.push({segment: 'admin-estimates', title: t('All Estimations'), icon: <ShowChartIcon />});
         }
 
         if (session?.user && permissionsSet?.has('USR_FCH')) {
-            navigation.push({segment: 'users', title: t('Users'), icon: <ImgElement src='/images/icons/users.svg' sx={{height: 30, filter: 'brightness(0) saturate(100%) invert(38%) sepia(100%) saturate(300%) hue-rotate(165deg) brightness(98%) contrast(100%)'}} />});
+            navigation.push({segment: 'users', title: t('Users'), icon: <PeopleOutlinedIcon />});
         }
 
         navigation.push({segment: 'account', title: t('My Company'), icon: <BusinessOutlinedIcon /> });
