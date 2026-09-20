@@ -145,17 +145,17 @@ export default function UsersPageTab() {
                             return (
                                 <>
                                     <Tooltip title={t('Edit')} placement='top'>
-                                        <IconButton onClick={() => handleEditUser(cell.row)} sx={{ color: 'action.active', '&:hover': { color: 'primary.main' } }}>
+                                        <IconButton onClick={() => handleEditUser(cell.row)}>
                                             <EditIcon />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={isActive ? t('DEACTIVATE') : t('ACTIVATE')} placement='top'>
-                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id, !isActive)} sx={{ color: 'action.active', '&:hover': { color: isActive ? 'warning.main' : 'success.main' } }}>
+                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id, !isActive)}>
                                             {isActive ? <BlockOutlinedIcon /> : <CheckCircleOutlineIcon />}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('Delete')} placement='top'>
-                                        <IconButton onClick={() => onDeleteUser(cell.row._id)} sx={{ color: 'action.active', '&:hover': { color: 'error.main' } }}>
+                                        <IconButton onClick={() => onDeleteUser(cell.row._id)}>
                                             <DeleteOutlineIcon />
                                         </IconButton>
                                     </Tooltip>

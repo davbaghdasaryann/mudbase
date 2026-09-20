@@ -165,17 +165,17 @@ export default function ActiveAccountsTab() {
                             return (
                                 <>
                                     <Tooltip title={t('Edit')} placement='top'>
-                                        <IconButton onClick={() => setEditedAccount(cell.row)} sx={{ color: 'action.active', '&:hover': { color: 'primary.main' } }}>
+                                        <IconButton onClick={() => setEditedAccount(cell.row)}>
                                             <EditIcon />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('ACTIVATE')} placement='top'>
-                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id)} sx={{ color: 'action.active', '&:hover': { color: 'success.main' } }}>
+                                        <IconButton onClick={() => onIsActiveStatusChange(cell.row._id)}>
                                             <CheckCircleOutlineIcon />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('Delete')} placement='top'>
-                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)} sx={{ color: 'action.active', '&:hover': { color: 'error.main' } }}>
+                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)}>
                                             <DeleteOutlineIcon />
                                         </IconButton>
                                     </Tooltip>
