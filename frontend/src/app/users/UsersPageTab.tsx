@@ -71,7 +71,7 @@ export default function UsersPageTab() {
     const { data: session } = useSession();
 
     const onDeleteUser = React.useCallback(async (userId: string) => {
-        const result = await confirmDialog(t('Are you sure?'));
+        const result = await confirmDialog('Ջնջե՞լ', undefined, { confirmColor: '#DC3741' });
         if (result.isConfirmed) {
             await Api.requestSession<any>({ command: 'user/delete', args: { userId } });
             apiData.setApi({ command: 'users/fetch' });
