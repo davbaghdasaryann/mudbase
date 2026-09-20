@@ -128,7 +128,7 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
         <Table size='small' sx={{ mt: 2, '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
             <TableHead>
                 <TableRow>
-                    <TableCell rowSpan={2} sx={{ ...GROUP_SX, textAlign: 'left', verticalAlign: 'middle', minWidth: colWidths.desc }}>
+                    <TableCell rowSpan={2} sx={{ ...GROUP_SX, textAlign: 'left', verticalAlign: 'middle', minWidth: companies.length > 0 ? Math.max(690, colWidths.desc) : colWidths.desc }}>
                         {rh('desc')}
                     </TableCell>
                     <TableCell rowSpan={2} align='center' sx={{ ...GROUP_SX, verticalAlign: 'middle', minWidth: colWidths.unit }}>
