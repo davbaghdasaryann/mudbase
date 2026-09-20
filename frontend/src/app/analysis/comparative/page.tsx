@@ -110,7 +110,7 @@ export default function ComparativeAnalysisPage() {
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'stretch', borderBottom: 1, borderColor: 'divider' }}>
                                 <TabList onChange={(_, v) => setActiveTab(v as AnalyticsTab)} sx={{ flex: 1 }}>
-                                    <Tab label={t('General')} value='general' disabled={analysisType === 'base_proposals' && !submittedSelection} />
+                                    <Tab label={t('General')} value='general' disabled={(analysisType === 'base_proposals' || analysisType === 'entered_data') && !submittedSelection} />
                                     <Tab label={t('Labor')} value='labor' />
                                     <Tab label={t('Materials')} value='materials' />
                                 </TabList>

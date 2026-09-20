@@ -45,11 +45,11 @@ const AM_TOTAL    = 'Ընդհանուր';
 const SUB_SX   = { fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap' as const, bgcolor: '#f4f4f4', borderBottom: '2px solid #e0e0e0', position: 'relative' as const };
 const GROUP_SX = { fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' as const, textAlign: 'center' as const, bgcolor: '#f9f9f9', borderBottom: '1px solid #e0e0e0', position: 'relative' as const };
 
-// Default column widths (px)
-const DEFAULT_WIDTHS: Record<string, number> = {
-    desc: 280, unit: 100,
+// Default column widths (px) — desc is wider when no companies yet
+const makeDefaultWidths = (hasCompanies: boolean): Record<string, number> => ({
+    desc: hasCompanies ? 280 : 420, unit: 100,
     est_uc: 120, est_qty: 90, est_total: 120,
-};
+});
 const compColWidth = (suffix: string) => suffix === 'uc' ? 110 : suffix === 'qty' ? 90 : 130;
 
 interface Props {
@@ -65,7 +65,15 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [cellValues, setCellValues] = useState<Record<string, Record<string, CellState>>>({});
-    const [colWidths, setColWidths] = useState<Record<string, number>>(DEFAULT_WIDTHS);
+    const [colWidths, setColWidths] = useState<Record<string, number>>(() => makeDefaultWidths(companies.length > 0));
+    const prevCompanyCount = React.useRef(companies.length);
+    useEffect(() => {
+        // When first company is added, shrink desc to compact default if user hasn't resized it
+        if (prevCompanyCount.current === 0 && companies.length > 0) {
+            setColWidths(prev => prev.desc === 420 ? { ...prev, desc: 280 } : prev);
+        }
+        prevCompanyCount.current = companies.length;
+    }, [companies.length]);
 
     const estimateId = String(estimate._id);
     const isMaterials = mode === 'materials';
@@ -226,8 +234,8 @@ export default function EnteredDataGrid({ estimate, mode = 'general', companies 
                                 : `${si + 1}.${i + 1} ${item.itemName}`;
                             return (
                                 <TableRow key={itemId} sx={{ bgcolor: '#fff', '&:hover': { bgcolor: '#f5fdfe' } }}>
-                                    <TableCell align='left' sx={{ py: 1.5, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        <Typography variant='body2' color='text.secondary' noWrap>{label}</Typography>
+                                    <TableCell align='left' sx={{ py: 1.5 }}>
+                                        <Typography variant='body2' color='text.secondary'>{label}</Typography>
                                     </TableCell>
                                     <TableCell align='center' sx={{ color: 'text.secondary', py: 1.5 }}>{item.unitSymbol}</TableCell>
                                     <TableCell align='center' sx={{ py: 1.5, borderLeft: '2px solid #f0f0f0' }}>{formatCurrencyRounded(item.unitCost)}</TableCell>
