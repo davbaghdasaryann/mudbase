@@ -10,3 +10,4 @@ export * from './dashboard';
 export * from './comparative';
 export * from './chronological';
 export * from './structural';
+export * from './entity_package';

@@ -26,6 +26,7 @@ export interface ApiAccount {
     // accountNumber: string;
 
     companyLogo?: string;
+    packageId?: string;
 };
 
 

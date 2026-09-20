@@ -4,6 +4,7 @@ import React from 'react';
 import { Button, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
 import * as Api from '@/api';
 import SearchComponent from '../../components/SearchComponent';
@@ -17,9 +18,11 @@ import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '@/components/ConfirmationDialog';
 import { accountActivities } from '@/tsmudbase/company_activities';
 import { PageSelect } from '../../tsui/PageSelect';
+import AssignPackageDialog from './AssignPackageDialog';
 
 export default function ActiveAccountsTab() {
     const [editedAccount, setEditedAccount] = React.useState<Api.ApiAccount | null>(null);
+    const [assignPackageAccount, setAssignPackageAccount] = React.useState<Api.ApiAccount | null>(null);
     const [createAccount, setCreateAccount] = React.useState(false);
     const [selectedValueId, setSelectedValueId] = React.useState<string | null>('all');
     const [searchValue, setSearchValue] = React.useState('');
@@ -165,6 +168,9 @@ export default function ActiveAccountsTab() {
                                     <IconButton onClick={() => setEditedAccount(cell.row)} color='primary'>
                                         <EditIcon />
                                     </IconButton>
+                                    <IconButton onClick={() => setAssignPackageAccount(cell.row)} title={t('Assign Package')}>
+                                        <Inventory2OutlinedIcon fontSize='small' />
+                                    </IconButton>
                                 </>
                             );
                         },
@@ -209,6 +215,16 @@ export default function ActiveAccountsTab() {
                     }
                 }}
             />
+
+            {assignPackageAccount && (
+                <AssignPackageDialog
+                    accountId={assignPackageAccount._id}
+                    accountName={assignPackageAccount.companyName}
+                    currentPackageId={assignPackageAccount.packageId}
+                    onClose={() => setAssignPackageAccount(null)}
+                    onSaved={() => { apiData.loading = true; apiData.invalidate(); }}
+                />
+            )}
         </>
     );
 }

@@ -129,22 +129,18 @@ registerApiSession('signup/local_invite', async (req, res, session) => {
 
     const totalCount = activeUserCount + pendingInviteCount;
 
-    if (totalCount >= 3) {
+    // Determine user limit: from assigned package, or default 3
+    let userLimit = 3;
+    if (fromUserAccount?.packageId) {
+        const pkg = await Db.getPackagesCollection().findOne({ _id: fromUserAccount.packageId });
+        if (pkg?.numberOfUsers) userLimit = pkg.numberOfUsers;
+    }
+
+    if (totalCount >= userLimit) {
         if (pendingInviteCount > 0) {
-            verify(
-                false,
-                req.t('usersLimit.pendingInviteCountMoreThanZero')
-            ); //TODO: translate this
-            // respondJsonData(res, { errMsg: req.t('usersLimit.pendingInviteCountMoreThanZero') });
-            // return
+            verify(false, req.t('usersLimit.pendingInviteCountMoreThanZero'));
         } else {
-            console.log(req.language);
-            verify(
-                false,
-                req.t('usersLimit.activeUserCountMoreThanThree')
-            );//TODO: translate this
-            // respondJsonData(res, { errMsg: req.t('usersLimit.pendingInviteCountMoreThanZero') });
-            // return
+            verify(false, req.t('usersLimit.activeUserCountMoreThanThree'));
         }
     }
 
