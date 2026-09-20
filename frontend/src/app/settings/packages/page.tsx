@@ -212,20 +212,38 @@ export default function PackagesPage() {
                     {editingId ? t('Edit Package') : t('Package Settings')}
                 </DialogTitle>
 
-                <DialogContent sx={{ pt: 1 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                        <FieldRow label={t('Package Name')}>
-                            <TextField value={form.name} onChange={e => set('name')(e.target.value)} size='small' fullWidth sx={numberFieldSx} />
-                        </FieldRow>
-                        <FieldRow label={t('Package Price')}>
-                            <NumericField value={form.price} onChange={set('price')} />
-                        </FieldRow>
-                        <FieldRow label={t('Number of Users')}>
-                            <NumericField value={form.numberOfUsers} onChange={set('numberOfUsers')} />
-                        </FieldRow>
-                        <FieldRow label={t('Number of Estimations')}>
-                            <NumericField value={form.numberOfEstimations} onChange={set('numberOfEstimations')} />
-                        </FieldRow>
+                <DialogContent sx={{ pt: 2 }}>
+                    {/* Name — full width */}
+                    <TextField
+                        label={t('Package Name')}
+                        value={form.name}
+                        onChange={e => set('name')(e.target.value)}
+                        fullWidth
+                        sx={{ ...numberFieldSx, mb: 2 }}
+                    />
+                    {/* Price / Users / Estimations — 3-column grid */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 0.5 }}>
+                        <TextField
+                            label={t('Price')}
+                            value={form.price || ''}
+                            onChange={e => set('price')(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                            inputProps={{ inputMode: 'numeric' }}
+                            sx={numberFieldSx}
+                        />
+                        <TextField
+                            label={t('Users')}
+                            value={form.numberOfUsers || ''}
+                            onChange={e => set('numberOfUsers')(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                            inputProps={{ inputMode: 'numeric' }}
+                            sx={numberFieldSx}
+                        />
+                        <TextField
+                            label={t('Estimations')}
+                            value={form.numberOfEstimations || ''}
+                            onChange={e => set('numberOfEstimations')(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                            inputProps={{ inputMode: 'numeric' }}
+                            sx={numberFieldSx}
+                        />
                     </Box>
 
                     <Divider sx={{ my: 2.5 }} />
