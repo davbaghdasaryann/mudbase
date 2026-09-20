@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {useTranslation} from 'react-i18next';
 
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
+import {Box, Button, Dialog, DialogActions, DialogContent, IconButton, Toolbar, Tooltip, Typography} from '@mui/material';
 
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
@@ -12,6 +12,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import DoDisturbAltOutlinedIcon from '@mui/icons-material/DoDisturbAltOutlined';
 
 import * as Api from 'api';
 import * as EstimatesApi from '@/api/estimate';
@@ -330,15 +331,27 @@ export default function AccountEstimatesTab() {
 
             <ProgressIndicator show={bigProgIndic} background='backdrop' />
 
-            <Dialog open={limitDialogOpen} onClose={() => setLimitDialogOpen(false)} maxWidth='sm' fullWidth>
-                <DialogTitle>{t('Estimation Limit Reached')}</DialogTitle>
-                <DialogContent>
-                    <Typography>
+            <Dialog open={limitDialogOpen} onClose={() => setLimitDialogOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogContent sx={{ textAlign: 'center', pt: 4, pb: 2, px: 4 }}>
+                    <Typography variant='h6' sx={{ fontWeight: 700, mb: 3 }}>
+                        {t('Estimation Limit Reached')}
+                    </Typography>
+                    <Box sx={{
+                        width: 90, height: 90, borderRadius: '50%',
+                        border: `3px solid ${mainPrimaryColor}`,
+                        backgroundColor: 'rgba(0,171,190,0.08)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        mx: 'auto', mb: 3,
+                    }}>
+                        <DoDisturbAltOutlinedIcon sx={{ fontSize: 48, color: mainPrimaryColor }} />
+                    </Box>
+                    <Typography sx={{ color: 'text.secondary', lineHeight: 1.7, fontSize: '0.92rem' }}>
                         {t('estimationsLimit.limitReached')}
                     </Typography>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setLimitDialogOpen(false)} variant='contained' sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor }}>
+                <DialogActions sx={{ justifyContent: 'flex-end', px: 3, pb: 3 }}>
+                    <Button onClick={() => setLimitDialogOpen(false)} variant='contained'
+                        sx={{ borderRadius: '12px', backgroundColor: mainPrimaryColor, px: 4, textTransform: 'none', fontWeight: 600, '&:hover': { backgroundColor: '#008fa0' } }}>
                         {t('Close')}
                     </Button>
                 </DialogActions>
