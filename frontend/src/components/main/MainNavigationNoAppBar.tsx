@@ -82,7 +82,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const isNavLocked = React.useCallback((href: string): boolean => {
         const isRestrictable = href.startsWith('/costing') || href.startsWith('/performance') || href.startsWith('/analysis');
         if (!isRestrictable) return false;
-        if (myPkg === undefined) return true; // still loading — keep locked to avoid flash
+        if (myPkg === undefined) return false; // still loading — default to unlocked
         if (myPkg === null) return false; // no package = full access
         if (href.startsWith('/costing')) return !myPkg.costing;
         if (href.startsWith('/performance')) return !myPkg.performance;
