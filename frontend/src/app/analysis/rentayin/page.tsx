@@ -1286,7 +1286,6 @@ export default function RentayinPage() {
                                     <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{rec.estimateName}</Typography>
                                     <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
                                         {new Date(rec.createdAt).toLocaleDateString()}
-                                        {pending > 0 && ` · ${pending} ${t('need manual entry')}`}
                                     </Typography>
                                 </Box>
                             </Box>
