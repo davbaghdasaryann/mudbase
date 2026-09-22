@@ -39,13 +39,13 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         if (!companyLaborOfferPriceByItemId.has(id)) companyLaborOfferPriceByItemId.set(id, (o as any).price as number);
     }
 
-    // Same for materials — also project estimatedLaborId to group by labor row
+    // Same for materials — project estimatedLaborId, quantity, changableAveragePrice to recompute per-row cost
     const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, estimatedLaborId: 1 } })
+        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 } })
         .toArray();
     const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
     const companyMaterialOffers = await Db.getMaterialOffersCollection()
-        .find({ accountId, itemId: { $in: materialItemIds }, isActive: { $ne: false }, isArchived: { $ne: true } }, { projection: { itemId: 1, price: 1 }, sort: { updatedAt: -1 } })
+        .find({ accountId, itemId: { $in: materialItemIds }, isActive: { $ne: false }, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 }, sort: { updatedAt: -1 } })
         .toArray();
     const companyMaterialOfferItemIds = new Set(companyMaterialOffers.map(o => o.itemId.toString()));
     // keep most-recently-updated price per material item
@@ -54,12 +54,19 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         const id = o.itemId.toString();
         if (!companyMaterialOfferPriceByItemId.has(id)) companyMaterialOfferPriceByItemId.set(id, (o as any).price as number);
     }
-    // per labor row: does ANY material item have a company offer?
+    // per labor row: recompute material cost using library prices where available; track source
     const materialSrcByLaborRowId = new Map<string, 'library' | 'market'>();
+    const libraryMaterialCostByLaborRowId = new Map<string, number>();
     for (const mat of estimateMaterialItems) {
         const laborRowId = (mat as any).estimatedLaborId?.toString();
         if (!laborRowId) continue;
-        if (companyMaterialOfferItemIds.has(mat.materialItemId?.toString() ?? '')) {
+        const matItemId = mat.materialItemId?.toString() ?? '';
+        const qty = (mat as any).quantity ?? 0;
+        const snapshotPrice = (mat as any).changableAveragePrice ?? 0;
+        const libraryPrice = companyMaterialOfferPriceByItemId.get(matItemId);
+        const effectivePrice = libraryPrice ?? snapshotPrice;
+        libraryMaterialCostByLaborRowId.set(laborRowId, (libraryMaterialCostByLaborRowId.get(laborRowId) ?? 0) + qty * effectivePrice);
+        if (companyMaterialOfferItemIds.has(matItemId)) {
             materialSrcByLaborRowId.set(laborRowId, 'library');
         } else if (!materialSrcByLaborRowId.has(laborRowId)) {
             materialSrcByLaborRowId.set(laborRowId, 'market');
@@ -178,6 +185,9 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             const libraryLaborPrice = laborSrcTag === 'library'
                 ? (companyLaborOfferPriceByItemId.get(laborItemId) ?? estimatedUnitCost)
                 : (marketPrice ?? estimatedUnitCost);
+            // Recompute material cost using library prices where available
+            const libraryMatTotal = libraryMaterialCostByLaborRowId.get(r._id) ?? 0;
+            const libraryMatUnitCost = r.quantity > 0 && libraryMatTotal > 0 ? libraryMatTotal / r.quantity : estimatedMaterialUnitCost;
             if (estimatedUnitCost > 0 || libraryLaborPrice > 0) {
                 return {
                     laborItemId,
@@ -188,7 +198,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     estimatedUnitCost,
                     estimatedMaterialUnitCost,
                     actualLaborUnitCost: libraryLaborPrice,
-                    actualMaterialUnitCost: estimatedMaterialUnitCost > 0 ? estimatedMaterialUnitCost : null,
+                    actualMaterialUnitCost: libraryMatUnitCost > 0 ? libraryMatUnitCost : null,
                     actualUnitCost: libraryLaborPrice,
                     actualLaborTotal: null,
                     actualMaterialTotal: null,

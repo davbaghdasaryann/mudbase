@@ -331,7 +331,7 @@ export default function RentayinPage() {
         if (!row.unitCostSource) return null;
         const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
         const actFull = (row.unitCostSource === 'library' || row.unitCostSource === 'market')
-            ? (row.actualUnitCost ?? 0) + (row.estimatedMaterialUnitCost ?? 0)
+            ? (row.actualUnitCost ?? 0) + (row.actualMaterialUnitCost ?? row.estimatedMaterialUnitCost ?? 0)
             : (row.actualUnitCost ?? 0);
         if (!actFull || !estFull) return null;
         return ((estFull - actFull) / actFull) * 100;
@@ -349,7 +349,7 @@ export default function RentayinPage() {
         const totalEstimated = rows.reduce((s, r) => s + ((r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity), 0);
         const totalActual = rows.reduce((s, r) => {
             const actFull = (r.unitCostSource === 'library' || r.unitCostSource === 'market')
-                ? (r.actualUnitCost ?? 0) + (r.estimatedMaterialUnitCost ?? 0)
+                ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0)
                 : (r.actualUnitCost ?? 0);
             return s + actFull * r.quantity;
         }, 0);
@@ -468,7 +468,7 @@ export default function RentayinPage() {
                                                                     const estUnitFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
                                                                     const estTotal = estUnitFull * row.quantity;
                                                                     const actUnitCost = (row.unitCostSource === 'library' || row.unitCostSource === 'market')
-                                                                        ? (row.actualUnitCost ?? 0) + (row.estimatedMaterialUnitCost ?? 0)
+                                                                        ? (row.actualUnitCost ?? 0) + (row.actualMaterialUnitCost ?? row.estimatedMaterialUnitCost ?? 0)
                                                                         : row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
@@ -614,7 +614,7 @@ export default function RentayinPage() {
                             const donutActMat = rows.reduce((s, r) => {
                                 if (r.unitCostSource === 'actual') return s + (r.actualMaterialTotal ?? 0);
                                 if (r.unitCostSource === 'manual') return s + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity;
-                                return s + (r.estimatedMaterialUnitCost ?? 0) * r.quantity;
+                                return s + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) * r.quantity;
                             }, 0);
                             const rowsWithActual = rows.filter(r => r.actualUnitCost !== null).length;
                             const completionPct = rows.length > 0 ? Math.min(100, Math.round((rowsWithActual / rows.length) * 100)) : null;
