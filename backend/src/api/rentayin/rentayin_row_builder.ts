@@ -39,15 +39,32 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         if (!companyLaborOfferPriceByItemId.has(id)) companyLaborOfferPriceByItemId.set(id, (o as any).price as number);
     }
 
-    // Same for materials
+    // Same for materials — also project estimatedLaborId to group by labor row
     const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1 } })
+        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, estimatedLaborId: 1 } })
         .toArray();
     const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
     const companyMaterialOffers = await Db.getMaterialOffersCollection()
-        .find({ accountId, itemId: { $in: materialItemIds } }, { projection: { itemId: 1 } })
+        .find({ accountId, itemId: { $in: materialItemIds }, isActive: { $ne: false }, isArchived: { $ne: true } }, { projection: { itemId: 1, price: 1 }, sort: { updatedAt: -1 } })
         .toArray();
     const companyMaterialOfferItemIds = new Set(companyMaterialOffers.map(o => o.itemId.toString()));
+    // keep most-recently-updated price per material item
+    const companyMaterialOfferPriceByItemId = new Map<string, number>();
+    for (const o of companyMaterialOffers) {
+        const id = o.itemId.toString();
+        if (!companyMaterialOfferPriceByItemId.has(id)) companyMaterialOfferPriceByItemId.set(id, (o as any).price as number);
+    }
+    // per labor row: does ANY material item have a company offer?
+    const materialSrcByLaborRowId = new Map<string, 'library' | 'market'>();
+    for (const mat of estimateMaterialItems) {
+        const laborRowId = (mat as any).estimatedLaborId?.toString();
+        if (!laborRowId) continue;
+        if (companyMaterialOfferItemIds.has(mat.materialItemId?.toString() ?? '')) {
+            materialSrcByLaborRowId.set(laborRowId, 'library');
+        } else if (!materialSrcByLaborRowId.has(laborRowId)) {
+            materialSrcByLaborRowId.set(laborRowId, 'market');
+        }
+    }
 
     // If the costing was forked, build a direct originalLaborItemId → forkedRowId mapping.
     // Costing data (actualData, costHistory) is keyed by forked row IDs.
@@ -145,7 +162,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     actualMaterialTotal: matActTotal,
                     unitCostSource: 'actual' as const,
                     laborUnitCostSource: 'actual' as const,
-                    materialUnitCostSource: matActTotal > 0 ? 'actual' as const : null,
+                    materialUnitCostSource: matActTotal > 0 ? 'actual' as const : (estimatedMaterialUnitCost > 0 ? (materialSrcByLaborRowId.get(r._id) ?? 'market') : null),
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
                 };
@@ -177,7 +194,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     actualMaterialTotal: null,
                     unitCostSource: laborSrcTag,
                     laborUnitCostSource: laborSrcTag,
-                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? 'market' as const : null,
+                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? (materialSrcByLaborRowId.get(r._id) ?? 'market') : null,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
                 };
@@ -199,7 +216,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                 actualMaterialTotal: null,
                 unitCostSource: null,
                 laborUnitCostSource: null,
-                materialUnitCostSource: estimatedMaterialUnitCost > 0 ? laborSrcTag : null,
+                materialUnitCostSource: estimatedMaterialUnitCost > 0 ? (materialSrcByLaborRowId.get(r._id) ?? 'market') : null,
                 sectionName: r.sectionName,
                 subsectionName: r.subsectionName,
             };
