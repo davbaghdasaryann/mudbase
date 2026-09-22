@@ -348,7 +348,7 @@ export default function RentayinPage() {
         const totalEstimated = rows.reduce((s, r) => s + ((r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity), 0);
         const totalActual = rows.reduce((s, r) => {
             const actFull = (r.unitCostSource === 'library' || r.unitCostSource === 'market')
-                ? r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)
+                ? (r.actualUnitCost ?? 0) + (r.estimatedMaterialUnitCost ?? 0)
                 : (r.actualUnitCost ?? 0);
             return s + actFull * r.quantity;
         }, 0);
@@ -467,7 +467,7 @@ export default function RentayinPage() {
                                                                     const estUnitFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
                                                                     const estTotal = estUnitFull * row.quantity;
                                                                     const actUnitCost = (row.unitCostSource === 'library' || row.unitCostSource === 'market')
-                                                                        ? row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0)
+                                                                        ? (row.actualUnitCost ?? 0) + (row.estimatedMaterialUnitCost ?? 0)
                                                                         : row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
                                                                     const pct = profitPct(row);
@@ -608,7 +608,7 @@ export default function RentayinPage() {
                             const donutActLabor = rows.reduce((s, r) => {
                                 if (r.unitCostSource === 'actual') return s + (r.actualLaborTotal ?? r.estimatedUnitCost * r.quantity);
                                 if (r.unitCostSource === 'manual') return s + (r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity;
-                                return s + r.estimatedUnitCost * r.quantity;
+                                return s + (r.actualLaborUnitCost ?? r.estimatedUnitCost) * r.quantity;
                             }, 0);
                             const donutActMat = rows.reduce((s, r) => {
                                 if (r.unitCostSource === 'actual') return s + (r.actualMaterialTotal ?? 0);

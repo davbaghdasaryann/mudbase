@@ -27,9 +27,10 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
     // priceSource on estimate items is stale (copied on duplicate) so we check labor_offers directly.
     const laborItemIds = origLaborItems.map(i => i.laborItemId).filter(Boolean) as ObjectId[];
     const companyLaborOffers = await Db.getLaborOffersCollection()
-        .find({ accountId, itemId: { $in: laborItemIds } }, { projection: { itemId: 1 } })
+        .find({ accountId, itemId: { $in: laborItemIds } }, { projection: { itemId: 1, price: 1 } })
         .toArray();
     const companyLaborOfferItemIds = new Set(companyLaborOffers.map(o => o.itemId.toString()));
+    const companyLaborOfferPriceByItemId = new Map(companyLaborOffers.map(o => [o.itemId.toString(), (o as any).price as number]));
 
     // Same for materials
     const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
@@ -146,7 +147,11 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             // No actual data — tag as library if the company currently has an offer for this item,
             // otherwise market (system average). priceSource on the item is unreliable (stale on duplicates).
             const laborSrcTag = companyLaborOfferItemIds.has(laborItemId) ? 'library' as const : 'market' as const;
-            if (estimatedUnitCost > 0) {
+            // For library rows, use the user's own current offer price, not the (possibly copied) snapshot price.
+            const libraryLaborPrice = laborSrcTag === 'library'
+                ? (companyLaborOfferPriceByItemId.get(laborItemId) ?? estimatedUnitCost)
+                : estimatedUnitCost;
+            if (estimatedUnitCost > 0 || libraryLaborPrice > 0) {
                 return {
                     laborItemId,
                     estimateRowId: r._id,
@@ -155,9 +160,9 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     quantity: r.quantity,
                     estimatedUnitCost,
                     estimatedMaterialUnitCost,
-                    actualLaborUnitCost: estimatedUnitCost,
+                    actualLaborUnitCost: libraryLaborPrice,
                     actualMaterialUnitCost: estimatedMaterialUnitCost > 0 ? estimatedMaterialUnitCost : null,
-                    actualUnitCost: estimatedUnitCost,
+                    actualUnitCost: libraryLaborPrice,
                     actualLaborTotal: null,
                     actualMaterialTotal: null,
                     unitCostSource: laborSrcTag,
