@@ -17,11 +17,13 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
 
     const localEstimateId = (latestCosting as any)?.localEstimateId as string | undefined;
 
-    // Build laborItemId (catalog ID) lookup for the original estimate rows
+    // Build laborItemId (catalog ID) and market price lookups for the original estimate rows.
+    // averagePrice is the read-only market average; changableAveragePrice is what was used in the estimate.
     const origLaborItems = await Db.getEstimateLaborItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { _id: 1, laborItemId: 1 } })
+        .find({ estimateId: estimateObjId }, { projection: { _id: 1, laborItemId: 1, averagePrice: 1 } })
         .toArray();
     const laborItemIdByOrigRowId = new Map(origLaborItems.map(i => [i._id.toString(), i.laborItemId?.toString()]));
+    const marketPriceByOrigRowId = new Map(origLaborItems.map(i => [i._id.toString(), (i as any).averagePrice as number | undefined]));
 
     // Check which catalog labor items this company currently has their own offer for.
     // priceSource on estimate items is stale (copied on duplicate) so we check labor_offers directly.
@@ -153,9 +155,12 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
             // otherwise market (system average). priceSource on the item is unreliable (stale on duplicates).
             const laborSrcTag = companyLaborOfferItemIds.has(laborItemId) ? 'library' as const : 'market' as const;
             // For library rows, use the user's own current offer price, not the (possibly copied) snapshot price.
+            // For market rows, use averagePrice (the read-only market rate) so the comparison is
+            // estimate price (changableAveragePrice) vs current market price (averagePrice).
+            const marketPrice = marketPriceByOrigRowId.get(r._id);
             const libraryLaborPrice = laborSrcTag === 'library'
                 ? (companyLaborOfferPriceByItemId.get(laborItemId) ?? estimatedUnitCost)
-                : estimatedUnitCost;
+                : (marketPrice ?? estimatedUnitCost);
             if (estimatedUnitCost > 0 || libraryLaborPrice > 0) {
                 return {
                     laborItemId,
