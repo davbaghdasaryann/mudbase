@@ -328,10 +328,11 @@ export default function RentayinPage() {
     );
 
     const profitPct = (row: RentayinRow) => {
-        if (row.unitCostSource === 'library' || row.unitCostSource === 'market') return null;
-        if (row.unitCostSource !== 'actual' && row.unitCostSource !== 'manual') return null;
+        if (!row.unitCostSource) return null;
         const estFull = row.estimatedUnitCost + (row.estimatedMaterialUnitCost ?? 0);
-        const actFull = row.actualUnitCost ?? 0;
+        const actFull = (row.unitCostSource === 'library' || row.unitCostSource === 'market')
+            ? (row.actualUnitCost ?? 0) + (row.estimatedMaterialUnitCost ?? 0)
+            : (row.actualUnitCost ?? 0);
         if (!actFull || !estFull) return null;
         return ((estFull - actFull) / actFull) * 100;
     };
@@ -625,10 +626,8 @@ export default function RentayinPage() {
                                 const p = actPctsForDonut[key] ?? 0;
                                 return s + (p > 0 ? (p / 100) * totalActCost : (costingActualsForDonut[key] ?? 0));
                             }, 0);
-                            const profActCost = actualOnlyRows.reduce((s, r) => s + (r.actualUnitCost ?? 0) * r.quantity, 0);
-                            const profEstCost = actualOnlyRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
-                            const profitAmt = profActCost > 0 && profEstCost > 0 ? profEstCost - profActCost : null;
-                            const profitPct = profitAmt !== null && profEstCost > 0 ? (profitAmt / profEstCost) * 100 : null;
+                            const profitAmt = totalActCost > 0 && totalEstCost > 0 ? totalEstCost - totalActCost : null;
+                            const profitPct = profitAmt !== null && totalEstCost > 0 ? (profitAmt / totalEstCost) * 100 : null;
                             const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
                             const profColor = profitPct === null ? '#bbb' : profitPct >= 0 ? '#2e7d32' : '#c62828';
                             const buildDonutData = (labor: number, materials: number, other: number) => {
