@@ -729,5 +729,7 @@
   "Estimated": "Նախահաշվային",
   "Delete this rentayin?": "Ջնջե՞լ ռենտայինը",
   "K": "հ",
-  "M": "մ"
+  "M": "մ",
+  "Switch to amount": "Անցնել գումարի",
+  "Switch to percentage": "Անցնել տոկոսի"
 }
