@@ -48,7 +48,8 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
     const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
     const companyMaterialOffers = materialItemIds.length > 0
         ? await Db.getMaterialOffersCollection()
-            .find({ accountId, itemId: { $in: materialItemIds }, isActive: true, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 }, sort: { price: 1 } })
+            .find({ accountId, itemId: { $in: materialItemIds }, isActive: true, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 } })
+            .sort({ _id: -1 })
             .toArray()
         : [];
     // keep lowest-priced offer per material item (sort price ASC, first entry wins)
