@@ -724,5 +724,8 @@
   "estimationsLimit": {
     "limitReached": "Ձեր կազմակերպությունը հասել է փաթեթում ներառված նախահաշիվների սահմանաչափին:"
   },
-  "Estimation Limit Reached": "Նախահաշիվների սահմանաչափ"
+  "Estimation Limit Reached": "Նախահաշիվների սահմանաչափ",
+  "overrun": "Ավելածախս",
+  "Estimated": "Նախահաշվային",
+  "Delete this rentayin?": "Ջնջե՞լ ռենտայինը"
 }
