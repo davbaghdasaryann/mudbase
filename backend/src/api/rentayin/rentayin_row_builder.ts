@@ -39,34 +39,31 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         if (!companyLaborOfferPriceByItemId.has(id)) companyLaborOfferPriceByItemId.set(id, (o as any).price as number);
     }
 
-    // Same for materials — project estimatedLaborId, quantity, changableAveragePrice to recompute per-row cost
+    // For materials: look up current price of the specific offer selected in the estimate (materialOfferId).
+    // This avoids ambiguity from multiple offers per item — use exactly the offer the estimate references.
     const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 } })
+        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, materialOfferId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 } })
         .toArray();
-    const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
-    const companyMaterialOffers = await Db.getMaterialOffersCollection()
-        .find({ accountId, itemId: { $in: materialItemIds }, isActive: true, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 }, sort: { updatedAt: -1 } })
-        .toArray();
-    const companyMaterialOfferItemIds = new Set(companyMaterialOffers.map(o => o.itemId.toString()));
-    // keep most-recently-updated price per material item
-    const companyMaterialOfferPriceByItemId = new Map<string, number>();
-    for (const o of companyMaterialOffers) {
-        const id = o.itemId.toString();
-        if (!companyMaterialOfferPriceByItemId.has(id)) companyMaterialOfferPriceByItemId.set(id, (o as any).price as number);
-    }
-    // per labor row: recompute material cost using library prices where available; track source
+    const selectedOfferIds = estimateMaterialItems.map(m => (m as any).materialOfferId).filter(Boolean) as ObjectId[];
+    const selectedOffers = selectedOfferIds.length > 0
+        ? await Db.getMaterialOffersCollection()
+            .find({ _id: { $in: selectedOfferIds }, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { _id: 1, price: 1 } })
+            .toArray()
+        : [];
+    const currentPriceByOfferId = new Map(selectedOffers.map(o => [o._id.toString(), (o as any).price as number]));
+    // per labor row: recompute material cost using current offer prices where available; track source
     const materialSrcByLaborRowId = new Map<string, 'library' | 'market'>();
     const libraryMaterialCostByLaborRowId = new Map<string, number>();
     for (const mat of estimateMaterialItems) {
         const laborRowId = (mat as any).estimatedLaborId?.toString();
         if (!laborRowId) continue;
-        const matItemId = mat.materialItemId?.toString() ?? '';
+        const offerId = (mat as any).materialOfferId?.toString();
         const qty = (mat as any).quantity ?? 0;
         const snapshotPrice = (mat as any).changableAveragePrice ?? 0;
-        const libraryPrice = companyMaterialOfferPriceByItemId.get(matItemId);
-        const effectivePrice = libraryPrice ?? snapshotPrice;
+        const currentPrice = offerId ? currentPriceByOfferId.get(offerId) : undefined;
+        const effectivePrice = currentPrice ?? snapshotPrice;
         libraryMaterialCostByLaborRowId.set(laborRowId, (libraryMaterialCostByLaborRowId.get(laborRowId) ?? 0) + qty * effectivePrice);
-        if (companyMaterialOfferItemIds.has(matItemId)) {
+        if (offerId && currentPriceByOfferId.has(offerId)) {
             materialSrcByLaborRowId.set(laborRowId, 'library');
         } else if (!materialSrcByLaborRowId.has(laborRowId)) {
             materialSrcByLaborRowId.set(laborRowId, 'market');
