@@ -29,7 +29,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
     // priceSource on estimate items is stale (copied on duplicate) so we check labor_offers directly.
     const laborItemIds = origLaborItems.map(i => i.laborItemId).filter(Boolean) as ObjectId[];
     const companyLaborOffers = await Db.getLaborOffersCollection()
-        .find({ accountId, itemId: { $in: laborItemIds }, isActive: true, isArchived: { $ne: true } }, { projection: { itemId: 1, price: 1 }, sort: { updatedAt: -1 } })
+        .find({ accountId, itemId: { $in: laborItemIds }, isActive: true, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 }, sort: { updatedAt: -1 } })
         .toArray();
     const companyLaborOfferItemIds = new Set(companyLaborOffers.map(o => o.itemId.toString()));
     // keep most-recently-updated price per item (query sorted by updatedAt desc, so first wins)
@@ -177,7 +177,7 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
                     actualMaterialTotal: null,
                     unitCostSource: laborSrcTag,
                     laborUnitCostSource: laborSrcTag,
-                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? laborSrcTag : null,
+                    materialUnitCostSource: estimatedMaterialUnitCost > 0 ? 'market' as const : null,
                     sectionName: r.sectionName,
                     subsectionName: r.subsectionName,
                 };
