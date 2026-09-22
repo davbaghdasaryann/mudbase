@@ -39,34 +39,41 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         if (!companyLaborOfferPriceByItemId.has(id)) companyLaborOfferPriceByItemId.set(id, (o as any).price as number);
     }
 
-    // For materials: look up current price of the specific offer selected in the estimate (materialOfferId).
-    // This avoids ambiguity from multiple offers per item — use exactly the offer the estimate references.
+    // For materials: fetch user's own active offers sorted by price ASC.
+    // When multiple offers exist per item (different suppliers/grades), use the lowest price —
+    // that's the user's best available rate and matches what the library highlights.
     const estimateMaterialItems = await Db.getEstimateMaterialItemsCollection()
-        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, materialOfferId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 } })
+        .find({ estimateId: estimateObjId }, { projection: { materialItemId: 1, estimatedLaborId: 1, quantity: 1, changableAveragePrice: 1 } })
         .toArray();
-    const selectedOfferIds = estimateMaterialItems.map(m => (m as any).materialOfferId).filter(Boolean) as ObjectId[];
-    const selectedOffers = selectedOfferIds.length > 0
+    const materialItemIds = estimateMaterialItems.map(m => m.materialItemId).filter(Boolean) as ObjectId[];
+    const companyMaterialOffers = materialItemIds.length > 0
         ? await Db.getMaterialOffersCollection()
-            .find({ _id: { $in: selectedOfferIds }, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { _id: 1, price: 1, accountId: 1 } })
+            .find({ accountId, itemId: { $in: materialItemIds }, isActive: true, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 }, sort: { price: 1 } })
             .toArray()
         : [];
-    const currentPriceByOfferId = new Map(selectedOffers.map(o => [o._id.toString(), (o as any).price as number]));
-    // offer belongs to user's own library if its accountId matches the viewing company
-    const ownOfferIds = new Set(selectedOffers.filter(o => (o as any).accountId?.toString() === accountId.toString()).map(o => o._id.toString()));
-    // per labor row: recompute material cost using current offer prices where available; track source
+    // keep lowest-priced offer per material item (sort price ASC, first entry wins)
+    const companyMatPriceByItemId = new Map<string, number>();
+    const companyMatItemIds = new Set<string>();
+    for (const o of companyMaterialOffers) {
+        const id = o.itemId.toString();
+        if (!companyMatPriceByItemId.has(id)) {
+            companyMatPriceByItemId.set(id, (o as any).price as number);
+            companyMatItemIds.add(id);
+        }
+    }
+    // per labor row: recompute material cost using library prices where available; track source
     const materialSrcByLaborRowId = new Map<string, 'library' | 'market'>();
     const libraryMaterialCostByLaborRowId = new Map<string, number>();
     for (const mat of estimateMaterialItems) {
         const laborRowId = (mat as any).estimatedLaborId?.toString();
         if (!laborRowId) continue;
-        const offerId = (mat as any).materialOfferId?.toString();
+        const matItemId = mat.materialItemId?.toString() ?? '';
         const qty = (mat as any).quantity ?? 0;
         const snapshotPrice = (mat as any).changableAveragePrice ?? 0;
-        const currentPrice = offerId ? currentPriceByOfferId.get(offerId) : undefined;
-        const effectivePrice = currentPrice ?? snapshotPrice;
+        const libraryPrice = companyMatPriceByItemId.get(matItemId);
+        const effectivePrice = libraryPrice ?? snapshotPrice;
         libraryMaterialCostByLaborRowId.set(laborRowId, (libraryMaterialCostByLaborRowId.get(laborRowId) ?? 0) + qty * effectivePrice);
-        // show library badge only if the selected offer belongs to the user's own account
-        if (offerId && ownOfferIds.has(offerId)) {
+        if (companyMatItemIds.has(matItemId)) {
             materialSrcByLaborRowId.set(laborRowId, 'library');
         } else if (!materialSrcByLaborRowId.has(laborRowId)) {
             materialSrcByLaborRowId.set(laborRowId, 'market');
