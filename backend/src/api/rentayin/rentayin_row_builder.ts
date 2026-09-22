@@ -47,10 +47,12 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
     const selectedOfferIds = estimateMaterialItems.map(m => (m as any).materialOfferId).filter(Boolean) as ObjectId[];
     const selectedOffers = selectedOfferIds.length > 0
         ? await Db.getMaterialOffersCollection()
-            .find({ _id: { $in: selectedOfferIds }, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { _id: 1, price: 1 } })
+            .find({ _id: { $in: selectedOfferIds }, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { _id: 1, price: 1, accountId: 1 } })
             .toArray()
         : [];
     const currentPriceByOfferId = new Map(selectedOffers.map(o => [o._id.toString(), (o as any).price as number]));
+    // offer belongs to user's own library if its accountId matches the viewing company
+    const ownOfferIds = new Set(selectedOffers.filter(o => (o as any).accountId?.toString() === accountId.toString()).map(o => o._id.toString()));
     // per labor row: recompute material cost using current offer prices where available; track source
     const materialSrcByLaborRowId = new Map<string, 'library' | 'market'>();
     const libraryMaterialCostByLaborRowId = new Map<string, number>();
@@ -63,7 +65,8 @@ export async function buildRentayinRows(estimateId: string, accountId: ObjectId)
         const currentPrice = offerId ? currentPriceByOfferId.get(offerId) : undefined;
         const effectivePrice = currentPrice ?? snapshotPrice;
         libraryMaterialCostByLaborRowId.set(laborRowId, (libraryMaterialCostByLaborRowId.get(laborRowId) ?? 0) + qty * effectivePrice);
-        if (offerId && currentPriceByOfferId.has(offerId)) {
+        // show library badge only if the selected offer belongs to the user's own account
+        if (offerId && ownOfferIds.has(offerId)) {
             materialSrcByLaborRowId.set(laborRowId, 'library');
         } else if (!materialSrcByLaborRowId.has(laborRowId)) {
             materialSrcByLaborRowId.set(laborRowId, 'market');
