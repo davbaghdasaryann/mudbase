@@ -1201,7 +1201,7 @@ export default function RentayinPage() {
                 onSave={async (pcts) => {
                     setOtherCostPercentages(pcts);
                     if (detail) {
-                        await Api.requestSession({ command: 'rentayin/save_other_costs', args: { id: detail._id, percentages: pcts } });
+                        await Api.requestSession({ command: 'rentayin/save_other_costs', json: { id: detail._id, percentages: pcts } });
                     }
                 }}
             />
