@@ -46,11 +46,11 @@ const OE_BAR_GRADS = [
     { top: '#3DC9BF', bottom: '#1A8A84', stroke: '#116b66' },
 ];
 const OE_ACT_GRAD = { top: '#FF8A65', bottom: '#E64A19', stroke: '#bf360c' };
-const oeFormatY = (v: number) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${Math.round(v / 1_000)}K` : String(Math.round(v));
+const oeFormatY = (v: number) => { const t = getI18n().t.bind(getI18n()); return v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}${t('M')}` : v >= 1_000 ? `${Math.round(v / 1_000)}${t('K')}` : String(Math.round(v)); };
 import PageContents from '@/components/PageContents';
 import { PageButton } from '@/tsui/Buttons/PageButton';
 import { mainPrimaryColor } from '@/theme';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, getI18n } from 'react-i18next';
 import ChooseEstimationDialog from '@/app/analysis/structural/ChooseEstimationDialog';
 import EstimatePageDialog from '@/app/estimates/EstimateDialog';
 import RentayinOtherCostsDialog from './RentayinOtherCostsDialog';
