@@ -213,7 +213,12 @@ export default function RentayinPage() {
         if (detail) {
             setLaborOverrides(detail.laborPriceOverrides ?? {});
             setMatOverrides(detail.materialPriceOverrides ?? {});
-            setOtherCostPercentages((detail as any).otherCostPercentages ?? {});
+            const rawPcts: Record<string, number> = { ...((detail as any).otherCostPercentages ?? {}) };
+            if (rawPcts['smallScaleConstruction'] && !rawPcts['smallScaleConstructionWork']) {
+                rawPcts['smallScaleConstructionWork'] = rawPcts['smallScaleConstruction'];
+            }
+            delete rawPcts['smallScaleConstruction'];
+            setOtherCostPercentages(rawPcts);
             setOverheadEntries(((detail as any).overheadEntries ?? []).map((e: any) => ({
                 ...e,
                 history: (e.history ?? []).map((h: any) => ({ ...h, addedAt: new Date(h.addedAt) })),
