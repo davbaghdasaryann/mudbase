@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
-    DialogActions, TextField, IconButton, Divider,
+    DialogActions, TextField, IconButton, Divider, CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,30 +11,52 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
+import * as Api from '@/api';
 
 const ACCENT = '#00A390';
 
-interface Project { id: string; name: string; createdAt: Date; }
+interface Project { _id: string; name: string; createdAt: string; }
 
 export default function KaravariumPage() {
     const { t } = useTranslation();
     const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        Api.requestSession<Project[]>({ command: 'karavarum/fetch_all', args: {} })
+            .then(data => setProjects(data ?? []))
+            .finally(() => setLoading(false));
+    }, []);
 
     const openDialog = () => { setName(''); setDialogOpen(true); };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (!name.trim()) return;
-        setProjects(prev => [...prev, { id: Date.now().toString(), name: name.trim(), createdAt: new Date() }]);
-        setDialogOpen(false);
+        setSaving(true);
+        try {
+            const created = await Api.requestSession<Project>({ command: 'karavarum/create', args: { name: name.trim() } });
+            if (created) setProjects(prev => [created, ...prev]);
+            setDialogOpen(false);
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleDelete = (id: string) => setProjects(prev => prev.filter(p => p.id !== id));
+    const handleDelete = async (id: string) => {
+        setProjects(prev => prev.filter(p => p._id !== id));
+        await Api.requestSession({ command: 'karavarum/delete', args: { id } });
+    };
 
     return (
         <PageContents title={t('Karavarium')}>
-            {projects.length === 0 ? (
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                    <CircularProgress size={32} sx={{ color: ACCENT }} />
+                </Box>
+            ) : projects.length === 0 ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 2 }}>
                     <ManageAccountsOutlinedIcon sx={{ fontSize: 100, color: ACCENT, opacity: 0.2 }} />
                     <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No records yet')}</Typography>
@@ -62,7 +84,7 @@ export default function KaravariumPage() {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         {projects.map(p => (
                             <Box
-                                key={p.id}
+                                key={p._id}
                                 sx={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     px: 2.5, py: 1.8, borderRadius: 2,
@@ -75,10 +97,10 @@ export default function KaravariumPage() {
                                     <ManageAccountsOutlinedIcon sx={{ color: ACCENT, opacity: 0.7, fontSize: 22 }} />
                                     <Box>
                                         <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#222' }}>{p.name}</Typography>
-                                        <Typography variant='caption' color='text.secondary'>{p.createdAt.toLocaleDateString()}</Typography>
+                                        <Typography variant='caption' color='text.secondary'>{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</Typography>
                                     </Box>
                                 </Box>
-                                <IconButton size='small' onClick={() => handleDelete(p.id)} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                <IconButton size='small' onClick={() => handleDelete(p._id)} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                     <DeleteOutlineIcon fontSize='small' />
                                 </IconButton>
                             </Box>
@@ -112,11 +134,11 @@ export default function KaravariumPage() {
                     <Button onClick={() => setDialogOpen(false)} sx={{ borderRadius: '20px', textTransform: 'none', color: '#888' }}>{t('Cancel')}</Button>
                     <Button
                         onClick={handleConfirm}
-                        disabled={!name.trim()}
+                        disabled={!name.trim() || saving}
                         variant='contained'
                         sx={{ borderRadius: '20px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
                     >
-                        {t('Confirm')}
+                        {saving ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : t('Confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>
