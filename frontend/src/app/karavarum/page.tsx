@@ -108,14 +108,76 @@ export default function KaravariumPage() {
                     <CircularProgress size={32} sx={{ color: ACCENT }} />
                 </Box>
             ) : projects.length === 0 ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 2 }}>
-                    <ManageAccountsOutlinedIcon sx={{ fontSize: 100, color: ACCENT, opacity: 0.2 }} />
-                    <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>{t('No records yet')}</Typography>
+                <Box sx={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    minHeight: '65vh', gap: 2, position: 'relative', overflow: 'hidden',
+                    animation: 'fadeSlideUp 0.5s ease both',
+                    '@keyframes fadeSlideUp': { from: { opacity: 0, transform: 'translateY(18px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+                }}>
+                    {/* decorative floating dots */}
+                    {[
+                        { top: '12%', left: '18%', size: 6, delay: '0s', opacity: 0.18 },
+                        { top: '20%', right: '14%', size: 4, delay: '0.3s', opacity: 0.13 },
+                        { bottom: '22%', left: '12%', size: 5, delay: '0.6s', opacity: 0.15 },
+                        { bottom: '15%', right: '20%', size: 7, delay: '0.2s', opacity: 0.12 },
+                        { top: '38%', left: '6%', size: 3, delay: '0.5s', opacity: 0.1 },
+                        { top: '35%', right: '7%', size: 4, delay: '0.4s', opacity: 0.1 },
+                    ].map((dot, i) => (
+                        <Box key={i} sx={{
+                            position: 'absolute', borderRadius: '50%', bgcolor: ACCENT,
+                            width: dot.size, height: dot.size, opacity: dot.opacity,
+                            top: dot.top, left: (dot as any).left, right: (dot as any).right, bottom: (dot as any).bottom,
+                            animation: `floatDot 4s ease-in-out ${dot.delay} infinite alternate`,
+                            '@keyframes floatDot': { from: { transform: 'translateY(0)' }, to: { transform: 'translateY(-8px)' } },
+                        }} />
+                    ))}
+
+                    {/* pulsing rings */}
+                    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                        {[1, 2, 3].map(i => (
+                            <Box key={i} sx={{
+                                position: 'absolute', borderRadius: '50%',
+                                border: `1.5px solid ${ACCENT}`,
+                                width: 72 + i * 36, height: 72 + i * 36,
+                                opacity: 0,
+                                animation: `pulseRing 2.8s ease-out ${i * 0.7}s infinite`,
+                                '@keyframes pulseRing': {
+                                    '0%': { transform: 'scale(0.82)', opacity: 0.28 },
+                                    '100%': { transform: 'scale(1.18)', opacity: 0 },
+                                },
+                            }} />
+                        ))}
+                        <Box sx={{
+                            width: 80, height: 80, borderRadius: '50%',
+                            background: `radial-gradient(circle, rgba(0,163,144,0.12) 0%, rgba(0,163,144,0.04) 70%)`,
+                            border: `1.5px solid rgba(0,163,144,0.2)`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            animation: 'iconFloat 3.5s ease-in-out infinite',
+                            '@keyframes iconFloat': {
+                                '0%, 100%': { transform: 'translateY(0)' },
+                                '50%': { transform: 'translateY(-7px)' },
+                            },
+                        }}>
+                            <ManageAccountsOutlinedIcon sx={{ fontSize: 40, color: ACCENT, opacity: 0.85 }} />
+                        </Box>
+                    </Box>
+
+                    <Typography variant='h6' sx={{ fontWeight: 600, color: '#2d3748', mt: 1.5, animation: 'fadeSlideUp 0.5s 0.1s ease both' }}>
+                        {t('No records yet')}
+                    </Typography>
+                    <Typography variant='body2' sx={{ color: '#8a9ab0', textAlign: 'center', maxWidth: 280, lineHeight: 1.6, animation: 'fadeSlideUp 0.5s 0.2s ease both' }}>
+                        {t('Create your first record to get started')}
+                    </Typography>
                     <Button
                         variant='outlined'
                         startIcon={<AddIcon />}
                         onClick={openDialog}
-                        sx={{ borderRadius: '25px', height: '40px', mt: 1, borderColor: ACCENT, color: ACCENT, '&:hover': { backgroundColor: ACCENT, color: '#fff', borderColor: ACCENT } }}
+                        sx={{
+                            borderRadius: '25px', height: '40px', mt: 1,
+                            borderColor: ACCENT, color: ACCENT,
+                            '&:hover': { backgroundColor: ACCENT, color: '#fff', borderColor: ACCENT },
+                            animation: 'fadeSlideUp 0.5s 0.3s ease both',
+                        }}
                     >
                         {t('Create')}
                     </Button>
