@@ -14,6 +14,7 @@ import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlin
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -97,7 +98,30 @@ export default function KaravariumPage() {
                                 </TabList>
                             </Box>
                         </Box>
-                        <TabPanel value='costs' sx={{ p: 0 }} />
+                        <TabPanel value='costs' sx={{ p: 0 }}>
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', pt: 1 }}>
+                                <Box
+                                    onClick={() => {}}
+                                    sx={{
+                                        width: 110, height: 110, borderRadius: 3,
+                                        border: '1.5px solid #e0f5f2', bgcolor: '#f7fdfc',
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
+                                        cursor: 'pointer', transition: 'all 0.18s ease',
+                                        '&:hover': {
+                                            borderColor: ACCENT,
+                                            boxShadow: `0 4px 18px rgba(0,163,144,0.15)`,
+                                            transform: 'translateY(-2px)',
+                                            bgcolor: '#edfaf8',
+                                        },
+                                    }}
+                                >
+                                    <RequestQuoteOutlinedIcon sx={{ fontSize: 32, color: ACCENT, opacity: 0.85 }} />
+                                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#2d3748', letterSpacing: '0.01em' }}>
+                                        {t('Estimations')}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </TabPanel>
                         <TabPanel value='risks' sx={{ p: 0 }} />
                         <TabPanel value='tasks' sx={{ p: 0 }} />
                     </Box>
