@@ -52,18 +52,19 @@ export default function KaravariumPage() {
                     {t('Create your first record to get started')}
                 </Typography>
                 <Button
-                    variant="contained"
+                    variant="outlined"
                     startIcon={<AddIcon />}
                     onClick={handleCreate}
                     sx={{
                         mt: 1,
-                        borderRadius: '24px',
+                        borderRadius: '25px',
+                        height: '40px',
                         textTransform: 'none',
                         fontWeight: 600,
                         px: 3,
-                        bgcolor: '#00A390',
-                        boxShadow: 'none',
-                        '&:hover': { bgcolor: '#008a79', boxShadow: 'none' },
+                        borderColor: '#00A390',
+                        color: '#00A390',
+                        '&:hover': { backgroundColor: '#00A390', color: '#fff', borderColor: '#00A390' },
                     }}
                 >
                     {t('Create')}
