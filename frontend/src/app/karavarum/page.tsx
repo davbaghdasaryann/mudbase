@@ -99,24 +99,32 @@ export default function KaravariumPage() {
                             </Box>
                         </Box>
                         <TabPanel value='costs' sx={{ p: 0 }}>
-                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', pt: 1 }}>
+                            <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', pt: 2 }}>
                                 <Box
                                     onClick={() => {}}
                                     sx={{
-                                        width: 110, height: 110, borderRadius: 3,
-                                        border: '1.5px solid #e0f5f2', bgcolor: '#f7fdfc',
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
-                                        cursor: 'pointer', transition: 'all 0.18s ease',
+                                        width: 148, borderRadius: 3, py: 3, px: 2,
+                                        border: `1.5px solid rgba(0,163,144,0.28)`,
+                                        background: 'linear-gradient(145deg, rgba(0,163,144,0.08) 0%, rgba(0,163,144,0.03) 100%)',
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+                                        cursor: 'pointer', transition: 'all 0.2s ease',
+                                        boxShadow: '0 1px 4px rgba(0,163,144,0.08)',
                                         '&:hover': {
                                             borderColor: ACCENT,
-                                            boxShadow: `0 4px 18px rgba(0,163,144,0.15)`,
-                                            transform: 'translateY(-2px)',
-                                            bgcolor: '#edfaf8',
+                                            boxShadow: `0 6px 24px rgba(0,163,144,0.18)`,
+                                            transform: 'translateY(-3px)',
+                                            background: 'linear-gradient(145deg, rgba(0,163,144,0.14) 0%, rgba(0,163,144,0.06) 100%)',
                                         },
                                     }}
                                 >
-                                    <RequestQuoteOutlinedIcon sx={{ fontSize: 32, color: ACCENT, opacity: 0.85 }} />
-                                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#2d3748', letterSpacing: '0.01em' }}>
+                                    <Box sx={{
+                                        width: 52, height: 52, borderRadius: 2.5,
+                                        bgcolor: 'rgba(0,163,144,0.12)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    }}>
+                                        <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: ACCENT }} />
+                                    </Box>
+                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#2d3748', textAlign: 'center', lineHeight: 1.3 }}>
                                         {t('Estimations')}
                                     </Typography>
                                 </Box>
