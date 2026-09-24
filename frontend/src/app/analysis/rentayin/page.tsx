@@ -672,7 +672,8 @@ export default function RentayinPage() {
                             const totalEstOther = estExpenses.reduce((s, e) => { const k = Object.keys(e)[0]; return s + (k && k !== 'typeOfCost' ? ((e[k] ?? 0) / 100) * totalEstCost : 0); }, 0);
                             const costingActualsForDonut: Record<string, number> = (detail as any)?.costingOtherActuals ?? {};
                             const actPctsForDonut: Record<string, number> = otherCostPercentages;
-                            const totalActOther = Object.keys({ ...costingActualsForDonut, ...actPctsForDonut }).reduce((s, key) => {
+                            const overheadTotal = overheadEntries.reduce((s: number, e: any) => s + (e.total ?? 0), 0);
+                            const totalActOther = overheadTotal + Object.keys({ ...costingActualsForDonut, ...actPctsForDonut }).reduce((s, key) => {
                                 const p = actPctsForDonut[key] ?? 0;
                                 return s + (p > 0 ? (p / 100) * totalActCost : (costingActualsForDonut[key] ?? 0));
                             }, 0);
