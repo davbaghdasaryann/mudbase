@@ -102,24 +102,23 @@ export default function KaravariumPage() {
                         <TabPanel value='costs' sx={{ p: 0 }}>
                             <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', pt: 2 }}>
                                 {[
-                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: '#00A390' }} />, color: '#00A390', iconBg: 'rgba(0,163,144,0.10)', cardBg: 'rgba(0,163,144,0.04)', hoverBg: 'rgba(0,163,144,0.09)', border: 'rgba(0,163,144,0.2)', hoverBorder: '#00A390', shadow: 'rgba(0,163,144,0.14)' },
-                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 28, color: '#5B73E8' }} />, color: '#5B73E8', iconBg: 'rgba(91,115,232,0.10)', cardBg: 'rgba(91,115,232,0.04)', hoverBg: 'rgba(91,115,232,0.09)', border: 'rgba(91,115,232,0.2)', hoverBorder: '#5B73E8', shadow: 'rgba(91,115,232,0.14)' },
+                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: '#00A390' }} />, iconBg: 'rgba(0,163,144,0.10)', border: '#cef0eb', hoverBorder: '#00A390', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(0,163,144,0.07) 100%)', shadow: 'rgba(0,163,144,0.18)' },
+                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 28, color: '#5B73E8' }} />, iconBg: 'rgba(91,115,232,0.10)', border: '#d8dcf8', hoverBorder: '#5B73E8', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(91,115,232,0.07) 100%)', shadow: 'rgba(91,115,232,0.18)' },
                                 ].map((tile, i) => (
                                     <Box
                                         key={i}
                                         onClick={() => {}}
                                         sx={{
                                             width: 148, borderRadius: 3, py: 3, px: 2,
-                                            border: `1.5px solid ${tile.border}`,
-                                            background: tile.cardBg,
+                                            border: `1px solid ${tile.border}`,
+                                            background: tile.grad,
                                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5,
-                                            cursor: 'pointer', transition: 'all 0.2s ease',
-                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
                                             '&:hover': {
                                                 borderColor: tile.hoverBorder,
-                                                boxShadow: `0 6px 22px ${tile.shadow}`,
+                                                boxShadow: `0 8px 24px ${tile.shadow}`,
                                                 transform: 'translateY(-3px)',
-                                                background: tile.hoverBg,
                                             },
                                         }}
                                     >
