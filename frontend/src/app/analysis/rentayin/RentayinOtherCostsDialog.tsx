@@ -111,7 +111,7 @@ export default function RentayinOtherCostsDialog({ open, onClose, percentages, t
     const inputSx = { '& .MuiOutlinedInput-root': { borderRadius: 1.5, '&.Mui-focused fieldset': { borderColor: ACCENT } } };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}>
+        <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}>
             <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(229,57,53,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

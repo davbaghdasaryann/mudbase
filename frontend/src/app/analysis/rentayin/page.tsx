@@ -949,8 +949,17 @@ export default function RentayinPage() {
                                                                                 <CartesianGrid vertical={false} strokeDasharray='3 3' stroke='#f0f0f0' />
                                                                                 <XAxis dataKey='name' tick={{ fontSize: 10, fill: '#888' }} axisLine={false} tickLine={false} />
                                                                                 <YAxis tick={{ fontSize: 10, fill: '#aaa' }} axisLine={false} tickLine={false} tickFormatter={oeFormatY} width={36} />
-                                                                                <RechartsTooltip formatter={(v: unknown) => fmtAMD(v as number)} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
-                                                                                <Bar dataKey='value' radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                                                                                <RechartsTooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} content={({ active, payload }: any) => {
+                                                                                    if (!active || !payload?.length) return null;
+                                                                                    const d = payload[0];
+                                                                                    return (
+                                                                                        <Paper elevation={3} sx={{ p: 1, px: 1.5, borderRadius: 2, minWidth: 110 }}>
+                                                                                            <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.25, color: '#555' }}>{d.payload?.name}</Typography>
+                                                                                            <Typography variant='caption' sx={{ color: '#00A390', fontWeight: 700 }}>{fmtAMD(d.value)}</Typography>
+                                                                                        </Paper>
+                                                                                    );
+                                                                                }} />
+                                                                                <Bar dataKey='value' name='Արժեք' radius={[4, 4, 0, 0]} isAnimationActive={false}>
                                                                                     {chartData.map((d, ci) => <Cell key={ci} fill={`url(#${d.gradId})`} />)}
                                                                                 </Bar>
                                                                             </BarChart>
