@@ -16,6 +16,7 @@ import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const ACCENT = '#00A390';
 
@@ -23,6 +24,8 @@ interface Project { _id: string; name: string; createdAt: string; }
 
 export default function KaravariumPage() {
     const { t } = useTranslation();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<Project | null>(null);
@@ -33,7 +36,14 @@ export default function KaravariumPage() {
 
     useEffect(() => {
         Api.requestSession<Project[]>({ command: 'karavarum/fetch_all', args: {} })
-            .then(data => setProjects(data ?? []))
+            .then(data => {
+                setProjects(data ?? []);
+                const id = searchParams.get('id');
+                if (id && data) {
+                    const found = data.find((p: Project) => p._id === id);
+                    if (found) setSelected(found);
+                }
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -64,7 +74,7 @@ export default function KaravariumPage() {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <IconButton onClick={() => setSelected(null)} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: ACCENT } }}>
+                                <IconButton onClick={() => { setSelected(null); router.replace('/karavarum', { scroll: false }); }} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: ACCENT } }}>
                                     <ArrowBackIcon fontSize='small' />
                                 </IconButton>
                                 <TabList
@@ -126,7 +136,7 @@ export default function KaravariumPage() {
                         {projects.map(p => (
                             <Box
                                 key={p._id}
-                                onClick={() => { setSelected(p); setTab('costs'); }}
+                                onClick={() => { setSelected(p); setTab('costs'); router.replace(`/karavarum?id=${p._id}`, { scroll: false }); }}
                                 sx={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     px: 2.5, py: 1.8, borderRadius: 2,
