@@ -523,7 +523,7 @@ export default function RentayinPage() {
                                                                     const subPct = subEstTotal > 0 && subActTotal > 0 ? ((subEstTotal - subActTotal) / subEstTotal) * 100 : null;
                                                                     return (
                                                                         <tr key={`subtotal-${si}-${subI}`} style={{ backgroundColor: '#f0f9fb' }}>
-                                                                            <td colSpan={3} style={tdStyle({ fontWeight: 600, fontSize: '0.76rem', color: '#4b7c82', paddingLeft: 28, borderTop: '1px solid #d6eef1' })}>Ընդամենը: {sub}</td>
+                                                                            <td colSpan={3} style={tdStyle({ fontWeight: 600, fontSize: '0.76rem', color: '#4b7c82', paddingLeft: 28, borderTop: '1px solid #d6eef1' })}>Ընդամենը</td>
                                                                             <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '1px solid #d6eef1' })} />
                                                                             <td style={tdStyle({ borderTop: '1px solid #d6eef1' })} />
                                                                             <td style={tdStyle({ textAlign: 'center', fontWeight: 700, color: '#333', borderTop: '1px solid #d6eef1' })}>{subEstTotal > 0 ? Math.round(subEstTotal).toLocaleString() : '—'}</td>
@@ -552,7 +552,7 @@ export default function RentayinPage() {
                                                         const secPct = secEstTotal > 0 && secActTotal > 0 ? ((secEstTotal - secActTotal) / secEstTotal) * 100 : null;
                                                         return (
                                                             <tr key={`sectotal-${si}`} style={{ backgroundColor: '#e8f6f8' }}>
-                                                                <td colSpan={3} style={tdStyle({ fontWeight: 700, fontSize: '0.77rem', color: '#00818f', paddingLeft: 16, borderTop: '2px solid #b2dfe6' })}>Ընդամենը: {sec}</td>
+                                                                <td colSpan={3} style={tdStyle({ fontWeight: 700, fontSize: '0.77rem', color: '#00818f', paddingLeft: 16, borderTop: '2px solid #b2dfe6' })}>Ընդամենը</td>
                                                                 <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '2px solid #b2dfe6' })} />
                                                                 <td style={tdStyle({ borderTop: '2px solid #b2dfe6' })} />
                                                                 <td style={tdStyle({ textAlign: 'center', fontWeight: 700, color: '#00818f', borderTop: '2px solid #b2dfe6' })}>{secEstTotal > 0 ? Math.round(secEstTotal).toLocaleString() : '—'}</td>
