@@ -669,10 +669,27 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
         if (!matLibPriceByItemId.has(id)) matLibPriceByItemId.set(id, (o as any).price as number);
     }
 
+    // Look up costing actual prices per material item via pahestEntries
+    const latestCosting = await Db.getCostingsCollection().findOne(
+        { accountId: session.mongoAccountId, estimateId, deleted: { $ne: true }, isUnforeseen: { $ne: true } },
+        { sort: { createdAt: -1 }, projection: { pahestEntries: 1 } }
+    );
+    // Key: materialItemId|estimatedLaborId → costPerUnit
+    const matCostingPriceByKey = new Map<string, number>();
+    for (const pe of (latestCosting as any)?.pahestEntries ?? []) {
+        const matId = pe.materialItemId ? String(pe.materialItemId) : '';
+        const laborId = pe.estimatedLaborId ? String(pe.estimatedLaborId) : '';
+        const price = typeof pe.costPerUnit === 'number' ? pe.costPerUnit : parseFloat(String(pe.costPerUnit ?? 0));
+        if (matId && price > 0) matCostingPriceByKey.set(`${matId}|${laborId}`, price);
+    }
+
     const result = materialItems.map((item: any) => {
         const labor = laborMap.get(item.estimatedLaborId?.toString()) ?? { laborOfferItemName: '', laborCatalogName: '', laborFullCode: '' };
-        const libraryPrice = matLibPriceByItemId.get(item.materialItemId?.toString() ?? '');
-        const effectivePrice = libraryPrice ?? (item.changableAveragePrice ?? 0);
+        const matId = item.materialItemId?.toString() ?? '';
+        const laborId = item.estimatedLaborId?.toString() ?? '';
+        const costingPrice = matCostingPriceByKey.get(`${matId}|${laborId}`) ?? matCostingPriceByKey.get(`${matId}|`) ?? null;
+        const libraryPrice = matLibPriceByItemId.get(matId);
+        const effectivePrice = costingPrice ?? libraryPrice ?? (item.changableAveragePrice ?? 0);
         return {
             _id: item._id,
             estimatedLaborId: item.estimatedLaborId,
@@ -686,6 +703,7 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
             unitSymbol: item.unitSymbol ?? '',
             quantity: item.quantity ?? 0,
             changableAveragePrice: item.changableAveragePrice ?? 0,
+            costingPrice: costingPrice ?? null,
             libraryPrice: libraryPrice ?? null,
             cost: (item.quantity ?? 0) * effectivePrice,
         };
