@@ -399,7 +399,7 @@ function useMainNavigation() {
         }
 
         navigation.push({segment: 'haymnadits', title: t('Haymnadits'), icon: <CorporateFareOutlinedIcon />});
-        navigation.push({segment: 'karavarium', title: t('Karavarium'), icon: <ManageAccountsOutlinedIcon />});
+        navigation.push({segment: 'karavarum', title: t('Karavarium'), icon: <ManageAccountsOutlinedIcon />});
 
         navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
 

@@ -79,7 +79,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <RequestQuoteOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'haymnadits':
                 return <CorporateFareOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
-            case 'karavarium':
+            case 'karavarum':
                 return <ManageAccountsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'risk-monitoring':
                 return <MonitorHeartOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
