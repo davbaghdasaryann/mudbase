@@ -111,6 +111,7 @@ export default function KaravariumPage() {
                 <Box sx={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     minHeight: '65vh', gap: 2, position: 'relative', overflow: 'hidden',
+                    background: 'radial-gradient(ellipse 55% 45% at 50% 48%, rgba(0,163,144,0.06) 0%, transparent 100%)',
                     animation: 'fadeSlideUp 0.5s ease both',
                     '@keyframes fadeSlideUp': { from: { opacity: 0, transform: 'translateY(18px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
                 }}>
@@ -163,10 +164,10 @@ export default function KaravariumPage() {
                     </Box>
 
                     <Typography variant='h6' sx={{ fontWeight: 600, color: '#2d3748', mt: 1.5, animation: 'fadeSlideUp 0.5s 0.1s ease both' }}>
-                        {t('No records yet')}
+                        {t('No projects yet')}
                     </Typography>
-                    <Typography variant='body2' sx={{ color: '#8a9ab0', textAlign: 'center', maxWidth: 280, lineHeight: 1.6, animation: 'fadeSlideUp 0.5s 0.2s ease both' }}>
-                        {t('Create your first record to get started')}
+                    <Typography variant='body2' sx={{ color: '#8a9ab0', textAlign: 'center', maxWidth: 300, lineHeight: 1.6, animation: 'fadeSlideUp 0.5s 0.2s ease both' }}>
+                        {t('Create a project to manage costs and risks')}
                     </Typography>
                     <Button
                         variant='outlined'
@@ -176,10 +177,14 @@ export default function KaravariumPage() {
                             borderRadius: '25px', height: '40px', mt: 1,
                             borderColor: ACCENT, color: ACCENT,
                             '&:hover': { backgroundColor: ACCENT, color: '#fff', borderColor: ACCENT },
-                            animation: 'fadeSlideUp 0.5s 0.3s ease both',
+                            animation: 'popIn 0.45s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both',
+                            '@keyframes popIn': {
+                                '0%': { opacity: 0, transform: 'scale(0.82)' },
+                                '100%': { opacity: 1, transform: 'scale(1)' },
+                            },
                         }}
                     >
-                        {t('Create')}
+                        {t('New Project')}
                     </Button>
                 </Box>
             ) : (
@@ -226,7 +231,7 @@ export default function KaravariumPage() {
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}>
                 <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{t('Create')}</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{t('New Project')}</Typography>
                         <IconButton size='small' onClick={() => setDialogOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
                             <CloseIcon sx={{ fontSize: 18 }} />
                         </IconButton>

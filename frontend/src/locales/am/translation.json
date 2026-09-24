@@ -734,5 +734,8 @@
   "Switch to percentage": "Տոկոսային",
   "Total profitability indicator": "Ընդհանուր շահութաբերության ցուցանիշ",
   "No records yet": "Գրառումներ դեռ չկան",
-  "Create your first record to get started": "Ստեղծեք առաջին գրառումը սկսելու համար"
+  "Create your first record to get started": "Ստեղծեք առաջին գրառումը սկսելու համար",
+  "No projects yet": "Ծրագրեր դեռ չկան",
+  "Create a project to manage costs and risks": "Ստեղծեք ծրագիր՝ ծախսերն ու ռիսկերը կառավարելու համար",
+  "New Project": "Նոր ծրագիր"
 }
