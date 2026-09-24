@@ -867,7 +867,12 @@ export default function RentayinPage() {
                                     {(() => {
                                         const rows = detail?.rows ?? [];
                                         const totalEstCost = rows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
-                                        const totalActCost = rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0);
+                                        const totalActCost = rows.reduce((s, r) => {
+                                            const actFull = (r.unitCostSource === 'library' || r.unitCostSource === 'market')
+                                                ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0)
+                                                : (r.actualUnitCost ?? 0);
+                                            return s + actFull * r.quantity;
+                                        }, 0);
                                         const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
                                         const actPcts: Record<string, number> = otherCostPercentages;
                                         const costingActuals: Record<string, number> = (detail as any)?.costingOtherActuals ?? {};
@@ -1248,7 +1253,7 @@ export default function RentayinPage() {
                 open={otherCostsOpen}
                 onClose={() => setOtherCostsOpen(false)}
                 percentages={otherCostPercentages}
-                totalActualCost={(() => { const rows = detail?.rows ?? []; return rows.reduce((s, r) => s + ((r.actualUnitCost ?? 0) * r.quantity), 0); })()}
+                totalActualCost={(() => { const rows = detail?.rows ?? []; return rows.reduce((s, r) => { const af = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : (r.actualUnitCost ?? 0); return s + af * r.quantity; }, 0); })()}
                 onSave={async (pcts) => {
                     setOtherCostPercentages(pcts);
                     if (detail) {

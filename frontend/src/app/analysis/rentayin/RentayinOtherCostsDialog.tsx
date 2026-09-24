@@ -19,6 +19,7 @@ export const OTHER_COST_TYPES: { key: string; label: string }[] = [
     { key: 'transportationCosts',    label: 'Տրանսպորտային ծախսեր' },
     { key: 'operationHandoverCosts', label: 'Շահագործման հանձնման ծախսեր' },
     { key: 'stateDutiesAndFees',     label: 'Պետական տուրքեր և վճարներ' },
+    { key: 'profit',                 label: 'Շահույթ' },
 ];
 
 interface Props {
