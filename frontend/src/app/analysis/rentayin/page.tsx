@@ -512,9 +512,59 @@ export default function RentayinPage() {
                                                                         </tr>
                                                                     );
                                                                 })}
+                                                                {(() => {
+                                                                    // Subsection total row
+                                                                    if (!sub || subRows.length === 0) return null;
+                                                                    const subEstTotal = subRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
+                                                                    const subActTotal = subRows.reduce((s, r) => {
+                                                                        const auc = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : r.actualUnitCost;
+                                                                        return s + (auc !== null && auc > 0 && r.unitCostSource ? auc * r.quantity : 0);
+                                                                    }, 0);
+                                                                    const subPct = subEstTotal > 0 && subActTotal > 0 ? ((subEstTotal - subActTotal) / subEstTotal) * 100 : null;
+                                                                    return (
+                                                                        <tr key={`subtotal-${si}-${subI}`} style={{ backgroundColor: '#f0f9fb' }}>
+                                                                            <td colSpan={3} style={tdStyle({ fontWeight: 600, fontSize: '0.76rem', color: '#4b7c82', paddingLeft: 28, borderTop: '1px solid #d6eef1' })}>Ընդամենը: {sub}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '1px solid #d6eef1' })} />
+                                                                            <td style={tdStyle({ borderTop: '1px solid #d6eef1' })} />
+                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 700, color: '#333', borderTop: '1px solid #d6eef1' })}>{subEstTotal > 0 ? Math.round(subEstTotal).toLocaleString() : '—'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '1px solid #d6eef1' })} />
+                                                                            <td style={tdStyle({ borderTop: '1px solid #d6eef1' })} />
+                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 700, color: '#333', borderTop: '1px solid #d6eef1' })}>{subActTotal > 0 ? Math.round(subActTotal).toLocaleString() : '—'}</td>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '1px solid #d6eef1' })}>
+                                                                                {subPct !== null ? <span style={{ fontSize: '0.82rem', fontWeight: 600, color: subPct > 0 ? '#2E7D32' : subPct < 0 ? '#C62828' : '#888' }}>{subPct > 0 ? '+' : ''}{subPct.toFixed(1)}%</span> : <span style={{ color: '#ccc' }}>{'—'}</span>}
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })()}
                                                             </React.Fragment>
                                                         );
                                                     })}
+                                                    {(() => {
+                                                        // Section total row
+                                                        if (!sec) return null;
+                                                        const secRows = rows.filter(r => (r.sectionName || '') === sec);
+                                                        if (secRows.length === 0) return null;
+                                                        const secEstTotal = secRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
+                                                        const secActTotal = secRows.reduce((s, r) => {
+                                                            const auc = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : r.actualUnitCost;
+                                                            return s + (auc !== null && auc > 0 && r.unitCostSource ? auc * r.quantity : 0);
+                                                        }, 0);
+                                                        const secPct = secEstTotal > 0 && secActTotal > 0 ? ((secEstTotal - secActTotal) / secEstTotal) * 100 : null;
+                                                        return (
+                                                            <tr key={`sectotal-${si}`} style={{ backgroundColor: '#e8f6f8' }}>
+                                                                <td colSpan={3} style={tdStyle({ fontWeight: 700, fontSize: '0.77rem', color: '#00818f', paddingLeft: 16, borderTop: '2px solid #b2dfe6' })}>Ընդամենը: {sec}</td>
+                                                                <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '2px solid #b2dfe6' })} />
+                                                                <td style={tdStyle({ borderTop: '2px solid #b2dfe6' })} />
+                                                                <td style={tdStyle({ textAlign: 'center', fontWeight: 700, color: '#00818f', borderTop: '2px solid #b2dfe6' })}>{secEstTotal > 0 ? Math.round(secEstTotal).toLocaleString() : '—'}</td>
+                                                                <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '2px solid #b2dfe6' })} />
+                                                                <td style={tdStyle({ borderTop: '2px solid #b2dfe6' })} />
+                                                                <td style={tdStyle({ textAlign: 'center', fontWeight: 700, color: '#00818f', borderTop: '2px solid #b2dfe6' })}>{secActTotal > 0 ? Math.round(secActTotal).toLocaleString() : '—'}</td>
+                                                                <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, borderTop: '2px solid #b2dfe6' })}>
+                                                                    {secPct !== null ? <span style={{ fontSize: '0.82rem', fontWeight: 700, color: secPct > 0 ? '#2E7D32' : secPct < 0 ? '#C62828' : '#888' }}>{secPct > 0 ? '+' : ''}{secPct.toFixed(1)}%</span> : <span style={{ color: '#ccc' }}>{'—'}</span>}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })()}
                                                 </React.Fragment>
                                             );
                                         })}
