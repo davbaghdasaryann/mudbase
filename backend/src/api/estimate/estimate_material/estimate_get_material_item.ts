@@ -655,24 +655,39 @@ registerApiSession('estimate/fetch_materials_for_analysis', async (req, res, ses
         ])
         .toArray();
 
+    // Look up user's own active material offer prices (library) for each catalog material item
+    const catalogMatIds = [...new Set(materialItems.map((m: any) => m.materialItemId).filter(Boolean))] as ObjectId[];
+    const matLibOffers = catalogMatIds.length > 0
+        ? await Db.getMaterialOffersCollection()
+            .find({ accountId: session.mongoAccountId, itemId: { $in: catalogMatIds }, isActive: true, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 } })
+            .sort({ _id: -1 })
+            .toArray()
+        : [];
+    const matLibPriceByItemId = new Map<string, number>();
+    for (const o of matLibOffers) {
+        const id = o.itemId.toString();
+        if (!matLibPriceByItemId.has(id)) matLibPriceByItemId.set(id, (o as any).price as number);
+    }
+
     const result = materialItems.map((item: any) => {
         const labor = laborMap.get(item.estimatedLaborId?.toString()) ?? { laborOfferItemName: '', laborCatalogName: '', laborFullCode: '' };
+        const libraryPrice = matLibPriceByItemId.get(item.materialItemId?.toString() ?? '');
+        const effectivePrice = libraryPrice ?? (item.changableAveragePrice ?? 0);
         return {
             _id: item._id,
             estimatedLaborId: item.estimatedLaborId,
             materialItemId: item.materialItemId,
-            // Labor info (for parent grouping)
             laborCatalogName: labor.laborCatalogName,
             laborFullCode: labor.laborFullCode,
             laborOfferItemName: labor.laborOfferItemName,
-            // Material info (for child rows)
             materialCatalogName: item.materialCatalogName ?? '',
             materialCatalogFullCode: item.materialCatalogFullCode ?? '',
             materialOfferItemName: item.materialOfferItemName ?? item.materialCatalogName ?? '',
             unitSymbol: item.unitSymbol ?? '',
             quantity: item.quantity ?? 0,
             changableAveragePrice: item.changableAveragePrice ?? 0,
-            cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
+            libraryPrice: libraryPrice ?? null,
+            cost: (item.quantity ?? 0) * effectivePrice,
         };
     });
 

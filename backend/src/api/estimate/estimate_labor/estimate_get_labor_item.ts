@@ -609,27 +609,46 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
         ])
         .toArray();
 
+    // Look up user's own active labor offer prices (library) for each catalog labor item
+    const catalogLaborIds = [...new Set(laborItems.map((l: any) => l.laborItemId).filter(Boolean))] as ObjectId[];
+    const laborLibOffers = catalogLaborIds.length > 0
+        ? await Db.getLaborOffersCollection()
+            .find({ accountId: session.mongoAccountId, itemId: { $in: catalogLaborIds }, isActive: { $ne: false }, isArchived: { $ne: true }, price: { $gt: 0 } }, { projection: { itemId: 1, price: 1 } })
+            .sort({ updatedAt: -1 })
+            .toArray()
+        : [];
+    const laborLibPriceByItemId = new Map<string, number>();
+    for (const o of laborLibOffers) {
+        const id = o.itemId.toString();
+        if (!laborLibPriceByItemId.has(id)) laborLibPriceByItemId.set(id, (o as any).price as number);
+    }
+
     const result = [
-        ...laborItems.map((item: any) => ({
-            _id: item._id,
-            laborItemId: item.laborItemId,
-            isGroupRow: false,
-            fullCode: item.fullCode ?? '',
-            catalogName: item.catalogName ?? '',
-            laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
-            unitSymbol: item.unitSymbol ?? '',
-            quantity: item.quantity ?? 0,
-            laborHours: item.laborHours ?? null,
-            changableAveragePrice: item.changableAveragePrice ?? 0,
-            cost: (item.quantity ?? 0) * (item.changableAveragePrice ?? 0),
-            subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
-            sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
-        })),
+        ...laborItems.map((item: any) => {
+            const libraryPrice = laborLibPriceByItemId.get(item.laborItemId?.toString() ?? '');
+            const effectivePrice = libraryPrice ?? (item.changableAveragePrice ?? 0);
+            return {
+                _id: item._id,
+                laborItemId: item.laborItemId,
+                isGroupRow: false,
+                fullCode: item.fullCode ?? '',
+                catalogName: item.catalogName ?? '',
+                laborOfferItemName: item.laborOfferItemName ?? item.catalogName ?? '',
+                unitSymbol: item.unitSymbol ?? '',
+                quantity: item.quantity ?? 0,
+                laborHours: item.laborHours ?? null,
+                changableAveragePrice: item.changableAveragePrice ?? 0,
+                libraryPrice: libraryPrice ?? null,
+                cost: (item.quantity ?? 0) * effectivePrice,
+                subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
+                sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
+            };
+        }),
         ...groupRowItems
             .filter((item: any) => !!(item.laborOfferItemName ?? '').trim())
             .map((item: any) => ({
                 _id: item._id,
-                laborItemId: item._id, // use own _id as grouping key
+                laborItemId: item._id,
                 isGroupRow: true,
                 fullCode: '',
                 catalogName: item.laborOfferItemName ?? '',
@@ -637,6 +656,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                 unitSymbol: item.unitSymbol ?? '',
                 quantity: item.quantity ?? 0,
                 changableAveragePrice: (item.changableAveragePrice ?? 0) > 0 ? (item.changableAveragePrice ?? 0) : Math.round(item.childrenCost ?? 0),
+                libraryPrice: null,
                 cost: Math.round(((item.changableAveragePrice ?? 0) > 0 ? (item.changableAveragePrice ?? 0) : Math.round(item.childrenCost ?? 0)) * (item.quantity ?? 0)),
                 subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
                 sectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.sectionName ?? '',
