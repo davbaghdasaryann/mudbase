@@ -786,68 +786,79 @@ export default function RentayinPage() {
                                                     </Box>
                                                 </Box>
                                             </Paper>
-                                            {/* Profitability gauge widgets */}
-                                            {(() => {
-                                                const GCX = 90, GCY = 90, GR = 65;
-                                                const ptOn = (deg: number, r: number) => ({
-                                                    x: GCX + r * Math.cos((deg * Math.PI) / 180),
-                                                    y: GCY - r * Math.sin((deg * Math.PI) / 180),
-                                                });
-                                                const arcSeg = (d1: number, d2: number) => {
-                                                    const s = ptOn(d1, GR), e = ptOn(d2, GR);
-                                                    return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${GR} ${GR} 0 0 0 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
-                                                };
-                                                const GRANGE = 60;
-                                                const renderGauge = (pct: number | null, pColor: string, gaugeTitle: string, amt: number | null) => {
-                                                    const clamped = pct !== null ? Math.max(-GRANGE, Math.min(GRANGE, pct)) : 0;
-                                                    const needleDeg = 180 - ((clamped + GRANGE) / (2 * GRANGE)) * 180;
-                                                    const nPt = ptOn(needleDeg, GR * 0.76);
-                                                    const nBase1 = ptOn(needleDeg + 90, 4);
-                                                    const nBase2 = ptOn(needleDeg - 90, 4);
-                                                    return (
-                                                        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2, minHeight: 220 }}>
-                                                            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{gaugeTitle}</Typography>
-                                                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                                {pct === null ? (
-                                                                    <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
-                                                                ) : (
-                                                                    <>
-                                                                        <svg width='180' height='105' viewBox='0 0 180 105' style={{ overflow: 'visible', display: 'block' }}>
-                                                                            <path d={arcSeg(180, 0)} fill='none' stroke='#f3f3f3' strokeWidth={18} strokeLinecap='butt' />
-                                                                            <path d={arcSeg(180, 120)} fill='none' stroke='#ffcdd2' strokeWidth={16} />
-                                                                            <path d={arcSeg(120, 60)} fill='none' stroke='#fff9c4' strokeWidth={16} />
-                                                                            <path d={arcSeg(60, 0)} fill='none' stroke='#c8e6c9' strokeWidth={16} />
-                                                                            <line x1={GCX} y1={GCY - GR - 5} x2={GCX} y2={GCY - GR + 10} stroke='#e0e0e0' strokeWidth={1.5} />
-                                                                            <text x='14' y='98' fontSize='10' fill='#bbb' textAnchor='middle'>−</text>
-                                                                            <text x='166' y='98' fontSize='10' fill='#bbb' textAnchor='middle'>+</text>
-                                                                            <polygon points={`${nPt.x.toFixed(2)},${nPt.y.toFixed(2)} ${nBase1.x.toFixed(2)},${nBase1.y.toFixed(2)} ${nBase2.x.toFixed(2)},${nBase2.y.toFixed(2)}`} fill={pColor} />
-                                                                            <circle cx={GCX} cy={GCY} r={5.5} fill={pColor} />
-                                                                            <circle cx={GCX} cy={GCY} r={2.5} fill='#fff' />
-                                                                        </svg>
-                                                                        <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: pColor, lineHeight: 1, mt: 0 }}>
-                                                                            {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                                        </Typography>
-                                                                        {amt !== null && (
-                                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 0.75, textAlign: 'center' }}>
-                                                                                {fmtAMD(Math.abs(amt))} {amt >= 0 ? t('savings') : t('overrun')}
-                                                                            </Typography>
-                                                                        )}
-                                                                    </>
-                                                                )}
+                                            {/* Profitability widget */}
+                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
+                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {profitPct === null ? (
+                                                        <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
+                                                    ) : (
+                                                        <>
+                                                            <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: profColor, lineHeight: 1.1, mb: 1.5 }}>
+                                                                {profitPct >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                                                            </Typography>
+                                                            <Box sx={{ width: '100%', px: 1 }}>
+                                                                <Box sx={{ position: 'relative', height: 8, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                                                    {(() => {
+                                                                        const RANGE = 60;
+                                                                        const clamped = Math.max(-RANGE, Math.min(RANGE, profitPct));
+                                                                        return <Box sx={{
+                                                                            position: 'absolute', height: '100%', borderRadius: 4,
+                                                                            background: profitPct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)',
+                                                                            left: profitPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
+                                                                            width: `${Math.abs(clamped / RANGE) * 50}%`,
+                                                                        }} />;
+                                                                    })()}
+                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
+                                                                </Box>
                                                             </Box>
-                                                        </Paper>
-                                                    );
-                                                };
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
+                                                                {fmtAMD(Math.abs(profitAmt!))} {profitAmt! >= 0 ? t('savings') : t('overrun')}
+                                                            </Typography>
+                                                        </>
+                                                    )}
+                                                </Box>
+                                            </Paper>
+                                            {/* Total Profitability widget */}
+                                            {(() => {
                                                 const totalEstAll = totalEstCost + totalEstOther;
                                                 const totalActAll = totalActCost + totalActOther;
                                                 const totalProfAmt = totalEstAll > 0 && totalActAll > 0 ? totalEstAll - totalActAll : null;
                                                 const totalProfPct = totalProfAmt !== null && totalEstAll > 0 ? (totalProfAmt / totalEstAll) * 100 : null;
                                                 const totalProfColor = totalProfPct === null ? '#bbb' : totalProfPct >= 0 ? '#2e7d32' : '#c62828';
                                                 return (
-                                                    <>
-                                                        {renderGauge(profitPct, profColor, t('Average profitability of works'), profitAmt)}
-                                                        {renderGauge(totalProfPct, totalProfColor, t('Total profitability indicator'), totalProfAmt)}
-                                                    </>
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Total profitability indicator')}</Typography>
+                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                            {totalProfPct === null ? (
+                                                                <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
+                                                            ) : (
+                                                                <>
+                                                                    <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: totalProfColor, lineHeight: 1.1, mb: 1.5 }}>
+                                                                        {totalProfPct >= 0 ? '+' : ''}{totalProfPct.toFixed(1)}%
+                                                                    </Typography>
+                                                                    <Box sx={{ width: '100%', px: 1 }}>
+                                                                        <Box sx={{ position: 'relative', height: 8, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                                                            {(() => {
+                                                                                const RANGE = 60;
+                                                                                const clamped = Math.max(-RANGE, Math.min(RANGE, totalProfPct));
+                                                                                return <Box sx={{
+                                                                                    position: 'absolute', height: '100%', borderRadius: 4,
+                                                                                    background: totalProfPct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)',
+                                                                                    left: totalProfPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
+                                                                                    width: `${Math.abs(clamped / RANGE) * 50}%`,
+                                                                                }} />;
+                                                                            })()}
+                                                                            <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
+                                                                        </Box>
+                                                                    </Box>
+                                                                    <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
+                                                                        {fmtAMD(Math.abs(totalProfAmt!))} {totalProfAmt! >= 0 ? t('savings') : t('overrun')}
+                                                                    </Typography>
+                                                                </>
+                                                            )}
+                                                        </Box>
+                                                    </Paper>
                                                 );
                                             })()}
                                             {/* Profitability by category widget */}
