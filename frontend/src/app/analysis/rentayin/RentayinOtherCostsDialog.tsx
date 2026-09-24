@@ -19,7 +19,7 @@ export const OTHER_COST_TYPES: { key: string; label: string }[] = [
     { key: 'transportationCosts',    label: 'Տրանսպորտային ծախսեր' },
     { key: 'operationHandoverCosts', label: 'Շահագործման հանձնման ծախսեր' },
     { key: 'stateDutiesAndFees',     label: 'Պետական տուրքեր և վճարներ' },
-    { key: 'smallScaleConstruction', label: 'Փոքրածավալ շինաշխատանք' },
+    { key: 'smallScaleConstructionWork', label: 'Փոքրածավալ շինաշխատանք' },
     { key: 'profit',                 label: 'Շահույթ' },
 ];
 
