@@ -3,12 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
-    DialogActions, TextField, IconButton, Divider, CircularProgress,
+    DialogActions, TextField, IconButton, Divider, CircularProgress, Tab,
 } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybe';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -21,6 +25,8 @@ export default function KaravariumPage() {
     const { t } = useTranslation();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState<Project | null>(null);
+    const [tab, setTab] = useState('costs');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
@@ -50,6 +56,41 @@ export default function KaravariumPage() {
         await Api.requestSession({ command: 'karavarum/delete', args: { id } });
     };
 
+    // ── DETAIL VIEW ──────────────────────────────────────────────────────────
+    if (selected) {
+        return (
+            <PageContents title={selected.name}>
+                <TabContext value={tab}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <IconButton onClick={() => setSelected(null)} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: ACCENT } }}>
+                                    <ArrowBackIcon fontSize='small' />
+                                </IconButton>
+                                <TabList
+                                    onChange={(_, v) => setTab(v)}
+                                    sx={{ '& .MuiTabs-indicator': { backgroundColor: ACCENT }, '& .MuiTab-root.Mui-selected': { color: ACCENT } }}
+                                >
+                                    <Tab
+                                        label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />Ծախսերի կառավարում</Box>}
+                                        value='costs'
+                                    />
+                                    <Tab
+                                        label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><GppMaybeOutlinedIcon sx={{ fontSize: 18 }} />Ռիսկերի կառավարում</Box>}
+                                        value='risks'
+                                    />
+                                </TabList>
+                            </Box>
+                        </Box>
+                        <TabPanel value='costs' sx={{ p: 0 }} />
+                        <TabPanel value='risks' sx={{ p: 0 }} />
+                    </Box>
+                </TabContext>
+            </PageContents>
+        );
+    }
+
+    // ── LIST VIEW ─────────────────────────────────────────────────────────────
     return (
         <PageContents title={t('Karavarium')}>
             {loading ? (
@@ -85,6 +126,7 @@ export default function KaravariumPage() {
                         {projects.map(p => (
                             <Box
                                 key={p._id}
+                                onClick={() => { setSelected(p); setTab('costs'); }}
                                 sx={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     px: 2.5, py: 1.8, borderRadius: 2,
@@ -100,7 +142,7 @@ export default function KaravariumPage() {
                                         <Typography variant='caption' color='text.secondary'>{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</Typography>
                                     </Box>
                                 </Box>
-                                <IconButton size='small' onClick={() => handleDelete(p._id)} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
+                                <IconButton size='small' onClick={e => { e.stopPropagation(); handleDelete(p._id); }} sx={{ color: '#bbb', '&:hover': { color: '#e53935' } }}>
                                     <DeleteOutlineIcon fontSize='small' />
                                 </IconButton>
                             </Box>
