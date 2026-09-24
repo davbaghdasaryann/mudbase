@@ -93,7 +93,7 @@ interface RentayinRecord {
     createdAt: string;
 }
 
-interface LaborRow { _id: string; laborItemId: string; isGroupRow: boolean; fullCode: string; catalogName: string; laborOfferItemName: string; unitSymbol: string; quantity: number; changableAveragePrice: number; libraryPrice?: number | null; cost: number; subsectionName: string; sectionName: string; }
+interface LaborRow { _id: string; laborItemId: string; isGroupRow: boolean; fullCode: string; catalogName: string; laborOfferItemName: string; unitSymbol: string; quantity: number; changableAveragePrice: number; costingPrice?: number | null; libraryPrice?: number | null; cost: number; subsectionName: string; sectionName: string; }
 interface GroupedLabor { laborItemId: string; fullCode: string; name: string; unitSymbol: string; totalCost: number; totalQuantity: number; items: LaborRow[]; }
 interface MaterialRow { _id: string; materialItemId: string; laborCatalogName: string; laborFullCode: string; laborOfferItemName: string; materialCatalogName: string; materialCatalogFullCode: string; materialOfferItemName: string; unitSymbol: string; quantity: number; changableAveragePrice: number; libraryPrice?: number | null; cost: number; }
 interface GroupedByMaterial { materialItemId: string; materialFullCode: string; materialName: string; unitSymbol: string; totalCost: number; totalQuantity: number; items: MaterialRow[]; }
@@ -967,7 +967,7 @@ export default function RentayinPage() {
                     <Box sx={{ px: 2, pb: 2 }}>
                         {laborGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
                         {!laborGroupsLoading && laborGroups.length > 0 && (() => {
-                            const effectiveLaborItemCost = (item: any) => (laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.libraryPrice ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
+                            const effectiveLaborItemCost = (item: any) => (laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.costingPrice ?? item.libraryPrice ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
                             const totalLaborCost = laborGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveLaborItemCost(it), 0), 0);
                             const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
                             return (
@@ -1054,8 +1054,8 @@ export default function RentayinPage() {
                                                                 </Box>
                                                             ) : (
                                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                                    <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.libraryPrice ?? item.changableAveragePrice) || 0) || '—'}</span>
-                                                                    <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.libraryPrice ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
+                                                                    <span style={{ fontSize: '0.82rem', color: '#777' }}>{Math.round((laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.costingPrice ?? item.libraryPrice ?? item.changableAveragePrice) || 0) || '—'}</span>
+                                                                    <Tooltip title={t('Edit')} placement='top' arrow><IconButton size='small' onClick={() => { setEditingPriceKey('li:' + item._id); setEditingPriceValue(String(laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.costingPrice ?? item.libraryPrice ?? item.changableAveragePrice ?? '')); }} sx={{ opacity: 0, 'tr:hover &': { opacity: 1 }, transition: 'opacity 0.15s', p: '2px' }}><EditOutlinedIcon sx={{ fontSize: 14, color: '#aaa' }} /></IconButton></Tooltip>
                                                                 </Box>
                                                             )}
                                                         </TableCell>

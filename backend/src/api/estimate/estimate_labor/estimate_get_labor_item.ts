@@ -623,10 +623,53 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
         if (!laborLibPriceByItemId.has(id)) laborLibPriceByItemId.set(id, (o as any).price as number);
     }
 
+    // Look up costing actual prices per labor row — same formula as rentayin_row_builder
+    const latestCosting = await Db.getCostingsCollection().findOne(
+        { accountId: session.mongoAccountId, estimateId, deleted: { $ne: true }, isUnforeseen: { $ne: true } },
+        { sort: { createdAt: -1 }, projection: { actualData: 1, costHistory: 1, localEstimateId: 1 } }
+    );
+    // Build forkedRowId → origRowId map if costing is forked
+    const forkedToOrig = new Map<string, string>();
+    const origToForked = new Map<string, string>();
+    if ((latestCosting as any)?.localEstimateId) {
+        const forkItems = await Db.getEstimateLaborItemsCollection()
+            .find({ estimateId: new ObjectId(String((latestCosting as any).localEstimateId)), originalLaborItemId: { $exists: true } }, { projection: { _id: 1, originalLaborItemId: 1 } })
+            .toArray();
+        for (const fi of forkItems) {
+            const origId = (fi as any).originalLaborItemId?.toString();
+            const forkId = fi._id.toString();
+            if (origId) { forkedToOrig.set(forkId, origId); origToForked.set(origId, forkId); }
+        }
+    }
+    const salaryTotalByRowId = new Map<string, number>();
+    const gorqtyByRowId = new Map<string, number>();
+    for (const entry of latestCosting?.costHistory ?? []) {
+        const rowId = (entry as any).laborItemId as string | undefined;
+        if (!rowId) continue;
+        const pm = (entry as any).paymentMethod as string | undefined;
+        const total = (entry as any).total ?? 0;
+        const qty = (entry as any).quantity ?? 0;
+        if (pm !== 'nyuth_tsakhsagrum') salaryTotalByRowId.set(rowId, (salaryTotalByRowId.get(rowId) ?? 0) + total);
+        if (pm === 'salary_gorcarqayin') gorqtyByRowId.set(rowId, (gorqtyByRowId.get(rowId) ?? 0) + qty);
+    }
+    const getCostingPrice = (origRowId: string): number | null => {
+        const ck = origToForked.get(origRowId) ?? origRowId;
+        const ad = latestCosting?.actualData?.[ck] as any;
+        const adQty = ad?.quantity ? parseFloat(String(ad.quantity).replace(',', '.')) : 0;
+        const adSpent = ad?.spent ? parseFloat(String(ad.spent).replace(',', '.')) : 0;
+        const salaryTotal = salaryTotalByRowId.get(ck) ?? 0;
+        const gorqty = gorqtyByRowId.get(ck) ?? 0;
+        const laborTotal = adSpent + salaryTotal;
+        const effectiveQty = gorqty > 0 ? gorqty : adQty;
+        if (laborTotal > 0 && effectiveQty > 0) return laborTotal / effectiveQty;
+        return null;
+    };
+
     const result = [
         ...laborItems.map((item: any) => {
+            const costingPrice = getCostingPrice(item._id.toString());
             const libraryPrice = laborLibPriceByItemId.get(item.laborItemId?.toString() ?? '');
-            const effectivePrice = libraryPrice ?? (item.changableAveragePrice ?? 0);
+            const effectivePrice = costingPrice ?? libraryPrice ?? (item.changableAveragePrice ?? 0);
             return {
                 _id: item._id,
                 laborItemId: item.laborItemId,
@@ -638,6 +681,7 @@ registerApiSession('estimate/fetch_labor_for_analysis', async (req, res, session
                 quantity: item.quantity ?? 0,
                 laborHours: item.laborHours ?? null,
                 changableAveragePrice: item.changableAveragePrice ?? 0,
+                costingPrice: costingPrice ?? null,
                 libraryPrice: libraryPrice ?? null,
                 cost: (item.quantity ?? 0) * effectivePrice,
                 subsectionName: subsectionMap.get(item.estimateSubsectionId?.toString())?.name ?? '',
