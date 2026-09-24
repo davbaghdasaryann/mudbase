@@ -13,6 +13,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -29,7 +30,7 @@ export default function KaravariumPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<Project | null>(null);
-    const [tab, setTab] = useState(() => { const t = searchParams.get('tab'); return t === 'risks' ? 'risks' : 'costs'; });
+    const [tab, setTab] = useState(() => { const t = searchParams.get('tab'); return ['costs', 'risks', 'tasks'].includes(t ?? '') ? t! : 'costs'; });
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
@@ -89,11 +90,16 @@ export default function KaravariumPage() {
                                         label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><GppMaybeOutlinedIcon sx={{ fontSize: 18 }} />Ռիսկերի կառավարում</Box>}
                                         value='risks'
                                     />
+                                    <Tab
+                                        label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><AssignmentOutlinedIcon sx={{ fontSize: 18 }} />Առաջադրանքներ</Box>}
+                                        value='tasks'
+                                    />
                                 </TabList>
                             </Box>
                         </Box>
                         <TabPanel value='costs' sx={{ p: 0 }} />
                         <TabPanel value='risks' sx={{ p: 0 }} />
+                        <TabPanel value='tasks' sx={{ p: 0 }} />
                     </Box>
                 </TabContext>
             </PageContents>
