@@ -875,6 +875,7 @@ export default function RentayinPage() {
                                             return s + actFull * r.quantity;
                                         }, 0);
                                         const estExpenses: Record<string, number>[] = (detail as any)?.estimateOtherExpenses ?? [];
+                                        const actBase = totalActCost > 0 ? totalActCost : totalEstCost;
                                         const actPcts: Record<string, number> = otherCostPercentages;
                                         const costingActuals: Record<string, number> = (detail as any)?.costingOtherActuals ?? {};
                                         const allKeys = Array.from(new Set([
@@ -897,7 +898,7 @@ export default function RentayinPage() {
                                                             const estimatedValue = Math.round((estPct / 100) * totalEstCost);
                                                             const actPct = actPcts[key] ?? 0;
                                                             const actualValue = actPct > 0
-                                                                ? Math.round((actPct / 100) * totalActCost)
+                                                                ? Math.round((actPct / 100) * actBase)
                                                                 : Math.round(costingActuals[key] ?? 0);
                                                             const overheadTotal = key === 'overheadCosts' ? overheadEntries.reduce((s: number, e: any) => s + e.total, 0) : 0;
                                                             const compareActual = key === 'overheadCosts' ? overheadTotal : actualValue;
@@ -1254,7 +1255,7 @@ export default function RentayinPage() {
                 open={otherCostsOpen}
                 onClose={() => setOtherCostsOpen(false)}
                 percentages={otherCostPercentages}
-                totalActualCost={(() => { const rows = detail?.rows ?? []; return rows.reduce((s, r) => { const af = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : (r.actualUnitCost ?? 0); return s + af * r.quantity; }, 0); })()}
+                totalActualCost={(() => { const rows = detail?.rows ?? []; const actC = rows.reduce((s, r) => { const af = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : (r.actualUnitCost ?? 0); return s + af * r.quantity; }, 0); if (actC > 0) return actC; return rows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0); })()}
                 onSave={async (pcts) => {
                     setOtherCostPercentages(pcts);
                     if (detail) {
