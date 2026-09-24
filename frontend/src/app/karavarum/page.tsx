@@ -29,7 +29,7 @@ export default function KaravariumPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<Project | null>(null);
-    const [tab, setTab] = useState('costs');
+    const [tab, setTab] = useState(() => { const t = searchParams.get('tab'); return t === 'risks' ? 'risks' : 'costs'; });
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
@@ -78,7 +78,7 @@ export default function KaravariumPage() {
                                     <ArrowBackIcon fontSize='small' />
                                 </IconButton>
                                 <TabList
-                                    onChange={(_, v) => setTab(v)}
+                                    onChange={(_, v) => { setTab(v); const p = new URLSearchParams(searchParams.toString()); p.set('tab', v); router.replace(`/karavarum?${p.toString()}`, { scroll: false }); }}
                                     sx={{ '& .MuiTabs-indicator': { backgroundColor: ACCENT }, '& .MuiTab-root.Mui-selected': { color: ACCENT } }}
                                 >
                                     <Tab
@@ -136,7 +136,7 @@ export default function KaravariumPage() {
                         {projects.map(p => (
                             <Box
                                 key={p._id}
-                                onClick={() => { setSelected(p); setTab('costs'); router.replace(`/karavarum?id=${p._id}`, { scroll: false }); }}
+                                onClick={() => { setSelected(p); setTab('costs'); router.replace(`/karavarum?id=${p._id}&tab=costs`, { scroll: false }); }}
                                 sx={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     px: 2.5, py: 1.8, borderRadius: 2,
