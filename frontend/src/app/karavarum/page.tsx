@@ -15,6 +15,7 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -100,34 +101,36 @@ export default function KaravariumPage() {
                         </Box>
                         <TabPanel value='costs' sx={{ p: 0 }}>
                             <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', pt: 2 }}>
-                                <Box
-                                    onClick={() => {}}
-                                    sx={{
-                                        width: 148, borderRadius: 3, py: 3, px: 2,
-                                        border: `1.5px solid rgba(0,163,144,0.28)`,
-                                        background: 'linear-gradient(145deg, rgba(0,163,144,0.08) 0%, rgba(0,163,144,0.03) 100%)',
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5,
-                                        cursor: 'pointer', transition: 'all 0.2s ease',
-                                        boxShadow: '0 1px 4px rgba(0,163,144,0.08)',
-                                        '&:hover': {
-                                            borderColor: ACCENT,
-                                            boxShadow: `0 6px 24px rgba(0,163,144,0.18)`,
-                                            transform: 'translateY(-3px)',
-                                            background: 'linear-gradient(145deg, rgba(0,163,144,0.14) 0%, rgba(0,163,144,0.06) 100%)',
-                                        },
-                                    }}
-                                >
-                                    <Box sx={{
-                                        width: 52, height: 52, borderRadius: 2.5,
-                                        bgcolor: 'rgba(0,163,144,0.12)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    }}>
-                                        <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: ACCENT }} />
+                                {[
+                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: '#00A390' }} />, color: '#00A390', iconBg: 'rgba(0,163,144,0.10)', cardBg: 'rgba(0,163,144,0.04)', hoverBg: 'rgba(0,163,144,0.09)', border: 'rgba(0,163,144,0.2)', hoverBorder: '#00A390', shadow: 'rgba(0,163,144,0.14)' },
+                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 28, color: '#5B73E8' }} />, color: '#5B73E8', iconBg: 'rgba(91,115,232,0.10)', cardBg: 'rgba(91,115,232,0.04)', hoverBg: 'rgba(91,115,232,0.09)', border: 'rgba(91,115,232,0.2)', hoverBorder: '#5B73E8', shadow: 'rgba(91,115,232,0.14)' },
+                                ].map((tile, i) => (
+                                    <Box
+                                        key={i}
+                                        onClick={() => {}}
+                                        sx={{
+                                            width: 148, borderRadius: 3, py: 3, px: 2,
+                                            border: `1.5px solid ${tile.border}`,
+                                            background: tile.cardBg,
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+                                            cursor: 'pointer', transition: 'all 0.2s ease',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                            '&:hover': {
+                                                borderColor: tile.hoverBorder,
+                                                boxShadow: `0 6px 22px ${tile.shadow}`,
+                                                transform: 'translateY(-3px)',
+                                                background: tile.hoverBg,
+                                            },
+                                        }}
+                                    >
+                                        <Box sx={{ width: 52, height: 52, borderRadius: 2.5, bgcolor: tile.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            {tile.icon}
+                                        </Box>
+                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#2d3748', textAlign: 'center', lineHeight: 1.3 }}>
+                                            {tile.label}
+                                        </Typography>
                                     </Box>
-                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#2d3748', textAlign: 'center', lineHeight: 1.3 }}>
-                                        {t('Estimations')}
-                                    </Typography>
-                                </Box>
+                                ))}
                             </Box>
                         </TabPanel>
                         <TabPanel value='risks' sx={{ p: 0 }} />
