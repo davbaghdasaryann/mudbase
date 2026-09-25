@@ -49,9 +49,10 @@ const BADGE_GREEN_TEXT = '#2e7d32';
 interface Props {
     widget: any;
     onUpdate: () => void;
+    refreshKey?: number;
 }
 
-export default function Widget15Day({ widget, onUpdate }: Props) {
+export default function Widget15Day({ widget, onUpdate, refreshKey = 0 }: Props) {
     const [t] = useTranslation();
     const [snapshots, setSnapshots] = useState<Array<{ timestamp: string; value: number }>>([]);
     const [analytics, setAnalytics] = useState<{ min: number; max: number; avg: number } | null>(null);
@@ -104,7 +105,7 @@ export default function Widget15Day({ widget, onUpdate }: Props) {
         fetchData();
         const interval = setInterval(fetchData, 30 * 60 * 1000);
         return () => clearInterval(interval);
-    }, [widget._id, isPreview, widget.widgetType, widget.dataSource, String(widget.dataSourceConfig?.itemId ?? widget.dataSourceConfig?.estimateId ?? '')]);
+    }, [widget._id, isPreview, widget.widgetType, widget.dataSource, String(widget.dataSourceConfig?.itemId ?? widget.dataSourceConfig?.estimateId ?? ''), refreshKey]);
 
     const handleDelete = async () => {
         if (isPreview) return;

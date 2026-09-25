@@ -11,21 +11,14 @@ import Widget30Day from './widgets/Widget30Day';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 
-export interface LiveSnapshot {
-    widgetId: string;
-    timestamp: string;
-    value: number;
-}
-
 interface Props {
     group: any;
     onUpdate: () => void;
     onAddWidget?: (groupId: string) => void;
-    liveSnapshots?: LiveSnapshot[];
-    onClearLiveSnapshot?: (widgetId: string) => void;
+    refreshKey?: number;
 }
 
-export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnapshots = [], onClearLiveSnapshot }: Props) {
+export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshKey = 0 }: Props) {
     const [t] = useTranslation();
     const [editing, setEditing] = useState(false);
     const [editName, setEditName] = useState(group.name);
@@ -160,8 +153,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                                         <Widget1Day
                                             widget={widget}
                                             onUpdate={onUpdate}
-                                            liveSnapshots={liveSnapshots}
-                                            onClearLiveSnapshot={onClearLiveSnapshot}
+                                            refreshKey={refreshKey}
                                             grouped
                                         />
                                         <Typography className="drag-hint" sx={{ opacity: 0, transition: 'opacity 0.15s', textAlign: 'center', fontSize: 11, color: '#aaa', pb: 0.5, userSelect: 'none', pointerEvents: 'none' }}>
@@ -193,14 +185,13 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, liveSnap
                                     }}
                                 >
                                     {widget.widgetType === '15-day' && (
-                                        <Widget15Day widget={widget} onUpdate={onUpdate} />
+                                        <Widget15Day widget={widget} onUpdate={onUpdate} refreshKey={refreshKey} />
                                     )}
                                     {widget.widgetType === '30-day' && (
                                         <Widget30Day
                                             widget={widget}
                                             onUpdate={onUpdate}
-                                            liveSnapshots={liveSnapshots}
-                                            onClearLiveSnapshot={onClearLiveSnapshot}
+                                            refreshKey={refreshKey}
                                         />
                                     )}
                                     <Typography className="drag-hint" sx={{ opacity: 0, transition: 'opacity 0.15s', textAlign: 'center', fontSize: 11, color: '#aaa', pt: 0.5, pb: 0.5, userSelect: 'none', pointerEvents: 'none' }}>

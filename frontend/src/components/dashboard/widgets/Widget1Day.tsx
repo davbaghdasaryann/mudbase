@@ -9,17 +9,15 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DescriptionIcon from '@mui/icons-material/Description';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
-import type { LiveSnapshot } from '../WidgetGroupCard';
 
 interface Props {
     widget: any;
     onUpdate: () => void;
-    liveSnapshots?: LiveSnapshot[];
-    onClearLiveSnapshot?: (widgetId: string) => void;
+    refreshKey?: number;
     grouped?: boolean;
 }
 
-export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onClearLiveSnapshot, grouped = false }: Props) {
+export default function Widget1Day({ widget, onUpdate, refreshKey = 0, grouped = false }: Props) {
     const [t] = useTranslation();
     const [data, setData] = useState<Array<{ time: string; value: number; ts: number }>>([]);
     const [loading, setLoading] = useState(true);
@@ -70,7 +68,6 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
                 };
             });
             setData(chartData);
-            onClearLiveSnapshot?.(widget._id);
         } catch (error) {
             console.error('Failed to fetch widget data:', error);
         } finally {
@@ -86,17 +83,9 @@ export default function Widget1Day({ widget, onUpdate, liveSnapshots = [], onCle
         fetchData();
         const interval = setInterval(fetchData, 30 * 60 * 1000);
         return () => clearInterval(interval);
-    }, [widget._id, isPreview, widget.widgetType, widget.dataSource, String(widget.dataSourceConfig?.itemId ?? widget.dataSourceConfig?.estimateId ?? '')]);
+    }, [widget._id, isPreview, widget.widgetType, widget.dataSource, String(widget.dataSourceConfig?.itemId ?? widget.dataSourceConfig?.estimateId ?? ''), refreshKey]);
 
-    const liveForThis = liveSnapshots.filter((s) => s.widgetId === widget._id);
-    const merged = [
-        ...data,
-        ...liveForThis.map((s) => ({
-            time: new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            value: s.value,
-            ts: new Date(s.timestamp).getTime()
-        }))
-    ].sort((a, b) => a.ts - b.ts);
+    const merged = [...data].sort((a, b) => a.ts - b.ts);
 
     const handleDelete = async () => {
         if (isPreview) return;

@@ -19,8 +19,8 @@ registerApiSession('dashboard/snapshot/snapshot_capture', async (req, res, sessi
     // Use live timestamp (e.g. 14:14) so "Snapshot Now" shows exact moment; widget_data_fetch normalizes to 30-min on refresh
     const now = new Date();
 
-    // Fetch all widgets
-    const widgets = await widgetsColl.find({}).toArray();
+    // Fetch only this account's widgets
+    const widgets = await widgetsColl.find({ accountId: session.mongoAccountId }).toArray();
 
     let capturedCount = 0;
     const captured: Array<{ widgetId: string; timestamp: string; value: number }> = [];

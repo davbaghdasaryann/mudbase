@@ -39,7 +39,7 @@ export default function DashboardBuilderPage() {
     const [snackbarMessage, setSnackbarMessage] = useState<string>('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
     const [showSnackbar, setShowSnackbar] = useState(false);
-    const [liveSnapshots, setLiveSnapshots] = useState<Array<{ widgetId: string; timestamp: string; value: number }>>([]);
+    const [refreshKey, setRefreshKey] = useState(0);
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -100,9 +100,7 @@ export default function DashboardBuilderPage() {
             setSnackbarMessage('Snapshot captured successfully!');
             setSnackbarSeverity('success');
             setShowSnackbar(true);
-            if (result.captured && result.captured.length > 0) {
-                setLiveSnapshots(result.captured);
-            }
+            setRefreshKey(k => k + 1);
             fetchGroups();
         } catch (error) {
             console.error('Failed to capture snapshot:', error);
@@ -112,10 +110,6 @@ export default function DashboardBuilderPage() {
         } finally {
             setCapturingSnapshot(false);
         }
-    };
-
-    const clearLiveSnapshotForWidget = (widgetId: string) => {
-        setLiveSnapshots((prev) => prev.filter((s) => s.widgetId !== widgetId));
     };
 
     return (
@@ -159,8 +153,7 @@ export default function DashboardBuilderPage() {
                                 group={group}
                                 onUpdate={fetchGroups}
                                 onAddWidget={handleAddWidgetToGroup}
-                                liveSnapshots={liveSnapshots}
-                                onClearLiveSnapshot={clearLiveSnapshotForWidget}
+                                refreshKey={refreshKey}
                             />
                         ))}
                     </Stack>
