@@ -194,47 +194,23 @@ export default function KaravariumPage() {
                                             p: 2.5,
                                         }}
                                     >
-                                        {/* header */}
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                                            <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(0,163,144,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <RequestQuoteOutlinedIcon sx={{ fontSize: 20, color: ACCENT }} />
+                                            </Box>
+                                            <Typography sx={{ fontSize: '0.78rem', color: '#888', fontWeight: 400 }}>
                                                 {t('Total Estimations Cost')}
                                             </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(0,163,144,0.08)', borderRadius: '10px', px: 1, py: 0.3 }}>
-                                                <RequestQuoteOutlinedIcon sx={{ fontSize: 13, color: ACCENT }} />
-                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: ACCENT }}>{confirmedEsts.length}</Typography>
-                                            </Box>
                                         </Box>
 
-                                        {/* total number */}
-                                        <Box sx={{ mb: 2 }}>
-                                            <Typography component='span' sx={{ fontSize: 30, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }}>
-                                                {Math.round(total).toLocaleString()}
-                                            </Typography>
-                                            <Typography component='span' sx={{ ml: 0.75, fontSize: 15, fontWeight: 500, color: '#aaa' }}>AMD</Typography>
-                                        </Box>
+                                        <Typography component='div' sx={{ fontSize: 30, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px', lineHeight: 1.1, mb: 0.5 }}>
+                                            {Math.round(total).toLocaleString()}
+                                            <Typography component='span' sx={{ ml: 0.75, fontSize: 14, fontWeight: 400, color: '#bbb' }}>AMD</Typography>
+                                        </Typography>
 
-                                        {/* estimate breakdown */}
-                                        <Divider sx={{ mb: 1.5, borderColor: 'rgba(0,0,0,0.06)' }} />
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                            {confirmedEsts.slice(0, 4).map((e) => {
-                                                const val = Math.round(e.totalCostWithOtherExpenses ?? e.totalCost ?? 0);
-                                                const pct = total > 0 ? (val / total) * 100 : 0;
-                                                return (
-                                                    <Box key={e._id}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.4 }}>
-                                                            <Typography sx={{ fontSize: '0.78rem', color: '#444', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '65%' }}>{e.name || '—'}</Typography>
-                                                            <Typography sx={{ fontSize: '0.75rem', color: '#888', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{val.toLocaleString()}</Typography>
-                                                        </Box>
-                                                        <Box sx={{ height: 3, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                                                            <Box sx={{ height: '100%', width: `${pct}%`, borderRadius: 2, background: 'linear-gradient(90deg, #F57C00 0%, #FFCC80 100%)' }} />
-                                                        </Box>
-                                                    </Box>
-                                                );
-                                            })}
-                                            {confirmedEsts.length > 4 && (
-                                                <Typography sx={{ fontSize: '0.73rem', color: '#bbb', mt: 0.5 }}>+{confirmedEsts.length - 4} {t('more')}</Typography>
-                                            )}
-                                        </Box>
+                                        <Typography sx={{ fontSize: '0.75rem', color: ACCENT, fontWeight: 500 }}>
+                                            {confirmedEsts.length} {confirmedEsts.length === 1 ? t('estimation') : t('estimations')}
+                                        </Typography>
                                     </Box>
                                 );
                             })()}
