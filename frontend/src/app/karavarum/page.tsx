@@ -285,9 +285,6 @@ export default function KaravariumPage() {
                             <ManageAccountsOutlinedIcon sx={{ fontSize: 28, color: ACCENT }} />
                         </Box>
                         <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#1a1a1a' }}>{t('New Project')}</Typography>
-                        <Typography sx={{ fontSize: '0.82rem', color: '#8a9ab0', textAlign: 'center' }}>
-                            {t('Give your project a name to get started')}
-                        </Typography>
                     </Box>
                     <TextField
                         autoFocus
