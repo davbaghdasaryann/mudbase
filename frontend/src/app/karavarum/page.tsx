@@ -136,30 +136,25 @@ export default function KaravariumPage() {
                         <TabPanel value='costs' sx={{ p: 0 }}>
                             <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', pt: 2 }}>
                                 {[
-                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: '#00A390' }} />, iconBg: 'rgba(0,163,144,0.10)', border: '#cef0eb', hoverBorder: '#00A390', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(0,163,144,0.07) 100%)', shadow: 'rgba(0,163,144,0.18)', onClick: openEstimations },
-                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 28, color: '#5B73E8' }} />, iconBg: 'rgba(91,115,232,0.10)', border: '#d8dcf8', hoverBorder: '#5B73E8', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(91,115,232,0.07) 100%)', shadow: 'rgba(91,115,232,0.18)', onClick: () => {} },
+                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: '#00A390', opacity: 0.55 }} />, hoverBg: 'rgba(0,163,144,0.06)', onClick: openEstimations },
+                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 24, color: '#5B73E8', opacity: 0.55 }} />, hoverBg: 'rgba(91,115,232,0.06)', onClick: () => {} },
                                 ].map((tile, i) => (
                                     <Box
                                         key={i}
                                         onClick={tile.onClick}
                                         sx={{
-                                            width: 148, borderRadius: 3, py: 3, px: 2,
-                                            border: `1px solid ${tile.border}`,
-                                            background: tile.grad,
-                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                            gap: 0.5, width: 118, height: 96, px: 1, py: 1,
+                                            bgcolor: '#fff', borderRadius: 3,
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                             cursor: 'pointer',
-                                            transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                                            '&:hover': {
-                                                borderColor: tile.hoverBorder,
-                                                boxShadow: `0 8px 24px ${tile.shadow}`,
-                                                transform: 'translateY(-3px)',
-                                            },
+                                            transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s',
+                                            '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: tile.hoverBg },
+                                            '&:hover svg': { opacity: '1 !important' },
                                         }}
                                     >
-                                        <Box sx={{ width: 52, height: 52, borderRadius: 2.5, bgcolor: tile.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            {tile.icon}
-                                        </Box>
-                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#2d3748', textAlign: 'center', lineHeight: 1.3 }}>
+                                        {tile.icon}
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>
                                             {tile.label}
                                         </Typography>
                                     </Box>
