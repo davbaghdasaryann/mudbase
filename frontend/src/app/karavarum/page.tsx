@@ -172,7 +172,7 @@ export default function KaravariumPage() {
                 </TabContext>
 
                 {/* Estimations modal */}
-                <Dialog open={estModalOpen} onClose={() => setEstModalOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 680 } }}>
+                <Dialog open={estModalOpen} onClose={() => setEstModalOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 820, minHeight: '72vh' } }}>
                     <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
                         <IconButton size='small' onClick={() => setEstModalOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
                             <CloseIcon sx={{ fontSize: 18 }} />
@@ -202,7 +202,7 @@ export default function KaravariumPage() {
                             sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderColor: ACCENT } } }}
                         />
 
-                        <Box sx={{ maxHeight: 480, overflowY: 'auto', mx: -0.5 }}>
+                        <Box sx={{ maxHeight: 'calc(72vh - 220px)', minHeight: 300, overflowY: 'auto', mx: -0.5 }}>
                             {estLoading ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
                                     <CircularProgress size={28} sx={{ color: ACCENT }} />
