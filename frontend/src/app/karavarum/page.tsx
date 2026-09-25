@@ -268,37 +268,48 @@ export default function KaravariumPage() {
                 </>
             )}
 
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}>
-                <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{t('New Project')}</Typography>
-                        <IconButton size='small' onClick={() => setDialogOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
-                            <CloseIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 480 } }}>
+                <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+                    <IconButton size='small' onClick={() => setDialogOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                        <CloseIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                </Box>
+                <DialogContent sx={{ px: 4, pt: 4, pb: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                        <Box sx={{
+                            width: 56, height: 56, borderRadius: '50%',
+                            background: `linear-gradient(135deg, rgba(0,163,144,0.15) 0%, rgba(0,163,144,0.06) 100%)`,
+                            border: `1.5px solid rgba(0,163,144,0.22)`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <ManageAccountsOutlinedIcon sx={{ fontSize: 28, color: ACCENT }} />
+                        </Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#1a1a1a' }}>{t('New Project')}</Typography>
+                        <Typography sx={{ fontSize: '0.82rem', color: '#8a9ab0', textAlign: 'center' }}>
+                            {t('Give your project a name to get started')}
+                        </Typography>
                     </Box>
-                </DialogTitle>
-                <Divider sx={{ mx: 3, mt: 2 }} />
-                <DialogContent sx={{ px: 3, py: 2.5 }}>
                     <TextField
                         autoFocus
                         fullWidth
-                        label={t('Name')}
+                        label={t('Project name')}
                         value={name}
                         onChange={e => setName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderColor: ACCENT } }, '& label.Mui-focused': { color: ACCENT } }}
                     />
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2.5, pt: 0 }}>
-                    <Button onClick={() => setDialogOpen(false)} sx={{ borderRadius: '20px', textTransform: 'none', color: '#888' }}>{t('Cancel')}</Button>
+                <DialogActions sx={{ px: 4, pb: 3.5, pt: 0, flexDirection: 'column', gap: 1 }}>
                     <Button
                         onClick={handleConfirm}
                         disabled={!name.trim() || saving}
                         variant='contained'
-                        sx={{ borderRadius: '20px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
+                        fullWidth
+                        sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', py: 1.1, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
                     >
-                        {saving ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : t('Confirm')}
+                        {saving ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : t('Create Project')}
                     </Button>
+                    <Button onClick={() => setDialogOpen(false)} sx={{ textTransform: 'none', color: '#aaa', fontSize: '0.8rem', '&:hover': { color: '#555', background: 'none' } }} disableRipple>{t('Cancel')}</Button>
                 </DialogActions>
             </Dialog>
         </PageContents>
