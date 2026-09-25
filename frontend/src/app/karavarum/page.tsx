@@ -173,6 +173,43 @@ export default function KaravariumPage() {
                                     </Box>
                                 ))}
                             </Box>
+
+                            {/* Estimations total widget */}
+                            {confirmedEsts.length > 0 && (() => {
+                                const total = confirmedEsts.reduce((s, e) => s + (e.totalCostWithOtherExpenses ?? e.totalCost ?? 0), 0);
+                                return (
+                                    <Box
+                                        sx={{
+                                            mt: 3,
+                                            borderRadius: 3,
+                                            border: '1px solid rgba(245,124,0,0.22)',
+                                            background: 'linear-gradient(135deg, #ffffff 0%, rgba(245,124,0,0.05) 100%)',
+                                            boxShadow: '0 2px 12px rgba(245,124,0,0.10)',
+                                            p: 2.5,
+                                            display: 'flex', alignItems: 'center', gap: 2.5,
+                                            cursor: 'pointer',
+                                            transition: 'box-shadow 0.2s, transform 0.15s',
+                                            '&:hover': { boxShadow: '0 6px 20px rgba(245,124,0,0.18)', transform: 'translateY(-2px)' },
+                                        }}
+                                        onClick={openEstimations}
+                                    >
+                                        <Box sx={{ width: 48, height: 48, borderRadius: 2.5, bgcolor: 'rgba(245,124,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <RequestQuoteOutlinedIcon sx={{ fontSize: 26, color: '#F57C00' }} />
+                                        </Box>
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#F57C00', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.4 }}>
+                                                {t('Total Estimations Cost')}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '1.45rem', fontWeight: 700, color: '#1a1a1a', lineHeight: 1.1 }}>
+                                                {Math.round(total).toLocaleString()} <Typography component='span' sx={{ fontSize: '0.8rem', fontWeight: 500, color: '#888' }}>AMD</Typography>
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.75rem', color: '#aaa', mt: 0.3 }}>
+                                                {confirmedEsts.length} {confirmedEsts.length === 1 ? t('estimation') : t('estimations')}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                );
+                            })()}
                         </TabPanel>
                         <TabPanel value='risks' sx={{ p: 0 }} />
                         <TabPanel value='tasks' sx={{ p: 0 }} />

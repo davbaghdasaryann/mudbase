@@ -709,7 +709,7 @@
   "Market": "Շուկայական",
   "savings": "Խնայողություն",
   "Savings": "Խնայողություն",
-  "estimation": "Նախահաշիվ",
+  "estimation": "նախահաշիվ",
   "Success": "Կատարված է",
   "Estimate copied to your estimates successfully": "Հաջողությամբ պատճենված է Ձեր նախահաշիվների մեջ։",
   "catalog.eci_copy_success": "Հաջողությամբ ավելացված է ձեր շտեմարանում",
@@ -742,5 +742,7 @@
   "Give your project a name to get started": "Տվեք ձեր ծրագրին անուն սկսելու համար",
   "Project name": "Ծրագրի անուն",
   "Create Project": "Ստեղծել ծրագիր",
-  "Select Estimations": "Ընտրել նախահաշիվներ"
+  "Select Estimations": "Ընտրել նախահաշիվներ",
+  "Total Estimations Cost": "Նախահաշիվների ընդհանուր արժեք",
+  "estimations": "նախահաշիվ"
 }
