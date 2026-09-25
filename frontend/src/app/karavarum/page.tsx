@@ -181,44 +181,56 @@ export default function KaravariumPage() {
                                     <Box
                                         onClick={openEstimations}
                                         sx={{
-                                            mt: 3, width: 280,
+                                            mt: 3, width: 360, overflow: 'hidden',
                                             background: 'rgba(255,255,255,0.82)',
                                             backdropFilter: 'blur(18px)',
                                             WebkitBackdropFilter: 'blur(18px)',
                                             borderRadius: 3,
                                             boxShadow: '0 4px 24px rgba(245,124,0,0.10), 0 1px 4px rgba(0,0,0,0.04)',
-                                            border: '1px solid rgba(245,124,0,0.18)',
+                                            border: '1px solid rgba(245,124,0,0.2)',
                                             cursor: 'pointer',
                                             transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.15s',
-                                            '&:hover': { borderColor: 'rgba(245,124,0,0.45)', boxShadow: '0 4px 24px rgba(245,124,0,0.2), 0 1px 6px rgba(0,0,0,0.06)', transform: 'translateY(-2px)' },
-                                            p: 2,
+                                            '&:hover': { borderColor: 'rgba(245,124,0,0.5)', boxShadow: '0 6px 28px rgba(245,124,0,0.18), 0 1px 6px rgba(0,0,0,0.06)', transform: 'translateY(-2px)' },
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.75 }}>
-                                            <Typography sx={{ fontSize: 14, fontWeight: 400, color: '#424242', maxWidth: '65%', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                {t('Total Estimations Cost')}
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                <RequestQuoteOutlinedIcon sx={{ fontSize: 18, color: '#F57C00' }} />
-                                                <Typography sx={{ fontSize: 14, color: '#424242' }}>{confirmedEsts.length}</Typography>
-                                            </Box>
-                                        </Box>
-                                        <Box sx={{ mb: 1.5 }}>
-                                            <Typography component='span' sx={{ fontSize: 24, fontWeight: 600, color: '#212121', letterSpacing: 0 }}>
-                                                {Math.round(total).toLocaleString()}
-                                            </Typography>
-                                            <Typography component='span' sx={{ ml: 0.75, fontSize: 18, fontWeight: 400, color: '#424242' }}>AMD</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                            {confirmedEsts.slice(0, 3).map(e => (
-                                                <Box key={e._id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#F57C00', flexShrink: 0 }} />
-                                                    <Typography sx={{ fontSize: '0.72rem', color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name || '—'}</Typography>
+                                        {/* orange accent bar */}
+                                        <Box sx={{ height: 4, background: 'linear-gradient(90deg, #F57C00 0%, #FFCC80 100%)' }} />
+                                        <Box sx={{ p: 2.5 }}>
+                                            {/* header */}
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#F57C00', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                                                    {t('Total Estimations Cost')}
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(245,124,0,0.08)', borderRadius: '10px', px: 1, py: 0.3 }}>
+                                                    <RequestQuoteOutlinedIcon sx={{ fontSize: 14, color: '#F57C00' }} />
+                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#F57C00' }}>{confirmedEsts.length}</Typography>
                                                 </Box>
-                                            ))}
-                                            {confirmedEsts.length > 3 && (
-                                                <Typography sx={{ fontSize: '0.72rem', color: '#aaa', ml: 1.3 }}>+{confirmedEsts.length - 3} {t('more')}</Typography>
-                                            )}
+                                            </Box>
+                                            {/* total */}
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography component='span' sx={{ fontSize: 28, fontWeight: 700, color: '#212121', letterSpacing: '-0.5px' }}>
+                                                    {Math.round(total).toLocaleString()}
+                                                </Typography>
+                                                <Typography component='span' sx={{ ml: 0.75, fontSize: 16, fontWeight: 400, color: '#888' }}>AMD</Typography>
+                                            </Box>
+                                            {/* estimate list */}
+                                            <Divider sx={{ mb: 1.5, borderColor: 'rgba(245,124,0,0.1)' }} />
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                                {confirmedEsts.slice(0, 4).map((e, i) => (
+                                                    <Box key={e._id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                                            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: i === 0 ? '#F57C00' : i === 1 ? '#FFA040' : i === 2 ? '#FFB74D' : '#FFCC80', flexShrink: 0 }} />
+                                                            <Typography sx={{ fontSize: '0.8rem', color: '#444', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name || '—'}</Typography>
+                                                        </Box>
+                                                        <Typography sx={{ fontSize: '0.78rem', color: '#888', flexShrink: 0 }}>
+                                                            {Math.round((e.totalCostWithOtherExpenses ?? e.totalCost ?? 0)).toLocaleString()}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                                {confirmedEsts.length > 4 && (
+                                                    <Typography sx={{ fontSize: '0.75rem', color: '#aaa', ml: 1.9 }}>+{confirmedEsts.length - 4} {t('more')}</Typography>
+                                                )}
+                                            </Box>
                                         </Box>
                                     </Box>
                                 );
