@@ -202,7 +202,7 @@ export default function KaravariumPage() {
                             sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderColor: ACCENT } } }}
                         />
 
-                        <Box sx={{ maxHeight: 340, overflowY: 'auto', mx: -0.5 }}>
+                        <Box sx={{ maxHeight: 480, overflowY: 'auto', mx: -0.5 }}>
                             {estLoading ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
                                     <CircularProgress size={28} sx={{ color: ACCENT }} />
