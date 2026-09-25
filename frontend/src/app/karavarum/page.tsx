@@ -41,13 +41,19 @@ export default function KaravariumPage() {
     const [saving, setSaving] = useState(false);
 
     const [estModalOpen, setEstModalOpen] = useState(false);
+    const [estStep, setEstStep] = useState<'view' | 'pick'>('view');
     const [estimates, setEstimates] = useState<Estimate[]>([]);
     const [estLoading, setEstLoading] = useState(false);
     const [estSearch, setEstSearch] = useState('');
-    const [selectedEstIds, setSelectedEstIds] = useState<Set<string>>(new Set());
+    const [pickerSelectedIds, setPickerSelectedIds] = useState<Set<string>>(new Set());
+    const [confirmedEsts, setConfirmedEsts] = useState<Estimate[]>([]);
 
-    const openEstimations = async () => {
-        setEstModalOpen(true);
+    const openEstimations = () => { setEstModalOpen(true); setEstStep('view'); };
+
+    const openPicker = async () => {
+        setEstStep('pick');
+        setEstSearch('');
+        setPickerSelectedIds(new Set(confirmedEsts.map(e => e._id)));
         if (estimates.length === 0) {
             setEstLoading(true);
             try {
@@ -59,11 +65,18 @@ export default function KaravariumPage() {
         }
     };
 
-    const toggleEst = (id: string) => setSelectedEstIds(prev => {
+    const togglePicker = (id: string) => setPickerSelectedIds(prev => {
         const next = new Set(prev);
         next.has(id) ? next.delete(id) : next.add(id);
         return next;
     });
+
+    const confirmPicker = () => {
+        setConfirmedEsts(estimates.filter(e => pickerSelectedIds.has(e._id)));
+        setEstStep('view');
+    };
+
+    const removeConfirmed = (id: string) => setConfirmedEsts(prev => prev.filter(e => e._id !== id));
 
     const filteredEsts = estimates.filter(e =>
         !estSearch.trim() ||
@@ -168,90 +181,138 @@ export default function KaravariumPage() {
 
                 {/* Estimations modal */}
                 <Dialog open={estModalOpen} onClose={() => setEstModalOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 820, height: '88vh' } }}>
-                    <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+                    <Box sx={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}>
                         <IconButton size='small' onClick={() => setEstModalOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
                             <CloseIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                     </Box>
-                    <DialogContent sx={{ px: 3.5, pt: 3.5, pb: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
-                            <Box sx={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(0,163,144,0.15) 0%,rgba(0,163,144,0.06) 100%)', border: '1.5px solid rgba(0,163,144,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <RequestQuoteOutlinedIcon sx={{ fontSize: 22, color: ACCENT }} />
+
+                    {/* ── STEP 1: VIEW ── */}
+                    {estStep === 'view' && <>
+                        <DialogContent sx={{ px: 3.5, pt: 3.5, pb: 1, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Box sx={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(0,163,144,0.15) 0%,rgba(0,163,144,0.06) 100%)', border: '1.5px solid rgba(0,163,144,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <RequestQuoteOutlinedIcon sx={{ fontSize: 22, color: ACCENT }} />
+                                    </Box>
+                                    <Box>
+                                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Estimations')}</Typography>
+                                        {confirmedEsts.length > 0 && (
+                                            <Typography sx={{ fontSize: '0.75rem', color: ACCENT, fontWeight: 500 }}>{confirmedEsts.length} {t('selected')}</Typography>
+                                        )}
+                                    </Box>
+                                </Box>
+                                <Button
+                                    startIcon={<AddIcon />}
+                                    onClick={openPicker}
+                                    variant='outlined'
+                                    size='small'
+                                    sx={{ borderRadius: '20px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2, '&:hover': { bgcolor: 'rgba(0,163,144,0.06)', borderColor: ACCENT } }}
+                                >
+                                    {t('Add')}
+                                </Button>
                             </Box>
-                            <Box>
-                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Estimations')}</Typography>
-                                {selectedEstIds.size > 0 && (
-                                    <Typography sx={{ fontSize: '0.75rem', color: ACCENT, fontWeight: 500 }}>
-                                        {selectedEstIds.size} {t('selected')}
-                                    </Typography>
+
+                            <Box sx={{ flex: 1, overflowY: 'auto', mx: -0.5 }}>
+                                {confirmedEsts.length === 0 ? (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1.5, py: 8 }}>
+                                        <RequestQuoteOutlinedIcon sx={{ fontSize: 48, color: '#e0e0e0' }} />
+                                        <Typography sx={{ color: '#bbb', fontSize: '0.9rem' }}>{t('No records yet')}</Typography>
+                                        <Button
+                                            startIcon={<AddIcon />}
+                                            onClick={openPicker}
+                                            variant='contained'
+                                            sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, mt: 1, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
+                                        >
+                                            {t('Add')}
+                                        </Button>
+                                    </Box>
+                                ) : confirmedEsts.map(est => (
+                                    <Box key={est._id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.2, mx: 0.5, borderRadius: 2, border: '1px solid #e0f5f2', bgcolor: 'rgba(0,163,144,0.04)', mb: 0.75 }}>
+                                        <RequestQuoteOutlinedIcon sx={{ fontSize: 18, color: ACCENT, opacity: 0.7, flexShrink: 0 }} />
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{est.name || '—'}</Typography>
+                                            {est.estimateNumber && <Typography variant='caption' sx={{ color: '#aaa' }}>#{est.estimateNumber}</Typography>}
+                                        </Box>
+                                        <IconButton size='small' onClick={() => removeConfirmed(est._id)} sx={{ color: '#ccc', '&:hover': { color: '#e53935' } }}>
+                                            <CloseIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                    </Box>
+                                ))}
+                            </Box>
+                        </DialogContent>
+                        <Divider sx={{ mx: 3.5 }} />
+                        <DialogActions sx={{ px: 3.5, py: 2, gap: 1 }}>
+                            <Button onClick={() => setEstModalOpen(false)} sx={{ textTransform: 'none', color: '#aaa', fontSize: '0.85rem', '&:hover': { color: '#555', background: 'none' } }} disableRipple>{t('Cancel')}</Button>
+                            <Box sx={{ flex: 1 }} />
+                            <Button
+                                variant='contained'
+                                disabled={confirmedEsts.length === 0}
+                                onClick={() => setEstModalOpen(false)}
+                                sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
+                            >
+                                {t('Confirm')} {confirmedEsts.length > 0 ? `(${confirmedEsts.length})` : ''}
+                            </Button>
+                        </DialogActions>
+                    </>}
+
+                    {/* ── STEP 2: PICKER ── */}
+                    {estStep === 'pick' && <>
+                        <DialogContent sx={{ px: 3.5, pt: 3.5, pb: 1, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                                <IconButton size='small' onClick={() => setEstStep('view')} sx={{ color: '#aaa', '&:hover': { color: ACCENT } }}>
+                                    <ArrowBackIcon fontSize='small' />
+                                </IconButton>
+                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>{t('Select Estimations')}</Typography>
+                                {pickerSelectedIds.size > 0 && (
+                                    <Typography sx={{ fontSize: '0.75rem', color: ACCENT, fontWeight: 500, ml: 0.5 }}>{pickerSelectedIds.size} {t('selected')}</Typography>
                                 )}
                             </Box>
-                        </Box>
 
-                        <TextField
-                            fullWidth size='small'
-                            placeholder={t('Search...')}
-                            value={estSearch}
-                            onChange={e => setEstSearch(e.target.value)}
-                            InputProps={{ startAdornment: <InputAdornment position='start'><SearchIcon sx={{ fontSize: 18, color: '#bbb' }} /></InputAdornment> }}
-                            sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderColor: ACCENT } } }}
-                        />
+                            <TextField
+                                fullWidth size='small'
+                                placeholder={t('Search...')}
+                                value={estSearch}
+                                onChange={e => setEstSearch(e.target.value)}
+                                InputProps={{ startAdornment: <InputAdornment position='start'><SearchIcon sx={{ fontSize: 18, color: '#bbb' }} /></InputAdornment> }}
+                                sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderColor: ACCENT } } }}
+                            />
 
-                        <Box sx={{ maxHeight: 'calc(88vh - 220px)', minHeight: 300, overflowY: 'auto', mx: -0.5 }}>
-                            {estLoading ? (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
-                                    <CircularProgress size={28} sx={{ color: ACCENT }} />
-                                </Box>
-                            ) : filteredEsts.length === 0 ? (
-                                <Typography sx={{ textAlign: 'center', color: '#aaa', py: 5, fontSize: '0.88rem' }}>
-                                    {t('No records yet')}
-                                </Typography>
-                            ) : filteredEsts.map(est => {
-                                const checked = selectedEstIds.has(est._id);
-                                return (
-                                    <Box
-                                        key={est._id}
-                                        onClick={() => toggleEst(est._id)}
-                                        sx={{
-                                            display: 'flex', alignItems: 'center', gap: 1.5,
-                                            px: 1.5, py: 1.2, mx: 0.5, borderRadius: 2,
-                                            cursor: 'pointer', transition: 'background 0.15s',
-                                            background: checked ? 'rgba(0,163,144,0.06)' : 'transparent',
-                                            '&:hover': { background: checked ? 'rgba(0,163,144,0.1)' : 'rgba(0,0,0,0.03)' },
-                                        }}
-                                    >
-                                        <Checkbox
-                                            checked={checked}
-                                            size='small'
-                                            disableRipple
-                                            sx={{ p: 0, color: '#ccc', '&.Mui-checked': { color: ACCENT } }}
-                                        />
-                                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            <Typography sx={{ fontWeight: checked ? 600 : 400, fontSize: '0.9rem', color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {est.name || '—'}
-                                            </Typography>
-                                            {est.estimateNumber && (
-                                                <Typography variant='caption' sx={{ color: '#aaa' }}>#{est.estimateNumber}</Typography>
-                                            )}
-                                        </Box>
+                            <Box sx={{ flex: 1, overflowY: 'auto', mx: -0.5 }}>
+                                {estLoading ? (
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+                                        <CircularProgress size={28} sx={{ color: ACCENT }} />
                                     </Box>
-                                );
-                            })}
-                        </Box>
-                    </DialogContent>
-                    <Divider sx={{ mx: 3.5, mt: 1 }} />
-                    <DialogActions sx={{ px: 3.5, py: 2, gap: 1 }}>
-                        <Button onClick={() => setEstModalOpen(false)} sx={{ textTransform: 'none', color: '#aaa', fontSize: '0.85rem', '&:hover': { color: '#555', background: 'none' } }} disableRipple>{t('Cancel')}</Button>
-                        <Box sx={{ flex: 1 }} />
-                        <Button
-                            variant='contained'
-                            disabled={selectedEstIds.size === 0}
-                            onClick={() => setEstModalOpen(false)}
-                            sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
-                        >
-                            {t('Confirm')} {selectedEstIds.size > 0 ? `(${selectedEstIds.size})` : ''}
-                        </Button>
-                    </DialogActions>
+                                ) : filteredEsts.length === 0 ? (
+                                    <Typography sx={{ textAlign: 'center', color: '#aaa', py: 5, fontSize: '0.88rem' }}>{t('No records yet')}</Typography>
+                                ) : filteredEsts.map(est => {
+                                    const checked = pickerSelectedIds.has(est._id);
+                                    return (
+                                        <Box key={est._id} onClick={() => togglePicker(est._id)} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.2, mx: 0.5, borderRadius: 2, cursor: 'pointer', transition: 'background 0.15s', background: checked ? 'rgba(0,163,144,0.06)' : 'transparent', '&:hover': { background: checked ? 'rgba(0,163,144,0.1)' : 'rgba(0,0,0,0.03)' } }}>
+                                            <Checkbox checked={checked} size='small' disableRipple sx={{ p: 0, color: '#ccc', '&.Mui-checked': { color: ACCENT } }} />
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography sx={{ fontWeight: checked ? 600 : 400, fontSize: '0.9rem', color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{est.name || '—'}</Typography>
+                                                {est.estimateNumber && <Typography variant='caption' sx={{ color: '#aaa' }}>#{est.estimateNumber}</Typography>}
+                                            </Box>
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                        </DialogContent>
+                        <Divider sx={{ mx: 3.5 }} />
+                        <DialogActions sx={{ px: 3.5, py: 2, gap: 1 }}>
+                            <Button onClick={() => setEstStep('view')} sx={{ textTransform: 'none', color: '#aaa', fontSize: '0.85rem', '&:hover': { color: '#555', background: 'none' } }} disableRipple>{t('Back')}</Button>
+                            <Box sx={{ flex: 1 }} />
+                            <Button
+                                variant='contained'
+                                disabled={pickerSelectedIds.size === 0}
+                                onClick={confirmPicker}
+                                sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
+                            >
+                                {t('Add')} {pickerSelectedIds.size > 0 ? `(${pickerSelectedIds.size})` : ''}
+                            </Button>
+                        </DialogActions>
+                    </>}
                 </Dialog>
             </PageContents>
         );
