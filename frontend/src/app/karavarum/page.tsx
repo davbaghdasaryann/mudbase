@@ -172,7 +172,7 @@ export default function KaravariumPage() {
                 </TabContext>
 
                 {/* Estimations modal */}
-                <Dialog open={estModalOpen} onClose={() => setEstModalOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 520 } }}>
+                <Dialog open={estModalOpen} onClose={() => setEstModalOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 680 } }}>
                     <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
                         <IconButton size='small' onClick={() => setEstModalOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
                             <CloseIcon sx={{ fontSize: 18 }} />
