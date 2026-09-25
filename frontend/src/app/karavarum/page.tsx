@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Box, Typography, Button, Dialog, DialogTitle, DialogContent,
+    Box, Typography, Button, Dialog, DialogContent,
     DialogActions, TextField, IconButton, Divider, CircularProgress, Tab,
+    Checkbox, InputAdornment,
 } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,6 +17,7 @@ import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import SearchIcon from '@mui/icons-material/Search';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -24,6 +26,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 const ACCENT = '#00A390';
 
 interface Project { _id: string; name: string; createdAt: string; }
+interface Estimate { _id: string; name?: string; estimateNumber?: string; totalCostWithOtherExpenses?: number; totalCost?: number; }
 
 export default function KaravariumPage() {
     const { t } = useTranslation();
@@ -36,6 +39,37 @@ export default function KaravariumPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
+
+    const [estModalOpen, setEstModalOpen] = useState(false);
+    const [estimates, setEstimates] = useState<Estimate[]>([]);
+    const [estLoading, setEstLoading] = useState(false);
+    const [estSearch, setEstSearch] = useState('');
+    const [selectedEstIds, setSelectedEstIds] = useState<Set<string>>(new Set());
+
+    const openEstimations = async () => {
+        setEstModalOpen(true);
+        if (estimates.length === 0) {
+            setEstLoading(true);
+            try {
+                const data = await Api.requestSession<Estimate[]>({ command: 'estimates/fetch', args: { searchVal: 'empty' } });
+                setEstimates(data ?? []);
+            } finally {
+                setEstLoading(false);
+            }
+        }
+    };
+
+    const toggleEst = (id: string) => setSelectedEstIds(prev => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+    });
+
+    const filteredEsts = estimates.filter(e =>
+        !estSearch.trim() ||
+        (e.name ?? '').toLowerCase().includes(estSearch.toLowerCase()) ||
+        (e.estimateNumber ?? '').toLowerCase().includes(estSearch.toLowerCase())
+    );
 
     useEffect(() => {
         Api.requestSession<Project[]>({ command: 'karavarum/fetch_all', args: {} })
@@ -102,12 +136,12 @@ export default function KaravariumPage() {
                         <TabPanel value='costs' sx={{ p: 0 }}>
                             <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', pt: 2 }}>
                                 {[
-                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: '#00A390' }} />, iconBg: 'rgba(0,163,144,0.10)', border: '#cef0eb', hoverBorder: '#00A390', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(0,163,144,0.07) 100%)', shadow: 'rgba(0,163,144,0.18)' },
-                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 28, color: '#5B73E8' }} />, iconBg: 'rgba(91,115,232,0.10)', border: '#d8dcf8', hoverBorder: '#5B73E8', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(91,115,232,0.07) 100%)', shadow: 'rgba(91,115,232,0.18)' },
+                                    { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 28, color: '#00A390' }} />, iconBg: 'rgba(0,163,144,0.10)', border: '#cef0eb', hoverBorder: '#00A390', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(0,163,144,0.07) 100%)', shadow: 'rgba(0,163,144,0.18)', onClick: openEstimations },
+                                    { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 28, color: '#5B73E8' }} />, iconBg: 'rgba(91,115,232,0.10)', border: '#d8dcf8', hoverBorder: '#5B73E8', grad: 'linear-gradient(135deg,#ffffff 0%,rgba(91,115,232,0.07) 100%)', shadow: 'rgba(91,115,232,0.18)', onClick: () => {} },
                                 ].map((tile, i) => (
                                     <Box
                                         key={i}
-                                        onClick={() => {}}
+                                        onClick={tile.onClick}
                                         sx={{
                                             width: 148, borderRadius: 3, py: 3, px: 2,
                                             border: `1px solid ${tile.border}`,
@@ -136,6 +170,94 @@ export default function KaravariumPage() {
                         <TabPanel value='tasks' sx={{ p: 0 }} />
                     </Box>
                 </TabContext>
+
+                {/* Estimations modal */}
+                <Dialog open={estModalOpen} onClose={() => setEstModalOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 40px rgba(0,0,0,0.13)', maxWidth: 520 } }}>
+                    <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+                        <IconButton size='small' onClick={() => setEstModalOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
+                    <DialogContent sx={{ px: 3.5, pt: 3.5, pb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+                            <Box sx={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(0,163,144,0.15) 0%,rgba(0,163,144,0.06) 100%)', border: '1.5px solid rgba(0,163,144,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <RequestQuoteOutlinedIcon sx={{ fontSize: 22, color: ACCENT }} />
+                            </Box>
+                            <Box>
+                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Estimations')}</Typography>
+                                {selectedEstIds.size > 0 && (
+                                    <Typography sx={{ fontSize: '0.75rem', color: ACCENT, fontWeight: 500 }}>
+                                        {selectedEstIds.size} {t('selected')}
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Box>
+
+                        <TextField
+                            fullWidth size='small'
+                            placeholder={t('Search...')}
+                            value={estSearch}
+                            onChange={e => setEstSearch(e.target.value)}
+                            InputProps={{ startAdornment: <InputAdornment position='start'><SearchIcon sx={{ fontSize: 18, color: '#bbb' }} /></InputAdornment> }}
+                            sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderColor: ACCENT } } }}
+                        />
+
+                        <Box sx={{ maxHeight: 340, overflowY: 'auto', mx: -0.5 }}>
+                            {estLoading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+                                    <CircularProgress size={28} sx={{ color: ACCENT }} />
+                                </Box>
+                            ) : filteredEsts.length === 0 ? (
+                                <Typography sx={{ textAlign: 'center', color: '#aaa', py: 5, fontSize: '0.88rem' }}>
+                                    {t('No records yet')}
+                                </Typography>
+                            ) : filteredEsts.map(est => {
+                                const checked = selectedEstIds.has(est._id);
+                                return (
+                                    <Box
+                                        key={est._id}
+                                        onClick={() => toggleEst(est._id)}
+                                        sx={{
+                                            display: 'flex', alignItems: 'center', gap: 1.5,
+                                            px: 1.5, py: 1.2, mx: 0.5, borderRadius: 2,
+                                            cursor: 'pointer', transition: 'background 0.15s',
+                                            background: checked ? 'rgba(0,163,144,0.06)' : 'transparent',
+                                            '&:hover': { background: checked ? 'rgba(0,163,144,0.1)' : 'rgba(0,0,0,0.03)' },
+                                        }}
+                                    >
+                                        <Checkbox
+                                            checked={checked}
+                                            size='small'
+                                            disableRipple
+                                            sx={{ p: 0, color: '#ccc', '&.Mui-checked': { color: ACCENT } }}
+                                        />
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography sx={{ fontWeight: checked ? 600 : 400, fontSize: '0.9rem', color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {est.name || '—'}
+                                            </Typography>
+                                            {est.estimateNumber && (
+                                                <Typography variant='caption' sx={{ color: '#aaa' }}>#{est.estimateNumber}</Typography>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                    </DialogContent>
+                    <Divider sx={{ mx: 3.5, mt: 1 }} />
+                    <DialogActions sx={{ px: 3.5, py: 2, gap: 1 }}>
+                        <Button onClick={() => setEstModalOpen(false)} sx={{ textTransform: 'none', color: '#aaa', fontSize: '0.85rem', '&:hover': { color: '#555', background: 'none' } }} disableRipple>{t('Cancel')}</Button>
+                        <Box sx={{ flex: 1 }} />
+                        <Button
+                            variant='contained'
+                            disabled={selectedEstIds.size === 0}
+                            onClick={() => setEstModalOpen(false)}
+                            sx={{ borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}
+                        >
+                            {t('Confirm')} {selectedEstIds.size > 0 ? `(${selectedEstIds.size})` : ''}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </PageContents>
         );
     }
