@@ -22,6 +22,7 @@ import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { useRouter, useSearchParams } from 'next/navigation';
+import KaravarumCalendar from './KaravarumCalendar';
 
 const ACCENT = '#00A390';
 
@@ -221,7 +222,12 @@ export default function KaravariumPage() {
                         </TabPanel>
                         <TabPanel value='risks' sx={{ p: 0 }} />
                         <TabPanel value='tasks' sx={{ p: 0 }} />
-                        <TabPanel value='calendar' sx={{ p: 0 }} />
+                        <TabPanel value='calendar' sx={{ p: 0 }}>
+                            <KaravarumCalendar
+                                projectId={selected?._id}
+                                projects={projects}
+                            />
+                        </TabPanel>
                     </Box>
                 </TabContext>
 

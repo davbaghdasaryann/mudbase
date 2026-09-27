@@ -10,4 +10,5 @@ export * from './entity_schedule_item';
 export * from './entity_schedule_group';
 export * from './entity_rentayin';
 export * from './entity_karavarum';
+export * from './entity_karavarum_task';
 export * from './offers';
