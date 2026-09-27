@@ -83,7 +83,7 @@ export default function KaravarumTasksList({ projectId, tasks, loading, onRefres
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                 <Button variant='outlined' startIcon={<AddIcon />} onClick={openCreate}
                     sx={{ borderRadius: '22px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2.5, '&:hover': { bgcolor: ACCENT, color: '#fff', borderColor: ACCENT } }}>
-                    Ավ. առաջadranq
+                    Ававелацнел аrajаdrаnq
                 </Button>
             </Box>
 
@@ -93,7 +93,7 @@ export default function KaravarumTasksList({ projectId, tasks, loading, onRefres
                     <Typography sx={{ color: '#bbb', fontSize: '0.9rem' }}>Առաջadranqner չkаn</Typography>
                     <Button variant='contained' startIcon={<AddIcon />} onClick={openCreate}
                         sx={{ mt: 1, borderRadius: '22px', textTransform: 'none', fontWeight: 600, bgcolor: ACCENT, boxShadow: 'none', px: 3, '&:hover': { bgcolor: '#008a79', boxShadow: 'none' } }}>
-                        Ստ. առ.
+                        Ававелацнел аrajаdrаnq
                     </Button>
                 </Box>
             ) : (
