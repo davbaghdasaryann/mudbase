@@ -193,9 +193,9 @@ export default function KaravariumPage() {
                                 {[
                                     { label: t('Estimations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: '#00A390', opacity: 0.55 }} />, hoverBg: 'rgba(0,163,144,0.06)', onClick: openEstimations },
                                     { label: 'Ժամանակացույցեր', icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 24, color: '#5B73E8', opacity: 0.55 }} />, hoverBg: 'rgba(91,115,232,0.06)', onClick: () => {} },
-                                    { label: 'Կatarоghаkаnnерr', icon: <AssessmentOutlinedIcon sx={{ fontSize: 24, color: '#E67E22', opacity: 0.55 }} />, hoverBg: 'rgba(230,126,34,0.06)', onClick: () => {} },
-                                    { label: 'Цахsаgrimnerr', icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 24, color: '#9B59B6', opacity: 0.55 }} />, hoverBg: 'rgba(155,89,182,0.06)', onClick: () => {} },
-                                    { label: 'Gortzenkerner', icon: <GroupsOutlinedIcon sx={{ fontSize: 24, color: '#4A90D9', opacity: 0.55 }} />, hoverBg: 'rgba(74,144,217,0.06)', onClick: () => {} },
+                                    { label: 'Կատարողականներ', icon: <AssessmentOutlinedIcon sx={{ fontSize: 24, color: '#E67E22', opacity: 0.55 }} />, hoverBg: 'rgba(230,126,34,0.06)', onClick: () => {} },
+                                    { label: 'Ծախսագրիմներ', icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 24, color: '#9B59B6', opacity: 0.55 }} />, hoverBg: 'rgba(155,89,182,0.06)', onClick: () => {} },
+                                    { label: 'Գործենկերներ', icon: <GroupsOutlinedIcon sx={{ fontSize: 24, color: '#4A90D9', opacity: 0.55 }} />, hoverBg: 'rgba(74,144,217,0.06)', onClick: () => {} },
                                 ].map((tile, i) => (
                                     <Box
                                         key={i}

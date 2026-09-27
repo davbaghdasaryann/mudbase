@@ -230,7 +230,7 @@ export default function KaravarumCalendar({ tasks, loading, onRefresh }: Props) 
             {/* Edit dialog */}
             <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
-                    <Typography sx={{ fontWeight: 700 }}>Խմբագրել առաջadranq</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>Խմբագրել առաջադրանք</Typography>
                 </DialogTitle>
                 <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
                     <TextField label='Անվ.' value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} size='small' fullWidth autoFocus sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
