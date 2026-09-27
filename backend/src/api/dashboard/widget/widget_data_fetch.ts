@@ -254,19 +254,6 @@ registerApiSession('dashboard/widget/widget_data_fetch', async (req, res, sessio
                 const dayCount = widget!.widgetType === '30-day' ? 30 : 15;
                 const dailyJournal = await getJournalPointsInWindowDaily(widget!.dataSource, offerIds, startDate, now, dayCount);
                 const merged = mergeSnapshotAndJournalPointsDaily(snapshotDocs, dailyJournal);
-                const today = roundToDay(now);
-                const todayKey = today.toISOString().slice(0, 10);
-                // Always override today with live catalog stats using the SAME offer set as the journal
-                {
-                    const isLabor = widget!.dataSource === 'labor';
-                    const liveStats = await getLiveOfferStatsForOfferIds(offerIds, isLabor);
-                    if (liveStats != null && liveStats.avg > 0) {
-                        const idx = merged.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                        const todayPoint = { timestamp: today, value: liveStats.avg, min: liveStats.min, max: liveStats.max };
-                        if (idx >= 0) merged[idx] = todayPoint;
-                        else merged.push(todayPoint);
-                    }
-                }
                 dailySnapshots = normalizeToDailyBuckets(merged, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
@@ -443,19 +430,6 @@ registerApiSession('dashboard/widget/widget_data_preview', async (req, res, sess
                 const dayCount = widgetType === '30-day' ? 30 : 15;
                 const dailyJournal = await getJournalPointsInWindowDaily(dataSource, offerIds, startDate, now, dayCount);
                 const merged = mergeSnapshotAndJournalPointsDaily(snapshotDocs, dailyJournal);
-                const today = roundToDay(now);
-                const todayKey = today.toISOString().slice(0, 10);
-                // Always override today with live catalog stats using the SAME offer set as the journal
-                {
-                    const isLabor = dataSource === 'labor';
-                    const liveStats = await getLiveOfferStatsForOfferIds(offerIds, isLabor);
-                    if (liveStats != null && liveStats.avg > 0) {
-                        const idx = merged.findIndex(p => roundToDay(p.timestamp).toISOString().slice(0, 10) === todayKey);
-                        const todayPoint = { timestamp: today, value: liveStats.avg, min: liveStats.min, max: liveStats.max };
-                        if (idx >= 0) merged[idx] = todayPoint;
-                        else merged.push(todayPoint);
-                    }
-                }
                 dailySnapshots = normalizeToDailyBuckets(merged, startDate, now, dayCount);
                 snapshots = dailySnapshots.map(d => ({ timestamp: d.timestamp, value: d.value }));
             } else {
