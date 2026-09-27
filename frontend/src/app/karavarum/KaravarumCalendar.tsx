@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
     Box, Typography, IconButton, Dialog, DialogTitle, DialogContent,
     DialogActions, TextField, Button, CircularProgress, MenuItem, Select,
@@ -9,7 +9,6 @@ import {
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TodayIcon from '@mui/icons-material/Today';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import CloseIcon from '@mui/icons-material/Close';
@@ -28,7 +27,7 @@ const TASK_COLORS = [
     '#27AE60', '#F39C12', '#1ABC9C', '#2C3E50', '#8E44AD',
 ];
 
-interface KaravarumTask {
+export interface KaravarumTask {
     _id: string;
     projectId?: string;
     title: string;
@@ -39,22 +38,14 @@ interface KaravarumTask {
     status?: 'pending' | 'in_progress' | 'done';
 }
 
-interface Project {
-    _id: string;
-    name: string;
-}
-
 interface Props {
-    projectId?: string;
-    projects?: Project[];
+    tasks: KaravarumTask[];
+    loading: boolean;
+    onRefresh: () => void;
 }
 
 function isoDate(d: Date) {
     return d.toISOString().slice(0, 10);
-}
-
-function sameDay(a: string, b: string) {
-    return a.slice(0, 10) === b.slice(0, 10);
 }
 
 function taskSpansDay(task: KaravarumTask, dayKey: string): boolean {
@@ -63,136 +54,68 @@ function taskSpansDay(task: KaravarumTask, dayKey: string): boolean {
     return dayKey >= start && dayKey <= end;
 }
 
-export default function KaravarumCalendar({ projectId, projects = [] }: Props) {
+export default function KaravarumCalendar({ tasks, loading, onRefresh }: Props) {
     const today = new Date();
     const [year, setYear] = useState(today.getFullYear());
-    const [month, setMonth] = useState(today.getMonth()); // 0-indexed
-    const [tasks, setTasks] = useState<KaravarumTask[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [month, setMonth] = useState(today.getMonth());
 
-    // dialog state
-    const [dialogOpen, setDialogOpen] = useState(false);
+    const [detailTask, setDetailTask] = useState<KaravarumTask | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
     const [editTask, setEditTask] = useState<KaravarumTask | null>(null);
-    const [selectedDay, setSelectedDay] = useState<string>('');
-    const [form, setForm] = useState({ title: '', description: '', endDate: '', color: TASK_COLORS[0], status: 'pending', projectId: projectId ?? '' });
+    const [form, setForm] = useState({ title: '', description: '', startDate: '', endDate: '', color: TASK_COLORS[0], status: 'pending' as string });
     const [saving, setSaving] = useState(false);
 
-    // popover for task detail
-    const [detailTask, setDetailTask] = useState<KaravarumTask | null>(null);
-
-    const fetchTasks = useCallback(async () => {
-        setLoading(true);
-        try {
-            const result = await Api.requestSession<KaravarumTask[]>({
-                command: 'karavarum/tasks_fetch',
-                args: projectId ? { projectId } : {},
-            });
-            setTasks(result as any);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    }, [projectId]);
-
-    useEffect(() => { fetchTasks(); }, [fetchTasks]);
-
-    // Calendar grid
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startOffset = firstDay.getDay(); // 0=Sun
+    const startOffset = firstDay.getDay();
     const totalCells = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
     const cells: (Date | null)[] = [];
     for (let i = 0; i < totalCells; i++) {
-        const dayIndex = i - startOffset + 1;
-        if (dayIndex < 1 || dayIndex > lastDay.getDate()) cells.push(null);
-        else cells.push(new Date(year, month, dayIndex));
+        const d = i - startOffset + 1;
+        cells.push(d < 1 || d > lastDay.getDate() ? null : new Date(year, month, d));
     }
 
-    function prevMonth() {
-        if (month === 0) { setYear(y => y - 1); setMonth(11); }
-        else setMonth(m => m - 1);
-    }
-    function nextMonth() {
-        if (month === 11) { setYear(y => y + 1); setMonth(0); }
-        else setMonth(m => m + 1);
-    }
-    function goToday() { setYear(today.getFullYear()); setMonth(today.getMonth()); }
-
-    function openCreate(day: Date) {
-        const key = isoDate(day);
-        setSelectedDay(key);
-        setEditTask(null);
-        setForm({ title: '', description: '', endDate: '', color: TASK_COLORS[0], status: 'pending', projectId: projectId ?? '' });
-        setDialogOpen(true);
-    }
+    function prevMonth() { if (month === 0) { setYear(y => y - 1); setMonth(11); } else setMonth(m => m - 1); }
+    function nextMonth() { if (month === 11) { setYear(y => y + 1); setMonth(0); } else setMonth(m => m + 1); }
 
     function openEdit(task: KaravarumTask) {
         setDetailTask(null);
         setEditTask(task);
-        setSelectedDay(task.startDate.slice(0, 10));
         setForm({
             title: task.title,
             description: task.description ?? '',
+            startDate: task.startDate.slice(0, 10),
             endDate: task.endDate ? task.endDate.slice(0, 10) : '',
             color: task.color ?? TASK_COLORS[0],
             status: task.status ?? 'pending',
-            projectId: task.projectId ?? projectId ?? '',
         });
-        setDialogOpen(true);
+        setEditOpen(true);
     }
 
-    async function saveTask() {
-        if (!form.title.trim()) return;
+    async function saveEdit() {
+        if (!editTask || !form.title.trim()) return;
         setSaving(true);
         try {
-            if (editTask) {
-                await Api.requestSession({
-                    command: 'karavarum/task_update',
-                    json: {
-                        id: editTask._id,
-                        title: form.title,
-                        description: form.description,
-                        startDate: selectedDay,
-                        endDate: form.endDate || null,
-                        color: form.color,
-                        status: form.status,
-                    },
-                });
-            } else {
-                await Api.requestSession({
-                    command: 'karavarum/task_create',
-                    json: {
-                        title: form.title,
-                        description: form.description,
-                        startDate: selectedDay,
-                        endDate: form.endDate || null,
-                        color: form.color,
-                        status: form.status,
-                        projectId: form.projectId || null,
-                    },
-                });
-            }
-            setDialogOpen(false);
-            fetchTasks();
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setSaving(false);
-        }
+            await Api.requestSession({
+                command: 'karavarum/task_update',
+                json: { id: editTask._id, title: form.title, description: form.description, startDate: form.startDate, endDate: form.endDate || null, color: form.color, status: form.status },
+            });
+            setEditOpen(false);
+            onRefresh();
+        } finally { setSaving(false); }
     }
 
     async function deleteTask(id: string) {
         await Api.requestSession({ command: 'karavarum/task_delete', args: { id } });
         setDetailTask(null);
-        setDialogOpen(false);
-        fetchTasks();
+        setEditOpen(false);
+        onRefresh();
     }
 
     async function toggleStatus(task: KaravarumTask) {
         const next = task.status === 'done' ? 'pending' : 'done';
         await Api.requestSession({ command: 'karavarum/task_update', json: { id: task._id, status: next } });
-        fetchTasks();
+        onRefresh();
     }
 
     const todayKey = isoDate(today);
@@ -201,131 +124,71 @@ export default function KaravarumCalendar({ projectId, projects = [] }: Props) {
         <Box sx={{ pt: 2 }}>
             {/* Header */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <IconButton onClick={prevMonth} size='small' sx={{ color: '#555' }}>
-                    <ChevronLeftIcon />
-                </IconButton>
+                <IconButton onClick={prevMonth} size='small'><ChevronLeftIcon /></IconButton>
                 <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: '#1a1a1a', minWidth: 180, textAlign: 'center' }}>
                     {MONTH_NAMES[month]} {year}
                 </Typography>
-                <IconButton onClick={nextMonth} size='small' sx={{ color: '#555' }}>
-                    <ChevronRightIcon />
-                </IconButton>
-                <Button
-                    size='small'
-                    startIcon={<TodayIcon sx={{ fontSize: 16 }} />}
-                    onClick={goToday}
-                    sx={{ ml: 1, textTransform: 'none', color: ACCENT, fontWeight: 500, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(0,163,144,0.06)' } }}
-                >
+                <IconButton onClick={nextMonth} size='small'><ChevronRightIcon /></IconButton>
+                <Button size='small' startIcon={<TodayIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }}
+                    sx={{ ml: 1, textTransform: 'none', color: ACCENT, fontWeight: 500, fontSize: '0.82rem' }}>
                     Այսօր
                 </Button>
                 <Box sx={{ flex: 1 }} />
                 {loading && <CircularProgress size={16} sx={{ color: ACCENT }} />}
             </Box>
 
-            {/* Day headers */}
+            {/* Day names */}
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
                 {DAY_NAMES.map(d => (
                     <Box key={d} sx={{ textAlign: 'center', py: 0.75 }}>
-                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            {d}
-                        </Typography>
+                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: 0.5 }}>{d}</Typography>
                     </Box>
                 ))}
             </Box>
 
-            {/* Calendar grid */}
-            <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                border: '1px solid rgba(0,0,0,0.08)',
-                borderRadius: 2,
-                overflow: 'hidden',
-                bgcolor: '#fff',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            }}>
+            {/* Grid */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 2, overflow: 'hidden', bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 {cells.map((day, idx) => {
-                    if (!day) {
-                        return (
-                            <Box key={idx} sx={{
-                                minHeight: 110,
-                                bgcolor: '#fafafa',
-                                borderRight: idx % 7 !== 6 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                                borderBottom: idx < cells.length - 7 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                            }} />
-                        );
-                    }
+                    if (!day) return (
+                        <Box key={idx} sx={{ minHeight: 110, bgcolor: '#fafafa', borderRight: idx % 7 !== 6 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderBottom: idx < cells.length - 7 ? '1px solid rgba(0,0,0,0.06)' : 'none' }} />
+                    );
                     const key = isoDate(day);
                     const isToday = key === todayKey;
-                    const dayTasks = tasks.filter(t => taskSpansDay(t, key));
                     const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                    const dayTasks = tasks.filter(t => taskSpansDay(t, key));
 
                     return (
-                        <Box
-                            key={idx}
-                            onClick={() => openCreate(day)}
-                            sx={{
-                                minHeight: 110,
-                                p: 0.75,
-                                bgcolor: isToday ? 'rgba(0,163,144,0.04)' : isWeekend ? 'rgba(0,0,0,0.015)' : '#fff',
-                                borderRight: idx % 7 !== 6 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                                borderBottom: idx < cells.length - 7 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                                cursor: 'pointer',
-                                transition: 'background 0.15s',
-                                '&:hover': { bgcolor: 'rgba(0,163,144,0.04)' },
-                                '&:hover .add-btn': { opacity: 1 },
-                                position: 'relative',
-                            }}
-                        >
-                            {/* Day number */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                <Box sx={{
-                                    width: 26, height: 26, borderRadius: '50%',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    bgcolor: isToday ? ACCENT : 'transparent',
-                                }}>
-                                    <Typography sx={{
-                                        fontSize: '0.78rem',
-                                        fontWeight: isToday ? 700 : 400,
-                                        color: isToday ? '#fff' : isWeekend ? '#aaa' : '#333',
-                                        lineHeight: 1,
-                                    }}>
+                        <Box key={idx} sx={{
+                            minHeight: 110, p: 0.75,
+                            bgcolor: isToday ? 'rgba(0,163,144,0.04)' : isWeekend ? 'rgba(0,0,0,0.015)' : '#fff',
+                            borderRight: idx % 7 !== 6 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                            borderBottom: idx < cells.length - 7 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                        }}>
+                            <Box sx={{ mb: 0.5 }}>
+                                <Box sx={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: isToday ? ACCENT : 'transparent' }}>
+                                    <Typography sx={{ fontSize: '0.78rem', fontWeight: isToday ? 700 : 400, color: isToday ? '#fff' : isWeekend ? '#aaa' : '#333', lineHeight: 1 }}>
                                         {day.getDate()}
                                     </Typography>
                                 </Box>
-                                <AddIcon className='add-btn' sx={{ fontSize: 14, color: ACCENT, opacity: 0, transition: 'opacity 0.15s' }} />
                             </Box>
-
-                            {/* Task chips */}
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4 }}>
                                 {dayTasks.slice(0, 3).map(task => (
-                                    <Box
-                                        key={task._id}
-                                        onClick={e => { e.stopPropagation(); setDetailTask(task); }}
-                                        sx={{
-                                            px: 0.75, py: 0.25,
-                                            borderRadius: 1,
-                                            bgcolor: task.color ? `${task.color}22` : 'rgba(0,163,144,0.12)',
-                                            borderLeft: `3px solid ${task.color ?? ACCENT}`,
-                                            cursor: 'pointer',
-                                            transition: 'filter 0.15s',
-                                            '&:hover': { filter: 'brightness(0.95)' },
-                                            opacity: task.status === 'done' ? 0.55 : 1,
-                                        }}
-                                    >
-                                        <Typography sx={{
-                                            fontSize: '0.68rem', fontWeight: 500,
-                                            color: '#1a1a1a',
-                                            overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                                            textDecoration: task.status === 'done' ? 'line-through' : 'none',
-                                        }}>
+                                    <Box key={task._id} onClick={() => setDetailTask(task)} sx={{
+                                        px: 0.75, py: 0.25, borderRadius: 1,
+                                        bgcolor: task.color ? `${task.color}22` : 'rgba(0,163,144,0.12)',
+                                        borderLeft: `3px solid ${task.color ?? ACCENT}`,
+                                        cursor: 'pointer', transition: 'filter 0.15s',
+                                        '&:hover': { filter: 'brightness(0.93)' },
+                                        opacity: task.status === 'done' ? 0.5 : 1,
+                                    }}>
+                                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 500, color: '#1a1a1a', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', textDecoration: task.status === 'done' ? 'line-through' : 'none' }}>
                                             {task.title}
                                         </Typography>
                                     </Box>
                                 ))}
                                 {dayTasks.length > 3 && (
-                                    <Typography sx={{ fontSize: '0.65rem', color: '#aaa', pl: 0.5 }}>
-                                        +{dayTasks.length - 3} ևս
-                                    </Typography>
+                                    <Typography sx={{ fontSize: '0.65rem', color: '#aaa', pl: 0.5 }}>+{dayTasks.length - 3} ևս</Typography>
                                 )}
                             </Box>
                         </Box>
@@ -333,187 +196,69 @@ export default function KaravarumCalendar({ projectId, projects = [] }: Props) {
                 })}
             </Box>
 
-            {/* Task detail popover */}
-            <Dialog
-                open={!!detailTask}
-                onClose={() => setDetailTask(null)}
-                maxWidth='xs'
-                fullWidth
-                PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' } }}
-            >
-                {detailTask && (
-                    <>
-                        <DialogTitle sx={{ pb: 1, pr: 6 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: detailTask.color ?? ACCENT, flexShrink: 0 }} />
-                                <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{detailTask.title}</Typography>
-                            </Box>
-                            <IconButton onClick={() => setDetailTask(null)} size='small' sx={{ position: 'absolute', top: 12, right: 12, color: '#aaa' }}>
-                                <CloseIcon fontSize='small' />
-                            </IconButton>
-                        </DialogTitle>
-                        <DialogContent sx={{ pt: 0 }}>
-                            {detailTask.description && (
-                                <Typography sx={{ fontSize: '0.85rem', color: '#666', mb: 1.5 }}>{detailTask.description}</Typography>
-                            )}
-                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                                <Chip
-                                    size='small'
-                                    label={new Date(detailTask.startDate).toLocaleDateString('hy-AM', { day: 'numeric', month: 'short' })}
-                                    sx={{ fontSize: '0.72rem', bgcolor: 'rgba(0,163,144,0.08)', color: ACCENT }}
-                                />
-                                {detailTask.endDate && (
-                                    <Chip
-                                        size='small'
-                                        label={`→ ${new Date(detailTask.endDate).toLocaleDateString('hy-AM', { day: 'numeric', month: 'short' })}`}
-                                        sx={{ fontSize: '0.72rem', bgcolor: 'rgba(0,0,0,0.05)', color: '#555' }}
-                                    />
-                                )}
-                                <Chip
-                                    size='small'
-                                    label={detailTask.status === 'done' ? 'Կատ.' : detailTask.status === 'in_progress' ? 'Ընթ.' : 'Սպաս.'}
-                                    sx={{ fontSize: '0.72rem', bgcolor: detailTask.status === 'done' ? 'rgba(39,174,96,0.1)' : detailTask.status === 'in_progress' ? 'rgba(74,144,217,0.1)' : 'rgba(0,0,0,0.05)', color: detailTask.status === 'done' ? '#27AE60' : detailTask.status === 'in_progress' ? '#4A90D9' : '#888' }}
-                                />
-                            </Box>
-                            {projects.length > 0 && detailTask.projectId && (
-                                <Typography sx={{ fontSize: '0.75rem', color: '#aaa' }}>
-                                    {projects.find(p => p._id === detailTask.projectId)?.name}
-                                </Typography>
-                            )}
-                        </DialogContent>
-                        <DialogActions sx={{ px: 2, pb: 2, gap: 0.5 }}>
-                            <IconButton size='small' onClick={() => toggleStatus(detailTask)} sx={{ color: detailTask.status === 'done' ? '#27AE60' : '#aaa' }}>
-                                {detailTask.status === 'done' ? <CheckCircleOutlineIcon fontSize='small' /> : <RadioButtonUncheckedIcon fontSize='small' />}
-                            </IconButton>
-                            <Box sx={{ flex: 1 }} />
-                            <IconButton size='small' onClick={() => deleteTask(detailTask._id)} sx={{ color: '#e74c3c' }}>
-                                <DeleteOutlineIcon fontSize='small' />
-                            </IconButton>
-                            <Button
-                                size='small'
-                                startIcon={<EditOutlinedIcon sx={{ fontSize: 15 }} />}
-                                onClick={() => openEdit(detailTask)}
-                                sx={{ textTransform: 'none', color: ACCENT, fontWeight: 500, fontSize: '0.82rem' }}
-                            >
-                                Խմբ.
-                            </Button>
-                        </DialogActions>
-                    </>
-                )}
+            {/* Detail dialog */}
+            <Dialog open={!!detailTask} onClose={() => setDetailTask(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                {detailTask && <>
+                    <DialogTitle sx={{ pb: 1, pr: 6 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: detailTask.color ?? ACCENT, flexShrink: 0 }} />
+                            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{detailTask.title}</Typography>
+                        </Box>
+                        <IconButton onClick={() => setDetailTask(null)} size='small' sx={{ position: 'absolute', top: 12, right: 12, color: '#aaa' }}><CloseIcon fontSize='small' /></IconButton>
+                    </DialogTitle>
+                    <DialogContent sx={{ pt: 0 }}>
+                        {detailTask.description && <Typography sx={{ fontSize: '0.85rem', color: '#666', mb: 1.5 }}>{detailTask.description}</Typography>}
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Chip size='small' label={new Date(detailTask.startDate).toLocaleDateString('hy-AM', { day: 'numeric', month: 'short' })} sx={{ fontSize: '0.72rem', bgcolor: 'rgba(0,163,144,0.08)', color: ACCENT }} />
+                            {detailTask.endDate && <Chip size='small' label={`→ ${new Date(detailTask.endDate).toLocaleDateString('hy-AM', { day: 'numeric', month: 'short' })}`} sx={{ fontSize: '0.72rem', bgcolor: 'rgba(0,0,0,0.05)', color: '#555' }} />}
+                            <Chip size='small'
+                                label={detailTask.status === 'done' ? 'Կատ.' : detailTask.status === 'in_progress' ? 'Ընթ.' : 'Սպաս.'}
+                                sx={{ fontSize: '0.72rem', bgcolor: detailTask.status === 'done' ? 'rgba(39,174,96,0.1)' : detailTask.status === 'in_progress' ? 'rgba(74,144,217,0.1)' : 'rgba(0,0,0,0.05)', color: detailTask.status === 'done' ? '#27AE60' : detailTask.status === 'in_progress' ? '#4A90D9' : '#888' }} />
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 2, pb: 2, gap: 0.5 }}>
+                        <IconButton size='small' onClick={() => toggleStatus(detailTask)} sx={{ color: detailTask.status === 'done' ? '#27AE60' : '#bbb' }}>
+                            {detailTask.status === 'done' ? <CheckCircleOutlineIcon fontSize='small' /> : <RadioButtonUncheckedIcon fontSize='small' />}
+                        </IconButton>
+                        <Box sx={{ flex: 1 }} />
+                        <IconButton size='small' onClick={() => deleteTask(detailTask._id)} sx={{ color: '#e74c3c' }}><DeleteOutlineIcon fontSize='small' /></IconButton>
+                        <Button size='small' startIcon={<EditOutlinedIcon sx={{ fontSize: 15 }} />} onClick={() => openEdit(detailTask)} sx={{ textTransform: 'none', color: ACCENT, fontWeight: 500, fontSize: '0.82rem' }}>Խմբ.</Button>
+                    </DialogActions>
+                </>}
             </Dialog>
 
-            {/* Create / Edit dialog */}
-            <Dialog
-                open={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                maxWidth='xs'
-                fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
-            >
+            {/* Edit dialog */}
+            <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
-                    <Typography sx={{ fontWeight: 700 }}>{editTask ? 'Խմբագրել առաջադրանք' : 'Ավելացնել առաջադրանք'}</Typography>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#aaa', mt: 0.25 }}>
-                        {new Date(selectedDay).toLocaleDateString('hy-AM', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </Typography>
+                    <Typography sx={{ fontWeight: 700 }}>Խմբագրել առաջadranq</Typography>
                 </DialogTitle>
                 <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
-                    <TextField
-                        label='Անվանում'
-                        value={form.title}
-                        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                        size='small'
-                        fullWidth
-                        autoFocus
-                        onKeyDown={e => { if (e.key === 'Enter') saveTask(); }}
-                        sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
-                    />
-                    <TextField
-                        label='Նկարագրություն'
-                        value={form.description}
-                        onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                        size='small'
-                        fullWidth
-                        multiline
-                        rows={2}
-                        sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
-                    />
-                    <TextField
-                        label='Ավարտի ամսաթիվ (ըnտ.)'
-                        type='date'
-                        value={form.endDate}
-                        onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-                        size='small'
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{ min: selectedDay }}
-                        sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
-                    />
+                    <TextField label='Անվ.' value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} size='small' fullWidth autoFocus sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
+                    <TextField label='Նկ.' value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} size='small' fullWidth multiline rows={2} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
+                    <TextField label='Սկ.' type='date' value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} size='small' fullWidth InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
+                    <TextField label='Ավ. (ըnտ.)' type='date' value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} size='small' fullWidth InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
                     <FormControl size='small' fullWidth>
                         <InputLabel sx={{ '&.Mui-focused': { color: ACCENT } }}>Կարգ.</InputLabel>
-                        <Select
-                            value={form.status}
-                            label='Կարգ.'
-                            onChange={e => setForm(f => ({ ...f, status: e.target.value as any }))}
-                            sx={{ '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT } }}
-                        >
+                        <Select value={form.status} label='Կարգ.' onChange={e => setForm(f => ({ ...f, status: e.target.value }))} sx={{ '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT } }}>
                             <MenuItem value='pending'>Սպասում</MenuItem>
                             <MenuItem value='in_progress'>Ընթացքի մեջ</MenuItem>
-                            <MenuItem value='done'>Կատարված</MenuItem>
+                            <MenuItem value='done'>Կատarված</MenuItem>
                         </Select>
                     </FormControl>
-                    {/* Color picker */}
                     <Box>
                         <Typography sx={{ fontSize: '0.75rem', color: '#888', mb: 0.75 }}>Գույն</Typography>
                         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
                             {TASK_COLORS.map(c => (
-                                <Box
-                                    key={c}
-                                    onClick={() => setForm(f => ({ ...f, color: c }))}
-                                    sx={{
-                                        width: 22, height: 22, borderRadius: '50%', bgcolor: c, cursor: 'pointer',
-                                        outline: form.color === c ? `2px solid ${c}` : '2px solid transparent',
-                                        outlineOffset: 2,
-                                        transition: 'transform 0.1s',
-                                        '&:hover': { transform: 'scale(1.2)' },
-                                    }}
-                                />
+                                <Box key={c} onClick={() => setForm(f => ({ ...f, color: c }))} sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: c, cursor: 'pointer', outline: form.color === c ? `2px solid ${c}` : '2px solid transparent', outlineOffset: 2, transition: 'transform 0.1s', '&:hover': { transform: 'scale(1.2)' } }} />
                             ))}
                         </Box>
                     </Box>
-                    {!projectId && projects.length > 0 && (
-                        <FormControl size='small' fullWidth>
-                            <InputLabel sx={{ '&.Mui-focused': { color: ACCENT } }}>Նախ.</InputLabel>
-                            <Select
-                                value={form.projectId}
-                                label='Նախ.'
-                                onChange={e => setForm(f => ({ ...f, projectId: e.target.value }))}
-                                sx={{ '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT } }}
-                            >
-                                <MenuItem value=''>—</MenuItem>
-                                {projects.map(p => <MenuItem key={p._id} value={p._id}>{p.name}</MenuItem>)}
-                            </Select>
-                        </FormControl>
-                    )}
                 </DialogContent>
                 <DialogActions sx={{ px: 2.5, pb: 2.5, gap: 1 }}>
-                    {editTask && (
-                        <IconButton size='small' onClick={() => deleteTask(editTask._id)} sx={{ color: '#e74c3c', mr: 'auto' }}>
-                            <DeleteOutlineIcon fontSize='small' />
-                        </IconButton>
-                    )}
-                    <Button onClick={() => setDialogOpen(false)} sx={{ textTransform: 'none', color: '#888' }}>Չեղ.</Button>
-                    <Button
-                        onClick={saveTask}
-                        disabled={!form.title.trim() || saving}
-                        variant='contained'
-                        sx={{
-                            textTransform: 'none', bgcolor: ACCENT, fontWeight: 600,
-                            '&:hover': { bgcolor: '#009070' },
-                            '&:disabled': { bgcolor: 'rgba(0,163,144,0.3)' },
-                            borderRadius: 2, px: 2.5,
-                        }}
-                    >
-                        {saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : editTask ? 'Պահ.' : 'Ավ.'}
+                    {editTask && <IconButton size='small' onClick={() => deleteTask(editTask._id)} sx={{ color: '#e74c3c', mr: 'auto' }}><DeleteOutlineIcon fontSize='small' /></IconButton>}
+                    <Button onClick={() => setEditOpen(false)} sx={{ textTransform: 'none', color: '#888' }}>Չ.</Button>
+                    <Button onClick={saveEdit} disabled={!form.title.trim() || saving} variant='contained' sx={{ textTransform: 'none', bgcolor: ACCENT, fontWeight: 600, '&:hover': { bgcolor: '#009070' }, borderRadius: 2, px: 2.5 }}>
+                        {saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Պահ.'}
                     </Button>
                 </DialogActions>
             </Dialog>

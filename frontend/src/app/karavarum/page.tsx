@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Box, Typography, Button, Dialog, DialogContent,
     DialogActions, TextField, IconButton, Divider, CircularProgress, Tab,
@@ -23,6 +23,8 @@ import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import KaravarumCalendar from './KaravarumCalendar';
+import KaravarumTasksList from './KaravarumTasksList';
+import type { KaravarumTask } from './KaravarumCalendar';
 
 const ACCENT = '#00A390';
 
@@ -40,6 +42,20 @@ export default function KaravariumPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
+
+    // Task state — lifted so both tasks tab and calendar share the same data
+    const [tasks, setTasks] = useState<KaravarumTask[]>([]);
+    const [tasksLoading, setTasksLoading] = useState(false);
+    const estsLoadedRef = useRef(false);
+
+    const fetchTasks = useCallback(async (projectId: string) => {
+        setTasksLoading(true);
+        try {
+            const result = await Api.requestSession<KaravarumTask[]>({ command: 'karavarum/tasks_fetch', args: { projectId } });
+            setTasks((result as any) ?? []);
+        } catch (e) { console.error(e); }
+        finally { setTasksLoading(false); }
+    }, []);
 
     const [estModalOpen, setEstModalOpen] = useState(false);
     const [estStep, setEstStep] = useState<'view' | 'pick'>('view');
@@ -97,6 +113,24 @@ export default function KaravariumPage() {
             })
             .finally(() => setLoading(false));
     }, []);
+
+    // Load confirmedEsts and tasks from storage when project selected
+    useEffect(() => {
+        if (!selected) { setTasks([]); setConfirmedEsts([]); return; }
+        estsLoadedRef.current = false;
+        try {
+            const stored = localStorage.getItem(`confirmedEsts_${selected._id}`);
+            setConfirmedEsts(stored ? JSON.parse(stored) : []);
+        } catch { setConfirmedEsts([]); }
+        estsLoadedRef.current = true;
+        fetchTasks(selected._id);
+    }, [selected?._id]);
+
+    // Persist confirmedEsts to localStorage whenever they change
+    useEffect(() => {
+        if (!selected || !estsLoadedRef.current) return;
+        try { localStorage.setItem(`confirmedEsts_${selected._id}`, JSON.stringify(confirmedEsts)); } catch {}
+    }, [confirmedEsts, selected?._id]);
 
     const openDialog = () => { setName(''); setDialogOpen(true); };
 
@@ -221,11 +255,19 @@ export default function KaravariumPage() {
                             })()}
                         </TabPanel>
                         <TabPanel value='risks' sx={{ p: 0 }} />
-                        <TabPanel value='tasks' sx={{ p: 0 }} />
+                        <TabPanel value='tasks' sx={{ p: 0 }}>
+                            <KaravarumTasksList
+                                projectId={selected._id}
+                                tasks={tasks}
+                                loading={tasksLoading}
+                                onRefresh={() => fetchTasks(selected._id)}
+                            />
+                        </TabPanel>
                         <TabPanel value='calendar' sx={{ p: 0 }}>
                             <KaravarumCalendar
-                                projectId={selected?._id}
-                                projects={projects}
+                                tasks={tasks}
+                                loading={tasksLoading}
+                                onRefresh={() => fetchTasks(selected._id)}
                             />
                         </TabPanel>
                     </Box>
