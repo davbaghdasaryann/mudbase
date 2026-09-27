@@ -35,7 +35,7 @@ export default function KaravariumPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<Project | null>(null);
-    const [tab, setTab] = useState(() => { const t = searchParams.get('tab'); return ['costs', 'risks', 'tasks'].includes(t ?? '') ? t! : 'costs'; });
+    const [tab, setTab] = useState(() => { const t = searchParams.get('tab'); return ['costs', 'risks', 'tasks', 'calendar'].includes(t ?? '') ? t! : 'costs'; });
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
@@ -143,6 +143,10 @@ export default function KaravariumPage() {
                                         label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><AssignmentOutlinedIcon sx={{ fontSize: 18 }} />Առաջադրանքներ</Box>}
                                         value='tasks'
                                     />
+                                    <Tab
+                                        label={<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}><CalendarMonthOutlinedIcon sx={{ fontSize: 18 }} />Օրացույց</Box>}
+                                        value='calendar'
+                                    />
                                 </TabList>
                             </Box>
                         </Box>
@@ -217,6 +221,7 @@ export default function KaravariumPage() {
                         </TabPanel>
                         <TabPanel value='risks' sx={{ p: 0 }} />
                         <TabPanel value='tasks' sx={{ p: 0 }} />
+                        <TabPanel value='calendar' sx={{ p: 0 }} />
                     </Box>
                 </TabContext>
 
