@@ -20,6 +20,7 @@ export default function HeroSection() {
             pt: 12,
             pb: 0,
             overflow: 'hidden',
+            backgroundColor: '#ffffff',
         }}>
             {/* M Logo */}
             <Box sx={{ mb: 5 }}>
