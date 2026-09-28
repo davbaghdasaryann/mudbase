@@ -15,10 +15,10 @@ const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
 ];
 
 export default function TargetSection() {
-    const [flipped, setFlipped] = useState<boolean[]>([false, false, false]);
+    const [flipped, setFlipped] = useState<number | null>(null);
 
     const toggle = (i: number) =>
-        setFlipped(prev => prev.map((v, idx) => (idx === i ? !v : v)));
+        setFlipped(prev => (prev === i ? null : i));
 
     return (
         <Box sx={{
@@ -77,7 +77,7 @@ export default function TargetSection() {
                             height: { xs: 240, md: 320 },
                             transformStyle: 'preserve-3d',
                             transition: 'transform 0.6s cubic-bezier(0.4,0.2,0.2,1)',
-                            transform: flipped[i] ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                            transform: flipped === i ? 'rotateY(180deg)' : 'rotateY(0deg)',
                         }}>
                             {/* Front face */}
                             <Box sx={{
@@ -135,8 +135,8 @@ export default function TargetSection() {
                                 alignItems: 'center',
                                 justifyContent: 'flex-end',
                                 borderRadius: '18px',
-                                border: `1.5px solid ${STROKE}26`,
-                                boxShadow: '0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)',
+                                border: `2px solid ${iconColor}`,
+                                boxShadow: `0 4px 24px ${iconColor}26, 0 1px 4px rgba(0,0,0,0.03)`,
                                 backgroundColor: '#fff',
                                 pb: 3,
                             }}>
