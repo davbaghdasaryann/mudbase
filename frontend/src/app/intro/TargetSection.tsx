@@ -22,7 +22,7 @@ export default function TargetSection() {
 
     return (
         <Box sx={{
-            py: { xs: 6, md: 8 },
+            py: { xs: 3, md: 4 },
             px: { xs: 3, md: 6 },
             display: 'flex',
             flexDirection: 'column',
@@ -47,11 +47,11 @@ export default function TargetSection() {
                             perspective: '1000px',
                         }}
                     >
-                        {/* Flip container */}
+                        {/* Flip container — square via aspect-ratio */}
                         <Box sx={{
                             position: 'relative',
                             width: '100%',
-                            height: { xs: 300, md: 460 },
+                            aspectRatio: '1 / 1',
                             transformStyle: 'preserve-3d',
                             transition: 'transform 0.6s cubic-bezier(0.4,0.2,0.2,1)',
                             transform: flipped === i ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -70,9 +70,23 @@ export default function TargetSection() {
                                 border: `1.5px solid ${STROKE}26`,
                                 boxShadow: '0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)',
                                 backgroundColor: '#fff',
+                                overflow: 'hidden',
                                 gap: 3,
                                 '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)' },
                             }}>
+                                {/* Background image on first card */}
+                                {i === 0 && (
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        opacity: 0.25,
+                                        backgroundImage: 'url(/images/estimations_card_bg.png)',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        pointerEvents: 'none',
+                                    }} />
+                                )}
+
                                 <Box sx={{
                                     width: 90,
                                     height: 90,
@@ -81,6 +95,7 @@ export default function TargetSection() {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
+                                    position: 'relative',
                                 }}>
                                     <Icon sx={{ fontSize: 40, color: iconColor }} />
                                 </Box>
@@ -93,6 +108,7 @@ export default function TargetSection() {
                                         cursor: 'pointer',
                                         userSelect: 'none',
                                         transition: 'color 0.15s',
+                                        position: 'relative',
                                         '&:hover': { color: '#00ABBE' },
                                     }}
                                 >
