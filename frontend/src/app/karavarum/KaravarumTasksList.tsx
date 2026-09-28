@@ -149,12 +149,12 @@ export default function KaravarumTasksList({ projectId, tasks, loading, onRefres
                 </DialogTitle>
                 <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
                     <TextField label='Անվանում' value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} size='small' fullWidth autoFocus onKeyDown={e => { if (e.key === 'Enter') save(); }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
-                    <TextField label='Նկառագրություն' value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} size='small' fullWidth multiline rows={2} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
-                    <TextField label='Սկս. Ամսաթիվ' type='date' value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} size='small' fullWidth InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
-                    <TextField label='Ավարտի Ամս. (Ենթ.)' type='date' value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} size='small' fullWidth InputLabelProps={{ shrink: true }} inputProps={{ min: form.startDate }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
+                    <TextField label='Նկարագրություն' value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} size='small' fullWidth multiline rows={2} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
+                    <TextField label='Սկիզբ' type='date' value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} size='small' fullWidth InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
+                    <TextField label='Ավարտ' type='date' value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} size='small' fullWidth InputLabelProps={{ shrink: true }} inputProps={{ min: form.startDate }} sx={{ '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }} />
                     <FormControl size='small' fullWidth>
-                        <InputLabel sx={{ '&.Mui-focused': { color: ACCENT } }}>Կարգ.</InputLabel>
-                        <Select value={form.status} label='Կարգ.' onChange={e => setForm(f => ({ ...f, status: e.target.value }))} sx={{ '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT } }}>
+                        <InputLabel sx={{ '&.Mui-focused': { color: ACCENT } }}>Կարգավիճակ</InputLabel>
+                        <Select value={form.status} label='Կարգավիճակ' onChange={e => setForm(f => ({ ...f, status: e.target.value }))} sx={{ '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: ACCENT } }}>
                             <MenuItem value='pending'>Սպասում</MenuItem>
                             <MenuItem value='in_progress'>Ընթացքի Մեջ</MenuItem>
                             <MenuItem value='done'>Կատարված</MenuItem>
@@ -170,9 +170,9 @@ export default function KaravarumTasksList({ projectId, tasks, loading, onRefres
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 2.5, pb: 2.5, gap: 1 }}>
-                    <Button onClick={() => setDialogOpen(false)} sx={{ textTransform: 'none', color: '#888' }}>Վորագնել</Button>
+                    <Button onClick={() => setDialogOpen(false)} sx={{ textTransform: 'none', color: '#888' }}>Չեգարկել</Button>
                     <Button onClick={save} disabled={!form.title.trim() || saving} variant='contained' sx={{ textTransform: 'none', bgcolor: ACCENT, fontWeight: 600, '&:hover': { bgcolor: '#009070' }, borderRadius: 2, px: 2.5 }}>
-                        {saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : editTask ? 'Պահել' : 'Ստվարել'}
+                        {saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : editTask ? 'Պահպանել' : 'Պահպանել'}
                     </Button>
                 </DialogActions>
             </Dialog>
