@@ -31,7 +31,7 @@ import type { KaravarumTask } from './KaravarumCalendar';
 
 const ACCENT = '#00A390';
 
-interface Project { _id: string; name: string; createdAt: string; }
+interface Project { _id: string; name: string; createdAt: string; confirmedEsts?: Estimate[]; }
 interface Estimate { _id: string; name?: string; estimateNumber?: string; totalCostWithOtherExpenses?: number; totalCost?: number; }
 
 export default function KaravariumPage() {
@@ -117,22 +117,19 @@ export default function KaravariumPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Load confirmedEsts and tasks from storage when project selected
+    // Load confirmedEsts and tasks when project selected
     useEffect(() => {
         if (!selected) { setTasks([]); setConfirmedEsts([]); return; }
         estsLoadedRef.current = false;
-        try {
-            const stored = localStorage.getItem(`confirmedEsts_${selected._id}`);
-            setConfirmedEsts(stored ? JSON.parse(stored) : []);
-        } catch { setConfirmedEsts([]); }
+        setConfirmedEsts(selected.confirmedEsts ?? []);
         estsLoadedRef.current = true;
         fetchTasks(selected._id);
     }, [selected?._id]);
 
-    // Persist confirmedEsts to localStorage whenever they change
+    // Persist confirmedEsts to backend whenever they change
     useEffect(() => {
         if (!selected || !estsLoadedRef.current) return;
-        try { localStorage.setItem(`confirmedEsts_${selected._id}`, JSON.stringify(confirmedEsts)); } catch {}
+        Api.requestSession({ command: 'karavarum/save_confirmed_ests', args: { id: selected._id }, json: { confirmedEsts } });
     }, [confirmedEsts, selected?._id]);
 
     const openDialog = () => { setName(''); setDialogOpen(true); };

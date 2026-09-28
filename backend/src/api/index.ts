@@ -111,6 +111,7 @@ export * from "./karavarum/karavarum_tasks_fetch";
 export * from "./karavarum/karavarum_task_create";
 export * from "./karavarum/karavarum_task_update";
 export * from "./karavarum/karavarum_task_delete";
+export * from "./karavarum/karavarum_save_confirmed_ests";
 export * from "./comparative/index";
 export * from "./analysis/index";
 export * from "./packages/index";
