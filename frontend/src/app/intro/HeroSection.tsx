@@ -14,15 +14,15 @@ export default function HeroSection() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             position: 'relative',
-            pt: 12,
+            pt: 10,
             pb: 0,
             overflow: 'hidden',
             backgroundColor: '#ffffff',
         }}>
             {/* M Logo animation */}
-            <Box sx={{ mb: 3, mt: -3 }}>
+            <Box sx={{ mb: 2 }}>
                 <video
                     src='/images/mudbase_intro.mp4'
                     autoPlay
