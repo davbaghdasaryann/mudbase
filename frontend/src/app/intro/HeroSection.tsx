@@ -29,7 +29,7 @@ export default function HeroSection() {
                     loop
                     muted
                     playsInline
-                    style={{ width: 130, height: 130, display: 'block', objectFit: 'contain' }}
+                    style={{ width: 260, height: 260, display: 'block', objectFit: 'contain' }}
                 />
             </Box>
 
