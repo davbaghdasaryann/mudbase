@@ -2016,7 +2016,14 @@
 <path d="M1766.57 392.008V392.603L1754.53 402.445V401.799L1766.57 392.008Z" fill="#00B43C" fill-opacity="0.2"/>
 <path d="M1766.14 391.113H1765.4L1754.53 399.955V400.602L1766.14 391.113Z" fill="#00B43C" fill-opacity="0.2"/>
 </g>
+
+<!-- orange building overlay -->
+<path d="M1239.95 165.656V412.145H1322.66V165.656H1239.95Z" fill="url(#orangeBuilding)" opacity="0.28" stroke="#E65100" stroke-width="0.5" stroke-opacity="0.4"/>
 <defs>
+  <linearGradient id="orangeBuilding" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#FFCC80"/>
+    <stop offset="100%" stop-color="#F57C00"/>
+  </linearGradient>
 <clipPath id="clip0_3174_49596">
 <rect width="505" height="432" fill="white" transform="translate(-19 93.1211)"/>
 </clipPath>
