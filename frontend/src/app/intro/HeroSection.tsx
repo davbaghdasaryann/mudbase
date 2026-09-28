@@ -1,7 +1,6 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
 
@@ -22,9 +21,16 @@ export default function HeroSection() {
             overflow: 'hidden',
             backgroundColor: '#ffffff',
         }}>
-            {/* M Logo */}
-            <Box sx={{ mb: 5 }}>
-                <Image src='/images/logo_square.svg' alt='Mudbase' width={130} height={130} priority />
+            {/* M Logo animation */}
+            <Box sx={{ mb: 3, mt: -3 }}>
+                <video
+                    src='/images/mudbase_intro.mp4'
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{ width: 130, height: 130, display: 'block', objectFit: 'contain' }}
+                />
             </Box>
 
             {/* Headline — minimalistic */}
