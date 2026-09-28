@@ -135,7 +135,7 @@ export default function TargetSection() {
                                 alignItems: 'center',
                                 justifyContent: 'flex-end',
                                 borderRadius: '18px',
-                                border: `2px solid ${iconColor}`,
+                                border: `1px solid ${iconColor}`,
                                 boxShadow: `0 4px 24px ${iconColor}26, 0 1px 4px rgba(0,0,0,0.03)`,
                                 backgroundColor: '#fff',
                                 pb: 3,
