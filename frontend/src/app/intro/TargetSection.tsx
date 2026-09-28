@@ -22,42 +22,19 @@ export default function TargetSection() {
 
     return (
         <Box sx={{
-            py: { xs: 8, md: 11 },
+            py: { xs: 6, md: 8 },
             px: { xs: 3, md: 6 },
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             backgroundColor: '#fff',
         }}>
-            {/* Header */}
-            <Box sx={{ textAlign: 'center', mb: { xs: 5, md: 7 } }}>
-                <Box sx={{
-                    display: 'inline-block',
-                    backgroundColor: 'rgba(0,171,190,0.07)',
-                    border: '1px solid rgba(0,171,190,0.18)',
-                    borderRadius: '100px',
-                    px: 2, py: 0.55, mb: 2.5,
-                }}>
-                    <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00ABBE', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                        Թիրախային Լսարան
-                    </Typography>
-                </Box>
-
-                <Typography sx={{ fontWeight: 700, fontSize: { xs: '1.55rem', md: '2.1rem' }, color: '#1a2e35', lineHeight: 1.3, mb: 1.5 }}>
-                    Ում համար է նախատեսված Մադբեյզը
-                </Typography>
-
-                <Typography sx={{ fontSize: { xs: '0.875rem', md: '0.95rem' }, color: '#94a3ac', fontWeight: 400 }}>
-                    Յուրախանչնուրը գտնում է իր օգութը համակարգի տվյալնևրին
-                </Typography>
-            </Box>
-
             {/* Cards row */}
             <Box sx={{
                 display: 'flex',
-                gap: { xs: 1.5, md: 2 },
+                gap: { xs: 2, md: 3 },
                 width: '100%',
-                maxWidth: 860,
+                maxWidth: 1100,
                 flexWrap: { xs: 'wrap', md: 'nowrap' },
                 justifyContent: 'center',
             }}>
@@ -74,7 +51,7 @@ export default function TargetSection() {
                         <Box sx={{
                             position: 'relative',
                             width: '100%',
-                            height: { xs: 240, md: 320 },
+                            height: { xs: 300, md: 460 },
                             transformStyle: 'preserve-3d',
                             transition: 'transform 0.6s cubic-bezier(0.4,0.2,0.2,1)',
                             transform: flipped === i ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -97,15 +74,15 @@ export default function TargetSection() {
                                 '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)' },
                             }}>
                                 <Box sx={{
-                                    width: 64,
-                                    height: 64,
+                                    width: 90,
+                                    height: 90,
                                     borderRadius: '50%',
                                     backgroundColor: circleBg,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}>
-                                    <Icon sx={{ fontSize: 28, color: iconColor }} />
+                                    <Icon sx={{ fontSize: 40, color: iconColor }} />
                                 </Box>
 
                                 <Typography
