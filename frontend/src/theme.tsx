@@ -91,7 +91,7 @@ export const globalStyles = {
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale',
 
-        backgroundColor: defaultThemeMode === 'light' ? '#fafafa' : '#121212',
+        backgroundColor: defaultThemeMode === 'light' ? '#ffffff' : '#121212',
 
         //backgroundColor: '#000000',
         // backgroundColor: '#242c37',
