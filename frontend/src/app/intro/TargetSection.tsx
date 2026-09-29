@@ -120,7 +120,7 @@ export default function TargetSection() {
                                         zIndex: 1,
                                         pointerEvents: 'none',
                                     }}>
-                                        Խոշորացվադ շտեմարան
+                                        Խոշորացված շտեմարան
                                     </Typography>
                                     <Box sx={{
                                         position: 'absolute',
