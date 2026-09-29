@@ -105,6 +105,17 @@ export default function TargetSection() {
                                         pointerEvents: 'none',
                                     }} />
                                     </>
+                                ) : i === 1 ? (
+                                    /* Second card: bg image only */
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        opacity: 1,
+                                        backgroundImage: 'url(/images/aggregated_card_bg.png)',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        pointerEvents: 'none',
+                                    }} />
                                 ) : (
                                     <>
                                         <Box sx={{
