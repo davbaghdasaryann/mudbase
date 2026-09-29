@@ -22,7 +22,7 @@ export default function TargetSection() {
 
     return (
         <Box sx={{
-            pt: { xs: 6, md: 9 },
+            pt: { xs: 2, md: 3 },
             pb: { xs: 3, md: 4 },
             px: { xs: 3, md: 6 },
             display: 'flex',
@@ -39,7 +39,7 @@ export default function TargetSection() {
                     borderRadius: '100px',
                     px: 2, py: 0.55,
                 }}>
-                    <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                         Գործիքներ
                     </Typography>
                 </Box>
