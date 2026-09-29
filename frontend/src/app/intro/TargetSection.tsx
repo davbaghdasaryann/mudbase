@@ -206,7 +206,6 @@ export default function TargetSection() {
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Box sx={{ width: { xs: '100%', md: 'calc(33.33% - 8px)' }, perspective: '1000px' }}>
                     <Box
-                        onClick={() => toggle(3)}
                         sx={{
                             position: 'relative',
                             width: '100%',
