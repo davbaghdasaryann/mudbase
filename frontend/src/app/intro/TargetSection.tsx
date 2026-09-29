@@ -83,7 +83,7 @@ export default function TargetSection() {
                                     <Box sx={{
                                         position: 'absolute',
                                         inset: 0,
-                                        opacity: 0.65,
+                                        opacity: 1,
                                         backgroundImage: 'url(/images/estimations_card_bg.png)',
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
