@@ -1,17 +1,41 @@
 'use client';
 
-import { Box, Button, IconButton, Menu, MenuItem, Typography } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
+function HamburgerIcon({ open }: { open: boolean }) {
+    const lineBase = {
+        display: 'block',
+        width: 20,
+        height: 2,
+        backgroundColor: '#222',
+        borderRadius: 2,
+        transition: 'transform 0.25s ease, opacity 0.25s ease',
+        transformOrigin: 'center',
+    };
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '5px', cursor: 'pointer', p: '6px' }}>
+            <Box component='span' sx={{
+                ...lineBase,
+                transform: open ? 'translateY(3.5px) rotate(45deg)' : 'none',
+            }} />
+            <Box component='span' sx={{
+                ...lineBase,
+                transform: open ? 'translateY(-3.5px) rotate(-45deg)' : 'none',
+            }} />
+        </Box>
+    );
+}
+
 export default function LandingHeader() {
     const { t } = useTranslation();
     const router = useRouter();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
 
     const navLinks = [
         { key: 'Tools', label: t('Tools') },
@@ -31,14 +55,13 @@ export default function LandingHeader() {
                 py: 1.25,
                 width: '100%',
                 maxWidth: 800,
-                gap: 2,
             }}>
                 {/* Logo */}
                 <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Nav links — desktop only */}
+                {/* Nav links — desktop only, centered */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
                     {navLinks.map(link => (
                         <Typography
@@ -58,24 +81,25 @@ export default function LandingHeader() {
                     ))}
                 </Box>
 
-                {/* Spacer on desktop to push buttons right */}
+                {/* Spacer — desktop */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1 }} />
 
-                {/* Three-dots menu — mobile only */}
-                <Box sx={{ display: { xs: 'flex', md: 'none' }, flex: 1, alignItems: 'center' }}>
-                    <IconButton
-                        size='small'
-                        onClick={e => setAnchorEl(e.currentTarget)}
-                        sx={{ color: '#222' }}
+                {/* Right side: hamburger (mobile) + action buttons */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+
+                    {/* Animated hamburger — mobile only */}
+                    <Box
+                        sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}
+                        onClick={e => setAnchorEl(open ? null : e.currentTarget as HTMLElement)}
                     >
-                        <MoreVertIcon fontSize='small' />
-                    </IconButton>
+                        <HamburgerIcon open={open} />
+                    </Box>
                     <Menu
                         anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
+                        open={open}
                         onClose={() => setAnchorEl(null)}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         PaperProps={{
                             sx: { borderRadius: '14px', mt: 1, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', minWidth: 160 }
                         }}
@@ -90,10 +114,8 @@ export default function LandingHeader() {
                             </MenuItem>
                         ))}
                     </Menu>
-                </Box>
 
-                {/* Auth buttons — always visible */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0 }}>
+                    {/* Auth buttons */}
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
