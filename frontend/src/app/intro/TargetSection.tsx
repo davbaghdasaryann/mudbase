@@ -30,6 +30,25 @@ export default function TargetSection() {
             alignItems: 'center',
             backgroundColor: '#fff',
         }}>
+            {/* Pill header */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, md: 3 } }}>
+                <Typography sx={{
+                    px: 4,
+                    py: 1,
+                    borderRadius: '999px',
+                    border: '1.5px solid #00A390',
+                    backgroundColor: 'rgba(0,163,144,0.07)',
+                    color: '#00A390',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.95rem', md: '1.05rem' },
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    userSelect: 'none',
+                }}>
+                    Գործիքներ
+                </Typography>
+            </Box>
+
             {/* Cards layout */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 }, width: '100%', maxWidth: 1100 }}>
 
