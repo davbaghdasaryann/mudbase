@@ -1,35 +1,13 @@
 'use client';
 
-import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Button, IconButton, Menu, MenuItem, Typography } from '@mui/material';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EastIcon from '@mui/icons-material/East';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-
-function HamburgerIcon({ open }: { open: boolean }) {
-    const lineBase = {
-        display: 'block',
-        width: 20,
-        height: 2,
-        backgroundColor: '#222',
-        borderRadius: 2,
-        transition: 'transform 0.25s ease, opacity 0.25s ease',
-        transformOrigin: 'center',
-    };
-    return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '5px', cursor: 'pointer', p: '6px' }}>
-            <Box component='span' sx={{
-                ...lineBase,
-                transform: open ? 'translateY(3.5px) rotate(45deg)' : 'none',
-            }} />
-            <Box component='span' sx={{
-                ...lineBase,
-                transform: open ? 'translateY(-3.5px) rotate(-45deg)' : 'none',
-            }} />
-        </Box>
-    );
-}
 
 export default function LandingHeader() {
     const { t } = useTranslation();
@@ -56,12 +34,12 @@ export default function LandingHeader() {
                 width: '100%',
                 maxWidth: 800,
             }}>
-                {/* Logo */}
+                {/* Logo — left */}
                 <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Nav links — desktop only, centered */}
+                {/* Desktop: nav links centered */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
                     {navLinks.map(link => (
                         <Typography
@@ -81,41 +59,8 @@ export default function LandingHeader() {
                     ))}
                 </Box>
 
-                {/* Spacer — desktop */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1 }} />
-
-                {/* Right side: hamburger (mobile) + action buttons */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
-
-                    {/* Animated hamburger — mobile only */}
-                    <Box
-                        sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}
-                        onClick={e => setAnchorEl(open ? null : e.currentTarget as HTMLElement)}
-                    >
-                        <HamburgerIcon open={open} />
-                    </Box>
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={open}
-                        onClose={() => setAnchorEl(null)}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                        PaperProps={{
-                            sx: { borderRadius: '14px', mt: 1, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', minWidth: 160 }
-                        }}
-                    >
-                        {navLinks.map(link => (
-                            <MenuItem
-                                key={link.key}
-                                onClick={() => setAnchorEl(null)}
-                                sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', py: 1.25 }}
-                            >
-                                {link.label}
-                            </MenuItem>
-                        ))}
-                    </Menu>
-
-                    {/* Auth buttons */}
+                {/* Mobile: action buttons centered */}
+                <Box sx={{ display: { xs: 'flex', md: 'none' }, flex: 1, justifyContent: 'center', alignItems: 'center', gap: 1 }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -123,9 +68,9 @@ export default function LandingHeader() {
                             color: '#00ABBE',
                             fontWeight: 600,
                             textTransform: 'none',
-                            fontSize: { xs: '0.78rem', md: '0.88rem' },
+                            fontSize: '0.78rem',
                             minWidth: 0,
-                            px: { xs: 1, md: 1.5 },
+                            px: 1.2,
                             py: 0.75,
                             borderRadius: '8px',
                             background: 'transparent',
@@ -137,15 +82,14 @@ export default function LandingHeader() {
                     <Button
                         onClick={() => router.push('/signup')}
                         variant='contained'
-                        endIcon={<EastIcon sx={{ fontSize: '0.9rem !important', display: { xs: 'none', sm: 'inline-flex' } }} />}
                         sx={{
                             backgroundColor: '#00ABBE',
                             color: '#fff',
                             textTransform: 'none',
                             fontWeight: 600,
-                            fontSize: { xs: '0.78rem', md: '0.88rem' },
+                            fontSize: '0.78rem',
                             borderRadius: '10px',
-                            px: { xs: 1.5, md: 2.5 },
+                            px: 1.8,
                             py: 0.75,
                             boxShadow: 'none',
                             whiteSpace: 'nowrap',
@@ -154,6 +98,89 @@ export default function LandingHeader() {
                     >
                         {t('Register')}
                     </Button>
+                </Box>
+
+                {/* Right side */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0 }}>
+                    {/* Desktop: auth buttons */}
+                    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+                        <Button
+                            onClick={() => router.push('/login')}
+                            disableRipple
+                            sx={{
+                                color: '#00ABBE',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                fontSize: '0.88rem',
+                                minWidth: 0,
+                                px: 1.5,
+                                py: 0.75,
+                                borderRadius: '8px',
+                                background: 'transparent',
+                                '&:hover': { background: 'rgba(0,171,190,0.06)' },
+                            }}
+                        >
+                            {t('Login')}
+                        </Button>
+                        <Button
+                            onClick={() => router.push('/signup')}
+                            variant='contained'
+                            endIcon={<EastIcon sx={{ fontSize: '0.9rem !important' }} />}
+                            sx={{
+                                backgroundColor: '#00ABBE',
+                                color: '#fff',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.88rem',
+                                borderRadius: '10px',
+                                px: 2.5,
+                                py: 0.75,
+                                boxShadow: 'none',
+                                whiteSpace: 'nowrap',
+                                '&:hover': { backgroundColor: '#009aab', boxShadow: 'none' },
+                            }}
+                        >
+                            {t('Register')}
+                        </Button>
+                    </Box>
+
+                    {/* Mobile: hamburger icon — right end */}
+                    <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+                        <IconButton
+                            size='small'
+                            onClick={e => setAnchorEl(open ? null : e.currentTarget)}
+                            sx={{
+                                color: '#222',
+                                transition: 'transform 0.2s ease',
+                                transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+                            }}
+                        >
+                            {open
+                                ? <CloseRoundedIcon sx={{ fontSize: 22 }} />
+                                : <MenuRoundedIcon sx={{ fontSize: 22 }} />
+                            }
+                        </IconButton>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={() => setAnchorEl(null)}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            PaperProps={{
+                                sx: { borderRadius: '14px', mt: 1, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', minWidth: 160 }
+                            }}
+                        >
+                            {navLinks.map(link => (
+                                <MenuItem
+                                    key={link.key}
+                                    onClick={() => setAnchorEl(null)}
+                                    sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', py: 1.25 }}
+                                >
+                                    {link.label}
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </Box>
                 </Box>
             </Box>
         </Box>
