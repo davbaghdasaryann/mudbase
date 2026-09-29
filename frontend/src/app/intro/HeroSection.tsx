@@ -2,11 +2,28 @@
 
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 
 
 export default function HeroSection() {
     const { i18n } = useTranslation();
     const isAm = i18n.language === 'am';
+
+    const [skylineOpacity, setSkylineOpacity] = useState(0.25);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            const heroHeight = window.innerHeight;
+            // Start fading in at 20% scroll, reach full opacity at 75%
+            const start = heroHeight * 0.2;
+            const end = heroHeight * 0.75;
+            const progress = Math.min(1, Math.max(0, (scrollY - start) / (end - start)));
+            setSkylineOpacity(0.25 + progress * 0.75);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
         <Box sx={{
@@ -75,7 +92,7 @@ export default function HeroSection() {
             {/* City skyline — anchored at hero section bottom */}
             <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, lineHeight: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src='/images/hero_skyline.svg' alt='' style={{ width: '100%', display: 'block', transform: 'translateY(23%)' }} />
+                <img src='/images/hero_skyline.svg' alt='' style={{ width: '100%', display: 'block', transform: 'translateY(23%)', opacity: skylineOpacity, transition: 'opacity 0.1s linear' }} />
             </Box>
         </Box>
     );
