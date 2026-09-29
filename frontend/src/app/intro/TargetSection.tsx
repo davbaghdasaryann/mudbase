@@ -22,7 +22,8 @@ export default function TargetSection() {
 
     return (
         <Box sx={{
-            py: { xs: 3, md: 4 },
+            pt: { xs: 6, md: 9 },
+            pb: { xs: 3, md: 4 },
             px: { xs: 3, md: 6 },
             display: 'flex',
             flexDirection: 'column',
