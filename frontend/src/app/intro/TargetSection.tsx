@@ -57,25 +57,29 @@ export default function TargetSection() {
                             transform: flipped === i ? 'rotateY(180deg)' : 'rotateY(0deg)',
                         }}>
                             {/* Front face */}
-                            <Box sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                backfaceVisibility: 'hidden',
-                                WebkitBackfaceVisibility: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '18px',
-                                border: `1.5px solid ${STROKE}26`,
-                                boxShadow: '0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)',
-                                backgroundColor: '#fff',
-                                overflow: 'hidden',
-                                gap: 3,
-                                '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)' },
-                            }}>
-                                {/* Background image on first card */}
-                                {i === 0 && (
+                            <Box
+                                onClick={() => toggle(i)}
+                                sx={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    backfaceVisibility: 'hidden',
+                                    WebkitBackfaceVisibility: 'hidden',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '18px',
+                                    border: `1.5px solid ${STROKE}26`,
+                                    boxShadow: '0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)',
+                                    backgroundColor: '#fff',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    gap: 3,
+                                    '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)' },
+                                }}
+                            >
+                                {i === 0 ? (
+                                    /* First card: bg image only, no icon or button */
                                     <Box sx={{
                                         position: 'absolute',
                                         inset: 0,
@@ -85,65 +89,59 @@ export default function TargetSection() {
                                         backgroundPosition: 'center',
                                         pointerEvents: 'none',
                                     }} />
+                                ) : (
+                                    <>
+                                        <Box sx={{
+                                            width: 90,
+                                            height: 90,
+                                            borderRadius: '50%',
+                                            backgroundColor: circleBg,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <Icon sx={{ fontSize: 40, color: iconColor }} />
+                                        </Box>
+
+                                        <Typography sx={{
+                                            fontSize: '0.78rem',
+                                            color: '#94a3ac',
+                                            userSelect: 'none',
+                                        }}>
+                                            Պտտել ›
+                                        </Typography>
+                                    </>
                                 )}
-
-                                <Box sx={{
-                                    width: 90,
-                                    height: 90,
-                                    borderRadius: '50%',
-                                    backgroundColor: circleBg,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    position: 'relative',
-                                }}>
-                                    <Icon sx={{ fontSize: 40, color: iconColor }} />
-                                </Box>
-
-                                <Typography
-                                    onClick={() => toggle(i)}
-                                    sx={{
-                                        fontSize: '0.78rem',
-                                        color: '#94a3ac',
-                                        cursor: 'pointer',
-                                        userSelect: 'none',
-                                        transition: 'color 0.15s',
-                                        position: 'relative',
-                                        '&:hover': { color: '#00ABBE' },
-                                    }}
-                                >
-                                    Պտտել ›
-                                </Typography>
                             </Box>
 
                             {/* Back face */}
-                            <Box sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                backfaceVisibility: 'hidden',
-                                WebkitBackfaceVisibility: 'hidden',
-                                transform: 'rotateY(180deg)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'flex-end',
-                                borderRadius: '18px',
-                                border: `1px solid ${iconColor}`,
-                                boxShadow: `0 4px 24px ${iconColor}26, 0 1px 4px rgba(0,0,0,0.03)`,
-                                backgroundColor: '#fff',
-                                pb: 3,
-                            }}>
-                                <Typography
-                                    onClick={() => toggle(i)}
-                                    sx={{
-                                        fontSize: '0.78rem',
-                                        color: '#94a3ac',
-                                        cursor: 'pointer',
-                                        userSelect: 'none',
-                                        transition: 'color 0.15s',
-                                        '&:hover': { color: '#00ABBE' },
-                                    }}
-                                >
+                            <Box
+                                onClick={() => toggle(i)}
+                                sx={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    backfaceVisibility: 'hidden',
+                                    WebkitBackfaceVisibility: 'hidden',
+                                    transform: 'rotateY(180deg)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                    borderRadius: '18px',
+                                    border: `1px solid ${iconColor}`,
+                                    boxShadow: `0 4px 24px ${iconColor}26, 0 1px 4px rgba(0,0,0,0.03)`,
+                                    backgroundColor: '#fff',
+                                    cursor: 'pointer',
+                                    pb: 3,
+                                }}
+                            >
+                                <Typography sx={{
+                                    fontSize: '0.78rem',
+                                    color: '#94a3ac',
+                                    userSelect: 'none',
+                                    transition: 'color 0.15s',
+                                    '&:hover': { color: '#00ABBE' },
+                                }}>
                                     ‹ Պտտել
                                 </Typography>
                             </Box>
