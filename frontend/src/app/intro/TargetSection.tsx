@@ -10,8 +10,8 @@ const STROKE = '#3FA297';
 
 const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
     { Icon: ConstructionOutlinedIcon, circleBg: 'rgba(28,164,97,0.10)',  iconColor: '#00A390' },
-    { Icon: DrawOutlinedIcon,         circleBg: 'rgba(0,171,190,0.10)',  iconColor: '#00ABBE' },
     { Icon: ApartmentOutlinedIcon,    circleBg: 'rgba(57,176,117,0.15)', iconColor: '#39B075' },
+    { Icon: DrawOutlinedIcon,         circleBg: 'rgba(0,171,190,0.10)',  iconColor: '#00ABBE' },
 ];
 
 export default function TargetSection() {
@@ -105,8 +105,23 @@ export default function TargetSection() {
                                         pointerEvents: 'none',
                                     }} />
                                     </>
-                                ) : i === 1 ? (
-                                    /* Second card: bg image only */
+                                ) : i === 2 ? (
+                                    /* Third card (moved to last): aggregated bg image */
+                                    <>
+                                    <Typography sx={{
+                                        position: 'absolute',
+                                        top: 20,
+                                        left: 0,
+                                        right: 0,
+                                        textAlign: 'center',
+                                        fontWeight: 700,
+                                        fontSize: '1rem',
+                                        color: '#000',
+                                        zIndex: 1,
+                                        pointerEvents: 'none',
+                                    }}>
+                                        Խոշորացվադ շտեմարան
+                                    </Typography>
                                     <Box sx={{
                                         position: 'absolute',
                                         inset: 0,
@@ -116,6 +131,7 @@ export default function TargetSection() {
                                         backgroundPosition: 'center',
                                         pointerEvents: 'none',
                                     }} />
+                                    </>
                                 ) : (
                                     <>
                                         <Box sx={{
