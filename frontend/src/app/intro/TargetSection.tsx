@@ -32,21 +32,17 @@ export default function TargetSection() {
         }}>
             {/* Pill header */}
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, md: 3 } }}>
-                <Typography sx={{
-                    px: 4,
-                    py: 1,
-                    borderRadius: '999px',
-                    border: '1.5px solid #00A390',
+                <Box sx={{
+                    display: 'inline-block',
                     backgroundColor: 'rgba(0,163,144,0.07)',
-                    color: '#00A390',
-                    fontWeight: 600,
-                    fontSize: { xs: '0.95rem', md: '1.05rem' },
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    userSelect: 'none',
+                    border: '1px solid rgba(0,163,144,0.18)',
+                    borderRadius: '100px',
+                    px: 2, py: 0.55,
                 }}>
-                    Գործիքներ
-                </Typography>
+                    <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                        Գործիքներ
+                    </Typography>
+                </Box>
             </Box>
 
             {/* Cards layout */}
