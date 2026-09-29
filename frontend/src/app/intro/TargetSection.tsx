@@ -252,6 +252,15 @@ export default function TargetSection() {
                             }}>
                                 Վերլուծություններ
                             </Typography>
+                            <Box sx={{
+                                position: 'absolute',
+                                inset: 0,
+                                opacity: 1,
+                                backgroundImage: 'url(/images/analysis_card_bg.png)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                pointerEvents: 'none',
+                            }} />
                         </Box>
                         {/* Back face */}
                         <Box
