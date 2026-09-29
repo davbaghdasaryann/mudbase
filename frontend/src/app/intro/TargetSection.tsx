@@ -134,7 +134,8 @@ export default function TargetSection() {
                                     }} />
                                     </>
                                 ) : (
-                                    /* Second card: header only, bg image coming soon */
+                                    /* Second card: estimate tool bg image */
+                                    <>
                                     <Typography sx={{
                                         position: 'absolute',
                                         top: 20,
@@ -149,6 +150,16 @@ export default function TargetSection() {
                                     }}>
                                         Նախահաշվային գործիք
                                     </Typography>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        opacity: 1,
+                                        backgroundImage: 'url(/images/estimate_tool_card_bg.png)',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        pointerEvents: 'none',
+                                    }} />
+                                    </>
                                 )}
                             </Box>
 
