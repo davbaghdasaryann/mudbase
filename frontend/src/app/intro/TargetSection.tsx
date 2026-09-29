@@ -75,7 +75,8 @@ export default function TargetSection() {
                                     overflow: 'hidden',
                                     cursor: 'pointer',
                                     gap: 3,
-                                    '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)' },
+                                    '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)', filter: 'brightness(0.93)' },
+                                    transition: 'box-shadow 0.2s, filter 0.2s',
                                 }}
                             >
                                 {i === 0 ? (
@@ -133,27 +134,21 @@ export default function TargetSection() {
                                     }} />
                                     </>
                                 ) : (
-                                    <>
-                                        <Box sx={{
-                                            width: 90,
-                                            height: 90,
-                                            borderRadius: '50%',
-                                            backgroundColor: circleBg,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}>
-                                            <Icon sx={{ fontSize: 40, color: iconColor }} />
-                                        </Box>
-
-                                        <Typography sx={{
-                                            fontSize: '0.78rem',
-                                            color: '#94a3ac',
-                                            userSelect: 'none',
-                                        }}>
-                                            Պտտել ›
-                                        </Typography>
-                                    </>
+                                    /* Second card: header only, bg image coming soon */
+                                    <Typography sx={{
+                                        position: 'absolute',
+                                        top: 20,
+                                        left: 0,
+                                        right: 0,
+                                        textAlign: 'center',
+                                        fontWeight: 700,
+                                        fontSize: '1rem',
+                                        color: '#000',
+                                        zIndex: 1,
+                                        pointerEvents: 'none',
+                                    }}>
+                                        Նախահաշվի գործիք
+                                    </Typography>
                                 )}
                             </Box>
 
