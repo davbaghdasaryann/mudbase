@@ -1,14 +1,17 @@
 'use client';
 
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, IconButton, Menu, MenuItem, Typography } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import EastIcon from '@mui/icons-material/East';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import EastIcon from '@mui/icons-material/East';
+import { useState } from 'react';
 
 export default function LandingHeader() {
     const { t } = useTranslation();
     const router = useRouter();
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const navLinks = [
         { key: 'Tools', label: t('Tools') },
@@ -19,8 +22,7 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr',
+                display: 'flex',
                 alignItems: 'center',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
@@ -29,14 +31,15 @@ export default function LandingHeader() {
                 py: 1.25,
                 width: '100%',
                 maxWidth: 800,
+                gap: 2,
             }}>
-                {/* Logo — far left */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {/* Logo */}
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Nav links — truly centered */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {/* Nav links — desktop only */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -55,8 +58,42 @@ export default function LandingHeader() {
                     ))}
                 </Box>
 
-                {/* Auth actions — far right */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                {/* Spacer on desktop to push buttons right */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1 }} />
+
+                {/* Three-dots menu — mobile only */}
+                <Box sx={{ display: { xs: 'flex', md: 'none' }, flex: 1, alignItems: 'center' }}>
+                    <IconButton
+                        size='small'
+                        onClick={e => setAnchorEl(e.currentTarget)}
+                        sx={{ color: '#222' }}
+                    >
+                        <MoreVertIcon fontSize='small' />
+                    </IconButton>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={() => setAnchorEl(null)}
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                        PaperProps={{
+                            sx: { borderRadius: '14px', mt: 1, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', minWidth: 160 }
+                        }}
+                    >
+                        {navLinks.map(link => (
+                            <MenuItem
+                                key={link.key}
+                                onClick={() => setAnchorEl(null)}
+                                sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', py: 1.25 }}
+                            >
+                                {link.label}
+                            </MenuItem>
+                        ))}
+                    </Menu>
+                </Box>
+
+                {/* Auth buttons — always visible */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0 }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -64,9 +101,9 @@ export default function LandingHeader() {
                             color: '#00ABBE',
                             fontWeight: 600,
                             textTransform: 'none',
-                            fontSize: '0.88rem',
+                            fontSize: { xs: '0.78rem', md: '0.88rem' },
                             minWidth: 0,
-                            px: 1.5,
+                            px: { xs: 1, md: 1.5 },
                             py: 0.75,
                             borderRadius: '8px',
                             background: 'transparent',
@@ -78,15 +115,15 @@ export default function LandingHeader() {
                     <Button
                         onClick={() => router.push('/signup')}
                         variant='contained'
-                        endIcon={<EastIcon sx={{ fontSize: '0.9rem !important' }} />}
+                        endIcon={<EastIcon sx={{ fontSize: '0.9rem !important', display: { xs: 'none', sm: 'inline-flex' } }} />}
                         sx={{
                             backgroundColor: '#00ABBE',
                             color: '#fff',
                             textTransform: 'none',
                             fontWeight: 600,
-                            fontSize: '0.88rem',
+                            fontSize: { xs: '0.78rem', md: '0.88rem' },
                             borderRadius: '10px',
-                            px: 2.5,
+                            px: { xs: 1.5, md: 2.5 },
                             py: 0.75,
                             boxShadow: 'none',
                             whiteSpace: 'nowrap',
