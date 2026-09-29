@@ -250,7 +250,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: 'none',
                             }}>
-                                Գործիքներ
+                                Վերլուծություններ
                             </Typography>
                         </Box>
                         {/* Back face */}
