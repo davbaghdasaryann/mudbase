@@ -33,20 +33,20 @@ export default function HeroSection() {
             alignItems: 'center',
             justifyContent: 'flex-start',
             position: 'relative',
-            pt: 10,
+            pt: { xs: 5, sm: 7, md: 10 },
             pb: 0,
             overflow: 'hidden',
             backgroundColor: '#ffffff',
         }}>
             {/* M Logo animation */}
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: { xs: 1.5, md: 2 }, lineHeight: 0 }}>
                 <video
                     src='/images/mudbase_intro.mp4'
                     autoPlay
                     loop
                     muted
                     playsInline
-                    style={{ width: 380, height: 380, display: 'block', objectFit: 'contain' }}
+                    style={{ width: 'min(58vw, 380px)', height: 'min(58vw, 380px)', display: 'block', objectFit: 'contain' }}
                 />
             </Box>
 
@@ -59,32 +59,52 @@ export default function HeroSection() {
                     to:   { opacity: 1, transform: 'translateY(0)' },
                 },
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: { xs: 1.5, md: 2.5 } }}>
+                {/* Desktop: one row with dot separators */}
+                <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', justifyContent: 'center', gap: 2.5 }}>
                     {[
                         { am: 'Հաշվարկիր', en: 'Calculate', color: '#4aab49' },
                         { am: 'Վերլուծիր', en: 'Analyze',   color: '#00a896' },
                         { am: 'կառավարիր', en: 'Manage',    color: '#00abbe' },
                     ].map((item, i) => (
-                        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2.5 } }}>
-                            <Typography
-                                component='span'
-                                sx={{
-                                    fontWeight: 400,
-                                    fontSize: { xs: '0.8rem', sm: '0.95rem', md: '1.05rem' },
-                                    letterSpacing: '0.28em',
-                                    textTransform: 'uppercase',
-                                    color: item.color,
-                                    opacity: 0.72,
-                                    animation: 'fadeUp 0.8s ease both',
-                                    animationDelay: `${0.15 + i * 0.18}s`,
-                                }}
-                            >
+                        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                            <Typography component='span' sx={{
+                                fontWeight: 400,
+                                fontSize: { sm: '0.9rem', md: '1.05rem' },
+                                letterSpacing: '0.28em',
+                                textTransform: 'uppercase',
+                                color: item.color,
+                                opacity: 0.72,
+                                animation: 'fadeUp 0.8s ease both',
+                                animationDelay: `${0.15 + i * 0.18}s`,
+                            }}>
                                 {isAm ? item.am : item.en}
                             </Typography>
                             {i < 2 && (
                                 <Box component='span' sx={{ color: '#c8d8dc', fontSize: '0.45rem', lineHeight: 1 }}>&#9679;</Box>
                             )}
                         </Box>
+                    ))}
+                </Box>
+
+                {/* Mobile: stacked column, no dots */}
+                <Box sx={{ display: { xs: 'flex', sm: 'none' }, flexDirection: 'column', alignItems: 'center', gap: 0.75 }}>
+                    {[
+                        { am: 'Հաշվարկիր', en: 'Calculate', color: '#4aab49' },
+                        { am: 'Վերլուծիր', en: 'Analyze',   color: '#00a896' },
+                        { am: 'կառավարիր', en: 'Manage',    color: '#00abbe' },
+                    ].map((item, i) => (
+                        <Typography key={i} component='span' sx={{
+                            fontWeight: 400,
+                            fontSize: '0.78rem',
+                            letterSpacing: '0.22em',
+                            textTransform: 'uppercase',
+                            color: item.color,
+                            opacity: 0.72,
+                            animation: 'fadeUp 0.8s ease both',
+                            animationDelay: `${0.15 + i * 0.18}s`,
+                        }}>
+                            {isAm ? item.am : item.en}
+                        </Typography>
                     ))}
                 </Box>
             </Box>
