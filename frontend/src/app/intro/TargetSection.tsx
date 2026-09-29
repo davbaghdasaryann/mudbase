@@ -80,6 +80,21 @@ export default function TargetSection() {
                             >
                                 {i === 0 ? (
                                     /* First card: bg image only, no icon or button */
+                                    <>
+                                    <Typography sx={{
+                                        position: 'absolute',
+                                        top: 20,
+                                        left: 0,
+                                        right: 0,
+                                        textAlign: 'center',
+                                        fontWeight: 700,
+                                        fontSize: '1rem',
+                                        color: '#000',
+                                        zIndex: 1,
+                                        pointerEvents: 'none',
+                                    }}>
+                                        Տվյալների շտեմարան
+                                    </Typography>
                                     <Box sx={{
                                         position: 'absolute',
                                         inset: 0,
@@ -89,6 +104,7 @@ export default function TargetSection() {
                                         backgroundPosition: 'center',
                                         pointerEvents: 'none',
                                     }} />
+                                    </>
                                 ) : (
                                     <>
                                         <Box sx={{
