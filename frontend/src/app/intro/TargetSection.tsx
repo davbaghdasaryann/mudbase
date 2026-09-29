@@ -75,8 +75,8 @@ export default function TargetSection() {
                                     overflow: 'hidden',
                                     cursor: 'pointer',
                                     gap: 3,
-                                    '&:hover': { boxShadow: '0 12px 40px rgba(0,171,190,0.22), 0 4px 12px rgba(0,0,0,0.06)', transform: 'scale(1.025)' },
-                                    transition: 'box-shadow 0.25s, transform 0.25s',
+                                    '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)', filter: 'brightness(0.93)' },
+                                    transition: 'box-shadow 0.2s, filter 0.2s',
                                 }}
                             >
                                 {i === 0 ? (
