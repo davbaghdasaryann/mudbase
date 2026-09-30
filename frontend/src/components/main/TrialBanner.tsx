@@ -42,7 +42,7 @@ export default function TrialBanner() {
     const { i18n } = useTranslation();
     const isAm = i18n.language === 'am';
     const labels = isAm
-        ? { d: '塞', h: 'ժ', m: 'ր', s: 'վ' }
+        ? { d: 'օր', h: 'ժ', m: 'ր', s: 'վ' }
         : { d: 'd', h: 'h', m: 'm', s: 's' };
 
     const [trial, setTrial] = useState<TrialStatus | null>(null);
