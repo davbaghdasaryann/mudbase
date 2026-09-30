@@ -16,6 +16,9 @@ registerApiSession('account/delete', async (req, res, session) => {
     const account = await accounts.findOne({ _id: accountId });
     verify(account, 'Account not found');
 
+    const users = Db.getUsersCollection();
+    await users.updateMany({ accountId: accountId }, { $set: { isActive: false } });
+
     const result = await accounts.deleteOne({ _id: accountId });
 
     respondJsonData(res, result);
