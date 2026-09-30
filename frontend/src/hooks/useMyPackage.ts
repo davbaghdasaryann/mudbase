@@ -23,16 +23,24 @@ export interface MyPackage {
     exportBoQ: boolean;
 }
 
+// Keyed by user email so switching accounts always fetches fresh data
+const cache = new Map<string, MyPackage | null>();
+
 export function useMyPackage() {
-    const { status } = useSession();
-    const [pkg, setPkg] = useState<MyPackage | null | undefined>(undefined);
+    const { data: session, status } = useSession();
+    const userKey = session?.user?.email ?? null;
+
+    const [pkg, setPkg] = useState<MyPackage | null | undefined>(
+        userKey ? cache.get(userKey) : undefined
+    );
 
     useEffect(() => {
-        if (status !== 'authenticated') return;
+        if (status !== 'authenticated' || !userKey) return;
+        if (cache.has(userKey)) { setPkg(cache.get(userKey)!); return; }
         Api.requestSession<MyPackage | null>({ command: 'packages/my' })
-            .then(data => setPkg(data))
-            .catch(() => setPkg(null));
-    }, [status]);
+            .then(data => { cache.set(userKey, data); setPkg(data); })
+            .catch(() => { cache.set(userKey, null); setPkg(null); });
+    }, [status, userKey]);
 
     return pkg;
 }
