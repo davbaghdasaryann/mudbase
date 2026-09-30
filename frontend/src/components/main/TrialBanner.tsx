@@ -2,8 +2,10 @@
 
 import { Box, Typography } from '@mui/material';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useMyPackage } from '@/hooks/useMyPackage';
 import * as Api from 'api';
 
 interface TrialStatus {
@@ -19,7 +21,6 @@ function useCountdown(endDate: string | undefined) {
     useEffect(() => {
         if (!endDate) return;
         const end = new Date(endDate).getTime();
-
         const tick = () => {
             const diff = Math.max(0, end - Date.now());
             setTimeLeft({
@@ -29,7 +30,6 @@ function useCountdown(endDate: string | undefined) {
                 s: Math.floor((diff % 60000) / 1000),
             });
         };
-
         tick();
         const id = setInterval(tick, 1000);
         return () => clearInterval(id);
@@ -45,23 +45,52 @@ export default function TrialBanner() {
         ? { d: 'օր', h: 'ժ', m: 'ր', s: 'վ' }
         : { d: 'd', h: 'h', m: 'm', s: 's' };
 
+    const myPkg = useMyPackage();
     const [trial, setTrial] = useState<TrialStatus | null>(null);
     const [hovered, setHovered] = useState(false);
 
+    const isTrial = !!(myPkg as any)?.isTrial;
+
     useEffect(() => {
+        if (!isTrial) return;
         Api.requestSession<TrialStatus>({ command: 'account/trial_status' })
             .then(res => setTrial(res))
             .catch(() => {});
-    }, []);
+    }, [isTrial]);
 
     const { d, h, m, s } = useCountdown(trial?.trialEndDate);
 
+    // No package at all — show nothing
+    if (myPkg === undefined || myPkg === null) return null;
+
+    // Paid package — show name pill
+    if (!isTrial) {
+        return (
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                px: 2,
+                py: 0.75,
+                borderRadius: '10px',
+                backgroundColor: 'rgba(0,171,190,0.07)',
+                border: '1px solid rgba(0,171,190,0.2)',
+                flexShrink: 0,
+            }}>
+                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 16, color: '#00ABBE' }} />
+                <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#00ABBE', whiteSpace: 'nowrap' }}>
+                    {myPkg.name}
+                </Typography>
+            </Box>
+        );
+    }
+
+    // Trial package — show countdown
     if (!trial?.isTrial || !trial?.isTrialActive) return null;
 
     const urgent = (trial.daysLeft ?? 0) <= 3;
     const color = urgent ? '#dc3545' : '#00ABBE';
     const pad = (n: number) => String(n).padStart(2, '0');
-
     const summaryText = d > 0 ? `${d} ${labels.d}` : `${pad(h)}${labels.h} ${pad(m)}${labels.m}`;
     const detailText = `${pad(h)}${labels.h} ${pad(m)}${labels.m} ${pad(s)}${labels.s}`;
 
@@ -84,18 +113,12 @@ export default function TrialBanner() {
             }}
         >
             <AccessTimeOutlinedIcon sx={{ fontSize: 16, color, flexShrink: 0 }} />
-
             <Typography sx={{
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                color,
-                fontVariantNumeric: 'tabular-nums',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
+                fontSize: '0.85rem', fontWeight: 700, color,
+                fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', flexShrink: 0,
             }}>
                 {summaryText}
             </Typography>
-
             <Box sx={{
                 overflow: 'hidden',
                 maxWidth: hovered ? '120px' : '0px',
@@ -103,12 +126,8 @@ export default function TrialBanner() {
                 transition: 'max-width 0.35s ease, opacity 0.2s ease',
             }}>
                 <Typography sx={{
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    color,
-                    fontVariantNumeric: 'tabular-nums',
-                    whiteSpace: 'nowrap',
-                    pl: 0.5,
+                    fontSize: '0.85rem', fontWeight: 700, color,
+                    fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', pl: 0.5,
                 }}>
                     {detailText}
                 </Typography>

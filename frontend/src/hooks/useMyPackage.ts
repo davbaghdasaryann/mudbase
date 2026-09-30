@@ -21,6 +21,7 @@ export interface MyPackage {
     duplicateEstimation: boolean;
     exportEstimation: boolean;
     exportBoQ: boolean;
+    isTrial?: boolean;
 }
 
 // Keyed by user email so switching accounts always fetches fresh data
