@@ -25,6 +25,7 @@ const BRAND = '#00abbe';
 interface Package {
     _id?: string;
     name: string;
+    nameAm?: string;
     price: number;
     numberOfUsers: number;
     numberOfEstimations: number;
@@ -43,7 +44,7 @@ interface Package {
 }
 
 const EMPTY_PKG: Package = {
-    name: '', price: 0, numberOfUsers: 0, numberOfEstimations: 0,
+    name: '', nameAm: '', price: 0, numberOfUsers: 0, numberOfEstimations: 0,
     worksCatalog: false, materialsCatalog: false, aggregatedCatalog: false,
     costing: false, analysis: false, performance: false,
     seeOffers: false, archiveEstimations: false, shareEstimations: false,
@@ -214,13 +215,22 @@ export default function PackagesPage() {
 
                 <DialogContent sx={{ pt: 2 }}>
                     {/* Name — full width */}
-                    <TextField
-                        label={t('Package Name')}
-                        value={form.name}
-                        onChange={e => set('name')(e.target.value)}
-                        fullWidth
-                        sx={{ ...numberFieldSx, mb: 2 }}
-                    />
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                        <TextField
+                            label={t('Package Name')}
+                            value={form.name}
+                            onChange={e => set('name')(e.target.value)}
+                            fullWidth
+                            sx={numberFieldSx}
+                        />
+                        <TextField
+                            label='Անվանում (հայ.)'
+                            value={form.nameAm || ''}
+                            onChange={e => set('nameAm')(e.target.value)}
+                            fullWidth
+                            sx={numberFieldSx}
+                        />
+                    </Box>
                     {/* Price / Users / Estimations — 3-column grid */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 0.5 }}>
                         <TextField

@@ -65,10 +65,11 @@ export default function TrialBanner() {
 
     // Paid package — show name with sparkle icon, no box
     if (!isTrial) {
+        const displayName = isAm && myPkg.nameAm ? myPkg.nameAm : myPkg.name;
         return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0 }}>
                 <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#00ABBE', whiteSpace: 'nowrap' }}>
-                    {myPkg.name}
+                    {displayName}
                 </Typography>
                 <AutoAwesomeIcon sx={{ fontSize: 16, color: '#00ABBE' }} />
             </Box>
