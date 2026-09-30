@@ -3,6 +3,7 @@
 import { Box, Typography } from '@mui/material';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as Api from 'api';
 
 interface TrialStatus {
@@ -38,6 +39,12 @@ function useCountdown(endDate: string | undefined) {
 }
 
 export default function TrialBanner() {
+    const { i18n } = useTranslation();
+    const isAm = i18n.language === 'am';
+    const labels = isAm
+        ? { d: '塞', h: 'ժ', m: 'ր', s: 'վ' }
+        : { d: 'd', h: 'h', m: 'm', s: 's' };
+
     const [trial, setTrial] = useState<TrialStatus | null>(null);
 
     useEffect(() => {
@@ -69,7 +76,7 @@ export default function TrialBanner() {
         }}>
             <AccessTimeOutlinedIcon sx={{ fontSize: 13, color }} />
             <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color, letterSpacing: '0.04em', fontVariantNumeric: 'tabular-nums' }}>
-                {d > 0 ? `${d}d ` : ''}{pad(h)}h {pad(m)}m {pad(s)}s
+                {d > 0 ? `${d}${labels.d} ` : ''}{pad(h)}{labels.h} {pad(m)}{labels.m} {pad(s)}{labels.s}
             </Typography>
         </Box>
     );
