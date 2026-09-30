@@ -12,6 +12,7 @@ import Env from '../../env';
 import ImgElement from '../../tsui/DomElements/ImgElement';
 import { usePermissions } from '../../api/auth';
 import { useMobileDrawer } from './MobileDrawerContext';
+import TrialBanner from './TrialBanner';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -108,6 +109,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 boxShadow: '0 4px 24px rgba(0, 171, 190, 0.06)',
             }}
         >
+            <TrialBanner />
             <Stack
                 direction='row'
                 alignItems='center'

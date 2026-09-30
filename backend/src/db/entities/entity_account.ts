@@ -36,6 +36,8 @@ export interface EntityAccount {
 
     isActive: boolean;
 
+    trialEndDate?: Date;
+
     adminUserId?: ObjectId;
 
     packageId?: ObjectId;

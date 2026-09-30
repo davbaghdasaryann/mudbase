@@ -82,7 +82,8 @@ registerApiSession('signup/company', async (req, res, session) => {
         accountActivity: selectedActivities,
         // permissions: permissionsStr,
         adminUserId: session.mongoUserId,
-        isActive: false,
+        isActive: true,
+        trialEndDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
     };
 
     const insertResult = await accountsCollection.insertOne(newAccount);
@@ -109,6 +110,7 @@ registerApiSession('signup/company', async (req, res, session) => {
             $set: {
                 accountId: newAccount._id,
                 role: 'A',
+                isActive: true,
                 chosenPermissions: chosenPermissions
             }
         }
