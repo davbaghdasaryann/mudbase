@@ -109,7 +109,6 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 boxShadow: '0 4px 24px rgba(0, 171, 190, 0.06)',
             }}
         >
-            <TrialBanner />
             <Stack
                 direction='row'
                 alignItems='center'
@@ -148,6 +147,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 )}
                 {!props.title && <Box sx={{ flexGrow: 1 }} />}
 
+                <TrialBanner />
                 <AppLangSelector />
                 {/* <AppThemeSwitcher /> */}
                 <AppHeaderAccount {...props} />
