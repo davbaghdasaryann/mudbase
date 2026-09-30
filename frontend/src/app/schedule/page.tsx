@@ -772,7 +772,7 @@ export default function SchedulePage() {
                         <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
                     </Box>
                 ) : records.length === 0 ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2, pb: 8 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: 'calc(100vh - 120px)', gap: 2 }}>
                         <CalendarMonthIcon sx={{ fontSize: 90, color: mainPrimaryColor, opacity: 0.25 }} />
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
                             {t('No schedules created yet')}
