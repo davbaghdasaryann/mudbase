@@ -2,7 +2,7 @@
 
 import { Box, Typography } from '@mui/material';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
-import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMyPackage } from '@/hooks/useMyPackage';
@@ -63,24 +63,14 @@ export default function TrialBanner() {
     // No package at all — show nothing
     if (myPkg === undefined || myPkg === null) return null;
 
-    // Paid package — show name pill
+    // Paid package — show name with sparkle icon, no box
     if (!isTrial) {
         return (
-            <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.75,
-                px: 2,
-                py: 0.75,
-                borderRadius: '10px',
-                backgroundColor: 'rgba(0,171,190,0.07)',
-                border: '1px solid rgba(0,171,190,0.2)',
-                flexShrink: 0,
-            }}>
-                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 16, color: '#00ABBE' }} />
-                <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#00ABBE', whiteSpace: 'nowrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0 }}>
+                <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#00ABBE', whiteSpace: 'nowrap' }}>
                     {myPkg.name}
                 </Typography>
+                <AutoAwesomeIcon sx={{ fontSize: 16, color: '#00ABBE' }} />
             </Box>
         );
     }
