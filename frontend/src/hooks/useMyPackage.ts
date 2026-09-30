@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import * as Api from 'api';
+import { usePermissions } from '@/api/auth';
 
 export interface MyPackage {
     _id: string;
@@ -22,17 +23,23 @@ export interface MyPackage {
     exportBoQ: boolean;
 }
 
-let cachedPackage: MyPackage | null | undefined = undefined;
+const cache = new Map<string, MyPackage | null>();
 
 export function useMyPackage() {
-    const [pkg, setPkg] = useState<MyPackage | null | undefined>(cachedPackage);
+    const { session } = usePermissions();
+    const accountId = (session?.user as any)?.accountId as string | undefined;
+
+    const [pkg, setPkg] = useState<MyPackage | null | undefined>(
+        accountId !== undefined ? cache.get(accountId) : undefined
+    );
 
     useEffect(() => {
-        if (cachedPackage !== undefined) { setPkg(cachedPackage); return; }
+        if (!accountId) return;
+        if (cache.has(accountId)) { setPkg(cache.get(accountId)!); return; }
         Api.requestSession<MyPackage | null>({ command: 'packages/my' })
-            .then(data => { cachedPackage = data; setPkg(data); })
-            .catch(() => { cachedPackage = null; setPkg(null); });
-    }, []);
+            .then(data => { cache.set(accountId, data); setPkg(data); })
+            .catch(() => { cache.set(accountId, null); setPkg(null); });
+    }, [accountId]);
 
     return pkg;
 }
