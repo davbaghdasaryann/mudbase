@@ -15,7 +15,10 @@ import { generateInvitationId } from '../../lib/invitation';
 import { UserRole } from '../../tsmudbase/user_roles';
 import { AccountActivity } from '../../tsmudbase/company_activities';
 import { getAllowedPagesByActivities, PermissionsId, RadioPermissionChoice } from '@/tsmudbase/permissions_setup';
+import { ObjectId } from 'mongodb';
 import { combineUserPermissions } from '../../permissions/roles_setup';
+
+const TRIAL_PACKAGE_ID = new ObjectId('6abcfb2bb80ec73a5ec59f35');
 
 registerApiSession('signup/company', async (req, res, session) => {
     // log_.info('req.body', req.body)
@@ -85,6 +88,7 @@ registerApiSession('signup/company', async (req, res, session) => {
         adminUserId: session.mongoUserId,
         isActive: true,
         trialEndDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+        packageId: TRIAL_PACKAGE_ID,
     };
 
     const insertResult = await accountsCollection.insertOne(newAccount);
