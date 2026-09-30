@@ -73,9 +73,9 @@ export default function TrialBanner() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
-                px: 1.5,
-                py: 0.4,
-                borderRadius: '8px',
+                px: 2,
+                py: 0.75,
+                borderRadius: '10px',
                 backgroundColor: urgent ? 'rgba(220,53,69,0.07)' : 'rgba(0,171,190,0.07)',
                 border: `1px solid ${urgent ? 'rgba(220,53,69,0.2)' : 'rgba(0,171,190,0.2)'}`,
                 cursor: 'default',
@@ -83,10 +83,10 @@ export default function TrialBanner() {
                 overflow: 'hidden',
             }}
         >
-            <AccessTimeOutlinedIcon sx={{ fontSize: 13, color, flexShrink: 0 }} />
+            <AccessTimeOutlinedIcon sx={{ fontSize: 16, color, flexShrink: 0 }} />
 
             <Typography sx={{
-                fontSize: '0.75rem',
+                fontSize: '0.85rem',
                 fontWeight: 700,
                 color,
                 fontVariantNumeric: 'tabular-nums',
@@ -103,7 +103,7 @@ export default function TrialBanner() {
                 transition: 'max-width 0.35s ease, opacity 0.2s ease',
             }}>
                 <Typography sx={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.85rem',
                     fontWeight: 700,
                     color,
                     fontVariantNumeric: 'tabular-nums',
