@@ -15,6 +15,7 @@ import { generateInvitationId } from '../../lib/invitation';
 import { UserRole } from '../../tsmudbase/user_roles';
 import { AccountActivity } from '../../tsmudbase/company_activities';
 import { getAllowedPagesByActivities, PermissionsId, RadioPermissionChoice } from '@/tsmudbase/permissions_setup';
+import { combineUserPermissions } from '../../permissions/roles_setup';
 
 registerApiSession('signup/company', async (req, res, session) => {
     // log_.info('req.body', req.body)
@@ -104,6 +105,10 @@ registerApiSession('signup/company', async (req, res, session) => {
         }
     });
 
+    const permissionsStr = selectedActivities?.length
+        ? combineUserPermissions('A', selectedActivities, chosenPermissions)
+        : '';
+
     await users.updateOne(
         { _id: session.mongoUserId },
         {
@@ -111,7 +116,8 @@ registerApiSession('signup/company', async (req, res, session) => {
                 accountId: newAccount._id,
                 role: 'A',
                 isActive: true,
-                chosenPermissions: chosenPermissions
+                chosenPermissions: chosenPermissions,
+                permissions: permissionsStr,
             }
         }
     );
