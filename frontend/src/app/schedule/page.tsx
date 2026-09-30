@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -772,18 +773,26 @@ export default function SchedulePage() {
                         <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
                     </Box>
                 ) : records.length === 0 ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: 'calc(100vh - 120px)', gap: 2 }}>
-                        <CalendarMonthIcon sx={{ fontSize: 90, color: mainPrimaryColor, opacity: 0.25 }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 2 }}>
+                        <CalendarMonthIcon sx={{
+                            fontSize: 100, color: mainPrimaryColor, opacity: 0.2,
+                            '@keyframes floatIcon': {
+                                '0%, 100%': { transform: 'translateY(0px)' },
+                                '50%': { transform: 'translateY(-10px)' },
+                            },
+                            animation: 'floatIcon 3s ease-in-out infinite',
+                        }} />
                         <Typography variant='h6' color='text.secondary' sx={{ fontWeight: 400 }}>
                             {t('No schedules created yet')}
                         </Typography>
-                        <PageButton
+                        <Button
                             variant='outlined'
-                            label='Create'
-                            size='large'
-                            sx={{ borderRadius: '25px', height: '40px', mt: 1, '&:hover': { backgroundColor: mainPrimaryColor, color: '#ffffff', borderColor: mainPrimaryColor } }}
+                            startIcon={<AddIcon />}
                             onClick={() => setDialogOpen(true)}
-                        />
+                            sx={{ borderRadius: '25px', height: '40px', mt: 1, borderColor: mainPrimaryColor, color: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor, color: '#fff', borderColor: mainPrimaryColor } }}
+                        >
+                            {t('Create')}
+                        </Button>
                     </Box>
                 ) : (
                     <>
