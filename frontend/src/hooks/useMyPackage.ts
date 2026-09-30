@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import * as Api from 'api';
-import { usePermissions } from '@/api/auth';
+import { useSession } from 'next-auth/react';
 
 export interface MyPackage {
     _id: string;
@@ -23,23 +23,16 @@ export interface MyPackage {
     exportBoQ: boolean;
 }
 
-const cache = new Map<string, MyPackage | null>();
-
 export function useMyPackage() {
-    const { session } = usePermissions();
-    const accountId = (session?.user as any)?.accountId as string | undefined;
-
-    const [pkg, setPkg] = useState<MyPackage | null | undefined>(
-        accountId !== undefined ? cache.get(accountId) : undefined
-    );
+    const { status } = useSession();
+    const [pkg, setPkg] = useState<MyPackage | null | undefined>(undefined);
 
     useEffect(() => {
-        if (!accountId) return;
-        if (cache.has(accountId)) { setPkg(cache.get(accountId)!); return; }
+        if (status !== 'authenticated') return;
         Api.requestSession<MyPackage | null>({ command: 'packages/my' })
-            .then(data => { cache.set(accountId, data); setPkg(data); })
-            .catch(() => { cache.set(accountId, null); setPkg(null); });
-    }, [accountId]);
+            .then(data => setPkg(data))
+            .catch(() => setPkg(null));
+    }, [status]);
 
     return pkg;
 }
