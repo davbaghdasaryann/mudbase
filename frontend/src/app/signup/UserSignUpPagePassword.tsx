@@ -54,7 +54,6 @@ export default function UserSignUpPagePassword() {
             <PageDialog type='confirm' title='signup.received_title' confirmLabel='Close' size='sm' modeless onConfirm={onSubmissionClose}>
                 <Stack direction='column' spacing={2}>
                     <PageText text='signup.received_message' />
-                    <PageText text='signup.received_instruction' />
                 </Stack>
             </PageDialog>
         );

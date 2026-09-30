@@ -104,7 +104,6 @@ export default function UserSignUpPageCompany() {
             <PageDialog type='confirm' title='signup.received_title' confirmLabel='Close' size='sm' modeless onClose={onSubmissionClose} onConfirm={onSubmissionClose}>
                 <Stack direction='column' spacing={2}>
                     <PageText text='signup.signup_company_received_message' />
-                    <PageText text='signup.received_instruction' />
                 </Stack>
             </PageDialog>
         );
