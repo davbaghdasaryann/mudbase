@@ -90,6 +90,9 @@ export default function HaymnaditsPage() {
                     <Typography variant='h6' sx={{ fontWeight: 600, color: '#2d3748', mt: 1.5, animation: 'fadeSlideUp 0.5s 0.1s ease both' }}>
                         {t('No Founders created yet')}
                     </Typography>
+                    <Typography variant='body2' sx={{ color: '#8a9ab0', textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.6, animation: 'fadeSlideUp 0.5s 0.2s ease both' }}>
+                        {t('Add widgets to monitor your project at a glance')}
+                    </Typography>
                     <Button
                         variant='outlined'
                         startIcon={<AddIcon />}
