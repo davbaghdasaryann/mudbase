@@ -122,7 +122,7 @@ export default function DashboardBuilderPage() {
                             startIcon={<CameraAltIcon />}
                             onClick={handleCaptureSnapshot}
                             disabled={capturingSnapshot || loading || groups.length === 0}
-                            sx={{ borderRadius: '25px', height: '40px' }}
+                            sx={{ borderRadius: '25px', height: '40px', borderColor: '#00A390', color: '#00A390', '&:hover': { backgroundColor: '#00A390', color: '#fff', borderColor: '#00A390' } }}
                         >
                             {t('Snapshot Now')}
                         </Button>
