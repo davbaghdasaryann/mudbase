@@ -227,7 +227,7 @@ export default function TargetSection() {
             }}>
                 {[
                     { idx: 3, label: 'Ծախսագրում',     bg: '/images/costing_card_bg.png' },
-                    { idx: 4, label: 'Կատարողական', bg: null },
+                    { idx: 4, label: 'Կատարողական', bg: '/images/performance_card_bg.png' },
                     { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.png' },
                 ].map(({ idx, label, bg }) => (
                     <Box key={idx} sx={{ flex: '1 1 0', minWidth: { xs: 200, md: 0 }, perspective: '1000px' }}>
