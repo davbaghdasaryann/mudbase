@@ -13,6 +13,10 @@ import {ReqSession} from '../server/session';
 import {authjsConfig} from './authjs_config';
 import {hexToBigint} from './authjs_lib';
 
+// Rate-limit lastVisitedAt writes: at most once per 5 min per account
+const _visitCache = new Map<string, number>();
+const VISIT_TTL_MS = 5 * 60 * 1000;
+
 export async function getSessionAuthJS(req: Request, res: Response) {
     // log_.info('getSessionAuthJS');
 
@@ -82,7 +86,17 @@ export async function getSessionAuthJS(req: Request, res: Response) {
     session.permissions = sessionUser.permissions.split(',').map((perm) => perm.trim());
     session.permissionsSet = new Set(session.permissions);
 
-    // log_.info(session);
+    // Track last visit per account (fire-and-forget, rate-limited)
+    if (session.mongoAccountId) {
+        const key = session.accountId;
+        const now = Date.now();
+        if (now - (_visitCache.get(key) ?? 0) > VISIT_TTL_MS) {
+            _visitCache.set(key, now);
+            Db.getAccountsCollection()
+                .updateOne({ _id: session.mongoAccountId }, { $set: { lastVisitedAt: new Date(now) } })
+                .catch(() => {});
+        }
+    }
 
     return session;
 }

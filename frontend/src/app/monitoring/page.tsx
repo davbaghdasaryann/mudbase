@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Grid, Chip, CircularProgress } from '@mui/material';
+import { Box, Typography, Grid, Chip, CircularProgress, Table, TableBody, TableCell, TableHead, TableRow, Tooltip as MuiTooltip } from '@mui/material';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { keyframes } from '@emotion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -285,6 +286,24 @@ function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHove
     );
 }
 
+type ActivityEntry = { _id: string; companyName: string; lastVisitedAt: string; isActive: boolean };
+
+function fmtVisit(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `${diffH}h ago`;
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function isOnline(iso: string) {
+    return Date.now() - new Date(iso).getTime() < 10 * 60 * 1000; // active in last 10 min
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
     const mounted = useRef(false);
@@ -295,6 +314,7 @@ export default function DashboardPage() {
     const [trendLoading, setTrendLoading] = useState(true);
     const [dataRequested, setDataRequested] = useState(false);
     const [hoveredId, setHoveredId] = useState<string | null>(null);
+    const [activity, setActivity] = useState<ActivityEntry[]>([]);
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -308,8 +328,14 @@ export default function DashboardPage() {
             Promise.all([
                 Api.requestSession<any>({ command: 'dashboard/fetch_data' }),
                 Api.requestSession<any>({ command: 'dashboard/fetch_offers_trend' }),
-            ]).then(([main, trend]) => {
-                if (mounted.current) { setDashboardData(main); setTrendData(trend); setTrendLoading(false); }
+                Api.requestSession<ActivityEntry[]>({ command: 'dashboard/fetch_activity' }),
+            ]).then(([main, trend, act]) => {
+                if (mounted.current) {
+                    setDashboardData(main);
+                    setTrendData(trend);
+                    setTrendLoading(false);
+                    setActivity(act ?? []);
+                }
             });
             setDataRequested(true);
         }
@@ -360,6 +386,49 @@ export default function DashboardPage() {
                             ]}
                             {...hover('Users')}
                         />
+                    </Box>
+
+                    {/* Company Activity */}
+                    <Box sx={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(18px)', borderRadius: 3, border: '1px solid rgba(0,171,190,0.14)', boxShadow: '0 4px 24px rgba(0,171,190,0.08)', p: 3 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: TEXT_DARK, mb: 2 }}>
+                            {t('Company Activity')}
+                        </Typography>
+                        {activity.length === 0 ? (
+                            <Typography variant='body2' color='text.secondary'>{t('No activity recorded yet. Data will appear once companies start using the app.')}</Typography>
+                        ) : (
+                            <Table size='small'>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.78rem', border: 0, pb: 1 }}>{t('Company')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.78rem', border: 0, pb: 1 }}>{t('Status')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.78rem', border: 0, pb: 1 }}>{t('Last Visited')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.78rem', border: 0, pb: 1 }}>{t('Date / Time')}</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {activity.map(a => {
+                                        const online = isOnline(a.lastVisitedAt);
+                                        return (
+                                            <TableRow key={a._id} sx={{ '&:last-child td': { border: 0 } }}>
+                                                <TableCell sx={{ fontWeight: 500, fontSize: '0.88rem' }}>{a.companyName}</TableCell>
+                                                <TableCell>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <FiberManualRecordIcon sx={{ fontSize: 10, color: online ? '#4caf50' : '#bdbdbd' }} />
+                                                        <Typography variant='caption' sx={{ color: online ? '#4caf50' : 'text.disabled' }}>
+                                                            {online ? t('Online') : t('Offline')}
+                                                        </Typography>
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{fmtVisit(a.lastVisitedAt)}</TableCell>
+                                                <TableCell sx={{ fontSize: '0.82rem', color: 'text.disabled' }}>
+                                                    {new Date(a.lastVisitedAt).toLocaleString()}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        )}
                     </Box>
                 </Box>
             )}
