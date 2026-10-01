@@ -27,6 +27,8 @@ export interface ApiAccount {
 
     companyLogo?: string;
     packageId?: string;
+    packageStartDate?: string;
+    packageEndDate?: string;
 };
 
 
