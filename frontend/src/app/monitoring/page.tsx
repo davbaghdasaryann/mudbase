@@ -288,15 +288,15 @@ function StatCard({ title, count, hasPending = false, isActive, isDimmed, onHove
 
 type ActivityEntry = { _id: string; companyName: string; lastVisitedAt: string; isActive: boolean };
 
-function fmtVisit(iso: string) {
+function fmtVisit(iso: string, t: (key: string) => string) {
     const d = new Date(iso);
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return 'Just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffMin < 1) return t('Just now');
+    if (diffMin < 60) return `${diffMin} ${t('m ago')}`;
     const diffH = Math.floor(diffMin / 60);
-    if (diffH < 24) return `${diffH}h ago`;
+    if (diffH < 24) return `${diffH} ${t('h ago')}`;
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                                                         </Typography>
                                                     </Box>
                                                 </TableCell>
-                                                <TableCell sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{fmtVisit(a.lastVisitedAt)}</TableCell>
+                                                <TableCell sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{fmtVisit(a.lastVisitedAt, t)}</TableCell>
                                                 <TableCell sx={{ fontSize: '0.82rem', color: 'text.disabled' }}>
                                                     {new Date(a.lastVisitedAt).toLocaleString()}
                                                 </TableCell>

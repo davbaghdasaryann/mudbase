@@ -386,5 +386,14 @@
   "Start Date": "Start Date",
   "End Date": "End Date",
   "Edit Package": "Edit Package",
-  "Monitoring": "Monitoring"
+  "Monitoring": "Monitoring",
+  "Last Visited": "Last Visited",
+  "Date / Time": "Date / Time",
+  "Online": "Online",
+  "Offline": "Offline",
+  "Just now": "Just now",
+  "Company Activity": "Company Activity",
+  "m ago": "m ago",
+  "h ago": "h ago",
+  "No activity recorded yet. Data will appear once companies start using the app.": "No activity recorded yet. Data will appear once companies start using the app."
 }
