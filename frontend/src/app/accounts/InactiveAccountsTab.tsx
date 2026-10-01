@@ -148,7 +148,6 @@ export default function ActiveAccountsTab() {
                     // {field: 'address', headerName: 'Address', headerAlign: 'left', minWidth: 250},
                     { field: 'companyTin', headerName: t('TIN'), flex: 1 },
                     { field: 'phoneNumber', headerName: t('Phone'), flex: 1 },
-                    { field: 'email', headerName: t('Email'), minWidth: 200, flex: 1 },
                     // {field: 'name', headerName: 'First Name', headerAlign: 'left', width: 150},
                     // {field: 'surname', headerName: 'Surname', headerAlign: 'left', width: 150},
                     // {field: 'login', headerName: 'Login', headerAlign: 'left', width: 150},
