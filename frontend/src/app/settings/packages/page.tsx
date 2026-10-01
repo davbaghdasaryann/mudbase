@@ -215,9 +215,9 @@ export default function PackagesPage() {
                     {editingId ? t('Edit Package') : t('Package Settings')}
                 </DialogTitle>
 
-                <DialogContent sx={{ pt: 3 }}>
+                <DialogContent sx={{ pt: 1 }}>
                     {/* Name — full width */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2, mb: 2 }}>
                         <TextField
                             label={t('Package Name')}
                             value={form.name}
