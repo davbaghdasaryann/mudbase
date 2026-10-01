@@ -363,6 +363,14 @@ export default function TargetSection() {
                             }}>
                                 Մոնիթորինգ
                             </Typography>
+                            <Box sx={{
+                                position: "absolute",
+                                inset: 0,
+                                backgroundImage: "url(/images/monitoring_card_bg.png)",
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                pointerEvents: "none",
+                            }} />
                         </Box>
                         {/* Back face */}
                         <Box
