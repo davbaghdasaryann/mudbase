@@ -391,7 +391,7 @@ function useMainNavigation() {
 
         // Superadmin sees old dashboard with system stats
         if (isSuperAdmin) {
-            navigation.push({segment: 'dashboard', title: t('Dashboard'), icon: <DashboardIcon />});
+            navigation.push({segment: 'monitoring', title: t('Monitoring'), icon: <DashboardIcon />});
         }
         // Regular users see widget builder
         else if (session?.user) {

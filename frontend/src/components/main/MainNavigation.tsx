@@ -179,8 +179,8 @@ function useMainNavigation() {
 
         if (session?.user && permissionsSet?.has('DASH_USE')) {
             navigation.push({
-                segment: 'dashboard',
-                title: t('Dashboard'),
+                segment: 'monitoring',
+                title: t('Monitoring'),
                 icon: <DashboardIcon />,
             });
         }
