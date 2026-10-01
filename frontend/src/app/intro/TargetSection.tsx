@@ -318,7 +318,7 @@ export default function TargetSection() {
 
             {/* Row 3: Monitoring, Schedule */}
             <Box sx={{ display: "flex", gap: { xs: 2, md: 3 }, width: "100%", flexWrap: { xs: "wrap", md: "nowrap" }, justifyContent: "center" }}>
-                <Box key={6} sx={{ flex: "1 1 0", minWidth: { xs: 200, md: 0 }, perspective: "1000px" }}>
+                <Box key={6} sx={{ flex: "0 0 calc(33.33% - 8px)", minWidth: { xs: 200, md: 0 }, maxWidth: { xs: "100%", md: "calc(33.33% - 8px)" }, perspective: "1000px" }}>
                     <Box sx={{
                         position: "relative",
                         width: "100%",
@@ -391,7 +391,7 @@ export default function TargetSection() {
                         </Box>
                     </Box>
                 </Box>
-                <Box key={7} sx={{ flex: "1 1 0", minWidth: { xs: 200, md: 0 }, perspective: "1000px" }}>
+                <Box key={7} sx={{ flex: "0 0 calc(33.33% - 8px)", minWidth: { xs: 200, md: 0 }, maxWidth: { xs: "100%", md: "calc(33.33% - 8px)" }, perspective: "1000px" }}>
                     <Box sx={{
                         position: "relative",
                         width: "100%",
