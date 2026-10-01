@@ -339,7 +339,13 @@ export default function DashboardPage() {
             });
             setDataRequested(true);
         }
-        return () => { mounted.current = false; };
+        // Refresh activity every 30 s so online/offline status stays current
+        const interval = setInterval(() => {
+            Api.requestSession<ActivityEntry[]>({ command: 'dashboard/fetch_activity' })
+                .then(act => { if (mounted.current) setActivity(act ?? []); })
+                .catch(() => {});
+        }, 30000);
+        return () => { mounted.current = false; clearInterval(interval); };
     }, [dataRequested]);
 
     const raw: StatCardProps[] = dashboardData?.dashboard ?? [];
