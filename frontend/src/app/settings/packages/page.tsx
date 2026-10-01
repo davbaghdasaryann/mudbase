@@ -215,7 +215,7 @@ export default function PackagesPage() {
                     {editingId ? t('Edit Package') : t('Package Settings')}
                 </DialogTitle>
 
-                <DialogContent sx={{ pt: 2 }}>
+                <DialogContent sx={{ pt: 3 }}>
                     {/* Name — full width */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
                         <TextField

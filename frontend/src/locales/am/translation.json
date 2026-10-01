@@ -752,6 +752,7 @@
   "Create a costing to manage your project expenses": "Ստեղծեք ծախսագրում ձեր նախագծին ծախսերու կատարելու համար",
   "Package Start": "Փաթեթի սկիզբ",
   "Package End": "Փաթեթի ավարտ",
-  "Start Date": "սկիզբի ազծաթիվ",
-  "End Date": "ավարտի ազծաթիվ"
+  "Start Date": "Սկիզբ",
+  "End Date": "Ավարտ",
+  "Edit Package": "Խմբագրել փաթեթը"
 }
