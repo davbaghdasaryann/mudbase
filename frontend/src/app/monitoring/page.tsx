@@ -396,9 +396,6 @@ export default function DashboardPage() {
 
                     {/* Company Activity */}
                     <Box sx={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(18px)', borderRadius: 3, border: '1px solid rgba(0,171,190,0.14)', boxShadow: '0 4px 24px rgba(0,171,190,0.08)', p: 3 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: TEXT_DARK, mb: 2 }}>
-                            {t('Company Activity')}
-                        </Typography>
                         {activity.length === 0 ? (
                             <Typography variant='body2' color='text.secondary'>{t('No activity recorded yet. Data will appear once companies start using the app.')}</Typography>
                         ) : (
