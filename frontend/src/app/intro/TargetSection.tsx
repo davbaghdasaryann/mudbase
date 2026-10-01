@@ -226,8 +226,8 @@ export default function TargetSection() {
                 justifyContent: 'center',
             }}>
                 {[
-                    { idx: 3, label: 'Costing',     bg: null },
-                    { idx: 4, label: 'Performance', bg: null },
+                    { idx: 3, label: 'Ծախսագրում',     bg: null },
+                    { idx: 4, label: 'Կատարողական', bg: null },
                     { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.png' },
                 ].map(({ idx, label, bg }) => (
                     <Box key={idx} sx={{ flex: '1 1 0', minWidth: { xs: 200, md: 0 }, perspective: '1000px' }}>
