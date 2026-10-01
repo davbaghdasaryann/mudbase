@@ -226,7 +226,7 @@ export default function TargetSection() {
                 justifyContent: 'center',
             }}>
                 {[
-                    { idx: 3, label: 'Ծախսագրում',     bg: null },
+                    { idx: 3, label: 'Ծախսագրում',     bg: '/images/costing_card_bg.png' },
                     { idx: 4, label: 'Կատարողական', bg: null },
                     { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.png' },
                 ].map(({ idx, label, bg }) => (
