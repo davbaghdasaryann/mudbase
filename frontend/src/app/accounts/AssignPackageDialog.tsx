@@ -13,6 +13,8 @@ interface Package {
     name: string;
     price: number;
     numberOfUsers: number;
+    startDate?: string;
+    endDate?: string;
 }
 
 interface Props {
@@ -37,6 +39,15 @@ export default function AssignPackageDialog({ accountId, accountName, currentPac
     const [selected, setSelected] = useState<string>(currentPackageId ?? '');
     const [startDate, setStartDate] = useState<string>(toInputDate(currentPackageStartDate) || today());
     const [endDate, setEndDate] = useState<string>(toInputDate(currentPackageEndDate) || nextYear());
+
+    const handlePackageChange = (pkgId: string) => {
+        setSelected(pkgId);
+        const pkg = packages.find(p => p._id === pkgId);
+        if (pkg) {
+            if (pkg.startDate) setStartDate(toInputDate(pkg.startDate));
+            if (pkg.endDate) setEndDate(toInputDate(pkg.endDate));
+        }
+    };
 
     useEffect(() => {
         Api.requestSession<Package[]>({ command: 'packages/fetch' })
@@ -87,7 +98,7 @@ export default function AssignPackageDialog({ accountId, accountName, currentPac
                             <Select
                                 value={selected}
                                 label={t('Package')}
-                                onChange={e => setSelected(e.target.value)}
+                                onChange={e => handlePackageChange(e.target.value)}
                             >
                                 <MenuItem value=''><em>{t('No package')}</em></MenuItem>
                                 {packages.map(pkg => (

@@ -41,6 +41,8 @@ interface Package {
     duplicateEstimation: boolean;
     exportEstimation: boolean;
     exportBoQ: boolean;
+    startDate?: string;
+    endDate?: string;
 }
 
 const EMPTY_PKG: Package = {
@@ -228,6 +230,25 @@ export default function PackagesPage() {
                             value={form.nameAm || ''}
                             onChange={e => set('nameAm')(e.target.value)}
                             fullWidth
+                            sx={numberFieldSx}
+                        />
+                    </Box>
+                    {/* Start / End dates */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                        <TextField
+                            label={t('Start Date')}
+                            type='date'
+                            value={form.startDate ? new Date(form.startDate).toISOString().split('T')[0] : ''}
+                            onChange={e => set('startDate')(e.target.value || undefined)}
+                            InputLabelProps={{ shrink: true }}
+                            sx={numberFieldSx}
+                        />
+                        <TextField
+                            label={t('End Date')}
+                            type='date'
+                            value={form.endDate ? new Date(form.endDate).toISOString().split('T')[0] : ''}
+                            onChange={e => set('endDate')(e.target.value || undefined)}
+                            InputLabelProps={{ shrink: true }}
                             sx={numberFieldSx}
                         />
                     </Box>

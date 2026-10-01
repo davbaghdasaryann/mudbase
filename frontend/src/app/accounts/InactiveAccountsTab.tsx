@@ -149,11 +149,11 @@ export default function ActiveAccountsTab() {
                     { field: 'companyTin', headerName: t('TIN'), flex: 1 },
                     { field: 'phoneNumber', headerName: t('Phone'), flex: 1 },
                     {
-                        field: 'packageStartDate', headerName: t('Pkg Start'), flex: 1,
+                        field: 'packageStartDate', headerName: t('Package Start'), flex: 1,
                         renderCell: (cell) => cell.row.packageStartDate ? new Date(cell.row.packageStartDate).toLocaleDateString() : '—',
                     },
                     {
-                        field: 'packageEndDate', headerName: t('Pkg End'), flex: 1,
+                        field: 'packageEndDate', headerName: t('Package End'), flex: 1,
                         renderCell: (cell) => cell.row.packageEndDate ? new Date(cell.row.packageEndDate).toLocaleDateString() : '—',
                     },
                     // {field: 'name', headerName: 'First Name', headerAlign: 'left', width: 150},
