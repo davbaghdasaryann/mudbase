@@ -756,13 +756,13 @@
   "End Date": "Ավարտ",
   "Edit Package": "Խմբագրել փաթեթը",
   "Monitoring": "Մոնիթորինգ",
-  "Last Visited": "Վերջին Այցելելություն",
+  "Last Visited": "Այցելելություն",
   "Date / Time": "Ամսաթիվ / ժամ",
   "Company Activity": "Կազմակերպությունի Գործունեության",
   "Online": "Օնլայն",
   "Offline": "Օփլայն",
-  "Just now": "Նորից",
+  "Just now": "Այտս պահին",
   "No activity recorded yet. Data will appear once companies start using the app.": "Տվյալներ չկան",
-  "m ago": "րոփ. առաջ",
+  "m ago": "րոպե առաջ",
   "h ago": "ժամ առաջ"
 }
