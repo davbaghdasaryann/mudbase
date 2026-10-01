@@ -217,92 +217,103 @@ export default function TargetSection() {
                 ))}
             </Box>
 
-            {/* Row 2: fourth card centered */}
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Box sx={{ width: { xs: '100%', md: 'calc(33.33% - 8px)' }, perspective: '1000px' }}>
-                    <Box
-                        sx={{
+            {/* Row 2: Costing, Performance, Analysis */}
+            <Box sx={{
+                display: 'flex',
+                gap: { xs: 2, md: 3 },
+                width: '100%',
+                flexWrap: { xs: 'wrap', md: 'nowrap' },
+                justifyContent: 'center',
+            }}>
+                {[
+                    { idx: 3, label: 'Costing',     bg: null },
+                    { idx: 4, label: 'Performance', bg: null },
+                    { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.png' },
+                ].map(({ idx, label, bg }) => (
+                    <Box key={idx} sx={{ flex: '1 1 0', minWidth: { xs: 200, md: 0 }, perspective: '1000px' }}>
+                        <Box sx={{
                             position: 'relative',
                             width: '100%',
                             aspectRatio: '1 / 1',
                             transformStyle: 'preserve-3d',
                             transition: 'transform 0.6s cubic-bezier(0.4,0.2,0.2,1)',
-                            transform: flipped === 3 ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                        }}
-                    >
-                        {/* Front face */}
-                        <Box
-                            onClick={() => toggle(3)}
-                            sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                backfaceVisibility: 'hidden',
-                                WebkitBackfaceVisibility: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '18px',
-                                border: `1.5px solid rgba(63,162,151,0.15)`,
-                                boxShadow: '0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)',
-                                backgroundColor: '#fff',
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                                '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)', filter: 'brightness(0.93)' },
-                                transition: 'box-shadow 0.2s, filter 0.2s',
-                            }}
-                        >
-                            <Typography sx={{
-                                position: 'absolute',
-                                top: 20,
-                                left: 0,
-                                right: 0,
-                                textAlign: 'center',
-                                fontWeight: 700,
-                                fontSize: '1rem',
-                                color: '#000',
-                                zIndex: 1,
-                                pointerEvents: 'none',
-                            }}>
-                                Վերլուծություններ
-                            </Typography>
-                            <Box sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                opacity: 1,
-                                backgroundImage: 'url(/images/analysis_card_bg.png)',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                pointerEvents: 'none',
-                            }} />
-                        </Box>
-                        {/* Back face */}
-                        <Box
-                            onClick={() => toggle(3)}
-                            sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                backfaceVisibility: 'hidden',
-                                WebkitBackfaceVisibility: 'hidden',
-                                transform: 'rotateY(180deg)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'flex-end',
-                                borderRadius: '18px',
-                                border: `1px solid #00ABBE`,
-                                boxShadow: `0 4px 24px rgba(0,171,190,0.15)`,
-                                backgroundColor: '#fff',
-                                cursor: 'pointer',
-                                pb: 3,
-                            }}
-                        >
-                            <Typography sx={{ fontSize: '0.78rem', color: '#94a3ac', userSelect: 'none' }}>
-                                ‹ Պտտել
-                            </Typography>
+                            transform: flipped === idx ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                        }}>
+                            {/* Front face */}
+                            <Box
+                                onClick={() => toggle(idx)}
+                                sx={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    backfaceVisibility: 'hidden',
+                                    WebkitBackfaceVisibility: 'hidden',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '18px',
+                                    border: `1.5px solid rgba(63,162,151,0.15)`,
+                                    boxShadow: '0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)',
+                                    backgroundColor: '#fff',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    '&:hover': { boxShadow: '0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)', filter: 'brightness(0.93)' },
+                                    transition: 'box-shadow 0.2s, filter 0.2s',
+                                }}
+                            >
+                                <Typography sx={{
+                                    position: 'absolute',
+                                    top: 20,
+                                    left: 0,
+                                    right: 0,
+                                    textAlign: 'center',
+                                    fontWeight: 700,
+                                    fontSize: '1rem',
+                                    color: '#000',
+                                    zIndex: 1,
+                                    pointerEvents: 'none',
+                                }}>
+                                    {label}
+                                </Typography>
+                                {bg && (
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        backgroundImage: `url(${bg})`,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        pointerEvents: 'none',
+                                    }} />
+                                )}
+                            </Box>
+                            {/* Back face */}
+                            <Box
+                                onClick={() => toggle(idx)}
+                                sx={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    backfaceVisibility: 'hidden',
+                                    WebkitBackfaceVisibility: 'hidden',
+                                    transform: 'rotateY(180deg)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                    borderRadius: '18px',
+                                    border: `1px solid #00ABBE`,
+                                    boxShadow: `0 4px 24px rgba(0,171,190,0.15)`,
+                                    backgroundColor: '#fff',
+                                    cursor: 'pointer',
+                                    pb: 3,
+                                }}
+                            >
+                                <Typography sx={{ fontSize: '0.78rem', color: '#94a3ac', userSelect: 'none' }}>
+                                    ‹ Պտտել
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
-                </Box>
+                ))}
             </Box>
 
             </Box>
