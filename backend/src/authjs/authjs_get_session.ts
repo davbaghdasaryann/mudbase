@@ -13,9 +13,9 @@ import {ReqSession} from '../server/session';
 import {authjsConfig} from './authjs_config';
 import {hexToBigint} from './authjs_lib';
 
-// Rate-limit lastVisitedAt writes: at most once per 5 min per account
+// Rate-limit lastVisitedAt writes: at most once per 2 min per account
 const _visitCache = new Map<string, number>();
-const VISIT_TTL_MS = 5 * 60 * 1000;
+const VISIT_TTL_MS = 2 * 60 * 1000;
 
 export async function getSessionAuthJS(req: Request, res: Response) {
     // log_.info('getSessionAuthJS');

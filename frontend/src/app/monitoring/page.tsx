@@ -301,7 +301,7 @@ function fmtVisit(iso: string) {
 }
 
 function isOnline(iso: string) {
-    return Date.now() - new Date(iso).getTime() < 10 * 60 * 1000; // active in last 10 min
+    return Date.now() - new Date(iso).getTime() < 4 * 60 * 1000; // active in last 4 min
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
