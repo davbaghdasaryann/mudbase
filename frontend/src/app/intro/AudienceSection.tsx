@@ -30,30 +30,20 @@ export default function AudienceSection() {
             backgroundColor: '#f8fafb',
         }}>
             {/* Pill header */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 1.5, md: 2 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 3, md: 4 } }}>
                 <Box sx={{
                     display: 'inline-block',
                     backgroundColor: 'rgba(0,163,144,0.07)',
                     border: '1px solid rgba(0,163,144,0.18)',
                     borderRadius: '100px',
-                    px: 2, py: 0.55,
+                    px: 3, py: 1,
                 }}>
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                        Թիռանակաին Լսարան
+                    <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#00A390', whiteSpace: 'nowrap' }}>
+                        Ում համար է նախատասված Մադբեյզը
                     </Typography>
                 </Box>
             </Box>
 
-            {/* Title */}
-            <Typography variant='h4' sx={{
-                fontWeight: 700,
-                fontSize: { xs: '1.5rem', md: '2rem' },
-                color: '#1a2a2a',
-                textAlign: 'center',
-                mb: { xs: 3, md: 4 },
-            }}>
-                Ում համար է նախատասված Մադբեյզը
-            </Typography>
 
             {/* Cards */}
             <Box sx={{
@@ -69,7 +59,7 @@ export default function AudienceSection() {
                         flex: '1 1 0',
                         minWidth: { xs: 'calc(50% - 8px)', md: 0 },
                         maxWidth: { xs: 'calc(50% - 8px)', md: 'none' },
-                        minHeight: { xs: 200, md: 320 },
+                        minHeight: { xs: 160, md: 240 },
                         backgroundColor: '#fff',
                         borderRadius: '18px',
                         border: '1px solid rgba(0,171,190,0.22)',
@@ -78,10 +68,10 @@ export default function AudienceSection() {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        pt: 6,
-                        pb: 5,
-                        px: 3,
-                        gap: 3,
+                        pt: 4,
+                        pb: 4,
+                        px: 2,
+                        gap: 2,
                         transition: 'box-shadow 0.25s, border-color 0.25s, transform 0.25s',
                         '&:hover': {
                             boxShadow: '0 12px 36px rgba(0,171,190,0.18)',
@@ -90,8 +80,8 @@ export default function AudienceSection() {
                         },
                     }}>
                         <Box sx={{
-                            width: 88,
-                            height: 88,
+                            width: 70,
+                            height: 70,
                             borderRadius: '50%',
                             backgroundColor: 'rgba(0,171,190,0.08)',
                             display: 'flex',
@@ -99,7 +89,7 @@ export default function AudienceSection() {
                             justifyContent: 'center',
                             flexShrink: 0,
                         }}>
-                            <Icon sx={{ fontSize: '2.4rem', color: '#00ABBE' }} />
+                            <Icon sx={{ fontSize: '2rem', color: '#00ABBE' }} />
                         </Box>
                         <Typography sx={{
                             fontSize: '1rem',
