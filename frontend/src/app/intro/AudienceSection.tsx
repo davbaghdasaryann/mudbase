@@ -9,13 +9,13 @@ import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { ElementType } from 'react';
 
-const CARDS: { Icon: ElementType; label: string }[] = [
-    { Icon: ConstructionOutlinedIcon, label: 'Շինարարություն' },
-    { Icon: DrawOutlinedIcon,          label: 'Նախագծում' },
-    { Icon: ApartmentOutlinedIcon,     label: 'Կառուցապատող' },
-    { Icon: AccountBalanceOutlinedIcon,label: 'Ապահովագրական' },
-    { Icon: CalculateOutlinedIcon,     label: 'Գնահատող' },
-    { Icon: EngineeringOutlinedIcon,   label: 'Բանկեր' },
+const CARDS: { Icon: ElementType; label: string; color: string; bgColor: string }[] = [
+    { Icon: ConstructionOutlinedIcon, label: 'Շինարարություն', color: '#00ABBE', bgColor: 'rgba(0,171,190,0.08)' },
+    { Icon: DrawOutlinedIcon,          label: 'Նախագծում', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
+    { Icon: ApartmentOutlinedIcon,     label: 'Կառուցապատող', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
+    { Icon: AccountBalanceOutlinedIcon, label: 'Ապահովագրական', color: '#41A240', bgColor: 'rgba(65,162,64,0.08)' },
+    { Icon: CalculateOutlinedIcon,     label: 'Գնահատող', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
+    { Icon: EngineeringOutlinedIcon,     label: 'Բանկեր', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
 ];
 
 export default function AudienceSection() {
@@ -54,7 +54,7 @@ export default function AudienceSection() {
                 flexWrap: { xs: 'wrap', md: 'nowrap' },
                 justifyContent: 'center',
             }}>
-                {CARDS.map(({ Icon, label }, i) => (
+                {CARDS.map(({ Icon, label, color, bgColor }, i) => (
                     <Box key={i} sx={{
                         flex: '1 1 0',
                         minWidth: { xs: 'calc(50% - 8px)', md: 0 },
@@ -83,13 +83,13 @@ export default function AudienceSection() {
                             width: 70,
                             height: 70,
                             borderRadius: '50%',
-                            backgroundColor: 'rgba(0,171,190,0.08)',
+                            backgroundColor: bgColor,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexShrink: 0,
                         }}>
-                            <Icon sx={{ fontSize: '2rem', color: '#00ABBE' }} />
+                            <Icon sx={{ fontSize: '2rem', color: color }} />
                         </Box>
                         <Typography sx={{
                             fontSize: '1rem',
