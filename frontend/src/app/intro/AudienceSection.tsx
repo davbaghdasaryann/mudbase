@@ -10,12 +10,12 @@ import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { ElementType } from 'react';
 
 const CARDS: { Icon: ElementType; label: string }[] = [
-    { Icon: ConstructionOutlinedIcon, label: '...' },
-    { Icon: DrawOutlinedIcon,          label: '...' },
-    { Icon: ApartmentOutlinedIcon,     label: '...' },
-    { Icon: AccountBalanceOutlinedIcon,label: '...' },
-    { Icon: CalculateOutlinedIcon,     label: '...' },
-    { Icon: EngineeringOutlinedIcon,   label: '...' },
+    { Icon: ConstructionOutlinedIcon, label: 'Շինարարություն' },
+    { Icon: DrawOutlinedIcon,          label: 'Նախագծում' },
+    { Icon: ApartmentOutlinedIcon,     label: 'Կառուցապատող' },
+    { Icon: AccountBalanceOutlinedIcon,label: 'Ապահովագրական' },
+    { Icon: CalculateOutlinedIcon,     label: 'Գնահատող' },
+    { Icon: EngineeringOutlinedIcon,   label: 'Բանկեր' },
 ];
 
 export default function AudienceSection() {
@@ -60,7 +60,7 @@ export default function AudienceSection() {
                 display: 'flex',
                 gap: { xs: 1.5, md: 2 },
                 width: '100%',
-                maxWidth: 1100,
+                maxWidth: 1200,
                 flexWrap: { xs: 'wrap', md: 'nowrap' },
                 justifyContent: 'center',
             }}>
@@ -69,6 +69,7 @@ export default function AudienceSection() {
                         flex: '1 1 0',
                         minWidth: { xs: 'calc(50% - 8px)', md: 0 },
                         maxWidth: { xs: 'calc(50% - 8px)', md: 'none' },
+                        minHeight: { xs: 'auto', md: 240 },
                         backgroundColor: '#fff',
                         borderRadius: '18px',
                         border: '1px solid rgba(0,171,190,0.22)',
@@ -76,10 +77,11 @@ export default function AudienceSection() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        pt: 4,
-                        pb: 3,
+                        justifyContent: 'center',
+                        pt: 5,
+                        pb: 4,
                         px: 2,
-                        gap: 2,
+                        gap: 2.5,
                         transition: 'box-shadow 0.2s, border-color 0.2s',
                         '&:hover': {
                             boxShadow: '0 6px 24px rgba(0,171,190,0.14)',
@@ -87,8 +89,8 @@ export default function AudienceSection() {
                         },
                     }}>
                         <Box sx={{
-                            width: 56,
-                            height: 56,
+                            width: 72,
+                            height: 72,
                             borderRadius: '50%',
                             backgroundColor: 'rgba(0,171,190,0.08)',
                             display: 'flex',
@@ -96,10 +98,10 @@ export default function AudienceSection() {
                             justifyContent: 'center',
                             flexShrink: 0,
                         }}>
-                            <Icon sx={{ fontSize: '1.6rem', color: '#00ABBE' }} />
+                            <Icon sx={{ fontSize: '2rem', color: '#00ABBE' }} />
                         </Box>
                         <Typography sx={{
-                            fontSize: '0.85rem',
+                            fontSize: '0.9rem',
                             fontWeight: 600,
                             color: '#2a3a3a',
                             textAlign: 'center',
