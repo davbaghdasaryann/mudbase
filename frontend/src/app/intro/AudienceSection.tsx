@@ -1,6 +1,22 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
+import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
+import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
+import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
+import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
+import { ElementType } from 'react';
+
+const CARDS: { Icon: ElementType; label: string }[] = [
+    { Icon: ConstructionOutlinedIcon, label: '...' },
+    { Icon: DrawOutlinedIcon,          label: '...' },
+    { Icon: ApartmentOutlinedIcon,     label: '...' },
+    { Icon: AccountBalanceOutlinedIcon,label: '...' },
+    { Icon: CalculateOutlinedIcon,     label: '...' },
+    { Icon: EngineeringOutlinedIcon,   label: '...' },
+];
 
 export default function AudienceSection() {
     return (
@@ -27,6 +43,7 @@ export default function AudienceSection() {
                     </Typography>
                 </Box>
             </Box>
+
             {/* Title */}
             <Typography variant='h4' sx={{
                 fontWeight: 700,
@@ -37,6 +54,62 @@ export default function AudienceSection() {
             }}>
                 Ում համար է նախատասված
             </Typography>
+
+            {/* Cards */}
+            <Box sx={{
+                display: 'flex',
+                gap: { xs: 1.5, md: 2 },
+                width: '100%',
+                maxWidth: 1100,
+                flexWrap: { xs: 'wrap', md: 'nowrap' },
+                justifyContent: 'center',
+            }}>
+                {CARDS.map(({ Icon, label }, i) => (
+                    <Box key={i} sx={{
+                        flex: '1 1 0',
+                        minWidth: { xs: 'calc(50% - 8px)', md: 0 },
+                        maxWidth: { xs: 'calc(50% - 8px)', md: 'none' },
+                        backgroundColor: '#fff',
+                        borderRadius: '18px',
+                        border: '1px solid rgba(0,171,190,0.22)',
+                        boxShadow: '0 2px 12px rgba(0,171,190,0.06)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        pt: 4,
+                        pb: 3,
+                        px: 2,
+                        gap: 2,
+                        transition: 'box-shadow 0.2s, border-color 0.2s',
+                        '&:hover': {
+                            boxShadow: '0 6px 24px rgba(0,171,190,0.14)',
+                            borderColor: 'rgba(0,171,190,0.5)',
+                        },
+                    }}>
+                        <Box sx={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(0,171,190,0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                        }}>
+                            <Icon sx={{ fontSize: '1.6rem', color: '#00ABBE' }} />
+                        </Box>
+                        <Typography sx={{
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            color: '#2a3a3a',
+                            textAlign: 'center',
+                            lineHeight: 1.4,
+                        }}>
+                            {label}
+                        </Typography>
+                    </Box>
+                ))}
+            </Box>
         </Box>
     );
 }
