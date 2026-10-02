@@ -678,6 +678,15 @@ export default function TargetSection() {
                             }}>
                                 Ռիսկերի մոնիթորինգ
                             </Typography>
+                            <Box sx={{
+                                position: 'absolute',
+                                inset: 0,
+                                backgroundImage: 'url(/images/riskmonitoring_card_bg.webp)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                borderRadius: '18px',
+                                pointerEvents: 'none',
+                            }} />
                                 {(
                                     <>
                                         <Box className='beta-pill' sx={{
