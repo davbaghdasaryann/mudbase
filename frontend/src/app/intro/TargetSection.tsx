@@ -549,6 +549,15 @@ export default function TargetSection() {
                             }}>
                                 Նախագծերի կառավարում
                             </Typography>
+                            <Box sx={{
+                                position: 'absolute',
+                                inset: 0,
+                                backgroundImage: 'url(/images/projectmanagement_card_bg.webp)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                borderRadius: '18px',
+                                pointerEvents: 'none',
+                            }} />
                                 {(
                                     <>
                                         <Box className='beta-pill' sx={{
