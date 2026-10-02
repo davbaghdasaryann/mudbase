@@ -527,7 +527,7 @@ export default function TargetSection() {
                                 border: "1.5px solid rgba(63,162,151,0.15)",
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
-                                overflow: "hidden",
+                                overflow: "visible",
                                 cursor: "pointer",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
                                     '&:hover .beta-pill': { backgroundColor: 'rgba(0,171,190,0.12)' },
@@ -550,18 +550,12 @@ export default function TargetSection() {
                                 Նախագծերի կառավարում
                             </Typography>
                                 {(
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        top: 12,
-                                        right: 10,
-                                        zIndex: 2,
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        pointerEvents: 'none',
-                                    }}>
+                                    <>
                                         <Box className='beta-pill' sx={{
+                                            position: 'absolute',
+                                            top: 16,
+                                            right: 12,
+                                            zIndex: 3,
                                             width: 24,
                                             height: 24,
                                             borderRadius: '50%',
@@ -570,21 +564,33 @@ export default function TargetSection() {
                                             justifyContent: 'center',
                                             backgroundColor: 'transparent',
                                             transition: 'background-color 0.2s',
-                                            flexShrink: 0,
+                                            pointerEvents: 'none',
                                         }}>
                                             <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
                                                 🛠
                                             </Box>
                                         </Box>
                                         <Box className='dev-stage-text' sx={{
+                                            position: 'absolute',
+                                            top: 17,
+                                            left: 'calc(100% - 10px)',
+                                            zIndex: 4,
                                             opacity: 0,
                                             transition: 'opacity 0.2s',
+                                            pointerEvents: 'none',
+                                            backgroundColor: '#fff',
+                                            border: '1px solid rgba(0,171,190,0.3)',
+                                            borderRadius: '6px',
+                                            px: '6px',
+                                            py: '2px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                            whiteSpace: 'nowrap',
                                         }}>
-                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, whiteSpace: 'nowrap', lineHeight: 1 }}>
+                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, lineHeight: 1.4 }}>
                                                 Մշակման փուլում
                                             </Typography>
                                         </Box>
-                                    </Box>
+                                    </>
                                 )}
                         </Box>
                         {/* Back face */}
@@ -643,7 +649,7 @@ export default function TargetSection() {
                                 border: "1.5px solid rgba(63,162,151,0.15)",
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
-                                overflow: "hidden",
+                                overflow: "visible",
                                 cursor: "pointer",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
                                     '&:hover .beta-pill': { backgroundColor: 'rgba(0,171,190,0.12)' },
@@ -666,18 +672,12 @@ export default function TargetSection() {
                                 Ռիսկերի մոնիթորինգ
                             </Typography>
                                 {(
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        top: 12,
-                                        right: 10,
-                                        zIndex: 2,
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        pointerEvents: 'none',
-                                    }}>
+                                    <>
                                         <Box className='beta-pill' sx={{
+                                            position: 'absolute',
+                                            top: 16,
+                                            right: 12,
+                                            zIndex: 3,
                                             width: 24,
                                             height: 24,
                                             borderRadius: '50%',
@@ -686,21 +686,33 @@ export default function TargetSection() {
                                             justifyContent: 'center',
                                             backgroundColor: 'transparent',
                                             transition: 'background-color 0.2s',
-                                            flexShrink: 0,
+                                            pointerEvents: 'none',
                                         }}>
                                             <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
                                                 🛠
                                             </Box>
                                         </Box>
                                         <Box className='dev-stage-text' sx={{
+                                            position: 'absolute',
+                                            top: 17,
+                                            left: 'calc(100% - 10px)',
+                                            zIndex: 4,
                                             opacity: 0,
                                             transition: 'opacity 0.2s',
+                                            pointerEvents: 'none',
+                                            backgroundColor: '#fff',
+                                            border: '1px solid rgba(0,171,190,0.3)',
+                                            borderRadius: '6px',
+                                            px: '6px',
+                                            py: '2px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                            whiteSpace: 'nowrap',
                                         }}>
-                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, whiteSpace: 'nowrap', lineHeight: 1 }}>
+                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, lineHeight: 1.4 }}>
                                                 Մշակման փուլում
                                             </Typography>
                                         </Box>
-                                    </Box>
+                                    </>
                                 )}
                         </Box>
                         {/* Back face */}
