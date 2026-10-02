@@ -11,9 +11,9 @@ import { ElementType } from 'react';
 
 const CARDS: { Icon: ElementType; label: string; color: string; bgColor: string }[] = [
     { Icon: ConstructionOutlinedIcon, label: 'Շինարարություն', color: '#00ABBE', bgColor: 'rgba(0,171,190,0.08)' },
-    { Icon: DrawOutlinedIcon,          label: 'Նախագծում', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
-    { Icon: ApartmentOutlinedIcon,     label: 'Կառուցապատող', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
     { Icon: AccountBalanceOutlinedIcon, label: 'Ապահովագրական', color: '#41A240', bgColor: 'rgba(65,162,64,0.08)' },
+    { Icon: ApartmentOutlinedIcon,     label: 'Կառուցապատող', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
+    { Icon: DrawOutlinedIcon,          label: 'Նախագծում', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
     { Icon: CalculateOutlinedIcon,     label: 'Գնահատող', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
     { Icon: EngineeringOutlinedIcon,     label: 'Բանկեր', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
 ];
