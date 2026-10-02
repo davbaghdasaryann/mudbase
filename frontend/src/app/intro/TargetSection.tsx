@@ -550,40 +550,42 @@ export default function TargetSection() {
                                 Նախագծերի կառավարում
                             </Typography>
                                 {(
-                                    <Box className='beta-pill' sx={{
+                                    <Box sx={{
                                         position: 'absolute',
-                                        top: 16,
-                                        right: 12,
+                                        top: 12,
+                                        right: 10,
                                         zIndex: 2,
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '50%',
                                         display: 'flex',
+                                        flexDirection: 'row',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
-                                        backgroundColor: 'transparent',
-                                        transition: 'background-color 0.2s',
+                                        gap: '6px',
                                         pointerEvents: 'none',
                                     }}>
-                                        <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
-                                            🛠
+                                        <Box className='beta-pill' sx={{
+                                            width: 24,
+                                            height: 24,
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            backgroundColor: 'transparent',
+                                            transition: 'background-color 0.2s',
+                                            flexShrink: 0,
+                                        }}>
+                                            <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
+                                                🛠
+                                            </Box>
+                                        </Box>
+                                        <Box className='dev-stage-text' sx={{
+                                            opacity: 0,
+                                            transition: 'opacity 0.2s',
+                                        }}>
+                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, whiteSpace: 'nowrap', lineHeight: 1 }}>
+                                                Մշակման փուլում
+                                            </Typography>
                                         </Box>
                                     </Box>
                                 )}
-                            <Box className='dev-stage-text' sx={{
-                                position: 'absolute',
-                                top: 14,
-                                right: 42,
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                                pointerEvents: 'none',
-                                display: 'flex',
-                                alignItems: 'center',
-                            }}>
-                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                                    Մշակման փուլում
-                                </Typography>
-                            </Box>
                         </Box>
                         {/* Back face */}
                         <Box
@@ -664,40 +666,42 @@ export default function TargetSection() {
                                 Ռիսկերի մոնիթորինգ
                             </Typography>
                                 {(
-                                    <Box className='beta-pill' sx={{
+                                    <Box sx={{
                                         position: 'absolute',
-                                        top: 16,
-                                        right: 12,
+                                        top: 12,
+                                        right: 10,
                                         zIndex: 2,
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '50%',
                                         display: 'flex',
+                                        flexDirection: 'row',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
-                                        backgroundColor: 'transparent',
-                                        transition: 'background-color 0.2s',
+                                        gap: '6px',
                                         pointerEvents: 'none',
                                     }}>
-                                        <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
-                                            🛠
+                                        <Box className='beta-pill' sx={{
+                                            width: 24,
+                                            height: 24,
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            backgroundColor: 'transparent',
+                                            transition: 'background-color 0.2s',
+                                            flexShrink: 0,
+                                        }}>
+                                            <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
+                                                🛠
+                                            </Box>
+                                        </Box>
+                                        <Box className='dev-stage-text' sx={{
+                                            opacity: 0,
+                                            transition: 'opacity 0.2s',
+                                        }}>
+                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, whiteSpace: 'nowrap', lineHeight: 1 }}>
+                                                Մշակման փուլում
+                                            </Typography>
                                         </Box>
                                     </Box>
                                 )}
-                            <Box className='dev-stage-text' sx={{
-                                position: 'absolute',
-                                top: 14,
-                                right: 42,
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                                pointerEvents: 'none',
-                                display: 'flex',
-                                alignItems: 'center',
-                            }}>
-                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                                    Մշակման փուլում
-                                </Typography>
-                            </Box>
                         </Box>
                         {/* Back face */}
                         <Box
