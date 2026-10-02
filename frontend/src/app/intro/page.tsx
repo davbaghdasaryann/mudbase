@@ -13,8 +13,8 @@ export default function LandingPage() {
         <AppProviderWrapper>
             <LandingHeader />
             <HeroSection />
-            <TargetSection />
             <AudienceSection />
+            <TargetSection />
             <ContactSection />
             <Footer />
         </AppProviderWrapper>
