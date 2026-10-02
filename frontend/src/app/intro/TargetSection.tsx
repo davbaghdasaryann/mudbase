@@ -383,12 +383,12 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Մոնիթորինգ
+                                Ժամանակացույց
                             </Typography>
                             <Box sx={{
                                 position: "absolute",
                                 inset: 0,
-                                backgroundImage: "url(/images/monitoring_card_bg.webp)",
+                                backgroundImage: "url(/images/schedule_card_bg.webp)",
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
@@ -464,12 +464,12 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Ժամանակացույց
+                                Մոնիթորինգ
                             </Typography>
                             <Box sx={{
                                 position: "absolute",
                                 inset: 0,
-                                backgroundImage: "url(/images/schedule_card_bg.webp)",
+                                backgroundImage: "url(/images/monitoring_card_bg.webp)",
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
