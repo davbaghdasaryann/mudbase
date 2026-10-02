@@ -118,7 +118,7 @@ export default function TargetSection() {
                                         position: 'absolute',
                                         inset: 0,
                                         opacity: 1,
-                                        backgroundImage: 'url(/images/estimations_card_bg.png)',
+                                        backgroundImage: 'url(/images/estimations_card_bg.webp)',
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                         pointerEvents: 'none',
@@ -145,7 +145,7 @@ export default function TargetSection() {
                                         position: 'absolute',
                                         inset: 0,
                                         opacity: 1,
-                                        backgroundImage: 'url(/images/aggregated_card_bg.png)',
+                                        backgroundImage: 'url(/images/aggregated_card_bg.webp)',
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                         pointerEvents: 'none',
@@ -172,7 +172,7 @@ export default function TargetSection() {
                                         position: 'absolute',
                                         inset: 0,
                                         opacity: 1,
-                                        backgroundImage: 'url(/images/estimate_tool_card_bg.png)',
+                                        backgroundImage: 'url(/images/estimate_tool_card_bg.webp)',
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                         pointerEvents: 'none',
@@ -226,9 +226,9 @@ export default function TargetSection() {
                 justifyContent: 'center',
             }}>
                 {[
-                    { idx: 3, label: 'Ծախսագրում',     bg: '/images/costing_card_bg.png' },
-                    { idx: 4, label: 'Կատարողական', bg: '/images/performance_card_bg.png' },
-                    { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.png' },
+                    { idx: 3, label: 'Ծախսագրում',     bg: '/images/costing_card_bg.webp' },
+                    { idx: 4, label: 'Կատարողական', bg: '/images/performance_card_bg.webp' },
+                    { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.webp' },
                 ].map(({ idx, label, bg }) => (
                     <Box key={idx} sx={{ flex: '1 1 0', minWidth: { xs: 200, md: 0 }, perspective: '1000px' }}>
                         <Box sx={{
@@ -388,7 +388,7 @@ export default function TargetSection() {
                             <Box sx={{
                                 position: "absolute",
                                 inset: 0,
-                                backgroundImage: "url(/images/monitoring_card_bg.png)",
+                                backgroundImage: "url(/images/monitoring_card_bg.webp)",
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
@@ -469,7 +469,7 @@ export default function TargetSection() {
                             <Box sx={{
                                 position: "absolute",
                                 inset: 0,
-                                backgroundImage: "url(/images/schedule_card_bg.jpg)",
+                                backgroundImage: "url(/images/schedule_card_bg.webp)",
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
