@@ -23,7 +23,7 @@ export default function AudienceSection() {
         <Box sx={{
             pt: { xs: 6, md: 10 },
             pb: { xs: 6, md: 10 },
-            px: { xs: 3, md: 6 },
+            px: { xs: 2, md: 4 },
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -60,7 +60,7 @@ export default function AudienceSection() {
                 display: 'flex',
                 gap: { xs: 1.5, md: 2 },
                 width: '100%',
-                maxWidth: 1200,
+                maxWidth: 1500,
                 flexWrap: { xs: 'wrap', md: 'nowrap' },
                 justifyContent: 'center',
             }}>
