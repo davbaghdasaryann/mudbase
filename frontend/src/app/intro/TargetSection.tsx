@@ -572,15 +572,15 @@ export default function TargetSection() {
                                 )}
                             <Box className='dev-stage-text' sx={{
                                 position: 'absolute',
-                                bottom: 16,
-                                left: 0,
-                                right: 0,
-                                textAlign: 'center',
+                                top: 14,
+                                right: 42,
                                 opacity: 0,
                                 transition: 'opacity 0.2s',
                                 pointerEvents: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
                             }}>
-                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none' }}>
+                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
                                     Մշակման փուլում
                                 </Typography>
                             </Box>
@@ -686,15 +686,15 @@ export default function TargetSection() {
                                 )}
                             <Box className='dev-stage-text' sx={{
                                 position: 'absolute',
-                                bottom: 16,
-                                left: 0,
-                                right: 0,
-                                textAlign: 'center',
+                                top: 14,
+                                right: 42,
                                 opacity: 0,
                                 transition: 'opacity 0.2s',
                                 pointerEvents: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
                             }}>
-                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none' }}>
+                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
                                     Մշակման փուլում
                                 </Typography>
                             </Box>
