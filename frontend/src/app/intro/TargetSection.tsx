@@ -289,7 +289,7 @@ export default function TargetSection() {
                                 {idx === 5 && (
                                     <Box className='beta-pill' sx={{
                                         position: 'absolute',
-                                        top: 10,
+                                        top: 16,
                                         right: 12,
                                         zIndex: 2,
                                         width: 24,
