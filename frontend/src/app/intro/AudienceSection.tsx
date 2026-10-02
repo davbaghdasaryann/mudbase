@@ -36,9 +36,9 @@ export default function AudienceSection() {
                     backgroundColor: 'rgba(0,163,144,0.07)',
                     border: '1px solid rgba(0,163,144,0.18)',
                     borderRadius: '100px',
-                    px: 3, py: 1,
+                    px: 2, py: 0.55,
                 }}>
-                    <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#00A390', whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                         Ում համար է նախատասված Մադբեյզը
                     </Typography>
                 </Box>
