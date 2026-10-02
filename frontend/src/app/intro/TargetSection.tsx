@@ -531,6 +531,7 @@ export default function TargetSection() {
                                 cursor: "pointer",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
                                     '&:hover .beta-pill': { backgroundColor: 'rgba(0,171,190,0.12)' },
+                                    '&:hover .dev-stage-text': { opacity: 1 },
                                 transition: "box-shadow 0.2s, filter 0.2s",
                             }}
                         >
@@ -565,10 +566,24 @@ export default function TargetSection() {
                                         pointerEvents: 'none',
                                     }}>
                                         <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
-                                            β
+                                            🛠
                                         </Box>
                                     </Box>
                                 )}
+                            <Box className='dev-stage-text' sx={{
+                                position: 'absolute',
+                                bottom: 16,
+                                left: 0,
+                                right: 0,
+                                textAlign: 'center',
+                                opacity: 0,
+                                transition: 'opacity 0.2s',
+                                pointerEvents: 'none',
+                            }}>
+                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none' }}>
+                                    Մշակման փուլում
+                                </Typography>
+                            </Box>
                         </Box>
                         {/* Back face */}
                         <Box
@@ -630,6 +645,7 @@ export default function TargetSection() {
                                 cursor: "pointer",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
                                     '&:hover .beta-pill': { backgroundColor: 'rgba(0,171,190,0.12)' },
+                                    '&:hover .dev-stage-text': { opacity: 1 },
                                 transition: "box-shadow 0.2s, filter 0.2s",
                             }}
                         >
@@ -664,10 +680,24 @@ export default function TargetSection() {
                                         pointerEvents: 'none',
                                     }}>
                                         <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
-                                            β
+                                            🛠
                                         </Box>
                                     </Box>
                                 )}
+                            <Box className='dev-stage-text' sx={{
+                                position: 'absolute',
+                                bottom: 16,
+                                left: 0,
+                                right: 0,
+                                textAlign: 'center',
+                                opacity: 0,
+                                transition: 'opacity 0.2s',
+                                pointerEvents: 'none',
+                            }}>
+                                <Typography sx={{ fontSize: '0.75rem', color: '#00ABBE', fontWeight: 600, pointerEvents: 'none' }}>
+                                    Մշակման փուլում
+                                </Typography>
+                            </Box>
                         </Box>
                         {/* Back face */}
                         <Box
