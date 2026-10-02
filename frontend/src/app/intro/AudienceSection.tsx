@@ -52,7 +52,7 @@ export default function AudienceSection() {
                 textAlign: 'center',
                 mb: { xs: 3, md: 4 },
             }}>
-                Ում համար է նախատասված
+                Ում համար է նախատասված Մադբեյզը
             </Typography>
 
             {/* Cards */}
@@ -82,10 +82,11 @@ export default function AudienceSection() {
                         pb: 5,
                         px: 3,
                         gap: 3,
-                        transition: 'box-shadow 0.2s, border-color 0.2s',
+                        transition: 'box-shadow 0.25s, border-color 0.25s, transform 0.25s',
                         '&:hover': {
-                            boxShadow: '0 6px 24px rgba(0,171,190,0.14)',
-                            borderColor: 'rgba(0,171,190,0.5)',
+                            boxShadow: '0 12px 36px rgba(0,171,190,0.18)',
+                            borderColor: 'rgba(0,171,190,0.55)',
+                            transform: 'translateY(-8px)',
                         },
                     }}>
                         <Box sx={{
