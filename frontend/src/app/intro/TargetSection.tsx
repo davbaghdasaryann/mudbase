@@ -444,6 +444,14 @@ export default function TargetSection() {
                             }}>
                                 Ժամանակացույց
                             </Typography>
+                            <Box sx={{
+                                position: "absolute",
+                                inset: 0,
+                                backgroundImage: "url(/images/schedule_card_bg.jpg)",
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                pointerEvents: "none",
+                            }} />
                         </Box>
                         {/* Back face */}
                         <Box
