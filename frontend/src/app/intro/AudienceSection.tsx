@@ -21,8 +21,8 @@ const CARDS: { Icon: ElementType; label: string }[] = [
 export default function AudienceSection() {
     return (
         <Box sx={{
-            pt: { xs: 4, md: 6 },
-            pb: { xs: 4, md: 6 },
+            pt: { xs: 6, md: 10 },
+            pb: { xs: 6, md: 10 },
             px: { xs: 3, md: 6 },
             display: 'flex',
             flexDirection: 'column',
@@ -69,7 +69,7 @@ export default function AudienceSection() {
                         flex: '1 1 0',
                         minWidth: { xs: 'calc(50% - 8px)', md: 0 },
                         maxWidth: { xs: 'calc(50% - 8px)', md: 'none' },
-                        minHeight: { xs: 'auto', md: 240 },
+                        minHeight: { xs: 200, md: 320 },
                         backgroundColor: '#fff',
                         borderRadius: '18px',
                         border: '1px solid rgba(0,171,190,0.22)',
@@ -78,10 +78,10 @@ export default function AudienceSection() {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        pt: 5,
-                        pb: 4,
-                        px: 2,
-                        gap: 2.5,
+                        pt: 6,
+                        pb: 5,
+                        px: 3,
+                        gap: 3,
                         transition: 'box-shadow 0.2s, border-color 0.2s',
                         '&:hover': {
                             boxShadow: '0 6px 24px rgba(0,171,190,0.14)',
@@ -89,8 +89,8 @@ export default function AudienceSection() {
                         },
                     }}>
                         <Box sx={{
-                            width: 72,
-                            height: 72,
+                            width: 88,
+                            height: 88,
                             borderRadius: '50%',
                             backgroundColor: 'rgba(0,171,190,0.08)',
                             display: 'flex',
@@ -98,10 +98,10 @@ export default function AudienceSection() {
                             justifyContent: 'center',
                             flexShrink: 0,
                         }}>
-                            <Icon sx={{ fontSize: '2rem', color: '#00ABBE' }} />
+                            <Icon sx={{ fontSize: '2.4rem', color: '#00ABBE' }} />
                         </Box>
                         <Typography sx={{
-                            fontSize: '0.9rem',
+                            fontSize: '1rem',
                             fontWeight: 600,
                             color: '#2a3a3a',
                             textAlign: 'center',
