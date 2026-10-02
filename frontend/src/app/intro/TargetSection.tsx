@@ -566,9 +566,7 @@ export default function TargetSection() {
                                             transition: 'background-color 0.2s',
                                             pointerEvents: 'none',
                                         }}>
-                                            <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
-                                                🛠
-                                            </Box>
+                                            <ConstructionOutlinedIcon sx={{ fontSize: '0.85rem', color: '#00ABBE' }} />
                                         </Box>
                                         <Box className='dev-stage-text' sx={{
                                             position: 'absolute',
@@ -688,9 +686,7 @@ export default function TargetSection() {
                                             transition: 'background-color 0.2s',
                                             pointerEvents: 'none',
                                         }}>
-                                            <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
-                                                🛠
-                                            </Box>
+                                            <ConstructionOutlinedIcon sx={{ fontSize: '0.85rem', color: '#00ABBE' }} />
                                         </Box>
                                         <Box className='dev-stage-text' sx={{
                                             position: 'absolute',
