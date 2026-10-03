@@ -34,8 +34,8 @@ export default function LandingHeader() {
                 width: '100%',
                 maxWidth: 800,
             }}>
-                {/* Left zone: logo — flex:1 on desktop so it mirrors right zone width */}
-                <Box sx={{ flex: { xs: '0 0 auto', md: 1 }, display: 'flex', alignItems: 'center' }}>
+                {/* Left zone: flex:1 mirrors right zone — guarantees nav is centered */}
+                <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
@@ -100,8 +100,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Right zone: auth buttons — flex:1 mirrors left zone, buttons right-aligned */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                {/* Right zone: flex:1 mirrors left zone, buttons right-aligned */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'flex-end', gap: 1 }} style={{ flex: 1 }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
