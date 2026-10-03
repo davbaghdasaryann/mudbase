@@ -102,7 +102,7 @@ export default function LandingHeader() {
                 </Box>
 
                 {/* Right side */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0, marginLeft: 'auto' }}>
                     {/* Desktop: auth buttons */}
                     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
                         <Button
