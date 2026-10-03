@@ -75,7 +75,7 @@ export default function Footer() {
                         ))}
                     </Box>
                     <Button variant="contained" href="/register" sx={{ width: '160px',
-                        backgroundColor: TEAL,
+                        backgroundColor: '#00ABBE',
                         color: '#fff',
                         fontWeight: 500,
                         fontSize: '0.78rem',
@@ -84,7 +84,7 @@ export default function Footer() {
                         py: '7px',
                         boxShadow: 'none',
                         textTransform: 'none',
-                        '&:hover': { backgroundColor: '#00897a', boxShadow: 'none' },
+                        '&:hover': { backgroundColor: '#009aab', boxShadow: 'none' },
                     }}>
                         Գրանցվել →
                     </Button>
