@@ -10,9 +10,9 @@ const TEAL = '#00A390';
 const ICON_BG = 'rgba(0,163,144,0.09)';
 
 const CONTACTS: { Icon: ElementType; label: string; value: string }[] = [
-    { Icon: EmailOutlinedIcon,      label: 'Էլ. հաշե',   value: 'info@mudbase.am' },
-    { Icon: LocationOnOutlinedIcon, label: 'Հաշե',  value: 'Yerevan, Armenia' },
-    { Icon: PhoneOutlinedIcon,      label: 'տելեփոն',  value: '+374 (10) 55-00-55' },
+    { Icon: EmailOutlinedIcon,      label: 'Էլ․ հասցե',   value: 'info@mudbase.am' },
+    { Icon: LocationOnOutlinedIcon, label: 'Հասցե',  value: 'Yerevan, Armenia' },
+    { Icon: PhoneOutlinedIcon,      label: 'Հեռախոս',  value: '+374 (10) 55-00-55' },
 ];
 
 const inputSx = {
@@ -68,12 +68,12 @@ export default function ContactSection() {
 
                     {/* Heading */}
                     <Typography sx={{ fontWeight: 700, fontSize: { xs: '1.7rem', md: '2.1rem' }, color: '#1a2e35', lineHeight: 1.25, mb: 2 }}>
-                        Ունեք՞ հարծեր:<br />Պատրասուն ենք աջակցել
+                        Ունեք հարցե՞ր։ Պատրաստ ենք աջակցել
                     </Typography>
 
                     {/* Description */}
                     <Typography sx={{ fontSize: '0.9rem', color: '#7a9098', lineHeight: 1.7, mb: 4 }}>
-                        Մեր տիմակ սիրով կպատասխանենք Ձեր հարծերնին համակարգի եվ API ինտեգրման.
+                        Մեր թիմը սիրով կպատասխանի Ձեր հարցերին։
                     </Typography>
 
                     {/* Contact items */}
@@ -127,7 +127,7 @@ export default function ContactSection() {
                             sx={{...inputSx}}
                         />
                         <TextField
-                            label='Էլ. Հաշե'
+                            label='Էլ․ հասցե'
                             placeholder='johndoe@example.com'
                             fullWidth
                             size='medium'
