@@ -180,7 +180,7 @@ export default function ContactSection() {
                             '&:hover': { backgroundColor: '#00897a', boxShadow: 'none' },
                         }}
                     >
-                        Ողարկել
+                        Ուղարկել
                     </Button>
                 </Box>
             </Box>
