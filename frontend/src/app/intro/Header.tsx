@@ -38,7 +38,7 @@ export default function LandingHeader() {
                 minHeight: 56,
             }}>
                 {/* Logo — absolutely pinned to left edge */}
-                <Box sx={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
@@ -63,7 +63,7 @@ export default function LandingHeader() {
                 </Box>
 
                 {/* Auth buttons — absolutely pinned to right edge */}
-                <Box sx={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+                <Box sx={{ position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)', display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -146,7 +146,7 @@ export default function LandingHeader() {
                 </Box>
 
                 {/* Mobile: hamburger — absolutely pinned to right edge */}
-                <Box sx={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+                <Box sx={{ position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)', display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
                     <IconButton
                         size='small'
                         onClick={e => setAnchorEl(open ? null : e.currentTarget)}
