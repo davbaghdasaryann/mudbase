@@ -24,8 +24,7 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr',
+                display: 'flex',
                 alignItems: 'center',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
@@ -35,13 +34,13 @@ export default function LandingHeader() {
                 width: '100%',
                 maxWidth: 860,
             }}>
-                {/* Col 1: logo — always visible */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {/* Logo — fixed left */}
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Col 2 desktop: nav links */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4 }}>
+                {/* Desktop nav — mx:'auto' splits free space equally on both sides */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, mx: 'auto' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -60,8 +59,8 @@ export default function LandingHeader() {
                     ))}
                 </Box>
 
-                {/* Col 2 mobile: login + register buttons */}
-                <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+                {/* Mobile: login + register buttons — mx:auto centers between logo and hamburger */}
+                <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', alignItems: 'center', gap: 1, mx: 'auto' }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -101,8 +100,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Col 3 desktop: auth buttons right-aligned */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                {/* Desktop auth — fixed right, no auto margins */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -143,8 +142,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Col 3 mobile: hamburger right-aligned */}
-                <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'flex-end', alignItems: 'center' }}>
+                {/* Mobile hamburger — fixed right */}
+                <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexShrink: 0 }}>
                     <IconButton
                         size='small'
                         onClick={e => setAnchorEl(open ? null : e.currentTarget)}
