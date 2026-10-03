@@ -95,7 +95,7 @@ export default function Footer() {
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)' }} />
             <Box sx={{ py: 2.5, textAlign: 'center' }}>
                 <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>
-                    © 2026 &quot;Ունո Փարթներս Էնդ Քո&quot; ՍՊԸ
+                    © 2026-2027 &quot;Ունո Փարթներս Ընդ Քո&quot; ՍՊԸ
                 </Typography>
             </Box>
         </Box>
