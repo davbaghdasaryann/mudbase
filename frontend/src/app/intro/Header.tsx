@@ -35,12 +35,9 @@ export default function LandingHeader() {
                 width: '100%',
                 maxWidth: 860,
             }}>
-                {/* Col 1: logo + wordmark — always visible */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {/* Col 1: logo — always visible */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
-                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a2a2a', letterSpacing: '-0.01em' }}>
-                        Mudbase
-                    </Typography>
                 </Box>
 
                 {/* Col 2 desktop: nav links */}
