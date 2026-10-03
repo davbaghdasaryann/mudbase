@@ -24,8 +24,10 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
                 boxShadow: '0 4px 32px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
@@ -33,14 +35,15 @@ export default function LandingHeader() {
                 py: 1.25,
                 width: '100%',
                 maxWidth: 800,
+                minHeight: 56,
             }}>
-                {/* Left zone: flex:1 mirrors right zone — guarantees nav is centered */}
-                <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                {/* Logo — absolutely pinned to left edge */}
+                <Box sx={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop center: nav links — natural width, sits between equal left/right zones */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                {/* Desktop nav — the only in-flow child on desktop, centered by justify-content:center on parent */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4 }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -59,49 +62,8 @@ export default function LandingHeader() {
                     ))}
                 </Box>
 
-                {/* Mobile center: action buttons */}
-                <Box sx={{ display: { xs: 'flex', md: 'none' }, flex: 1, justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-                    <Button
-                        onClick={() => router.push('/login')}
-                        disableRipple
-                        sx={{
-                            color: '#00ABBE',
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            fontSize: '0.78rem',
-                            minWidth: 0,
-                            px: 1.2,
-                            py: 0.75,
-                            borderRadius: '8px',
-                            background: 'transparent',
-                            '&:hover': { background: 'rgba(0,171,190,0.06)' },
-                        }}
-                    >
-                        {t('Login')}
-                    </Button>
-                    <Button
-                        onClick={() => router.push('/signup')}
-                        variant='contained'
-                        sx={{
-                            backgroundColor: '#00ABBE',
-                            color: '#fff',
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            fontSize: '0.78rem',
-                            borderRadius: '10px',
-                            px: 1.8,
-                            py: 0.75,
-                            boxShadow: 'none',
-                            whiteSpace: 'nowrap',
-                            '&:hover': { backgroundColor: '#009aab', boxShadow: 'none' },
-                        }}
-                    >
-                        {t('Register')}
-                    </Button>
-                </Box>
-
-                {/* Right zone: flex:1 mirrors left zone, buttons right-aligned */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'flex-end', gap: 1 }} style={{ flex: 1 }}>
+                {/* Auth buttons — absolutely pinned to right edge */}
+                <Box sx={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -142,8 +104,49 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Mobile: hamburger icon */}
-                <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+                {/* Mobile: login + register buttons (centered in-flow) */}
+                <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1 }}>
+                    <Button
+                        onClick={() => router.push('/login')}
+                        disableRipple
+                        sx={{
+                            color: '#00ABBE',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            fontSize: '0.78rem',
+                            minWidth: 0,
+                            px: 1.2,
+                            py: 0.75,
+                            borderRadius: '8px',
+                            background: 'transparent',
+                            '&:hover': { background: 'rgba(0,171,190,0.06)' },
+                        }}
+                    >
+                        {t('Login')}
+                    </Button>
+                    <Button
+                        onClick={() => router.push('/signup')}
+                        variant='contained'
+                        sx={{
+                            backgroundColor: '#00ABBE',
+                            color: '#fff',
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                            borderRadius: '10px',
+                            px: 1.8,
+                            py: 0.75,
+                            boxShadow: 'none',
+                            whiteSpace: 'nowrap',
+                            '&:hover': { backgroundColor: '#009aab', boxShadow: 'none' },
+                        }}
+                    >
+                        {t('Register')}
+                    </Button>
+                </Box>
+
+                {/* Mobile: hamburger — absolutely pinned to right edge */}
+                <Box sx={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
                     <IconButton
                         size='small'
                         onClick={e => setAnchorEl(open ? null : e.currentTarget)}
