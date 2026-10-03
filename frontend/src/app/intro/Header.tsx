@@ -24,9 +24,9 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr',
+                display: 'flex',
                 alignItems: 'center',
+                position: 'relative',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
                 boxShadow: '0 4px 32px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
@@ -40,8 +40,8 @@ export default function LandingHeader() {
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop: nav links — center column */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                {/* Desktop: nav links — absolute, spans full pill width, truly centered */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', gap: 4, justifyContent: 'center', pointerEvents: 'none' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -52,6 +52,7 @@ export default function LandingHeader() {
                                 cursor: 'pointer',
                                 whiteSpace: 'nowrap',
                                 transition: 'color 0.15s',
+                                pointerEvents: 'auto',
                                 '&:hover': { color: '#00ABBE' },
                             }}
                         >
@@ -101,8 +102,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Right side — right column */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                {/* Right side */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, marginLeft: 'auto' }}>
                     {/* Desktop: auth buttons */}
                     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
                         <Button
