@@ -33,14 +33,15 @@ export default function LandingHeader() {
                 py: 1.25,
                 width: '100%',
                 maxWidth: 800,
+                position: 'relative',
             }}>
                 {/* Logo — left */}
                 <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop: nav links centered */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
+                {/* Desktop: nav links truly centered relative to full header */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
