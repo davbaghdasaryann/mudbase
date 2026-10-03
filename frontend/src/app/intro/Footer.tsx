@@ -39,7 +39,7 @@ export default function Footer() {
                         Նավիգացիա
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {['Գործիքներ', 'Բաժանանորդագրություն', 'Կոնտակտներ'].map((link) => (
+                        {['Գործիքներ', 'Բաժանանորդագրություն', 'Կապ'].map((link) => (
                             <Typography key={link} component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
                                 {link}
                             </Typography>
