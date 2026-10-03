@@ -29,10 +29,10 @@ export default function LandingHeader() {
                 backgroundColor: '#fff',
                 borderRadius: '60px',
                 boxShadow: '0 4px 32px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
-                px: 3,
+                px: 2,
                 py: 1.25,
                 width: '100%',
-                maxWidth: 860,
+                maxWidth: 760,
             }}>
                 {/* Logo — fixed left */}
                 <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
