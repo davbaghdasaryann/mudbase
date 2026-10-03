@@ -24,7 +24,8 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
-                display: 'flex',
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
                 alignItems: 'center',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
@@ -33,15 +34,14 @@ export default function LandingHeader() {
                 py: 1.25,
                 width: '100%',
                 maxWidth: 800,
-                position: 'relative',
             }}>
-                {/* Logo — left */}
-                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                {/* Logo — left column */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop: nav links truly centered relative to full header */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+                {/* Desktop: nav links — center column */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, justifyContent: 'center' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -101,8 +101,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Right side */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0, marginLeft: 'auto' }}>
+                {/* Right side — right column */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                     {/* Desktop: auth buttons */}
                     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
                         <Button
