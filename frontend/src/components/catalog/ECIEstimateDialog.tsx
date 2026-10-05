@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button } from '@mui/material';
+import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
@@ -57,7 +57,23 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     }, [linkedEstimateId]);
 
     const isAdmin = permissionsSet == null ? true : permissionsSet.has('CAT_EDT');
+    const isSuperAdmin = permissionsSet == null ? true : permissionsSet.has('USR_FCH_ALL');
     const hasLinkedEstimate = !!linkedEstimateId;
+
+    const [changeCompanyOpen, setChangeCompanyOpen] = useState(false);
+    const [allAccounts, setAllAccounts] = useState<ApiAccount[]>([]);
+    const handleOpenChangeCompany = async () => {
+        if (!isSuperAdmin) return;
+        const data = await Api.requestSession<ApiAccount[]>({ command: 'accounts/fetch_active', args: { search: '', select: 'all' } }).catch(() => []);
+        setAllAccounts(data ?? []);
+        setChangeCompanyOpen(true);
+    };
+    const handleChangeCompany = async (account: ApiAccount | null) => {
+        if (!account || !linkedEstimateId) return;
+        await Api.requestSession({ command: 'estimate/change_account', args: { estimateId: linkedEstimateId, accountId: account._id } });
+        setCreatorAccount(account);
+        setChangeCompanyOpen(false);
+    };
 
     // Superadmin: create or open linked estimate
     const handleCreateEstimation = async () => {
@@ -411,27 +427,53 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                             }}>
                                 {creatorAccount && (
                                     <>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, px: 1 }}>
-                                            {makeCompanyLogoUrl(creatorAccount) ? (
-                                                <Box
-                                                    component="img"
-                                                    src={makeCompanyLogoUrl(creatorAccount)}
-                                                    alt={creatorAccount.companyName}
-                                                    sx={{ height: 36, maxWidth: 100, objectFit: 'contain', borderRadius: 1 }}
-                                                />
-                                            ) : (
-                                                <Box sx={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(0,171,190,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#00ABBE' }}>
-                                                        {creatorAccount.companyName?.charAt(0)?.toUpperCase() ?? '?'}
-                                                    </Typography>
-                                                </Box>
-                                            )}
-                                            <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 120 }}>
-                                                {creatorAccount.companyName}
-                                            </Typography>
-                                        </Box>
+                                        <Tooltip title={isSuperAdmin ? t('Change Company') : ''} placement="bottom">
+                                            <Box
+                                                onClick={isSuperAdmin ? handleOpenChangeCompany : undefined}
+                                                sx={{
+                                                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                                    justifyContent: 'center', gap: 0.5, px: 1,
+                                                    ...(isSuperAdmin && {
+                                                        cursor: 'pointer', borderRadius: 1,
+                                                        '&:hover': { bgcolor: 'rgba(0,171,190,0.08)' },
+                                                    }),
+                                                }}
+                                            >
+                                                {makeCompanyLogoUrl(creatorAccount) ? (
+                                                    <Box
+                                                        component="img"
+                                                        src={makeCompanyLogoUrl(creatorAccount)}
+                                                        alt={creatorAccount.companyName}
+                                                        sx={{ height: 36, maxWidth: 100, objectFit: 'contain', borderRadius: 1 }}
+                                                    />
+                                                ) : (
+                                                    <Box sx={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(0,171,190,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#00ABBE' }}>
+                                                            {creatorAccount.companyName?.charAt(0)?.toUpperCase() ?? '?'}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                                <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 120 }}>
+                                                    {creatorAccount.companyName}
+                                                </Typography>
+                                            </Box>
+                                        </Tooltip>
                                         <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
                                     </>
+                                )}
+
+                                {changeCompanyOpen && (
+                                    <Dialog open onClose={() => setChangeCompanyOpen(false)} maxWidth="xs" fullWidth>
+                                        <DialogTitle>{t('Change Company')}</DialogTitle>
+                                        <DialogContent sx={{ pt: 1 }}>
+                                            <Autocomplete
+                                                options={allAccounts}
+                                                getOptionLabel={(a) => a.companyName ?? ''}
+                                                onChange={(_, val) => handleChangeCompany(val)}
+                                                renderInput={(params) => <TextField {...params} autoFocus label={t('Company')} size="small" />}
+                                            />
+                                        </DialogContent>
+                                    </Dialog>
                                 )}
 
                                 {[

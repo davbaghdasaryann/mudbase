@@ -32,6 +32,7 @@ export * from "./estimate/estimate/estimate_duplicate";
 export * from "./estimate/estimate/estimate_get";
 export * from "./estimate/estimate/estimate_other_expenses";
 export * from "./estimate/estimate/estimate_rename";
+export * from "./estimate/estimate/estimate_change_account";
 export * from "./estimate/estimate/estimate_unarchive";
 export * from "./estimate/estimate/print_estimation_pdf";
 export * from "./estimate/estimate_labor/index";
