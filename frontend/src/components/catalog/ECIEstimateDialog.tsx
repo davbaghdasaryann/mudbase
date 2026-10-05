@@ -465,7 +465,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {changeCompanyOpen && (
                                     <Dialog open onClose={() => setChangeCompanyOpen(false)} maxWidth="xs" fullWidth>
                                         <DialogTitle>{t('Change Company')}</DialogTitle>
-                                        <DialogContent sx={{ pt: 1 }}>
+                                        <DialogContent sx={{ pt: 2.5 }}>
                                             <Autocomplete
                                                 options={allAccounts}
                                                 getOptionLabel={(a) => a.companyName ?? ''}
