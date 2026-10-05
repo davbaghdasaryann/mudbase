@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip, Popover } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
@@ -60,19 +60,19 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const isSuperAdmin = permissionsSet == null ? true : permissionsSet.has('USR_FCH_ALL');
     const hasLinkedEstimate = !!linkedEstimateId;
 
-    const [changeCompanyOpen, setChangeCompanyOpen] = useState(false);
+    const [companyAnchorEl, setCompanyAnchorEl] = useState<HTMLElement | null>(null);
     const [allAccounts, setAllAccounts] = useState<ApiAccount[]>([]);
-    const handleOpenChangeCompany = async () => {
+    const handleOpenChangeCompany = async (e: React.MouseEvent<HTMLElement>) => {
         if (!isSuperAdmin) return;
         const data = await Api.requestSession<ApiAccount[]>({ command: 'accounts/fetch_active', args: { search: '', select: 'all' } }).catch(() => []);
         setAllAccounts(data ?? []);
-        setChangeCompanyOpen(true);
+        setCompanyAnchorEl(e.currentTarget);
     };
     const handleChangeCompany = async (account: ApiAccount | null) => {
         if (!account || !linkedEstimateId) return;
         await Api.requestSession({ command: 'estimate/change_account', args: { estimateId: linkedEstimateId, accountId: account._id } });
         setCreatorAccount(account);
-        setChangeCompanyOpen(false);
+        setCompanyAnchorEl(null);
     };
 
     // Superadmin: create or open linked estimate
@@ -429,7 +429,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     <>
                                         <Tooltip title={isSuperAdmin ? t('Change Company') : ''} placement="bottom">
                                             <Box
-                                                onClick={isSuperAdmin ? handleOpenChangeCompany : undefined}
+                                                onClick={isSuperAdmin ? (e) => handleOpenChangeCompany(e) : undefined}
                                                 sx={{
                                                     display: 'flex', flexDirection: 'column', alignItems: 'center',
                                                     justifyContent: 'center', gap: 0.5, px: 1,
@@ -462,19 +462,25 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     </>
                                 )}
 
-                                {changeCompanyOpen && (
-                                    <Dialog open onClose={() => setChangeCompanyOpen(false)} maxWidth="xs" fullWidth>
-                                        <DialogTitle>{t('Change Company')}</DialogTitle>
-                                        <DialogContent sx={{ pt: 2.5 }}>
-                                            <Autocomplete
-                                                options={allAccounts}
-                                                getOptionLabel={(a) => a.companyName ?? ''}
-                                                onChange={(_, val) => handleChangeCompany(val)}
-                                                renderInput={(params) => <TextField {...params} autoFocus label={t('Company')} size="small" />}
-                                            />
-                                        </DialogContent>
-                                    </Dialog>
-                                )}
+                                <Popover
+                                    open={Boolean(companyAnchorEl)}
+                                    anchorEl={companyAnchorEl}
+                                    onClose={() => setCompanyAnchorEl(null)}
+                                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                                >
+                                    <Box sx={{ p: 1.5, width: 280 }}>
+                                        <Autocomplete
+                                            open
+                                            disablePortal
+                                            options={allAccounts}
+                                            getOptionLabel={(a) => a.companyName ?? ''}
+                                            onChange={(_, val) => handleChangeCompany(val)}
+                                            renderInput={(params) => <TextField {...params} autoFocus label={t('Company')} size="small" />}
+                                            ListboxProps={{ style: { maxHeight: 220 } }}
+                                        />
+                                    </Box>
+                                </Popover>
 
                                 {[
                                     { label: t('Project'), icon: `${TOOLBAR_ICON}/import.svg`, onClick: () => {} },
