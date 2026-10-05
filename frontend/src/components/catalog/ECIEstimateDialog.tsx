@@ -478,11 +478,10 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     onClose={() => setCompanyAnchorEl(null)}
                                     anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                                     transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                                    sx={{ mt: 0.5 }}
                                 >
                                     <Box sx={{ p: 1.5, width: 280 }}>
                                         <Autocomplete
-                                            open
-                                            disablePortal
                                             options={allAccounts}
                                             getOptionLabel={(a) => a.companyName ?? ''}
                                             onChange={(_, val) => handleChangeCompany(val)}
