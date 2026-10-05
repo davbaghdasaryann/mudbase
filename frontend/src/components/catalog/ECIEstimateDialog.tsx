@@ -441,7 +441,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         <TextField {...params} autoFocus size="small" placeholder={t('Search company')} />
                                                     )}
                                                     ListboxProps={{ style: { maxHeight: 240 } }}
-                                                    componentsProps={{ popper: { style: { width: 320 } } }}
+                                                    componentsProps={{ popper: { placement: 'bottom-start', style: { width: 320 } } }}
                                                     openOnFocus
                                                     size="small"
                                                 />
