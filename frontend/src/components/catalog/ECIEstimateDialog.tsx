@@ -64,9 +64,10 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const [allAccounts, setAllAccounts] = useState<ApiAccount[]>([]);
     const handleOpenChangeCompany = async (e: React.MouseEvent<HTMLElement>) => {
         if (!isSuperAdmin) return;
+        const anchor = e.currentTarget;
         const data = await Api.requestSession<ApiAccount[]>({ command: 'accounts/fetch_active', args: { search: '', select: 'all' } }).catch(() => []);
         setAllAccounts(data ?? []);
-        setCompanyAnchorEl(e.currentTarget);
+        setCompanyAnchorEl(anchor);
     };
     const handleChangeCompany = async (account: ApiAccount | null) => {
         if (!account || !linkedEstimateId) return;
