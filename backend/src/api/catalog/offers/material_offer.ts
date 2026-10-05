@@ -1,6 +1,7 @@
 import {registerApiSession} from '@/server/register';
 
 import * as Db from '@/db';
+import { Permissions } from '@/tsmudbase/permissions_setup';
 
 import {getReqParam, requireQueryParam} from '@/tsback/req/req_params';
 import {respondJson, respondJsonData} from '@/tsback/req/req_response';
@@ -436,4 +437,20 @@ registerApiSession('material/unarchive_offer', async (req, res, session) => {
     await captureSnapshotsForItem(updatedMaterialOffer.itemId, 'materials');
 
     respondJson(res, result);
+});
+
+
+registerApiSession('material/delete_offer', async (req, res, session) => {
+    session.assertPermission(Permissions.CatalogsEdit);
+    const offerId = requireMongoIdParam(req, 'offerId');
+
+    const materialOffersColl = Db.getMaterialOffersCollection();
+    const offer = await materialOffersColl.findOne({ _id: offerId });
+    verify(offer, req.t('error.item_not_found'));
+
+    await materialOffersColl.deleteOne({ _id: offerId });
+    await updateMaterialItemStats(offer!.itemId);
+    await captureSnapshotsForItem(offer!.itemId, 'materials');
+
+    respondJsonData(res, { ok: true });
 });

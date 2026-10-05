@@ -2,6 +2,7 @@ import { registerApiSession } from '@/server/register';
 import { ObjectId } from 'mongodb';
 
 import * as Db from '@/db';
+import { Permissions } from '@/tsmudbase/permissions_setup';
 
 import { getReqParam, requireQueryParam } from '../../../tsback/req/req_params';
 import { respondJson, respondJsonData } from '../../../tsback/req/req_response';
@@ -498,3 +499,18 @@ registerApiSession('labor/unarchive_offer', async (req, res, session) => {
     respondJson(res, result);
 })
 
+
+registerApiSession('labor/delete_offer', async (req, res, session) => {
+    session.assertPermission(Permissions.CatalogsEdit);
+    const offerId = requireMongoIdParam(req, 'offerId');
+
+    const laborOffersColl = Db.getLaborOffersCollection();
+    const offer = await laborOffersColl.findOne({ _id: offerId });
+    verify(offer, req.t('error.item_not_found'));
+
+    await laborOffersColl.deleteOne({ _id: offerId });
+    await updateLaborItemStats(offer!.itemId);
+    await captureSnapshotsForItem(offer!.itemId, 'labor');
+
+    respondJsonData(res, { ok: true });
+});

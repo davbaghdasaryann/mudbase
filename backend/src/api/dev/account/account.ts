@@ -89,13 +89,27 @@ registerApiSession('dev/delete_account', async (req, res, session) => {
     let accounts = Db.getAccountsCollection();
     let account = req.body._id;
     let accountId = new ObjectId(account);
+    const mode: string = req.body.mode || 'hard';
+
+    if (mode === 'soft') {
+        // Soft-delete: mark account as deleted, keep all data intact
+        await accounts.updateOne({ _id: accountId }, { $set: { deletedAt: new Date(), isDeleted: true } });
+        return respondJsonData(res, { ok: true, mode: 'soft' });
+    }
+
+    if (mode === 'with_offers') {
+        // Soft-delete account + hard-delete all its offers
+        await accounts.updateOne({ _id: accountId }, { $set: { deletedAt: new Date(), isDeleted: true } });
+        await Db.getLaborOffersCollection().deleteMany({ accountId });
+        await Db.getMaterialOffersCollection().deleteMany({ accountId });
+        return respondJsonData(res, { ok: true, mode: 'with_offers' });
+    }
+
+    // Legacy hard-delete with dependency checks
     log_.info('countUsers', req.body);
-
-
     let countUsers = await Db.getUsersCollection().countDocuments({ accountId: accountId });
     verify(countUsers === 0, "Account belongs to users");
 
-    // Check if the accountId is used in any other collections
     let checkEstimates = await Db.getEstimatesCollection().countDocuments({ accountId: accountId });
     let checkSharedEstimates = await Db.getEstimatesSharesCollection().countDocuments({ sharedByAccountId: accountId });
     let checkSharedEstimates2 = await Db.getEstimatesSharesCollection().countDocuments({ sharedWithAccountId: accountId });
@@ -103,29 +117,15 @@ registerApiSession('dev/delete_account', async (req, res, session) => {
     let checkMaterialOffers = await Db.getMaterialOffersCollection().countDocuments({ accountId: accountId });
 
     let errorMessages = [];
-
-    if (checkEstimates > 0) {
-        errorMessages.push("Account has made estimates (orders).");
-    }
-
-    if (checkSharedEstimates > 0 || checkSharedEstimates2 > 0) {
-        errorMessages.push("Account has shared estimates (transactions).");
-    }
-
-    if (checkLaborOffers > 0) {
-        errorMessages.push("Account has posted labor offers.");
-    }
-
-    if (checkMaterialOffers > 0) {
-        errorMessages.push("Account has posted material offers.");
-    }
+    if (checkEstimates > 0) errorMessages.push("Account has made estimates (orders).");
+    if (checkSharedEstimates > 0 || checkSharedEstimates2 > 0) errorMessages.push("Account has shared estimates (transactions).");
+    if (checkLaborOffers > 0) errorMessages.push("Account has posted labor offers.");
+    if (checkMaterialOffers > 0) errorMessages.push("Account has posted material offers.");
 
     if (errorMessages.length > 0) {
         verify(false, `Account cannot be deleted because: ${errorMessages.join(' ')}`);
     }
 
-    // Delete the account if no dependencies are found
     let result = await accounts.deleteOne({ _id: accountId });
-
     respondJsonData(res, result);
 });

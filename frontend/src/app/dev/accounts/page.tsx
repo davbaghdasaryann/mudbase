@@ -61,23 +61,17 @@ export default function DevPageAccounts() {
 
 
 
-    const handleRemove = (evt: ApiAccount) => {
+    const handleRemove = (evt: ApiAccount, mode: 'soft' | 'with_offers') => {
         setAnchorEl(null);
         Api.requestSession<any>({
             command: 'dev/delete_account',
-            json: evt
+            json: { ...evt, mode }
         })
-            .then(devAccounts => {
-                for(let d of devAccounts){
-                    console.log(d)
-
-                }
+            .then(() => {
                 setConfirmDelete(false);
-                // alert(devAccounts.length)
+                setDataRequested(false);
             })
-        setDataRequested(!dataRequested);
-
-
+            .catch((err) => alert(err?.message ?? 'Error'));
     };
 
 
@@ -317,14 +311,23 @@ export default function DevPageAccounts() {
         } */}
 
         {accountDetails && <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)}>
-            <DialogTitle>Confirm</DialogTitle>
-            <DialogContent>Delete Account?</DialogContent>
+            <DialogTitle>Delete Account: {accountDetails.companyName}</DialogTitle>
+            <DialogContent>
+                <Typography sx={{ mb: 1 }}>Choose what to delete:</Typography>
+                <Typography variant="body2" color="text.secondary">
+                    • <strong>Company only</strong> — soft-delete the company, all offers stay intact.<br />
+                    • <strong>Company + all offers</strong> — soft-delete the company and permanently delete all its offers.
+                </Typography>
+            </DialogContent>
             <DialogActions>
                 <Button onClick={() => setConfirmDelete(false)} color='secondary'>
                     Cancel
                 </Button>
-                <Button onClick={() => handleRemove(accountDetails)} color='error'>
-                    Delete
+                <Button onClick={() => handleRemove(accountDetails, 'soft')} color='warning' variant='outlined'>
+                    Company Only
+                </Button>
+                <Button onClick={() => handleRemove(accountDetails, 'with_offers')} color='error' variant='contained'>
+                    Company + All Offers
                 </Button>
             </DialogActions>
         </Dialog>
