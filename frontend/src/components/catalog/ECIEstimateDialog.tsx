@@ -431,7 +431,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {creatorAccount && (
                                     <>
                                         {isSuperAdmin && editingCompany ? (
-                                            <Box sx={{ width: 160, px: 1 }}>
+                                            <Box sx={{ width: 140, px: 1 }}>
                                                 <Autocomplete
                                                     options={allAccounts}
                                                     getOptionLabel={(a) => a.companyName ?? ''}
@@ -441,6 +441,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         <TextField {...params} autoFocus size="small" placeholder={t('Search company')} />
                                                     )}
                                                     ListboxProps={{ style: { maxHeight: 240 } }}
+                                                    componentsProps={{ popper: { style: { width: 320 } } }}
                                                     openOnFocus
                                                     size="small"
                                                 />
