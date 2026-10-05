@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, useTheme } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -28,6 +28,7 @@ export default function ActiveAccountsTab() {
     const [createAccount, setCreateAccount] = React.useState(false);
     const [selectedValueId, setSelectedValueId] = React.useState<string | null>('all');
     const [searchValue, setSearchValue] = React.useState('');
+    const [deleteTarget, setDeleteTarget] = React.useState<Api.ApiAccount | null>(null);
     const [t] = useTranslation();
     const [shouldSearch, setShouldSearch] = React.useState(false);
     // const form = F.useForm({ type: 'input' });
@@ -85,13 +86,16 @@ export default function ActiveAccountsTab() {
     }, [shouldSearch, performSearch]);
 
 
-    const onDeleteAccount = React.useCallback(async (accountId: string) => {
-        const result = await confirmDialog('Ջնջե՞լ', undefined, { confirmColor: '#DC3741' });
-        if (result.isConfirmed) {
-            await Api.requestSession<any>({ command: 'account/delete', args: { accountId } });
-            apiData.setApi({ command: 'accounts/fetch_active' });
-        }
+    const onDeleteAccount = React.useCallback(async (account: Api.ApiAccount) => {
+        setDeleteTarget(account);
     }, []);
+
+    const handleDeleteConfirm = async (mode: 'soft' | 'with_offers') => {
+        if (!deleteTarget) return;
+        await Api.requestSession<any>({ command: 'account/delete', args: { accountId: deleteTarget._id, mode } });
+        setDeleteTarget(null);
+        apiData.setApi({ command: 'accounts/fetch_active' });
+    };
 
     const onIsActiveStatusChange = React.useCallback(async (accountId: string) => {
         confirmDialog(t('Are you sure?')).then((result) => {
@@ -198,7 +202,7 @@ export default function ActiveAccountsTab() {
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title={t('Delete')} placement='top'>
-                                        <IconButton onClick={() => onDeleteAccount(cell.row._id)} sx={{ color: 'grey.400', '&:hover': { color: 'error.main' } }}>
+                                        <IconButton onClick={() => onDeleteAccount(cell.row)} sx={{ color: 'grey.400', '&:hover': { color: 'error.main' } }}>
                                             <DeleteOutlineIcon />
                                         </IconButton>
                                     </Tooltip>
@@ -241,6 +245,24 @@ export default function ActiveAccountsTab() {
                     onClose={() => setAssignPackageAccount(null)}
                     onSaved={() => { apiData.loading = true; apiData.invalidate(); }}
                 />
+            )}
+
+            {deleteTarget && (
+                <Dialog open onClose={() => setDeleteTarget(null)}>
+                    <DialogTitle>Delete Account: {deleteTarget.companyName}</DialogTitle>
+                    <DialogContent>
+                        <Typography sx={{ mb: 1 }}>Choose what to delete:</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            • <strong>Company only</strong> — soft-delete the company, all offers stay intact.<br />
+                            • <strong>Company + all offers</strong> — soft-delete the company and permanently delete all its offers.
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeleteTarget(null)} color="secondary">Cancel</Button>
+                        <Button onClick={() => handleDeleteConfirm('soft')} color="warning" variant="outlined">Company Only</Button>
+                        <Button onClick={() => handleDeleteConfirm('with_offers')} color="error" variant="contained">Company + All Offers</Button>
+                    </DialogActions>
+                </Dialog>
             )}
         </>
     );
