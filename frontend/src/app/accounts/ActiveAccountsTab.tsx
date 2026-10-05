@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
