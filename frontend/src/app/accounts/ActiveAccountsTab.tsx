@@ -248,19 +248,41 @@ export default function ActiveAccountsTab() {
             )}
 
             {deleteTarget && (
-                <Dialog open onClose={() => setDeleteTarget(null)}>
-                    <DialogTitle>Delete Account: {deleteTarget.companyName}</DialogTitle>
-                    <DialogContent>
-                        <Typography sx={{ mb: 1 }}>Choose what to delete:</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            • <strong>Company only</strong> — soft-delete the company, all offers stay intact.<br />
-                            • <strong>Company + all offers</strong> — soft-delete the company and permanently delete all its offers.
+                <Dialog open onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+                    <DialogTitle sx={{ pb: 1 }}>
+                        Delete <strong>{deleteTarget.companyName}</strong>?
+                    </DialogTitle>
+                    <DialogContent sx={{ pt: 0 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Choose how to proceed:
                         </Typography>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            color="warning"
+                            onClick={() => handleDeleteConfirm('soft')}
+                            sx={{ mb: 1.5, justifyContent: 'flex-start', textTransform: 'none', py: 1.5, px: 2 }}
+                        >
+                            <Box>
+                                <Typography fontWeight={600} fontSize={14}>Company only</Typography>
+                                <Typography variant="caption" color="text.secondary">The company is removed, all its offers remain in the catalog</Typography>
+                            </Box>
+                        </Button>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDeleteConfirm('with_offers')}
+                            sx={{ justifyContent: 'flex-start', textTransform: 'none', py: 1.5, px: 2 }}
+                        >
+                            <Box>
+                                <Typography fontWeight={600} fontSize={14}>Company + all offers</Typography>
+                                <Typography variant="caption" color="text.secondary">The company and all its catalog offers are permanently deleted</Typography>
+                            </Box>
+                        </Button>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setDeleteTarget(null)} color="secondary">Cancel</Button>
-                        <Button onClick={() => handleDeleteConfirm('soft')} color="warning" variant="outlined">Company Only</Button>
-                        <Button onClick={() => handleDeleteConfirm('with_offers')} color="error" variant="contained">Company + All Offers</Button>
+                        <Button onClick={() => setDeleteTarget(null)}>Cancel</Button>
                     </DialogActions>
                 </Dialog>
             )}
