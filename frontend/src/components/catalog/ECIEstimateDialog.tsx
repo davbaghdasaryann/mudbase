@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button } from '@mui/material';
@@ -19,6 +19,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
+import { ApiAccount, makeCompanyLogoUrl } from '@/api/accounts';
 import { confirmDialog, successDialog } from '@/components/ConfirmationDialog';
 
 const TOOLBAR_ICON = '/images/icons/toolbar';
@@ -42,6 +43,18 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
+    const [creatorAccount, setCreatorAccount] = useState<ApiAccount | null>(null);
+
+    useEffect(() => {
+        if (!linkedEstimateId) return;
+        Api.requestSession<any>({ command: 'estimate/get', args: { estimateId: linkedEstimateId } })
+            .then(est => {
+                if (!est?.accountId) return;
+                return Api.requestSession<ApiAccount>({ command: 'account/get', args: { accountId: String(est.accountId) } });
+            })
+            .then(account => { if (account) setCreatorAccount(account); })
+            .catch(() => {});
+    }, [linkedEstimateId]);
 
     const isAdmin = permissionsSet == null ? true : permissionsSet.has('CAT_EDT');
     const hasLinkedEstimate = !!linkedEstimateId;
@@ -409,6 +422,31 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         </Typography>
                                     </Box>
                                 ))}
+
+                                {creatorAccount && (
+                                    <>
+                                        <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, px: 1 }}>
+                                            {makeCompanyLogoUrl(creatorAccount) ? (
+                                                <Box
+                                                    component="img"
+                                                    src={makeCompanyLogoUrl(creatorAccount)}
+                                                    alt={creatorAccount.companyName}
+                                                    sx={{ height: 36, maxWidth: 100, objectFit: 'contain', borderRadius: 1 }}
+                                                />
+                                            ) : (
+                                                <Box sx={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(0,171,190,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#00ABBE' }}>
+                                                        {creatorAccount.companyName?.charAt(0)?.toUpperCase() ?? '?'}
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                            <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 120 }}>
+                                                {creatorAccount.companyName}
+                                            </Typography>
+                                        </Box>
+                                    </>
+                                )}
 
                                 {isAdmin && (<>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
