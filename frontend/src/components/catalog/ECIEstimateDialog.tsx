@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip, Popover } from '@mui/material';
+import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip, Popover, InputAdornment } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import CloseIcon from '@mui/icons-material/Close';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
@@ -62,12 +63,17 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
 
     const [companyAnchorEl, setCompanyAnchorEl] = useState<HTMLElement | null>(null);
     const [allAccounts, setAllAccounts] = useState<ApiAccount[]>([]);
-    const handleOpenChangeCompany = async (e: React.MouseEvent<HTMLElement>) => {
+
+    useEffect(() => {
         if (!isSuperAdmin) return;
-        const anchor = e.currentTarget;
-        const data = await Api.requestSession<ApiAccount[]>({ command: 'accounts/fetch_active', args: { search: '', select: 'all' } }).catch(() => []);
-        setAllAccounts(data ?? []);
-        setCompanyAnchorEl(anchor);
+        Api.requestSession<ApiAccount[]>({ command: 'accounts/fetch_active', args: { search: '', select: 'all' } })
+            .then(data => { if (data) setAllAccounts(data); })
+            .catch(() => {});
+    }, [isSuperAdmin]);
+
+    const handleOpenChangeCompany = (e: React.MouseEvent<HTMLElement>) => {
+        if (!isSuperAdmin) return;
+        setCompanyAnchorEl(e.currentTarget);
     };
     const handleChangeCompany = async (account: ApiAccount | null) => {
         if (!account || !linkedEstimateId) return;
@@ -430,10 +436,10 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     <>
                                         <Tooltip title={isSuperAdmin ? t('Change Company') : ''} placement="bottom">
                                             <Box
-                                                onClick={isSuperAdmin ? (e) => handleOpenChangeCompany(e) : undefined}
+                                                onClick={handleOpenChangeCompany}
                                                 sx={{
                                                     display: 'flex', flexDirection: 'column', alignItems: 'center',
-                                                    justifyContent: 'center', gap: 0.5, px: 1,
+                                                    justifyContent: 'center', gap: 0.5, px: 1, position: 'relative',
                                                     ...(isSuperAdmin && {
                                                         cursor: 'pointer', borderRadius: 1,
                                                         '&:hover': { bgcolor: 'rgba(0,171,190,0.08)' },
@@ -454,9 +460,12 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         </Typography>
                                                     </Box>
                                                 )}
-                                                <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 120 }}>
-                                                    {creatorAccount.companyName}
-                                                </Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                                                    <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 110 }}>
+                                                        {creatorAccount.companyName}
+                                                    </Typography>
+                                                    {isSuperAdmin && <KeyboardArrowDownIcon sx={{ fontSize: 14, color: 'text.disabled' }} />}
+                                                </Box>
                                             </Box>
                                         </Tooltip>
                                         <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
