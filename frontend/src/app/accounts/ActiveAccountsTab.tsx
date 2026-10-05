@@ -251,16 +251,18 @@ export default function ActiveAccountsTab() {
                 <Dialog open onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
                     <DialogTitle>{t('account.delete_title', { name: deleteTarget.companyName })}</DialogTitle>
                     <DialogContent>
-                        <Typography sx={{ mb: 1 }}>{t('account.delete_choose')}</Typography>
+                        <Typography variant="body2" sx={{ mb: 1.5 }}>{t('account.delete_choose')}</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            <strong>{t('account.delete_company_only')}</strong> — {t('account.delete_company_only_desc')}
+                        </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            • <strong>{t('account.delete_company_only')}</strong> — {t('account.delete_company_only_desc')}<br />
-                            • <strong>{t('account.delete_with_offers')}</strong> — {t('account.delete_with_offers_desc')}
+                            <strong>{t('account.delete_with_offers')}</strong> — {t('account.delete_with_offers_desc')}
                         </Typography>
                     </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setDeleteTarget(null)} color="secondary">{t('Cancel')}</Button>
-                        <Button onClick={() => handleDeleteConfirm('soft')} color="warning" variant="outlined">{t('account.delete_company_only')}</Button>
-                        <Button onClick={() => handleDeleteConfirm('with_offers')} color="error" variant="contained">{t('account.delete_with_offers')}</Button>
+                    <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 2, pb: 2 }}>
+                        <Button fullWidth onClick={() => handleDeleteConfirm('with_offers')} color="error" variant="contained">{t('account.delete_with_offers')}</Button>
+                        <Button fullWidth onClick={() => handleDeleteConfirm('soft')} color="warning" variant="outlined">{t('account.delete_company_only')}</Button>
+                        <Button fullWidth onClick={() => setDeleteTarget(null)} color="secondary">{t('Cancel')}</Button>
                     </DialogActions>
                 </Dialog>
             )}
