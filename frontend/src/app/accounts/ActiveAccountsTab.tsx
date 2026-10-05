@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -249,40 +249,18 @@ export default function ActiveAccountsTab() {
 
             {deleteTarget && (
                 <Dialog open onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
-                    <DialogTitle sx={{ pb: 1 }}>
-                        Delete <strong>{deleteTarget.companyName}</strong>?
-                    </DialogTitle>
-                    <DialogContent sx={{ pt: 0 }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Choose how to proceed:
+                    <DialogTitle>{t('account.delete_title', { name: deleteTarget.companyName })}</DialogTitle>
+                    <DialogContent>
+                        <Typography sx={{ mb: 1 }}>{t('account.delete_choose')}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            • <strong>{t('account.delete_company_only')}</strong> — {t('account.delete_company_only_desc')}<br />
+                            • <strong>{t('account.delete_with_offers')}</strong> — {t('account.delete_with_offers_desc')}
                         </Typography>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            color="warning"
-                            onClick={() => handleDeleteConfirm('soft')}
-                            sx={{ mb: 1.5, justifyContent: 'flex-start', textTransform: 'none', py: 1.5, px: 2 }}
-                        >
-                            <Box>
-                                <Typography fontWeight={600} fontSize={14}>Company only</Typography>
-                                <Typography variant="caption" color="text.secondary">The company is removed, all its offers remain in the catalog</Typography>
-                            </Box>
-                        </Button>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            color="error"
-                            onClick={() => handleDeleteConfirm('with_offers')}
-                            sx={{ justifyContent: 'flex-start', textTransform: 'none', py: 1.5, px: 2 }}
-                        >
-                            <Box>
-                                <Typography fontWeight={600} fontSize={14}>Company + all offers</Typography>
-                                <Typography variant="caption" color="text.secondary">The company and all its catalog offers are permanently deleted</Typography>
-                            </Box>
-                        </Button>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setDeleteTarget(null)}>Cancel</Button>
+                        <Button onClick={() => setDeleteTarget(null)} color="secondary">{t('Cancel')}</Button>
+                        <Button onClick={() => handleDeleteConfirm('soft')} color="warning" variant="outlined">{t('account.delete_company_only')}</Button>
+                        <Button onClick={() => handleDeleteConfirm('with_offers')} color="error" variant="contained">{t('account.delete_with_offers')}</Button>
                     </DialogActions>
                 </Dialog>
             )}
