@@ -279,19 +279,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             </DialogTitle>
 
             <IconButton
-                aria-label='print'
-                onClick={() => runPrintEstimate(props.estimateId)}
-                sx={(theme) => ({
-                    position: 'absolute',
-                    right: 48,
-                    top: 8,
-                    color: theme.palette.grey[500],
-                })}
-            >
-                <PrintIcon />
-            </IconButton>
-
-            <IconButton
                 aria-label='close'
                 onClick={handleClose}
                 sx={(theme) => ({
