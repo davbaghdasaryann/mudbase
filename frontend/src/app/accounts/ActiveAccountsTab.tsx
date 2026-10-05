@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, SelectChangeEvent, SxProps, Theme, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -248,21 +248,47 @@ export default function ActiveAccountsTab() {
             )}
 
             {deleteTarget && (
-                <Dialog open onClose={() => setDeleteTarget(null)} maxWidth="sm" fullWidth>
-                    <DialogTitle>{t('account.delete_title', { name: deleteTarget.companyName })}</DialogTitle>
+                <Dialog open onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+                    <DialogTitle sx={{ pb: 0.5 }}>
+                        {t('account.delete_title', { name: deleteTarget.companyName })}
+                    </DialogTitle>
                     <DialogContent>
-                        <Typography variant="body2" sx={{ mb: 1 }}>{t('account.delete_choose')}</Typography>
-                        <Typography variant="body2" sx={{ mb: 0.5 }}>
-                            • {t('account.delete_company_only')} — {t('account.delete_company_only_desc')}
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            {t('account.delete_choose')}
                         </Typography>
-                        <Typography variant="body2">
-                            • {t('account.delete_with_offers')} — {t('account.delete_with_offers_desc')}
-                        </Typography>
+                        <Box
+                            onClick={() => handleDeleteConfirm('soft')}
+                            sx={{
+                                mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer',
+                                border: '1px solid', borderColor: 'warning.main',
+                                '&:hover': { bgcolor: 'rgba(255,152,0,0.06)' },
+                            }}
+                        >
+                            <Typography variant="body2" fontWeight={600} color="warning.dark" sx={{ mb: 0.25 }}>
+                                {t('account.delete_company_only')}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                {t('account.delete_company_only_desc')}
+                            </Typography>
+                        </Box>
+                        <Box
+                            onClick={() => handleDeleteConfirm('with_offers')}
+                            sx={{
+                                p: 1.5, borderRadius: 1, cursor: 'pointer',
+                                border: '1px solid', borderColor: 'error.main',
+                                '&:hover': { bgcolor: 'rgba(211,47,47,0.06)' },
+                            }}
+                        >
+                            <Typography variant="body2" fontWeight={600} color="error.main" sx={{ mb: 0.25 }}>
+                                {t('account.delete_with_offers')}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                {t('account.delete_with_offers_desc')}
+                            </Typography>
+                        </Box>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setDeleteTarget(null)}>{t('Cancel')}</Button>
-                        <Button onClick={() => handleDeleteConfirm('soft')} color="warning" variant="outlined">{t('account.delete_company_only')}</Button>
-                        <Button onClick={() => handleDeleteConfirm('with_offers')} color="error" variant="contained">{t('account.delete_with_offers')}</Button>
                     </DialogActions>
                 </Dialog>
             )}
