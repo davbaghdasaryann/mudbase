@@ -76,6 +76,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [exportConfigFormat, setExportConfigFormat] = useState<'html' | 'word' | 'pdf' | 'excel'>('html');
     const [exportGroupMode, setExportGroupMode] = useState<'closed' | 'open'>('closed');
     const [exportOtherCostsMode, setExportOtherCostsMode] = useState<'separated' | 'included'>('separated');
+    const [updateDataModalOpen, setUpdateDataModalOpen] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
 
@@ -436,7 +437,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 },
                                 { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick },
                                 { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick },
-                                { labelKey: 'Update from Library', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate },
+                                { labelKey: 'Update Data', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => setUpdateDataModalOpen(true) },
                                 { labelKey: 'Import from Library', icon: `${TOOLBAR_ICON}/import.svg`, onClick: handleImportFromLibrary, disabled: !permissionsSet?.has('OFF_CRT_LBR') },
                                 { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick },
                                 { labelKey: 'Undo', iconNode: <UndoIcon sx={{ fontSize: 22 }} />, onClick: handleUndo },
@@ -761,6 +762,35 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         accordionRef.current?.refreshEverything(true);
                     }}
                 />
+            )}
+            {/* Update Data modal */}
+            {updateDataModalOpen && (
+                <Dialog open onClose={() => setUpdateDataModalOpen(false)} maxWidth="xs" fullWidth>
+                    <DialogTitle sx={{ pb: 0.5 }}>{t('Update Data')}</DialogTitle>
+                    <DialogContent sx={{ pt: 1.5 }}>
+                        <Box
+                            onClick={() => { setUpdateDataModalOpen(false); }}
+                            sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+                        >
+                            <Typography variant="body2" fontWeight={600}>{t('Update My Data')}</Typography>
+                        </Box>
+                        <Box
+                            onClick={() => { setUpdateDataModalOpen(false); handleUpdate(); }}
+                            sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+                        >
+                            <Typography variant="body2" fontWeight={600}>{t('Update Market Values')}</Typography>
+                        </Box>
+                        <Box
+                            onClick={() => { setUpdateDataModalOpen(false); }}
+                            sx={{ p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+                        >
+                            <Typography variant="body2" fontWeight={600}>{t('Load Fixed Data')}</Typography>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setUpdateDataModalOpen(false)}>{t('Cancel')}</Button>
+                    </DialogActions>
+                </Dialog>
             )}
             {/* Chronological date range dialog */}
             <ChronologicalDateRangeDialog

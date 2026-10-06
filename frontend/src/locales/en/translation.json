@@ -396,5 +396,9 @@
   "m ago": "m ago",
   "h ago": "h ago",
   "No activity recorded yet. Data will appear once companies start using the app.": "No activity recorded yet. Data will appear once companies start using the app.",
-  "Update from Library": "Update from Library"
+  "Update from Library": "Update from Library",
+  "Update Data": "Update Data",
+  "Update My Data": "Update My Data",
+  "Update Market Values": "Update Market Values",
+  "Load Fixed Data": "Load Fixed Data"
 }

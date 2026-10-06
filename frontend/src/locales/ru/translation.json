@@ -222,5 +222,9 @@
   "Source": "Источник",
   "Enter": "Ввести",
   "Unit": "Ед. изм.",
-  "Update from Library": "Обновить из библиотеки"
+  "Update from Library": "Обновить из библиотеки",
+  "Update Data": "Обновить данные",
+  "Update My Data": "Обновить мои данные",
+  "Update Market Values": "Обновить рыночные цены",
+  "Load Fixed Data": "Загрузить фиксированные данные"
 }
