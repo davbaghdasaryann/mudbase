@@ -20,6 +20,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -770,20 +772,23 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     <DialogContent sx={{ pt: 1.5 }}>
                         <Box
                             onClick={() => { setUpdateDataModalOpen(false); accordionRef.current?.importMyPrices(); }}
-                            sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+                            sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5, '&:hover': { bgcolor: 'action.hover' } }}
                         >
+                            <AccountCircleOutlinedIcon sx={{ color: 'primary.main', fontSize: 22 }} />
                             <Typography variant="body2" fontWeight={600}>{t('Update My Data')}</Typography>
                         </Box>
                         <Box
                             onClick={() => { setUpdateDataModalOpen(false); handleUpdate(); }}
-                            sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+                            sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5, '&:hover': { bgcolor: 'action.hover' } }}
                         >
+                            <ShowChartIcon sx={{ color: 'success.main', fontSize: 22 }} />
                             <Typography variant="body2" fontWeight={600}>{t('Update Market Values')}</Typography>
                         </Box>
                         <Box
                             onClick={() => { setUpdateDataModalOpen(false); }}
-                            sx={{ p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+                            sx={{ p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5, '&:hover': { bgcolor: 'action.hover' } }}
                         >
+                            <LockOutlinedIcon sx={{ color: 'warning.main', fontSize: 22 }} />
                             <Typography variant="body2" fontWeight={600}>{t('Load Fixed Data')}</Typography>
                         </Box>
                     </DialogContent>
