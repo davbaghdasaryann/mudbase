@@ -19,6 +19,8 @@ export interface ApiEstimateLaborItem{
 
     /** When true, price is fixed locally and won't write back to catalog. */
     isFixed?: boolean;
+    /** Snapshot price saved when Fix Values was clicked. */
+    fixedPrice?: number;
     /** When true, not counted in estimation; can be unhidden. */
     isHidden?: boolean;
     isGroupRow?: boolean;

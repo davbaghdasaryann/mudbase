@@ -24,6 +24,7 @@ export class EstimateLaborItemDisplayData {
     presentItemOfferAveragePrice?: number;
     priceSource?: 'market' | 'my_offer';
     isFixed?: boolean;
+    fixedPrice?: number;
     isHidden?: boolean;
     isGroupRow?: boolean;
     groupTotalCost?: number | null;
@@ -62,6 +63,7 @@ export class EstimateLaborItemDisplayData {
         this.presentItemOfferAveragePrice = roundToThree(estimateLaborItem.presentLaborOfferAveragePrice);
         this.priceSource = estimateLaborItem.priceSource;
         this.isFixed = estimateLaborItem.isFixed === true;
+        this.fixedPrice = estimateLaborItem.fixedPrice;
         this.isHidden = estimateLaborItem.isHidden === true;
         this.isGroupRow = estimateLaborItem.isGroupRow === true;
         this.groupTotalCost = estimateLaborItem.groupTotalCost ?? null;

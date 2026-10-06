@@ -90,6 +90,8 @@ interface AccordionItem {
 
     /** When true, price is fixed locally and won't write back to catalog. */
     isFixed?: boolean;
+    /** Snapshot price saved when Fix Values was clicked. */
+    fixedPrice?: number;
 
     /** When true, not counted in estimation; row shown as inactive. */
     isHidden?: boolean;
@@ -660,6 +662,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
         itemArr.priceSource = item.priceSource;
         itemArr.isFixed = item.isFixed === true;
+        itemArr.fixedPrice = item.fixedPrice;
         itemArr.isHidden = item.isHidden === true;
         itemArr.isGroupRow = item.isGroupRow === true;
         if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
@@ -743,6 +746,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             itemAveragePrice: roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0)),
                             priceSource: item.priceSource,
                             isFixed: item.isFixed === true,
+                            fixedPrice: item.fixedPrice,
                             isHidden: item.isHidden === true,
                             isGroupRow: item.isGroupRow === true,
                             materialUnitPrice: roundToThree(item.materialUnitPrice),
@@ -823,6 +827,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
             itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
             itemArr.priceSource = item.priceSource;
             itemArr.isFixed = item.isFixed === true;
+            itemArr.fixedPrice = item.fixedPrice;
             itemArr.isHidden = item.isHidden === true;
             itemArr.isGroupRow = item.isGroupRow === true;
 
@@ -1388,8 +1393,20 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                             const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
                                                             return <>{total ? formatCurrency(total) : null}</>;
                                                         }
+                                                        if (!row.isFixed) return <>{formatCurrency(params.value)}</>;
+                                                        const isDirty = row.fixedPrice !== undefined && Math.abs((params.value ?? 0) - row.fixedPrice) > 0.001;
                                                         return <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            {row.isFixed && <Tooltip title={t('Fixed — edits won\'t affect the catalog')} placement="top" arrow><LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} /></Tooltip>}
+                                                            <Tooltip title={isDirty ? t('Fix again') : t('Fixed — edits won\'t affect the catalog')} placement="top" arrow>
+                                                                <LockOutlinedIcon
+                                                                    onClick={(e) => {
+                                                                        if (!isDirty) return;
+                                                                        e.stopPropagation();
+                                                                        Api.requestSession({ command: 'estimate/fix_labor_values', args: { estimateId: props.estimateId }, json: { estimatedLaborIds: [row._id] } })
+                                                                            .then(() => refreshEverything(false));
+                                                                    }}
+                                                                    sx={{ fontSize: 13, color: isDirty ? 'text.disabled' : 'warning.main', flexShrink: 0, cursor: isDirty ? 'pointer' : 'default' }}
+                                                                />
+                                                            </Tooltip>
                                                             {formatCurrency(params.value)}
                                                         </Box>;
                                                     },
@@ -1854,8 +1871,20 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                 const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
                                                                                 return <>{total ? formatCurrency(total) : null}</>;
                                                                             }
+                                                                            if (!row.isFixed) return <>{formatCurrency(params.value)}</>;
+                                                                            const isDirty = row.fixedPrice !== undefined && Math.abs((params.value ?? 0) - row.fixedPrice) > 0.001;
                                                                             return <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                                {row.isFixed && <Tooltip title={t('Fixed — edits won\'t affect the catalog')} placement="top" arrow><LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} /></Tooltip>}
+                                                                                <Tooltip title={isDirty ? t('Fix again') : t('Fixed — edits won\'t affect the catalog')} placement="top" arrow>
+                                                                                    <LockOutlinedIcon
+                                                                                        onClick={(e) => {
+                                                                                            if (!isDirty) return;
+                                                                                            e.stopPropagation();
+                                                                                            Api.requestSession({ command: 'estimate/fix_labor_values', args: { estimateId: props.estimateId }, json: { estimatedLaborIds: [row._id] } })
+                                                                                                .then(() => refreshEverything(false));
+                                                                                        }}
+                                                                                        sx={{ fontSize: 13, color: isDirty ? 'text.disabled' : 'warning.main', flexShrink: 0, cursor: isDirty ? 'pointer' : 'default' }}
+                                                                                    />
+                                                                                </Tooltip>
                                                                                 {formatCurrency(params.value)}
                                                                             </Box>;
                                                                         },
