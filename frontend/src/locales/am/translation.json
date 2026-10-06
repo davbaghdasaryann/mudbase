@@ -773,7 +773,7 @@
   "account.delete_with_offers_desc": "Կազմակերպությունը և բոլոր առաջարկները կջնջվեն",
   "Update from Library": "Թարմացնել շտեմարանից",
   "Update Data": "Թարմացնել տվյալները",
-  "Update My Data": "Թարմացնել իմ տվյալները",
-  "Update Market Values": "Թարմացնել շուկայական արժեքները",
-  "Load Fixed Data": "Բեռնել ֆիքսված տվյալները"
+  "Update My Data": "Թարմացնել իմ տվյալներից",
+  "Update Market Values": "Թարմացնել շուկայական արժեքներից",
+  "Load Fixed Data": "Բեռնել ֆիքսված տվյալներից"
 }
