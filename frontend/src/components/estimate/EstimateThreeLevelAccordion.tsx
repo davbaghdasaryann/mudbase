@@ -13,6 +13,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 import * as Api from '@/api';
 import * as EstimateApi from '@/api/estimate';
@@ -86,6 +87,9 @@ interface AccordionItem {
 
     /** 'market' | 'my_offer' - for cell background (blue = market, yellow = my price) */
     priceSource?: 'market' | 'my_offer';
+
+    /** When true, price is fixed locally and won't write back to catalog. */
+    isFixed?: boolean;
 
     /** When true, not counted in estimation; row shown as inactive. */
     isHidden?: boolean;
@@ -655,6 +659,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
         itemArr.itemLaborHours = item.itemLaborHours; //🔴 TODO: this will need us in version 2 🔴
         itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
         itemArr.priceSource = item.priceSource;
+        itemArr.isFixed = item.isFixed === true;
         itemArr.isHidden = item.isHidden === true;
         itemArr.isGroupRow = item.isGroupRow === true;
         if (item.groupTotalCost != null) itemArr.groupTotalCost = item.groupTotalCost;
@@ -737,6 +742,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                             itemChangableAveragePrice: roundToThree(item.itemChangableAveragePrice),
                             itemAveragePrice: roundToThree(Number(item.estimateLaborItemData?.[0]?.averagePrice ?? item.itemAveragePrice ?? 0)),
                             priceSource: item.priceSource,
+                            isFixed: item.isFixed === true,
                             isHidden: item.isHidden === true,
                             isGroupRow: item.isGroupRow === true,
                             materialUnitPrice: roundToThree(item.materialUnitPrice),
@@ -816,6 +822,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
 
             itemArr.presentItemOfferAveragePrice = roundToThree(item.presentItemOfferAveragePrice);
             itemArr.priceSource = item.priceSource;
+            itemArr.isFixed = item.isFixed === true;
             itemArr.isHidden = item.isHidden === true;
             itemArr.isGroupRow = item.isGroupRow === true;
 
@@ -1381,7 +1388,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                             const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
                                                             return <>{total ? formatCurrency(total) : null}</>;
                                                         }
-                                                        return <>{formatCurrency(params.value)}</>;
+                                                        return <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            {row.isFixed && <LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} />}
+                                                            {formatCurrency(params.value)}
+                                                        </Box>;
                                                     },
                                                 },
                                                 {
@@ -1844,7 +1854,10 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                 const total = (row.groupLaborTotalCost || 0) + (row.groupMaterialCost || 0);
                                                                                 return <>{total ? formatCurrency(total) : null}</>;
                                                                             }
-                                                                            return <>{formatCurrency(params.value)}</>;
+                                                                            return <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                                {row.isFixed && <LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} />}
+                                                                                {formatCurrency(params.value)}
+                                                                            </Box>;
                                                                         },
                                                                     },
                                                                     {
