@@ -1389,7 +1389,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                             return <>{total ? formatCurrency(total) : null}</>;
                                                         }
                                                         return <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            {row.isFixed && <LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} />}
+                                                            {row.isFixed && <Tooltip title={t('Fixed — edits won\'t affect the catalog')} placement="top" arrow><LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} /></Tooltip>}
                                                             {formatCurrency(params.value)}
                                                         </Box>;
                                                     },
@@ -1855,7 +1855,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                                 return <>{total ? formatCurrency(total) : null}</>;
                                                                             }
                                                                             return <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                                {row.isFixed && <LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} />}
+                                                                                {row.isFixed && <Tooltip title={t('Fixed — edits won\'t affect the catalog')} placement="top" arrow><LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} /></Tooltip>}
                                                                                 {formatCurrency(params.value)}
                                                                             </Box>;
                                                                         },

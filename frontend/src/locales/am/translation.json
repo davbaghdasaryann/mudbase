@@ -776,5 +776,6 @@
   "Update My Data": "Թարմացնել իմ տվյալներից",
   "Update Market Values": "Թարմացնել շուկայական արժեքներից",
   "Load Fixed Data": "Բեռնել ֆիքսված տվյալներից",
-  "Fix Values": "Ֆիքսել արժեքները"
+  "Fix Values": "Ֆիքսել արժեքները",
+  "Fixed — edits won't affect the catalog": "Ֆիքսված — փոփոխությունները չեն ազդի գրադարանին"
 }
