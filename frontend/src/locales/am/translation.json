@@ -770,5 +770,6 @@
   "account.delete_company_only": "Միայն կազմակերպությունը",
   "account.delete_company_only_desc": "Կազմակերպությունը կջնջվի, առաջարկները կմնան",
   "account.delete_with_offers": "կազմակերպությունը + բոլոր առաջարկները",
-  "account.delete_with_offers_desc": "Կազմակերպությունը և բոլոր առաջարկները կջնջվեն"
+  "account.delete_with_offers_desc": "Կազմակերպությունը և բոլոր առաջարկները կջնջվեն",
+  "Update from Library": "Թարմացնել շտեմարանից"
 }

@@ -436,7 +436,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 },
                                 { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick },
                                 { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick },
-                                { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate },
+                                { labelKey: 'Update from Library', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate },
                                 { labelKey: 'Import from Library', icon: `${TOOLBAR_ICON}/import.svg`, onClick: handleImportFromLibrary, disabled: !permissionsSet?.has('OFF_CRT_LBR') },
                                 { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick },
                                 { labelKey: 'Undo', iconNode: <UndoIcon sx={{ fontSize: 22 }} />, onClick: handleUndo },
