@@ -140,8 +140,10 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
     );
 
     // Update catalog offer when price or labor hours changes (for builders with offer creation permission)
+    // Skip write-back when item is fixed (isFixed=true means user wants local-only prices)
     if ((priceChanged || hoursChanged) && session.permissionsSet?.has('OFF_CRT_LBR')) {
         let estLaborItem = (await estimatesLaborColl.findOne({ _id: estimatedLaborId }))!;
+        if (!estLaborItem.isFixed) {
         let laborOffersCollection = Db.getLaborOffersCollection();
 
         let laborOffers = await laborOffersCollection.find({ itemId: estLaborItem?.laborItemId }).toArray();
@@ -222,6 +224,7 @@ registerApiSession('estimate/update_labor_item', async (req, res, session) => {
         // Update labor item stats
         const {updateLaborItemStats} = await import('@/api/catalog/labors');
         updateLaborItemStats(estLaborItem.laborItemId);
+        } // end !isFixed
     }
 
     if ((priceChanged || hoursChanged || updatedData.quantity)) {

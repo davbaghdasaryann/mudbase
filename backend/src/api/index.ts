@@ -26,6 +26,7 @@ export * from "./dev/account/account";
 export * from "./dev/account/dev_remove_data";
 export * from "./estimate/estimate/estimate_archive";
 export * from "./estimate/estimate/estimate_calc_prices";
+export * from "./estimate/estimate/estimate_fix_values";
 export * from "./estimate/estimate/estimate_create";
 export * from "./estimate/estimate/estimate_delete";
 export * from "./estimate/estimate/estimate_duplicate";

@@ -213,6 +213,18 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const hideUnhideLabelKey = anySelectedHidden ? 'Unhide' : 'Hide';
     const handleHideUnhide = () => (anySelectedHidden ? handleSetHidden(false) : handleSetHidden(true));
 
+    const handleFixValues = () => {
+        if (selectedLaborIds.length === 0) return;
+        Api.requestSession({
+            command: 'estimate/fix_labor_values',
+            args: { estimateId: props.estimateId },
+            json: { estimatedLaborIds: selectedLaborIds },
+        }).then(() => {
+            dataUpdatedRef.current = true;
+            accordionRef.current?.refreshEverything(false);
+        });
+    };
+
     const handleUndo = () => accordionRef.current?.undo();
     const handleRedo = () => accordionRef.current?.redo();
 
@@ -500,7 +512,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { labelKey: 'Move', iconPath: `${TOOLBAR_ICON}/move.svg`, onClick: () => setShowMoveDialog(true) },
                                 { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 22 }} /> : <VisibilityIcon sx={{ fontSize: 22 }} />, onClick: handleHideUnhide },
                                 { labelKey: 'Copy', iconPath: `${TOOLBAR_ICON}/duplicate.svg`, onClick: handleDuplicateSelected },
-                                { labelKey: 'Fix Values', iconNode: <LockOutlinedIcon sx={{ fontSize: 22 }} />, onClick: () => {} },
+                                { labelKey: 'Fix Values', iconNode: <LockOutlinedIcon sx={{ fontSize: 22 }} />, onClick: handleFixValues },
                             ].map((tool, index) => (
                                 <Tooltip key={index} title={t(tool.labelKey)} placement="bottom" enterTouchDelay={0} arrow>
                                     <Box
@@ -785,7 +797,16 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             <Typography variant="body2" fontWeight={600}>{t('Update Market Values')}</Typography>
                         </Box>
                         <Box
-                            onClick={() => { setUpdateDataModalOpen(false); }}
+                            onClick={() => {
+                                setUpdateDataModalOpen(false);
+                                Api.requestSession({
+                                    command: 'estimate/load_fixed_values',
+                                    args: { estimateId: props.estimateId },
+                                }).then(() => {
+                                    dataUpdatedRef.current = true;
+                                    accordionRef.current?.refreshEverything(false);
+                                });
+                            }}
                             sx={{ p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5, '&:hover': { bgcolor: 'action.hover' } }}
                         >
                             <LockOutlinedIcon sx={{ color: 'warning.main', fontSize: 22 }} />
