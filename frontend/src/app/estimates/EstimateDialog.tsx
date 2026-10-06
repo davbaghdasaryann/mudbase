@@ -769,7 +769,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     <DialogTitle sx={{ pb: 0.5 }}>{t('Update Data')}</DialogTitle>
                     <DialogContent sx={{ pt: 1.5 }}>
                         <Box
-                            onClick={() => { setUpdateDataModalOpen(false); }}
+                            onClick={() => { setUpdateDataModalOpen(false); accordionRef.current?.importMyPrices(); }}
                             sx={{ mb: 1.5, p: 1.5, borderRadius: 1, cursor: 'pointer', border: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
                         >
                             <Typography variant="body2" fontWeight={600}>{t('Update My Data')}</Typography>
