@@ -500,6 +500,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { labelKey: 'Move', iconPath: `${TOOLBAR_ICON}/move.svg`, onClick: () => setShowMoveDialog(true) },
                                 { labelKey: hideUnhideLabelKey, iconNode: anySelectedHidden ? <VisibilityOffIcon sx={{ fontSize: 22 }} /> : <VisibilityIcon sx={{ fontSize: 22 }} />, onClick: handleHideUnhide },
                                 { labelKey: 'Copy', iconPath: `${TOOLBAR_ICON}/duplicate.svg`, onClick: handleDuplicateSelected },
+                                { labelKey: 'Fix Values', iconNode: <LockOutlinedIcon sx={{ fontSize: 22 }} />, onClick: () => {} },
                             ].map((tool, index) => (
                                 <Tooltip key={index} title={t(tool.labelKey)} placement="bottom" enterTouchDelay={0} arrow>
                                     <Box
