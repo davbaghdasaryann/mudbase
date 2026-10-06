@@ -17,6 +17,8 @@ export interface ApiEstimateLaborItem{
 
     priceSource?: 'market' | 'my_offer';
 
+    /** When true, price is fixed locally and won't write back to catalog. */
+    isFixed?: boolean;
     /** When true, not counted in estimation; can be unhidden. */
     isHidden?: boolean;
     isGroupRow?: boolean;
