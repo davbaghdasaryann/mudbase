@@ -198,8 +198,8 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
                     as: 'matched',
                 },
             },
-            {$set: {changableAveragePrice: {$first: '$matched.averagePrice'}, priceSource: 'market'}},
-            {$unset: 'matched'},
+            {$set: {changableAveragePrice: {$first: '$matched.averagePrice'}, priceSource: 'market', isFixed: false}},
+            {$unset: ['matched', 'fixedPrice']},
             {
                 $merge: {
                     into: 'estimate_labor_items',
@@ -210,6 +210,9 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
             },
         ])
         .toArray(); // force execution
+
+    // Clear isFixed flag after market price update (belt-and-suspenders for fixedPrice field)
+    await estimateLaborItemsColl.updateMany(laborMatch, { $unset: { fixedPrice: '' } });
 
     //
     // Update material items (all or those under selected labor items)
@@ -303,9 +306,10 @@ registerApiSession('estimate/import_my_prices', async (req, res, session) => {
                             else: '$priceSource',
                         },
                     },
+                    isFixed: false,
                 },
             },
-            { $unset: 'myOffer' },
+            { $unset: ['myOffer', 'fixedPrice'] },
             {
                 $merge: {
                     into: 'estimate_labor_items',
@@ -316,6 +320,9 @@ registerApiSession('estimate/import_my_prices', async (req, res, session) => {
             },
         ])
         .toArray();
+
+    // Clear isFixed flag (belt-and-suspenders for fixedPrice field)
+    await estimateLaborItemsColl.updateMany(laborMatch, { $unset: { fixedPrice: '' } });
 
     await updateEstimateCostById(estimateId);
 
