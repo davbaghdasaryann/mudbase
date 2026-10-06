@@ -431,7 +431,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         }}>
                             {/* Tool buttons */}
                             {[
-                                { labelKey: 'Create Section', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateSection },
+                                { labelKey: 'Create Section', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateSection, disabled: false },
                                 {
                                     labelKey: selectedLaborIds.length > 0 ? 'Add to Favorites' : 'Favorites',
                                     icon: `${TOOLBAR_ICON}/favourites.svg`,
