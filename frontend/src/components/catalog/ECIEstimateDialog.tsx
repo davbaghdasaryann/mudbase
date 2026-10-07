@@ -19,6 +19,11 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import FormatPaintIcon from '@mui/icons-material/FormatPaint';
 import HomeIcon from '@mui/icons-material/Home';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
+import FoundationIcon from '@mui/icons-material/Foundation';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
+import PlumbingIcon from '@mui/icons-material/Plumbing';
+import BoltIcon from '@mui/icons-material/Bolt';
+import AirIcon from '@mui/icons-material/Air';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
 import { ApiAccount, makeCompanyLogoUrl } from '@/api/accounts';
@@ -518,6 +523,11 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
                                         { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
                                         { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
+                                        { label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon fontSize="small" /> },
+                                        { label: 'Ջրամատակարարում', icon: <WaterDropIcon fontSize="small" /> },
+                                        { label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
+                                        { label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
+                                        { label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
                                     ].map((item, i) => (
                                         <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
                                             {item.label}
