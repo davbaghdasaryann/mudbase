@@ -3,8 +3,11 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Box, Typography, IconButton, Divider } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import { mainPrimaryColor } from '@/theme';
+
+const ACCENT = '#00796b';
 
 interface LaborRow {
     _id: string;
@@ -25,13 +28,25 @@ export default function EnthakajalsDialog({ open, onClose, laborRows }: Props) {
     const rows = laborRows.filter(r => !r.isGroupRow && Number(r.quantity ?? 0) > 0);
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#111' }}>Ենթակապալ</Typography>
-                <IconButton size="small" onClick={onClose} sx={{ color: '#9ca3af' }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}>
+            <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${ACCENT}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <HandshakeOutlinedIcon sx={{ fontSize: 20, color: ACCENT }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Ենթակապալ</Typography>
+                    </Box>
+                    <IconButton size="small" onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
+                        <CloseIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                </Box>
             </DialogTitle>
 
-            <DialogContent sx={{ pt: 0, px: 2, pb: 2 }}>
+            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
+
+            <DialogContent sx={{ p: 0, overflowY: 'auto' }}>
+                <Box sx={{ px: 3, py: 2 }}>
                 {/* Header row */}
                 <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, mb: 0.5 }}>
                     <Typography sx={{ flex: 1, fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Աշխատանք</Typography>
@@ -76,6 +91,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows }: Props) {
                         </IconButton>
                     </Box>
                 ))}
+                </Box>
             </DialogContent>
         </Dialog>
     );
