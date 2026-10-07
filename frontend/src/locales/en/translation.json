@@ -402,5 +402,7 @@
   "Update Market Values": "Update Market Values",
   "Load Fixed Data": "Load Fixed Data",
   "Fix Values": "Fix Values",
-  "Change Company": "Change Company"
+  "Change Company": "Change Company",
+  "Unit Price": "Unit Price",
+  "Without Material": "Without Material"
 }
