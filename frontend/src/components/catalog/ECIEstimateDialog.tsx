@@ -460,7 +460,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                 />
                                             </Box>
                                         ) : (
-                                            <Tooltip title={isSuperAdmin ? t('Change Company') : ''} placement="bottom">
+                                            <Tooltip title={isSuperAdmin ? `${creatorAccount.companyName} — ${t('Change Company')}` : creatorAccount.companyName} placement="bottom">
                                                 <Box
                                                     onClick={() => isSuperAdmin && setEditingCompany(true)}
                                                     sx={{
@@ -485,7 +485,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         </Box>
                                                     )}
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                                                        <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 110 }}>
+                                                        <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'text.secondary', textAlign: 'center', maxWidth: 110, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                             {creatorAccount.companyName}
                                                         </Typography>
                                                         {isSuperAdmin && <EditIcon className="edit-icon" sx={{ fontSize: 11, color: 'text.disabled', opacity: 0, transition: 'opacity 0.15s' }} />}
