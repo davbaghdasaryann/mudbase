@@ -44,6 +44,19 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
+    const autoUpdatedRef = useRef(false);
+
+    // Auto-update market prices when an estimate is linked/opened (no confirmation needed)
+    useEffect(() => {
+        if (!linkedEstimateId || autoUpdatedRef.current) return;
+        autoUpdatedRef.current = true;
+        Api.requestSession<any>({
+            command: 'estimate/calc_market_prices',
+            args: { estimateId: linkedEstimateId },
+        }).then(() => {
+            accordionRef.current?.refreshEverything(false);
+        }).catch(() => {});
+    }, [linkedEstimateId]);
     const [creatorAccount, setCreatorAccount] = useState<ApiAccount | null>(null);
 
     useEffect(() => {
@@ -256,14 +269,12 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                 icon: `${TOOLBAR_ICON}/add.svg`,
                 onClick: handleCreateEstimation,
             },
-            { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate, disabled: !hasLinkedEstimate },
             { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick, isSelect: true },
         ]
         : [
             { labelKey: 'Copy', icon: `${TOOLBAR_ICON}/add.svg`, onClick: handleCreateEstimation, disabled: !hasLinkedEstimate },
-            { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => {}, disabled: true },
             { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: () => {}, disabled: true },
