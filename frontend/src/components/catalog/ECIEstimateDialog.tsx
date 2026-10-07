@@ -13,6 +13,7 @@ import EstimatePageDialog from '@/app/estimates/EstimateDialog';
 import EstimateWorksListDialog from '@/components/estimate/EstimateWorksListDialog';
 import EstimateMaterialsListDialog from '@/components/estimate/EstimateMaterialsListDialog';
 import EstimateThreeLevelNestedAccordion, { EstimateThreeLevelNestedAccordionRef } from '@/components/estimate/EstimateThreeLevelAccordion';
+import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherExpensesAccordion';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import FormatPaintIcon from '@mui/icons-material/FormatPaint';
@@ -573,6 +574,9 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                             selectMode={isSelectMode}
                             onSelectionChange={setSelectedLaborIds}
                         />
+                    )}
+                    {hasLinkedEstimate && (
+                        <EstimateOtherExpensesAccordion estimateId={linkedEstimateId!} viewOnly={!isSuperAdmin} />
                     )}
                 </DialogContent>
             </Dialog>
