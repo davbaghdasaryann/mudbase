@@ -9,7 +9,9 @@ import { requireMongoIdParam } from '@/tsback/mongodb/mongodb_params';
 
 
 registerApiSession('estimate/rename', async (req, res, session) => {
-    session.assertPermission(Permissions.EstimateEditInformation);
+    if (!session.checkPermissionsOr([Permissions.EstimateEditInformation, Permissions.UserManageAll])) {
+        session.assertPermission(Permissions.EstimateEditInformation);
+    }
 
     // let estimateNumber = Number(requireQueryParam(req, 'estimateNumber'));
     let estimateId = requireMongoIdParam(req, 'estimateId');
