@@ -25,17 +25,22 @@ interface Props {
     onClose: () => void;
     laborRows: LaborRow[];
     costHistory?: CostHistoryEntry[];
+    actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
 }
 
-export default function EnthakajalsDialog({ open, onClose, laborRows, costHistory = [] }: Props) {
+export default function EnthakajalsDialog({ open, onClose, laborRows, costHistory = [], actualData = {} }: Props) {
     const rows = laborRows.filter(r => !r.isGroupRow && Number(r.quantity ?? 0) > 0);
 
-    const costedIds = new Set(
-        costHistory
-            .filter(e => (e.isSubcontractor || e.paymentMethod === 'subcontractor') && e.laborItemId)
-            .map(e => e.laborItemId!)
-    );
-    const costedCount = rows.filter(r => costedIds.has(r._id)).length;
+    const toRowId = (id: unknown): string =>
+        typeof id === 'object' && id !== null && 'oid' in (id as any) ? (id as any).oid : String(id ?? '');
+
+    const getUnitPrice = (rowId: string): number => {
+        const entry = actualData[rowId];
+        if (!entry) return 0;
+        return parseFloat((entry.unitPrice ?? '').replace(',', '.')) || 0;
+    };
+
+    const costedCount = rows.filter(r => getUnitPrice(toRowId(r._id)) > 0).length;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', boxShadow: '0 8px 40px rgba(0,0,0,0.13)' } }}>
@@ -76,6 +81,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                 <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, mb: 0.5 }}>
                     <Typography sx={{ flex: 1, fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Աշխատանք</Typography>
                     <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Քանակ</Typography>
+                    <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Արժ.</Typography>
                     <Box sx={{ width: 36 }} />
                 </Box>
                 <Divider sx={{ mb: 0.5, borderColor: '#e5f9fa' }} />
@@ -85,7 +91,9 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                 )}
 
                 {rows.map((row, idx) => {
-                    const isCosted = costedIds.has(row._id);
+                    const rowId = toRowId(row._id);
+                    const unitPrice = getUnitPrice(rowId);
+                    const isCosted = unitPrice > 0;
                     return (
                         <Box
                             key={row._id}
@@ -110,6 +118,9 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                             </Box>
                             <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.78rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
                                 {Number(row.quantity).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
+                            </Typography>
+                            <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.78rem', fontWeight: isCosted ? 600 : 400, color: isCosted ? ACCENT : '#bbb', flexShrink: 0 }}>
+                                {isCosted ? unitPrice.toLocaleString('hy-AM', { maximumFractionDigits: 0 }) : '—'}
                             </Typography>
                             <IconButton
                                 className="add-btn"
