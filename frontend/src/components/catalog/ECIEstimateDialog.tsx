@@ -46,6 +46,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     const [selectedLaborIds, setSelectedLaborIds] = useState<string[]>([]);
     const accordionRef = useRef<EstimateThreeLevelNestedAccordionRef>(null);
     const autoUpdatedRef = useRef(false);
+    const [accordionKey, setAccordionKey] = useState(0);
 
     // Auto-update market prices when an estimate is linked/opened (no confirmation needed)
     useEffect(() => {
@@ -55,7 +56,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
             command: 'estimate/calc_market_prices',
             args: { estimateId: linkedEstimateId },
         }).then(() => {
-            accordionRef.current?.refreshEverything(false);
+            setAccordionKey(k => k + 1); // remount accordion so it fetches fresh prices
         }).catch(() => {});
     }, [linkedEstimateId]);
     const [creatorAccount, setCreatorAccount] = useState<ApiAccount | null>(null);
@@ -568,6 +569,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     {/* Estimate content - always visible below tabs when linked */}
                     {hasLinkedEstimate && (
                         <EstimateThreeLevelNestedAccordion
+                            key={accordionKey}
                             ref={accordionRef}
                             estimateId={linkedEstimateId!}
                             isOnlyEstInfo={!isAdmin}
