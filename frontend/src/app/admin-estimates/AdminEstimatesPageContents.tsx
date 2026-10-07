@@ -258,6 +258,7 @@ export default function AdminEstimatesPageContents() {
                     onClose={() => setEstimateId(null)}
                     onConfirm={() => setDataRequested(false)}
                     isOnlyEstInfo={true}
+                    showBackButton={true}
                 />
             )}
 

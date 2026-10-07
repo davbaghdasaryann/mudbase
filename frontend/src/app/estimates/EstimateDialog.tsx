@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
@@ -52,6 +53,7 @@ interface EstimatePageDialogProps {
     onConfirm?: () => void;
 
     isOnlyEstInfo?: boolean;
+    showBackButton?: boolean;
 }
 
 export default function EstimatePageDialog(props: EstimatePageDialogProps) {
@@ -292,6 +294,21 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             <DialogTitle sx={{ m: 0, pt: 1, pb: 0 }} id='customized-dialog-title'>
                 {props.estimateTitle}
             </DialogTitle>
+
+            {props.showBackButton && (
+                <IconButton
+                    aria-label='back'
+                    onClick={handleClose}
+                    sx={(theme) => ({
+                        position: 'absolute',
+                        left: 8,
+                        top: 8,
+                        color: theme.palette.grey[500],
+                    })}
+                >
+                    <ArrowBackIcon />
+                </IconButton>
+            )}
 
             <IconButton
                 aria-label='close'
