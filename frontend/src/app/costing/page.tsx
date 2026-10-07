@@ -2572,6 +2572,7 @@ ${tableBodyHtml}
                     open={enthakajalsOpen}
                     onClose={() => setEnthakajalsOpen(false)}
                     laborRows={estimateSnapshot?.laborRows ?? []}
+                    costHistory={costHistory}
                 />
                 <UnforeseenDialog
                     open={unforeseenOpen}
