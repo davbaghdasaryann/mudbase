@@ -54,6 +54,7 @@ interface EstimatePageDialogProps {
 
     isOnlyEstInfo?: boolean;
     showBackButton?: boolean;
+    disableUpdateData?: boolean;
 }
 
 export default function EstimatePageDialog(props: EstimatePageDialogProps) {
@@ -468,7 +469,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 },
                                 { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick },
                                 { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick },
-                                { labelKey: 'Update Data', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => setUpdateDataModalOpen(true) },
+                                { labelKey: 'Update Data', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => setUpdateDataModalOpen(true), disabled: props.disableUpdateData },
                                 { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick },
                                 { labelKey: 'Undo', iconNode: <UndoIcon sx={{ fontSize: 22 }} />, onClick: handleUndo },
                                 { labelKey: 'Redo', iconNode: <RedoIcon sx={{ fontSize: 22 }} />, onClick: handleRedo },
