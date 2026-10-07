@@ -60,7 +60,7 @@ export default function EstimateInfoAccordionContent(props: Props) {
 
     let form = F.useForm({
         // type: 'input',
-        type: (!props.readOnly && session?.user && permissionsSet?.has?.('EST_EDT_INFO')) ? 'update-fields' : 'readonly',
+        type: (!props.readOnly && session?.user && (permissionsSet?.has?.('EST_EDT_INFO') || permissionsSet?.has?.('ALL'))) ? 'update-fields' : 'readonly',
     });
 
     const mounted = useRef(false);
