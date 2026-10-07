@@ -132,7 +132,7 @@ interface CostingRecord {
     costHistory: CostHistoryEntry[];
     pahestEntries: PahestEntry[];
     aylEntries: AylEntry[];
-    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
     estimateSnapshot?: EstimateSnapshot;
     unforeseenEstimateSnapshot?: EstimateSnapshot;
     unforeseenEstimateId?: string;
@@ -591,7 +591,7 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
 
 function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }: {
     estimateSnapshot?: EstimateSnapshot | null;
-    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
     height?: number;
 }) {
     const { t } = useTranslation();
@@ -665,7 +665,7 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
 
 function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, pahestEntries, height = 220 }: {
     estimateSnapshot?: EstimateSnapshot | null;
-    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
     costHistory: CostHistoryEntry[];
     pahestEntries: PahestEntry[];
     height?: number;
@@ -2574,6 +2574,16 @@ ${tableBodyHtml}
                     laborRows={estimateSnapshot?.laborRows ?? []}
                     costHistory={costHistory}
                     actualData={actualData}
+                    onSaveLaborPrice={(rowId, unitPrice, withoutMats) => {
+                        setActualData(prev => {
+                            const updated = {
+                                ...prev,
+                                [rowId]: { ...(prev[rowId] ?? { quantity: '', unitPrice: '', spent: '' }), unitPrice, withoutMaterials: withoutMats },
+                            };
+                            if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, updated, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
+                            return updated;
+                        });
+                    }}
                 />
                 <UnforeseenDialog
                     open={unforeseenOpen}
