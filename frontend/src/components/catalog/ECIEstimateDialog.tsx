@@ -572,6 +572,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                     estimateId={linkedEstimateId}
                     estimateTitle={props.estimateTitle}
                     onClose={() => setShowEstimateDialog(false)}
+                    showBackButton={true}
                 />
             )}
 
