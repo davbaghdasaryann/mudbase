@@ -53,6 +53,7 @@ import VolumesDialog from './VolumesDialog';
 import MaterialsDialog from './MaterialsDialog';
 import SalaryDialog from './SalaryDialog';
 import SubcontractorDialog from './SubcontractorDialog';
+import EnthakajalsDialog from './EnthakajalsDialog';
 import UnforeseenDialog from './UnforeseenDialog';
 import SmallScaleDialog from './SmallScaleDialog';
 import EstimatePageDialog from '../estimates/EstimateDialog';
@@ -783,6 +784,7 @@ export default function CostingPage() {
     const [materialsOpen, setMaterialsOpen] = useState(false);
     const [salaryOpen, setSalaryOpen] = useState(false);
     const [subcontractorOpen, setSubcontractorOpen] = useState(false);
+    const [enthakajalsOpen, setEnthakajalsOpen] = useState(false);
     const [unforeseenOpen, setUnforeseenOpen] = useState(false);
     const [smallScaleOpen, setSmallScaleOpen] = useState(false);
     const [smallScaleEditOpen, setSmallScaleEditOpen] = useState(false);
@@ -1930,7 +1932,7 @@ ${tableBodyHtml}
                                 { icon: <TuneOutlinedIcon sx={{ fontSize: 24, color: '#546e7a', opacity: 0.55 }} />, label: 'Վերադիր ծախսեր', onClick: () => setOverheadOpen(true), accent: '#546e7a', hoverBg: 'rgba(84,110,122,0.06)' },
                                 { icon: <AddCardOutlinedIcon sx={{ fontSize: 24, color: '#e53935', opacity: 0.55 }} />, label: 'Այլ ծախսեր', onClick: () => setOtherCostsOpen(true), accent: '#e53935', hoverBg: 'rgba(229,57,53,0.06)' },
                                 { icon: <ChangeCircleOutlinedIcon sx={{ fontSize: 24, color: '#f57c00', opacity: 0.55 }} />, label: 'Աշխատանքի Փոփոխություն', onClick: () => {}, accent: '#f57c00', hoverBg: 'rgba(245,124,0,0.06)' },
-                                { icon: <HandshakeOutlinedIcon sx={{ fontSize: 24, color: '#00796b', opacity: 0.55 }} />, label: 'Ենթակապալ', onClick: () => setSubcontractorOpen(true), accent: '#00796b', hoverBg: 'rgba(0,121,107,0.06)' },
+                                { icon: <HandshakeOutlinedIcon sx={{ fontSize: 24, color: '#00796b', opacity: 0.55 }} />, label: 'Ենթակապալ', onClick: () => setEnthakajalsOpen(true), accent: '#00796b', hoverBg: 'rgba(0,121,107,0.06)' },
                                 { icon: <DescriptionOutlinedIcon sx={{ fontSize: 24, color: '#3949ab', opacity: 0.55 }} />, label: 'Փաստաթղթեր', onClick: () => setDocumentsOpen(true), accent: '#3949ab', hoverBg: 'rgba(57,73,171,0.06)' },
                             ].map(({ icon, label, onClick, accent, hoverBg }) => (
                                 <Box key={label} onClick={onClick} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 118, height: 96, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: hoverBg }, '&:hover svg': { opacity: '1 !important' } }}>
@@ -2565,6 +2567,11 @@ ${tableBodyHtml}
                     open={subcontractorOpen}
                     onClose={() => setSubcontractorOpen(false)}
                     onCostAdded={handleCostAdded}
+                />
+                <EnthakajalsDialog
+                    open={enthakajalsOpen}
+                    onClose={() => setEnthakajalsOpen(false)}
+                    laborRows={estimateSnapshot?.laborRows ?? []}
                 />
                 <UnforeseenDialog
                     open={unforeseenOpen}
