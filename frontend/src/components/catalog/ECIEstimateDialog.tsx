@@ -256,7 +256,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                 icon: `${TOOLBAR_ICON}/add.svg`,
                 onClick: handleCreateEstimation,
             },
-            { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => {}, disabled: !hasLinkedEstimate },
+            { labelKey: 'Update', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: handleUpdate, disabled: !hasLinkedEstimate },
             { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick, disabled: !hasLinkedEstimate },
             { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick, isSelect: true },
