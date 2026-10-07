@@ -23,7 +23,13 @@ interface Props {
 // const [t]= useTranslation()
 
 export default function EstimateInfoAccordionContent(props: Props) {
-    const { session, status, permissionsSet } = usePermissions();
+    const { status } = usePermissions();
+    if (status === 'loading') return null;
+    return <EstimateInfoAccordionContentInner {...props} />;
+}
+
+function EstimateInfoAccordionContentInner(props: Props) {
+    const { session, permissionsSet } = usePermissions();
     const { t } = useTranslation();
 
     const constrData = [
