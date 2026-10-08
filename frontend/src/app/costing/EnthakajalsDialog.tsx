@@ -19,6 +19,7 @@ interface LaborRow {
     unitSymbol: string;
     quantity: number;
     isGroupRow?: boolean;
+    children?: LaborRow[];
 }
 
 interface Props {
@@ -36,7 +37,11 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
     const [inputPrice, setInputPrice] = useState('');
     const [withoutMaterials, setWithoutMaterials] = useState(false);
 
-    const rows = laborRows.filter(r => !r.isGroupRow && Number(r.quantity ?? 0) > 0);
+    // Flatten: skip group rows, include their children (and top-level non-group rows)
+    const flatten = (rs: LaborRow[]): LaborRow[] =>
+        rs.flatMap(r => r.isGroupRow ? (r.children ?? []) : [r]);
+
+    const rows = flatten(laborRows).filter(r => Number(r.quantity ?? 0) > 0);
 
     const toRowId = (id: unknown): string => {
         if (!id) return '';
@@ -51,7 +56,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
     const getUnitPrice = (rowId: string): number => {
         const direct = parseFloat((actualData[rowId]?.unitPrice ?? '').replace(',', '.')) || 0;
         if (direct > 0) return direct;
-        // fallback: average from costHistory entries
+        // fallback: average from costHistory entries for this row
         const entries = (costHistory ?? []).filter(e =>
             e.laborItemId === rowId &&
             !e.paymentMethod?.startsWith('pahest_') &&
