@@ -533,7 +533,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {true && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                                    <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: 1.5, overflow: 'hidden' }}>
                                         {[
                                             { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon />, color: '#E07B39' },
                                             { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon />, color: '#4CAF50' },
