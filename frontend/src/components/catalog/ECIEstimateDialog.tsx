@@ -25,6 +25,7 @@ import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import PlumbingIcon from '@mui/icons-material/Plumbing';
 import BoltIcon from '@mui/icons-material/Bolt';
 import AirIcon from '@mui/icons-material/Air';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { usePermissions } from '@/api/auth';
 import * as Api from '@/api';
 import { ApiAccount, makeCompanyLogoUrl } from '@/api/accounts';
@@ -542,6 +543,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                             { key: 'sewage', label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon />, color: '#00ACC1' },
                                             { key: 'electrical', label: 'Էլեկտրասնուցում', icon: <BoltIcon />, color: '#FFC107' },
                                             { key: 'ventilation', label: 'Օդափոխություն', icon: <AirIcon />, color: '#7E57C2' },
+                                            { key: 'fire_safety', label: 'Հակահրդեհային անվտանգություն', icon: <LocalFireDepartmentIcon />, color: '#FF5722' },
                                         ].map((item) => {
                                             const selected = constructionTypes.includes(item.key);
                                             return (
