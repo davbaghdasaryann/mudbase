@@ -534,14 +534,14 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                                         {[
-                                            { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
-                                            { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
-                                            { key: 'heating', label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
-                                            { key: 'foundation', label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon fontSize="small" /> },
-                                            { key: 'water_supply', label: 'Ջրամատակարարում', icon: <WaterDropIcon fontSize="small" /> },
-                                            { key: 'sewage', label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
-                                            { key: 'electrical', label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
-                                            { key: 'ventilation', label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
+                                            { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon />, color: '#E07B39' },
+                                            { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon />, color: '#4CAF50' },
+                                            { key: 'heating', label: 'Ջեռուցում', icon: <WhatshotIcon />, color: '#F44336' },
+                                            { key: 'foundation', label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon />, color: '#8D6E63' },
+                                            { key: 'water_supply', label: 'Ջրամատակարարում', icon: <WaterDropIcon />, color: '#2196F3' },
+                                            { key: 'sewage', label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon />, color: '#00ACC1' },
+                                            { key: 'electrical', label: 'Էլեկտրասնուցում', icon: <BoltIcon />, color: '#FFC107' },
+                                            { key: 'ventilation', label: 'Օդափոխություն', icon: <AirIcon />, color: '#7E57C2' },
                                         ].map((item) => {
                                             const selected = constructionTypes.includes(item.key);
                                             return (
@@ -552,16 +552,18 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         ...toolButtonSx(!isSuperAdmin),
                                                         pointerEvents: isSuperAdmin ? 'auto' : 'none',
                                                         backgroundColor: selected ? 'rgba(0,171,190,0.12)' : 'rgba(0,171,190,0.04)',
-                                                        color: selected ? 'primary.main' : 'text.secondary',
                                                         opacity: (!isSuperAdmin && !selected) ? 0.6 : 1,
                                                         outline: selected ? '1.5px solid' : 'none',
                                                         outlineColor: 'primary.main',
+                                                        width: 72,
+                                                        minWidth: 72,
+                                                        maxWidth: 72,
                                                     }}
                                                 >
-                                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, '& svg': { fontSize: '22px' } }}>
+                                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
                                                         {item.icon}
                                                     </Box>
-                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', color: selected ? 'primary.main' : 'text.secondary' }}>
                                                         {item.label}
                                                     </Typography>
                                                 </Box>
