@@ -17,6 +17,7 @@ import EstimateOtherExpensesAccordion from '@/components/estimate/EstimateOtherE
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import FormatPaintIcon from '@mui/icons-material/FormatPaint';
+import CheckIcon from '@mui/icons-material/Check';
 import HomeIcon from '@mui/icons-material/Home';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import FoundationIcon from '@mui/icons-material/Foundation';
@@ -549,19 +550,19 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
                                                     sx={{
                                                         display: 'flex', alignItems: 'center', gap: '6px',
-                                                        px: 1, py: '5px', borderRadius: '6px',
+                                                        px: '8px', py: '5px', borderRadius: '6px',
                                                         cursor: isSuperAdmin ? 'pointer' : 'default',
-                                                        border: '1px solid',
+                                                        border: selected ? '1.5px solid' : '1px solid',
                                                         borderColor: selected ? 'primary.main' : 'divider',
-                                                        bgcolor: selected ? 'primary.main' : 'action.hover',
-                                                        color: selected ? 'primary.contrastText' : 'text.secondary',
+                                                        bgcolor: 'background.paper',
+                                                        color: selected ? 'primary.main' : 'text.secondary',
                                                         transition: 'all 0.15s',
-                                                        '&:hover': isSuperAdmin ? { borderColor: 'primary.main', opacity: 0.85 } : {},
+                                                        '&:hover': isSuperAdmin ? { borderColor: 'primary.main', color: 'primary.main' } : {},
                                                         userSelect: 'none',
                                                         minWidth: 0,
                                                     }}
                                                 >
-                                                    <Box sx={{ display: 'flex', flexShrink: 0, '& svg': { fontSize: '14px' } }}>{item.icon}</Box>
+                                                    <Box sx={{ display: 'flex', flexShrink: 0, '& svg': { fontSize: '14px' } }}>{selected ? <CheckIcon sx={{ fontSize: '14px' }} /> : item.icon}</Box>
                                                     <Typography sx={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                                         {item.label}
                                                     </Typography>
