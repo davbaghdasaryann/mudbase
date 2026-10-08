@@ -29,7 +29,13 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
     // const { data: session } = useSession();
     const { session, status, permissionsSet } = usePermissions();
 
-    let form = F.useForm({ type: (session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly) ? 'update-fields' : 'displayonly' });
+    const canEditOtherExpenses = !!(session?.user && (
+        permissionsSet?.has?.('EST_EDT_OTHR_XPNS') ||
+        permissionsSet?.has?.('USR_FCH_ALL') ||
+        permissionsSet?.has?.('ALL')
+    ) && !props.viewOnly);
+
+    let form = F.useForm({ type: canEditOtherExpenses ? 'update-fields' : 'displayonly' });
 
     // let form = F.useForm({
     //     // type: 'input',
@@ -245,7 +251,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         const expenseKey = Object.keys(expense)[0];
                         const expenseValue = expense[expenseKey];
 
-                        if ((session?.user && (!permissionsSet?.has?.('EST_EDT_OTHR_XPNS') || props.viewOnly)) && expenseKey === 'typeOfCost' && expenseValue === 0) {
+                        if (!canEditOtherExpenses && expenseKey === 'typeOfCost' && expenseValue === 0) {
                             return null;
                         }
 
@@ -268,7 +274,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                                 {/* Left: Cost Type — 50% of row */}
                                 <Box sx={{ width: '50%', flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
                                     <F.PageForm form={form} size="xl" onFieldUpdate={handleChange} slotProps={{ paper: { sx: { width: '100%', maxWidth: '100%', minWidth: 0, py: '10px' } } }}>
-                                        {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly)
+                                        {canEditOtherExpenses
                                             ? props.disableEditIcons
                                                 ? <Box sx={{ pointerEvents: 'none', width: '100%', '& .MuiAutocomplete-popupIndicator': { display: 'none' } }}>
                                                     <F.SelectField form={form} xs={12} id={`${expenseKey}-${index}`} items={filteredExpenseItems} value={expenseKey} label="Type of cost" />
@@ -303,7 +309,7 @@ export default function EstimateOtherExpensesAccordion(props: EstimateOtherExpen
                         );
                     })}
 
-                    {(session?.user && permissionsSet?.has?.('EST_EDT_OTHR_XPNS') && !props.viewOnly && !props.disableEditIcons) &&
+                    {(canEditOtherExpenses && !props.disableEditIcons) &&
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, mb: 2 }}>
                             <Button onClick={handleAddExpense} variant="contained" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 {t("Add expense type")}
