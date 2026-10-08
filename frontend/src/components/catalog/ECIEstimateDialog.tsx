@@ -556,7 +556,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         borderColor: selected ? 'primary.main' : 'divider',
                                                         bgcolor: selected ? 'rgba(0,171,190,0.07)' : 'background.paper',
                                                         color: selected ? 'primary.main' : (!isSuperAdmin ? 'text.disabled' : 'text.secondary'),
-                                                        opacity: (!isSuperAdmin && !selected) ? 0.45 : 1,
+                                                        opacity: (!isSuperAdmin && !selected) ? 0.6 : 1,
                                                         transition: 'all 0.15s',
                                                         '&:hover': isSuperAdmin ? { borderColor: 'primary.main', color: 'primary.main', bgcolor: 'rgba(0,171,190,0.07)' } : {},
                                                         userSelect: 'none',
