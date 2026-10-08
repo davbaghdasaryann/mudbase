@@ -545,8 +545,8 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         ].map((item) => {
                                             const selected = constructionTypes.includes(item.key);
                                             return (
+                                                <Tooltip key={item.key} title={isSuperAdmin ? 'ընտրել' : ''} placement="top" arrow>
                                                 <Box
-                                                    key={item.key}
                                                     onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
                                                     sx={{
                                                         ...toolButtonSx(!isSuperAdmin),
@@ -556,15 +556,17 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         outline: selected ? '1.5px solid' : 'none',
                                                         outlineColor: 'primary.main',
                                                         minWidth: 80,
+                                                        height: 84,
                                                     }}
                                                 >
                                                     <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
                                                         {item.icon}
                                                     </Box>
-                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', color: selected ? 'primary.main' : 'text.secondary' }}>
+                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', height: '36px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', textAlign: 'center', color: selected ? 'primary.main' : 'text.secondary' }}>
                                                         {item.label}
                                                     </Typography>
                                                 </Box>
+                                                </Tooltip>
                                             );
                                         })}
                                     </Box>
