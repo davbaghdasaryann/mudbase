@@ -529,7 +529,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     </Box>
                                 ))}
 
-                                {(isSuperAdmin || constructionTypes.length > 0) && (
+                                {true && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
                                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
@@ -542,7 +542,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                             { key: 'sewage', label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
                                             { key: 'electrical', label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
                                             { key: 'ventilation', label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
-                                        ].filter(item => isSuperAdmin || constructionTypes.includes(item.key)).map((item) => {
+                                        ].map((item) => {
                                             const selected = constructionTypes.includes(item.key);
                                             return (
                                                 <Box
@@ -555,7 +555,8 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         border: selected ? '1.5px solid' : '1px solid',
                                                         borderColor: selected ? 'primary.main' : 'divider',
                                                         bgcolor: selected ? 'rgba(0,171,190,0.07)' : 'background.paper',
-                                                        color: selected ? 'primary.main' : 'text.secondary',
+                                                        color: selected ? 'primary.main' : (!isSuperAdmin ? 'text.disabled' : 'text.secondary'),
+                                                        opacity: (!isSuperAdmin && !selected) ? 0.45 : 1,
                                                         transition: 'all 0.15s',
                                                         '&:hover': isSuperAdmin ? { borderColor: 'primary.main', color: 'primary.main', bgcolor: 'rgba(0,171,190,0.07)' } : {},
                                                         userSelect: 'none',
