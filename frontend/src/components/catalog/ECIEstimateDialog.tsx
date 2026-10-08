@@ -444,30 +444,6 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                             {hasLinkedEstimate ? (
                                 <EstimateInfoAccordionContent estimateId={linkedEstimateId!} readOnly={!isAdmin} />
                             ) : noDataMessage}
-                            {constructionTypes.length > 0 && (
-                                <Box sx={{ mt: 2 }}>
-                                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: 'text.secondary', mb: 1 }}>
-                                        {t('Construction Types')}
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                        {[
-                                            { key: 'interior', label: 'Ներքին Հարդարում' },
-                                            { key: 'exterior', label: 'Արտաքին Հարդարում' },
-                                            { key: 'heating', label: 'Ջեռուցում' },
-                                            { key: 'foundation', label: 'Հիմնակմախքի իրականացում' },
-                                            { key: 'water_supply', label: 'Ջրամատակարարում' },
-                                            { key: 'sewage', label: 'Ջրահեռացում և կենցաղային կոյուղի' },
-                                            { key: 'electrical', label: 'Էլեկտրասնուցում' },
-                                            { key: 'ventilation', label: 'Օդափոխություն' },
-                                        ].filter(item => constructionTypes.includes(item.key)).map(item => (
-                                            <Box key={item.key} sx={{ display: 'inline-flex', alignItems: 'center', gap: '4px', px: '8px', py: '4px', borderRadius: '6px', border: '1px solid', borderColor: 'primary.main', color: 'primary.main', bgcolor: 'background.paper' }}>
-                                                <CheckIcon sx={{ fontSize: '12px' }} />
-                                                <Typography sx={{ fontSize: '11px', fontWeight: 500 }}>{item.label}</Typography>
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                </Box>
-                            )}
                         </Box>
                     )}
 
@@ -553,7 +529,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     </Box>
                                 ))}
 
-                                {isSuperAdmin && (
+                                {(isSuperAdmin || constructionTypes.length > 0) && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
                                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
