@@ -64,6 +64,7 @@ import AnalysisTab from './AnalysisTab';
 import { mainPrimaryColor } from '@/theme';
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
+import { usePermissions } from '@/api/auth';
 import { formatCurrencyRounded, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
 import CostBreakdownChart from '@/app/analysis/structural/CostBreakdownChart';
 import { estimateOtherExpensesItems } from '@/data/estimate_manual';
@@ -774,6 +775,8 @@ function LaborProfitabilityWidget({ estimateSnapshot, actualData, costHistory, p
 
 export default function CostingPage() {
     const { t } = useTranslation();
+    const { permissionsSet } = usePermissions();
+    const isSuperAdmin = permissionsSet == null ? true : permissionsSet.has('USR_FCH_ALL');
     const VALID_TABS: TabValue[] = ['general', 'main', 'history', 'pahest', 'analysis', 'unforeseen'];
     const [tab, setTab] = useState<TabValue>('general');
     useEffect(() => {
@@ -2594,7 +2597,7 @@ ${tableBodyHtml}
                 <OtherCostsDialog
                     open={otherCostsOpen}
                     onClose={() => setOtherCostsOpen(false)}
-                    activeExpenseKeys={fullEstimate ? (fullEstimate.otherExpenses ?? []).filter(exp => { const k = Object.keys(exp)[0]; return k && k !== 'typeOfCost'; }).map(exp => Object.keys(exp)[0]) : undefined}
+                    activeExpenseKeys={isSuperAdmin ? undefined : (fullEstimate ? (fullEstimate.otherExpenses ?? []).filter(exp => { const k = Object.keys(exp)[0]; return k && k !== 'typeOfCost'; }).map(exp => Object.keys(exp)[0]) : undefined)}
                     vatActual={vatDeduction}
                     onVatActualChange={val => setVatDeduction(val)}
                     climateActual={climateImpact}

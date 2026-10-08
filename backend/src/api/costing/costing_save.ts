@@ -4,6 +4,7 @@ import * as Db from '@/db';
 import { respondJsonData } from '@tsback/req/req_response';
 import { requireQueryParam } from '@/tsback/req/req_params';
 import { buildEstimateSnapshot } from './costing_snapshot';
+import { Permissions } from '@src/tsmudbase/permissions_setup';
 
 registerApiSession('costing/save', async (req, res, session) => {
     const id = requireQueryParam(req, 'id');
@@ -66,9 +67,12 @@ registerApiSession('costing/save', async (req, res, session) => {
         updateFields.smallScaleEstimateSnapshot = undefined;
     }
 
-    await col.updateOne(
-        { _id: new ObjectId(id), accountId: session.mongoAccountId },
-        { $set: updateFields }
-    );
+    const isSuperAdmin = session.checkPermission(Permissions.All) ||
+        session.checkPermission(Permissions.UsersFetchAll) ||
+        session.checkPermission(Permissions.AccountsFetch);
+    const filter = isSuperAdmin
+        ? { _id: new ObjectId(id) }
+        : { _id: new ObjectId(id), accountId: session.mongoAccountId };
+    await col.updateOne(filter, { $set: updateFields });
     respondJsonData(res, { ok: true });
 });
