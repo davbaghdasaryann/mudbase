@@ -555,9 +555,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         opacity: (!isSuperAdmin && !selected) ? 0.6 : 1,
                                                         outline: selected ? '1.5px solid' : 'none',
                                                         outlineColor: 'primary.main',
-                                                        width: 72,
-                                                        minWidth: 72,
-                                                        maxWidth: 72,
+                                                        minWidth: 80,
                                                     }}
                                                 >
                                                     <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
