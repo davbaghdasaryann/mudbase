@@ -532,7 +532,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {true && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                                         {[
                                             { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
                                             { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
@@ -549,23 +549,19 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     key={item.key}
                                                     onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
                                                     sx={{
-                                                        display: 'flex', alignItems: 'center', gap: '8px',
-                                                        px: '12px', py: '8px', borderRadius: '8px',
-                                                        cursor: isSuperAdmin ? 'pointer' : 'default',
-                                                        border: selected ? '1.5px solid' : '1px solid',
-                                                        borderColor: selected ? 'primary.main' : 'divider',
-                                                        bgcolor: selected ? 'rgba(0,171,190,0.07)' : 'background.paper',
-                                                        color: selected ? 'primary.main' : (!isSuperAdmin ? 'text.disabled' : 'text.secondary'),
+                                                        ...toolButtonSx(!isSuperAdmin),
+                                                        pointerEvents: isSuperAdmin ? 'auto' : 'none',
+                                                        backgroundColor: selected ? 'rgba(0,171,190,0.12)' : 'rgba(0,171,190,0.04)',
+                                                        color: selected ? 'primary.main' : 'text.secondary',
                                                         opacity: (!isSuperAdmin && !selected) ? 0.6 : 1,
-                                                        transition: 'all 0.15s',
-                                                        '&:hover': isSuperAdmin ? { borderColor: 'primary.main', color: 'primary.main', bgcolor: 'rgba(0,171,190,0.07)' } : {},
-                                                        userSelect: 'none',
-                                                        minWidth: '120px',
-                                                        boxSizing: 'border-box',
+                                                        outline: selected ? '1.5px solid' : 'none',
+                                                        outlineColor: 'primary.main',
                                                     }}
                                                 >
-                                                    <Box sx={{ display: 'flex', flexShrink: 0, '& svg': { fontSize: '18px' } }}>{selected ? <CheckIcon sx={{ fontSize: '16px' }} /> : item.icon}</Box>
-                                                    <Typography sx={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, '& svg': { fontSize: '22px' } }}>
+                                                        {item.icon}
+                                                    </Box>
+                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                                                         {item.label}
                                                     </Typography>
                                                 </Box>
