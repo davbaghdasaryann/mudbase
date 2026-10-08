@@ -16,6 +16,7 @@ export interface EntityEstimate {
     address?: string;
     constructionType?: string;
     buildingType?: string;
+    constructionTypes?: string[];
     constructionSurface?: string;
     builtUpArea?: string;
     createdAt?: Date;

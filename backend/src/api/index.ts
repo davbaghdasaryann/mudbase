@@ -32,6 +32,7 @@ export * from "./estimate/estimate/estimate_delete";
 export * from "./estimate/estimate/estimate_duplicate";
 export * from "./estimate/estimate/estimate_get";
 export * from "./estimate/estimate/estimate_other_expenses";
+export * from "./estimate/estimate/estimate_update_construction_types";
 export * from "./estimate/estimate/estimate_rename";
 export * from "./estimate/estimate/estimate_change_account";
 export * from "./estimate/estimate/estimate_unarchive";

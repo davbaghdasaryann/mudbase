@@ -10,6 +10,7 @@ export interface ApiEstimate {
     address: string;
     constructionType: string;
     buildingType: string;
+    constructionTypes?: string[];
     constructionSurface: string;
     createdAt: Date;
     estimateNumber: string;

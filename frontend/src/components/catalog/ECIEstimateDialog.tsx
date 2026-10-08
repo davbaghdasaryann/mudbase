@@ -66,16 +66,28 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
     }, [linkedEstimateId]);
     const [creatorAccount, setCreatorAccount] = useState<ApiAccount | null>(null);
 
+    const [constructionTypes, setConstructionTypes] = useState<string[]>([]);
+
     useEffect(() => {
-        if (!linkedEstimateId) return;
+        if (!linkedEstimateId) { setConstructionTypes([]); return; }
         Api.requestSession<any>({ command: 'estimate/get', args: { estimateId: linkedEstimateId } })
             .then(est => {
+                setConstructionTypes(est?.constructionTypes ?? []);
                 if (!est?.accountId) return;
                 return Api.requestSession<ApiAccount>({ command: 'account/get', args: { accountId: String(est.accountId) } });
             })
             .then(account => { if (account) setCreatorAccount(account); })
             .catch(() => {});
     }, [linkedEstimateId]);
+
+    const toggleConstructionType = async (key: string) => {
+        if (!linkedEstimateId) return;
+        const next = constructionTypes.includes(key)
+            ? constructionTypes.filter(k => k !== key)
+            : [...constructionTypes, key];
+        setConstructionTypes(next);
+        await Api.requestSession({ command: 'estimate/update_construction_types', args: { estimateId: linkedEstimateId, constructionTypes: next } });
+    };
 
     const isAdmin = permissionsSet == null ? true : permissionsSet.has('CAT_EDT');
     const isSuperAdmin = permissionsSet == null ? true : permissionsSet.has('USR_FCH_ALL');
@@ -516,26 +528,49 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                     </Box>
                                 ))}
 
-                                {isAdmin && (<>
+                                {(isAdmin || constructionTypes.length > 0) && (
+                                    <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
-
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0.5 }}>
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
                                         {[
-                                            { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
-                                            { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
-                                            { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
-                                            { label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon fontSize="small" /> },
-                                            { label: 'Ջրամատակարարում', icon: <WaterDropIcon fontSize="small" /> },
-                                            { label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
-                                            { label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
-                                            { label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
-                                        ].map((item, i) => (
-                                            <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '12px', color: 'text.primary', px: 1, justifyContent: 'flex-start' }}>
-                                                {item.label}
-                                            </Button>
-                                        ))}
+                                            { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
+                                            { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
+                                            { key: 'heating', label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
+                                            { key: 'foundation', label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon fontSize="small" /> },
+                                            { key: 'water_supply', label: 'Ջրամատակարարում', icon: <WaterDropIcon fontSize="small" /> },
+                                            { key: 'sewage', label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
+                                            { key: 'electrical', label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
+                                            { key: 'ventilation', label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
+                                        ].filter(item => isSuperAdmin || constructionTypes.includes(item.key)).map((item) => {
+                                            const selected = constructionTypes.includes(item.key);
+                                            return (
+                                                <Box
+                                                    key={item.key}
+                                                    onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
+                                                    sx={{
+                                                        display: 'flex', alignItems: 'center', gap: '6px',
+                                                        px: 1, py: '5px', borderRadius: '6px',
+                                                        cursor: isSuperAdmin ? 'pointer' : 'default',
+                                                        border: '1px solid',
+                                                        borderColor: selected ? 'primary.main' : 'divider',
+                                                        bgcolor: selected ? 'primary.main' : 'action.hover',
+                                                        color: selected ? 'primary.contrastText' : 'text.secondary',
+                                                        transition: 'all 0.15s',
+                                                        '&:hover': isSuperAdmin ? { borderColor: 'primary.main', opacity: 0.85 } : {},
+                                                        userSelect: 'none',
+                                                        minWidth: 0,
+                                                    }}
+                                                >
+                                                    <Box sx={{ display: 'flex', flexShrink: 0, '& svg': { fontSize: '14px' } }}>{item.icon}</Box>
+                                                    <Typography sx={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                                        {item.label}
+                                                    </Typography>
+                                                </Box>
+                                            );
+                                        })}
                                     </Box>
-                                </>)}
+                                    </>
+                                )}
                             </Box>
                         </Box>
                     )}
