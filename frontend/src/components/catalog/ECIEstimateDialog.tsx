@@ -519,20 +519,22 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {isAdmin && (<>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
 
-                                    {[
-                                        { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
-                                        { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
-                                        { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
-                                        { label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon fontSize="small" /> },
-                                        { label: 'Ջրամատակարարում', icon: <WaterDropIcon fontSize="small" /> },
-                                        { label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
-                                        { label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
-                                        { label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
-                                    ].map((item, i) => (
-                                        <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '13px', color: 'text.primary', px: 1.5 }}>
-                                            {item.label}
-                                        </Button>
-                                    ))}
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0.5 }}>
+                                        {[
+                                            { label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
+                                            { label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
+                                            { label: 'Ջեռուցում', icon: <WhatshotIcon fontSize="small" /> },
+                                            { label: 'Հիմնակմախքի իրականացում', icon: <FoundationIcon fontSize="small" /> },
+                                            { label: 'Ջրամատակարարում', icon: <WaterDropIcon fontSize="small" /> },
+                                            { label: 'Ջրահեռացում և կենցաղային կոյուղի', icon: <PlumbingIcon fontSize="small" /> },
+                                            { label: 'Էլեկտրասնուցում', icon: <BoltIcon fontSize="small" /> },
+                                            { label: 'Օդափոխություն', icon: <AirIcon fontSize="small" /> },
+                                        ].map((item, i) => (
+                                            <Button key={i} variant="text" onClick={() => {}} startIcon={item.icon} sx={{ textTransform: 'none', fontWeight: 500, fontSize: '12px', color: 'text.primary', px: 1, justifyContent: 'flex-start' }}>
+                                                {item.label}
+                                            </Button>
+                                        ))}
+                                    </Box>
                                 </>)}
                             </Box>
                         </Box>
