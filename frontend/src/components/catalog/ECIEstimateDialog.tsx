@@ -87,7 +87,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
             ? constructionTypes.filter(k => k !== key)
             : [...constructionTypes, key];
         setConstructionTypes(next);
-        await Api.requestSession({ command: 'estimate/update_construction_types', args: { estimateId: linkedEstimateId, constructionTypes: next } });
+        await Api.requestSession({ command: 'estimate/update_construction_types', json: { estimateId: linkedEstimateId, constructionTypes: next } });
     };
 
     const isAdmin = permissionsSet == null ? true : permissionsSet.has('CAT_EDT');
@@ -532,7 +532,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {(isSuperAdmin || constructionTypes.length > 0) && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                                         {[
                                             { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon fontSize="small" /> },
                                             { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon fontSize="small" /> },
@@ -549,21 +549,22 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     key={item.key}
                                                     onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
                                                     sx={{
-                                                        display: 'flex', alignItems: 'center', gap: '6px',
-                                                        px: '8px', py: '5px', borderRadius: '6px',
+                                                        display: 'flex', alignItems: 'center', gap: '8px',
+                                                        px: '12px', py: '8px', borderRadius: '8px',
                                                         cursor: isSuperAdmin ? 'pointer' : 'default',
                                                         border: selected ? '1.5px solid' : '1px solid',
                                                         borderColor: selected ? 'primary.main' : 'divider',
-                                                        bgcolor: 'background.paper',
+                                                        bgcolor: selected ? 'rgba(0,171,190,0.07)' : 'background.paper',
                                                         color: selected ? 'primary.main' : 'text.secondary',
                                                         transition: 'all 0.15s',
-                                                        '&:hover': isSuperAdmin ? { borderColor: 'primary.main', color: 'primary.main' } : {},
+                                                        '&:hover': isSuperAdmin ? { borderColor: 'primary.main', color: 'primary.main', bgcolor: 'rgba(0,171,190,0.07)' } : {},
                                                         userSelect: 'none',
-                                                        minWidth: 0,
+                                                        minWidth: '120px',
+                                                        boxSizing: 'border-box',
                                                     }}
                                                 >
-                                                    <Box sx={{ display: 'flex', flexShrink: 0, '& svg': { fontSize: '14px' } }}>{selected ? <CheckIcon sx={{ fontSize: '14px' }} /> : item.icon}</Box>
-                                                    <Typography sx={{ fontSize: '11px', fontWeight: 500, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                                    <Box sx={{ display: 'flex', flexShrink: 0, '& svg': { fontSize: '18px' } }}>{selected ? <CheckIcon sx={{ fontSize: '16px' }} /> : item.icon}</Box>
+                                                    <Typography sx={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                                         {item.label}
                                                     </Typography>
                                                 </Box>
