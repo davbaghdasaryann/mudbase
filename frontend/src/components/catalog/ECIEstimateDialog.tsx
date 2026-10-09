@@ -497,7 +497,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                             alt={creatorAccount.companyName}
                                                             sx={{ height: 36, maxWidth: 100, objectFit: 'contain', borderRadius: 1 }} />
                                                     ) : (
-                                                        <Box sx={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(0,171,190,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Box sx={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(0,171,190,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                             <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#00ABBE' }}>
                                                                 {creatorAccount.companyName?.charAt(0)?.toUpperCase() ?? '?'}
                                                             </Typography>
@@ -544,7 +544,12 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                             { key: 'electrical', label: 'Էլեկտրասնուցում', icon: <BoltIcon />, color: '#FFC107' },
                                             { key: 'ventilation', label: 'Օդափոխություն', icon: <AirIcon />, color: '#7E57C2' },
                                             { key: 'fire_safety', label: 'Հակահրդեհային անվտանգություն', icon: <LocalFireDepartmentIcon />, color: '#FF5722' },
-                                        ].map((item) => {
+                                        ].sort((a, b) => {
+                                            if (isSuperAdmin) return 0;
+                                            const aS = constructionTypes.includes(a.key) ? 0 : 1;
+                                            const bS = constructionTypes.includes(b.key) ? 0 : 1;
+                                            return aS - bS;
+                                        }).map((item) => {
                                             const selected = constructionTypes.includes(item.key);
                                             return (
                                                 <Tooltip key={item.key} title={isSuperAdmin ? 'ընտրել' : ''} placement="top" arrow>
@@ -553,12 +558,12 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     sx={{
                                                         ...toolButtonSx(!isSuperAdmin),
                                                         pointerEvents: isSuperAdmin ? 'auto' : 'none',
-                                                        backgroundColor: selected ? 'rgba(0,171,190,0.12)' : 'rgba(0,171,190,0.04)',
+                                                        backgroundColor: selected ? 'rgba(0,171,190,0.05)' : 'rgba(0,171,190,0.04)',
                                                         opacity: (!isSuperAdmin && !selected) ? 0.6 : 1,
                                                         outline: selected ? '1.5px solid' : 'none',
                                                         outlineColor: 'primary.main',
                                                         minWidth: 80,
-                                                        height: 96,
+
                                                     }}
                                                 >
                                                     <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
