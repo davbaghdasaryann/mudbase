@@ -569,7 +569,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
                                                         {item.icon}
                                                     </Box>
-                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', height: '48px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', textAlign: 'center', color: selected ? 'primary.main' : 'text.secondary' }}>
+                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', height: '36px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', textAlign: 'center', color: selected ? 'primary.main' : 'text.secondary' }}>
                                                         {item.label}
                                                     </Typography>
                                                 </Box>
