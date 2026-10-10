@@ -26,6 +26,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloseIcon from '@mui/icons-material/Close';
+import StarIcon from '@mui/icons-material/Star';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '../ConfirmationDialog';
@@ -286,17 +287,21 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
 
     return (
         <Dialog open={true} onClose={props.onClose} maxWidth="md" fullWidth>
-            <DialogTitle>
-                {step === 'destination' ? t('Choose destination') : t('Import from Favorites')}
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 2, pr: 6, borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{
+                    width: 40, height: 40, borderRadius: 1.5, flexShrink: 0,
+                    backgroundColor: 'rgba(0,171,190,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                    <StarIcon sx={{ color: 'primary.main', fontSize: 22 }} />
+                </Box>
+                <Box sx={{ flex: 1, textAlign: 'center', fontWeight: 600 }}>
+                    {step === 'destination' ? t('Choose destination') : t('Import from Favorites')}
+                </Box>
                 <IconButton
                     aria-label="close"
                     onClick={props.onClose}
-                    sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        color: (theme) => theme.palette.grey[500],
-                    }}
+                    sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
                 >
                     <CloseIcon />
                 </IconButton>
