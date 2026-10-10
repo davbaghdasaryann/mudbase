@@ -75,7 +75,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
     const [laborItemsByGroupId, setLaborItemsByGroupId] = useState<Record<string, FavoriteLaborItem[]>>({});
     const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
     const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
-    const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+    const [expandedGroupIds, setExpandedGroupIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
@@ -128,7 +128,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
     };
 
     const handleAccordionChange = (groupId: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-        setExpandedGroupId(isExpanded ? groupId : null);
+        setExpandedGroupIds(prev => isExpanded ? [...prev, groupId] : prev.filter(id => id !== groupId));
         if (isExpanded) fetchGroupItems(groupId);
     };
 
@@ -411,7 +411,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                             {groups.map((group) => (
                                 <Accordion
                                     key={group._id}
-                                    expanded={expandedGroupId === group._id}
+                                    expanded={expandedGroupIds.includes(group._id)}
                                     onChange={handleAccordionChange(group._id)}
                                     disableGutters
                                     sx={{
