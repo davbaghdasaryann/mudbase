@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Dialog, DialogContent, DialogTitle, IconButton, Tabs, Tab, Box, Typography, Divider, Button, TextField, Tooltip, Chip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -533,7 +533,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {true && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
-                                    <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: 1.5, overflow: 'hidden' }}>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignContent: 'center' }}>
                                         {[
                                             { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon />, color: '#E07B39' },
                                             { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon />, color: '#4CAF50' },
@@ -552,28 +552,26 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                         }).map((item) => {
                                             const selected = constructionTypes.includes(item.key);
                                             return (
-                                                <Tooltip key={item.key} title={isSuperAdmin ? 'ընտրել' : ''} placement="top" arrow>
-                                                <Box
+                                                <Tooltip key={item.key} title={isSuperAdmin ? 'ընтрел' : ''} placement="top" arrow>
+                                                <Chip
+                                                    icon={item.icon}
+                                                    label={item.label}
                                                     onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
+                                                    size="small"
                                                     sx={{
-                                                        ...toolButtonSx(!isSuperAdmin),
+                                                        cursor: isSuperAdmin ? 'pointer' : 'default',
+                                                        opacity: (!isSuperAdmin && !selected) ? 0.5 : 1,
                                                         pointerEvents: isSuperAdmin ? 'auto' : 'none',
-                                                        backgroundColor: selected ? 'rgba(0,171,190,0.05)' : 'rgba(0,171,190,0.04)',
-                                                        opacity: (!isSuperAdmin && !selected) ? 0.6 : 1,
-                                                        outline: selected ? '1.5px solid' : 'none',
-                                                        outlineColor: 'primary.main',
-                                                        minWidth: 80,
-                                                        height: { xs: 65, md: 75, lg: 85 },
-                                                        overflow: 'hidden',
+                                                        fontWeight: 500,
+                                                        fontSize: '11px',
+                                                        backgroundColor: selected ? 'rgba(0,171,190,0.1)' : 'rgba(0,0,0,0.04)',
+                                                        border: '1px solid',
+                                                        borderColor: selected ? 'primary.main' : 'rgba(0,0,0,0.18)',
+                                                        color: selected ? 'primary.main' : 'text.secondary',
+                                                        '& .MuiChip-icon': { color: `${item.color} !important`, fontSize: '16px !important' },
+                                                        boxShadow: selected ? '0 0 0 1px rgba(0,171,190,0.3)' : 'none',
                                                     }}
-                                                >
-                                                    <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
-                                                        {item.icon}
-                                                    </Box>
-                                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '11px', minHeight: '36px', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', textAlign: 'center', color: selected ? 'primary.main' : 'text.secondary' }}>
-                                                        {item.label}
-                                                    </Typography>
-                                                </Box>
+                                                />
                                                 </Tooltip>
                                             );
                                         })}
