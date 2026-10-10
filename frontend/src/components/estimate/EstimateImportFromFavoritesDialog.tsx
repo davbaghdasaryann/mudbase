@@ -331,9 +331,6 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                 {step === 'destination' ? (
                     /* Destination picker */
                     <Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            {t('Select a section or subsection to import into')}
-                        </Typography>
                         {sections.length === 0 ? (
                             <Box display="flex" justifyContent="center" p={3}>
                                 <CircularProgress size={24} />
