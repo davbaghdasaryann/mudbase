@@ -1572,12 +1572,14 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                 type: 'include',
                                                 ids: new Set(selectionByGridKey[`${item._id}_empty`] ?? []),
                                             }}
-                                            onRowSelectionModelChange={(newModel) =>
-                                                setSelectionByGridKey((prev) => ({
-                                                    ...prev,
-                                                    [`${item._id}_empty`]: Array.from((newModel as { ids?: Set<string> })?.ids ?? []),
-                                                }))
-                                            }
+                                            onRowSelectionModelChange={(newModel) => {
+                                                const m = newModel as { type?: string; ids?: Set<string> };
+                                                const allRowIds = (item.children?.[0]?.children ?? []).map((r: any) => r._id).filter(Boolean) as string[];
+                                                const selected = m.type === 'exclude'
+                                                    ? allRowIds.filter(id => !(m.ids ?? new Set()).has(id))
+                                                    : Array.from(m.ids ?? []);
+                                                setSelectionByGridKey((prev) => ({ ...prev, [`${item._id}_empty`]: selected }));
+                                            }}
                                             processRowUpdate={handleUpdateRow} // Handle updates
                                             onProcessRowUpdateError={(error) => console.error('Error updating row:', error)} // ✅ Handle errors
                                             getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
@@ -2053,12 +2055,14 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                     type: 'include',
                                                                     ids: new Set(selectionByGridKey[child._id] ?? []),
                                                                 }}
-                                                                onRowSelectionModelChange={(newModel) =>
-                                                                    setSelectionByGridKey((prev) => ({
-                                                                        ...prev,
-                                                                        [child._id]: Array.from((newModel as { ids?: Set<string> })?.ids ?? []),
-                                                                    }))
-                                                                }
+                                                                onRowSelectionModelChange={(newModel) => {
+                                                                    const m = newModel as { type?: string; ids?: Set<string> };
+                                                                    const allRowIds = (child.children ?? []).map((r: any) => r._id).filter(Boolean) as string[];
+                                                                    const selected = m.type === 'exclude'
+                                                                        ? allRowIds.filter(id => !(m.ids ?? new Set()).has(id))
+                                                                        : Array.from(m.ids ?? []);
+                                                                    setSelectionByGridKey((prev) => ({ ...prev, [child._id]: selected }));
+                                                                }}
                                                                 processRowUpdate={handleUpdateRow} // Handle updates
                                                                 onProcessRowUpdateError={(error) => console.error('Error updating row:', error)} // ✅ Handle errors
                                                                 getRowHeight={({ model }) => makeMultilineTableCell(model.itemChangableName as string)}
