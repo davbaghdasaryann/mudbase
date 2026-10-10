@@ -26,7 +26,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import StarIcon from '@mui/icons-material/Star';
 import * as Api from 'api';
 import { useTranslation } from 'react-i18next';
 import { confirmDialog } from '../ConfirmationDialog';
@@ -290,10 +289,10 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 2, pr: 6, borderBottom: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{
                     width: 40, height: 40, borderRadius: 1.5, flexShrink: 0,
-                    backgroundColor: 'rgba(0,171,190,0.12)',
+                    backgroundColor: 'rgba(255,157,0,0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                    <StarIcon sx={{ color: 'primary.main', fontSize: 22 }} />
+                    <ImgElement src='/images/icons/toolbar/favourites.svg' sx={{ height: 22 }} />
                 </Box>
                 <Box sx={{ flex: 1, textAlign: 'center', fontWeight: 600 }}>
                     {step === 'destination' ? t('Choose destination') : t('Import from Favorites')}
