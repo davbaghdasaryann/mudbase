@@ -222,7 +222,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
         border: '1px solid #00ABBE',
         borderTop: 0,
         borderRadius: '0 4px 4px 4px',
-        height: 130,
+        height: 160,
         overflow: 'visible',
     };
 
@@ -533,7 +533,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                 {true && (
                                     <>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1 }} />
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignContent: 'center' }}>
+                                    <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0.75, alignContent: 'center' }}>
                                         {[
                                             { key: 'interior', label: 'Ներքին Հարդարում', icon: <FormatPaintIcon />, color: '#E07B39' },
                                             { key: 'exterior', label: 'Արտաքին Հարդարում', icon: <HomeIcon />, color: '#4CAF50' },
@@ -557,13 +557,13 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                     icon={item.icon}
                                                     label={item.label}
                                                     onClick={isSuperAdmin ? () => toggleConstructionType(item.key) : undefined}
-                                                    size="small"
                                                     sx={{
+                                                        width: '100%',
                                                         cursor: isSuperAdmin ? 'pointer' : 'default',
                                                         opacity: (!isSuperAdmin && !selected) ? 0.5 : 1,
                                                         pointerEvents: isSuperAdmin ? 'auto' : 'none',
                                                         fontWeight: 500,
-                                                        fontSize: '11px',
+                                                        fontSize: '12px',
                                                         backgroundColor: selected ? 'rgba(0,171,190,0.1)' : 'rgba(0,0,0,0.04)',
                                                         border: '1px solid',
                                                         borderColor: selected ? 'primary.main' : 'rgba(0,0,0,0.18)',
