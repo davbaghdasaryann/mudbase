@@ -563,7 +563,8 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                                                         outline: selected ? '1.5px solid' : 'none',
                                                         outlineColor: 'primary.main',
                                                         minWidth: 80,
-
+                                                        height: { xs: 65, md: 75, lg: 85 },
+                                                        overflow: 'hidden',
                                                     }}
                                                 >
                                                     <Box sx={{ height: 28, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.color, '& svg': { fontSize: '22px' } }}>
