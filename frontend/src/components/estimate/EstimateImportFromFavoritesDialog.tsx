@@ -433,11 +433,16 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                                         ) : (
                                             <Box sx={{ mt: 1 }}>
                                                 <DataTableComponent
+                                                    getRowHeight={() => 'auto'}
                                                     sx={{
                                                         width: '100%',
                                                         '& .editableCell': {
                                                             border: '1px solid #00BFFF',
                                                             borderRadius: '5px',
+                                                        },
+                                                        '& .MuiDataGrid-cell': {
+                                                            alignItems: 'flex-start',
+                                                            py: 0.75,
                                                         },
                                                     }}
                                                     columns={[
@@ -461,6 +466,11 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                                                             flex: 1,
                                                             editable: true,
                                                             cellClassName: 'editableCell',
+                                                            renderCell: (cell) => (
+                                                                <Box sx={{ whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.4, py: 0.25 }}>
+                                                                    {cell.value}
+                                                                </Box>
+                                                            ),
                                                         },
                                                         {
                                                             field: 'unit',
