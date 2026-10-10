@@ -79,6 +79,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+    const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
     const [materialsEditTarget, setMaterialsEditTarget] = useState<{
         groupId: string;
         itemId: string;
@@ -183,6 +184,26 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
 
     const openMaterialsDialog = (groupId: string, item: FavoriteLaborItem) => {
         setMaterialsEditTarget({ groupId, itemId: item._id });
+    };
+
+    const handleDeleteGroup = (groupId: string) => {
+        confirmDialog(t('Delete this group and all its items?')).then((result) => {
+            if (!result.isConfirmed) return;
+            setDeletingGroupId(groupId);
+            Api.requestSession({
+                command: 'favorites/delete_group',
+                args: { favoriteGroupId: groupId },
+            })
+                .then(() => {
+                    setGroups(prev => prev.filter(g => g._id !== groupId));
+                    setSelectedItemIds(prev => {
+                        const removed = laborItemsByGroupId[groupId]?.map(i => i._id) ?? [];
+                        return prev.filter(id => !removed.includes(id));
+                    });
+                })
+                .catch((error) => console.error('Failed to delete group:', error))
+                .finally(() => setDeletingGroupId(null));
+        });
     };
 
     const handleRemoveFromFavorites = (groupId: string, itemId: string) => {
@@ -404,7 +425,7 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                     ) : (
                         <Box sx={{ pt: 0 }}>
                             {selectedItemIds.length > 0 && (
-                                <Typography variant="body2" color="primary" sx={{ mb: 1 }}>
+                                <Typography variant="body2" color="primary" sx={{ mb: 1, textAlign: 'right' }}>
                                     {selectedItemIds.length} {t('selected')}
                                 </Typography>
                             )}
@@ -421,8 +442,20 @@ export default function EstimateImportFromFavoritesDialog(props: EstimateImportF
                                         borderColor: 'divider',
                                     }}
                                 >
-                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ '& .MuiAccordionSummary-content': { display: 'flex', alignItems: 'center', justifyContent: 'space-between', mr: 1 } }}>
                                         <Typography fontWeight={500}>{group.name}</Typography>
+                                        <Tooltip title={t('Delete group')} arrow>
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group._id); }}
+                                                disabled={deletingGroupId === group._id}
+                                                sx={{ color: 'error.main', opacity: 0.7, '&:hover': { opacity: 1 } }}
+                                            >
+                                                {deletingGroupId === group._id
+                                                    ? <CircularProgress size={16} />
+                                                    : <DeleteOutlineIcon fontSize="small" />}
+                                            </IconButton>
+                                        </Tooltip>
                                     </AccordionSummary>
                                     <AccordionDetails sx={{ pt: 0, pb: 1, px: 0 }}>
                                         {loadingGroupId === group._id ? (
