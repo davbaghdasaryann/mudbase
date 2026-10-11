@@ -1059,13 +1059,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         </Dialog>
 
         {/* Adjust Prices dialog */}
-        <Dialog open={adjustOpen} onClose={() => { setAdjustOpen(false); setAdjustPct(''); }} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}>
-            <Box sx={{ height: 4, background: 'linear-gradient(90deg, #00ABBE, #00d4e8)' }} />
-            <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, pt: 2.5, pb: 0.5 }}>
-                <PercentIcon sx={{ color: '#00ABBE', fontSize: 22 }} />
+        <Dialog open={adjustOpen} onClose={() => { setAdjustOpen(false); setAdjustPct(''); }} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, pt: 3, pb: 1 }}>
+                <PercentIcon sx={{ color: '#00ABBE', fontSize: 24 }} />
                 {t('Adjust Prices')}
             </DialogTitle>
-            <DialogContent sx={{ pt: 2 }}>
+            <DialogContent sx={{ pt: 1.5, pb: 1 }}>
                 <TextField
                     label={t('Percentage')}
                     type='number'
@@ -1073,28 +1072,39 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     onChange={e => setAdjustPct(e.target.value)}
                     fullWidth
                     sx={{
-                        mb: 3,
+                        mb: (() => { const v = parseFloat(adjustPct); return (!adjustPct || isNaN(v) || v === 0) ? 3 : 1; })(),
+                        '& .MuiOutlinedInput-root': { fontSize: '1.15rem' },
                         '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#00ABBE' },
                         '& .MuiInputLabel-root.Mui-focused': { color: '#00ABBE' },
                     }}
-                    InputProps={{ endAdornment: <InputAdornment position='end'>%</InputAdornment> }}
+                    InputProps={{ endAdornment: <InputAdornment position='end' sx={{ fontSize: '1.1rem' }}>%</InputAdornment> }}
                     inputProps={{ step: 0.1 }}
                     autoFocus
                     onKeyDown={e => { if (e.key === 'Enter') handleAdjustApply(); }}
                 />
-                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('Apply to')}</Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                {(() => {
+                    const v = parseFloat(adjustPct);
+                    if (!adjustPct || isNaN(v) || v === 0) return null;
+                    const isIncrease = v > 0;
+                    return (
+                        <Typography variant='body2' sx={{ mb: 2.5, fontWeight: 600, color: isIncrease ? '#2e7d32' : '#c62828' }}>
+                            {isIncrease ? `+${v}% increase` : `${v}% decrease`}
+                        </Typography>
+                    );
+                })()}
+                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.6 }}>{t('Apply to')}</Typography>
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
                     {(['labor', 'materials', 'both'] as const).map(s => (
                         <Box
                             key={s}
                             onClick={() => setAdjustScope(s)}
                             sx={{
-                                flex: 1, py: 0.9, borderRadius: '20px', textAlign: 'center', cursor: 'pointer',
+                                flex: 1, py: 1.2, borderRadius: '20px', textAlign: 'center', cursor: 'pointer',
                                 border: '1.5px solid',
                                 borderColor: adjustScope === s ? '#00ABBE' : 'divider',
                                 backgroundColor: adjustScope === s ? '#00ABBE' : 'transparent',
                                 color: adjustScope === s ? '#fff' : 'text.secondary',
-                                fontWeight: 600, fontSize: '0.8rem',
+                                fontWeight: 600, fontSize: '0.85rem',
                                 transition: 'all 0.15s',
                                 '&:hover': { borderColor: '#00ABBE', color: adjustScope === s ? '#fff' : '#00ABBE' },
                             }}
@@ -1104,13 +1114,13 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     ))}
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2.5, pt: 0.5, gap: 1 }}>
-                <Button onClick={() => { setAdjustOpen(false); setAdjustPct(''); }} sx={{ color: 'text.secondary', borderRadius: '20px', px: 2 }}>{t('Cancel')}</Button>
+            <DialogActions sx={{ px: 3, pb: 3, pt: 2, gap: 1 }}>
+                <Button onClick={() => { setAdjustOpen(false); setAdjustPct(''); }} sx={{ color: 'text.secondary', borderRadius: '20px', px: 2.5 }}>{t('Cancel')}</Button>
                 <Button
                     onClick={handleAdjustApply}
                     variant='contained'
                     disabled={adjusting || !adjustPct || parseFloat(adjustPct) === 0 || isNaN(parseFloat(adjustPct))}
-                    sx={{ minWidth: 90, borderRadius: '20px', backgroundColor: '#00ABBE', '&:hover': { backgroundColor: '#008fa0' }, px: 3 }}
+                    sx={{ minWidth: 100, borderRadius: '20px', backgroundColor: '#00ABBE', '&:hover': { backgroundColor: '#008fa0' }, px: 3.5 }}
                 >
                     {adjusting ? <CircularProgress size={18} color='inherit' /> : t('Apply')}
                 </Button>
