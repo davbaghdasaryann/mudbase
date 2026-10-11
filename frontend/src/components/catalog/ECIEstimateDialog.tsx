@@ -222,7 +222,7 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
         border: '1px solid #00ABBE',
         borderTop: 0,
         borderRadius: '0 4px 4px 4px',
-        height: 160,
+        height: 130,
         overflow: 'visible',
     };
 
@@ -245,8 +245,8 @@ export default function ECIEstimateDialog(props: ECIEstimateDialogProps) {
                 transform: 'translateY(-2px)',
             },
         }),
-        width: { xs: 85, md: 100, lg: 115 },
-        minHeight: { xs: 65, md: 75, lg: 85 },
+        width: { xs: 44, md: 50, lg: 115 },
+        minHeight: { xs: 44, md: 50, lg: 85 },
     });
 
     const noDataMessage = (
