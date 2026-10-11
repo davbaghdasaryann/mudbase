@@ -782,5 +782,11 @@
   "Fix Values": "Ֆիքսել արժեքները",
   "Fixed — edits won't affect the catalog": "Ֆիքսված — փոփոխությունները չեն ազդի շտեմարանային արժեքների վրա",
   "Fix again": "Ֆիքսել կրկին",
-  "Change Company": "Փոխել Կազմակերպությունը"
+  "Change Company": "Փոխել Կազմակերպությունը",
+  "Adjust Prices": "Ճշգրտել գները",
+  "Enter a percentage to increase or decrease prices. Fixed items are not affected.": "Մուտքագրեք տոկոսը գները փոփոխելու համար: Ամրացված տարրերի վրա չի ազդի:",
+  "Percentage (e.g. -10 or +15)": "Տոկոս (օր.՝ -10 կամ +15)",
+  "Apply to": "Կիրառել",
+  "Both": "Երկուսն էլ",
+  "Apply": "Կիրառել"
 }
