@@ -56,13 +56,25 @@ registerApiSession('estimate/fetch_material_items', async (req, res, session) =>
                 as: 'estimateMeasurementUnitData',
             },
         },
+        {
+            $lookup: {
+                from: 'estimate_labor_items',
+                localField: 'estimatedLaborId',
+                foreignField: '_id',
+                as: 'parentLaborData',
+            },
+        },
+        { $unwind: { path: '$parentLaborData', preserveNullAndEmptyArrays: true } },
     ];
 
     const data = await estimatedMaterialsColl.aggregate(pipeline).toArray();
 
-    // log_.info('estimated material data', data)
+    const result = data.map((item: any) => ({
+        ...item,
+        isFixed: item.isFixed === true || item.parentLaborData?.isFixed === true,
+    }));
 
-    respondJsonData(res, data);
+    respondJsonData(res, result);
 });
 
 /** Single-call endpoint for Materials List dialog: all material items for an estimate with catalog hierarchy. */

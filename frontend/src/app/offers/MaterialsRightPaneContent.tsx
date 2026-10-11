@@ -14,6 +14,7 @@ import * as GD from '@/data/global_dispatch';
 
 import { validateDoubleInteger, validatePositiveDoubleInteger, validatePositiveInteger } from '../../tslib/validate';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { normalizeArmenianDecimalPoint } from '../../tslib/parse';
 import { evaluateFormula } from '@/components/FormulaTextField';
 import { formatCurrency } from '@/lib/format_currency';
@@ -254,7 +255,12 @@ export function MaterialsRightPaneContent(props: Props) {
                     { field: 'estimatedMaterialMeasurementUnitId', headerName: t('Unit'), headerAlign: 'left', flex: 0.1, disableColumnMenu: true, type: 'singleSelect', editable: !props.readOnly, valueOptions: measurementUnits, cellClassName: props.readOnly ? undefined : 'editableCell' },
                     { field: 'materialConsumptionNorm', headerName: t('Material consumption norm'), headerAlign: 'left', flex: 0.2, editable: !props.readOnly, cellClassName: props.readOnly ? undefined : 'editableCell', disableColumnMenu: true },
                     { field: 'quantity', headerName: t('Quantity'), headerAlign: 'left', flex: 0.15, disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
-                    { field: 'changableAveragePrice', headerName: t('Price'), headerAlign: 'left', flex: 0.23, editable: !props.readOnly, cellClassName: props.readOnly ? undefined : 'editableCell', disableColumnMenu: true, valueFormatter: (value) => formatCurrency(value) },
+                    { field: 'changableAveragePrice', headerName: t('Price'), headerAlign: 'left', flex: 0.23, editable: !props.readOnly, cellClassName: props.readOnly ? undefined : 'editableCell', disableColumnMenu: true, renderCell: (params: any) => (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {params.row.isFixed && <LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} />}
+                            {formatCurrency(params.value)}
+                        </Box>
+                    ) },
                     { field: 'materialTotalCost', headerName: t('Total Cost'), headerAlign: 'center', align: 'center', flex: 0.23, valueFormatter: (value) => formatCurrency(value) },
 
                     ...(!props.readOnly ? [{
