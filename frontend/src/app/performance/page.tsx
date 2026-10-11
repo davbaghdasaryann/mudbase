@@ -233,7 +233,7 @@ export default function PerformancePage() {
                                                 {rec.estimateName}
                                             </Typography>
                                             <Typography variant='caption' color='text.secondary'>
-                                                {new Date(rec.createdAt).toLocaleDateString()} &nbsp;·&nbsp; {rec.acts?.length ?? 0} {t('ACT')}(s)
+                                                {new Date(rec.createdAt).toLocaleDateString()} &nbsp;·&nbsp; {rec.acts?.length ?? 0} {t('ACT')}
                                             </Typography>
                                         </Box>
                                     </Box>
