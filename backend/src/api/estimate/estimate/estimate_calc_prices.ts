@@ -174,13 +174,13 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
 
     assertObject(estimate, 'Invalid Estimate Id');
 
-    const laborMatch: any = {estimateId: estimateId};
+    const laborMatch: any = {estimateId: estimateId, isFixed: {$ne: true}};
     if (estimatedLaborIds?.length) {
         laborMatch._id = {$in: estimatedLaborIds};
     }
 
     //
-    // Update labor items (all or selected)
+    // Update labor items (all or selected, skipping fixed items)
     //
     const estimateLaborItemsColl = Db.getEstimateLaborItemsCollection();
 
@@ -269,7 +269,7 @@ registerApiSession('estimate/import_my_prices', async (req, res, session) => {
     const estimate = (await Db.getEstimatesCollection().findOne({ _id: estimateId }))!;
     assertObject(estimate, 'Invalid Estimate Id');
 
-    const laborMatch: any = { estimateId };
+    const laborMatch: any = { estimateId, isFixed: { $ne: true } };
     if (estimatedLaborIds?.length) laborMatch._id = { $in: estimatedLaborIds };
 
     const estimateLaborItemsColl = Db.getEstimateLaborItemsCollection();
