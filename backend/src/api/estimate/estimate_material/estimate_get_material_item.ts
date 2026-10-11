@@ -152,6 +152,7 @@ registerApiSession('estimate/fetch_materials_list', async (req, res, session) =>
     const result = data.map((item: any) => ({
         ...item,
         laborName: item.laborData?.laborOfferItemName || item.laborCatalogData?.name || '',
+        isFixed: item.isFixed === true || item.laborData?.isFixed === true,
     }));
     respondJsonData(res, result);
 });
