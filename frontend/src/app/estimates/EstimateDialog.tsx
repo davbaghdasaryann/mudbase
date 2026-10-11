@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -23,6 +23,7 @@ import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import PercentIcon from '@mui/icons-material/Percent';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -228,6 +229,30 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         });
     };
 
+    const [adjustOpen, setAdjustOpen] = useState(false);
+    const [adjustPct, setAdjustPct] = useState('');
+    const [adjustScope, setAdjustScope] = useState<'labor' | 'materials' | 'both'>('both');
+    const [adjusting, setAdjusting] = useState(false);
+
+    const handleAdjustApply = async () => {
+        const pct = parseFloat(adjustPct);
+        if (isNaN(pct) || pct === 0) return;
+        setAdjusting(true);
+        try {
+            await Api.requestSession({
+                command: 'estimate/adjust_prices',
+                args: { estimateId: props.estimateId },
+                json: { percentage: pct, scope: adjustScope },
+            });
+            dataUpdatedRef.current = true;
+            accordionRef.current?.refreshEverything(false);
+            setAdjustOpen(false);
+            setAdjustPct('');
+        } finally {
+            setAdjusting(false);
+        }
+    };
+
     const handleUndo = () => accordionRef.current?.undo();
     const handleRedo = () => accordionRef.current?.redo();
 
@@ -267,6 +292,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     };
 
     return (
+        <>
         <Dialog
             fullScreen
             open={true}
@@ -569,6 +595,29 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     </Box>
                                 </Tooltip>
                             ))}
+
+                            {/* Adjust Prices button — always enabled */}
+                            <Tooltip title={t('Adjust Prices')} placement="bottom" enterTouchDelay={0} arrow>
+                                <Box
+                                    onClick={(e) => { e.stopPropagation(); setAdjustOpen(true); }}
+                                    sx={{
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                        p: 1, backgroundColor: 'transparent', borderRadius: 2, cursor: 'pointer',
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
+                                        transition: 'all 0.2s',
+                                        '&:hover': { boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2)', transform: 'translateY(-2px)' },
+                                        width: { xs: 44, md: 50, lg: 115 },
+                                        minHeight: { xs: 44, md: 50, lg: 85 },
+                                    }}
+                                >
+                                    <Box sx={{ height: 28, mb: { xs: 0, lg: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <PercentIcon sx={{ fontSize: 22 }} />
+                                    </Box>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', minHeight: '36px', display: { xs: 'none', lg: 'flex' }, alignItems: 'flex-start', justifyContent: 'center' }}>
+                                        {t('Adjust Prices')}
+                                    </Typography>
+                                </Box>
+                            </Tooltip>
                         </Box>
                     </Box>
                 )}
@@ -1029,5 +1078,51 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 </DialogContent>
             </Dialog>
         </Dialog>
+
+        {/* Adjust Prices dialog */}
+        <Dialog open={adjustOpen} onClose={() => { setAdjustOpen(false); setAdjustPct(''); }} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>{t('Adjust Prices')}</DialogTitle>
+            <DialogContent sx={{ pt: 1 }}>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+                    {t('Enter a percentage to increase or decrease prices. Fixed items are not affected.')}
+                </Typography>
+                <TextField
+                    label={t('Percentage (e.g. -10 or +15)')}
+                    type='number'
+                    value={adjustPct}
+                    onChange={e => setAdjustPct(e.target.value)}
+                    fullWidth
+                    size='small'
+                    sx={{ mb: 2 }}
+                    inputProps={{ step: 0.1 }}
+                    autoFocus
+                    onKeyDown={e => { if (e.key === 'Enter') handleAdjustApply(); }}
+                />
+                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1 }}>{t('Apply to')}</Typography>
+                <ToggleButtonGroup
+                    value={adjustScope}
+                    exclusive
+                    onChange={(_, v) => { if (v) setAdjustScope(v); }}
+                    size='small'
+                    fullWidth
+                >
+                    <ToggleButton value='labor' sx={{ textTransform: 'none', fontWeight: 600 }}>{t('Labor')}</ToggleButton>
+                    <ToggleButton value='materials' sx={{ textTransform: 'none', fontWeight: 600 }}>{t('Materials')}</ToggleButton>
+                    <ToggleButton value='both' sx={{ textTransform: 'none', fontWeight: 600 }}>{t('Both')}</ToggleButton>
+                </ToggleButtonGroup>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button onClick={() => { setAdjustOpen(false); setAdjustPct(''); }} color='inherit'>{t('Cancel')}</Button>
+                <Button
+                    onClick={handleAdjustApply}
+                    variant='contained'
+                    disabled={adjusting || !adjustPct || parseFloat(adjustPct) === 0 || isNaN(parseFloat(adjustPct))}
+                    sx={{ minWidth: 90, backgroundColor: '#00ABBE', '&:hover': { backgroundColor: '#008fa0' } }}
+                >
+                    {adjusting ? <CircularProgress size={18} color='inherit' /> : t('Apply')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+        </>
     );
 }
