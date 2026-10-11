@@ -941,27 +941,29 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         />
                     </Box>
 
-                    <Divider sx={{ borderColor: '#f0f2f4' }} />
-
-                    {/* Setting: Other costs */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
-                        <Box>
-                            <Typography variant='body2' fontWeight={500}>{t('Separate other costs')}</Typography>
-                            <Typography variant='caption' color='text.secondary'>
-                                {exportOtherCostsMode === 'separated'
-                                    ? t('Other costs shown as separate line items')
-                                    : t('Other costs included in unit cost by percentage')}
-                            </Typography>
+                    {exportConfigTarget === 'boq' && (
+                        <>
+                        <Divider sx={{ borderColor: '#f0f2f4' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
+                            <Box>
+                                <Typography variant='body2' fontWeight={500}>{t('Separate other costs')}</Typography>
+                                <Typography variant='caption' color='text.secondary'>
+                                    {exportOtherCostsMode === 'separated'
+                                        ? t('Other costs shown as separate line items')
+                                        : t('Other costs included in unit cost by percentage')}
+                                </Typography>
+                            </Box>
+                            <Switch
+                                checked={exportOtherCostsMode === 'separated'}
+                                onChange={(e) => setExportOtherCostsMode(e.target.checked ? 'separated' : 'included')}
+                                sx={{
+                                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                                }}
+                            />
                         </Box>
-                        <Switch
-                            checked={exportOtherCostsMode === 'separated'}
-                            onChange={(e) => setExportOtherCostsMode(e.target.checked ? 'separated' : 'included')}
-                            sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
-                            }}
-                        />
-                    </Box>
+                        </>
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={() => setExportConfigOpen(false)} size='small' sx={{ color: '#00A390' }}>{t('Cancel')}</Button>
