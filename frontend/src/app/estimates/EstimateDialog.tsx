@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, InputAdornment, CircularProgress } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -1059,44 +1059,58 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         </Dialog>
 
         {/* Adjust Prices dialog */}
-        <Dialog open={adjustOpen} onClose={() => { setAdjustOpen(false); setAdjustPct(''); }} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-            <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>{t('Adjust Prices')}</DialogTitle>
-            <DialogContent sx={{ pt: 1 }}>
-                <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-                    {t('Enter a percentage to increase or decrease prices. Fixed items are not affected.')}
-                </Typography>
+        <Dialog open={adjustOpen} onClose={() => { setAdjustOpen(false); setAdjustPct(''); }} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}>
+            <Box sx={{ height: 4, background: 'linear-gradient(90deg, #00ABBE, #00d4e8)' }} />
+            <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, pt: 2.5, pb: 0.5 }}>
+                <PercentIcon sx={{ color: '#00ABBE', fontSize: 22 }} />
+                {t('Adjust Prices')}
+            </DialogTitle>
+            <DialogContent sx={{ pt: 2 }}>
                 <TextField
-                    label={t('Percentage (e.g. -10 or +15)')}
+                    label={t('Percentage')}
                     type='number'
                     value={adjustPct}
                     onChange={e => setAdjustPct(e.target.value)}
                     fullWidth
-                    size='small'
-                    sx={{ mb: 2 }}
+                    sx={{
+                        mb: 3,
+                        '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#00ABBE' },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#00ABBE' },
+                    }}
+                    InputProps={{ endAdornment: <InputAdornment position='end'>%</InputAdornment> }}
                     inputProps={{ step: 0.1 }}
                     autoFocus
                     onKeyDown={e => { if (e.key === 'Enter') handleAdjustApply(); }}
                 />
-                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1 }}>{t('Apply to')}</Typography>
-                <ToggleButtonGroup
-                    value={adjustScope}
-                    exclusive
-                    onChange={(_, v) => { if (v) setAdjustScope(v); }}
-                    size='small'
-                    fullWidth
-                >
-                    <ToggleButton value='labor' sx={{ textTransform: 'none', fontWeight: 600 }}>{t('Labor')}</ToggleButton>
-                    <ToggleButton value='materials' sx={{ textTransform: 'none', fontWeight: 600 }}>{t('Materials')}</ToggleButton>
-                    <ToggleButton value='both' sx={{ textTransform: 'none', fontWeight: 600 }}>{t('Both')}</ToggleButton>
-                </ToggleButtonGroup>
+                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('Apply to')}</Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    {(['labor', 'materials', 'both'] as const).map(s => (
+                        <Box
+                            key={s}
+                            onClick={() => setAdjustScope(s)}
+                            sx={{
+                                flex: 1, py: 0.9, borderRadius: '20px', textAlign: 'center', cursor: 'pointer',
+                                border: '1.5px solid',
+                                borderColor: adjustScope === s ? '#00ABBE' : 'divider',
+                                backgroundColor: adjustScope === s ? '#00ABBE' : 'transparent',
+                                color: adjustScope === s ? '#fff' : 'text.secondary',
+                                fontWeight: 600, fontSize: '0.8rem',
+                                transition: 'all 0.15s',
+                                '&:hover': { borderColor: '#00ABBE', color: adjustScope === s ? '#fff' : '#00ABBE' },
+                            }}
+                        >
+                            {t(s === 'labor' ? 'Labor' : s === 'materials' ? 'Materials' : 'Both')}
+                        </Box>
+                    ))}
+                </Box>
             </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={() => { setAdjustOpen(false); setAdjustPct(''); }} color='inherit'>{t('Cancel')}</Button>
+            <DialogActions sx={{ px: 3, pb: 2.5, pt: 0.5, gap: 1 }}>
+                <Button onClick={() => { setAdjustOpen(false); setAdjustPct(''); }} sx={{ color: 'text.secondary', borderRadius: '20px', px: 2 }}>{t('Cancel')}</Button>
                 <Button
                     onClick={handleAdjustApply}
                     variant='contained'
                     disabled={adjusting || !adjustPct || parseFloat(adjustPct) === 0 || isNaN(parseFloat(adjustPct))}
-                    sx={{ minWidth: 90, backgroundColor: '#00ABBE', '&:hover': { backgroundColor: '#008fa0' } }}
+                    sx={{ minWidth: 90, borderRadius: '20px', backgroundColor: '#00ABBE', '&:hover': { backgroundColor: '#008fa0' }, px: 3 }}
                 >
                     {adjusting ? <CircularProgress size={18} color='inherit' /> : t('Apply')}
                 </Button>

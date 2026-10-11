@@ -21,7 +21,7 @@ registerApiSession('estimate/adjust_prices', async (req, res, session) => {
     if (applyToLabor) {
         const laborColl = Db.getEstimateLaborItemsCollection();
         await laborColl.updateMany(
-            { estimateId, isFixed: { $ne: true } },
+            { estimateId },
             { $mul: { changableAveragePrice: factor } } as any
         );
     }
@@ -29,7 +29,7 @@ registerApiSession('estimate/adjust_prices', async (req, res, session) => {
     if (applyToMaterials) {
         const materialColl = Db.getEstimateMaterialItemsCollection();
         await materialColl.updateMany(
-            { estimateId, isFixed: { $ne: true } },
+            { estimateId },
             { $mul: { changableAveragePrice: factor } } as any
         );
     }
