@@ -146,6 +146,8 @@ export default function RentayinPage() {
     const [matGroupsLoading, setMatGroupsLoading] = useState(false);
     const [laborExpanded, setLaborExpanded] = useState<Record<string, boolean>>({});
     const [matGroupExpanded, setMatGroupExpanded] = useState<Record<string, boolean>>({});
+    const [laborSourceFilter, setLaborSourceFilter] = useState<Set<string>>(new Set());
+    const [matSourceFilter, setMatSourceFilter] = useState<Set<string>>(new Set());
     const [unclassifiedMatOpen, setUnclassifiedMatOpen] = useState(false);
     const [laborOverrides, setLaborOverrides] = useState<Record<string, number>>({});
     const [matOverrides, setMatOverrides] = useState<Record<string, number>>({});
@@ -1030,10 +1032,38 @@ export default function RentayinPage() {
                     <Box sx={{ px: 2, pb: 2 }}>
                         {laborGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
                         {!laborGroupsLoading && laborGroups.length > 0 && (() => {
+                            const laborSourceMap = new Map<string, string>();
+                            for (const row of (detail?.rows ?? [])) {
+                                if (row.laborItemId && row.unitCostSource) laborSourceMap.set(String(row.laborItemId), row.unitCostSource);
+                            }
+                            const toggleLaborFilter = (src: string) => setLaborSourceFilter(prev => { const n = new Set(prev); n.has(src) ? n.delete(src) : n.add(src); return n; });
+                            const filteredLaborGroups = laborSourceFilter.size === 0 ? laborGroups : laborGroups.filter(g => {
+                                const src = laborSourceMap.get(g.laborItemId);
+                                return src ? laborSourceFilter.has(src) : false;
+                            });
                             const effectiveLaborItemCost = (item: any) => (laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.costingPrice ?? item.libraryPrice ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
-                            const totalLaborCost = laborGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveLaborItemCost(it), 0), 0);
+                            const totalLaborCost = filteredLaborGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveLaborItemCost(it), 0), 0);
                             const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
                             return (
+                                <>
+                                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5, mt: 0.5 }}>
+                                    {Object.entries(SOURCE_CHIP).map(([key, { label, color }]) => {
+                                        const active = laborSourceFilter.has(key);
+                                        return (
+                                            <Chip key={key} label={label} size='small' onClick={() => toggleLaborFilter(key)}
+                                                sx={{ fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer', borderColor: color,
+                                                    backgroundColor: active ? color : 'transparent',
+                                                    color: active ? '#fff' : color,
+                                                    border: `1.5px solid ${color}`,
+                                                    '&:hover': { backgroundColor: active ? color : `${color}18` },
+                                                }} />
+                                        );
+                                    })}
+                                    {laborSourceFilter.size > 0 && (
+                                        <Chip label={t('Clear')} size='small' onClick={() => setLaborSourceFilter(new Set())}
+                                            sx={{ fontWeight: 500, fontSize: '0.72rem', cursor: 'pointer', color: 'text.secondary', border: '1.5px solid #bbb', backgroundColor: 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }} />
+                                    )}
+                                </Box>
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
                                     <TableHead><TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
@@ -1044,7 +1074,7 @@ export default function RentayinPage() {
                                         <TableCell align='right' sx={{ fontWeight: 600, width: 60 }}>%</TableCell>
                                     </TableRow></TableHead>
                                     <TableBody>
-                                        {laborGroups.map(group => {
+                                        {filteredLaborGroups.map(group => {
                                             const isOpen = !!laborExpanded[group.laborItemId];
                                             const groupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveLaborItemCost(it), 0);
                                             return (
@@ -1131,6 +1161,7 @@ export default function RentayinPage() {
                                         })}
                                     </TableBody>
                                 </Table>
+                                </>
                             );
                         })()}
                     </Box>
@@ -1139,10 +1170,35 @@ export default function RentayinPage() {
                     <Box sx={{ px: 2, pb: 2 }}>
                         {matGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
                         {!matGroupsLoading && matGroups.length > 0 && (() => {
+                            const getMatSource = (item: any): string => item.costingPrice != null ? 'actual' : item.libraryPrice != null ? 'library' : 'market';
+                            const toggleMatFilter = (src: string) => setMatSourceFilter(prev => { const n = new Set(prev); n.has(src) ? n.delete(src) : n.add(src); return n; });
+                            const filteredMatGroups = matSourceFilter.size === 0 ? matGroups : matGroups.filter(g =>
+                                g.items.some((it: any) => matSourceFilter.has(getMatSource(it)))
+                            );
                             const effectiveMatItemCost = (item: any) => (matOverrides[item._id] ?? matOverrides[item.materialItemId] ?? item.costingPrice ?? item.libraryPrice ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
-                            const totalMatCost = matGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveMatItemCost(it), 0), 0);
+                            const totalMatCost = filteredMatGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveMatItemCost(it), 0), 0);
                             const pct = (cost: number) => totalMatCost > 0 ? ((cost / totalMatCost) * 100).toFixed(2) + '%' : '0%';
                             return (
+                                <>
+                                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5, mt: 0.5 }}>
+                                    {(['actual', 'library', 'market'] as const).map(key => {
+                                        const { label, color } = SOURCE_CHIP[key];
+                                        const active = matSourceFilter.has(key);
+                                        return (
+                                            <Chip key={key} label={label} size='small' onClick={() => toggleMatFilter(key)}
+                                                sx={{ fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer', borderColor: color,
+                                                    backgroundColor: active ? color : 'transparent',
+                                                    color: active ? '#fff' : color,
+                                                    border: `1.5px solid ${color}`,
+                                                    '&:hover': { backgroundColor: active ? color : `${color}18` },
+                                                }} />
+                                        );
+                                    })}
+                                    {matSourceFilter.size > 0 && (
+                                        <Chip label={t('Clear')} size='small' onClick={() => setMatSourceFilter(new Set())}
+                                            sx={{ fontWeight: 500, fontSize: '0.72rem', cursor: 'pointer', color: 'text.secondary', border: '1.5px solid #bbb', backgroundColor: 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }} />
+                                    )}
+                                </Box>
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
                                     <TableHead><TableRow sx={{ backgroundColor: '#f9f9f9' }}>
                                         <TableCell sx={{ fontWeight: 600, pl: 1.5 }}>{t('Name')}</TableCell>
@@ -1154,8 +1210,8 @@ export default function RentayinPage() {
                                     </TableRow></TableHead>
                                     <TableBody>
                                         {(() => {
-                                            const classifiedGroups = matGroups.filter(g => !!g.materialFullCode);
-                                            const unclassifiedGroups = matGroups.filter(g => !g.materialFullCode);
+                                            const classifiedGroups = filteredMatGroups.filter(g => !!g.materialFullCode);
+                                            const unclassifiedGroups = filteredMatGroups.filter(g => !g.materialFullCode);
                                             const unclassifiedTotal = unclassifiedGroups.reduce((s, g) => s + g.items.reduce((ss: number, it: any) => ss + effectiveMatItemCost(it), 0), 0);
                                             const renderGroup = (group: GroupedByMaterial, indent?: boolean) => {
                                                                                                 const isOpen = !!matGroupExpanded[group.materialItemId]; const matGroupDisplayCost = group.items.reduce((s: number, it: any) => s + effectiveMatItemCost(it), 0);
@@ -1294,6 +1350,7 @@ export default function RentayinPage() {
                                         })()}
                                     </TableBody>
                                 </Table>
+                                </>
                             );
                         })()}
                     </Box>
