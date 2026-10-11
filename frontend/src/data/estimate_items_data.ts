@@ -194,6 +194,7 @@ export class EstimateMaterialItemDisplayData {
     materialTotalCost?: number;
 
     materialOfferItemName?: string;
+    isFixed?: boolean;
 
     constructor(estimateMaterialItem?: EstimateItemsApi.ApiEstimateMaterialItem) {
         if (!estimateMaterialItem)
@@ -203,6 +204,7 @@ export class EstimateMaterialItemDisplayData {
         this.quantity = roundToThree(estimateMaterialItem.quantity)
         this.changableAveragePrice = roundToThree(estimateMaterialItem.changableAveragePrice)
         this.materialOfferItemName = estimateMaterialItem.materialOfferItemName
+        this.isFixed = (estimateMaterialItem as any).isFixed === true
 
         if (estimateMaterialItem.materialConsumptionNorm)
             this.materialConsumptionNorm = roundToThree(estimateMaterialItem.materialConsumptionNorm)
