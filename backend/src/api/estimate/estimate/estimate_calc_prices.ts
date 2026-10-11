@@ -219,7 +219,7 @@ registerApiSession('estimate/calc_market_prices', async (req, res, session) => {
     //
     const estimateMaterialItemsColl = Db.getEstimateMaterialItemsCollection();
 
-    const materialMatch: any = {estimateId: estimateId};
+    const materialMatch: any = {estimateId: estimateId, isFixed: {$ne: true}};
     if (estimatedLaborIds?.length) {
         materialMatch.estimatedLaborId = {$in: estimatedLaborIds};
     }
