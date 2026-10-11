@@ -496,6 +496,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 { labelKey: 'Works List', icon: `${TOOLBAR_ICON}/works.svg`, onClick: handleWorksListClick },
                                 { labelKey: 'Materials List', icon: `${TOOLBAR_ICON}/materials.svg`, onClick: handleMaterialsListClick },
                                 { labelKey: 'Update Data', icon: `${TOOLBAR_ICON}/refresh.svg`, onClick: () => setUpdateDataModalOpen(true), disabled: props.disableUpdateData },
+                                { labelKey: 'Adjust Prices', iconNode: <PercentIcon sx={{ fontSize: 22 }} />, onClick: () => setAdjustOpen(true) },
                                 { labelKey: 'Select', icon: `${TOOLBAR_ICON}/select.svg`, onClick: handleSelectClick },
                                 { labelKey: 'Undo', iconNode: <UndoIcon sx={{ fontSize: 22 }} />, onClick: handleUndo },
                                 { labelKey: 'Redo', iconNode: <RedoIcon sx={{ fontSize: 22 }} />, onClick: handleRedo },
@@ -596,28 +597,6 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 </Tooltip>
                             ))}
 
-                            {/* Adjust Prices button — always enabled */}
-                            <Tooltip title={t('Adjust Prices')} placement="bottom" enterTouchDelay={0} arrow>
-                                <Box
-                                    onClick={(e) => { e.stopPropagation(); setAdjustOpen(true); }}
-                                    sx={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                        p: 1, backgroundColor: 'transparent', borderRadius: 2, cursor: 'pointer',
-                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15), 2px 0 4px rgba(0, 0, 0, 0.05), -2px 0 4px rgba(0, 0, 0, 0.05)',
-                                        transition: 'all 0.2s',
-                                        '&:hover': { boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2)', transform: 'translateY(-2px)' },
-                                        width: { xs: 44, md: 50, lg: 115 },
-                                        minHeight: { xs: 44, md: 50, lg: 85 },
-                                    }}
-                                >
-                                    <Box sx={{ height: 28, mb: { xs: 0, lg: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                        <PercentIcon sx={{ fontSize: 22 }} />
-                                    </Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', minHeight: '36px', display: { xs: 'none', lg: 'flex' }, alignItems: 'flex-start', justifyContent: 'center' }}>
-                                        {t('Adjust Prices')}
-                                    </Typography>
-                                </Box>
-                            </Tooltip>
                         </Box>
                     </Box>
                 )}
