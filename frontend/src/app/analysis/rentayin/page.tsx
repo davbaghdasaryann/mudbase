@@ -103,6 +103,7 @@ const SOURCE_CHIP: Record<string, { label: string; color: string }> = {
     library: { label: 'Library', color: '#1565C0' },
     market: { label: 'Market', color: '#7b1fa2' },
     manual: { label: 'Manual', color: '#E65100' },
+    n_a: { label: 'N/A', color: '#757575' },
 };
 
 const GSEP = '1px solid #e8f4f6';
@@ -1034,34 +1035,41 @@ export default function RentayinPage() {
                         {!laborGroupsLoading && laborGroups.length > 0 && (() => {
                             const laborSourceMap = new Map<string, string>();
                             for (const row of (detail?.rows ?? [])) {
-                                if (row.laborItemId && row.unitCostSource) laborSourceMap.set(String(row.laborItemId), row.unitCostSource);
+                                if (row.laborItemId) laborSourceMap.set(String(row.laborItemId), row.unitCostSource ?? 'n_a');
                             }
+                            const getLaborGroupSource = (g: GroupedLabor): string => laborSourceMap.get(g.laborItemId) ?? 'n_a';
                             const toggleLaborFilter = (src: string) => setLaborSourceFilter(prev => { const n = new Set(prev); n.has(src) ? n.delete(src) : n.add(src); return n; });
-                            const filteredLaborGroups = laborSourceFilter.size === 0 ? laborGroups : laborGroups.filter(g => {
-                                const src = laborSourceMap.get(g.laborItemId);
-                                return src ? laborSourceFilter.has(src) : false;
-                            });
+                            const filteredLaborGroups = laborSourceFilter.size === 0 ? laborGroups : laborGroups.filter(g => laborSourceFilter.has(getLaborGroupSource(g)));
                             const effectiveLaborItemCost = (item: any) => (laborOverrides[item._id] ?? laborOverrides[item.laborItemId] ?? item.costingPrice ?? item.libraryPrice ?? item.changableAveragePrice ?? 0) * (item.quantity ?? 0);
                             const totalLaborCost = filteredLaborGroups.reduce((s, g) => s + g.items.reduce((gs: number, it: any) => gs + effectiveLaborItemCost(it), 0), 0);
                             const pct = (cost: number) => totalLaborCost > 0 ? ((cost / totalLaborCost) * 100).toFixed(2) + '%' : '0%';
                             return (
                                 <>
-                                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5, mt: 0.5 }}>
+                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2, mt: 1, alignItems: 'center' }}>
+                                    <TuneOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary', mr: 0.5 }} />
                                     {Object.entries(SOURCE_CHIP).map(([key, { label, color }]) => {
                                         const active = laborSourceFilter.has(key);
                                         return (
-                                            <Chip key={key} label={label} size='small' onClick={() => toggleLaborFilter(key)}
-                                                sx={{ fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer', borderColor: color,
-                                                    backgroundColor: active ? color : 'transparent',
-                                                    color: active ? '#fff' : color,
-                                                    border: `1.5px solid ${color}`,
-                                                    '&:hover': { backgroundColor: active ? color : `${color}18` },
-                                                }} />
+                                            <Box key={key} onClick={() => toggleLaborFilter(key)} sx={{
+                                                display: 'inline-flex', alignItems: 'center', px: 1.75, py: 0.6,
+                                                borderRadius: '20px', cursor: 'pointer', userSelect: 'none',
+                                                fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.02em',
+                                                border: `1.5px solid ${color}`,
+                                                backgroundColor: active ? color : 'transparent',
+                                                color: active ? '#fff' : color,
+                                                transition: 'all 0.15s',
+                                                '&:hover': { backgroundColor: active ? color : `${color}22`, boxShadow: `0 2px 6px ${color}40` },
+                                            }}>{t(label)}</Box>
                                         );
                                     })}
                                     {laborSourceFilter.size > 0 && (
-                                        <Chip label={t('Clear')} size='small' onClick={() => setLaborSourceFilter(new Set())}
-                                            sx={{ fontWeight: 500, fontSize: '0.72rem', cursor: 'pointer', color: 'text.secondary', border: '1.5px solid #bbb', backgroundColor: 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }} />
+                                        <Box onClick={() => setLaborSourceFilter(new Set())} sx={{
+                                            display: 'inline-flex', alignItems: 'center', px: 1.5, py: 0.6,
+                                            borderRadius: '20px', cursor: 'pointer', userSelect: 'none',
+                                            fontWeight: 500, fontSize: '0.78rem', border: '1.5px solid #bbb',
+                                            color: 'text.secondary', backgroundColor: 'transparent',
+                                            transition: 'all 0.15s', '&:hover': { backgroundColor: '#f0f0f0' },
+                                        }}>{t('Clear')}</Box>
                                     )}
                                 </Box>
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
@@ -1170,7 +1178,12 @@ export default function RentayinPage() {
                     <Box sx={{ px: 2, pb: 2 }}>
                         {matGroupsLoading && <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>}
                         {!matGroupsLoading && matGroups.length > 0 && (() => {
-                            const getMatSource = (item: any): string => item.costingPrice != null ? 'actual' : item.libraryPrice != null ? 'library' : 'market';
+                            const getMatSource = (item: any): string => {
+                                if (item.costingPrice != null) return 'actual';
+                                if (item.libraryPrice != null && item.libraryPrice > 0) return 'library';
+                                if (item.libraryPrice != null && item.libraryPrice === 0) return 'n_a';
+                                return 'market';
+                            };
                             const toggleMatFilter = (src: string) => setMatSourceFilter(prev => { const n = new Set(prev); n.has(src) ? n.delete(src) : n.add(src); return n; });
                             const filteredMatGroups = matSourceFilter.size === 0 ? matGroups : matGroups.filter(g =>
                                 g.items.some((it: any) => matSourceFilter.has(getMatSource(it)))
@@ -1180,23 +1193,31 @@ export default function RentayinPage() {
                             const pct = (cost: number) => totalMatCost > 0 ? ((cost / totalMatCost) * 100).toFixed(2) + '%' : '0%';
                             return (
                                 <>
-                                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5, mt: 0.5 }}>
-                                    {(['actual', 'library', 'market'] as const).map(key => {
-                                        const { label, color } = SOURCE_CHIP[key];
+                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2, mt: 1, alignItems: 'center' }}>
+                                    <TuneOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary', mr: 0.5 }} />
+                                    {Object.entries(SOURCE_CHIP).map(([key, { label, color }]) => {
                                         const active = matSourceFilter.has(key);
                                         return (
-                                            <Chip key={key} label={label} size='small' onClick={() => toggleMatFilter(key)}
-                                                sx={{ fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer', borderColor: color,
-                                                    backgroundColor: active ? color : 'transparent',
-                                                    color: active ? '#fff' : color,
-                                                    border: `1.5px solid ${color}`,
-                                                    '&:hover': { backgroundColor: active ? color : `${color}18` },
-                                                }} />
+                                            <Box key={key} onClick={() => toggleMatFilter(key)} sx={{
+                                                display: 'inline-flex', alignItems: 'center', px: 1.75, py: 0.6,
+                                                borderRadius: '20px', cursor: 'pointer', userSelect: 'none',
+                                                fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.02em',
+                                                border: `1.5px solid ${color}`,
+                                                backgroundColor: active ? color : 'transparent',
+                                                color: active ? '#fff' : color,
+                                                transition: 'all 0.15s',
+                                                '&:hover': { backgroundColor: active ? color : `${color}22`, boxShadow: `0 2px 6px ${color}40` },
+                                            }}>{t(label)}</Box>
                                         );
                                     })}
                                     {matSourceFilter.size > 0 && (
-                                        <Chip label={t('Clear')} size='small' onClick={() => setMatSourceFilter(new Set())}
-                                            sx={{ fontWeight: 500, fontSize: '0.72rem', cursor: 'pointer', color: 'text.secondary', border: '1.5px solid #bbb', backgroundColor: 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }} />
+                                        <Box onClick={() => setMatSourceFilter(new Set())} sx={{
+                                            display: 'inline-flex', alignItems: 'center', px: 1.5, py: 0.6,
+                                            borderRadius: '20px', cursor: 'pointer', userSelect: 'none',
+                                            fontWeight: 500, fontSize: '0.78rem', border: '1.5px solid #bbb',
+                                            color: 'text.secondary', backgroundColor: 'transparent',
+                                            transition: 'all 0.15s', '&:hover': { backgroundColor: '#f0f0f0' },
+                                        }}>{t('Clear')}</Box>
                                     )}
                                 </Box>
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
