@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
 import ProgressIndicator from '@/tsui/ProgressIndicator';
@@ -45,6 +46,7 @@ interface MaterialItem {
     itemChangableAveragePrice: number;
     /** Catalog market/average price (from refresh prices). Used to highlight market-price cells. */
     itemMarketPrice?: number | null;
+    isFixed?: boolean;
     instances: MaterialInstance[];
 }
 
@@ -107,6 +109,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                 if (materialsMap.has(materialItemId)) {
                     const existing = materialsMap.get(materialItemId)!;
                     existing.quantity += item.quantity ?? 0;
+                    if (item.isFixed === true) existing.isFixed = true;
                     existing.instances.push({ estimatedMaterialId: estimatedMaterialIdStr, estimatedLaborId: estimatedLaborIdStr });
                 } else {
                     materialsMap.set(materialItemId, {
@@ -119,6 +122,7 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                         quantity: item.quantity ?? 0,
                         itemChangableAveragePrice: item.changableAveragePrice ?? 0,
                         itemMarketPrice: materialData.averagePrice != null ? Number(materialData.averagePrice) : null,
+                        isFixed: item.isFixed === true,
                         instances: [{ estimatedMaterialId: estimatedMaterialIdStr, estimatedLaborId: estimatedLaborIdStr }],
                     });
                 }
@@ -263,13 +267,18 @@ export default function EstimateMaterialsListDialog(props: EstimateMaterialsList
                                                                     <TableCell>{mat.itemName}</TableCell>
                                                                     <TableCell>{mat.itemMeasurementUnit}</TableCell>
                                                                     <TableCell>
-                                                                        <FormulaTextField
-                                                                            value={displayPrice}
-                                                                            onChange={(val) => handlePriceChange(mat.materialItemId, String(val))}
-                                                                            width={120}
-                                                                            disabled={props.readOnly}
-                                                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: mat.itemMarketPrice != null && Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
-                                                                        />
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                            {mat.isFixed && (
+                                                                                <LockOutlinedIcon sx={{ fontSize: 13, color: 'warning.main', flexShrink: 0 }} />
+                                                                            )}
+                                                                            <FormulaTextField
+                                                                                value={displayPrice}
+                                                                                onChange={(val) => handlePriceChange(mat.materialItemId, String(val))}
+                                                                                width={120}
+                                                                                disabled={props.readOnly}
+                                                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px', backgroundColor: mat.itemMarketPrice != null && Math.abs(displayPrice - mat.itemMarketPrice) < MARKET_PRICE_EPS ? '#FFFDE7' : '#e3f2fd', '& fieldset': { borderColor: 'rgba(0,0,0,0.23)' }, '&.Mui-focused fieldset': { borderColor: '#00ABBE' } } }}
+                                                                            />
+                                                                        </Box>
                                                                     </TableCell>
                                                                 </TableRow>
                                                             );
