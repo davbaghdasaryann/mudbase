@@ -1063,13 +1063,14 @@ export default function RentayinPage() {
                                         );
                                     })}
                                     {laborSourceFilter.size > 0 && (
-                                        <Box onClick={() => setLaborSourceFilter(new Set())} sx={{
-                                            display: 'inline-flex', alignItems: 'center', px: 1.5, py: 0.6,
-                                            borderRadius: '20px', cursor: 'pointer', userSelect: 'none',
-                                            fontWeight: 500, fontSize: '0.78rem', border: '1.5px solid #bbb',
-                                            color: 'text.secondary', backgroundColor: 'transparent',
-                                            transition: 'all 0.15s', '&:hover': { backgroundColor: '#f0f0f0' },
-                                        }}>{t('Clear')}</Box>
+                                        <Tooltip title={t('Clear')} placement='top' arrow>
+                                            <Box onClick={() => setLaborSourceFilter(new Set())} sx={{
+                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                width: 30, height: 30, borderRadius: '50%', cursor: 'pointer',
+                                                border: '1.5px solid #bbb', color: 'text.secondary', backgroundColor: 'transparent',
+                                                transition: 'all 0.15s', '&:hover': { backgroundColor: '#f0f0f0', borderColor: '#999' },
+                                            }}><RefreshIcon sx={{ fontSize: 16 }} /></Box>
+                                        </Tooltip>
                                     )}
                                 </Box>
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
@@ -1211,13 +1212,14 @@ export default function RentayinPage() {
                                         );
                                     })}
                                     {matSourceFilter.size > 0 && (
-                                        <Box onClick={() => setMatSourceFilter(new Set())} sx={{
-                                            display: 'inline-flex', alignItems: 'center', px: 1.5, py: 0.6,
-                                            borderRadius: '20px', cursor: 'pointer', userSelect: 'none',
-                                            fontWeight: 500, fontSize: '0.78rem', border: '1.5px solid #bbb',
-                                            color: 'text.secondary', backgroundColor: 'transparent',
-                                            transition: 'all 0.15s', '&:hover': { backgroundColor: '#f0f0f0' },
-                                        }}>{t('Clear')}</Box>
+                                        <Tooltip title={t('Clear')} placement='top' arrow>
+                                            <Box onClick={() => setMatSourceFilter(new Set())} sx={{
+                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                width: 30, height: 30, borderRadius: '50%', cursor: 'pointer',
+                                                border: '1.5px solid #bbb', color: 'text.secondary', backgroundColor: 'transparent',
+                                                transition: 'all 0.15s', '&:hover': { backgroundColor: '#f0f0f0', borderColor: '#999' },
+                                            }}><RefreshIcon sx={{ fontSize: 16 }} /></Box>
+                                        </Tooltip>
                                     )}
                                 </Box>
                                 <Table size='small' sx={{ '& .MuiTableCell-root': { borderColor: '#f0f0f0' } }}>
