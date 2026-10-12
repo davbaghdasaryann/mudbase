@@ -11,6 +11,7 @@ import { fixedToThree, roundToThree } from '@/tslib/parse';
 interface ExportOptions {
     groupMode?: 'closed' | 'open';
     otherCostsMode?: 'separated' | 'included';
+    selectedCostNames?: string[];
 }
 
 function computeEntryDisplayTotal(laborData: any, otherMultiplier: number, groupMode: string, otherCostsMode: string): number {
@@ -666,12 +667,22 @@ function formatEstimateCurrencySymbol(value: number) {
 export function generateBoQHTML(data: any, t: TFunction, opts: ExportOptions = {}) {
     const otherCostsMode = opts.otherCostsMode ?? 'separated';
     const estimate = data.estimate;
+    const allExpences = (data.expences as any[]).filter((e: any) => e.name !== 'typeOfCost');
+    const selectedCostNames = opts.selectedCostNames;
 
-    const totalOtherPct = (data.expences as any[]).reduce((sum: number, e: any) => {
-        if (e.name === 'typeOfCost') return sum;
-        return sum + (Number(e.value) || 0);
-    }, 0);
-    const otherMultiplier = otherCostsMode === 'included' ? 1 + totalOtherPct / 100 : 1;
+    // Split expenses: included in unit price vs shown as separate section
+    let includedExpences: any[];
+    let separatedExpences: any[];
+    if (otherCostsMode === 'included') {
+        includedExpences = selectedCostNames ? allExpences.filter(e => selectedCostNames.includes(e.name)) : allExpences;
+        separatedExpences = selectedCostNames ? allExpences.filter(e => !selectedCostNames.includes(e.name)) : [];
+    } else {
+        includedExpences = [];
+        separatedExpences = selectedCostNames ? allExpences.filter(e => selectedCostNames.includes(e.name)) : allExpences;
+    }
+
+    const includedPct = includedExpences.reduce((sum: number, e: any) => sum + (Number(e.value) || 0), 0);
+    const otherMultiplier = 1 + includedPct / 100;
     const headerTableCol1Width = '200px';
 
     const ts = createTypeStyle();
@@ -938,30 +949,29 @@ ${styles}
         }
     }
 
-    // Other costs (only when separated mode)
-    if (otherCostsMode === 'separated' && data.expences && data.expences.length > 0) {
-        const filteredExpences = (data.expences as any[]).filter((e: any) => e.name !== 'typeOfCost');
-        if (filteredExpences.length > 0) {
-            html += `
+    // Other costs shown as separate section
+    if (separatedExpences.length > 0) {
+        const separatedTotal = separatedExpences.reduce((sum: number, e: any) => sum + estimate.totalCost * (Number(e.value) || 0) / 100, 0);
+        html += `
             <tr class="lightBlue">
                 <td class="subsection bold" colspan="5">ԱՅԼ ԾԱԽՍԵՐ</td>
-                <td class="bold">${formatEstimateCurrency(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
+                <td class="bold">${formatEstimateCurrency(separatedTotal)}</td>
             </tr>`;
-            for (const expence of filteredExpences) {
-                html += `
+        for (const expence of separatedExpences) {
+            html += `
                 <tr>
                     <td colspan="5" style="text-align:left; padding-left: 10px;">${t(expence.name)}</td>
                     <td>${expence.value}%</td>
                 </tr>`;
-            }
         }
     }
 
+    const grandTotal = estimate.totalCost * otherMultiplier + separatedExpences.reduce((sum: number, e: any) => sum + estimate.totalCost * (Number(e.value) || 0) / 100, 0);
     html += `
     <tr><td style="border:none;">&nbsp;</td></tr>
     <tr class="lightGray bold">
         <td colspan="5" style="text-align: right; padding-right: 10px;">ԸՆԴԱՄԵՆԸ՝</td>
-        <td>${formatEstimateCurrency(otherCostsMode === 'separated' ? estimate.totalCostWithOtherExpenses : estimate.totalCost)}</td>
+        <td>${formatEstimateCurrency(grandTotal)}</td>
     </tr>
     </tbody>
 </table>

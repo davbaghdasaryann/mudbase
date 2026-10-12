@@ -11,6 +11,17 @@ import { calcEstimateOtherExpensesCost } from '@/api/estimate/estimate/estimate_
 
 
 
+registerApiSession('estimate/get_other_expenses', async (req, res, session) => {
+    const estimateId = requireMongoIdParam(req, 'estimateId');
+    const estimatesCol = Db.getEstimatesCollection();
+    const estimate = await estimatesCol.findOne({ _id: estimateId }, { projection: { otherExpenses: 1 } });
+    const expenses = (Array.isArray(estimate?.otherExpenses) ? estimate!.otherExpenses : []) as any[];
+    const result = expenses
+        .map((item: any) => { const key = Object.keys(item)[0]; return { name: key, value: item[key] }; })
+        .filter((e: any) => e.name && e.name !== 'typeOfCost');
+    respondJson(res, result);
+});
+
 registerApiSession('estimate/update_other_expenses_key', async (req, res, session) => {
     // session.assertPermission(Permissions.EstimateEditInInformation);
 

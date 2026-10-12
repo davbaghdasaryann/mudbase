@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, InputAdornment, CircularProgress } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, InputAdornment, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -83,6 +83,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
     const [exportConfigFormat, setExportConfigFormat] = useState<'html' | 'word' | 'pdf' | 'excel'>('html');
     const [exportGroupMode, setExportGroupMode] = useState<'closed' | 'open'>('closed');
     const [exportOtherCostsMode, setExportOtherCostsMode] = useState<'separated' | 'included'>('separated');
+    const [boqExpenses, setBoqExpenses] = useState<{ name: string; value: number }[]>([]);
+    const [selectedCostNames, setSelectedCostNames] = useState<string[]>([]);
     const [updateDataModalOpen, setUpdateDataModalOpen] = useState(false);
 
     // const [progIndic, setProgIndic] = useState(false);
@@ -268,6 +270,14 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
         setExportConfigTarget('boq');
         setExportConfigFormat(format);
         setExportConfigOpen(true);
+        Api.requestSession<{ name: string; value: number }[]>({
+            command: 'estimate/get_other_expenses',
+            args: { estimateId: props.estimateId },
+        }).then(expenses => {
+            const list = expenses ?? [];
+            setBoqExpenses(list);
+            setSelectedCostNames(list.map(e => e.name));
+        }).catch(() => {});
     };
 
     const handleExportConfirm = () => {
@@ -283,10 +293,18 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             pdf:   'estimate/generate_boq_pdf',
             excel: 'estimate/generate_boq_excel',
         };
+        const exportArgs: Record<string, string> = {
+            estimateId: props.estimateId,
+            groupMode: exportGroupMode,
+            otherCostsMode: exportOtherCostsMode,
+        };
+        if (exportConfigTarget === 'boq' && boqExpenses.length > 0) {
+            exportArgs.selectedCostNames = selectedCostNames.join(',');
+        }
         window.open(
             Api.makeApiUrl({
                 command: commandMap[exportConfigFormat],
-                args: { estimateId: props.estimateId, groupMode: exportGroupMode, otherCostsMode: exportOtherCostsMode },
+                args: exportArgs,
             }),
             '_blank'
         );
@@ -972,6 +990,32 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 }}
                             />
                         </Box>
+                        {boqExpenses.length > 0 && (
+                            <Box sx={{ px: 0.5, pb: 1 }}>
+                                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
+                                    {exportOtherCostsMode === 'separated'
+                                        ? t('Select which costs to show as separate section')
+                                        : t('Select which costs to include in unit price')}
+                                </Typography>
+                                {boqExpenses.map(exp => (
+                                    <FormControlLabel
+                                        key={exp.name}
+                                        control={
+                                            <Checkbox
+                                                size='small'
+                                                checked={selectedCostNames.includes(exp.name)}
+                                                onChange={(e) => setSelectedCostNames(prev =>
+                                                    e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
+                                                )}
+                                                sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' }, py: 0.5 }}
+                                            />
+                                        }
+                                        label={<Typography variant='body2'>{t(exp.name)} ({exp.value}%)</Typography>}
+                                        sx={{ display: 'flex', ml: 0 }}
+                                    />
+                                ))}
+                            </Box>
+                        )}
                         </>
                     )}
                 </DialogContent>
