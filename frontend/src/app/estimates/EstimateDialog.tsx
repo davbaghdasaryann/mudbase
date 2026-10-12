@@ -24,6 +24,7 @@ import RedoIcon from '@mui/icons-material/Redo';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PercentIcon from '@mui/icons-material/Percent';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -746,8 +747,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                         <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             {[
                                 { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
-                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => setComparativeModalOpen(true) },
-                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => setChronologicalDialogOpen(true) },
+                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 30, color: '#0091a3' }} />, onClick: () => setComparativeModalOpen(true) },
+                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 30, color: '#007a8a' }} />, onClick: () => setChronologicalDialogOpen(true) },
+                                { label: 'Rental',        icon: <RequestQuoteIcon  sx={{ fontSize: 30, color: '#006475' }} />, onClick: () => window.open(`/analysis/rentayin`, '_blank') },
                             ].map((item) => (
                                 <Box key={item.label} onClick={item.onClick} sx={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
