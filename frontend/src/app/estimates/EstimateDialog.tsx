@@ -883,11 +883,11 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                 onDone={(fromDate, toDate) => {
                     setChronologicalDialogOpen(false);
                     const params = new URLSearchParams({
-                        estimateId: props.estimateId,
-                        estimateName: props.estimateTitle,
-                        sourceType: 'list_of_estimates',
-                        fromDate,
-                        toDate,
+                        autoEstimateId: props.estimateId,
+                        autoEstimateName: props.estimateTitle,
+                        autoSourceType: 'list_of_estimates',
+                        autoFromDate: fromDate,
+                        autoToDate: toDate,
                     });
                     window.open(`/analysis/chronological?${params.toString()}`, '_blank');
                 }}
@@ -1020,7 +1020,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 gradientId: 'comparativeGradientGreen2',
                                 onClick: () => {
                                     setComparativeModalOpen(false);
-                                    window.open(`/analysis/comparative?estimateId=${props.estimateId}&type=market`, '_blank');
+                                    window.open(`/analysis/comparative?autoEstimateId=${props.estimateId}&autoEstimateName=${encodeURIComponent(props.estimateTitle)}&autoType=market`, '_blank');
                                 },
                             },
                             {

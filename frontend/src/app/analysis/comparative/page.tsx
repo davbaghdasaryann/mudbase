@@ -96,9 +96,22 @@ export default function ComparativeAnalysisPage() {
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Load list on mount
+    const autoEstimateId = searchParams.get('autoEstimateId');
+    const autoEstimateName = searchParams.get('autoEstimateName');
+    const autoType = searchParams.get('autoType');
+    const autoCreateDoneRef = useRef(false);
+
     useEffect(() => {
         Api.requestSession<ComparativeRecord[]>({ command: 'comparative/fetch_all', args: {} })
-            .then(data => { setRecords(data ?? []); setListLoading(false); })
+            .then(data => {
+                setRecords(data ?? []);
+                setListLoading(false);
+                if (autoEstimateId && autoEstimateName && autoType && !autoCreateDoneRef.current) {
+                    autoCreateDoneRef.current = true;
+                    const cardKey = autoType === 'market' ? 'By Market Value' : 'By Base Proposals';
+                    handleEstimateSelect({ _id: autoEstimateId, name: autoEstimateName } as any, cardKey);
+                }
+            })
             .catch(() => setListLoading(false));
     }, []);
 
@@ -145,11 +158,12 @@ export default function ComparativeAnalysisPage() {
         setDialogOpen(true);
     };
 
-    const handleEstimateSelect = async (estimate: EstimatesApi.ApiEstimate) => {
+    const handleEstimateSelect = async (estimate: EstimatesApi.ApiEstimate, overrideType?: string) => {
         setDialogOpen(false);
+        const cardKey = overrideType ?? pendingCardKey;
         const analysisType: 'market' | 'base_proposals' | 'entered_data' =
-            pendingCardKey === 'By Market Value' ? 'market' :
-            pendingCardKey === 'By Base Proposals' ? 'base_proposals' : 'entered_data';
+            cardKey === 'By Market Value' ? 'market' :
+            cardKey === 'By Base Proposals' ? 'base_proposals' : 'entered_data';
         const tab = analysisType === 'market' ? 'general' : 'labor';
         setCreating(true);
         try {

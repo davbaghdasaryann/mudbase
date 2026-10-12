@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box, Typography, Button, CircularProgress, Chip, IconButton, Tooltip } from '@mui/material';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -82,10 +82,24 @@ export default function ChronologicalAnalysisPage() {
     const listType = (dialog !== 'none' && dialog !== 'create' && dialog !== 'daterange')
         ? dialog as ChronologicalSourceType : null;
 
+    const autoEstimateId = searchParams.get('autoEstimateId');
+    const autoEstimateName = searchParams.get('autoEstimateName');
+    const autoSourceType = searchParams.get('autoSourceType');
+    const autoFromDate = searchParams.get('autoFromDate');
+    const autoToDate = searchParams.get('autoToDate');
+    const autoCreateDoneRef = useRef(false);
+
     // Load list on mount
     useEffect(() => {
         Api.requestSession<ChronologicalRecord[]>({ command: 'analysis/chronological/fetch_all', args: {} })
-            .then(data => { setRecords(data ?? []); setListLoading(false); })
+            .then(data => {
+                setRecords(data ?? []);
+                setListLoading(false);
+                if (autoEstimateId && autoEstimateName && autoSourceType && autoFromDate && autoToDate && !autoCreateDoneRef.current) {
+                    autoCreateDoneRef.current = true;
+                    autoCreateChronological(autoEstimateId, autoEstimateName, autoSourceType, autoFromDate, autoToDate);
+                }
+            })
             .catch(() => setListLoading(false));
     }, []);
 
@@ -116,6 +130,23 @@ export default function ChronologicalAnalysisPage() {
             .catch(() => {})
             .finally(() => setChartLoading(false));
     }, [selectedId]);
+
+    const autoCreateChronological = async (estimateId: string, estimateName: string, sourceType: string, fromDate: string, toDate: string) => {
+        setCreating(true);
+        try {
+            const result = await Api.requestSession<{ _id: string }>({
+                command: 'analysis/chronological/create',
+                json: { name: estimateName, sourceType, itemId: estimateId, fromDate, toDate },
+            });
+            const newRec: ChronologicalRecord = {
+                _id: String(result._id), name: estimateName,
+                sourceType: sourceType as ChronologicalSourceType, itemId: estimateId,
+                fromDate, toDate, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+            };
+            setRecords(prev => [newRec, ...prev]);
+            router.push(`?id=${result._id}`);
+        } finally { setCreating(false); }
+    };
 
     const handleCreate = (itemId: string, itemName: string) => {
         if (!listType) return;
