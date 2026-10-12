@@ -913,10 +913,17 @@ ${styles}
             }
 
             for (const laborData of subsectionData.labors) {
+                // Skip child rows of a group (same as closed groupMode in estimation export)
+                if (laborData.labor.parentGroupRowId) continue;
                 ++itemIndex;
 
-                const laborUnit = laborData.labor.changableAveragePrice * otherMultiplier;
-                const totalCost = laborUnit * laborData.labor.quantity;
+                const isGroupRow = laborData.labor.isGroupRow === true;
+                const laborUnit = isGroupRow
+                    ? (laborData.labor.groupAbsoluteTotalCost || 0) * otherMultiplier / Math.max(laborData.labor.quantity || 1, 1)
+                    : laborData.labor.changableAveragePrice * otherMultiplier;
+                const totalCost = isGroupRow
+                    ? (laborData.labor.groupAbsoluteTotalCost || 0) * otherMultiplier
+                    : laborUnit * laborData.labor.quantity;
 
                 html += `
                 <tr>
@@ -928,7 +935,7 @@ ${styles}
                     <td>${formatEstimateCurrency(totalCost)}</td>
                 </tr>`;
 
-                if (laborData.materials && laborData.materials.length > 0) {
+                if (!isGroupRow && laborData.materials && laborData.materials.length > 0) {
                     for (const material of laborData.materials) {
                         ++itemIndex;
                         const matUnit = material.changableAveragePrice * otherMultiplier;
