@@ -197,9 +197,20 @@ export default function RentayinPage() {
         Api.requestSession({ command: 'rentayin/save_overhead_entries', json: { id, entries } });
     };
 
+    const autoEstimateId = searchParams.get('autoEstimateId');
+    const autoEstimateName = searchParams.get('autoEstimateName');
+    const autoCreateDoneRef = useRef(false);
+
     useEffect(() => {
         Api.requestSession<RentayinRecord[]>({ command: 'rentayin/fetch_all' })
-            .then(data => { setRecords(data ?? []); setLoading(false); })
+            .then(data => {
+                setRecords(data ?? []);
+                setLoading(false);
+                if (autoEstimateId && autoEstimateName && !autoCreateDoneRef.current) {
+                    autoCreateDoneRef.current = true;
+                    handleSelect({ _id: autoEstimateId, name: autoEstimateName } as any);
+                }
+            })
             .catch(() => setLoading(false));
     }, []);
 

@@ -746,10 +746,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}>
                         <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             {[
-                                { label: 'Structural',    icon: <AccountTreeIcon         sx={{ fontSize: 28 }} />, color: '#00ABBE', bg: 'rgba(0,171,190,0.1)',  onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
+                                { label: 'Structural',    icon: <AccountTreeIcon         sx={{ fontSize: 28 }} />, color: '#00ABBE', bg: 'rgba(0,171,190,0.1)',  onClick: () => window.open(`/analysis/structural?autoEstimateId=${props.estimateId}&autoEstimateName=${encodeURIComponent(props.estimateTitle)}`, '_blank') },
                                 { label: 'Comparative',   icon: <CompareArrowsIcon       sx={{ fontSize: 28 }} />, color: '#7B61FF', bg: 'rgba(123,97,255,0.1)', onClick: () => setComparativeModalOpen(true) },
                                 { label: 'Chronological', icon: <TimelineIcon            sx={{ fontSize: 28 }} />, color: '#FF7043', bg: 'rgba(255,112,67,0.1)', onClick: () => setChronologicalDialogOpen(true) },
-                                { label: 'Rentayin',      icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 28 }} />, color: '#26A69A', bg: 'rgba(38,166,154,0.1)', onClick: () => window.open(`/analysis/rentayin`, '_blank') },
+                                { label: 'Rentayin',      icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 28 }} />, color: '#26A69A', bg: 'rgba(38,166,154,0.1)', onClick: () => window.open(`/analysis/rentayin?autoEstimateId=${props.estimateId}&autoEstimateName=${encodeURIComponent(props.estimateTitle)}`, '_blank') },
                             ].map((item) => (
                                 <Box key={item.label} onClick={item.onClick} sx={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

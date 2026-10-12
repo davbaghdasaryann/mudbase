@@ -85,10 +85,22 @@ export default function StructuralAnalysisPage() {
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Auto-create if opened from estimation dialog
+    const autoEstimateId = searchParams.get('autoEstimateId');
+    const autoEstimateName = searchParams.get('autoEstimateName');
+    const autoCreateDoneRef = useRef(false);
+
     // Load list on mount
     useEffect(() => {
         Api.requestSession<StructuralRecord[]>({ command: 'analysis/structural/fetch_all', args: {} })
-            .then(data => { setRecords(data ?? []); setListLoading(false); })
+            .then(data => {
+                setRecords(data ?? []);
+                setListLoading(false);
+                if (autoEstimateId && autoEstimateName && !autoCreateDoneRef.current) {
+                    autoCreateDoneRef.current = true;
+                    handleSelect({ _id: autoEstimateId, name: autoEstimateName } as any);
+                }
+            })
             .catch(() => setListLoading(false));
     }, []);
 
