@@ -971,16 +971,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
 
                     {exportConfigTarget === 'boq' && (
                         <>
-                        <Divider sx={{ borderColor: '#f0f2f4' }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
-                            <Box>
-                                <Typography variant='body2' fontWeight={500}>{t('Separate other costs')}</Typography>
-                                <Typography variant='caption' color='text.secondary'>
-                                    {exportOtherCostsMode === 'separated'
-                                        ? t('Other costs shown as separate line items')
-                                        : t('Other costs included in unit cost by percentage')}
-                                </Typography>
-                            </Box>
+                        <Divider sx={{ my: 0.5, borderColor: '#e8eaed' }} />
+                        {/* Other costs toggle */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1.2 }}>
+                            <Typography variant='body2' fontWeight={500}>{t('Separate other costs')}</Typography>
                             <Switch
                                 checked={exportOtherCostsMode === 'separated'}
                                 onChange={(e) => setExportOtherCostsMode(e.target.checked ? 'separated' : 'included')}
@@ -991,29 +985,38 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             />
                         </Box>
                         {boqExpenses.length > 0 && (
-                            <Box sx={{ px: 0.5, pb: 1 }}>
-                                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
-                                    {exportOtherCostsMode === 'separated'
-                                        ? t('Select which costs to show as separate section')
-                                        : t('Select which costs to include in unit price')}
-                                </Typography>
-                                {boqExpenses.map(exp => (
-                                    <FormControlLabel
-                                        key={exp.name}
-                                        control={
-                                            <Checkbox
-                                                size='small'
-                                                checked={selectedCostNames.includes(exp.name)}
-                                                onChange={(e) => setSelectedCostNames(prev =>
-                                                    e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
-                                                )}
-                                                sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' }, py: 0.5 }}
+                            <Box sx={{ mx: 0.5, mb: 1, border: '1px solid #e8eaed', borderRadius: 2, overflow: 'hidden' }}>
+                                <Box sx={{ px: 1.5, py: 0.8, backgroundColor: '#f7f9fa', borderBottom: '1px solid #e8eaed' }}>
+                                    <Typography variant='caption' fontWeight={600} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                        {exportOtherCostsMode === 'separated'
+                                            ? t('Select which costs to show as separate section')
+                                            : t('Select which costs to include in unit price')}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ px: 1, py: 0.5 }}>
+                                    {boqExpenses.map((exp, idx) => (
+                                        <Box key={exp.name} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            py: 0.4, borderBottom: idx < boqExpenses.length - 1 ? '1px solid #f0f2f4' : 'none' }}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        size='small'
+                                                        checked={selectedCostNames.includes(exp.name)}
+                                                        onChange={(e) => setSelectedCostNames(prev =>
+                                                            e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
+                                                        )}
+                                                        sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' }, py: 0 }}
+                                                    />
+                                                }
+                                                label={<Typography variant='body2'>{t(exp.name)}</Typography>}
+                                                sx={{ m: 0 }}
                                             />
-                                        }
-                                        label={<Typography variant='body2'>{t(exp.name)} ({exp.value}%)</Typography>}
-                                        sx={{ display: 'flex', ml: 0 }}
-                                    />
-                                ))}
+                                            <Typography variant='caption' sx={{ color: '#00A390', fontWeight: 600, ml: 1, flexShrink: 0 }}>
+                                                {exp.value}%
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </Box>
                             </Box>
                         )}
                         </>

@@ -788,5 +788,7 @@
   "Percentage (e.g. -10 or +15)": "Տոկոս (օր.՝ -10 կամ +15)",
   "Apply to": "Կիրառել",
   "Both": "Երկուսն էլ",
-  "Apply": "Կիրառել"
+  "Apply": "Կիրառել",
+  "Select which costs to show as separate section": "Ընտրեք որ ծախսերը ցուցադրել որպես առանձին բաժին",
+  "Select which costs to include in unit price": "Ընտրեք որ ծախսերը ներառել միավոր արժեքում"
 }
