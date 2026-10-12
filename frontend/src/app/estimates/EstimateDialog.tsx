@@ -943,79 +943,81 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             />
 
             {/* Export Config Modal */}
-            <Dialog open={exportConfigOpen} onClose={() => setExportConfigOpen(false)} maxWidth='xs' fullWidth>
-                <DialogTitle sx={{ pb: 1 }}>
-                    {t('Export Settings')}
-                    <IconButton onClick={() => setExportConfigOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}>
-                        <CloseIcon />
+            <Dialog open={exportConfigOpen} onClose={() => setExportConfigOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ pb: 0.5, pt: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box>
+                        <Typography variant='h6' fontWeight={700} sx={{ fontSize: '1rem', lineHeight: 1.2 }}>
+                            {t('Export as')} {exportConfigFormat.toUpperCase()}
+                        </Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                            {exportConfigTarget === 'boq' ? 'Bill of Quantities' : t('Estimation')}
+                        </Typography>
+                    </Box>
+                    <IconButton onClick={() => setExportConfigOpen(false)} size='small' sx={{ color: 'grey.400' }}>
+                        <CloseIcon fontSize='small' />
                     </IconButton>
                 </DialogTitle>
-                <DialogContent sx={{ pt: 1, pb: 2, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <DialogContent sx={{ pt: 1.5, pb: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {/* Setting: Group rows (estimation only) */}
-                    {exportConfigTarget !== 'boq' && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
-                        <Box>
-                            <Typography variant='body2' fontWeight={500}>{t('Expand group rows')}</Typography>
-                            <Typography variant='caption' color='text.secondary'>
-                                {exportGroupMode === 'open' ? t('Groups shown with individual rows') : t('Groups shown collapsed with total')}
-                            </Typography>
+                    {exportConfigTarget !== 'boq' && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1 }}>
+                            <Box>
+                                <Typography variant='body2' fontWeight={500}>{t('Expand group rows')}</Typography>
+                                <Typography variant='caption' color='text.secondary'>
+                                    {exportGroupMode === 'open' ? t('Groups shown with individual rows') : t('Groups shown collapsed with total')}
+                                </Typography>
+                            </Box>
+                            <Switch
+                                checked={exportGroupMode === 'open'}
+                                onChange={(e) => setExportGroupMode(e.target.checked ? 'open' : 'closed')}
+                                sx={{
+                                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                                }}
+                            />
                         </Box>
-                        <Switch
-                            checked={exportGroupMode === 'open'}
-                            onChange={(e) => setExportGroupMode(e.target.checked ? 'open' : 'closed')}
-                            sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
-                            }}
-                        />
-                    </Box>}
+                    )}
 
                     {exportConfigTarget === 'boq' && boqExpenses.length > 0 && (
                         <>
-                        <Divider sx={{ my: 0.5, borderColor: '#e8eaed' }} />
-                        <Box sx={{ mx: 0.5, mb: 0.5, border: '1px solid #e8eaed', borderRadius: 2, overflow: 'hidden' }}>
-                            <Box sx={{ px: 1.5, py: 0.8, backgroundColor: '#f7f9fa', borderBottom: '1px solid #e8eaed' }}>
-                                <Typography variant='caption' fontWeight={600} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                    {t('Other costs')}
-                                </Typography>
-                            </Box>
-                            {boqExpenses.map((exp, idx) => {
-                                const included = selectedCostNames.includes(exp.name);
-                                return (
-                                    <Box key={exp.name} sx={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        px: 1.5, py: 0.8,
-                                        borderBottom: idx < boqExpenses.length - 1 ? '1px solid #f0f2f4' : 'none',
-                                        transition: 'background 0.15s',
-                                        backgroundColor: included ? 'rgba(0,163,144,0.04)' : 'transparent',
-                                    }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Typography variant='body2' sx={{ fontWeight: included ? 500 : 400, color: included ? '#00A390' : 'text.secondary' }}>
-                                                {t(exp.name)}
-                                            </Typography>
-                                            <Typography variant='caption' sx={{ color: '#aaa', fontWeight: 400 }}>
-                                                {exp.value}%
-                                            </Typography>
-                                        </Box>
-                                        <Switch
-                                            size='small'
-                                            checked={included}
-                                            onChange={(e) => setSelectedCostNames(prev =>
-                                                e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
-                                            )}
-                                            sx={{
-                                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
-                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
-                                            }}
-                                        />
+                        <Typography variant='caption' fontWeight={600} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.6, mb: 0.5, display: 'block' }}>
+                            {t('Other costs')}
+                        </Typography>
+                        {boqExpenses.map((exp, idx) => {
+                            const included = selectedCostNames.includes(exp.name);
+                            return (
+                                <Box key={exp.name} sx={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    py: 0.75,
+                                    borderBottom: idx < boqExpenses.length - 1 ? '1px solid #f0f2f4' : 'none',
+                                }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography variant='body2' sx={{ fontWeight: included ? 500 : 400, color: included ? '#00A390' : 'text.primary' }}>
+                                            {t(exp.name)}
+                                        </Typography>
+                                        <Typography variant='caption' sx={{ color: '#bbb' }}>
+                                            {exp.value}%
+                                        </Typography>
                                     </Box>
-                                );
-                            })}
-                        </Box>
+                                    <Switch
+                                        size='small'
+                                        checked={included}
+                                        onChange={(e) => setSelectedCostNames(prev =>
+                                            e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
+                                        )}
+                                        sx={{
+                                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                                        }}
+                                    />
+                                </Box>
+                            );
+                        })}
                         </>
                     )}
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setExportConfigOpen(false)} size='small' sx={{ color: '#00A390' }}>{t('Cancel')}</Button>
+                <DialogActions sx={{ px: 2, pb: 2, pt: 1 }}>
+                    <Button onClick={() => setExportConfigOpen(false)} size='small' sx={{ color: 'text.secondary' }}>{t('Cancel')}</Button>
                     <Button
                         variant='contained'
                         size='small'
