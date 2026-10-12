@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
-import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, InputAdornment, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, DialogActions, IconButton, Tabs, Tab, Box, Typography, Collapse, Stack, Switch, Button, Divider, Tooltip, TextField, InputAdornment, CircularProgress } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -978,30 +978,38 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     {t('Other costs')}
                                 </Typography>
                             </Box>
-                            <Box sx={{ px: 1, py: 0.5 }}>
-                                {boqExpenses.map((exp, idx) => (
-                                    <Box key={exp.name} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        py: 0.4, borderBottom: idx < boqExpenses.length - 1 ? '1px solid #f0f2f4' : 'none' }}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    size='small'
-                                                    checked={selectedCostNames.includes(exp.name)}
-                                                    onChange={(e) => setSelectedCostNames(prev =>
-                                                        e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
-                                                    )}
-                                                    sx={{ color: '#00A390', '&.Mui-checked': { color: '#00A390' }, py: 0 }}
-                                                />
-                                            }
-                                            label={<Typography variant='body2'>{t(exp.name)}</Typography>}
-                                            sx={{ m: 0 }}
+                            {boqExpenses.map((exp, idx) => {
+                                const included = selectedCostNames.includes(exp.name);
+                                return (
+                                    <Box key={exp.name} sx={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        px: 1.5, py: 0.8,
+                                        borderBottom: idx < boqExpenses.length - 1 ? '1px solid #f0f2f4' : 'none',
+                                        transition: 'background 0.15s',
+                                        backgroundColor: included ? 'rgba(0,163,144,0.04)' : 'transparent',
+                                    }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography variant='body2' sx={{ fontWeight: included ? 500 : 400, color: included ? '#00A390' : 'text.secondary' }}>
+                                                {t(exp.name)}
+                                            </Typography>
+                                            <Typography variant='caption' sx={{ color: '#aaa', fontWeight: 400 }}>
+                                                {exp.value}%
+                                            </Typography>
+                                        </Box>
+                                        <Switch
+                                            size='small'
+                                            checked={included}
+                                            onChange={(e) => setSelectedCostNames(prev =>
+                                                e.target.checked ? [...prev, exp.name] : prev.filter(n => n !== exp.name)
+                                            )}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#00A390' },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
+                                            }}
                                         />
-                                        <Typography variant='caption' sx={{ color: '#00A390', fontWeight: 600, ml: 1, flexShrink: 0 }}>
-                                            {exp.value}%
-                                        </Typography>
                                     </Box>
-                                ))}
-                            </Box>
+                                );
+                            })}
                         </Box>
                         </>
                     )}
