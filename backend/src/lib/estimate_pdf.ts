@@ -855,14 +855,13 @@ ${styles}
 
     html += vertSpacer;
 
-    // BoQ Table - simplified version showing just items and quantities
+    // BoQ Table
     html += `
 <h3 style="margin-top: 20px; margin-bottom: 10px;">ՔԱՆԱԿԱԿԱՆ ՎԵՐԼՈՒԾՈՒԹՅՈՒՆ (Bill of Quantities)</h3>
 <table class="boqTable">
     <thead>
         <tr class="lightBlue">
             <th style="width: 40px;">Հ/հ</th>
-            <th style="width: 70px;">Կոդը</th>
             <th>Անվանումը</th>
             <th style="width: 60px;">Չ․Մ․</th>
             <th style="width: 80px;">Քանակը</th>
@@ -881,7 +880,7 @@ ${styles}
 
         html += `
         <tr>
-            <td class="section lightGray" colspan="7">${sectionIndex}. ${ensureNotUndefined(sectionData.section.name || sectionData.section._id)}</td>
+            <td class="section lightGray" colspan="6">${sectionIndex}. ${ensureNotUndefined(sectionData.section.name || sectionData.section._id)}</td>
         </tr>`;
 
         let subSectIndex = 0;
@@ -891,7 +890,7 @@ ${styles}
             if (subsectionData.subsection.name) {
                 html += `
                 <tr>
-                    <td class="subsection lightBlue" colspan="7">${sectionIndex}.${subSectIndex} ${ensureNotUndefined(subsectionData.subsection.name)}</td>
+                    <td class="subsection lightBlue" colspan="6">${sectionIndex}.${subSectIndex} ${ensureNotUndefined(subsectionData.subsection.name)}</td>
                 </tr>`;
             }
 
@@ -899,12 +898,10 @@ ${styles}
                 ++itemIndex;
 
                 const totalCost = laborData.labor.changableAveragePrice * laborData.labor.quantity;
-                const laborCode = laborData.labor.isGroupRow ? 'Խումբ' : (laborData.labor.laborItemId || 'N/A');
 
                 html += `
                 <tr>
                     <td>${itemIndex}</td>
-                    <td>${laborCode}</td>
                     <td style="text-align:left;">${laborData.labor.laborOfferItemName}</td>
                     <td>${laborData.labor.measurementUnitMongoId}</td>
                     <td>${fmt(laborData.labor.quantity)}</td>
@@ -912,7 +909,6 @@ ${styles}
                     <td>${formatEstimateCurrency(totalCost)}</td>
                 </tr>`;
 
-                // Add materials if any
                 if (laborData.materials && laborData.materials.length > 0) {
                     for (const material of laborData.materials) {
                         ++itemIndex;
@@ -921,7 +917,6 @@ ${styles}
                         html += `
                         <tr style="background-color: #f9f9f9;">
                             <td>${itemIndex}</td>
-                            <td>${ensureNotUndefined(material.materialItemId)}</td>
                             <td style="text-align:left; padding-left: 20px;">└ ${ensureNotUndefined(material.materialOfferItemName)}</td>
                             <td>${ensureNotUndefined(material.measurementUnitMongoId)}</td>
                             <td>${fmt(material.quantity)}</td>
@@ -934,11 +929,30 @@ ${styles}
         }
     }
 
+    // Other costs
+    if (data.expences && data.expences.length > 0) {
+        const filteredExpences = (data.expences as any[]).filter((e: any) => e.name !== 'typeOfCost');
+        if (filteredExpences.length > 0) {
+            html += `
+            <tr class="lightBlue">
+                <td class="subsection bold" colspan="5">ԱՅԼ ԾԱԽՍԵՐ</td>
+                <td class="bold">${formatEstimateCurrency(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
+            </tr>`;
+            for (const expence of filteredExpences) {
+                html += `
+                <tr>
+                    <td colspan="5" style="text-align:left; padding-left: 10px;">${expence.name}</td>
+                    <td>${expence.value}%</td>
+                </tr>`;
+            }
+        }
+    }
+
     html += `
     <tr><td style="border:none;">&nbsp;</td></tr>
     <tr class="lightGray bold">
-        <td colspan="6" style="text-align: right; padding-right: 10px;">ԸՆԴԱՄԵՆԸ՝</td>
-        <td>${formatEstimateCurrency(estimate.totalCost)}</td>
+        <td colspan="5" style="text-align: right; padding-right: 10px;">ԸՆԴԱՄԵՆԸ՝</td>
+        <td>${formatEstimateCurrency(estimate.totalCostWithOtherExpenses)}</td>
     </tr>
     </tbody>
 </table>
