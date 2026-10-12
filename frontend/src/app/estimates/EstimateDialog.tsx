@@ -988,9 +988,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                             <Box sx={{ mx: 0.5, mb: 1, border: '1px solid #e8eaed', borderRadius: 2, overflow: 'hidden' }}>
                                 <Box sx={{ px: 1.5, py: 0.8, backgroundColor: '#f7f9fa', borderBottom: '1px solid #e8eaed' }}>
                                     <Typography variant='caption' fontWeight={600} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                        {exportOtherCostsMode === 'separated'
-                                            ? t('Select which costs to show as separate section')
-                                            : t('Select which costs to include in unit price')}
+                                        {t('Other costs')}
                                     </Typography>
                                 </Box>
                                 <Box sx={{ px: 1, py: 0.5 }}>
