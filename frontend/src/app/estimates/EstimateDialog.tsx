@@ -24,7 +24,7 @@ import RedoIcon from '@mui/icons-material/Redo';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PercentIcon from '@mui/icons-material/Percent';
-import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import EstimateInfoAccordionContent from '@/components/estimate/EstimateInfoAccordionContent';
@@ -746,10 +746,10 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     }}>
                         <Box sx={{ display: 'flex', gap: { xs: 1.5, md: 2, lg: 2.5 }, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             {[
-                                { label: 'Structural',    icon: <AccountTreeIcon   sx={{ fontSize: 30, color: '#00ABBE' }} />, onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
-                                { label: 'Comparative',   icon: <CompareArrowsIcon sx={{ fontSize: 30, color: '#0091a3' }} />, onClick: () => setComparativeModalOpen(true) },
-                                { label: 'Chronological', icon: <TimelineIcon      sx={{ fontSize: 30, color: '#007a8a' }} />, onClick: () => setChronologicalDialogOpen(true) },
-                                { label: 'Rental',        icon: <RequestQuoteIcon  sx={{ fontSize: 30, color: '#006475' }} />, onClick: () => window.open(`/analysis/rentayin`, '_blank') },
+                                { label: 'Structural',    icon: <AccountTreeIcon         sx={{ fontSize: 28 }} />, color: '#00ABBE', bg: 'rgba(0,171,190,0.1)',  onClick: () => window.open(`/analysis/structural?estimateId=${props.estimateId}`, '_blank') },
+                                { label: 'Comparative',   icon: <CompareArrowsIcon       sx={{ fontSize: 28 }} />, color: '#7B61FF', bg: 'rgba(123,97,255,0.1)', onClick: () => setComparativeModalOpen(true) },
+                                { label: 'Chronological', icon: <TimelineIcon            sx={{ fontSize: 28 }} />, color: '#FF7043', bg: 'rgba(255,112,67,0.1)', onClick: () => setChronologicalDialogOpen(true) },
+                                { label: 'Rentayin',      icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 28 }} />, color: '#26A69A', bg: 'rgba(38,166,154,0.1)', onClick: () => window.open(`/analysis/rentayin`, '_blank') },
                             ].map((item) => (
                                 <Box key={item.label} onClick={item.onClick} sx={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -759,8 +759,12 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                     transition: 'all 0.2s',
                                     '&:hover': { boxShadow: '0 6px 10px rgba(0,0,0,0.2)', transform: 'translateY(-2px)' },
                                 }}>
-                                    <Box sx={{ height: 34, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
+                                    <Box sx={{
+                                        height: 44, width: 44, borderRadius: '50%', mb: 0.75,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                        backgroundColor: item.bg, color: item.color,
+                                    }}>{item.icon}</Box>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 600, fontSize: '0.65rem', lineHeight: 1.2, color: item.color }}>
                                         {t(item.label)}
                                     </Typography>
                                 </Box>
