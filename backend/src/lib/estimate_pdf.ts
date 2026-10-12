@@ -666,6 +666,12 @@ function formatEstimateCurrencySymbol(value: number) {
 export function generateBoQHTML(data: any, t: TFunction, opts: ExportOptions = {}) {
     const otherCostsMode = opts.otherCostsMode ?? 'separated';
     const estimate = data.estimate;
+
+    const totalOtherPct = (data.expences as any[]).reduce((sum: number, e: any) => {
+        if (e.name === 'typeOfCost') return sum;
+        return sum + (Number(e.value) || 0);
+    }, 0);
+    const otherMultiplier = otherCostsMode === 'included' ? 1 + totalOtherPct / 100 : 1;
     const headerTableCol1Width = '200px';
 
     const ts = createTypeStyle();
@@ -898,7 +904,8 @@ ${styles}
             for (const laborData of subsectionData.labors) {
                 ++itemIndex;
 
-                const totalCost = laborData.labor.changableAveragePrice * laborData.labor.quantity;
+                const laborUnit = laborData.labor.changableAveragePrice * otherMultiplier;
+                const totalCost = laborUnit * laborData.labor.quantity;
 
                 html += `
                 <tr>
@@ -906,14 +913,15 @@ ${styles}
                     <td style="text-align:left;">${laborData.labor.laborOfferItemName}</td>
                     <td>${laborData.labor.measurementUnitMongoId}</td>
                     <td>${fmt(laborData.labor.quantity)}</td>
-                    <td>${formatEstimateCurrency(laborData.labor.changableAveragePrice)}</td>
+                    <td>${formatEstimateCurrency(laborUnit)}</td>
                     <td>${formatEstimateCurrency(totalCost)}</td>
                 </tr>`;
 
                 if (laborData.materials && laborData.materials.length > 0) {
                     for (const material of laborData.materials) {
                         ++itemIndex;
-                        const matTotal = material.changableAveragePrice * material.quantity;
+                        const matUnit = material.changableAveragePrice * otherMultiplier;
+                        const matTotal = matUnit * material.quantity;
 
                         html += `
                         <tr style="background-color: #f9f9f9;">
@@ -921,7 +929,7 @@ ${styles}
                             <td style="text-align:left; padding-left: 20px;">└ ${ensureNotUndefined(material.materialOfferItemName)}</td>
                             <td>${ensureNotUndefined(material.measurementUnitMongoId)}</td>
                             <td>${fmt(material.quantity)}</td>
-                            <td>${formatEstimateCurrency(material.changableAveragePrice)}</td>
+                            <td>${formatEstimateCurrency(matUnit)}</td>
                             <td>${formatEstimateCurrency(matTotal)}</td>
                         </tr>`;
                     }
