@@ -116,18 +116,20 @@ registerApiSession('estimate/generate_excel', async (req, res, session) => {
 // Bill of Quantities endpoints
 registerApiSession('estimate/generate_boq_html', async (req, res, session) => {
     const estimateId = requireQueryParam(req, 'estimateId');
+    const otherCostsMode = (req.query.otherCostsMode as string) === 'included' ? 'included' : 'separated';
 
     const estimateData = await genEstimateDataWithPipeline(estimateId);
-    const html = generateBoQHTML(estimateData, req.t);
+    const html = generateBoQHTML(estimateData, req.t, { otherCostsMode });
 
     respondHtml(res, html);
 });
 
 registerApiSession('estimate/generate_boq_pdf', async (req, res, session) => {
     const estimateId = requireQueryParam(req, 'estimateId');
+    const otherCostsMode = (req.query.otherCostsMode as string) === 'included' ? 'included' : 'separated';
 
     const data = await genEstimateDataWithPipeline(estimateId);
-    const html = generateBoQHTML(data, req.t);
+    const html = generateBoQHTML(data, req.t, { otherCostsMode });
 
     const margins = 30;
     const options: htmlPdf.Options = {
@@ -165,8 +167,9 @@ registerApiSession('estimate/generate_boq_word', async (req, res, session) => {
     try {
         const estimateId = requireQueryParam(req, 'estimateId');
 
+        const otherCostsMode = (req.query.otherCostsMode as string) === 'included' ? 'included' : 'separated';
         const estimateData = await genEstimateDataWithPipeline(estimateId);
-        const html = generateBoQHTML(estimateData, req.t);
+        const html = generateBoQHTML(estimateData, req.t, { otherCostsMode });
 
         // @ts-ignore - html-to-docx doesn't have type definitions
         const buffer = await HTMLtoDOCX(html, null, {

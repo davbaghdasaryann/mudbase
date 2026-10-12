@@ -663,7 +663,8 @@ function formatEstimateCurrencySymbol(value: number) {
     return formatEstimateCurrency(value) + ' AMD';
 }
 
-export function generateBoQHTML(data: any, t: TFunction) {
+export function generateBoQHTML(data: any, t: TFunction, opts: ExportOptions = {}) {
+    const otherCostsMode = opts.otherCostsMode ?? 'separated';
     const estimate = data.estimate;
     const headerTableCol1Width = '200px';
 
@@ -929,8 +930,8 @@ ${styles}
         }
     }
 
-    // Other costs
-    if (data.expences && data.expences.length > 0) {
+    // Other costs (only when separated mode)
+    if (otherCostsMode === 'separated' && data.expences && data.expences.length > 0) {
         const filteredExpences = (data.expences as any[]).filter((e: any) => e.name !== 'typeOfCost');
         if (filteredExpences.length > 0) {
             html += `
@@ -941,7 +942,7 @@ ${styles}
             for (const expence of filteredExpences) {
                 html += `
                 <tr>
-                    <td colspan="5" style="text-align:left; padding-left: 10px;">${expence.name}</td>
+                    <td colspan="5" style="text-align:left; padding-left: 10px;">${t(expence.name)}</td>
                     <td>${expence.value}%</td>
                 </tr>`;
             }
@@ -952,7 +953,7 @@ ${styles}
     <tr><td style="border:none;">&nbsp;</td></tr>
     <tr class="lightGray bold">
         <td colspan="5" style="text-align: right; padding-right: 10px;">ԸՆԴԱՄԵՆԸ՝</td>
-        <td>${formatEstimateCurrency(estimate.totalCostWithOtherExpenses)}</td>
+        <td>${formatEstimateCurrency(otherCostsMode === 'separated' ? estimate.totalCostWithOtherExpenses : estimate.totalCost)}</td>
     </tr>
     </tbody>
 </table>
