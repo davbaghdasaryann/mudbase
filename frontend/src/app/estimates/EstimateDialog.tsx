@@ -945,14 +945,9 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
             {/* Export Config Modal */}
             <Dialog open={exportConfigOpen} onClose={() => setExportConfigOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ pb: 0.5, pt: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box>
-                        <Typography variant='h6' fontWeight={700} sx={{ fontSize: '1rem', lineHeight: 1.2 }}>
-                            {t('Export as')} {exportConfigFormat.toUpperCase()}
-                        </Typography>
-                        <Typography variant='caption' color='text.secondary'>
-                            {exportConfigTarget === 'boq' ? 'Bill of Quantities' : t('Estimation')}
-                        </Typography>
-                    </Box>
+                    <Typography variant='h6' fontWeight={700} sx={{ fontSize: '1rem' }}>
+                        {t('Export as')} {exportConfigFormat.toUpperCase()}
+                    </Typography>
                     <IconButton onClick={() => setExportConfigOpen(false)} size='small' sx={{ color: 'grey.400' }}>
                         <CloseIcon fontSize='small' />
                     </IconButton>
