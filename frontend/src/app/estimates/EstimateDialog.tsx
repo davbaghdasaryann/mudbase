@@ -951,8 +951,8 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                     </IconButton>
                 </DialogTitle>
                 <DialogContent sx={{ pt: 1, pb: 2, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                    {/* Setting: Group rows */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
+                    {/* Setting: Group rows (estimation only) */}
+                    {exportConfigTarget !== 'boq' && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, py: 1 }}>
                         <Box>
                             <Typography variant='body2' fontWeight={500}>{t('Expand group rows')}</Typography>
                             <Typography variant='caption' color='text.secondary'>
@@ -967,7 +967,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#00A390' },
                             }}
                         />
-                    </Box>
+                    </Box>}
 
                     {exportConfigTarget === 'boq' && boqExpenses.length > 0 && (
                         <>
