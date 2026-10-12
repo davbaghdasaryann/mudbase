@@ -764,7 +764,7 @@ export default function EstimatePageDialog(props: EstimatePageDialogProps) {
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                                         backgroundColor: item.bg, color: item.color,
                                     }}>{item.icon}</Box>
-                                    <Typography variant="caption" align="center" sx={{ fontWeight: 600, fontSize: '0.65rem', lineHeight: 1.2, color: item.color }}>
+                                    <Typography variant="caption" align="center" sx={{ fontWeight: 500, fontSize: '0.65rem', lineHeight: 1.2 }}>
                                         {t(item.label)}
                                     </Typography>
                                 </Box>
