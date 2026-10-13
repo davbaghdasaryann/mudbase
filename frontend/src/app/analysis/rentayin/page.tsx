@@ -841,6 +841,8 @@ export default function RentayinPage() {
                                                     </Paper>
                                                 );
                                             })()}
+                                        </Box>
+                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                                             {/* Total Profitability widget */}
                                             {(() => {
                                                 const totalEstAll = totalEstCost + totalEstOther;
@@ -883,9 +885,7 @@ export default function RentayinPage() {
                                                     </Paper>
                                                 );
                                             })()}
-                                        </Box>
-                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                            {/* Average profitability widget (moved from row 1) */}
+                                            {/* Average profitability widget */}
                                             <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                 <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
                                                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
