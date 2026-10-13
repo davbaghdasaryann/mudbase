@@ -939,15 +939,15 @@ export default function RentayinPage() {
                                             const totalLabor = Object.values(laborCounts).reduce((a, b) => a + b, 0);
                                             const totalMat = Object.values(matCounts).reduce((a, b) => a + b, 0);
                                             const srcGradients: Record<string, [string, string]> = {
-                                                actual:  ['#00C9A7', '#00899B'],
+                                                actual:  ['#00CCDD', '#00899B'],
                                                 library: ['#5B9CF6', '#1565C0'],
-                                                market:  ['#CE93D8', '#7b1fa2'],
+                                                market:  ['#4EE89A', '#1CA461'],
                                                 manual:  ['#FFB74D', '#E65100'],
                                             };
                                             const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
                                                 const activeKeys = srcKeys.filter(k => counts[k] > 0);
                                                 return (
-                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                    <Paper elevation={0} sx={{ flex: '0 0 auto', width: { xs: '100%', md: 260 }, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{title}</Typography>
                                                         {total === 0 ? (
                                                             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -967,7 +967,7 @@ export default function RentayinPage() {
                                                                                 </Box>
                                                                                 <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, background: `linear-gradient(90deg, ${c1}, ${c2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{counts[k]}</Typography>
                                                                             </Box>
-                                                                            <Box sx={{ height: 6, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
+                                                                            <Box sx={{ height: 8, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
                                                                                 <Box sx={{ height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${c1}99, ${c2})`, width: `${pct}%`, transition: 'width 0.4s ease' }} />
                                                                             </Box>
                                                                         </Box>
