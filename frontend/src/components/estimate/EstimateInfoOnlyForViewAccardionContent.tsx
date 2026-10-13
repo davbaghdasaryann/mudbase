@@ -81,9 +81,9 @@ export default function EstimateInfoOnlyForViewAccardionContent(props: Props) {
             <F.InputText xs={2.4} id='address' value={data?.address} label={t('Address')} placeholder={t('Address')} />
 
             <F.InputText xs={2.4} id='constructionSurface' value={data?.constructionSurface} label={t('Construction area')} placeholder={t('Construction area')} />
-            <F.InputText isThousandsSeparator={true} readonly xs={2.4} id='builtUpCostPerSqM' value={data?.builtUpArea && parseFloat(data.builtUpArea) > 0 ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.builtUpArea)) : '0'} label={t('Built-up Cost per sq. m')} placeholder={t('Built-up Cost per sq. m')} />
+            <F.InputText isThousandsSeparator={true} readonly xs={2.4} id='builtUpCostPerSqM' value={data?.builtUpArea && parseFloat(data.builtUpArea) > 0 ? fixedNumber((data?.totalCostWithOtherExpenses ?? data?.totalCost ?? 0) / parseFloat(data.builtUpArea)) : '0'} label={t('Built-up Cost per sq. m')} placeholder={t('Built-up Cost per sq. m')} />
             <F.InputText isThousandsSeparator={true} readonly xs={2.4} id='otherCosts' value={fixedNumber((data?.totalCostWithOtherExpenses ?? 0) - (data?.totalCost ?? 0)) ?? '0'} label={t('Other costs')} placeholder={t('Other costs')} />
-            <F.InputText isThousandsSeparator={true} readonly xs={2.4} id='constructionCostPerSqM' value={data?.constructionSurface && parseFloat(data.constructionSurface) > 0 ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.constructionSurface)) : '0'} label={t('Construction Cost per sq. m')} placeholder={t('Construction Cost per sq. m')} />
+            <F.InputText isThousandsSeparator={true} readonly xs={2.4} id='constructionCostPerSqM' value={data?.constructionSurface && parseFloat(data.constructionSurface) > 0 ? fixedNumber((data?.totalCostWithOtherExpenses ?? data?.totalCost ?? 0) / parseFloat(data.constructionSurface)) : '0'} label={t('Construction Cost per sq. m')} placeholder={t('Construction Cost per sq. m')} />
             <F.InputText isThousandsSeparator={true} readonly xs={2.4} id='totalCostWithOtherExpenses' value={fixedNumber(data?.totalCostWithOtherExpenses) ?? '0'} label={t('Total Cost AMD')} placeholder={t('Total Cost AMD')} />
         </F.PageForm>
     );
