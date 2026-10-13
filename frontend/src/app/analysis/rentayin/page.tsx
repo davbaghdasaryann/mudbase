@@ -58,7 +58,7 @@ import OverheadCostsDialog, { type OverheadEntry } from '@/app/costing/OverheadC
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, RadialBarChart, RadialBar } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface RentayinRow {
     laborItemId: string;
@@ -946,54 +946,34 @@ export default function RentayinPage() {
                                             };
                                             const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
                                                 const activeKeys = srcKeys.filter(k => counts[k] > 0);
-                                                const chartData = activeKeys.map(k => ({
-                                                    name: srcLabels[k],
-                                                    value: total > 0 ? Math.round((counts[k] / total) * 100) : 0,
-                                                    count: counts[k],
-                                                    fill: `url(#${idPrefix}-${k})`,
-                                                }));
                                                 return (
-                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1, display: 'block', textAlign: 'center' }}>{title}</Typography>
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{title}</Typography>
                                                         {total === 0 ? (
                                                             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                                 <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
                                                             </Box>
                                                         ) : (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                <Box sx={{ flexShrink: 0, width: 120, height: 120 }}>
-                                                                    <ResponsiveContainer width='100%' height='100%'>
-                                                                        <RadialBarChart cx='50%' cy='50%' innerRadius={18} outerRadius={56} barSize={10} data={chartData} startAngle={90} endAngle={-270}>
-                                                                            <defs>
-                                                                                {activeKeys.map(k => {
-                                                                                    const [c1, c2] = srcGradients[k];
-                                                                                    return (
-                                                                                        <linearGradient key={k} id={`${idPrefix}-${k}`} x1='0' y1='0' x2='1' y2='0'>
-                                                                                            <stop offset='0%' stopColor={c1} stopOpacity={0.9} />
-                                                                                            <stop offset='100%' stopColor={c2} stopOpacity={1} />
-                                                                                        </linearGradient>
-                                                                                    );
-                                                                                })}
-                                                                            </defs>
-                                                                            <RadialBar dataKey='value' cornerRadius={5} background={{ fill: '#f3f4f6' }} />
-                                                                        </RadialBarChart>
-                                                                    </ResponsiveContainer>
-                                                                </Box>
-                                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                                                                    {activeKeys.map(k => {
-                                                                        const [c1] = srcGradients[k];
-                                                                        return (
-                                                                            <Box key={k} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-                                                                                    <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: `linear-gradient(135deg, ${srcGradients[k][0]}, ${srcGradients[k][1]})`, flexShrink: 0 }} />
-                                                                                    <Typography sx={{ fontSize: '0.7rem', color: '#6b7280', fontWeight: 500 }}>{srcLabels[k]}</Typography>
+                                                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 1 }}>
+                                                                {activeKeys.map(k => {
+                                                                    const [c1, c2] = srcGradients[k];
+                                                                    const pct = total > 0 ? (counts[k] / total) * 100 : 0;
+                                                                    return (
+                                                                        <Box key={k}>
+                                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: `linear-gradient(135deg, ${c1}, ${c2})`, flexShrink: 0 }} />
+                                                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{srcLabels[k]}</Typography>
                                                                                 </Box>
-                                                                                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: c1 }}>{counts[k]}</Typography>
+                                                                                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, background: `linear-gradient(90deg, ${c1}, ${c2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{counts[k]}</Typography>
                                                                             </Box>
-                                                                        );
-                                                                    })}
-                                                                    <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right', mt: 0.25 }}>{total} {t('total')}</Typography>
-                                                                </Box>
+                                                                            <Box sx={{ height: 6, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
+                                                                                <Box sx={{ height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${c1}99, ${c2})`, width: `${pct}%`, transition: 'width 0.4s ease' }} />
+                                                                            </Box>
+                                                                        </Box>
+                                                                    );
+                                                                })}
+                                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right', mt: 0.5 }}>{total} {t('total')}</Typography>
                                                             </Box>
                                                         )}
                                                     </Paper>
