@@ -883,30 +883,27 @@ export default function RentayinPage() {
                                                 return (
                                                     <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5 }}>{t('Profitability by category')}</Typography>
-                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 1 }}>
-                                                            {cats.map((c) => {
+                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: 1 }}>
+                                                            {cats.map((c, i) => {
                                                                 const hasData = c.est > 0 && c.act > 0;
                                                                 const amt = hasData ? c.est - c.act : null;
                                                                 const pct = amt !== null && c.est > 0 ? (amt / c.est) * 100 : null;
                                                                 const color = pct === null ? '#bbb' : pct >= 0 ? '#1CA461' : '#c62828';
-                                                                const RANGE = 60;
-                                                                const barGrad = pct === null ? '#f0f0f0' : pct >= 0 ? `linear-gradient(90deg, ${c.dot}66, ${c.dot})` : `linear-gradient(90deg, ${c.dot}44, ${c.dot}bb)`;
-                                                                const barPct = pct === null ? 0 : Math.min(100, Math.max(2, (Math.abs(Math.max(-RANGE, Math.min(RANGE, pct))) / RANGE) * 100));
+                                                                const bgColor = pct === null ? 'transparent' : pct >= 0 ? 'rgba(28,164,97,0.06)' : 'rgba(198,40,40,0.05)';
                                                                 return (
-                                                                    <Box key={c.key}>
-                                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{c.label}</Typography>
-                                                                            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color }}>
-                                                                                {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
+                                                                    <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 2, bgcolor: bgColor, borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.5 }}>
+                                                                        <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1, textAlign: 'center' }}>
+                                                                            {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
+                                                                        </Typography>
+                                                                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1.2 }}>{c.label}</Typography>
+                                                                        {amt !== null && (
+                                                                            <Typography sx={{ fontSize: '0.62rem', color: color + 'aa', textAlign: 'center' }}>
+                                                                                {fmtAMD(Math.abs(amt))}
                                                                             </Typography>
-                                                                        </Box>
-                                                                        <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
-                                                                            <Box sx={{ height: '100%', borderRadius: 4, background: barGrad, width: `${barPct}%`, transition: 'width 0.4s ease' }} />
-                                                                        </Box>
+                                                                        )}
                                                                     </Box>
                                                                 );
                                                             })}
-                                                            <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right', mt: 0.5 }}>{t('vs estimated')}</Typography>
                                                         </Box>
                                                     </Paper>
                                                 );
