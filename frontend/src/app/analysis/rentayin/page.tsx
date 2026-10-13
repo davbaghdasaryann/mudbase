@@ -891,7 +891,7 @@ export default function RentayinPage() {
                                                                 const color = pct === null ? '#bbb' : pct >= 0 ? '#1CA461' : '#c62828';
                                                                 const bgColor = pct === null ? 'transparent' : pct >= 0 ? 'rgba(28,164,97,0.06)' : 'rgba(198,40,40,0.05)';
                                                                 return (
-                                                                    <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 2, bgcolor: bgColor, borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.5 }}>
+                                                                    <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 2, borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.5 }}>
                                                                         <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1, textAlign: 'center' }}>
                                                                             {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
                                                                         </Typography>
