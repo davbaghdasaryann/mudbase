@@ -392,7 +392,7 @@ export default function RentayinPage() {
             <>
             <PageContents title={detail.estimateName}>
                 <TabContext value={tab}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <IconButton onClick={() => router.push('/analysis/rentayin')} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
@@ -544,9 +544,9 @@ export default function RentayinPage() {
                                                                                         >
                                                                                             {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
                                                                                         </span>
-                                                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur + 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 3px', lineHeight: 1, color: '#aaa', fontSize: '0.6rem', display: 'flex', alignItems: 'center' }}>▲</button>
-                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur - 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 3px', lineHeight: 1, color: '#aaa', fontSize: '0.6rem', display: 'flex', alignItems: 'center' }}>▼</button>
+                                                                                        <div style={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur + 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 2px', lineHeight: 1, color: '#2E7D32', fontSize: '0.65rem', display: 'flex', alignItems: 'center' }}>▲</button>
+                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur - 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 2px', lineHeight: 1, color: '#C62828', fontSize: '0.65rem', display: 'flex', alignItems: 'center' }}>▼</button>
                                                                                         </div>
                                                                                     </div>
                                                                                 ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'\u2014'}</span>}
