@@ -534,21 +534,21 @@ export default function RentayinPage() {
                                                                             <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: simActTotal !== null ? '#00899B' : actTotal !== null ? (row.actualUnitCost !== null ? '#111' : '#888') : '#ddd', cursor: simActTotal === null && row.unitCostSource ? 'pointer' : 'default', fontStyle: simActTotal !== null ? 'italic' : 'normal' })} onClick={simActTotal === null && row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
                                                                                 {simActTotal !== null ? Math.round(simActTotal).toLocaleString() : actTotal !== null && row.unitCostSource ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, cursor: row.unitCostSource && estUnitFull > 0 ? 'ns-resize' : 'default', userSelect: 'none' })}
-                                                                                    onWheel={row.unitCostSource && estUnitFull > 0 ? e => {
-                                                                                        e.preventDefault();
-                                                                                        const step = 0.5;
-                                                                                        const current = profitSimOverrides[globalIdx] ?? rawPct ?? 0;
-                                                                                        const next = Math.max(-100, Math.min(200, current + (e.deltaY < 0 ? step : -step)));
-                                                                                        setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: Math.round(next * 10) / 10 }));
-                                                                                    } : undefined}
-                                                                                    onDoubleClick={profitSimOverrides[globalIdx] !== undefined ? () => setProfitSimOverrides(prev => { const n = { ...prev }; delete n[globalIdx]; return n; }) : undefined}
-                                                                                    title={row.unitCostSource ? 'Scroll to simulate profitability. Double-click to reset.' : undefined}
-                                                                            >
-                                                                                {pct !== null ? (
-                                                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888', borderBottom: simPct !== null ? '2px dashed #00CCDD' : 'none' }}>
-                                                                                        {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                                                </span>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, userSelect: 'none', padding: '2px 4px' })}>
+                                                                                {pct !== null && row.unitCostSource && estUnitFull > 0 ? (
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                                                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur + 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1, color: '#00899B', fontSize: '0.7rem' }}>▲</button>
+                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur - 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0 2px', lineHeight: 1, color: '#00899B', fontSize: '0.7rem' }}>▼</button>
+                                                                                        </div>
+                                                                                        <span
+                                                                                            style={{ fontSize: '0.82rem', fontWeight: 600, color: pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888', borderBottom: simPct !== null ? '2px dashed #00CCDD' : 'none', cursor: simPct !== null ? 'pointer' : 'default' }}
+                                                                                            onClick={simPct !== null ? () => setProfitSimOverrides(prev => { const n = { ...prev }; delete n[globalIdx]; return n; }) : undefined}
+                                                                                            title={simPct !== null ? 'Click to reset' : undefined}
+                                                                                        >
+                                                                                            {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
+                                                                                        </span>
+                                                                                    </div>
                                                                                 ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'\u2014'}</span>}
                                                                             </td>
 
