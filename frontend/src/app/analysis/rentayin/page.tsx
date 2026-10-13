@@ -888,9 +888,8 @@ export default function RentayinPage() {
                                                                 })()}
                                                                 {/* Needle — sweeps from center */}
                                                                 <g>
-                                                                    <line x1={cx} y1={cy} x2={cx} y2={cy - needleLen} stroke={profColor} strokeWidth={2.5} strokeLinecap="round">
-                                                                        <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} ${cy}`} to={`${needleAngle + 90} ${cx} ${cy}`} dur="1.2s" fill="freeze" calcMode="spline" keySplines="0.34 1.56 0.64 1" keyTimes="0;1" />
-                                                                    </line>
+                                                                    <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} ${cy}`} to={`${needleAngle + 90} ${cx} ${cy}`} dur="1.2s" fill="freeze" calcMode="spline" keySplines="0.34 1.56 0.64 1" keyTimes="0;1" />
+                                                                    <line x1={cx} y1={cy} x2={cx} y2={cy - needleLen} stroke={profColor} strokeWidth={2.5} strokeLinecap="round" />
                                                                 </g>
                                                                 <circle cx={cx} cy={cy} r={5} fill={profColor} />
                                                                 {/* Labels */}
