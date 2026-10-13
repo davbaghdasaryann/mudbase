@@ -943,12 +943,13 @@ export default function RentayinPage() {
                                         })()}
                                             {/* Stat cards */}
                                             {(() => {
-                                                const matCount = rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0).length;
-                                                const actualCount = rows.filter(r => r.actualUnitCost !== null).length;
+                                                const estUnitTime = (detail as any)?.estimateUnitTime ?? 0;
+                                                const estLaborCount = (detail as any)?.estimateLaborItemCount ?? rows.length;
+                                                const estMatCount = (detail as any)?.estimateMaterialItemCount ?? rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0).length;
                                                 const statItems = [
-                                                    { label: t('Quantity of Labor'),   icon: <EngineeringIcon sx={{ fontSize: 22 }} />, value: rows.length },
-                                                    { label: t('Quantity of Materials'), icon: <BuildIcon sx={{ fontSize: 22 }} />,      value: matCount },
-                                                    { label: t('Actual entries'),       icon: <AccessTimeIcon sx={{ fontSize: 22 }} />,  value: actualCount },
+                                                    { label: t('Quantity of Labor'),   icon: <EngineeringIcon sx={{ fontSize: 22 }} />, value: estLaborCount },
+                                                    { label: t('Quantity of Materials'), icon: <BuildIcon sx={{ fontSize: 22 }} />,      value: estMatCount },
+                                                    { label: t('Unit Time'),             icon: <AccessTimeIcon sx={{ fontSize: 22 }} />,  value: estUnitTime },
                                                 ];
                                                 return (
                                                     <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
