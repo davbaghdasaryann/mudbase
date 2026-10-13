@@ -874,14 +874,24 @@ export default function RentayinPage() {
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Total profitability indicator')}</Typography>
                                                         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                                             <svg width={220} height={120} viewBox="0 0 220 120" style={{ overflow: 'visible' }}>
-                                                                {/* Background arc — teal to match page palette */}
+                                                                {/* Background arc */}
                                                                 <path d={arcPath(-180, 0, r)} fill="none" stroke="#d0f0f4" strokeWidth={strokeW} strokeLinecap="round" />
-                                                                {/* Active arc from center to needle */}
-                                                                {totalProfPct !== null && (
-                                                                    <path d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.85} />
-                                                                )}
-                                                                {/* Needle */}
-                                                                <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={profColor} strokeWidth={2.5} strokeLinecap="round" />
+                                                                {/* Active arc — animates draw-in */}
+                                                                {totalProfPct !== null && (() => {
+                                                                    const arcLen = Math.abs(needleAngle - (-90)) / 180 * Math.PI * r;
+                                                                    return (
+                                                                        <path d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.85}
+                                                                            strokeDasharray={arcLen} strokeDashoffset={arcLen}>
+                                                                            <animate attributeName="stroke-dashoffset" from={arcLen} to={0} dur="1.2s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1" keyTimes="0;1" />
+                                                                        </path>
+                                                                    );
+                                                                })()}
+                                                                {/* Needle — sweeps from center */}
+                                                                <g>
+                                                                    <line x1={cx} y1={cy} x2={cx} y2={cy - needleLen} stroke={profColor} strokeWidth={2.5} strokeLinecap="round">
+                                                                        <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} ${cy}`} to={`${needleAngle + 90} ${cx} ${cy}`} dur="1.2s" fill="freeze" calcMode="spline" keySplines="0.34 1.56 0.64 1" keyTimes="0;1" />
+                                                                    </line>
+                                                                </g>
                                                                 <circle cx={cx} cy={cy} r={5} fill={profColor} />
                                                                 {/* Labels */}
                                                                 <text x={cx - r - strokeW/2 - 6} y={cy + 5} textAnchor="end" fontSize="9" fill="#c62828" fontWeight="600">-{RANGE}%</text>
