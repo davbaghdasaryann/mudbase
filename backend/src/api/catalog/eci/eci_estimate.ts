@@ -99,12 +99,12 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
                                     then: {
                                         $round: [{
                                             $divide: [
-                                                { $arrayElemAt: ['$estimateData.totalCost', 0] },
+                                                { $ifNull: [{ $arrayElemAt: ['$estimateData.totalCostWithOtherExpenses', 0] }, { $arrayElemAt: ['$estimateData.totalCost', 0] }] },
                                                 '$$area'
                                             ]
                                         }]
                                     },
-                                    else: { $arrayElemAt: ['$estimateData.totalCost', 0] }
+                                    else: { $ifNull: [{ $arrayElemAt: ['$estimateData.totalCostWithOtherExpenses', 0] }, { $arrayElemAt: ['$estimateData.totalCost', 0] }] }
                                 }
                             }
                         }
@@ -123,7 +123,7 @@ registerApiSession('eci/fetch_estimates', async (req, res, session) => {
                     then: {
                         $round: [{
                             $divide: [
-                                { $arrayElemAt: ['$estimateData.totalCost', 0] },
+                                { $ifNull: [{ $arrayElemAt: ['$estimateData.totalCostWithOtherExpenses', 0] }, { $arrayElemAt: ['$estimateData.totalCost', 0] }] },
                                 { $convert: { input: '$constructionArea', to: 'double', onError: 0, onNull: 0 } },
                             ],
                         }],
