@@ -784,21 +784,17 @@ export default function RentayinPage() {
                                     </Box>
                                     {!collapsedSections.has('overview') && <>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                            {/* Cost breakdown widget */}
-                                            <Paper elevation={0} sx={{ flex: 1.5, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                <Box sx={{ display: 'flex', gap: 1, flex: 1, minHeight: 0 }}>
-                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
-                                                        {renderDonut(estDonutData, 'rent-est', RENT_EST_SEGS)}
-                                                        {renderLegend(estDonutData, RENT_EST_SEGS)}
-                                                    </Box>
-                                                    <Box sx={{ width: '1px', background: '#f0f0f0', mx: 0.5, alignSelf: 'stretch' }} />
-                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Հաշվարկային</Typography>
-                                                        {renderDonut(actDonutData, 'rent-act', RENT_ACT_SEGS)}
-                                                        {renderLegend(actDonutData, RENT_ACT_SEGS)}
-                                                    </Box>
-                                                </Box>
+                                            {/* Estimated cost breakdown */}
+                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Նախահաշիվ</Typography>
+                                                {renderDonut(estDonutData, 'rent-est', RENT_EST_SEGS)}
+                                                {renderLegend(estDonutData, RENT_EST_SEGS)}
+                                            </Paper>
+                                            {/* Actual cost breakdown */}
+                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>Հաշվարկային</Typography>
+                                                {renderDonut(actDonutData, 'rent-act', RENT_ACT_SEGS)}
+                                                {renderLegend(actDonutData, RENT_ACT_SEGS)}
                                             </Paper>
                                             {/* Profitability widget */}
                                             <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
