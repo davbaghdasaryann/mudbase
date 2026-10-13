@@ -871,6 +871,8 @@ export default function RentayinPage() {
                                                     </Paper>
                                                 );
                                             })()}
+                                        </Box>
+                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
                                             {/* Profitability by category widget */}
                                             {(() => {
                                                 const cats = [
@@ -919,9 +921,8 @@ export default function RentayinPage() {
                                                     </Paper>
                                                 );
                                             })()}
-                                        </Box>
-                                        {/* Data source count widgets */}
-                                        {(() => {
+                                            {/* Data source count widgets */}
+                                            {(() => {
                                             const srcKeys = ['actual', 'library', 'market', 'manual'] as const;
                                             const srcLabels: Record<string, string> = { actual: t('Company'), library: t('Costing'), market: t('Market'), manual: t('Manual') };
                                             const laborCounts: Record<string, number> = { actual: 0, library: 0, market: 0, manual: 0 };
@@ -943,7 +944,7 @@ export default function RentayinPage() {
                                             const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
                                                 const activeKeys = srcKeys.filter(k => counts[k] > 0);
                                                 return (
-                                                    <Paper elevation={0} sx={{ flex: 1, maxWidth: { md: 360 }, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{title}</Typography>
                                                         {total === 0 ? (
                                                             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -976,12 +977,13 @@ export default function RentayinPage() {
                                                 );
                                             };
                                             return (
-                                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                                                <>
                                                     {renderSourceWidget(t('Works by data source'), laborCounts, totalLabor, 'lsrc')}
                                                     {renderSourceWidget(t('Materials by data source'), matCounts, totalMat, 'msrc')}
-                                                </Box>
+                                                </>
                                             );
                                         })()}
+                                        </Box>
                                     </>}
                                     {/* Other Costs bar charts */}
                                     {(() => {
