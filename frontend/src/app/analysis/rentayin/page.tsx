@@ -808,7 +808,7 @@ export default function RentayinPage() {
                                                                 {profitPct >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
                                                             </Typography>
                                                             <Box sx={{ width: '100%', px: 1 }}>
-                                                                <Box sx={{ position: 'relative', height: 8, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                                                <Box sx={{ position: 'relative', height: 10, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
                                                                     {(() => {
                                                                         const RANGE = 60;
                                                                         const clamped = Math.max(-RANGE, Math.min(RANGE, profitPct));
@@ -848,7 +848,7 @@ export default function RentayinPage() {
                                                                         {totalProfPct >= 0 ? '+' : ''}{totalProfPct.toFixed(1)}%
                                                                     </Typography>
                                                                     <Box sx={{ width: '100%', px: 1 }}>
-                                                                        <Box sx={{ position: 'relative', height: 8, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                                                        <Box sx={{ position: 'relative', height: 10, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
                                                                             {(() => {
                                                                                 const RANGE = 60;
                                                                                 const clamped = Math.max(-RANGE, Math.min(RANGE, totalProfPct));
@@ -900,7 +900,7 @@ export default function RentayinPage() {
                                                                                 {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
                                                                             </Typography>
                                                                         </Box>
-                                                                        <Box sx={{ height: 8, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
+                                                                        <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
                                                                             <Box sx={{ height: '100%', borderRadius: 4, background: barGrad, width: `${barPct}%`, transition: 'width 0.4s ease' }} />
                                                                         </Box>
                                                                     </Box>
@@ -951,7 +951,7 @@ export default function RentayinPage() {
                                                                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{srcLabels[k]}</Typography>
                                                                                 <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, background: `linear-gradient(90deg, ${c1}, ${c2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{counts[k]}</Typography>
                                                                             </Box>
-                                                                            <Box sx={{ height: 8, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
+                                                                            <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
                                                                                 <Box sx={{ height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${c1}99, ${c2})`, width: `${pct}%`, transition: 'width 0.4s ease' }} />
                                                                             </Box>
                                                                         </Box>
