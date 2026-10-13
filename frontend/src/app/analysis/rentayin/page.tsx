@@ -843,58 +843,43 @@ export default function RentayinPage() {
                                             })()}
                                         </Box>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                            {/* Total Profitability widget */}
+                                            {/* Combined profitability widget */}
                                             {(() => {
                                                 const totalEstAll = totalEstCost + totalEstOther;
                                                 const totalActAll = totalActCost + totalActOther;
                                                 const totalProfAmt = totalEstAll > 0 && totalActAll > 0 ? totalEstAll - totalActAll : null;
                                                 const totalProfPct = totalProfAmt !== null && totalEstAll > 0 ? (totalProfAmt / totalEstAll) * 100 : null;
-                                                return (
-                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{t('Total profitability indicator')}</Typography>
-                                                        {totalProfPct === null ? (
-                                                            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
-                                                            </Box>
+                                                const renderProfRow = (label: string, pct: number | null, amt: number | null) => (
+                                                    <Box>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 0.75, display: 'block' }}>{label}</Typography>
+                                                        {pct === null ? (
+                                                            <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
                                                         ) : (
-                                                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                                                                 <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{totalProfAmt! >= 0 ? t('savings') : t('overrun')}</Typography>
-                                                                    <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1, background: totalProfPct >= 0 ? 'linear-gradient(90deg, #1CA461, #4EE89A)' : 'linear-gradient(90deg, #c62828, #ef5350)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                                                        {totalProfPct >= 0 ? '+' : ''}{totalProfPct.toFixed(1)}%
+                                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{amt! >= 0 ? t('savings') : t('overrun')}</Typography>
+                                                                    <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1, background: pct >= 0 ? 'linear-gradient(90deg, #1CA461, #4EE89A)' : 'linear-gradient(90deg, #c62828, #ef5350)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                                                        {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
                                                                     </Typography>
                                                                 </Box>
                                                                 <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
-                                                                    <Box sx={{ height: '100%', borderRadius: 4, background: totalProfPct >= 0 ? 'linear-gradient(90deg, #1CA46199, #1CA461)' : 'linear-gradient(90deg, #c6282899, #c62828)', width: `${Math.min(100, (Math.abs(totalProfPct) / 60) * 100)}%`, transition: 'width 0.4s ease' }} />
+                                                                    <Box sx={{ height: '100%', borderRadius: 4, background: pct >= 0 ? 'linear-gradient(90deg, #1CA46199, #1CA461)' : 'linear-gradient(90deg, #c6282899, #c62828)', width: `${Math.min(100, (Math.abs(pct) / 60) * 100)}%`, transition: 'width 0.4s ease' }} />
                                                                 </Box>
-                                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right' }}>{fmtAMD(Math.abs(totalProfAmt!))} AMD</Typography>
+                                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right' }}>{fmtAMD(Math.abs(amt!))} AMD</Typography>
                                                             </Box>
                                                         )}
+                                                    </Box>
+                                                );
+                                                return (
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, justifyContent: 'center' }}>
+                                                            {renderProfRow(t('Total profitability indicator'), totalProfPct, totalProfAmt)}
+                                                            <Box sx={{ borderTop: '1px solid #f0f2f4' }} />
+                                                            {renderProfRow(t('Average profitability of works'), profitPct, profitAmt ?? null)}
+                                                        </Box>
                                                     </Paper>
                                                 );
                                             })()}
-                                            {/* Average profitability widget */}
-                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{t('Average profitability of works')}</Typography>
-                                                {profitPct === null ? (
-                                                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
-                                                    </Box>
-                                                ) : (
-                                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{profitAmt! >= 0 ? t('savings') : t('overrun')}</Typography>
-                                                            <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1, background: profitPct >= 0 ? 'linear-gradient(90deg, #1CA461, #4EE89A)' : 'linear-gradient(90deg, #c62828, #ef5350)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                                                {profitPct >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
-                                                            </Typography>
-                                                        </Box>
-                                                        <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
-                                                            <Box sx={{ height: '100%', borderRadius: 4, background: profitPct >= 0 ? 'linear-gradient(90deg, #1CA46199, #1CA461)' : 'linear-gradient(90deg, #c6282899, #c62828)', width: `${Math.min(100, (Math.abs(profitPct) / 60) * 100)}%`, transition: 'width 0.4s ease' }} />
-                                                        </Box>
-                                                        <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right' }}>{fmtAMD(Math.abs(profitAmt!))} AMD</Typography>
-                                                    </Box>
-                                                )}
-                                            </Paper>
                                             {/* Data source count widgets */}
                                             {(() => {
                                             const srcKeys = ['actual', 'library', 'market', 'manual'] as const;
