@@ -927,9 +927,9 @@ export default function RentayinPage() {
                                             const totalMat = Object.values(matCounts).reduce((a, b) => a + b, 0);
                                             const srcGradients: Record<string, [string, string]> = {
                                                 actual:  ['#00CCDD', '#00899B'],
-                                                library: ['#5B9CF6', '#1565C0'],
+                                                library: ['#A8DED9', '#5CB8B0'],
                                                 market:  ['#4EE89A', '#1CA461'],
-                                                manual:  ['#FFB74D', '#E65100'],
+                                                manual:  ['#b0bec5', '#78909c'],
                                             };
                                             const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
                                                 const activeKeys = srcKeys.filter(k => counts[k] > 0);
