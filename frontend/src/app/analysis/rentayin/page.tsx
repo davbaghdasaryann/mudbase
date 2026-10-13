@@ -545,8 +545,8 @@ export default function RentayinPage() {
                                                                                             {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
                                                                                         </span>
                                                                                         <div style={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur + 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} className="profit-arr-up">▲</button>
-                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur - 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} className="profit-arr-dn">▼</button>
+                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur + 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 2px', lineHeight: 1, color: '#2E7D32', fontSize: '0.65rem', display: 'flex', alignItems: 'center' }}>▲</button>
+                                                                                            <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur - 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 2px', lineHeight: 1, color: '#C62828', fontSize: '0.65rem', display: 'flex', alignItems: 'center' }}>▼</button>
                                                                                         </div>
                                                                                     </div>
                                                                                 ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'\u2014'}</span>}
@@ -895,10 +895,6 @@ export default function RentayinPage() {
                                                                     const arcLen = totalProfPct !== null ? Math.abs(needleAngle - (-90)) / 180 * Math.PI * r : 0;
                                                                     return (
                                                                         <style>{`
-                                                                            .profit-arr-up { border: none; background: none; cursor: pointer; padding: 1px 2px; line-height: 1; color: #ccc; font-size: 0.75rem; display: flex; align-items: center; transition: color 0.15s; }
-                                                                            .profit-arr-up:hover { color: #2E7D32; }
-                                                                            .profit-arr-dn { border: none; background: none; cursor: pointer; padding: 1px 2px; line-height: 1; color: #ccc; font-size: 0.75rem; display: flex; align-items: center; transition: color 0.15s; }
-                                                                            .profit-arr-dn:hover { color: #C62828; }
                                                                             @keyframes gauge-needle-sweep {
                                                                                 from { transform: rotate(0deg); }
                                                                                 to   { transform: rotate(${needleAngle + 90}deg); }
