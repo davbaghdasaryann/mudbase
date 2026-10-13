@@ -218,6 +218,7 @@ export function CatalogDataProvider({
                         name: D.name,
                         label: D.name,
                         childrenQuantity: D.childrenQuantity,
+                        hasEstimations: (cat as any).hasEstimations ?? false,
                         children: [],
                     };
                 });
