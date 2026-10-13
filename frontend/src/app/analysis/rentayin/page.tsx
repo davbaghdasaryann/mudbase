@@ -924,7 +924,7 @@ export default function RentayinPage() {
                                                 manual:  ['#FFB300', '#E65100'],
                                             };
                                             const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
-                                                const activeKeys = srcKeys.filter(k => counts[k] > 0);
+                                                const activeKeys = srcKeys; // show all sources including zeros
                                                 return (
                                                     <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{title}</Typography>
