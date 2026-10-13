@@ -17,6 +17,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EngineeringIcon from '@mui/icons-material/Engineering';
+import BuildIcon from '@mui/icons-material/Build';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
@@ -939,6 +941,32 @@ export default function RentayinPage() {
                                                 </>
                                             );
                                         })()}
+                                            {/* Stat cards */}
+                                            {(() => {
+                                                const matCount = rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0).length;
+                                                const actualCount = rows.filter(r => r.actualUnitCost !== null).length;
+                                                const statItems = [
+                                                    { label: t('Quantity of Labor'),   icon: <EngineeringIcon sx={{ fontSize: 22 }} />, value: rows.length },
+                                                    { label: t('Quantity of Materials'), icon: <BuildIcon sx={{ fontSize: 22 }} />,      value: matCount },
+                                                    { label: t('Actual entries'),       icon: <AccessTimeIcon sx={{ fontSize: 22 }} />,  value: actualCount },
+                                                ];
+                                                return (
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{t('Overview')}</Typography>
+                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 1 }}>
+                                                            {statItems.map((s, i) => (
+                                                                <Box key={i} sx={{ border: '1px solid #E8E8E8', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5, transition: 'border-color 0.2s', '&:hover': { borderColor: '#00CCDD' } }}>
+                                                                    <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.2, fontSize: '0.68rem' }}>{s.label}</Typography>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.25 }}>
+                                                                        <Box sx={{ color: '#00899B' }}>{s.icon}</Box>
+                                                                        <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', lineHeight: 1 }}>{s.value}</Typography>
+                                                                    </Box>
+                                                                </Box>
+                                                            ))}
+                                                        </Box>
+                                                    </Paper>
+                                                );
+                                            })()}
                                         </Box>
                                     </>}
                                     {/* Other Costs bar charts */}
