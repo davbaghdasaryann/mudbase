@@ -845,39 +845,60 @@ export default function RentayinPage() {
                                             })()}
                                         </Box>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                            {/* Combined profitability widget */}
+                                            {/* Profitability tachometer gauge */}
                                             {(() => {
                                                 const totalEstAll = totalEstCost + totalEstOther;
                                                 const totalActAll = totalActCost + totalActOther;
                                                 const totalProfAmt = totalEstAll > 0 && totalActAll > 0 ? totalEstAll - totalActAll : null;
                                                 const totalProfPct = totalProfAmt !== null && totalEstAll > 0 ? (totalProfAmt / totalEstAll) * 100 : null;
-                                                const renderProfRow = (label: string, pct: number | null, amt: number | null) => (
-                                                    <Box>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 0.75, display: 'block' }}>{label}</Typography>
-                                                        {pct === null ? (
-                                                            <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
-                                                        ) : (
-                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                                                                <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{amt! >= 0 ? t('savings') : t('overrun')}</Typography>
-                                                                    <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1, background: pct >= 0 ? 'linear-gradient(90deg, #1CA461, #4EE89A)' : 'linear-gradient(90deg, #c62828, #ef5350)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                                                        {pct >= 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                                    </Typography>
-                                                                </Box>
-                                                                <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
-                                                                    <Box sx={{ height: '100%', borderRadius: 4, background: pct >= 0 ? 'linear-gradient(90deg, #1CA46199, #1CA461)' : 'linear-gradient(90deg, #c6282899, #c62828)', width: `${Math.min(100, (Math.abs(pct) / 60) * 100)}%`, transition: 'width 0.4s ease' }} />
-                                                                </Box>
-                                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right' }}>{fmtAMD(Math.abs(amt!))} AMD</Typography>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                );
+                                                const RANGE = 60;
+                                                const cx = 110, cy = 100, r = 78, strokeW = 16;
+                                                const toRad = (deg: number) => (deg * Math.PI) / 180;
+                                                const arcPath = (startDeg: number, endDeg: number, radius: number) => {
+                                                    const s = { x: cx + radius * Math.cos(toRad(startDeg)), y: cy + radius * Math.sin(toRad(startDeg)) };
+                                                    const e = { x: cx + radius * Math.cos(toRad(endDeg)), y: cy + radius * Math.sin(toRad(endDeg)) };
+                                                    const large = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+                                                    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${large} 1 ${e.x} ${e.y}`;
+                                                };
+                                                // Gauge: 180deg arc from left(-180deg=9o'clock) to right(0deg=3o'clock)
+                                                // Map pct [-RANGE, +RANGE] → angle [-180, 0] (left to right)
+                                                const pctToAngle = (pct: number) => -180 + ((Math.max(-RANGE, Math.min(RANGE, pct)) + RANGE) / (2 * RANGE)) * 180;
+                                                const needleAngle = totalProfPct !== null ? pctToAngle(totalProfPct) : -90;
+                                                const needleRad = toRad(needleAngle);
+                                                const needleLen = r - strokeW / 2 - 4;
+                                                const nx = cx + needleLen * Math.cos(needleRad);
+                                                const ny = cy + needleLen * Math.sin(needleRad);
+                                                const profColor = totalProfPct === null ? '#bbb' : totalProfPct >= 0 ? '#1CA461' : '#c62828';
                                                 return (
                                                     <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, justifyContent: 'center' }}>
-                                                            {renderProfRow(t('Total profitability indicator'), totalProfPct, totalProfAmt)}
-                                                            <Box sx={{ borderTop: '1px solid #f0f2f4' }} />
-                                                            {renderProfRow(t('Average profitability of works'), profitPct, profitAmt ?? null)}
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Total profitability indicator')}</Typography>
+                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <svg width={220} height={120} viewBox="0 0 220 120" style={{ overflow: 'visible' }}>
+                                                                {/* Background arc */}
+                                                                <path d={arcPath(-180, 0, r)} fill="none" stroke="#f0f0f0" strokeWidth={strokeW} strokeLinecap="round" />
+                                                                {/* Red zone (left half: -180 to -90) */}
+                                                                <path d={arcPath(-180, -90, r)} fill="none" stroke="#ffcdd2" strokeWidth={strokeW} strokeLinecap="butt" />
+                                                                {/* Green zone (right half: -90 to 0) */}
+                                                                <path d={arcPath(-90, 0, r)} fill="none" stroke="#c8e6c9" strokeWidth={strokeW} strokeLinecap="butt" />
+                                                                {/* Active arc to needle */}
+                                                                {totalProfPct !== null && (
+                                                                    <path d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.7} />
+                                                                )}
+                                                                {/* Needle */}
+                                                                <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={profColor} strokeWidth={2.5} strokeLinecap="round" />
+                                                                <circle cx={cx} cy={cy} r={5} fill={profColor} />
+                                                                {/* Labels */}
+                                                                <text x={cx - r - strokeW/2 - 6} y={cy + 5} textAnchor="end" fontSize="9" fill="#c62828" fontWeight="600">-{RANGE}%</text>
+                                                                <text x={cx + r + strokeW/2 + 6} y={cy + 5} textAnchor="start" fontSize="9" fill="#1CA461" fontWeight="600">+{RANGE}%</text>
+                                                            </svg>
+                                                            <Typography sx={{ fontSize: '1.6rem', fontWeight: 900, color: profColor, lineHeight: 1, mt: -1 }}>
+                                                                {totalProfPct === null ? '—' : `${totalProfPct >= 0 ? '+' : ''}${totalProfPct.toFixed(1)}%`}
+                                                            </Typography>
+                                                            {totalProfAmt !== null && (
+                                                                <Typography sx={{ fontSize: '0.68rem', color: '#9ca3af', mt: 0.5 }}>
+                                                                    {fmtAMD(Math.abs(totalProfAmt))} {totalProfAmt >= 0 ? t('savings') : t('overrun')}
+                                                                </Typography>
+                                                            )}
                                                         </Box>
                                                     </Paper>
                                                 );
