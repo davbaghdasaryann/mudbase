@@ -233,5 +233,7 @@
   "Unit Price": "Цена за единицу",
   "Without Material": "Без материалов",
   "Data sources": "Источники данных",
-  "total": "всего"
+  "total": "всего",
+  "Works by data source": "Работы по источникам",
+  "Materials by data source": "Материалы по источникам"
 }

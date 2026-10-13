@@ -793,5 +793,7 @@
   "Select which costs to include in unit price": "Ընտրեք որ ծախսերը ներառել միավոր արժեքում",
   "Export as": "Արտահանել որպես",
   "Data sources": "Աղբյուրներ",
-  "total": "Բոլոր"
+  "total": "Բոլոր",
+  "Works by data source": "Աշխատանկները՝ ըստ աղբյուրների",
+  "Materials by data source": "Նյութերը՝ ըստ աղբյուրների"
 }
