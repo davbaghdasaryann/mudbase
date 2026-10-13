@@ -791,5 +791,7 @@
   "Apply": "Կիրառել",
   "Select which costs to show as separate section": "Ընտրեք որ ծախսերը ցուցադրել որպես առանձին բաժին",
   "Select which costs to include in unit price": "Ընտրեք որ ծախսերը ներառել միավոր արժեքում",
-  "Export as": "Արտահանել որպես"
+  "Export as": "Արտահանել որպես",
+  "Data sources": "Աղբյուրներ",
+  "total": "Բոլոր"
 }

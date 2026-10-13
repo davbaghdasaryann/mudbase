@@ -924,6 +924,59 @@ export default function RentayinPage() {
                                                 );
                                             })()}
                                         </Box>
+                                        {/* Data source count widgets */}
+                                        {(() => {
+                                            const srcKeys = ['actual', 'library', 'market', 'manual'] as const;
+                                            const srcLabels: Record<string, string> = { actual: 'Company', library: 'Costing', market: 'Market', manual: 'Manual' };
+                                            const laborCounts: Record<string, number> = { actual: 0, library: 0, market: 0, manual: 0 };
+                                            const matCounts: Record<string, number> = { actual: 0, library: 0, market: 0, manual: 0 };
+                                            for (const r of rows) {
+                                                const lsrc = r.laborUnitCostSource !== undefined ? r.laborUnitCostSource : r.unitCostSource;
+                                                if (lsrc && lsrc in laborCounts) laborCounts[lsrc]++;
+                                                const msrc = r.materialUnitCostSource !== undefined ? r.materialUnitCostSource : (r.unitCostSource === 'actual' || r.unitCostSource === 'library' ? r.unitCostSource : null);
+                                                if (msrc && msrc in matCounts) matCounts[msrc]++;
+                                            }
+                                            const totalLabor = Object.values(laborCounts).reduce((a, b) => a + b, 0);
+                                            const totalMat = Object.values(matCounts).reduce((a, b) => a + b, 0);
+                                            const renderSourceWidget = (title: string, counts: Record<string, number>, total: number) => (
+                                                <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{title}</Typography>
+                                                    {total === 0 ? (
+                                                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
+                                                        </Box>
+                                                    ) : (
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                            {srcKeys.filter(k => counts[k] > 0).map(k => {
+                                                                const chip = SOURCE_CHIP[k];
+                                                                const pct = total > 0 ? (counts[k] / total) * 100 : 0;
+                                                                return (
+                                                                    <Box key={k}>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.4 }}>
+                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: chip.color, flexShrink: 0 }} />
+                                                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{srcLabels[k]}</Typography>
+                                                                            </Box>
+                                                                            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: chip.color }}>{counts[k]}</Typography>
+                                                                        </Box>
+                                                                        <Box sx={{ height: 5, bgcolor: '#f0f0f0', borderRadius: 3, overflow: 'hidden' }}>
+                                                                            <Box sx={{ height: '100%', borderRadius: 3, bgcolor: chip.color, width: `${pct}%`, opacity: 0.75, transition: 'width 0.4s' }} />
+                                                                        </Box>
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                            <Typography sx={{ fontSize: '0.67rem', color: '#bbb', textAlign: 'right', mt: 0.5 }}>{total} {t('total')}</Typography>
+                                                        </Box>
+                                                    )}
+                                                </Paper>
+                                            );
+                                            return (
+                                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
+                                                    {renderSourceWidget(t('Works') + ' — ' + t('Data sources'), laborCounts, totalLabor)}
+                                                    {renderSourceWidget(t('Materials') + ' — ' + t('Data sources'), matCounts, totalMat)}
+                                                </Box>
+                                            );
+                                        })()}
                                     </>}
                                     {/* Other Costs bar charts */}
                                     {(() => {

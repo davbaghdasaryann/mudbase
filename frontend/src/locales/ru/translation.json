@@ -231,5 +231,7 @@
   "Fix Values": "Зафиксировать значения",
   "Change Company": "Изменить компанию",
   "Unit Price": "Цена за единицу",
-  "Without Material": "Без материалов"
+  "Without Material": "Без материалов",
+  "Data sources": "Источники данных",
+  "total": "всего"
 }
