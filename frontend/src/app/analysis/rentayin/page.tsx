@@ -392,7 +392,7 @@ export default function RentayinPage() {
             <>
             <PageContents title={detail.estimateName}>
                 <TabContext value={tab}>
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <IconButton onClick={() => router.push('/analysis/rentayin')} size='small' sx={{ color: 'text.secondary', mr: 0.5, '&:hover': { color: mainPrimaryColor } }}>
