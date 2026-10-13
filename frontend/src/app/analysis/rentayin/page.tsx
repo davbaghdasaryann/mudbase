@@ -895,10 +895,7 @@ export default function RentayinPage() {
                                                                 return (
                                                                     <Box key={c.key}>
                                                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.dot, flexShrink: 0 }} />
-                                                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{c.label}</Typography>
-                                                                            </Box>
+                                                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{c.label}</Typography>
                                                                             <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color }}>
                                                                                 {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
                                                                             </Typography>
@@ -951,10 +948,7 @@ export default function RentayinPage() {
                                                                     return (
                                                                         <Box key={k}>
                                                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: `linear-gradient(135deg, ${c1}, ${c2})`, flexShrink: 0 }} />
-                                                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{srcLabels[k]}</Typography>
-                                                                                </Box>
+                                                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{srcLabels[k]}</Typography>
                                                                                 <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, background: `linear-gradient(90deg, ${c1}, ${c2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{counts[k]}</Typography>
                                                                             </Box>
                                                                             <Box sx={{ height: 8, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
