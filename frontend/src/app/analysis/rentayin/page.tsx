@@ -874,15 +874,11 @@ export default function RentayinPage() {
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Total profitability indicator')}</Typography>
                                                         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                                             <svg width={220} height={120} viewBox="0 0 220 120" style={{ overflow: 'visible' }}>
-                                                                {/* Background arc */}
-                                                                <path d={arcPath(-180, 0, r)} fill="none" stroke="#f0f0f0" strokeWidth={strokeW} strokeLinecap="round" />
-                                                                {/* Red zone (left half: -180 to -90) */}
-                                                                <path d={arcPath(-180, -90, r)} fill="none" stroke="#ffcdd2" strokeWidth={strokeW} strokeLinecap="butt" />
-                                                                {/* Green zone (right half: -90 to 0) */}
-                                                                <path d={arcPath(-90, 0, r)} fill="none" stroke="#c8e6c9" strokeWidth={strokeW} strokeLinecap="butt" />
-                                                                {/* Active arc to needle */}
+                                                                {/* Background arc — teal to match page palette */}
+                                                                <path d={arcPath(-180, 0, r)} fill="none" stroke="#d0f0f4" strokeWidth={strokeW} strokeLinecap="round" />
+                                                                {/* Active arc from center to needle */}
                                                                 {totalProfPct !== null && (
-                                                                    <path d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.7} />
+                                                                    <path d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.85} />
                                                                 )}
                                                                 {/* Needle */}
                                                                 <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={profColor} strokeWidth={2.5} strokeLinecap="round" />
