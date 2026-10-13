@@ -34,6 +34,11 @@ const RENT_ACT_SEGS = [
     { key: 'materials', inner: '#FFB300', outer: '#E65100', dot: '#F57C00' },
     { key: 'other',     inner: '#FFE57F', outer: '#FF8F00', dot: '#FFA000' },
 ];
+const RENT_PROF_SEGS = [
+    { key: 'labor',     inner: '#CE93D8', outer: '#9C27B0', dot: '#9C27B0' },
+    { key: 'materials', inner: '#9C27B0', outer: '#6A1B9A', dot: '#6A1B9A' },
+    { key: 'other',     inner: '#E1BEE7', outer: '#AB47BC', dot: '#AB47BC' },
+];
 
 const OE_BAR_GRADS = [
     { top: '#00CCDD', bottom: '#00899B', stroke: '#006e7e' },
@@ -796,39 +801,46 @@ export default function RentayinPage() {
                                                 {renderDonut(actDonutData, 'rent-act', RENT_ACT_SEGS)}
                                                 {renderLegend(actDonutData, RENT_ACT_SEGS)}
                                             </Paper>
-                                            {/* Profitability widget */}
-                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
-                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                    {profitPct === null ? (
-                                                        <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
-                                                    ) : (
-                                                        <>
-                                                            <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: profColor, lineHeight: 1.1, mb: 1.5 }}>
-                                                                {profitPct >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
-                                                            </Typography>
-                                                            <Box sx={{ width: '100%', px: 1 }}>
-                                                                <Box sx={{ position: 'relative', height: 10, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
-                                                                    {(() => {
-                                                                        const RANGE = 60;
-                                                                        const clamped = Math.max(-RANGE, Math.min(RANGE, profitPct));
-                                                                        return <Box sx={{
-                                                                            position: 'absolute', height: '100%', borderRadius: 4,
-                                                                            background: profitPct >= 0 ? 'linear-gradient(to right, #1CA461, rgba(28,164,97,0.3))' : 'linear-gradient(to right, rgba(198,40,40,0.3), #c62828)',
-                                                                            left: profitPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
-                                                                            width: `${Math.abs(clamped / RANGE) * 50}%`,
-                                                                        }} />;
-                                                                    })()}
-                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
-                                                                </Box>
-                                                            </Box>
-                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
-                                                                {fmtAMD(Math.abs(profitAmt!))} {profitAmt! >= 0 ? t('savings') : t('overrun')}
-                                                            </Typography>
-                                                        </>
-                                                    )}
-                                                </Box>
-                                            </Paper>
+                                            {/* Profitability by category donut */}
+                                            {(() => {
+                                                const profitLabor = totalEstLaborCost - donutActLabor;
+                                                const profitMat = totalEstMatCost - donutActMat;
+                                                const profitOther = totalEstOther - totalActOther;
+                                                const profCats = [
+                                                    { key: 'labor',     name: t('Labor'),         profit: profitLabor, est: totalEstLaborCost },
+                                                    { key: 'materials', name: t('Materials'),      profit: profitMat,   est: totalEstMatCost },
+                                                    { key: 'other',     name: t('Other Expenses'), profit: profitOther, est: totalEstOther },
+                                                ];
+                                                const profDonutData = profCats.map(c => ({
+                                                    key: c.key,
+                                                    name: c.name,
+                                                    value: Math.max(0, c.profit),
+                                                    pct: c.est > 0 ? ((c.profit / c.est) * 100).toFixed(1) : '0.0',
+                                                }));
+                                                return (
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Profitability by category')}</Typography>
+                                                        {renderDonut(profDonutData, 'rent-prof', RENT_PROF_SEGS)}
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                                                            {profCats.map(c => {
+                                                                const seg = RENT_PROF_SEGS.find(s => s.key === c.key);
+                                                                const hasEst = c.est > 0;
+                                                                const pctNum = hasEst ? (c.profit / c.est) * 100 : null;
+                                                                const pctColor = pctNum === null ? '#bbb' : pctNum >= 0 ? '#1CA461' : '#c62828';
+                                                                return (
+                                                                    <Box key={c.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: seg?.dot ?? '#ccc', flexShrink: 0 }} />
+                                                                        <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>{c.name}</Typography>
+                                                                        <Typography variant='caption' sx={{ color: pctColor, fontSize: '0.65rem', ml: 'auto', fontWeight: 700 }}>
+                                                                            {pctNum === null ? '—' : `${pctNum >= 0 ? '+' : ''}${pctNum.toFixed(1)}%`}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                        </Box>
+                                                    </Paper>
+                                                );
+                                            })()}
                                             {/* Total Profitability widget */}
                                             {(() => {
                                                 const totalEstAll = totalEstCost + totalEstOther;
@@ -873,40 +885,39 @@ export default function RentayinPage() {
                                             })()}
                                         </Box>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                            {/* Profitability by category widget */}
-                                            {(() => {
-                                                const cats = [
-                                                    { key: 'labor',  label: t('Labor'),         est: totalEstLaborCost, act: donutActLabor, dot: '#00899B' },
-                                                    { key: 'mat',    label: t('Materials'),      est: totalEstMatCost,   act: donutActMat,   dot: '#1CA461' },
-                                                    { key: 'other',  label: t('Other Expenses'), est: totalEstOther,     act: totalActOther, dot: '#5CB8B0' },
-                                                ];
-                                                return (
-                                                    <Paper elevation={0} sx={{ flex: 1.4, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5 }}>{t('Profitability by category')}</Typography>
-                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: 1 }}>
-                                                            {cats.map((c, i) => {
-                                                                const hasData = c.est > 0 && c.act > 0;
-                                                                const amt = hasData ? c.est - c.act : null;
-                                                                const pct = amt !== null && c.est > 0 ? (amt / c.est) * 100 : null;
-                                                                const color = pct === null ? '#bbb' : pct >= 0 ? '#1CA461' : '#c62828';
-                                                                return (
-                                                                    <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.75 }}>
-                                                                        <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color, lineHeight: 1, textAlign: 'center' }}>
-                                                                            {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
-                                                                        </Typography>
-                                                                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1.2 }}>{c.label}</Typography>
-                                                                        {amt !== null && (
-                                                                            <Typography sx={{ fontSize: '0.62rem', color: color + 'aa', textAlign: 'center' }}>
-                                                                                {fmtAMD(Math.abs(amt))}
-                                                                            </Typography>
-                                                                        )}
-                                                                    </Box>
-                                                                );
-                                                            })}
-                                                        </Box>
-                                                    </Paper>
-                                                );
-                                            })()}
+                                            {/* Average profitability widget (moved from row 1) */}
+                                            <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Average profitability of works')}</Typography>
+                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {profitPct === null ? (
+                                                        <Typography variant='body2' color='text.secondary' sx={{ py: 2, textAlign: 'center' }}>{t('No data')}</Typography>
+                                                    ) : (
+                                                        <>
+                                                            <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: profColor, lineHeight: 1.1, mb: 1.5 }}>
+                                                                {profitPct >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                                                            </Typography>
+                                                            <Box sx={{ width: '100%', px: 1 }}>
+                                                                <Box sx={{ position: 'relative', height: 10, bgcolor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                                                                    {(() => {
+                                                                        const RANGE = 60;
+                                                                        const clamped = Math.max(-RANGE, Math.min(RANGE, profitPct));
+                                                                        return <Box sx={{
+                                                                            position: 'absolute', height: '100%', borderRadius: 4,
+                                                                            background: profitPct >= 0 ? 'linear-gradient(to right, #1CA461, rgba(28,164,97,0.3))' : 'linear-gradient(to right, rgba(198,40,40,0.3), #c62828)',
+                                                                            left: profitPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
+                                                                            width: `${Math.abs(clamped / RANGE) * 50}%`,
+                                                                        }} />;
+                                                                    })()}
+                                                                    <Box sx={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, bgcolor: '#ccc', transform: 'translateX(-50%)' }} />
+                                                                </Box>
+                                                            </Box>
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
+                                                                {fmtAMD(Math.abs(profitAmt!))} {profitAmt! >= 0 ? t('savings') : t('overrun')}
+                                                            </Typography>
+                                                        </>
+                                                    )}
+                                                </Box>
+                                            </Paper>
                                             {/* Data source count widgets */}
                                             {(() => {
                                             const srcKeys = ['actual', 'library', 'market', 'manual'] as const;
