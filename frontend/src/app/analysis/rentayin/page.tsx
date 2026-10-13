@@ -891,12 +891,9 @@ export default function RentayinPage() {
                                                                 const color = pct === null ? '#bbb' : pct >= 0 ? '#1CA461' : '#c62828';
                                                                 return (
                                                                     <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.75 }}>
-                                                                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 0.4 }}>
-                                                                            <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1, textAlign: 'center' }}>
-                                                                                {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
-                                                                            </Typography>
-                                                                            <Box sx={{ height: 2, width: '70%', borderRadius: 1, bgcolor: color, opacity: 0.55 }} />
-                                                                        </Box>
+                                                                        <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1, textAlign: 'center' }}>
+                                                                            {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
+                                                                        </Typography>
                                                                         <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1.2 }}>{c.label}</Typography>
                                                                         {amt !== null && (
                                                                             <Typography sx={{ fontSize: '0.62rem', color: color + 'aa', textAlign: 'center' }}>
