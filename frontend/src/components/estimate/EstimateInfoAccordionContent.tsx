@@ -277,7 +277,7 @@ function EstimateInfoAccordionContentInner(props: Props) {
                     id='builtUpCostPerSqM'
                     value={
                         data?.builtUpArea && parseFloat(data.builtUpArea) > 0
-                            ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.builtUpArea))
+                            ? fixedNumber((data?.totalCostWithOtherExpenses ?? data?.totalCost ?? 0) / parseFloat(data.builtUpArea))
                             : '0'
                     }
                     label={t('Built-up Cost per sq. m')}
@@ -290,7 +290,7 @@ function EstimateInfoAccordionContentInner(props: Props) {
                     id='constructionCostPerSqM'
                     value={
                         data?.constructionSurface && parseFloat(data.constructionSurface) > 0
-                            ? fixedNumber((data?.totalCost ?? 0) / parseFloat(data.constructionSurface))
+                            ? fixedNumber((data?.totalCostWithOtherExpenses ?? data?.totalCost ?? 0) / parseFloat(data.constructionSurface))
                             : '0'
                     }
                     label={t('Construction Cost per sq. m')}
