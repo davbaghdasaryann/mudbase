@@ -929,7 +929,7 @@ export default function RentayinPage() {
                                                 actual:  ['#00CCDD', '#00899B'],
                                                 library: ['#A8DED9', '#5CB8B0'],
                                                 market:  ['#4EE89A', '#1CA461'],
-                                                manual:  ['#b0bec5', '#78909c'],
+                                                manual:  ['#FFB300', '#E65100'],
                                             };
                                             const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
                                                 const activeKeys = srcKeys.filter(k => counts[k] > 0);
