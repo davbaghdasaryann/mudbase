@@ -874,21 +874,35 @@ export default function RentayinPage() {
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{t('Total profitability indicator')}</Typography>
                                                         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                                             <svg width={220} height={120} viewBox="0 0 220 120" style={{ overflow: 'visible' }}>
-                                                                <style>{`
-                                                                    @keyframes gauge-needle-sweep {
-                                                                        from { transform: rotate(0deg); }
-                                                                        to   { transform: rotate(${needleAngle + 90}deg); }
-                                                                    }
-                                                                    .gauge-needle-g {
-                                                                        transform-origin: ${cx}px ${cy}px;
-                                                                        animation: gauge-needle-sweep 1.2s cubic-bezier(0.34,1.56,0.64,1) both;
-                                                                    }
-                                                                `}</style>
+                                                                {(() => {
+                                                                    const arcLen = totalProfPct !== null ? Math.abs(needleAngle - (-90)) / 180 * Math.PI * r : 0;
+                                                                    return (
+                                                                        <style>{`
+                                                                            @keyframes gauge-needle-sweep {
+                                                                                from { transform: rotate(0deg); }
+                                                                                to   { transform: rotate(${needleAngle + 90}deg); }
+                                                                            }
+                                                                            .gauge-needle-g {
+                                                                                transform-origin: ${cx}px ${cy}px;
+                                                                                animation: gauge-needle-sweep 1.2s cubic-bezier(0.34,1.56,0.64,1) both;
+                                                                            }
+                                                                            @keyframes gauge-arc-draw {
+                                                                                from { stroke-dashoffset: ${arcLen}; }
+                                                                                to   { stroke-dashoffset: 0; }
+                                                                            }
+                                                                            .gauge-arc {
+                                                                                stroke-dasharray: ${arcLen};
+                                                                                stroke-dashoffset: ${arcLen};
+                                                                                animation: gauge-arc-draw 1.2s cubic-bezier(0.25,0.1,0.25,1) both;
+                                                                            }
+                                                                        `}</style>
+                                                                    );
+                                                                })()}
                                                                 {/* Background arc */}
                                                                 <path d={arcPath(-180, 0, r)} fill="none" stroke="#d0f0f4" strokeWidth={strokeW} strokeLinecap="round" />
-                                                                {/* Active arc */}
+                                                                {/* Active arc — CSS animated draw-in */}
                                                                 {totalProfPct !== null && (
-                                                                    <path d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.85} />
+                                                                    <path className="gauge-arc" d={arcPath(-90, needleAngle, r)} fill="none" stroke={profColor} strokeWidth={strokeW} strokeLinecap="butt" opacity={0.85} />
                                                                 )}
                                                                 {/* Needle — CSS animated */}
                                                                 <g className="gauge-needle-g">
