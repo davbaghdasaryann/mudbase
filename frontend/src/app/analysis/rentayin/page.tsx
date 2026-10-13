@@ -172,6 +172,7 @@ export default function RentayinPage() {
     const [otherCostPercentages, setOtherCostPercentages] = useState<Record<string, number>>({});
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
+    const [profitSimOverrides, setProfitSimOverrides] = useState<Record<number, number>>({});
     const handleRefresh = async (d: RentayinRecord) => {
         setRefreshing(true);
         try {
@@ -497,7 +498,13 @@ export default function RentayinPage() {
                                                                         ? (row.actualUnitCost ?? 0) + (row.actualMaterialUnitCost ?? row.estimatedMaterialUnitCost ?? 0)
                                                                         : row.actualUnitCost;
                                     const actTotal = actUnitCost !== null && actUnitCost > 0 ? actUnitCost * row.quantity : null;
-                                                                    const pct = profitPct(row);
+                                                                    const rawPct = profitPct(row);
+                                                                    const simPct = profitSimOverrides[globalIdx] ?? null;
+                                                                    const pct = simPct !== null ? simPct : rawPct;
+                                                                    // Back-calculate simulated actual unit cost from target profitability
+                                                                    // Formula: pct = (est - act) / act * 100  →  act = est / (1 + pct/100)
+                                                                    const simActUnitCost = simPct !== null && estUnitFull > 0 ? estUnitFull / (1 + simPct / 100) : null;
+                                                                    const simActTotal = simActUnitCost !== null ? simActUnitCost * row.quantity : null;
                                                                     const src = row.unitCostSource ? SOURCE_CHIP[row.unitCostSource] : null;
                                                                     rowCounter++;
                                                                     return (
@@ -518,21 +525,31 @@ export default function RentayinPage() {
                                                                             <td style={tdStyle({ textAlign: 'center', color: '#777', borderLeft: GSEP })}>{row.quantity.toLocaleString()}</td>
                                                                             <td style={tdStyle({ textAlign: 'center' })}>
                                                                                 <span
-                                                                                    style={{ fontSize: '0.82rem', color: row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : row.unitCostSource === 'market' ? '#7b1fa2' : '#888', cursor: row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource ? 'underline dotted' : 'none' }}
-                                                                                    onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
+                                                                                    style={{ fontSize: '0.82rem', color: simActUnitCost !== null ? '#00899B' : row.unitCostSource === 'actual' ? '#111' : row.unitCostSource === 'library' ? '#1565C0' : row.unitCostSource === 'market' ? '#7b1fa2' : '#888', cursor: simActUnitCost === null && row.unitCostSource ? 'pointer' : 'default', textDecoration: row.unitCostSource && simActUnitCost === null ? 'underline dotted' : 'none', fontStyle: simActUnitCost !== null ? 'italic' : 'normal' }}
+                                                                                    onClick={simActUnitCost === null && row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}
                                                                                 >
-                                                                                    {actUnitCost !== null && actUnitCost > 0 && row.unitCostSource ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
+                                                                                    {simActUnitCost !== null ? Math.round(simActUnitCost).toLocaleString() : actUnitCost !== null && actUnitCost > 0 && row.unitCostSource ? Math.round(actUnitCost).toLocaleString() : '\u2014'}
                                                                                 </span>
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: actTotal !== null ? (row.actualUnitCost !== null ? '#111' : '#888') : '#ddd', cursor: row.unitCostSource ? 'pointer' : 'default' })} onClick={row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
-                                                                                {actTotal !== null && row.unitCostSource ? actTotal.toLocaleString() : '\u2014'}
+                                                                            <td style={tdStyle({ textAlign: 'center', fontWeight: 500, color: simActTotal !== null ? '#00899B' : actTotal !== null ? (row.actualUnitCost !== null ? '#111' : '#888') : '#ddd', cursor: simActTotal === null && row.unitCostSource ? 'pointer' : 'default', fontStyle: simActTotal !== null ? 'italic' : 'normal' })} onClick={simActTotal === null && row.unitCostSource ? e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRow(row); } : undefined}>
+                                                                                {simActTotal !== null ? Math.round(simActTotal).toLocaleString() : actTotal !== null && row.unitCostSource ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
-                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP })}>
+                                                                            <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, cursor: row.unitCostSource && estUnitFull > 0 ? 'ns-resize' : 'default', userSelect: 'none' })}
+                                                                                    onWheel={row.unitCostSource && estUnitFull > 0 ? e => {
+                                                                                        e.preventDefault();
+                                                                                        const step = 0.5;
+                                                                                        const current = profitSimOverrides[globalIdx] ?? rawPct ?? 0;
+                                                                                        const next = Math.max(-100, Math.min(200, current + (e.deltaY < 0 ? step : -step)));
+                                                                                        setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: Math.round(next * 10) / 10 }));
+                                                                                    } : undefined}
+                                                                                    onDoubleClick={profitSimOverrides[globalIdx] !== undefined ? () => setProfitSimOverrides(prev => { const n = { ...prev }; delete n[globalIdx]; return n; }) : undefined}
+                                                                                    title={row.unitCostSource ? 'Scroll to simulate profitability. Double-click to reset.' : undefined}
+                                                                            >
                                                                                 {pct !== null ? (
-                                                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888' }}>
+                                                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888', borderBottom: simPct !== null ? '2px dashed #00CCDD' : 'none' }}>
                                                                                         {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
-                                                                                    </span>
-                                                                                ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'—'}</span>}
+                                                                                </span>
+                                                                                ) : <span style={{ fontSize: '0.82rem', color: '#ccc' }}>{'\u2014'}</span>}
                                                                             </td>
 
                                                                         </tr>
