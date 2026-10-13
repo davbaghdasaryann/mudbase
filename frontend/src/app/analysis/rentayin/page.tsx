@@ -699,7 +699,7 @@ export default function RentayinPage() {
                             const profitAmt = totalActCost > 0 && totalEstCost > 0 ? totalEstCost - totalActCost : null;
                             const profitPct = profitAmt !== null && totalEstCost > 0 ? (profitAmt / totalEstCost) * 100 : null;
                             const fmtAMD = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ֏';
-                            const profColor = profitPct === null ? '#bbb' : profitPct >= 0 ? '#2e7d32' : '#c62828';
+                            const profColor = profitPct === null ? '#bbb' : profitPct >= 0 ? '#1CA461' : '#c62828';
                             const buildDonutData = (labor: number, materials: number, other: number) => {
                                 const total = labor + materials + other;
                                 return [
@@ -814,7 +814,7 @@ export default function RentayinPage() {
                                                                         const clamped = Math.max(-RANGE, Math.min(RANGE, profitPct));
                                                                         return <Box sx={{
                                                                             position: 'absolute', height: '100%', borderRadius: 4,
-                                                                            background: profitPct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)',
+                                                                            background: profitPct >= 0 ? 'linear-gradient(to right, #1CA461, rgba(28,164,97,0.3))' : 'linear-gradient(to right, rgba(198,40,40,0.3), #c62828)',
                                                                             left: profitPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
                                                                             width: `${Math.abs(clamped / RANGE) * 50}%`,
                                                                         }} />;
@@ -835,7 +835,7 @@ export default function RentayinPage() {
                                                 const totalActAll = totalActCost + totalActOther;
                                                 const totalProfAmt = totalEstAll > 0 && totalActAll > 0 ? totalEstAll - totalActAll : null;
                                                 const totalProfPct = totalProfAmt !== null && totalEstAll > 0 ? (totalProfAmt / totalEstAll) * 100 : null;
-                                                const totalProfColor = totalProfPct === null ? '#bbb' : totalProfPct >= 0 ? '#2e7d32' : '#c62828';
+                                                const totalProfColor = totalProfPct === null ? '#bbb' : totalProfPct >= 0 ? '#1CA461' : '#c62828';
                                                 return (
                                                     <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1 }}>{t('Total profitability indicator')}</Typography>
@@ -854,7 +854,7 @@ export default function RentayinPage() {
                                                                                 const clamped = Math.max(-RANGE, Math.min(RANGE, totalProfPct));
                                                                                 return <Box sx={{
                                                                                     position: 'absolute', height: '100%', borderRadius: 4,
-                                                                                    background: totalProfPct >= 0 ? 'linear-gradient(to right, #2e7d32, rgba(46,125,50,0.35))' : 'linear-gradient(to right, rgba(198,40,40,0.35), #c62828)',
+                                                                                    background: totalProfPct >= 0 ? 'linear-gradient(to right, #1CA461, rgba(28,164,97,0.3))' : 'linear-gradient(to right, rgba(198,40,40,0.3), #c62828)',
                                                                                     left: totalProfPct >= 0 ? '50%' : `${50 + (clamped / RANGE) * 50}%`,
                                                                                     width: `${Math.abs(clamped / RANGE) * 50}%`,
                                                                                 }} />;
@@ -888,7 +888,7 @@ export default function RentayinPage() {
                                                                 const hasData = c.est > 0 && c.act > 0;
                                                                 const amt = hasData ? c.est - c.act : null;
                                                                 const pct = amt !== null && c.est > 0 ? (amt / c.est) * 100 : null;
-                                                                const color = pct === null ? '#bbb' : pct >= 0 ? '#2e7d32' : '#c62828';
+                                                                const color = pct === null ? '#bbb' : pct >= 0 ? '#1CA461' : '#c62828';
                                                                 const RANGE = 60;
                                                                 const barGrad = pct === null ? '#f0f0f0' : pct >= 0 ? `linear-gradient(90deg, ${c.dot}66, ${c.dot})` : `linear-gradient(90deg, ${c.dot}44, ${c.dot}bb)`;
                                                                 const barPct = pct === null ? 0 : Math.min(100, Math.max(2, (Math.abs(Math.max(-RANGE, Math.min(RANGE, pct))) / RANGE) * 100));
