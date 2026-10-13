@@ -881,7 +881,7 @@ export default function RentayinPage() {
                                                     { key: 'other',  label: t('Other Expenses'), est: totalEstOther,     act: totalActOther, dot: '#5CB8B0' },
                                                 ];
                                                 return (
-                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                    <Paper elevation={0} sx={{ flex: 1.4, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                         <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5 }}>{t('Profitability by category')}</Typography>
                                                         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: 1 }}>
                                                             {cats.map((c, i) => {
@@ -889,12 +889,14 @@ export default function RentayinPage() {
                                                                 const amt = hasData ? c.est - c.act : null;
                                                                 const pct = amt !== null && c.est > 0 ? (amt / c.est) * 100 : null;
                                                                 const color = pct === null ? '#bbb' : pct >= 0 ? '#1CA461' : '#c62828';
-                                                                const bgColor = pct === null ? 'transparent' : pct >= 0 ? 'rgba(28,164,97,0.06)' : 'rgba(198,40,40,0.05)';
                                                                 return (
-                                                                    <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 2, borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.5 }}>
-                                                                        <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1, textAlign: 'center' }}>
-                                                                            {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
-                                                                        </Typography>
+                                                                    <Box key={c.key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: i > 0 ? '1px solid #f0f2f4' : 'none', px: 0.5, py: 1, gap: 0.75 }}>
+                                                                        <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 0.4 }}>
+                                                                            <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color, lineHeight: 1, textAlign: 'center' }}>
+                                                                                {pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
+                                                                            </Typography>
+                                                                            <Box sx={{ height: 2, width: '70%', borderRadius: 1, bgcolor: color, opacity: 0.55 }} />
+                                                                        </Box>
                                                                         <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1.2 }}>{c.label}</Typography>
                                                                         {amt !== null && (
                                                                             <Typography sx={{ fontSize: '0.62rem', color: color + 'aa', textAlign: 'center' }}>
