@@ -58,7 +58,7 @@ import OverheadCostsDialog, { type OverheadEntry } from '@/app/costing/OverheadC
 import * as EstimatesApi from '@/api/estimate';
 import * as Api from '@/api';
 import { formatCurrencyRounded } from '@/lib/format_currency';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, RadialBarChart, RadialBar } from 'recharts';
 
 interface RentayinRow {
     laborItemId: string;
@@ -938,42 +938,71 @@ export default function RentayinPage() {
                                             }
                                             const totalLabor = Object.values(laborCounts).reduce((a, b) => a + b, 0);
                                             const totalMat = Object.values(matCounts).reduce((a, b) => a + b, 0);
-                                            const renderSourceWidget = (title: string, counts: Record<string, number>, total: number) => (
-                                                <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                    <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{title}</Typography>
-                                                    {total === 0 ? (
-                                                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                            <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
-                                                        </Box>
-                                                    ) : (
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                            {srcKeys.filter(k => counts[k] > 0).map(k => {
-                                                                const chip = SOURCE_CHIP[k];
-                                                                const pct = total > 0 ? (counts[k] / total) * 100 : 0;
-                                                                return (
-                                                                    <Box key={k}>
-                                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.4 }}>
-                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: chip.color, flexShrink: 0 }} />
-                                                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{srcLabels[k]}</Typography>
+                                            const srcGradients: Record<string, [string, string]> = {
+                                                actual:  ['#00C9A7', '#00899B'],
+                                                library: ['#5B9CF6', '#1565C0'],
+                                                market:  ['#CE93D8', '#7b1fa2'],
+                                                manual:  ['#FFB74D', '#E65100'],
+                                            };
+                                            const renderSourceWidget = (title: string, counts: Record<string, number>, total: number, idPrefix: string) => {
+                                                const activeKeys = srcKeys.filter(k => counts[k] > 0);
+                                                const chartData = activeKeys.map(k => ({
+                                                    name: srcLabels[k],
+                                                    value: total > 0 ? Math.round((counts[k] / total) * 100) : 0,
+                                                    count: counts[k],
+                                                    fill: `url(#${idPrefix}-${k})`,
+                                                }));
+                                                return (
+                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1, display: 'block', textAlign: 'center' }}>{title}</Typography>
+                                                        {total === 0 ? (
+                                                            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Typography variant='body2' color='text.secondary'>{t('No data')}</Typography>
+                                                            </Box>
+                                                        ) : (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                                <Box sx={{ flexShrink: 0, width: 120, height: 120 }}>
+                                                                    <ResponsiveContainer width='100%' height='100%'>
+                                                                        <RadialBarChart cx='50%' cy='50%' innerRadius={18} outerRadius={56} barSize={10} data={chartData} startAngle={90} endAngle={-270}>
+                                                                            <defs>
+                                                                                {activeKeys.map(k => {
+                                                                                    const [c1, c2] = srcGradients[k];
+                                                                                    return (
+                                                                                        <linearGradient key={k} id={`${idPrefix}-${k}`} x1='0' y1='0' x2='1' y2='0'>
+                                                                                            <stop offset='0%' stopColor={c1} stopOpacity={0.9} />
+                                                                                            <stop offset='100%' stopColor={c2} stopOpacity={1} />
+                                                                                        </linearGradient>
+                                                                                    );
+                                                                                })}
+                                                                            </defs>
+                                                                            <RadialBar dataKey='value' cornerRadius={5} background={{ fill: '#f3f4f6' }} />
+                                                                        </RadialBarChart>
+                                                                    </ResponsiveContainer>
+                                                                </Box>
+                                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                                                    {activeKeys.map(k => {
+                                                                        const [c1] = srcGradients[k];
+                                                                        return (
+                                                                            <Box key={k} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                                                                                    <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: `linear-gradient(135deg, ${srcGradients[k][0]}, ${srcGradients[k][1]})`, flexShrink: 0 }} />
+                                                                                    <Typography sx={{ fontSize: '0.7rem', color: '#6b7280', fontWeight: 500 }}>{srcLabels[k]}</Typography>
+                                                                                </Box>
+                                                                                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: c1 }}>{counts[k]}</Typography>
                                                                             </Box>
-                                                                            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: chip.color }}>{counts[k]}</Typography>
-                                                                        </Box>
-                                                                        <Box sx={{ height: 5, bgcolor: '#f0f0f0', borderRadius: 3, overflow: 'hidden' }}>
-                                                                            <Box sx={{ height: '100%', borderRadius: 3, bgcolor: chip.color, width: `${pct}%`, opacity: 0.75, transition: 'width 0.4s' }} />
-                                                                        </Box>
-                                                                    </Box>
-                                                                );
-                                                            })}
-                                                            <Typography sx={{ fontSize: '0.67rem', color: '#bbb', textAlign: 'right', mt: 0.5 }}>{total} {t('total')}</Typography>
-                                                        </Box>
-                                                    )}
-                                                </Paper>
-                                            );
+                                                                        );
+                                                                    })}
+                                                                    <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right', mt: 0.25 }}>{total} {t('total')}</Typography>
+                                                                </Box>
+                                                            </Box>
+                                                        )}
+                                                    </Paper>
+                                                );
+                                            };
                                             return (
                                                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                                                    {renderSourceWidget(t('Works') + ' — ' + t('Data sources'), laborCounts, totalLabor)}
-                                                    {renderSourceWidget(t('Materials') + ' — ' + t('Data sources'), matCounts, totalMat)}
+                                                    {renderSourceWidget(t('Works') + ' — ' + t('Data sources'), laborCounts, totalLabor, 'lsrc')}
+                                                    {renderSourceWidget(t('Materials') + ' — ' + t('Data sources'), matCounts, totalMat, 'msrc')}
                                                 </Box>
                                             );
                                         })()}
