@@ -250,21 +250,18 @@ export default function PackagesPage() {
 
                                     <Divider sx={{ my: 0.25 }} />
 
-                                    {/* Grouped feature checklist */}
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                        {featureGroups.map(group => (
-                                            <Box key={group.heading}>
-                                                <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>{group.heading}</Typography>
-                                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.4 }}>
-                                                    {group.items.map(f => (
-                                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            {f.enabled
-                                                                ? <CheckIcon sx={{ fontSize: 13, color: '#22c55e', flexShrink: 0 }} />
-                                                                : <RemoveIcon sx={{ fontSize: 13, color: '#d1d5db', flexShrink: 0 }} />}
-                                                            <Typography sx={{ fontSize: '0.71rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
-                                                        </Box>
-                                                    ))}
-                                                </Box>
+                                    {/* Feature checklist — single column, groups separated by gap */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                        {featureGroups.map((group, gi) => (
+                                            <Box key={group.heading} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                {group.items.map(f => (
+                                                    <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                        {f.enabled
+                                                            ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e', flexShrink: 0 }} />
+                                                            : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db', flexShrink: 0 }} />}
+                                                        <Typography sx={{ fontSize: '0.75rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
+                                                    </Box>
+                                                ))}
                                             </Box>
                                         ))}
                                     </Box>
