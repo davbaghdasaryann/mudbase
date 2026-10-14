@@ -1004,8 +1004,8 @@ export default function RentayinPage() {
                                             {/* Stat cards */}
                                             {(() => {
                                                 const estUnitTime = (detail as any)?.estimateUnitTime ?? 0;
-                                                const estLaborCount = (detail as any)?.estimateLaborItemCount ?? rows.length;
-                                                const estMatCount = (detail as any)?.estimateMaterialItemCount ?? rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0).length;
+                                                const estLaborCount = rows.length;
+                                                const estMatCount = rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0).length;
                                                 const statItems = [
                                                     { label: t('Quantity of Labor'),   icon: <EngineeringIcon sx={{ fontSize: 22 }} />, value: estLaborCount },
                                                     { label: t('Quantity of Materials'), icon: <BuildIcon sx={{ fontSize: 22 }} />,      value: estMatCount },
