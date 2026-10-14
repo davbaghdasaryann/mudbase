@@ -250,19 +250,22 @@ export default function PackagesPage() {
 
                                     <Divider sx={{ my: 0.25 }} />
 
-                                    {/* Feature checklist — single column, groups separated by gap */}
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {/* Feature checklist — single column, groups separated by divider */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                                         {featureGroups.map((group, gi) => (
-                                            <Box key={group.heading} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                {group.items.map(f => (
-                                                    <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                        {f.enabled
-                                                            ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e', flexShrink: 0 }} />
-                                                            : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db', flexShrink: 0 }} />}
-                                                        <Typography sx={{ fontSize: '0.75rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
-                                                    </Box>
-                                                ))}
-                                            </Box>
+                                            <React.Fragment key={group.heading}>
+                                                {gi > 0 && <Divider sx={{ borderColor: 'rgba(0,0,0,0.06)', my: 0.75 }} />}
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    {group.items.map(f => (
+                                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                            {f.enabled
+                                                                ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e', flexShrink: 0 }} />
+                                                                : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db', flexShrink: 0 }} />}
+                                                            <Typography sx={{ fontSize: '0.75rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </React.Fragment>
                                         ))}
                                     </Box>
                                 </CardContent>
