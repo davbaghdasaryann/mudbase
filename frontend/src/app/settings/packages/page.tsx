@@ -125,6 +125,8 @@ export default function PackagesPage() {
     const [allPackages, setAllPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [myPackage, setMyPackage] = useState<Package | null>(null);
+    const [billingPeriod, setBillingPeriod] = useState<'annual' | 'monthly'>('annual');
+    const [showAll, setShowAll] = useState(false);
     const [saving, setSaving] = useState(false);
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -209,8 +211,51 @@ export default function PackagesPage() {
             if (id.$oid) return id.$oid;
             return String(id);
         };
+
+        // Active package first, then the rest
+        const myId = myPackage ? pkgIdStr(myPackage) : null;
+        const sorted = myId
+            ? [...allPackages].sort((a, b) => (pkgIdStr(a) === myId ? -1 : pkgIdStr(b) === myId ? 1 : 0))
+            : allPackages;
+        const visible = showAll ? sorted : sorted.slice(0, 3);
+
         return (
             <PageContents title={t('Packages')}>
+                {/* Header */}
+                <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
+                    <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
+                        Subscription Plans
+                    </Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.95rem', mb: 2.5 }}>
+                        Choose the best plan for you
+                    </Typography>
+
+                    {/* Annual / Monthly toggle */}
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(0,0,0,0.05)', borderRadius: '50px', p: '3px', gap: 0 }}>
+                        {(['annual', 'monthly'] as const).map(period => (
+                            <Box
+                                key={period}
+                                onClick={() => setBillingPeriod(period)}
+                                sx={{
+                                    px: 2.5, py: 0.6,
+                                    borderRadius: '50px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.875rem',
+                                    fontWeight: billingPeriod === period ? 600 : 400,
+                                    bgcolor: billingPeriod === period ? '#fff' : 'transparent',
+                                    color: billingPeriod === period ? '#111827' : 'text.secondary',
+                                    boxShadow: billingPeriod === period ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
+                                    transition: 'all 0.18s ease',
+                                    userSelect: 'none',
+                                    textTransform: 'capitalize',
+                                }}
+                            >
+                                {period === 'annual' ? 'Annual' : 'Monthly'}
+                            </Box>
+                        ))}
+                    </Box>
+                </Box>
+
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>
                 ) : allPackages.length === 0 ? (
@@ -219,89 +264,114 @@ export default function PackagesPage() {
                         <Typography color='text.secondary'>{t('No packages available')}</Typography>
                     </Box>
                 ) : (
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2.5 }}>
-                        {allPackages.map(pkg => {
-                            const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
-                            const active = myPackage ? pkgIdStr(pkg) === pkgIdStr(myPackage) : false;
-                            const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
+                    <>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2.5 }}>
+                            {visible.map(pkg => {
+                                const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
+                                const active = myId ? pkgIdStr(pkg) === myId : false;
+                                const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
+                                const displayPrice = billingPeriod === 'annual' ? pkg.price : monthly;
+                                const displaySuffix = billingPeriod === 'annual' ? 'AMD /year' : 'AMD /month';
+                                const secondaryPrice = billingPeriod === 'annual'
+                                    ? (monthly > 0 ? `${monthly.toLocaleString()} AMD /month` : null)
+                                    : (pkg.price > 0 ? `${pkg.price.toLocaleString()} AMD /year` : null);
 
-                            const features: string[] = [];
-                            if (pkg.numberOfUsers) features.push(`${pkg.numberOfUsers} ${t('Users')}`);
-                            if (pkg.numberOfEstimations === 0) features.push(t('Unlimited Estimations'));
-                            else if (pkg.numberOfEstimations) features.push(`${pkg.numberOfEstimations} ${t('Estimations')}`);
-                            if (pkg.worksCatalog) features.push(t('Works Catalog'));
-                            if (pkg.materialsCatalog) features.push(t('Materials Catalog'));
-                            if (pkg.aggregatedCatalog) features.push(t('Aggregated Catalog'));
-                            if (pkg.costing) features.push('Ծախսագրում');
-                            if (pkg.analysis) features.push('Վերլուծություն');
-                            if (pkg.performance) features.push('Կատարողական');
-                            if (pkg.seeOffers) features.push(t('See Offers'));
-                            if (pkg.exportEstimation) features.push(t('Export Estimation'));
-                            if (pkg.shareEstimations) features.push(t('Share Estimation'));
+                                const features: string[] = [];
+                                if (pkg.numberOfUsers) features.push(`${pkg.numberOfUsers} ${t('Users')}`);
+                                if (pkg.numberOfEstimations === 0) features.push(t('Unlimited Estimations'));
+                                else if (pkg.numberOfEstimations) features.push(`${pkg.numberOfEstimations} ${t('Estimations')}`);
+                                if (pkg.worksCatalog) features.push(t('Works Catalog'));
+                                if (pkg.materialsCatalog) features.push(t('Materials Catalog'));
+                                if (pkg.aggregatedCatalog) features.push(t('Aggregated Catalog'));
+                                if (pkg.costing) features.push('Ծախսագրում');
+                                if (pkg.analysis) features.push('Վերլուծություն');
+                                if (pkg.performance) features.push('Կատարողական');
+                                if (pkg.seeOffers) features.push(t('See Offers'));
+                                if (pkg.exportEstimation) features.push(t('Export Estimation'));
+                                if (pkg.shareEstimations) features.push(t('Share Estimation'));
 
-                            return (
-                                <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
-                                    borderRadius: 3,
-                                    border: `1px solid ${active ? BRAND + '55' : 'rgba(0,0,0,0.10)'}`,
-                                    background: 'rgba(255,255,255,0.80)',
-                                    backdropFilter: 'blur(14px)',
-                                    WebkitBackdropFilter: 'blur(14px)',
-                                    boxShadow: active
-                                        ? `0 4px 24px ${BRAND}22, 0 1px 4px rgba(0,0,0,0.04)`
-                                        : '0 2px 8px rgba(0,0,0,0.06)',
-                                    position: 'relative', overflow: 'hidden',
-                                    display: 'flex', flexDirection: 'column',
-                                }}>
-                                    {active && (
-                                        <Chip
-                                            label={t('Active')}
-                                            size='small'
-                                            sx={{
-                                                position: 'absolute', top: 12, right: 12,
-                                                bgcolor: BRAND, color: '#fff',
-                                                fontWeight: 700, fontSize: '0.7rem',
-                                                height: 22, borderRadius: '6px',
-                                            }}
-                                        />
-                                    )}
-                                    <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, pb: '16px !important' }}>
-                                        <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, pr: active ? 7 : 0 }}>
-                                            {displayName}
-                                        </Typography>
-                                        {pkg.price ? (
-                                            <Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                                                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1, color: 'text.primary' }}>
-                                                        {pkg.price.toLocaleString()}
-                                                    </Typography>
-                                                    <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>AMD /year</Typography>
-                                                </Box>
-                                                {monthly > 0 && (
-                                                    <Typography sx={{ fontSize: '0.8rem', color: BRAND, fontWeight: 600, mt: 0.25 }}>
-                                                        {monthly.toLocaleString()} AMD /month
-                                                    </Typography>
-                                                )}
-                                            </Box>
-                                        ) : (
-                                            <Typography sx={{ fontSize: '1.1rem', fontWeight: 600, color: 'text.secondary' }}>—</Typography>
+                                return (
+                                    <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
+                                        borderRadius: 3,
+                                        border: `1px solid ${active ? BRAND + '55' : 'rgba(0,0,0,0.10)'}`,
+                                        background: 'rgba(255,255,255,0.80)',
+                                        backdropFilter: 'blur(14px)',
+                                        WebkitBackdropFilter: 'blur(14px)',
+                                        boxShadow: active
+                                            ? `0 4px 24px ${BRAND}22, 0 1px 4px rgba(0,0,0,0.04)`
+                                            : '0 2px 8px rgba(0,0,0,0.06)',
+                                        position: 'relative', overflow: 'hidden',
+                                        display: 'flex', flexDirection: 'column',
+                                    }}>
+                                        {active && (
+                                            <Chip
+                                                label={t('Active')}
+                                                size='small'
+                                                sx={{
+                                                    position: 'absolute', top: 12, right: 12,
+                                                    bgcolor: BRAND, color: '#fff',
+                                                    fontWeight: 700, fontSize: '0.7rem',
+                                                    height: 22, borderRadius: '6px',
+                                                }}
+                                            />
                                         )}
-                                        <Divider sx={{ my: 0.5 }} />
-                                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                            Features
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                                            {features.map(f => (
-                                                <Box key={f} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                    <CheckIcon sx={{ fontSize: 14, color: BRAND, flexShrink: 0 }} />
-                                                    <Typography sx={{ fontSize: '0.8rem', color: '#374151', lineHeight: 1.3 }}>{f}</Typography>
+                                        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, pb: '16px !important' }}>
+                                            <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, pr: active ? 7 : 0 }}>
+                                                {displayName}
+                                            </Typography>
+                                            {displayPrice ? (
+                                                <Box>
+                                                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+                                                        <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1, color: 'text.primary' }}>
+                                                            {displayPrice.toLocaleString()}
+                                                        </Typography>
+                                                        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{displaySuffix}</Typography>
+                                                    </Box>
+                                                    {secondaryPrice && (
+                                                        <Typography sx={{ fontSize: '0.8rem', color: BRAND, fontWeight: 600, mt: 0.25 }}>
+                                                            {secondaryPrice}
+                                                        </Typography>
+                                                    )}
                                                 </Box>
-                                            ))}
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </Box>
+                                            ) : (
+                                                <Typography sx={{ fontSize: '1.1rem', fontWeight: 600, color: 'text.secondary' }}>—</Typography>
+                                            )}
+                                            <Divider sx={{ my: 0.5 }} />
+                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                                Features
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                                {features.map(f => (
+                                                    <Box key={f} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                        <CheckIcon sx={{ fontSize: 14, color: BRAND, flexShrink: 0 }} />
+                                                        <Typography sx={{ fontSize: '0.8rem', color: '#374151', lineHeight: 1.3 }}>{f}</Typography>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </Box>
+
+                        {sorted.length > 3 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                                <Button
+                                    variant='outlined'
+                                    onClick={() => setShowAll(v => !v)}
+                                    sx={{
+                                        borderRadius: '50px', px: 3.5, py: 0.9,
+                                        borderColor: 'rgba(0,0,0,0.15)', color: 'text.secondary',
+                                        textTransform: 'none', fontWeight: 500, fontSize: '0.875rem',
+                                        '&:hover': { borderColor: BRAND, color: BRAND, bgcolor: `${BRAND}08` },
+                                        transition: 'all 0.18s ease',
+                                    }}
+                                >
+                                    {showAll ? 'Show less' : `Show more (${sorted.length - 3} more)`}
+                                </Button>
+                            </Box>
+                        )}
+                    </>
                 )}
             </PageContents>
         );
