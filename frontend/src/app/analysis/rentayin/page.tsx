@@ -945,7 +945,7 @@ export default function RentayinPage() {
                                             {/* Data source count widgets */}
                                             {(() => {
                                             const srcKeys = ['actual', 'library', 'market', 'manual'] as const;
-                                            const srcLabels: Record<string, string> = { actual: t('Company'), library: t('Library'), market: t('Market'), manual: t('Manual') };
+                                            const srcLabels: Record<string, string> = { actual: t('Costing'), library: t('Library'), market: t('Market'), manual: t('Manual') };
                                             const laborCounts: Record<string, number> = { actual: 0, library: 0, market: 0, manual: 0 };
                                             const matCounts: Record<string, number> = { actual: 0, library: 0, market: 0, manual: 0 };
                                             for (const r of rows) {
