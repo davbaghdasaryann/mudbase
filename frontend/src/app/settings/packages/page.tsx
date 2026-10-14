@@ -224,10 +224,10 @@ export default function PackagesPage() {
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
                     <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
-                        Subscription Plans
+                        {t('Subscription Plans')}
                     </Typography>
                     <Typography sx={{ color: 'text.secondary', fontSize: '0.95rem', mb: 2.5 }}>
-                        Choose the best plan for you
+                        {t('Choose the best plan for you')}
                     </Typography>
 
                     {/* Annual / Monthly toggle */}
@@ -250,7 +250,7 @@ export default function PackagesPage() {
                                     textTransform: 'capitalize',
                                 }}
                             >
-                                {period === 'annual' ? 'Annual' : 'Monthly'}
+                                {period === 'annual' ? t('Annual') : t('Monthly')}
                             </Box>
                         ))}
                     </Box>
@@ -338,7 +338,7 @@ export default function PackagesPage() {
                                             )}
                                             <Divider sx={{ my: 0.5 }} />
                                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                                Features
+                                                {t('Features')}
                                             </Typography>
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                                                 {features.map(f => (
@@ -367,7 +367,7 @@ export default function PackagesPage() {
                                         transition: 'all 0.18s ease',
                                     }}
                                 >
-                                    {showAll ? 'Show less' : `Show more (${sorted.length - 3} more)`}
+                                    {showAll ? t('Show less') : `${t('Show more')} (${sorted.length - 3})`}
                                 </Button>
                             </Box>
                         )}

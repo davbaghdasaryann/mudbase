@@ -237,5 +237,12 @@
   "Works by data source": "Работы по источникам",
   "Materials by data source": "Материалы по источникам",
   "vs estimated": "к смете",
-  "Actual entries": "Факт. записей"
+  "Actual entries": "Факт. записей",
+  "Subscription Plans": "Тарифные планы",
+  "Choose the best plan for you": "Выберите лучший план для вас",
+  "Annual": "Годовой",
+  "Monthly": "Ежемесячный",
+  "Features": "Возможности",
+  "Show more": "Показать больше",
+  "Unlimited Estimations": "Неограниченные сметы"
 }
