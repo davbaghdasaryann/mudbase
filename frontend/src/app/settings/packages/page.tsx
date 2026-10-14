@@ -21,6 +21,7 @@ import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
 import * as Api from 'api';
+import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
 
@@ -115,8 +116,14 @@ const createButtonSx = {
 
 export default function PackagesPage() {
     const { t, i18n } = useTranslation();
+    const { session, permissionsSet } = usePermissions();
+    const isSuperAdmin = !!(session?.user && (
+        permissionsSet?.has('ALL') || permissionsSet?.has('USR_FCH_ALL') || permissionsSet?.has('ACC_FCH')
+    ));
+
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
+    const [myPackage, setMyPackage] = useState<Package | null>(null);
     const [saving, setSaving] = useState(false);
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -133,7 +140,21 @@ export default function PackagesPage() {
         }
     }, []);
 
-    useEffect(() => { fetchPackages(); }, [fetchPackages]);
+    const fetchMyPackage = useCallback(async () => {
+        try {
+            const data = await Api.requestSession<Package | null>({ command: 'packages/my' });
+            setMyPackage(data ?? null);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isSuperAdmin) fetchPackages();
+        else fetchMyPackage();
+    }, [isSuperAdmin, fetchPackages, fetchMyPackage]);
 
     const openCreate = () => { setForm({ ...EMPTY_PKG }); setEditingId(null); setOpen(true); };
     const openEdit = (pkg: Package) => { setForm({ ...pkg }); setEditingId(pkg._id!); setOpen(true); };
@@ -169,6 +190,77 @@ export default function PackagesPage() {
     };
 
     const set = (field: keyof Package) => (v: any) => setForm(f => ({ ...f, [field]: v }));
+
+    if (!isSuperAdmin) {
+        return (
+            <PageContents title={t('Packages')}>
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>
+                ) : !myPackage ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, gap: 1 }}>
+                        <Inventory2OutlinedIcon sx={{ fontSize: 48, color: '#d1d5db' }} />
+                        <Typography color='text.secondary'>{t('No package assigned')}</Typography>
+                    </Box>
+                ) : (() => {
+                    const pkg = myPackage;
+                    const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
+                    const accentColor = BRAND;
+                    type FeatureGroup = { heading: string; items: { label: string; enabled: boolean }[] };
+                    const featureGroups: FeatureGroup[] = [
+                        { heading: t('Library Access'), items: [
+                            { label: t('Works Catalog'), enabled: pkg.worksCatalog },
+                            { label: t('Materials Catalog'), enabled: pkg.materialsCatalog },
+                            { label: t('Aggregated Catalog'), enabled: pkg.aggregatedCatalog },
+                        ]},
+                        { heading: 'Բաժինների հասանելիություն', items: [
+                            { label: 'Ծախսագրում', enabled: pkg.costing },
+                            { label: 'Վերլուծություն', enabled: pkg.analysis },
+                            { label: 'Կատարողական', enabled: pkg.performance },
+                        ]},
+                        { heading: t('Offer Permissions'), items: [
+                            { label: t('See Offers'), enabled: pkg.seeOffers },
+                            { label: t('Export Estimation'), enabled: pkg.exportEstimation },
+                            { label: t('Share Estimation'), enabled: pkg.shareEstimations },
+                        ]},
+                    ];
+                    return (
+                        <Box sx={{ maxWidth: 420 }}>
+                            <Card variant='outlined' sx={{ borderRadius: 3, border: `1px solid ${accentColor}22`, background: 'rgba(255,255,255,0.80)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: `0 4px 24px ${accentColor}14, 0 1px 4px rgba(0,0,0,0.04)` }}>
+                                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pb: '16px !important' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</Typography>
+                                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: accentColor, flexShrink: 0 }}>
+                                            {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                        <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('Users')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                        <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('Estimations')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                    </Box>
+                                    <Divider sx={{ my: 0.25 }} />
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                        {featureGroups.map((group, gi) => (
+                                            <React.Fragment key={group.heading}>
+                                                {gi > 0 && <Divider sx={{ borderColor: 'rgba(0,0,0,0.06)', my: 0.75 }} />}
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    {group.items.map(f => (
+                                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                            {f.enabled ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e', flexShrink: 0 }} /> : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db', flexShrink: 0 }} />}
+                                                            <Typography sx={{ fontSize: '0.75rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </React.Fragment>
+                                        ))}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    );
+                })()}
+            </PageContents>
+        );
+    }
 
     return (
         <PageContents title={t('Packages')}>

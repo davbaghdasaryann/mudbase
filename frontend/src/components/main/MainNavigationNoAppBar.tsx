@@ -259,9 +259,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
             <List sx={{ px: 1, pt: 0, pb: 0 }}>
                 {([
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
-                    ...(!isSuperAdmin ? [
-                        { labelKey: 'Packages', icon: <Inventory2OutlinedIcon /> },
-                    ] : []),
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
                     <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
                         <ListItemButton
@@ -449,6 +446,15 @@ function useMainNavigation() {
                 children: [
                     { segment: 'packages', title: t('Packages'), icon: <Inventory2OutlinedIcon /> },
                     { segment: 'payments', title: t('Payments'), icon: <PaymentsOutlinedIcon /> },
+                ],
+            });
+        } else if (session?.user) {
+            navigation.push({
+                segment: 'settings',
+                title: t('Settings'),
+                icon: <SettingsOutlinedIcon />,
+                children: [
+                    { segment: 'packages', title: t('Packages'), icon: <Inventory2OutlinedIcon /> },
                 ],
             });
         }
