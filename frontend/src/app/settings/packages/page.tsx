@@ -122,6 +122,7 @@ export default function PackagesPage() {
     ));
 
     const [packages, setPackages] = useState<Package[]>([]);
+    const [allPackages, setAllPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [myPackage, setMyPackage] = useState<Package | null>(null);
     const [saving, setSaving] = useState(false);
@@ -146,6 +147,15 @@ export default function PackagesPage() {
             setMyPackage(data ?? null);
         } catch (e) {
             console.error(e);
+        }
+    }, []);
+
+    const fetchAllPackages = useCallback(async () => {
+        try {
+            const data = await Api.requestSession<Package[]>({ command: 'packages/list' });
+            setAllPackages(data);
+        } catch (e) {
+            console.error(e);
         } finally {
             setLoading(false);
         }
@@ -153,8 +163,8 @@ export default function PackagesPage() {
 
     useEffect(() => {
         if (isSuperAdmin) fetchPackages();
-        else fetchMyPackage();
-    }, [isSuperAdmin, fetchPackages, fetchMyPackage]);
+        else { fetchAllPackages(); fetchMyPackage(); }
+    }, [isSuperAdmin, fetchPackages, fetchMyPackage, fetchAllPackages]);
 
     const openCreate = () => { setForm({ ...EMPTY_PKG }); setEditingId(null); setOpen(true); };
     const openEdit = (pkg: Package) => { setForm({ ...pkg }); setEditingId(pkg._id!); setOpen(true); };
@@ -192,72 +202,107 @@ export default function PackagesPage() {
     const set = (field: keyof Package) => (v: any) => setForm(f => ({ ...f, [field]: v }));
 
     if (!isSuperAdmin) {
+        const pkgIdStr = (p: Package) => {
+            const id = p._id as any;
+            if (!id) return '';
+            if (typeof id === 'string') return id;
+            if (id.$oid) return id.$oid;
+            return String(id);
+        };
         return (
             <PageContents title={t('Packages')}>
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>
-                ) : !myPackage ? (
+                ) : allPackages.length === 0 ? (
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, gap: 1 }}>
                         <Inventory2OutlinedIcon sx={{ fontSize: 48, color: '#d1d5db' }} />
-                        <Typography color='text.secondary'>{t('No package assigned')}</Typography>
+                        <Typography color='text.secondary'>{t('No packages available')}</Typography>
                     </Box>
-                ) : (() => {
-                    const pkg = myPackage;
-                    const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
-                    const accentColor = BRAND;
-                    type FeatureGroup = { heading: string; items: { label: string; enabled: boolean }[] };
-                    const featureGroups: FeatureGroup[] = [
-                        { heading: t('Library Access'), items: [
-                            { label: t('Works Catalog'), enabled: pkg.worksCatalog },
-                            { label: t('Materials Catalog'), enabled: pkg.materialsCatalog },
-                            { label: t('Aggregated Catalog'), enabled: pkg.aggregatedCatalog },
-                        ]},
-                        { heading: 'Բաժինների հասանելիություն', items: [
-                            { label: 'Ծախսագրում', enabled: pkg.costing },
-                            { label: 'Վերլուծություն', enabled: pkg.analysis },
-                            { label: 'Կատարողական', enabled: pkg.performance },
-                        ]},
-                        { heading: t('Offer Permissions'), items: [
-                            { label: t('See Offers'), enabled: pkg.seeOffers },
-                            { label: t('Export Estimation'), enabled: pkg.exportEstimation },
-                            { label: t('Share Estimation'), enabled: pkg.shareEstimations },
-                        ]},
-                    ];
-                    return (
-                        <Box sx={{ maxWidth: 420 }}>
-                            <Card variant='outlined' sx={{ borderRadius: 3, border: `1px solid ${accentColor}22`, background: 'rgba(255,255,255,0.80)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: `0 4px 24px ${accentColor}14, 0 1px 4px rgba(0,0,0,0.04)` }}>
-                                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pb: '16px !important' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</Typography>
-                                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: accentColor, flexShrink: 0 }}>
-                                            {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
+                ) : (
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2.5 }}>
+                        {allPackages.map(pkg => {
+                            const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
+                            const active = myPackage ? pkgIdStr(pkg) === pkgIdStr(myPackage) : false;
+                            const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
+
+                            const features: string[] = [];
+                            if (pkg.numberOfUsers) features.push(`${pkg.numberOfUsers} ${t('Users')}`);
+                            if (pkg.numberOfEstimations === 0) features.push(t('Unlimited Estimations'));
+                            else if (pkg.numberOfEstimations) features.push(`${pkg.numberOfEstimations} ${t('Estimations')}`);
+                            if (pkg.worksCatalog) features.push(t('Works Catalog'));
+                            if (pkg.materialsCatalog) features.push(t('Materials Catalog'));
+                            if (pkg.aggregatedCatalog) features.push(t('Aggregated Catalog'));
+                            if (pkg.costing) features.push('Ծախսագրում');
+                            if (pkg.analysis) features.push('Վերլուծություն');
+                            if (pkg.performance) features.push('Կատարողական');
+                            if (pkg.seeOffers) features.push(t('See Offers'));
+                            if (pkg.exportEstimation) features.push(t('Export Estimation'));
+                            if (pkg.shareEstimations) features.push(t('Share Estimation'));
+
+                            return (
+                                <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
+                                    borderRadius: 3,
+                                    border: `1px solid ${active ? BRAND + '55' : 'rgba(0,0,0,0.10)'}`,
+                                    background: 'rgba(255,255,255,0.80)',
+                                    backdropFilter: 'blur(14px)',
+                                    WebkitBackdropFilter: 'blur(14px)',
+                                    boxShadow: active
+                                        ? `0 4px 24px ${BRAND}22, 0 1px 4px rgba(0,0,0,0.04)`
+                                        : '0 2px 8px rgba(0,0,0,0.06)',
+                                    position: 'relative', overflow: 'hidden',
+                                    display: 'flex', flexDirection: 'column',
+                                }}>
+                                    {active && (
+                                        <Chip
+                                            label={t('Active')}
+                                            size='small'
+                                            sx={{
+                                                position: 'absolute', top: 12, right: 12,
+                                                bgcolor: BRAND, color: '#fff',
+                                                fontWeight: 700, fontSize: '0.7rem',
+                                                height: 22, borderRadius: '6px',
+                                            }}
+                                        />
+                                    )}
+                                    <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, pb: '16px !important' }}>
+                                        <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, pr: active ? 7 : 0 }}>
+                                            {displayName}
                                         </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                        <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('Users')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
-                                        <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('Estimations')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
-                                    </Box>
-                                    <Divider sx={{ my: 0.25 }} />
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                                        {featureGroups.map((group, gi) => (
-                                            <React.Fragment key={group.heading}>
-                                                {gi > 0 && <Divider sx={{ borderColor: 'rgba(0,0,0,0.06)', my: 0.75 }} />}
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                    {group.items.map(f => (
-                                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                            {f.enabled ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e', flexShrink: 0 }} /> : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db', flexShrink: 0 }} />}
-                                                            <Typography sx={{ fontSize: '0.75rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
-                                                        </Box>
-                                                    ))}
+                                        {pkg.price ? (
+                                            <Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+                                                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1, color: 'text.primary' }}>
+                                                        {pkg.price.toLocaleString()}
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>AMD /year</Typography>
                                                 </Box>
-                                            </React.Fragment>
-                                        ))}
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Box>
-                    );
-                })()}
+                                                {monthly > 0 && (
+                                                    <Typography sx={{ fontSize: '0.8rem', color: BRAND, fontWeight: 600, mt: 0.25 }}>
+                                                        {monthly.toLocaleString()} AMD /month
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        ) : (
+                                            <Typography sx={{ fontSize: '1.1rem', fontWeight: 600, color: 'text.secondary' }}>—</Typography>
+                                        )}
+                                        <Divider sx={{ my: 0.5 }} />
+                                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                            Features
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                            {features.map(f => (
+                                                <Box key={f} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                    <CheckIcon sx={{ fontSize: 14, color: BRAND, flexShrink: 0 }} />
+                                                    <Typography sx={{ fontSize: '0.8rem', color: '#374151', lineHeight: 1.3 }}>{f}</Typography>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </Box>
+                )}
             </PageContents>
         );
     }
