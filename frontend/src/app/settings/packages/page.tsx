@@ -17,7 +17,6 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import RemoveIcon from '@mui/icons-material/Remove';
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
@@ -193,24 +192,38 @@ export default function PackagesPage() {
                     {packages.map(pkg => {
                         const now = new Date();
                         const end = pkg.endDate ? new Date(pkg.endDate) : null;
-                        const start = pkg.startDate ? new Date(pkg.startDate) : null;
                         const isExpired = end ? end < now : false;
                         const expiringSoon = end && !isExpired ? (end.getTime() - now.getTime()) < 30 * 24 * 60 * 60 * 1000 : false;
                         const accentColor = isExpired ? '#9ca3af' : expiringSoon ? '#f59e0b' : BRAND;
                         const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
 
-                        const features: { label: string; enabled: boolean }[] = [
-                            { label: t('Works Catalog'), enabled: pkg.worksCatalog },
-                            { label: t('Materials Catalog'), enabled: pkg.materialsCatalog },
-                            { label: t('Aggregated Catalog'), enabled: pkg.aggregatedCatalog },
-                            { label: 'Ծախսագրում', enabled: pkg.costing },
-                            { label: 'Վերլուծություն', enabled: pkg.analysis },
-                            { label: 'Կատարողական', enabled: pkg.performance },
-                            { label: t('See Offers'), enabled: pkg.seeOffers },
-                            { label: t('Export Estimation'), enabled: pkg.exportEstimation },
+                        type FeatureGroup = { heading: string; items: { label: string; enabled: boolean }[] };
+                        const featureGroups: FeatureGroup[] = [
+                            {
+                                heading: t('Library Access'),
+                                items: [
+                                    { label: t('Works Catalog'), enabled: pkg.worksCatalog },
+                                    { label: t('Materials Catalog'), enabled: pkg.materialsCatalog },
+                                    { label: t('Aggregated Catalog'), enabled: pkg.aggregatedCatalog },
+                                ],
+                            },
+                            {
+                                heading: 'Բաժինների հասանելիություն',
+                                items: [
+                                    { label: 'Ծախսագրում', enabled: pkg.costing },
+                                    { label: 'Վերլուծություն', enabled: pkg.analysis },
+                                    { label: 'Կատարողական', enabled: pkg.performance },
+                                ],
+                            },
+                            {
+                                heading: t('Offer Permissions'),
+                                items: [
+                                    { label: t('See Offers'), enabled: pkg.seeOffers },
+                                    { label: t('Export Estimation'), enabled: pkg.exportEstimation },
+                                    { label: t('Share Estimation'), enabled: pkg.shareEstimations },
+                                ],
+                            },
                         ];
-
-                        const formatDate = (d: Date) => d.toLocaleDateString('hy-AM', { day: '2-digit', month: 'short', year: 'numeric' });
 
                         return (
                             <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, border: `1px solid ${accentColor}22`, background: 'rgba(255,255,255,0.80)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: `0 4px 24px ${accentColor}14, 0 1px 4px rgba(0,0,0,0.04)`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'transform 0.25s ease, box-shadow 0.25s ease', '&:hover': { transform: 'scale(1.015)', boxShadow: `0 12px 36px ${accentColor}28, 0 4px 12px rgba(0,0,0,0.07)` } }}>
@@ -231,31 +244,27 @@ export default function PackagesPage() {
 
                                     {/* Users / estimations */}
                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                        <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('users')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
-                                        <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('est.')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                        <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('Users')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                        <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('Estimations')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
                                     </Box>
 
-                                    {/* Validity */}
-                                    {(start || end) && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                            <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: '#9ca3af' }} />
-                                            <Typography sx={{ fontSize: '0.75rem', color: isExpired ? '#ef4444' : expiringSoon ? '#f59e0b' : '#6b7280' }}>
-                                                {start ? formatDate(start) : '…'} → {end ? formatDate(end) : '…'}
-                                                {isExpired && ' (expired)'}
-                                            </Typography>
-                                        </Box>
-                                    )}
+                                    <Divider sx={{ my: 0.25 }} />
 
-                                    <Divider sx={{ my: 0.5 }} />
-
-                                    {/* Feature checklist — 2 columns */}
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
-                                        {features.map(f => (
-                                            <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                {f.enabled
-                                                    ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e' }} />
-                                                    : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db' }} />}
-                                                <Typography sx={{ fontSize: '0.72rem', color: f.enabled ? '#374151' : '#9ca3af' }}>{f.label}</Typography>
+                                    {/* Grouped feature checklist */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {featureGroups.map(group => (
+                                            <Box key={group.heading}>
+                                                <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>{group.heading}</Typography>
+                                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.4 }}>
+                                                    {group.items.map(f => (
+                                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            {f.enabled
+                                                                ? <CheckIcon sx={{ fontSize: 13, color: '#22c55e', flexShrink: 0 }} />
+                                                                : <RemoveIcon sx={{ fontSize: 13, color: '#d1d5db', flexShrink: 0 }} />}
+                                                            <Typography sx={{ fontSize: '0.71rem', color: f.enabled ? '#374151' : '#9ca3af', lineHeight: 1.3 }}>{f.label}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
                                             </Box>
                                         ))}
                                     </Box>
