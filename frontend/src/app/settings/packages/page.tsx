@@ -228,18 +228,14 @@ export default function PackagesPage() {
                         return (
                             <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, border: `1px solid ${accentColor}22`, background: 'rgba(255,255,255,0.80)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: `0 4px 24px ${accentColor}14, 0 1px 4px rgba(0,0,0,0.04)`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'transform 0.25s ease, box-shadow 0.25s ease', '&:hover': { transform: 'scale(1.015)', boxShadow: `0 12px 36px ${accentColor}28, 0 4px 12px rgba(0,0,0,0.07)` } }}>
                                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, pb: '16px !important' }}>
-                                    {/* Header */}
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2 }}>{displayName}</Typography>
-                                            <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: accentColor, mt: 0.25 }}>
-                                                {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ flexShrink: 0 }}>
-                                            <IconButton size='small' onClick={() => openEdit(pkg)}><EditIcon fontSize='small' /></IconButton>
-                                            <IconButton size='small' onClick={() => handleDelete(pkg)} color='error'><DeleteIcon fontSize='small' /></IconButton>
-                                        </Box>
+                                    {/* Header — name + price + actions all inline */}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</Typography>
+                                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: accentColor, flexShrink: 0 }}>
+                                            {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
+                                        </Typography>
+                                        <IconButton size='small' onClick={() => openEdit(pkg)} sx={{ color: '#c4c9d4', transition: 'color 0.15s', '&:hover': { color: '#374151', bgcolor: 'transparent' }, '&:active': { color: '#111827' } }}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
+                                        <IconButton size='small' onClick={() => handleDelete(pkg)} sx={{ color: '#c4c9d4', transition: 'color 0.15s', '&:hover': { color: '#ef4444', bgcolor: 'transparent' }, '&:active': { color: '#dc2626' } }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton>
                                     </Box>
 
                                     {/* Users / estimations */}
