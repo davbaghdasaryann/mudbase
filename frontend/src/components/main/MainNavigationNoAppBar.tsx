@@ -449,14 +449,7 @@ function useMainNavigation() {
                 ],
             });
         } else if (session?.user) {
-            navigation.push({
-                segment: 'settings',
-                title: t('Settings'),
-                icon: <SettingsOutlinedIcon />,
-                children: [
-                    { segment: 'packages', title: t('Packages'), icon: <Inventory2OutlinedIcon /> },
-                ],
-            });
+            navigation.push({ segment: 'settings/packages', title: t('Packages'), icon: <Inventory2OutlinedIcon /> });
         }
 
         if (Env.isDev) {
