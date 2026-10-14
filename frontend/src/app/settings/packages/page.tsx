@@ -15,6 +15,9 @@ import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import CheckIcon from '@mui/icons-material/Check';
+import RemoveIcon from '@mui/icons-material/Remove';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
@@ -187,26 +190,81 @@ export default function PackagesPage() {
                 </Box>
             ) : (
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
-                    {packages.map(pkg => (
-                        <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, borderColor: '#e5e7eb', position: 'relative' }}>
-                            <CardContent>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <Typography variant='h6' fontWeight={700} sx={{ flex: 1 }}>{i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name}</Typography>
-                                    <Box>
-                                        <IconButton size='small' onClick={() => openEdit(pkg)}><EditIcon fontSize='small' /></IconButton>
-                                        <IconButton size='small' onClick={() => handleDelete(pkg)} color='error'><DeleteIcon fontSize='small' /></IconButton>
+                    {packages.map(pkg => {
+                        const now = new Date();
+                        const end = pkg.endDate ? new Date(pkg.endDate) : null;
+                        const start = pkg.startDate ? new Date(pkg.startDate) : null;
+                        const isExpired = end ? end < now : false;
+                        const expiringSoon = end && !isExpired ? (end.getTime() - now.getTime()) < 30 * 24 * 60 * 60 * 1000 : false;
+                        const accentColor = isExpired ? '#9ca3af' : expiringSoon ? '#f59e0b' : BRAND;
+                        const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
+
+                        const features: { label: string; enabled: boolean }[] = [
+                            { label: t('Works Catalog'), enabled: pkg.worksCatalog },
+                            { label: t('Materials Catalog'), enabled: pkg.materialsCatalog },
+                            { label: t('Aggregated Catalog'), enabled: pkg.aggregatedCatalog },
+                            { label: 'Ծախսագրում', enabled: pkg.costing },
+                            { label: 'Վերլուծություն', enabled: pkg.analysis },
+                            { label: 'Կատարողական', enabled: pkg.performance },
+                            { label: t('See Offers'), enabled: pkg.seeOffers },
+                            { label: t('Export Estimation'), enabled: pkg.exportEstimation },
+                        ];
+
+                        const formatDate = (d: Date) => d.toLocaleDateString('hy-AM', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                        return (
+                            <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, borderColor: '#e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                {/* Accent bar */}
+                                <Box sx={{ height: 5, bgcolor: accentColor, flexShrink: 0 }} />
+                                <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, pb: '16px !important' }}>
+                                    {/* Header */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2 }}>{displayName}</Typography>
+                                            <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: accentColor, mt: 0.25 }}>
+                                                {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ flexShrink: 0 }}>
+                                            <IconButton size='small' onClick={() => openEdit(pkg)}><EditIcon fontSize='small' /></IconButton>
+                                            <IconButton size='small' onClick={() => handleDelete(pkg)} color='error'><DeleteIcon fontSize='small' /></IconButton>
+                                        </Box>
                                     </Box>
-                                </Box>
-                                <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
-                                    {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
-                                </Typography>
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                    <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('users')}`} size='small' />
-                                    <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('est.')}`} size='small' />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    ))}
+
+                                    {/* Users / estimations */}
+                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                        <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('users')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                        <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('est.')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                    </Box>
+
+                                    {/* Validity */}
+                                    {(start || end) && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                            <CalendarTodayOutlinedIcon sx={{ fontSize: 13, color: '#9ca3af' }} />
+                                            <Typography sx={{ fontSize: '0.75rem', color: isExpired ? '#ef4444' : expiringSoon ? '#f59e0b' : '#6b7280' }}>
+                                                {start ? formatDate(start) : '…'} → {end ? formatDate(end) : '…'}
+                                                {isExpired && ' (expired)'}
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    <Divider sx={{ my: 0.5 }} />
+
+                                    {/* Feature checklist — 2 columns */}
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
+                                        {features.map(f => (
+                                            <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                {f.enabled
+                                                    ? <CheckIcon sx={{ fontSize: 14, color: '#22c55e' }} />
+                                                    : <RemoveIcon sx={{ fontSize: 14, color: '#d1d5db' }} />}
+                                                <Typography sx={{ fontSize: '0.72rem', color: f.enabled ? '#374151' : '#9ca3af' }}>{f.label}</Typography>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </Box>
             )}
 
