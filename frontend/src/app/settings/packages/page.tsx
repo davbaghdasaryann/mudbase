@@ -214,8 +214,6 @@ export default function PackagesPage() {
 
                         return (
                             <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, border: `1px solid ${accentColor}22`, background: 'rgba(255,255,255,0.80)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: `0 4px 24px ${accentColor}14, 0 1px 4px rgba(0,0,0,0.04)`, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'transform 0.25s ease, box-shadow 0.25s ease', '&:hover': { transform: 'scale(1.015)', boxShadow: `0 12px 36px ${accentColor}28, 0 4px 12px rgba(0,0,0,0.07)` } }}>
-                                {/* Accent bar */}
-                                <Box sx={{ height: 3, bgcolor: accentColor, flexShrink: 0, opacity: 0.7 }} />
                                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, pb: '16px !important' }}>
                                     {/* Header */}
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
