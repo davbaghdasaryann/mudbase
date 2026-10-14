@@ -213,9 +213,9 @@ export default function PackagesPage() {
                         const formatDate = (d: Date) => d.toLocaleDateString('hy-AM', { day: '2-digit', month: 'short', year: 'numeric' });
 
                         return (
-                            <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, borderColor: '#e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                            <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, borderColor: '#e5e7eb', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'box-shadow 0.2s, transform 0.15s', '&:hover': { boxShadow: '0 6px 20px rgba(0,0,0,0.09)', transform: 'translateY(-2px)', borderColor: accentColor } }}>
                                 {/* Accent bar */}
-                                <Box sx={{ height: 5, bgcolor: accentColor, flexShrink: 0 }} />
+                                <Box sx={{ height: 3, bgcolor: accentColor, flexShrink: 0 }} />
                                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, pb: '16px !important' }}>
                                     {/* Header */}
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
