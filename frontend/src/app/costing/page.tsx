@@ -1001,9 +1001,18 @@ export default function CostingPage() {
                 healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(qty) };
             }
         }
-        // Remove stale actualData entries for rows whose labor history was deleted
-        for (const lid of Object.keys(healedActual)) {
-            if (!laborLidSet.has(lid)) delete healedActual[lid];
+        // Remove stale actualData entries not present in the estimate snapshot.
+        // Using the snapshot (not costHistory) avoids wiping data on newly-created costings
+        // that have actualData saved but no costHistory entries yet.
+        const snapshotLaborIds = new Set(
+            (rec.estimateSnapshot?.laborRows ?? []).map(r =>
+                typeof r._id === 'object' && r._id !== null && 'oid' in (r._id as any) ? (r._id as any).oid : String(r._id ?? '')
+            )
+        );
+        if (snapshotLaborIds.size > 0) {
+            for (const lid of Object.keys(healedActual)) {
+                if (!snapshotLaborIds.has(lid)) delete healedActual[lid];
+            }
         }
         setActualData(healedActual);
         setUnforeseenEstimate(null);
