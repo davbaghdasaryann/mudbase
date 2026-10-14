@@ -234,8 +234,10 @@ export default function PackagesPage() {
                                         <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: accentColor, flexShrink: 0 }}>
                                             {pkg.price ? `${pkg.price.toLocaleString()} AMD` : '—'}
                                         </Typography>
-                                        <IconButton size='small' onClick={() => openEdit(pkg)} sx={{ color: '#c4c9d4', transition: 'color 0.15s', '&:hover': { color: '#374151', bgcolor: 'transparent' }, '&:active': { color: '#111827' } }}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
-                                        <IconButton size='small' onClick={() => handleDelete(pkg)} sx={{ color: '#c4c9d4', transition: 'color 0.15s', '&:hover': { color: '#ef4444', bgcolor: 'transparent' }, '&:active': { color: '#dc2626' } }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton>
+                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <IconButton size='small' onClick={() => openEdit(pkg)} sx={{ color: '#c4c9d4', transition: 'color 0.15s', '&:hover': { color: '#374151', bgcolor: 'transparent' }, '&:active': { color: '#111827' } }}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
+                                            <IconButton size='small' onClick={() => handleDelete(pkg)} sx={{ color: '#c4c9d4', transition: 'color 0.15s', '&:hover': { color: '#ef4444', bgcolor: 'transparent' }, '&:active': { color: '#dc2626' } }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton>
+                                        </Box>
                                     </Box>
 
                                     {/* Users / estimations */}
