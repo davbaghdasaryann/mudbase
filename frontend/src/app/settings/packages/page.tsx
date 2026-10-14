@@ -112,7 +112,7 @@ const createButtonSx = {
 } as const;
 
 export default function PackagesPage() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -191,7 +191,7 @@ export default function PackagesPage() {
                         <Card key={pkg._id} variant='outlined' sx={{ borderRadius: 3, borderColor: '#e5e7eb', position: 'relative' }}>
                             <CardContent>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <Typography variant='h6' fontWeight={700} sx={{ flex: 1 }}>{pkg.name}</Typography>
+                                    <Typography variant='h6' fontWeight={700} sx={{ flex: 1 }}>{i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name}</Typography>
                                     <Box>
                                         <IconButton size='small' onClick={() => openEdit(pkg)}><EditIcon fontSize='small' /></IconButton>
                                         <IconButton size='small' onClick={() => handleDelete(pkg)} color='error'><DeleteIcon fontSize='small' /></IconButton>
