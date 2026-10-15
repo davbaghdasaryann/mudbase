@@ -217,10 +217,11 @@ export default function PackagesPage() {
         const sorted = myId
             ? [...allPackages].sort((a, b) => (pkgIdStr(a) === myId ? -1 : pkgIdStr(b) === myId ? 1 : 0))
             : allPackages;
-        const PAGE_SIZE = 3;
-        const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
-        const safePage = Math.min(carouselPage, totalPages - 1);
-        const visible = sorted.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+        const maxOffset = Math.max(0, sorted.length - 3);
+        const safeOffset = Math.min(carouselPage, maxOffset);
+        const totalPages = maxOffset + 1;
+        const safePage = safeOffset;
+        const visible = sorted.slice(safeOffset, safeOffset + 3);
 
         return (
             <PageContents title={t('Packages')}>
