@@ -126,7 +126,7 @@ export default function PackagesPage() {
     const [loading, setLoading] = useState(true);
     const [myPackage, setMyPackage] = useState<Package | null>(null);
     const [billingPeriod, setBillingPeriod] = useState<'annual' | 'monthly'>('annual');
-    const [showAll, setShowAll] = useState(false);
+    const [carouselPage, setCarouselPage] = useState(0);
     const [saving, setSaving] = useState(false);
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -217,7 +217,10 @@ export default function PackagesPage() {
         const sorted = myId
             ? [...allPackages].sort((a, b) => (pkgIdStr(a) === myId ? -1 : pkgIdStr(b) === myId ? 1 : 0))
             : allPackages;
-        const visible = showAll ? sorted : sorted.slice(0, 3);
+        const PAGE_SIZE = 3;
+        const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+        const safePage = Math.min(carouselPage, totalPages - 1);
+        const visible = sorted.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
         return (
             <PageContents title={t('Packages')}>
@@ -266,9 +269,22 @@ export default function PackagesPage() {
                     </Box>
                 ) : (
                     <>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, width: '100%' }}>
+                        {/* Left arrow */}
+                        <Box onClick={() => setCarouselPage(p => Math.max(0, p - 1))} sx={{
+                            width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: safePage === 0 ? 'default' : 'pointer',
+                            opacity: safePage === 0 ? 0 : 1,
+                            pointerEvents: safePage === 0 ? 'none' : 'auto',
+                            bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                            transition: 'all 0.18s ease', flexShrink: 0,
+                            '&:hover': { bgcolor: BRAND, borderColor: BRAND, '& svg': { color: '#fff' } },
+                        }}>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        </Box>
                         <Box sx={{ maxWidth: 1080, width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, alignItems: 'stretch' }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
                             {visible.map(pkg => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
@@ -360,25 +376,20 @@ export default function PackagesPage() {
                             })}
                         </Box>
                         </Box>
+                        {/* Right arrow */}
+                        <Box onClick={() => setCarouselPage(p => Math.min(totalPages - 1, p + 1))} sx={{
+                            width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: safePage >= totalPages - 1 ? 'default' : 'pointer',
+                            opacity: safePage >= totalPages - 1 ? 0 : 1,
+                            pointerEvents: safePage >= totalPages - 1 ? 'none' : 'auto',
+                            bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
+                            transition: 'all 0.18s ease', flexShrink: 0,
+                            '&:hover': { bgcolor: BRAND, borderColor: BRAND, '& svg': { color: '#fff' } },
+                        }}>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         </Box>
-
-                        {sorted.length > 3 && (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                                <Button
-                                    variant='outlined'
-                                    onClick={() => setShowAll(v => !v)}
-                                    sx={{
-                                        borderRadius: '50px', px: 3.5, py: 0.9,
-                                        borderColor: 'rgba(0,0,0,0.15)', color: 'text.secondary',
-                                        textTransform: 'none', fontWeight: 500, fontSize: '0.875rem',
-                                        '&:hover': { borderColor: BRAND, color: BRAND, bgcolor: `${BRAND}08` },
-                                        transition: 'all 0.18s ease',
-                                    }}
-                                >
-                                    {showAll ? t('Show less') : `${t('Show more')} (${sorted.length - 3})`}
-                                </Button>
-                            </Box>
-                        )}
+                        </Box>
                     </>
                 )}
                 </Box>
