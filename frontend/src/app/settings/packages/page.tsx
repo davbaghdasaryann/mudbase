@@ -230,8 +230,8 @@ export default function PackagesPage() {
         const visible = sorted.slice(safeOffset, safeOffset + 3);
 
         return (
-            <PageContents title={t('Packages')} sx={{ pb: { xs: 7, md: 9 } }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 'calc(100vh - 220px)' }}>
+            <PageContents title={t('Packages')} sx={{ pb: { xs: 7, md: 9 }, '& > .MuiStack-root': { flex: 1, display: 'flex', flexDirection: 'column' } }}>
+                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
                     <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
