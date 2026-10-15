@@ -410,7 +410,19 @@ export default function PackagesPage() {
                                     '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.15)', color: BRAND, border: `1px solid ${BRAND}44` },
                                 }}
                             >
-                                <KeyboardDoubleArrowDownIcon sx={{ fontSize: 22, transform: showAll ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.28s ease' }} />
+                                <KeyboardDoubleArrowDownIcon sx={{
+                                    fontSize: 22,
+                                    ...(showAll ? {
+                                        transform: 'rotate(180deg)',
+                                        transition: 'transform 0.28s ease',
+                                    } : {
+                                        animation: 'nudgeDown 1.7s ease-in-out infinite',
+                                        '@keyframes nudgeDown': {
+                                            '0%, 50%, 100%': { transform: 'translateY(0px)' },
+                                            '25%': { transform: 'translateY(5px)' },
+                                        },
+                                    }),
+                                }} />
                             </Box>
                         )}
                     </>
