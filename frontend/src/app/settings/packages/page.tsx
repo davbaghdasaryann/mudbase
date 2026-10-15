@@ -395,7 +395,7 @@ export default function PackagesPage() {
                                                     sx={{
                                                         bgcolor: BRAND,
                                                         color: '#fff',
-                                                        borderRadius: '10px',
+                                                        borderRadius: '50px',
                                                         textTransform: 'none',
                                                         fontWeight: 600,
                                                         fontSize: '0.9rem',
