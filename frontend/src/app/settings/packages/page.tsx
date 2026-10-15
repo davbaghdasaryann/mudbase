@@ -17,6 +17,14 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import RemoveIcon from '@mui/icons-material/Remove';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import SpeedIcon from '@mui/icons-material/Speed';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
+import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor } from '@/theme';
@@ -24,6 +32,12 @@ import * as Api from 'api';
 import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
+const CARD_GRADIENTS = [
+    'linear-gradient(145deg, #e4f6f9 0%, #c5edf5 55%, #98dde9 100%)',
+    'linear-gradient(145deg, #dff4f8 0%, #bae9f3 55%, #87d8e8 100%)',
+    'linear-gradient(145deg, #d8f1f6 0%, #aee3ef 55%, #73cedf 100%)',
+    'linear-gradient(145deg, #ecf8fb 0%, #d2f0f6 55%, #aee5f0 100%)',
+];
 
 interface Package {
     _id?: string;
@@ -292,9 +306,10 @@ export default function PackagesPage() {
                         </Box>
                         <Box sx={{ maxWidth: 1080, width: '100%' }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
-                            {visible.map(pkg => {
+                            {visible.map((pkg, cardIdx) => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
+                                const cardGrad = CARD_GRADIENTS[cardIdx % CARD_GRADIENTS.length];
                                 const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
                                 const displayPrice = billingPeriod === 'annual' ? pkg.price : monthly;
                                 const displaySuffix = `AMD /${billingPeriod === 'annual' ? t('year') : t('month')}`;
@@ -303,41 +318,35 @@ export default function PackagesPage() {
                                     : (pkg.price > 0 ? `${pkg.price.toLocaleString()} AMD /${t('year')}` : null);
                                 const secondaryColor = billingPeriod === 'annual' ? '#1CA461' : BRAND;
 
-                                const features: string[] = [];
-                                if (pkg.numberOfUsers) features.push(`${pkg.numberOfUsers} ${t('Users')}`);
-                                if (pkg.numberOfEstimations === 0) features.push(t('Unlimited Estimations'));
-                                else if (pkg.numberOfEstimations) features.push(`${pkg.numberOfEstimations} ${t('Estimations')}`);
-                                if (pkg.worksCatalog) features.push(t('Works Catalog'));
-                                if (pkg.materialsCatalog) features.push(t('Materials Catalog'));
-                                if (pkg.aggregatedCatalog) features.push(t('Aggregated Catalog'));
-                                if (pkg.costing) features.push('Ծախսագրում');
-                                if (pkg.analysis) features.push('Վերլուծություն');
-                                if (pkg.performance) features.push('Կատարողական');
-                                if (pkg.seeOffers) features.push(t('See Offers'));
-                                if (pkg.exportEstimation) features.push(t('Export Estimation'));
-                                if (pkg.shareEstimations) features.push(t('Share Estimation'));
+                                const features: { label: string; Icon: React.ElementType }[] = [];
+                                if (pkg.numberOfUsers) features.push({ label: `${pkg.numberOfUsers} ${t('Users')}`, Icon: PeopleOutlinedIcon });
+                                if (pkg.numberOfEstimations === 0) features.push({ label: t('Unlimited Estimations'), Icon: StackedLineChartIcon });
+                                else if (pkg.numberOfEstimations) features.push({ label: `${pkg.numberOfEstimations} ${t('Estimations')}`, Icon: StackedLineChartIcon });
+                                if (pkg.worksCatalog) features.push({ label: t('Works Catalog'), Icon: MenuBookOutlinedIcon });
+                                if (pkg.materialsCatalog) features.push({ label: t('Materials Catalog'), Icon: Inventory2OutlinedIcon });
+                                if (pkg.aggregatedCatalog) features.push({ label: t('Aggregated Catalog'), Icon: CategoryOutlinedIcon });
+                                if (pkg.costing) features.push({ label: 'Ծախսագրում', Icon: RequestQuoteOutlinedIcon });
+                                if (pkg.analysis) features.push({ label: 'Վերլուծություն', Icon: BarChartIcon });
+                                if (pkg.performance) features.push({ label: 'Կատարողական', Icon: SpeedIcon });
+                                if (pkg.seeOffers) features.push({ label: t('See Offers'), Icon: SellOutlinedIcon });
+                                if (pkg.exportEstimation) features.push({ label: t('Export Estimation'), Icon: FileDownloadOutlinedIcon });
+                                if (pkg.shareEstimations) features.push({ label: t('Share Estimation'), Icon: ShareOutlinedIcon });
 
                                 return (
                                     <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
                                         borderRadius: 3,
-                                        border: `1px solid ${active ? BRAND + '66' : 'rgba(0,0,0,0.10)'}`,
-                                        background: active
-                                            ? 'linear-gradient(145deg, #ffffff 0%, rgba(0,171,190,0.02) 65%, rgba(0,171,190,0.06) 100%)'
-                                            : 'rgba(255,255,255,0.80)',
-                                        backdropFilter: 'blur(14px)',
-                                        WebkitBackdropFilter: 'blur(14px)',
+                                        border: `1px solid ${active ? BRAND + '88' : 'rgba(0,171,190,0.25)'}`,
+                                        background: cardGrad,
                                         boxShadow: active
-                                            ? `0 4px 24px ${BRAND}22, 0 1px 4px rgba(0,0,0,0.04)`
-                                            : '0 2px 8px rgba(0,0,0,0.06)',
+                                            ? `0 6px 28px ${BRAND}33, 0 1px 4px rgba(0,0,0,0.06)`
+                                            : '0 2px 10px rgba(0,171,190,0.12)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
                                         height: 560,
-                                        transition: 'box-shadow 0.18s ease, background 0.18s ease',
+                                        transition: 'box-shadow 0.18s ease, filter 0.18s ease',
                                         '&:hover': {
-                                            boxShadow: active ? `0 8px 32px ${BRAND}33` : '0 4px 18px rgba(0,0,0,0.10)',
-                                            background: active
-                                                ? 'linear-gradient(145deg, #f7f7f7 0%, rgba(0,171,190,0.03) 65%, rgba(0,171,190,0.07) 100%)'
-                                                : 'rgba(245,245,245,0.95)',
+                                            boxShadow: active ? `0 10px 36px ${BRAND}44` : `0 6px 22px rgba(0,171,190,0.20)`,
+                                            filter: 'brightness(0.97)',
                                         },
                                     }}>
                                         {active && (
@@ -379,9 +388,9 @@ export default function PackagesPage() {
                                             </Typography>
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
                                                 {features.map(f => (
-                                                    <Box key={f} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <CheckIcon sx={{ fontSize: 15, color: BRAND, flexShrink: 0 }} />
-                                                        <Typography sx={{ fontSize: '0.85rem', color: '#374151', lineHeight: 1.4 }}>{f}</Typography>
+                                                    <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <f.Icon sx={{ fontSize: 16, color: '#006EA0', flexShrink: 0 }} />
+                                                        <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4 }}>{f.label}</Typography>
                                                     </Box>
                                                 ))}
                                             </Box>
