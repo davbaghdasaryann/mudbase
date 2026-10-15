@@ -291,10 +291,11 @@ export default function PackagesPage() {
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
                                 const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
                                 const displayPrice = billingPeriod === 'annual' ? pkg.price : monthly;
-                                const displaySuffix = billingPeriod === 'annual' ? 'AMD /year' : 'AMD /month';
+                                const displaySuffix = `AMD /${billingPeriod === 'annual' ? t('year') : t('month')}`;
                                 const secondaryPrice = billingPeriod === 'annual'
-                                    ? (monthly > 0 ? `${monthly.toLocaleString()} AMD /month` : null)
-                                    : (pkg.price > 0 ? `${pkg.price.toLocaleString()} AMD /year` : null);
+                                    ? (monthly > 0 ? `${monthly.toLocaleString()} AMD /${t('month')}` : null)
+                                    : (pkg.price > 0 ? `${pkg.price.toLocaleString()} AMD /${t('year')}` : null);
+                                const secondaryColor = billingPeriod === 'annual' ? '#1CA461' : BRAND;
 
                                 const features: string[] = [];
                                 if (pkg.numberOfUsers) features.push(`${pkg.numberOfUsers} ${t('Users')}`);
@@ -358,7 +359,7 @@ export default function PackagesPage() {
                                                         <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{displaySuffix}</Typography>
                                                     </Box>
                                                     {secondaryPrice && (
-                                                        <Typography sx={{ fontSize: '0.8rem', color: '#1CA461', fontWeight: 600, mt: 0.25 }}>
+                                                        <Typography sx={{ fontSize: '0.8rem', color: secondaryColor, fontWeight: 600, mt: 0.25 }}>
                                                             {secondaryPrice}
                                                         </Typography>
                                                     )}
