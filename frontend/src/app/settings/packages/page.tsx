@@ -267,8 +267,8 @@ export default function PackagesPage() {
                 ) : (
                     <>
                         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                        <Box sx={{ maxWidth: 1189, width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, alignItems: 'stretch' }}>
+                        <Box sx={{ maxWidth: 800, width: '100%' }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2.5 }}>
                             {visible.map(pkg => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
