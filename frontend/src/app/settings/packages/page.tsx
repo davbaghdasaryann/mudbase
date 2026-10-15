@@ -267,8 +267,8 @@ export default function PackagesPage() {
                 ) : (
                     <>
                         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                        <Box sx={{ maxWidth: 800, width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2.5 }}>
+                        <Box sx={{ maxWidth: 1080, width: '100%' }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, alignItems: 'stretch' }}>
                             {visible.map(pkg => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
@@ -296,8 +296,10 @@ export default function PackagesPage() {
                                 return (
                                     <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
                                         borderRadius: 3,
-                                        border: `1px solid ${active ? BRAND + '55' : 'rgba(0,0,0,0.10)'}`,
-                                        background: active ? 'rgba(0,171,190,0.05)' : 'rgba(255,255,255,0.80)',
+                                        border: `1px solid ${active ? BRAND + '66' : 'rgba(0,0,0,0.10)'}`,
+                                        background: active
+                                            ? 'linear-gradient(145deg, rgba(0,171,190,0.12) 0%, rgba(0,171,190,0.04) 60%, rgba(255,255,255,0.85) 100%)'
+                                            : 'rgba(255,255,255,0.80)',
                                         backdropFilter: 'blur(14px)',
                                         WebkitBackdropFilter: 'blur(14px)',
                                         boxShadow: active
@@ -305,7 +307,7 @@ export default function PackagesPage() {
                                             : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
-                                        height: 739,
+                                        height: 640,
                                     }}>
                                         {active && (
                                             <Chip
@@ -319,7 +321,7 @@ export default function PackagesPage() {
                                                 }}
                                             />
                                         )}
-                                        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, pb: '16px !important' }}>
+                                        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, p: '20px !important' }}>
                                             <Typography variant='h6' fontWeight={700} sx={{ lineHeight: 1.2, pr: active ? 7 : 0 }}>
                                                 {displayName}
                                             </Typography>
@@ -344,11 +346,11 @@ export default function PackagesPage() {
                                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                                 {t('Features')}
                                             </Typography>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
                                                 {features.map(f => (
-                                                    <Box key={f} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                        <CheckIcon sx={{ fontSize: 14, color: BRAND, flexShrink: 0 }} />
-                                                        <Typography sx={{ fontSize: '0.8rem', color: '#374151', lineHeight: 1.3 }}>{f}</Typography>
+                                                    <Box key={f} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <CheckIcon sx={{ fontSize: 15, color: BRAND, flexShrink: 0 }} />
+                                                        <Typography sx={{ fontSize: '0.85rem', color: '#374151', lineHeight: 1.4 }}>{f}</Typography>
                                                     </Box>
                                                 ))}
                                             </Box>
