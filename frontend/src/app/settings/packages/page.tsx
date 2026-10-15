@@ -245,7 +245,7 @@ export default function PackagesPage() {
 
         return (
             <PageContents title={t('Packages')} sx={{ pb: { xs: 7, md: 9 }, '& > .MuiStack-root': { flex: 1, display: 'flex', flexDirection: 'column' } }}>
-                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', pt: 8 }}>
+                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', pt: 5 }}>
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
                     <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
