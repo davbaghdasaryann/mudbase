@@ -387,6 +387,27 @@ export default function PackagesPage() {
                                                     </Box>
                                                 ))}
                                             </Box>
+                                            <Box sx={{ mt: 'auto', pt: 2.5 }}>
+                                                <Button
+                                                    variant='contained'
+                                                    fullWidth
+                                                    disabled={active}
+                                                    sx={{
+                                                        bgcolor: BRAND,
+                                                        color: '#fff',
+                                                        borderRadius: '10px',
+                                                        textTransform: 'none',
+                                                        fontWeight: 600,
+                                                        fontSize: '0.9rem',
+                                                        py: 1.1,
+                                                        boxShadow: 'none',
+                                                        '&:hover': { bgcolor: '#009aab', boxShadow: `0 4px 14px ${BRAND}44` },
+                                                        '&.Mui-disabled': { bgcolor: BRAND, color: '#fff', opacity: 0.45 },
+                                                    }}
+                                                >
+                                                    {active ? t('Active') : t('Subscribe')}
+                                                </Button>
+                                            </Box>
                                         </CardContent>
                                     </Card>
                                 );
