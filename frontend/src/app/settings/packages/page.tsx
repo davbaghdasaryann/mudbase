@@ -325,6 +325,13 @@ export default function PackagesPage() {
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
                                         height: 640,
+                                        transition: 'box-shadow 0.18s ease, background 0.18s ease',
+                                        '&:hover': {
+                                            boxShadow: active ? `0 8px 32px ${BRAND}33` : '0 4px 18px rgba(0,0,0,0.10)',
+                                            background: active
+                                                ? 'linear-gradient(145deg, #f7f7f7 0%, rgba(0,171,190,0.03) 65%, rgba(0,171,190,0.07) 100%)'
+                                                : 'rgba(245,245,245,0.95)',
+                                        },
                                     }}>
                                         {active && (
                                             <Chip
@@ -351,7 +358,7 @@ export default function PackagesPage() {
                                                         <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{displaySuffix}</Typography>
                                                     </Box>
                                                     {secondaryPrice && (
-                                                        <Typography sx={{ fontSize: '0.8rem', color: BRAND, fontWeight: 600, mt: 0.25 }}>
+                                                        <Typography sx={{ fontSize: '0.8rem', color: '#1CA461', fontWeight: 600, mt: 0.25 }}>
                                                             {secondaryPrice}
                                                         </Typography>
                                                     )}
