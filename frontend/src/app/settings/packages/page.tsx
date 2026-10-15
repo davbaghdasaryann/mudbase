@@ -33,10 +33,10 @@ import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
 const CARD_GRADIENTS = [
-    'linear-gradient(145deg, #e4f6f9 0%, #c5edf5 55%, #98dde9 100%)',
-    'linear-gradient(145deg, #dff4f8 0%, #bae9f3 55%, #87d8e8 100%)',
-    'linear-gradient(145deg, #d8f1f6 0%, #aee3ef 55%, #73cedf 100%)',
-    'linear-gradient(145deg, #ecf8fb 0%, #d2f0f6 55%, #aee5f0 100%)',
+    'linear-gradient(145deg, #ffffff 0%, rgba(0,171,190,0.04) 65%, rgba(0,171,190,0.10) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, rgba(0,107,160,0.04) 65%, rgba(0,107,160,0.10) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, rgba(0,140,155,0.04) 65%, rgba(0,140,155,0.10) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, rgba(0,85,130,0.04) 65%, rgba(0,85,130,0.10) 100%)',
 ];
 
 interface Package {
@@ -335,18 +335,25 @@ export default function PackagesPage() {
                                 return (
                                     <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
                                         borderRadius: 3,
-                                        border: `1px solid ${active ? BRAND + '88' : 'rgba(0,171,190,0.25)'}`,
-                                        background: cardGrad,
+                                        border: `1px solid ${active ? BRAND + '66' : 'rgba(0,0,0,0.10)'}`,
+                                        background: active
+                                            ? 'linear-gradient(145deg, #ffffff 0%, rgba(0,171,190,0.02) 65%, rgba(0,171,190,0.06) 100%)'
+                                            : cardGrad,
+                                        backdropFilter: 'blur(14px)',
+                                        WebkitBackdropFilter: 'blur(14px)',
                                         boxShadow: active
-                                            ? `0 6px 28px ${BRAND}33, 0 1px 4px rgba(0,0,0,0.06)`
-                                            : '0 2px 10px rgba(0,171,190,0.12)',
+                                            ? `0 4px 24px ${BRAND}22, 0 1px 4px rgba(0,0,0,0.04)`
+                                            : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
                                         height: 560,
-                                        transition: 'box-shadow 0.18s ease, filter 0.18s ease',
+                                        transition: 'box-shadow 0.18s ease, background 0.18s ease',
                                         '&:hover': {
-                                            boxShadow: active ? `0 10px 36px ${BRAND}44` : `0 6px 22px rgba(0,171,190,0.20)`,
-                                            filter: 'brightness(0.97)',
+                                            boxShadow: active ? `0 8px 32px ${BRAND}33` : '0 4px 18px rgba(0,0,0,0.10)',
+                                            background: active
+                                                ? 'linear-gradient(145deg, #f7f7f7 0%, rgba(0,171,190,0.03) 65%, rgba(0,171,190,0.07) 100%)'
+                                                : cardGrad,
+                                            filter: active ? 'none' : 'brightness(0.97)',
                                         },
                                     }}>
                                         {active && (
