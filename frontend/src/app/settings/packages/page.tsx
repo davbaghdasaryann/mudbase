@@ -265,6 +265,7 @@ export default function PackagesPage() {
                     </Box>
                 ) : (
                     <>
+                        <Box sx={{ maxWidth: 960, mx: 'auto', width: '100%' }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
                             {visible.map(pkg => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
@@ -294,7 +295,7 @@ export default function PackagesPage() {
                                     <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
                                         borderRadius: 3,
                                         border: `1px solid ${active ? BRAND + '55' : 'rgba(0,0,0,0.10)'}`,
-                                        background: 'rgba(255,255,255,0.80)',
+                                        background: active ? 'rgba(0,171,190,0.05)' : 'rgba(255,255,255,0.80)',
                                         backdropFilter: 'blur(14px)',
                                         WebkitBackdropFilter: 'blur(14px)',
                                         boxShadow: active
@@ -352,6 +353,7 @@ export default function PackagesPage() {
                                     </Card>
                                 );
                             })}
+                        </Box>
                         </Box>
 
                         {sorted.length > 3 && (
