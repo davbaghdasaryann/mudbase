@@ -33,10 +33,10 @@ import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
 const CARD_GRADIENTS = [
-    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(0,171,190,0.13) 100%)',
-    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(0,80,170,0.13) 100%)',
-    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(0,150,110,0.13) 100%)',
-    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(60,80,160,0.13) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(0,171,190,0.05) 80%, rgba(0,171,190,0.13) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(0,80,170,0.05) 80%, rgba(0,80,170,0.13) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(0,150,110,0.05) 80%, rgba(0,150,110,0.13) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(60,80,160,0.05) 80%, rgba(60,80,160,0.13) 100%)',
 ];
 
 interface Package {
@@ -237,11 +237,12 @@ export default function PackagesPage() {
             if (a.price && !b.price) return -1;
             return (a.price || 0) - (b.price || 0);
         });
-        const maxOffset = Math.max(0, sorted.length - 3);
+        const sortedVisible = sorted.filter(pkg => pkg.price > 0 || (myId && pkgIdStr(pkg) === myId));
+        const maxOffset = Math.max(0, sortedVisible.length - 3);
         const safeOffset = Math.min(carouselPage, maxOffset);
         const totalPages = maxOffset + 1;
         const safePage = safeOffset;
-        const visible = sorted.slice(safeOffset, safeOffset + 3);
+        const visible = sortedVisible.slice(safeOffset, safeOffset + 3);
 
         return (
             <PageContents title={t('Packages')} sx={{ pb: { xs: 7, md: 9 }, '& > .MuiStack-root': { flex: 1, display: 'flex', flexDirection: 'column' } }}>
