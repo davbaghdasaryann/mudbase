@@ -298,7 +298,7 @@ export default function PackagesPage() {
                                         borderRadius: 3,
                                         border: `1px solid ${active ? BRAND + '66' : 'rgba(0,0,0,0.10)'}`,
                                         background: active
-                                            ? 'linear-gradient(145deg, rgba(0,171,190,0.12) 0%, rgba(0,171,190,0.04) 60%, rgba(255,255,255,0.85) 100%)'
+                                            ? 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(0,171,190,0.04) 55%, rgba(0,171,190,0.09) 100%)'
                                             : 'rgba(255,255,255,0.80)',
                                         backdropFilter: 'blur(14px)',
                                         WebkitBackdropFilter: 'blur(14px)',
