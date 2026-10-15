@@ -265,8 +265,8 @@ export default function PackagesPage() {
                     </Box>
                 ) : (
                     <>
-                        <Box sx={{ maxWidth: 960, mx: 'auto', width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+                        <Box sx={{ maxWidth: 780, width: '100%', alignSelf: 'center' }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2.5 }}>
                             {visible.map(pkg => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
@@ -303,6 +303,7 @@ export default function PackagesPage() {
                                             : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
+                                        minHeight: 320,
                                     }}>
                                         {active && (
                                             <Chip
