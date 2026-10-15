@@ -212,11 +212,17 @@ export default function PackagesPage() {
             return String(id);
         };
 
-        // Active package first, then the rest
+        // Active first, then by price asc, zero-price (trial) last
         const myId = myPackage ? pkgIdStr(myPackage) : null;
-        const sorted = myId
-            ? [...allPackages].sort((a, b) => (pkgIdStr(a) === myId ? -1 : pkgIdStr(b) === myId ? 1 : 0))
-            : allPackages;
+        const sorted = [...allPackages].sort((a, b) => {
+            const aActive = myId ? pkgIdStr(a) === myId : false;
+            const bActive = myId ? pkgIdStr(b) === myId : false;
+            if (aActive) return -1;
+            if (bActive) return 1;
+            if (!a.price && b.price) return 1;
+            if (a.price && !b.price) return -1;
+            return (a.price || 0) - (b.price || 0);
+        });
         const maxOffset = Math.max(0, sorted.length - 3);
         const safeOffset = Math.min(carouselPage, maxOffset);
         const totalPages = maxOffset + 1;
