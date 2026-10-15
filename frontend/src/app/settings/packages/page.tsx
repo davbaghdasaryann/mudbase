@@ -382,7 +382,7 @@ export default function PackagesPage() {
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
                                                 {features.map(f => (
                                                     <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <f.Icon sx={{ fontSize: 16, color: '#006EA0', flexShrink: 0 }} />
+                                                        <f.Icon sx={{ fontSize: 16, color: BRAND, flexShrink: 0 }} />
                                                         <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4 }}>{f.label}</Typography>
                                                     </Box>
                                                 ))}
