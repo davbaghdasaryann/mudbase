@@ -245,7 +245,7 @@ export default function PackagesPage() {
 
         return (
             <PageContents title={t('Packages')} sx={{ pb: { xs: 7, md: 9 }, '& > .MuiStack-root': { flex: 1, display: 'flex', flexDirection: 'column' } }}>
-                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', pt: 4 }}>
+                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', pt: 8 }}>
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
                     <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
@@ -291,7 +291,7 @@ export default function PackagesPage() {
                 ) : (
                     <>
                         <Box sx={{ maxWidth: 1080, width: '100%' }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4 }}>
                             {displayed.map((pkg, cardIdx) => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
@@ -416,10 +416,11 @@ export default function PackagesPage() {
                                         transform: 'rotate(180deg)',
                                         transition: 'transform 0.28s ease',
                                     } : {
-                                        animation: 'nudgeDown 1.7s ease-in-out infinite',
+                                        animation: 'nudgeDown 2.6s ease-in-out infinite',
                                         '@keyframes nudgeDown': {
-                                            '0%, 50%, 100%': { transform: 'translateY(0px)' },
-                                            '25%': { transform: 'translateY(5px)' },
+                                            '0%, 100%': { transform: 'translateY(0px)' },
+                                            '20%': { transform: 'translateY(6px)' },
+                                            '40%': { transform: 'translateY(0px)' },
                                         },
                                     }),
                                 }} />
