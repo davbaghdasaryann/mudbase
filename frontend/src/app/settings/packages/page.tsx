@@ -221,6 +221,7 @@ export default function PackagesPage() {
 
         return (
             <PageContents title={t('Packages')}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, width: '100%', minHeight: 'calc(100vh - 140px)', py: 3 }}>
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
                     <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
@@ -266,7 +267,7 @@ export default function PackagesPage() {
                 ) : (
                     <>
                         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                        <Box sx={{ maxWidth: 1040, width: '100%' }}>
+                        <Box sx={{ maxWidth: 1189, width: '100%' }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, alignItems: 'stretch' }}>
                             {visible.map(pkg => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
@@ -304,7 +305,7 @@ export default function PackagesPage() {
                                             : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
-                                        height: '100%',
+                                        height: 739,
                                     }}>
                                         {active && (
                                             <Chip
@@ -378,6 +379,7 @@ export default function PackagesPage() {
                         )}
                     </>
                 )}
+                </Box>
             </PageContents>
         );
     }
