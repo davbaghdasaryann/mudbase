@@ -324,6 +324,7 @@ export default function PackagesPage() {
                                             : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
+                                        height: 560,
                                         transition: 'box-shadow 0.18s ease, background 0.18s ease',
                                         '&:hover': {
                                             boxShadow: active ? `0 8px 32px ${BRAND}33` : '0 4px 18px rgba(0,0,0,0.10)',
