@@ -33,10 +33,10 @@ import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
 const CARD_GRADIENTS = [
-    'linear-gradient(145deg, #ffffff 0%, rgba(0,171,190,0.04) 65%, rgba(0,171,190,0.10) 100%)',
-    'linear-gradient(145deg, #ffffff 0%, rgba(0,107,160,0.04) 65%, rgba(0,107,160,0.10) 100%)',
-    'linear-gradient(145deg, #ffffff 0%, rgba(0,140,155,0.04) 65%, rgba(0,140,155,0.10) 100%)',
-    'linear-gradient(145deg, #ffffff 0%, rgba(0,85,130,0.04) 65%, rgba(0,85,130,0.10) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(0,171,190,0.13) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(0,80,170,0.13) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(0,150,110,0.13) 100%)',
+    'linear-gradient(145deg, #ffffff 0%, #ffffff 50%, rgba(60,80,160,0.13) 100%)',
 ];
 
 interface Package {
