@@ -278,9 +278,9 @@ export default function PackagesPage() {
                             cursor: safePage === 0 ? 'default' : 'pointer',
                             opacity: safePage === 0 ? 0.3 : 1,
                             pointerEvents: safePage === 0 ? 'none' : 'auto',
-                            bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
-                            transition: 'all 0.18s ease', flexShrink: 0,
-                            '&:hover': { bgcolor: BRAND, borderColor: BRAND, '& svg': { color: '#fff' } },
+                            bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+                            transition: 'all 0.18s ease', flexShrink: 0, color: '#6b7280',
+                            '&:hover': { borderColor: BRAND, color: BRAND, bgcolor: 'rgba(255,255,255,0.9)' },
                         }}>
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         </Box>
@@ -324,7 +324,6 @@ export default function PackagesPage() {
                                             : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
-                                        height: 640,
                                         transition: 'box-shadow 0.18s ease, background 0.18s ease',
                                         '&:hover': {
                                             boxShadow: active ? `0 8px 32px ${BRAND}33` : '0 4px 18px rgba(0,0,0,0.10)',
@@ -391,9 +390,9 @@ export default function PackagesPage() {
                             cursor: safePage >= totalPages - 1 ? 'default' : 'pointer',
                             opacity: safePage >= totalPages - 1 ? 0.3 : 1,
                             pointerEvents: safePage >= totalPages - 1 ? 'none' : 'auto',
-                            bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
-                            transition: 'all 0.18s ease', flexShrink: 0,
-                            '&:hover': { bgcolor: BRAND, borderColor: BRAND, '& svg': { color: '#fff' } },
+                            bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+                            transition: 'all 0.18s ease', flexShrink: 0, color: '#6b7280',
+                            '&:hover': { borderColor: BRAND, color: BRAND, bgcolor: 'rgba(255,255,255,0.9)' },
                         }}>
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         </Box>
