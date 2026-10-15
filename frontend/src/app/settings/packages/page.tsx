@@ -224,8 +224,8 @@ export default function PackagesPage() {
         const visible = sorted.slice(safeOffset, safeOffset + 3);
 
         return (
-            <PageContents title={t('Packages')}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, width: '100%', minHeight: 'calc(100vh - 140px)', py: 3 }}>
+            <PageContents title={t('Packages')} sx={{ pt: 0, pb: 0 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 'calc(100vh - 76px)', py: 5 }}>
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
                     <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
