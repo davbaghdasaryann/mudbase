@@ -17,7 +17,7 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import RemoveIcon from '@mui/icons-material/Remove';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SpeedIcon from '@mui/icons-material/Speed';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -34,10 +34,10 @@ import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
 const CARD_GRADIENTS = [
-    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(0,171,190,0.05) 80%, rgba(0,171,190,0.13) 100%)',
-    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(0,80,170,0.05) 80%, rgba(0,80,170,0.13) 100%)',
-    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(0,150,110,0.05) 80%, rgba(0,150,110,0.13) 100%)',
-    'linear-gradient(135deg, #ffffff 0%, #ffffff 60%, rgba(60,80,160,0.05) 80%, rgba(60,80,160,0.13) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, rgba(0,171,190,0.01) 40%, rgba(0,171,190,0.05) 68%, rgba(0,171,190,0.11) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, rgba(0,80,170,0.01) 40%, rgba(0,80,170,0.05) 68%, rgba(0,80,170,0.11) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, rgba(0,150,110,0.01) 40%, rgba(0,150,110,0.05) 68%, rgba(0,150,110,0.11) 100%)',
+    'linear-gradient(135deg, #ffffff 0%, rgba(60,80,160,0.01) 40%, rgba(60,80,160,0.05) 68%, rgba(60,80,160,0.11) 100%)',
 ];
 
 interface Package {
@@ -141,7 +141,7 @@ export default function PackagesPage() {
     const [loading, setLoading] = useState(true);
     const [myPackage, setMyPackage] = useState<Package | null>(null);
     const [billingPeriod, setBillingPeriod] = useState<'annual' | 'monthly'>('annual');
-    const [carouselPage, setCarouselPage] = useState(0);
+    const [showAll, setShowAll] = useState(false);
     const [saving, setSaving] = useState(false);
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -239,11 +239,9 @@ export default function PackagesPage() {
             return (a.price || 0) - (b.price || 0);
         });
         const sortedVisible = sorted.filter(pkg => pkg.price > 0 || (myId && pkgIdStr(pkg) === myId));
-        const maxOffset = Math.max(0, sortedVisible.length - 3);
-        const safeOffset = Math.min(carouselPage, maxOffset);
-        const totalPages = maxOffset + 1;
-        const safePage = safeOffset;
-        const visible = sortedVisible.slice(safeOffset, safeOffset + 3);
+        const top3 = sortedVisible.slice(0, 3);
+        const rest = sortedVisible.slice(3);
+        const displayed = showAll ? sortedVisible : top3;
 
         return (
             <PageContents title={t('Packages')} sx={{ pb: { xs: 7, md: 9 }, '& > .MuiStack-root': { flex: 1, display: 'flex', flexDirection: 'column' } }}>
@@ -292,23 +290,9 @@ export default function PackagesPage() {
                     </Box>
                 ) : (
                     <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, width: '100%' }}>
-                        {/* Left arrow */}
-                        <Box onClick={() => setCarouselPage(p => Math.max(0, p - 1))} sx={{
-                            width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.12)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: safePage === 0 ? 'default' : 'pointer',
-                            opacity: safePage === 0 ? 0.3 : 1,
-                            pointerEvents: safePage === 0 ? 'none' : 'auto',
-                            bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
-                            transition: 'all 0.18s ease', flexShrink: 0, color: '#6b7280',
-                            '&:hover': { borderColor: BRAND, color: BRAND, bgcolor: 'rgba(255,255,255,0.9)' },
-                        }}>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        </Box>
                         <Box sx={{ maxWidth: 1080, width: '100%' }}>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
-                            {visible.map((pkg, cardIdx) => {
+                            {displayed.map((pkg, cardIdx) => {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
                                 const cardGrad = CARD_GRADIENTS[cardIdx % CARD_GRADIENTS.length];
@@ -409,20 +393,26 @@ export default function PackagesPage() {
                             })}
                         </Box>
                         </Box>
-                        {/* Right arrow */}
-                        <Box onClick={() => setCarouselPage(p => Math.min(totalPages - 1, p + 1))} sx={{
-                            width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.12)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: safePage >= totalPages - 1 ? 'default' : 'pointer',
-                            opacity: safePage >= totalPages - 1 ? 0.3 : 1,
-                            pointerEvents: safePage >= totalPages - 1 ? 'none' : 'auto',
-                            bgcolor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
-                            transition: 'all 0.18s ease', flexShrink: 0, color: '#6b7280',
-                            '&:hover': { borderColor: BRAND, color: BRAND, bgcolor: 'rgba(255,255,255,0.9)' },
-                        }}>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        </Box>
-                        </Box>
+                        {rest.length > 0 && (
+                            <Box
+                                onClick={() => setShowAll(v => !v)}
+                                sx={{
+                                    mt: 3, width: 52, height: 52, borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    background: 'rgba(255,255,255,0.55)',
+                                    backdropFilter: 'blur(14px)',
+                                    WebkitBackdropFilter: 'blur(14px)',
+                                    border: '1px solid rgba(255,255,255,0.75)',
+                                    boxShadow: '0 4px 18px rgba(0,0,0,0.10)',
+                                    color: '#374151',
+                                    transition: 'all 0.22s ease',
+                                    '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.15)', color: BRAND, border: `1px solid ${BRAND}44` },
+                                }}
+                            >
+                                <KeyboardDoubleArrowDownIcon sx={{ fontSize: 22, transform: showAll ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.28s ease' }} />
+                            </Box>
+                        )}
                     </>
                 )}
                 </Box>
