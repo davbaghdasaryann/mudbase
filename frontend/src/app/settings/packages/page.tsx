@@ -17,6 +17,7 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import RemoveIcon from '@mui/icons-material/Remove';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SpeedIcon from '@mui/icons-material/Speed';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -143,6 +144,7 @@ export default function PackagesPage() {
     const [carouselPage, setCarouselPage] = useState(0);
     const [saving, setSaving] = useState(false);
     const [open, setOpen] = useState(false);
+    const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<Package>({ ...EMPTY_PKG });
 
@@ -333,8 +335,10 @@ export default function PackagesPage() {
                                 if (pkg.exportEstimation) features.push({ label: t('Export Estimation'), Icon: FileDownloadOutlinedIcon });
                                 if (pkg.shareEstimations) features.push({ label: t('Share Estimation'), Icon: ShareOutlinedIcon });
 
+                                const cardId = pkgIdStr(pkg);
+                                const expanded = !!expandedCards[cardId];
                                 return (
-                                    <Card key={pkgIdStr(pkg)} variant='outlined' sx={{
+                                    <Card key={cardId} variant='outlined' sx={{
                                         borderRadius: 3,
                                         border: `1px solid ${active ? BRAND + '66' : 'rgba(0,0,0,0.10)'}`,
                                         background: active
@@ -347,8 +351,8 @@ export default function PackagesPage() {
                                             : '0 2px 8px rgba(0,0,0,0.06)',
                                         position: 'relative', overflow: 'hidden',
                                         display: 'flex', flexDirection: 'column',
-                                        height: 560,
-                                        transition: 'box-shadow 0.18s ease, background 0.18s ease',
+                                        height: expanded ? 'auto' : 400,
+                                        transition: 'box-shadow 0.18s ease, background 0.18s ease, height 0.22s ease',
                                         '&:hover': {
                                             boxShadow: active ? `0 8px 32px ${BRAND}33` : '0 4px 18px rgba(0,0,0,0.10)',
                                             background: active
@@ -394,15 +398,32 @@ export default function PackagesPage() {
                                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                                 {t('Features')}
                                             </Typography>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
-                                                {features.map(f => (
-                                                    <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <f.Icon sx={{ fontSize: 16, color: '#006EA0', flexShrink: 0 }} />
-                                                        <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4 }}>{f.label}</Typography>
-                                                    </Box>
-                                                ))}
+                                            <Box sx={{ position: 'relative' }}>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1, overflow: 'hidden', maxHeight: expanded ? 'none' : 160 }}>
+                                                    {features.map(f => (
+                                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <f.Icon sx={{ fontSize: 16, color: '#006EA0', flexShrink: 0 }} />
+                                                            <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4 }}>{f.label}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                                {!expanded && features.length > 4 && (
+                                                    <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 36, background: `linear-gradient(to bottom, transparent, ${active ? '#ffffff' : 'rgba(255,255,255,0.9)'})`, pointerEvents: 'none' }} />
+                                                )}
                                             </Box>
                                         </CardContent>
+                                        <Box
+                                            onClick={() => setExpandedCards(prev => ({ ...prev, [cardId]: !prev[cardId] }))}
+                                            sx={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                py: 0.8, cursor: 'pointer', borderTop: '1px solid rgba(0,0,0,0.06)',
+                                                color: '#6b7280', userSelect: 'none',
+                                                '&:hover': { color: BRAND, bgcolor: 'rgba(0,171,190,0.04)' },
+                                                transition: 'color 0.15s ease, background 0.15s ease',
+                                            }}
+                                        >
+                                            <ExpandMoreIcon sx={{ fontSize: 20, transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.22s ease' }} />
+                                        </Box>
                                     </Card>
                                 );
                             })}
