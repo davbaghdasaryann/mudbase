@@ -382,7 +382,16 @@ export default function PackagesPage() {
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
                                                 {features.map(f => (
                                                     <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <f.Icon sx={{ fontSize: 16, color: BRAND, flexShrink: 0 }} />
+                                                        <Box sx={{
+                                                            width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            bgcolor: 'rgba(0,171,190,0.10)',
+                                                            border: '1px solid rgba(0,171,190,0.16)',
+                                                            backdropFilter: 'blur(6px)',
+                                                            WebkitBackdropFilter: 'blur(6px)',
+                                                        }}>
+                                                            <f.Icon sx={{ fontSize: 14, color: BRAND }} />
+                                                        </Box>
                                                         <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4 }}>{f.label}</Typography>
                                                     </Box>
                                                 ))}
