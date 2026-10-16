@@ -377,7 +377,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                 }}>
                     {/* PAGE 1: Works list */}
                     <Box sx={{ width: '50%', overflowY: 'auto', pt: 0.5, pb: 1 }}>
-                        {loading ? (
+                        {loading || !laborMatIdsReady ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                                 <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
                             </Box>
