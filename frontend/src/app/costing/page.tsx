@@ -590,9 +590,10 @@ function OtherExpenseBarWidget({ expenseKey, label, estimatedValue, actualValue,
 }
 
 
-function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }: {
+function ProjectCompletionWidget({ estimateSnapshot, actualData, costHistory, height = 220 }: {
     estimateSnapshot?: EstimateSnapshot | null;
     actualData: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
+    costHistory: CostHistoryEntry[];
     height?: number;
 }) {
     const { t } = useTranslation();
@@ -606,7 +607,12 @@ function ProjectCompletionWidget({ estimateSnapshot, actualData, height = 220 }:
 
     for (const row of rows) {
         const estQty = Number(row.quantity ?? 0);
-        const actQty = parseFloat((actualData[toRowId(row._id)]?.quantity ?? '').replace(',', '.')) || 0;
+        const rid = toRowId(row._id);
+        const actQtyFromData = parseFloat((actualData[rid]?.quantity ?? '').replace(',', '.')) || 0;
+        const actQtyFromHistory = actQtyFromData === 0
+            ? costHistory.filter(e => e.laborItemId === rid && !e.paymentMethod).reduce((s, e) => s + (e.quantity || 0), 0)
+            : 0;
+        const actQty = actQtyFromData || actQtyFromHistory;
         totalEst += estQty;
         totalAct += Math.min(actQty, estQty);
         if (actQty >= estQty) completedRows++;
@@ -989,14 +995,13 @@ export default function CostingPage() {
             const entries = laborEntries.filter(c => c.laborItemId === lid);
             const salaryEntries = entries.filter(c => c.paymentMethod?.startsWith('salary_')).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
             const volumeEntries = entries.filter(c => !c.paymentMethod).sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
-            // Volume entries are absolute totals (not deltas) — use the latest one, not their sum.
+            // Volume entries are cumulative deltas — sum them all.
             // Salary is only used as a fallback for salary-only rows (no volume entries).
-            // If volume entries exist, always trust the saved actualData or latest volume entry.
             const baseQty = parseFloat((healedActual[lid] ?? {}).quantity || '0') || 0;
-            const latestVolumeQty = volumeEntries.length > 0 ? volumeEntries[0].quantity : 0;
+            const volumeTotal = volumeEntries.reduce((s, e) => s + e.quantity, 0);
             const qty = volumeEntries.length === 0 && salaryEntries.length > 0
                 ? Math.max(baseQty, salaryEntries[0].quantity)
-                : Math.max(baseQty, latestVolumeQty);
+                : Math.max(baseQty, volumeTotal);
             if (qty > 0) {
                 healedActual[lid] = { ...(healedActual[lid] ?? {}), quantity: String(qty) };
             }
@@ -1962,7 +1967,7 @@ ${tableBodyHtml}
                                 <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={vatDeduction + climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees + Math.round(smallScaleEstimate?.totalCost ?? 0)} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
-                                <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} height={220} />
+                                <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} height={220} />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} pahestEntries={pahestEntries} height={220} />
