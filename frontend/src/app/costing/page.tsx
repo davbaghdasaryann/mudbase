@@ -2593,21 +2593,22 @@ ${tableBodyHtml}
                     actualData={actualData}
                     onSaveLaborPrice={(rowId, unitPrice, withoutMats, subQty) => {
                         const customQty = parseFloat((subQty ?? '').replace(',', '.')) || 0;
-                        setActualData(prev => {
-                            const updated = {
-                                ...prev,
-                                [rowId]: { ...(prev[rowId] ?? { quantity: '', unitPrice: '', spent: '' }), unitPrice, withoutMaterials: withoutMats, ...(customQty > 0 ? { quantity: String(customQty) } : {}) },
-                            };
-                            if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, updated, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
-                            return updated;
-                        });
                         const price = parseFloat(unitPrice.replace(',', '.')) || 0;
                         const laborRow = estimateSnapshot?.laborRows?.find(r => {
                             const rid = typeof r._id === 'object' && r._id !== null ? ('oid' in (r._id as any) ? (r._id as any).oid : '$oid' in (r._id as any) ? (r._id as any).$oid : String(r._id)) : String(r._id ?? '');
                             return rid === rowId;
                         });
+                        const effectiveQty = customQty > 0 ? customQty : Number(laborRow?.quantity ?? 0);
+                        setActualData(prev => {
+                            const updated = {
+                                ...prev,
+                                [rowId]: { ...(prev[rowId] ?? { quantity: '', unitPrice: '', spent: '' }), unitPrice, withoutMaterials: withoutMats, ...(effectiveQty > 0 ? { quantity: String(effectiveQty) } : {}) },
+                            };
+                            if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, updated, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
+                            return updated;
+                        });
                         if (price > 0 && laborRow) {
-                            const qty = customQty > 0 ? customQty : Number(laborRow.quantity);
+                            const qty = effectiveQty > 0 ? effectiveQty : Number(laborRow.quantity);
                             const newEntry: CostHistoryEntry = {
                                 id: String(Date.now() + Math.random()),
                                 laborItemId: rowId,

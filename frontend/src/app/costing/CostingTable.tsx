@@ -833,7 +833,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
                     const effectiveSubVal = subcontractorTotal > 0
-                        ? (withoutMaterials ? subcontractorTotal + matActTotal : subcontractorTotal) / q
+                        ? (withoutMaterials ? actUP : subcontractorTotal / q)
                         : 0;
                     const displayUP = subcontractorTotal > 0 ? effectiveSubVal : actUP;
                     const rows: { label: string; val: number }[] = subcontractorTotal > 0
