@@ -236,24 +236,23 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                                 )
                                                             )}
                                                         </Box>
-                                                        <Box>
                                                         <Typography sx={{ fontSize: '0.8825rem', color: row.isGroupRow ? accentColor : '#333', fontWeight: row.isGroupRow ? 600 : 400 }}>
-                                                            {row.laborOfferItemName || row.catalogName || '—'}
-                                                        </Typography>
-                                                        {subPrice > 0 && (
-                                                            <Typography sx={{ fontSize: '0.72rem', color: '#00796b', mt: 0.3 }}>
-                                                                Ենթակապալ · {subPrice.toLocaleString('hy-AM')} ֏
-                                                            </Typography>
-                                                        )}
-                                                    </Box>
+                                                        {row.laborOfferItemName || row.catalogName || '—'}
+                                                    </Typography>
                                                         <Typography sx={{ fontSize: '0.8825rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
                                                         <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
-                                                        <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
+                                                        {subPrice > 0 ? (
+                                                            <Tooltip title='Ենթակապալ'><Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#00796b', textAlign: 'center', cursor: 'default' }}>{subPrice.toLocaleString('hy-AM')} ֏</Typography></Tooltip>
+                                                        ) : (
+                                                            <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
+                                                        )}
                                                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                            <Tooltip title={t('Add new quantity')}>
-                                                                <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
+                                                            <Tooltip title={subPrice > 0 ? '' : t('Add new quantity')}>
+                                                                <span>
+                                                                <IconButton size='small' disabled={subPrice > 0} onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: subPrice > 0 ? '#ccc' : accentColor } }}>
                                                                     <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                 </IconButton>
+                                                                </span>
                                                             </Tooltip>
                                                         </Box>
                                                     </Box>

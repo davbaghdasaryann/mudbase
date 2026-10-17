@@ -2600,6 +2600,28 @@ ${tableBodyHtml}
                             if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, updated, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
                             return updated;
                         });
+                        const price = parseFloat(unitPrice.replace(',', '.')) || 0;
+                        const laborRow = estimateSnapshot?.laborRows?.find(r => {
+                            const rid = typeof r._id === 'object' && r._id !== null ? ('oid' in (r._id as any) ? (r._id as any).oid : '$oid' in (r._id as any) ? (r._id as any).$oid : String(r._id)) : String(r._id ?? '');
+                            return rid === rowId;
+                        });
+                        if (price > 0 && laborRow && Number(laborRow.quantity) > 0) {
+                            const qty = Number(laborRow.quantity);
+                            const newEntry: CostHistoryEntry = {
+                                id: String(Date.now() + Math.random()),
+                                laborItemId: rowId,
+                                workName: (laborRow as any).laborOfferItemName || (laborRow as any).catalogName || '',
+                                unit: (laborRow as any).unitSymbol || '',
+                                quantity: qty,
+                                unitPrice: price,
+                                total: Math.round(qty * price),
+                                addedAt: new Date(),
+                                paymentMethod: 'subcontractor',
+                            };
+                            setCostHistory(prev => [newEntry, ...prev.filter(e => !(e.laborItemId === rowId && e.paymentMethod === 'subcontractor'))]);
+                        } else if (price === 0) {
+                            setCostHistory(prev => prev.filter(e => !(e.laborItemId === rowId && e.paymentMethod === 'subcontractor')));
+                        }
                     }}
                 />
                 <UnforeseenDialog
