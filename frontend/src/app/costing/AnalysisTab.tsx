@@ -95,7 +95,7 @@ interface Props {
     unforeseenEstimate?: EstimatesApi.ApiEstimate | null;
     unforeseenSnapshot?: SnapshotData | null;
     onDeleteUnforeseen?: () => void;
-    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    actualData: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
     costHistory: CostHistoryEntry[];
     pahestEntries?: PahestEntry[];
 }
@@ -248,9 +248,17 @@ export default function AnalysisTab({ estimate, estimateSnapshot, unforeseenEsti
         const a = actualData[rowId];
         const actQty = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
-        const salTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const matActTotal = calcMatActTotal(rowId);
+        const subTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+        const withoutMats = a?.withoutMaterials ?? false;
         const gorcarqayanQtyTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
-        const actTotal = volumeTotal + salTotal + calcMatActTotal(rowId);
+        if (subTotal > 0) {
+            const actTotal = subTotal + (withoutMats ? matActTotal : 0);
+            const upDivisor = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
+            return { actQty, actTotal, hasData: actQty > 0 && actTotal > 0, upDivisor };
+        }
+        const salTotal = costHistory.filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const actTotal = volumeTotal + salTotal + matActTotal;
         // Unit price uses gorcarqayin qty sum (avg across multiple payments); quantity display keeps volume registration
         const upDivisor = gorcarqayanQtyTotal > 0 ? gorcarqayanQtyTotal : actQty;
         const hasData  = actQty > 0 && actTotal > 0;
