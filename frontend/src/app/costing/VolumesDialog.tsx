@@ -242,7 +242,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                         <Typography sx={{ fontSize: '0.8825rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
                                                         <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
                                                         {subPrice > 0 ? (
-                                                            <Tooltip title='Ենթակապալ'><Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#00796b', textAlign: 'center', cursor: 'default' }}>{subPrice.toLocaleString('hy-AM')} ֏</Typography></Tooltip>
+                                                            <Tooltip title='Ենթակապալ'><Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#00796b', textAlign: 'center', cursor: 'default' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography></Tooltip>
                                                         ) : (
                                                             <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
                                                         )}

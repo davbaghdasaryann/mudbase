@@ -854,12 +854,13 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const effQ = bGorcarqayanQtyTotal > 0 ? bGorcarqayanQtyTotal : (bq > 0 ? bq : 1);
                     const bActUP = bActTotal / effQ;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
-                    const effectiveSubVal = bSubcontractorTotal > 0
-                        ? (bWithoutMats ? bActUP : bSubcontractorTotal / effQ)
-                        : 0;
-                    const displayUP = bSubcontractorTotal > 0 ? effectiveSubVal : bActUP;
+                    const bSubUP = bSubcontractorTotal > 0 ? bSubcontractorTotal / effQ : 0;
+                    const displayUP = bActUP;
                     const bdRows: { label: string; val: number }[] = bSubcontractorTotal > 0
-                        ? [{ label: 'Ենթակապալ', val: effectiveSubVal }]
+                        ? [
+                            { label: 'Ենթակապալ', val: bSubUP },
+                            ...(bWithoutMats && bMatActTotal > 0 ? [{ label: t('Materials Cost'), val: bMatActTotal / effQ }] : []),
+                          ]
                         : [
                             { label: t('Labor Cost'), val: bSalaryTotal / effQ },
                             { label: 'Volume / Spent', val: bVolumeTotal / effQ },
