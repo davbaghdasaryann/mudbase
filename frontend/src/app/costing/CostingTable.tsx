@@ -148,7 +148,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
 
     const [groupDialog, setGroupDialog] = useState<{ open: boolean; groupName: string; items: any[]; loading: boolean }>({ open: false, groupName: '', items: [], loading: false });
     const [breakdownAnchor, setBreakdownAnchor] = useState<HTMLElement | null>(null);
-    const [breakdownData, setBreakdownData] = useState<{ salaryTotal: number; volumeTotal: number; matActTotal: number; mechanismTotal: number; subcontractorTotal: number; withoutMaterials: boolean; actTotal: number; actUP: number; unitSymbol: string } | null>(null);
+    const [breakdownRowId, setBreakdownRowId] = useState<string | null>(null);
 
     const handleGroupRowClick = useCallback(async (row: LaborRow) => {
         setGroupDialog({ open: true, groupName: row.laborOfferItemName || row.catalogName, items: [], loading: true });
@@ -483,7 +483,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>
                     {hasData ? (
                         <span
-                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, withoutMaterials: withoutMats, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
+                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownRowId(rowId); }}
                             style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
                         >
                             {formatCurrencyRounded(actUP)}
@@ -831,28 +831,47 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: 220, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
             >
-                {breakdownData && (() => {
-                    const { salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, withoutMaterials, actTotal, actUP, unitSymbol } = breakdownData;
-                    const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
+                {breakdownRowId && (() => {
+                    const findRow = (rs: LaborRow[]): LaborRow | undefined => {
+                        for (const r of rs) {
+                            if (toId(r._id) === breakdownRowId) return r;
+                            if (r.children?.length) { const f = findRow(r.children); if (f) return f; }
+                        }
+                        return undefined;
+                    };
+                    const bRow = findRow(rows);
+                    if (!bRow) return null;
+                    const ba = actualData[breakdownRowId];
+                    const bq = parseFloat((ba?.quantity ?? '').replace(',', '.')) || 0;
+                    const bVolumeTotal = parseFloat((ba?.spent ?? '').replace(',', '.')) || 0;
+                    const bMechanismTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod === 'mechanism').reduce((s, e) => s + e.total, 0);
+                    const bSubcontractorTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+                    const bWithoutMats = ba?.withoutMaterials ?? false;
+                    const bSalaryTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism' && e.paymentMethod !== 'subcontractor').reduce((s, e) => s + e.total, 0);
+                    const bMatActTotal = calcMatActTotal(breakdownRowId);
+                    const bGorcarqayanQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
+                    const { actTotal: bActTotal } = getRowActTotal(bRow);
+                    const effQ = bGorcarqayanQtyTotal > 0 ? bGorcarqayanQtyTotal : (bq > 0 ? bq : 1);
+                    const bActUP = bActTotal / effQ;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
-                    const effectiveSubVal = subcontractorTotal > 0
-                        ? (withoutMaterials ? actUP : subcontractorTotal / q)
+                    const effectiveSubVal = bSubcontractorTotal > 0
+                        ? (bWithoutMats ? bActUP : bSubcontractorTotal / effQ)
                         : 0;
-                    const displayUP = subcontractorTotal > 0 ? effectiveSubVal : actUP;
-                    const rows: { label: string; val: number }[] = subcontractorTotal > 0
+                    const displayUP = bSubcontractorTotal > 0 ? effectiveSubVal : bActUP;
+                    const bdRows: { label: string; val: number }[] = bSubcontractorTotal > 0
                         ? [{ label: 'Ենթակապալ', val: effectiveSubVal }]
                         : [
-                            { label: t('Labor Cost'), val: salaryTotal / q },
-                            { label: 'Volume / Spent', val: volumeTotal / q },
-                            { label: t('Materials Cost'), val: matActTotal / q },
-                            { label: 'Մեխանիզմ', val: mechanismTotal / q },
+                            { label: t('Labor Cost'), val: bSalaryTotal / effQ },
+                            { label: 'Volume / Spent', val: bVolumeTotal / effQ },
+                            { label: t('Materials Cost'), val: bMatActTotal / effQ },
+                            { label: 'Մևանիզմ', val: bMechanismTotal / effQ },
                         ].filter(r => r.val > 0);
                     return (
                         <Box>
                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1 }}>
-                                {t('Cost Breakdown')} / {unitSymbol}
+                                {t('Cost Breakdown')} / {bRow.unitSymbol}
                             </Typography>
-                            {rows.map(r => (
+                            {bdRows.map(r => (
                                 <Box key={r.label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.6 }}>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>{r.label}</Typography>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, whiteSpace: 'nowrap' }}>{fmtAMD(r.val)}</Typography>
