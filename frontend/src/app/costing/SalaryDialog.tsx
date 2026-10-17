@@ -200,7 +200,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth
-            PaperProps={{ sx: { borderRadius: 3, height: '82vh', maxHeight: '82vh', overflow: 'hidden' } }}
+            PaperProps={{ sx: { borderRadius: 3, maxHeight: '82vh', overflow: 'hidden' } }}
         >
             <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0, flexShrink: 0 }}>
                 {selectedRow ? (
@@ -240,7 +240,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             </DialogTitle>
             <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
-            <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <DialogContent sx={{ p: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 {!selectedRow ? (
                     <Box sx={{ overflowY: 'auto', flex: 1 }}>
                         {loading ? (
