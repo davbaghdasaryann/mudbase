@@ -97,7 +97,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                 size="small"
                                 sx={{
                                     height: 20,
-                                    fontSize: '0.7rem',
+                                    fontSize: '0.7625rem',
                                     fontWeight: 700,
                                     bgcolor: costedCount === rows.length ? `${ACCENT}20` : 'rgba(0,0,0,0.06)',
                                     color: costedCount === rows.length ? ACCENT : '#666',
@@ -118,15 +118,15 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
             <DialogContent sx={{ p: 0, overflowY: 'auto' }}>
                 <Box sx={{ px: 3, py: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, mb: 0.5 }}>
-                    <Typography sx={{ flex: 1, fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Աշխատանք</Typography>
-                    <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Քանակ</Typography>
-                    <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Արժ.</Typography>
+                    <Typography sx={{ flex: 1, fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Աշխատանք</Typography>
+                    <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Քանակ</Typography>
+                    <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Արժ.</Typography>
                     <Box sx={{ width: 36 }} />
                 </Box>
                 <Divider sx={{ mb: 0.5, borderColor: '#e5f9fa' }} />
 
                 {rows.length === 0 && (
-                    <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', textAlign: 'center', py: 4 }}>Աշխատանկներ Չկան</Typography>
+                    <Typography sx={{ fontSize: '0.8625rem', color: '#9ca3af', textAlign: 'center', py: 4 }}>Աշխատանկներ Չկան</Typography>
                 )}
 
                 {rows.map((row, idx) => {
@@ -153,14 +153,14 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                     {isCosted && (
                                         <CheckCircleIcon sx={{ fontSize: 14, color: ACCENT, flexShrink: 0 }} />
                                     )}
-                                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: isCosted ? ACCENT : '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <Typography sx={{ fontSize: '0.8425rem', fontWeight: 600, color: isCosted ? ACCENT : '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {row.laborOfferItemName || row.catalogName}
                                     </Typography>
                                 </Box>
-                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.78rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
+                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.8425rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
                                     {Number(row.quantity).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
                                 </Typography>
-                                <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.78rem', fontWeight: isCosted ? 600 : 400, color: isCosted ? ACCENT : '#bbb', flexShrink: 0 }}>
+                                <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.8425rem', fontWeight: isCosted ? 600 : 400, color: isCosted ? ACCENT : '#bbb', flexShrink: 0 }}>
                                     {isCosted ? unitPrice.toLocaleString('hy-AM', { maximumFractionDigits: 0 }) : '—'}
                                 </Typography>
                                 <IconButton
@@ -202,15 +202,15 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                                     sx={{ color: ACCENT, '&.Mui-checked': { color: ACCENT } }}
                                                 />
                                             }
-                                            label={<Typography sx={{ fontSize: '0.8rem' }}>{t('Without Material')}</Typography>}
+                                            label={<Typography sx={{ fontSize: '0.8625rem' }}>{t('Without Material')}</Typography>}
                                         />
                                         <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
                                             <Button size="small" variant="text" onClick={() => setExpandedRowId(null)}
-                                                sx={{ color: '#888', fontSize: '0.75rem', textTransform: 'none' }}>
+                                                sx={{ color: '#888', fontSize: '0.8125rem', textTransform: 'none' }}>
                                                 {t('Cancel')}
                                             </Button>
                                             <Button size="small" variant="contained" onClick={() => handleSave(rowId)}
-                                                sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: '#00695c' }, fontSize: '0.75rem', textTransform: 'none', boxShadow: 'none' }}>
+                                                sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: '#00695c' }, fontSize: '0.8125rem', textTransform: 'none', boxShadow: 'none' }}>
                                                 {t('Save')}
                                             </Button>
                                         </Box>

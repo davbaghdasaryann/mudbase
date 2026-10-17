@@ -87,7 +87,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                     size='small'
                     startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
                     onClick={() => setCreateOpen(true)}
-                    sx={{ ml: 'auto', borderRadius: '20px', textTransform: 'none', color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
+                    sx={{ ml: 'auto', borderRadius: '20px', textTransform: 'none', color: mainPrimaryColor, border: `1px solid ${mainPrimaryColor}`, px: 2, fontSize: '0.8825rem', '&:hover': { bgcolor: 'rgba(0,171,190,0.06)' } }}
                 >
                     {t('Create Estimate')}
                 </Button>
@@ -129,7 +129,7 @@ export default function UnforeseenDialog({ open, onClose, onEstimateSelected, ac
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>
                                         {est.name}
-                                        {isActive && <Typography component='span' sx={{ ml: 1, fontSize: '0.75rem', color: '#e65100', fontWeight: 600 }}>({t('Active')})</Typography>}
+                                        {isActive && <Typography component='span' sx={{ ml: 1, fontSize: '0.8125rem', color: '#e65100', fontWeight: 600 }}>({t('Active')})</Typography>}
                                     </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(est.createdAt)}</TableCell>
                                     <TableCell align='right' sx={{ pr: 1 }}>

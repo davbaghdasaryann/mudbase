@@ -21,11 +21,11 @@ function Field({ label, value, onChange, autoFocus }: { label: string; value: st
     const ref = React.useRef<HTMLInputElement>(null);
     return (
         <Box sx={INPUT_SX} onClick={() => ref.current?.focus()}>
-            <Typography sx={{ fontSize: '0.85rem', color: '#555', flex: 1 }}>{label}</Typography>
+            <Typography sx={{ fontSize: '0.9125rem', color: '#555', flex: 1 }}>{label}</Typography>
             <InputBase autoFocus={autoFocus} value={value} inputRef={ref}
                 onChange={ev => onChange(ev.target.value)}
                 placeholder='—'
-                inputProps={{ style: { textAlign: 'right', width: 130, padding: 0, fontSize: '0.92rem', fontWeight: 600, color: '#333' } }}
+                inputProps={{ style: { textAlign: 'right', width: 130, padding: 0, fontSize: '0.9825rem', fontWeight: 600, color: '#333' } }}
             />
         </Box>
     );
@@ -35,14 +35,14 @@ function NumField({ label, value, onChange, suffix }: { label: string; value: st
     const ref = React.useRef<HTMLInputElement>(null);
     return (
         <Box sx={INPUT_SX} onClick={() => ref.current?.focus()}>
-            <Typography sx={{ fontSize: '0.85rem', color: '#555', flex: 1 }}>{label}</Typography>
+            <Typography sx={{ fontSize: '0.9125rem', color: '#555', flex: 1 }}>{label}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <InputBase value={value} inputRef={ref}
                     onChange={ev => onChange(ev.target.value.replace(/[^0-9.]/g, ''))}
                     placeholder='0'
-                    inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.92rem', fontWeight: 600, color: '#333' } }}
+                    inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.9825rem', fontWeight: 600, color: '#333' } }}
                 />
-                {suffix && <Typography sx={{ fontSize: '0.78rem', color: '#aaa' }}>{suffix}</Typography>}
+                {suffix && <Typography sx={{ fontSize: '0.8425rem', color: '#aaa' }}>{suffix}</Typography>}
             </Box>
         </Box>
     );
@@ -94,7 +94,7 @@ export default function SubcontractorDialog({ open, onClose, onCostAdded }: Prop
                     <NumField label='Քանակը' value={qty} onChange={setQty} />
                     <NumField label='Միավորի արժեք' value={unitPrice} onChange={setUnitPrice} suffix='AMD' />
                     {total > 0 && (
-                        <Typography sx={{ fontSize: '0.8rem', color: '#555', px: 0.5 }}>
+                        <Typography sx={{ fontSize: '0.8625rem', color: '#555', px: 0.5 }}>
                             Ընդհանուր արժեք: <strong style={{ color: mainPrimaryColor }}>{total.toLocaleString(undefined, { maximumFractionDigits: 0 })} AMD</strong>
                         </Typography>
                     )}

@@ -103,7 +103,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
         borderRadius: 2,
         px: 1.5,
         py: 0.75,
-        fontSize: '0.9rem',
+        fontSize: '0.9625rem',
         bgcolor: '#fff',
         '&:focus-within': { borderColor: ACCENT, boxShadow: `0 0 0 2px ${ACCENT}18` },
         transition: 'all 0.15s',
@@ -128,7 +128,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                             <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {histEntry.name}
                             </Typography>
-                            <Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.1 }}>
+                            <Typography sx={{ fontSize: '0.8425rem', color: '#888', mt: 0.1 }}>
                                 {t('History')} · {fmt(histEntry.total)} AMD
                             </Typography>
                         </Box>
@@ -163,14 +163,14 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                             <Box>
                                 {/* Column headers */}
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 140px 80px 40px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 1 }}>
-                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Ամսաթիվ</Typography>
-                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
+                                    <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Ամսաթիվ</Typography>
+                                    <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
                                     <Box />
                                     <Box />
                                 </Box>
                                 {[...histEntry.history].reverse().map((rec, idx) => (
                                     <Box key={rec.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 140px 80px 40px', gap: 1, alignItems: 'center', px: 1.5, py: 1, borderRadius: 1.5, bgcolor: idx % 2 !== 0 ? '#fafafa' : '#fff', '&:hover': { bgcolor: '#f0f4f6' }, transition: 'background 0.12s' }}>
-                                        <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>
+                                        <Typography sx={{ fontSize: '0.9125rem', color: '#555' }}>
                                             {rec.addedAt.toLocaleDateString('hy-AM', { day: '2-digit', month: 'short', year: 'numeric' })}
                                         </Typography>
                                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: PRIMARY, textAlign: 'right' }}>{fmt(rec.amount)} AMD</Typography>
@@ -184,7 +184,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                 ))}
                                 {/* History total */}
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '1px solid #f0f0f0' }}>
-                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#444' }}>
+                                    <Typography sx={{ fontSize: '0.9125rem', fontWeight: 700, color: '#444' }}>
                                         Ընդամենը:&nbsp;
                                         <Box component='span' sx={{ color: PRIMARY }}>{fmt(histEntry.total)} AMD</Box>
                                     </Typography>
@@ -204,14 +204,14 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                         size='small'
                                         startIcon={<AddIcon sx={{ fontSize: 16 }} />}
                                         onClick={() => setAddOpen(true)}
-                                        sx={{ borderRadius: '20px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2, fontSize: '0.8rem', boxShadow: 'none', '&:hover': { bgcolor: ACCENT, color: '#fff', borderColor: ACCENT, boxShadow: 'none' } }}
+                                        sx={{ borderRadius: '20px', textTransform: 'none', borderColor: ACCENT, color: ACCENT, fontWeight: 600, px: 2, fontSize: '0.8625rem', boxShadow: 'none', '&:hover': { bgcolor: ACCENT, color: '#fff', borderColor: ACCENT, boxShadow: 'none' } }}
                                     >
                                         {t('Add')}
                                     </Button>
                                 </Box>
                             ) : (
                                 <Box sx={{ bgcolor: `${ACCENT}08`, border: `1px solid ${ACCENT}22`, borderRadius: 2.5, p: 2 }}>
-                                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
+                                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
                                         Նոր ծախս
                                     </Typography>
                                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
@@ -255,10 +255,10 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                         {/* Column headers */}
                         {entries.length > 0 && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուն</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
-                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}></Typography>
+                                <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
+                                <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուն</Typography>
+                                <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար</Typography>
+                                <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}></Typography>
                             </Box>
                         )}
 
@@ -271,9 +271,9 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                         ) : entries.map((e, idx) => (
                             <Box key={e.id}>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 160px 120px', gap: 1, alignItems: 'center', px: 1.5, py: 1.1, borderRadius: 1.5, bgcolor: idx % 2 !== 0 ? '#fafafa' : '#fff', '&:hover': { bgcolor: '#f0f4f6' }, transition: 'background 0.12s' }}>
-                                    <Typography sx={{ fontSize: '0.78rem', color: '#bbb', fontWeight: 600 }}>{idx + 1}</Typography>
-                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
-                                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: PRIMARY, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                    <Typography sx={{ fontSize: '0.8425rem', color: '#bbb', fontWeight: 600 }}>{idx + 1}</Typography>
+                                    <Typography sx={{ fontSize: '0.9625rem', fontWeight: 600, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</Typography>
+                                    <Typography sx={{ fontSize: '0.9625rem', fontWeight: 700, color: PRIMARY, textAlign: 'right', whiteSpace: 'nowrap' }}>
                                         {fmt(e.total)} AMD
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.25 }}>
@@ -298,7 +298,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                                 {/* Inline plus row */}
                                 {plusEntryId === e.id && (
                                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', px: 1.5, py: 1, bgcolor: '#f0f7f6', borderRadius: 1.5, mx: 0, mb: 0.5 }}>
-                                        <Typography sx={{ fontSize: '0.78rem', color: '#888', flexShrink: 0 }}>Ավելացել:</Typography>
+                                        <Typography sx={{ fontSize: '0.8425rem', color: '#888', flexShrink: 0 }}>Ավելացել:</Typography>
                                         <InputBase
                                             value={plusAmount}
                                             onChange={ev => setPlusAmount(ev.target.value)}
@@ -326,7 +326,7 @@ export default function OverheadCostsDialog({ open, onClose, entries, onChange, 
                         {/* Footer total */}
                         {entries.length > 0 && (
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
-                                <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>
+                                <Typography sx={{ fontSize: '0.9625rem', fontWeight: 700, color: '#444' }}>
                                     Ընդամենը:&nbsp;
                                     <Box component='span' sx={{ color: PRIMARY, fontSize: '1rem' }}>{fmt(grandTotal)} AMD</Box>
                                 </Typography>

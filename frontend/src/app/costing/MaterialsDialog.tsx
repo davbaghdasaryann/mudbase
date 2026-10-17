@@ -301,15 +301,15 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         return (
                             <Box key={toId(sub._id)} sx={{ borderTop: '1px solid #f0f0f0' }}>
                                 <Box onClick={() => toggleSub(subKey)} sx={{ display: 'flex', alignItems: 'center', px: 3, py: 0.7, bgcolor: '#fafafa', cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#f3f3f3' } }}>
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#555', flex: 1 }}>{sub.name}</Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8625rem', color: '#555', flex: 1 }}>{sub.name}</Typography>
                                     <ExpandMoreIcon sx={{ fontSize: 15, color: '#bbb', transition: 'transform 0.2s', transform: openedSubs.has(subKey) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                                 </Box>
                                 <Collapse in={openedSubs.has(subKey)}>
                                 {subRows.map(row => (
                                     <Box key={toId(row._id)} onClick={() => setSelectedRow(row)} sx={{ display: 'flex', alignItems: 'center', px: 3, py: 1, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: accentColor === mainPrimaryColor ? '#f2fcfd' : '#fff8f4' } }}>
                                         <Box sx={{ flex: 1 }}>
-                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>{row.laborOfferItemName || row.catalogName || '—'}</Typography>
-                                            <Typography sx={{ fontSize: '0.74rem', color: '#888', mt: 0.2 }}>{row.unitSymbol} · {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
+                                            <Typography sx={{ fontSize: '0.8925rem', color: '#222', fontWeight: 500 }}>{row.laborOfferItemName || row.catalogName || '—'}</Typography>
+                                            <Typography sx={{ fontSize: '0.8025rem', color: '#888', mt: 0.2 }}>{row.unitSymbol} · {row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 })}</Typography>
                                         </Box>
                                         <ChevronRightIcon sx={{ fontSize: 18, color: '#ccc' }} />
                                     </Box>
@@ -342,7 +342,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                         <IconButton size='small' onClick={() => setSelectedRow(null)} sx={{ color: mainPrimaryColor, mr: 0.5 }}>
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: mainPrimaryColor, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1.0125rem', color: mainPrimaryColor, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {selectedRow?.laborOfferItemName || selectedRow?.catalogName}
                         </Typography>
                         <IconButton size='small' onClick={onClose} sx={{ color: '#bbb', '&:hover': { color: '#555' }, ml: 0.5 }}>
@@ -388,8 +388,8 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                             return parseFloat(actualData?.[laborId]?.quantity || '0') > 0 || pahestEntries.some(e => e.quantity > 0 && (laborMatIds.get(laborId) ?? new Set<string>()).has(e.materialItemId));
                         }) && !ufRows.some(r => parseFloat(actualData?.[toId(r._id)]?.quantity || '0') > 0) ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, px: 4, gap: 0.5 }}>
-                                <Typography sx={{ color: '#bbb', fontSize: '0.82rem', textAlign: 'center' }}>Նախ անհրաժեշտ է ծավալի գրանցում կատարել</Typography>
-                                <Typography sx={{ color: '#ccc', fontSize: '0.78rem', textAlign: 'center' }}>Volume registration must be completed first</Typography>
+                                <Typography sx={{ color: '#bbb', fontSize: '0.8825rem', textAlign: 'center' }}>Նախ անհրաժեշտ է ծավալի գրանցում կատարել</Typography>
+                                <Typography sx={{ color: '#ccc', fontSize: '0.8425rem', textAlign: 'center' }}>Volume registration must be completed first</Typography>
                             </Box>
                         ) : (
                             <Box>
@@ -398,7 +398,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                     <>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 3 }}>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
-                                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
+                                            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                         </Box>
                                         {renderWorkSections(ufSections, ufSubsections, ufRows, '#e65100', '#fff8f4')}
@@ -429,11 +429,11 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                                         <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
-                                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Հիմնական նյութեր</Typography>
+                                        <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Հիմնական նյութեր</Typography>
                                         <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
                                     </Box>
                                     {visiblePahest.length === 0 && (
-                                        <Typography sx={{ fontSize: '0.82rem', color: '#bbb', textAlign: 'center', py: 1 }}>Հիմնական նյութեր չկան</Typography>
+                                        <Typography sx={{ fontSize: '0.8825rem', color: '#bbb', textAlign: 'center', py: 1 }}>Հիմնական նյութեր չկան</Typography>
                                     )}
                                     {visiblePahest.map(mat => (
                                         <Box
@@ -454,18 +454,18 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                             </Box>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                 <Box>
-                                                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
-                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{mat.unit || '—'}</Typography>
+                                                    <Typography sx={{ fontSize: '0.7425rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
+                                                    <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555' }}>{mat.unit || '—'}</Typography>
                                                 </Box>
                                                 <Box>
-                                                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
-                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
+                                                    <Typography sx={{ fontSize: '0.7425rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
+                                                    <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: mainPrimaryColor }}>
                                                         {mat.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                                                     </Typography>
                                                 </Box>
                                                 <Box>
-                                                    <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
-                                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: (mat.costedQuantity ?? 0) > 0 ? '#222' : '#ccc' }}>
+                                                    <Typography sx={{ fontSize: '0.7425rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
+                                                    <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: (mat.costedQuantity ?? 0) > 0 ? '#222' : '#ccc' }}>
                                                         {(mat.costedQuantity ?? 0) > 0 ? mat.costedQuantity!.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                                                     </Typography>
                                                 </Box>
@@ -476,7 +476,7 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                         <>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 0.5 }}>
                                                 <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
-                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութեր</Typography>
+                                                <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#888', whiteSpace: 'nowrap' }}>Այլ նյութեր</Typography>
                                                 <Box sx={{ flex: 1, height: '1px', bgcolor: '#e0f5f7' }} />
                                             </Box>
                                             {visibleAyl.map(ayl => (
@@ -491,18 +491,18 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                                                     </Box>
                                                     <Box sx={{ display: 'flex', gap: 2 }}>
                                                         <Box>
-                                                            <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
-                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{ayl.unit || '—'}</Typography>
+                                                            <Typography sx={{ fontSize: '0.7425rem', color: '#999', mb: 0.2 }}>{t('Unit')}</Typography>
+                                                            <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555' }}>{ayl.unit || '—'}</Typography>
                                                         </Box>
                                                         <Box>
-                                                            <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
-                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: mainPrimaryColor }}>
+                                                            <Typography sx={{ fontSize: '0.7425rem', color: '#999', mb: 0.2 }}>Մուտքագրված</Typography>
+                                                            <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: mainPrimaryColor }}>
                                                                 {ayl.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                                                             </Typography>
                                                         </Box>
                                                         <Box>
-                                                            <Typography sx={{ fontSize: '0.68rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
-                                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: parseFloat(ayl.tsakh || '0') > 0 ? '#222' : '#ccc' }}>
+                                                            <Typography sx={{ fontSize: '0.7425rem', color: '#999', mb: 0.2 }}>Ծախսագրված</Typography>
+                                                            <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: parseFloat(ayl.tsakh || '0') > 0 ? '#222' : '#ccc' }}>
                                                                 {parseFloat(ayl.tsakh || '0') > 0 ? parseFloat(ayl.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}
                                                             </Typography>
                                                         </Box>
@@ -531,11 +531,11 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             <DialogContent sx={{ pt: 1 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
                     <Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
+                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{materialModal?.material.unit || '—'}</Typography>
                     </Box>
                     <Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Մուտքագրված</Typography>
+                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>Մուտքագրված</Typography>
                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: mainPrimaryColor }}>
                             {materialModal?.material.quantity.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                         </Typography>
@@ -543,13 +543,13 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                 </Box>
                 {(materialModal?.material.costedQuantity ?? 0) > 0 && (
                     <Box sx={{ mb: 1.5, px: 1.5, py: 0.8, bgcolor: '#f0fbfc', borderRadius: 1.5 }}>
-                        <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
+                        <Typography sx={{ fontSize: '0.8425rem', color: '#888' }}>
                             Ծախսագրված: <strong style={{ color: '#555' }}>{materialModal!.material.costedQuantity!.toLocaleString(undefined, { maximumFractionDigits: 3 })}</strong>
                         </Typography>
                     </Box>
                 )}
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
+                    <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
                     <InputBase
                         autoFocus
                         fullWidth
@@ -580,11 +580,11 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
             <DialogContent sx={{ pt: 1 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
                     <Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
+                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>{t('Unit')}</Typography>
                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{aylModal?.entry.unit || '—'}</Typography>
                     </Box>
                     <Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Մուտքագրված</Typography>
+                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>Մուտքագրված</Typography>
                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: mainPrimaryColor }}>
                             {aylModal?.entry.mutq.toLocaleString(undefined, { maximumFractionDigits: 3 })}
                         </Typography>
@@ -592,13 +592,13 @@ export default function MaterialsDialog({ open, onClose, estimate, estimateSnaps
                 </Box>
                 {aylModal && parseFloat(aylModal.entry.tsakh || '0') > 0 && (
                     <Box sx={{ mb: 1.5, px: 1.5, py: 0.8, bgcolor: '#f0fbfc', borderRadius: 1.5 }}>
-                        <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
+                        <Typography sx={{ fontSize: '0.8425rem', color: '#888' }}>
                             Ծախսագրված: <strong style={{ color: '#555' }}>{parseFloat(aylModal.entry.tsakh).toLocaleString(undefined, { maximumFractionDigits: 3 })}</strong>
                         </Typography>
                     </Box>
                 )}
                 <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
+                    <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>{t('Quantity')}</Typography>
                     <InputBase
                         autoFocus
                         fullWidth

@@ -187,7 +187,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                     <Collapse in={openedSecs.has(toId(sec._id))}>
                     {secSubs.length === 0 ? (
                         <Box sx={{ px: 2, py: 1 }}>
-                            <Typography sx={{ fontSize: '0.8rem', color: '#bbb' }}>{t('No sections found')}</Typography>
+                            <Typography sx={{ fontSize: '0.8625rem', color: '#bbb' }}>{t('No sections found')}</Typography>
                         </Box>
                     ) : secSubs.map(sub => {
                         const subRows = rws.filter(r => r.subsectionName === sub.name && r.sectionName === sec.name);
@@ -195,7 +195,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                         return (
                             <Box key={toId(sub._id)} sx={{ borderTop: '1px solid #f0f0f0' }}>
                                 <Box onClick={() => toggleSub(subKey)} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.75, bgcolor: '#fafafa', cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#f3f3f3' } }}>
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.82rem', color: '#555', flex: 1 }}>{sub.name}</Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.8825rem', color: '#555', flex: 1 }}>{sub.name}</Typography>
                                     <ExpandMoreIcon sx={{ fontSize: 15, color: '#bbb', transition: 'transform 0.2s', transform: openedSubs.has(subKey) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                                 </Box>
                                 <Collapse in={openedSubs.has(subKey)}>
@@ -203,7 +203,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                     <Box>
                                         <Box sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7' }}>
                                             {['', t('Description'), t('Unit'), t('Quantity'), 'Ծախսագրում', ''].map((h, i) => (
-                                                <Typography key={i} sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textAlign: i <= 1 ? 'left' : 'center' }}>{i === 4 ? '' : h}</Typography>
+                                                <Typography key={i} sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#888', textAlign: i <= 1 ? 'left' : 'center' }}>{i === 4 ? '' : h}</Typography>
                                             ))}
                                         </Box>
                                         {subRows.length === 0 ? null : subRows.map((row, i) => {
@@ -226,12 +226,12 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                                 )
                                                             )}
                                                         </Box>
-                                                        <Typography sx={{ fontSize: '0.82rem', color: row.isGroupRow ? accentColor : '#333', fontWeight: row.isGroupRow ? 600 : 400 }}>
+                                                        <Typography sx={{ fontSize: '0.8825rem', color: row.isGroupRow ? accentColor : '#333', fontWeight: row.isGroupRow ? 600 : 400 }}>
                                                             {row.laborOfferItemName || row.catalogName || '—'}
                                                         </Typography>
-                                                        <Typography sx={{ fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
-                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
-                                                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
+                                                        <Typography sx={{ fontSize: '0.8825rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
+                                                        <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
+                                                        <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
                                                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                             <Tooltip title={t('Add new quantity')}>
                                                                 <IconButton size='small' onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: accentColor } }}>
@@ -243,9 +243,9 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                     {isExpanded && children.map((child, ci) => (
                                                         <Box key={toId(child._id)} sx={{ display: 'grid', gridTemplateColumns: COLS, pl: 4, pr: 2, py: 0.5, alignItems: 'center', borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${accentColor}22` }}>
                                                             <Box />
-                                                            <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
-                                                            <Typography sx={{ fontSize: '0.8rem', color: '#666', textAlign: 'center' }}>{child.unitSymbol || '—'}</Typography>
-                                                            <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{child.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
+                                                            <Typography sx={{ fontSize: '0.8625rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
+                                                            <Typography sx={{ fontSize: '0.8625rem', color: '#666', textAlign: 'center' }}>{child.unitSymbol || '—'}</Typography>
+                                                            <Typography sx={{ fontSize: '0.8625rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{child.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
                                                             <Box /><Box />
                                                         </Box>
                                                     ))}
@@ -296,7 +296,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                             <>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2, mb: 1, px: 1 }}>
                                     <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
-                                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
+                                    <Typography sx={{ fontSize: '0.8425rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
                                     <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                 </Box>
                                 {renderSections(ufSections, ufSubsections, ufRows, '#e65100', '#fff8f4', '#fff3ee')}
@@ -321,7 +321,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#999', mb: 0.5 }}>Քանակը</Typography>
+                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>Քանակը</Typography>
                         <InputBase
                             autoFocus
                             fullWidth

@@ -79,7 +79,7 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                         size='small'
                         startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
                         onClick={() => setCreateOpen(true)}
-                        sx={{ borderRadius: '20px', textTransform: 'none', color: ACCENT, border: `1px solid ${ACCENT}`, px: 2, fontSize: '0.82rem', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}
+                        sx={{ borderRadius: '20px', textTransform: 'none', color: ACCENT, border: `1px solid ${ACCENT}`, px: 2, fontSize: '0.8825rem', '&:hover': { bgcolor: 'rgba(21,101,192,0.06)' } }}
                     >
                         {t('Create Estimate')}
                     </Button>
@@ -115,7 +115,7 @@ export default function SmallScaleDialog({ open, onClose, onEstimateSelected, ac
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>
                                         {est.name}
-                                        {isActive && <Typography component='span' sx={{ ml: 1, fontSize: '0.75rem', color: ACCENT, fontWeight: 600 }}>({t('Active')})</Typography>}
+                                        {isActive && <Typography component='span' sx={{ ml: 1, fontSize: '0.8125rem', color: ACCENT, fontWeight: 600 }}>({t('Active')})</Typography>}
                                     </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(est.createdAt)}</TableCell>
                                     <TableCell align='right' sx={{ pr: 1 }}>

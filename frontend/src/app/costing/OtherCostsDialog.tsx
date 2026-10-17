@@ -64,7 +64,7 @@ const inputSx = {
     borderRadius: 2,
     px: 1.5,
     py: 0.6,
-    fontSize: '0.9rem',
+    fontSize: '0.9625rem',
     bgcolor: '#fff',
     width: '100%',
     '& input': { textAlign: 'right' },
@@ -160,9 +160,9 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                     {/* Column headers */}
                     {rows.length > 0 && (
                         <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 180px', gap: 1, px: 1.5, py: 0.75, bgcolor: '#f8f9fa', borderRadius: 1.5, mb: 0.5 }}>
-                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
-                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուններ</Typography>
-                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար (AMD)</Typography>
+                            <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>№</Typography>
+                            <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Անուններ</Typography>
+                            <Typography sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#9e9e9e', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Գումար (AMD)</Typography>
                         </Box>
                     )}
 
@@ -172,8 +172,8 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                             key={row.key}
                             sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 180px', gap: 1, alignItems: 'center', px: 1.5, py: 1.1, borderRadius: 1.5, bgcolor: idx % 2 !== 0 ? '#fafafa' : '#fff', '&:hover': { bgcolor: '#f0f7f6' }, transition: 'background 0.12s' }}
                         >
-                            <Typography sx={{ fontSize: '0.78rem', color: '#bbb', fontWeight: 600 }}>{idx + 1}</Typography>
-                            <Typography sx={{ fontSize: '0.9rem', color: '#333' }}>{row.label}</Typography>
+                            <Typography sx={{ fontSize: '0.8425rem', color: '#bbb', fontWeight: 600 }}>{idx + 1}</Typography>
+                            <Typography sx={{ fontSize: '0.9625rem', color: '#333' }}>{row.label}</Typography>
                             <InputBase
                                 value={row.input}
                                 inputRef={row.ref}
@@ -189,7 +189,7 @@ export default function OtherCostsDialog({ open, onClose, activeExpenseKeys, vat
                     {rows.length > 0 && (
                         <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1fr 180px', gap: 1, alignItems: 'center', px: 1.5, pt: 1.5, mt: 1, borderTop: '2px solid #f0f0f0' }}>
                             <Box />
-                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#444' }}>Ընդամենը</Typography>
+                            <Typography sx={{ fontSize: '0.9625rem', fontWeight: 700, color: '#444' }}>Ընդամենը</Typography>
                             <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: ACCENT, textAlign: 'right' }}>
                                 {grandTotal > 0 ? fmtNum(grandTotal) + ' AMD' : '—'}
                             </Typography>
