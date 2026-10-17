@@ -233,7 +233,8 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                         const sub = r.subsectionName || '—';
                         if (!subsecNames.includes(sub)) subsecNames.push(sub);
                     }
-                    const hasMultipleSubs = subsecNames.length > 1 || (subsecNames.length === 1 && subsecNames[0] !== '—');
+                    const realSubs = subsecNames.filter(s => s !== '—');
+                    const hasMultipleSubs = realSubs.length > 1;
 
                     return (
                         <Box key={secName} sx={{ mb: 1.5, borderRadius: 1.5, overflow: 'hidden', border: '1px solid #e8e8e8' }}>
@@ -250,13 +251,13 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                     const subRows = secRows.filter(r => (r.subsectionName || '—') === subName);
                                     return (
                                         <Box key={subName} sx={{ borderTop: '1px solid #f0f0f0' }}>
-                                            {hasMultipleSubs && (
+                                            {hasMultipleSubs && subName !== '—' && (
                                                 <Box onClick={() => toggleSub(subKey)} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.7, bgcolor: '#fafafa', cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#f3f3f3' } }}>
                                                     <Typography sx={{ fontWeight: 600, fontSize: '0.8625rem', color: '#555', flex: 1 }}>{subName}</Typography>
                                                     <ExpandMoreIcon sx={{ fontSize: 15, color: '#bbb', transition: 'transform 0.2s', transform: openedSubs.has(subKey) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                                                 </Box>
                                             )}
-                                            <Collapse in={!hasMultipleSubs || openedSubs.has(subKey)}>
+                                            <Collapse in={!hasMultipleSubs || subName === '—' || openedSubs.has(subKey)}>
                                                 <Box sx={{ px: 1.5, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7', display: 'grid', gridTemplateColumns: '1fr 80px 90px 36px' }}>
                                                     <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Աշխատանք</Typography>
                                                     <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'right' }}>Քանակ</Typography>
