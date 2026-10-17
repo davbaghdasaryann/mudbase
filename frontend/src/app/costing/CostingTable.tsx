@@ -831,13 +831,14 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const { salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, actTotal, actUP, unitSymbol } = breakdownData;
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
-                    const rows: { label: string; val: number }[] = [
-                        { label: 'Ենթակապալ', val: subcontractorTotal / q },
-                        { label: t('Labor Cost'), val: salaryTotal / q },
-                        { label: 'Volume / Spent', val: volumeTotal / q },
-                        { label: t('Materials Cost'), val: matActTotal / q },
-                        { label: 'Մեխանիզմ', val: mechanismTotal / q },
-                    ].filter(r => r.val > 0);
+                    const rows: { label: string; val: number }[] = subcontractorTotal > 0
+                        ? [{ label: 'Ենթակապալ', val: subcontractorTotal / q }]
+                        : [
+                            { label: t('Labor Cost'), val: salaryTotal / q },
+                            { label: 'Volume / Spent', val: volumeTotal / q },
+                            { label: t('Materials Cost'), val: matActTotal / q },
+                            { label: 'Մեխանիզմ', val: mechanismTotal / q },
+                        ].filter(r => r.val > 0);
                     return (
                         <Box>
                             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1 }}>
