@@ -152,7 +152,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                     }}>
                         {parseFloat((inputQty || '0').replace(',', '.')) > 0 && (
                             <Box sx={{ mb: 1.25, pl: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Remaining')}</Typography>
+                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>'Մնացորդ'</Typography>
                                 <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: (Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)) < 0 ? '#c62828' : ACCENT }}>
                                     {(Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
                                 </Typography>
