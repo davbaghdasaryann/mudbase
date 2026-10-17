@@ -207,7 +207,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                     <Box>
                                         <Box sx={{ display: 'grid', gridTemplateColumns: COLS, px: 2, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7' }}>
                                             {['', t('Description'), t('Unit'), t('Quantity'), 'Ծախսագրում', ''].map((h, i) => (
-                                                <Typography key={i} sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#888', textAlign: i <= 1 ? 'left' : 'center' }}>{i === 4 ? '' : h}</Typography>
+                                                <Typography key={i} sx={{ fontSize: '0.7825rem', fontWeight: 700, color: '#888', textAlign: i <= 1 ? 'left' : 'center' }}>{h}</Typography>
                                             ))}
                                         </Box>
                                         {subRows.length === 0 ? null : subRows.map((row, i) => {
