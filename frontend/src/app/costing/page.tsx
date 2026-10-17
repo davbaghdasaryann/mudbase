@@ -2591,11 +2591,12 @@ ${tableBodyHtml}
                     laborRows={estimateSnapshot?.laborRows ?? []}
                     costHistory={costHistory}
                     actualData={actualData}
-                    onSaveLaborPrice={(rowId, unitPrice, withoutMats) => {
+                    onSaveLaborPrice={(rowId, unitPrice, withoutMats, subQty) => {
+                        const customQty = parseFloat((subQty ?? '').replace(',', '.')) || 0;
                         setActualData(prev => {
                             const updated = {
                                 ...prev,
-                                [rowId]: { ...(prev[rowId] ?? { quantity: '', unitPrice: '', spent: '' }), unitPrice, withoutMaterials: withoutMats },
+                                [rowId]: { ...(prev[rowId] ?? { quantity: '', unitPrice: '', spent: '' }), unitPrice, withoutMaterials: withoutMats, ...(customQty > 0 ? { quantity: String(customQty) } : {}) },
                             };
                             if (selected) saveToBackend(selected._id, costHistory, pahestEntries, aylEntries, updated, unforeseenEstimate ? String(unforeseenEstimate._id) : null, smallScaleEstimate ? String(smallScaleEstimate._id) : null);
                             return updated;
@@ -2605,8 +2606,8 @@ ${tableBodyHtml}
                             const rid = typeof r._id === 'object' && r._id !== null ? ('oid' in (r._id as any) ? (r._id as any).oid : '$oid' in (r._id as any) ? (r._id as any).$oid : String(r._id)) : String(r._id ?? '');
                             return rid === rowId;
                         });
-                        if (price > 0 && laborRow && Number(laborRow.quantity) > 0) {
-                            const qty = Number(laborRow.quantity);
+                        if (price > 0 && laborRow) {
+                            const qty = customQty > 0 ? customQty : Number(laborRow.quantity);
                             const newEntry: CostHistoryEntry = {
                                 id: String(Date.now() + Math.random()),
                                 laborItemId: rowId,

@@ -31,13 +31,14 @@ interface Props {
     laborRows: LaborRow[];
     costHistory?: CostHistoryEntry[];
     actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
-    onSaveLaborPrice?: (rowId: string, unitPrice: string, withoutMaterials: boolean) => void;
+    onSaveLaborPrice?: (rowId: string, unitPrice: string, withoutMaterials: boolean, quantity: string) => void;
 }
 
 export default function EnthakajalsDialog({ open, onClose, laborRows, costHistory = [], actualData = {}, onSaveLaborPrice }: Props) {
     const { t } = useTranslation();
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
     const [inputPrice, setInputPrice] = useState('');
+    const [inputQty, setInputQty] = useState('');
     const [withoutMaterials, setWithoutMaterials] = useState(false);
     const [openedSecs, setOpenedSecs] = useState<Set<string>>(new Set());
     const [openedSubs, setOpenedSubs] = useState<Set<string>>(new Set());
@@ -80,12 +81,14 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
         const rowId = toRowId(row._id);
         const price = getUnitPrice(rowId);
         setInputPrice(price > 0 ? String(Math.round(price)) : '');
+        const savedQty = actualData[rowId]?.quantity;
+        setInputQty(savedQty && parseFloat(savedQty.replace(',', '.')) > 0 ? savedQty : String(Number(row.quantity)));
         setWithoutMaterials(actualData[rowId]?.withoutMaterials ?? false);
         setExpandedRowId(prev => prev === row._id ? null : row._id);
     };
 
     const handleSave = (rowId: string) => {
-        onSaveLaborPrice?.(rowId, inputPrice, withoutMaterials);
+        onSaveLaborPrice?.(rowId, inputPrice, withoutMaterials, inputQty);
         setExpandedRowId(null);
     };
 
@@ -150,11 +153,20 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                             <TextField
                                 size="small"
+                                label={t('Quantity')}
+                                value={inputQty}
+                                onChange={e => setInputQty(e.target.value)}
+                                inputProps={{ inputMode: 'decimal' }}
+                                sx={{ width: 120, '& .MuiInputBase-root': { bgcolor: '#fff' }, '& .MuiInputLabel-root': { fontSize: '0.78rem', color: '#bbb' }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
+                                onKeyDown={e => { if (e.key === 'Enter') handleSave(rowId); if (e.key === 'Escape') setExpandedRowId(null); }}
+                            />
+                            <TextField
+                                size="small"
                                 label={t('Unit Price')}
                                 value={inputPrice}
                                 onChange={e => setInputPrice(e.target.value)}
                                 inputProps={{ inputMode: 'decimal' }}
-                                sx={{ width: 160, '& .MuiInputBase-root': { bgcolor: '#fff' }, '& .MuiInputLabel-root': { fontSize: '0.78rem', color: '#bbb' }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
+                                sx={{ width: 140, '& .MuiInputBase-root': { bgcolor: '#fff' }, '& .MuiInputLabel-root': { fontSize: '0.78rem', color: '#bbb' }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
                                 onKeyDown={e => { if (e.key === 'Enter') handleSave(rowId); if (e.key === 'Escape') setExpandedRowId(null); }}
                                 autoFocus
                             />
