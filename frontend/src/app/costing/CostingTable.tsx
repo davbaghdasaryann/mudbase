@@ -832,21 +832,17 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
                     const rows: { label: string; val: number }[] = [
-                        { label: t('Labor Cost'), val: (salaryTotal + subcontractorTotal) / q },
+                        { label: 'Ենթակապալ', val: subcontractorTotal / q },
+                        { label: t('Labor Cost'), val: salaryTotal / q },
                         { label: 'Volume / Spent', val: volumeTotal / q },
                         { label: t('Materials Cost'), val: matActTotal / q },
                         { label: 'Մեխանիզմ', val: mechanismTotal / q },
                     ].filter(r => r.val > 0);
                     return (
                         <Box>
-                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: subcontractorTotal > 0 ? 0.5 : 1 }}>
+                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1 }}>
                                 {t('Cost Breakdown')} / {unitSymbol}
                             </Typography>
-                            {subcontractorTotal > 0 && (
-                                <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: '#00796b18', color: '#00796b', borderRadius: '10px', px: 1, py: 0.25, mb: 1 }}>
-                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em' }}>Ենթակապալ</Typography>
-                                </Box>
-                            )}
                             {rows.map(r => (
                                 <Box key={r.label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 3, mb: 0.6 }}>
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>{r.label}</Typography>
