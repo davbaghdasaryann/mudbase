@@ -832,7 +832,11 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
                     const rows: { label: string; val: number }[] = subcontractorTotal > 0
-                        ? [{ label: 'Ենթակապալ', val: subcontractorTotal / q }]
+                        ? [
+                            { label: 'Ենթակապալ', val: subcontractorTotal / q },
+                            { label: t('Materials Cost'), val: matActTotal / q },
+                            { label: 'Մեխանիզմ', val: mechanismTotal / q },
+                        ].filter(r => r.val > 0)
                         : [
                             { label: t('Labor Cost'), val: salaryTotal / q },
                             { label: 'Volume / Spent', val: volumeTotal / q },
