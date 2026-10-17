@@ -59,14 +59,14 @@ function NumInput({ label, value, onChange, autoFocus, unit = 'AMD' }: { label: 
     const inputRef = React.useRef<HTMLInputElement>(null);
     return (
         <Box sx={INPUT_SX} onClick={() => inputRef.current?.focus()}>
-            <Typography sx={{ fontSize: '0.85rem', color: '#555', flex: 1 }}>{label}</Typography>
+            <Typography sx={{ fontSize: '0.9125rem', color: '#555', flex: 1 }}>{label}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <InputBase autoFocus={autoFocus} value={value} inputRef={inputRef}
                     onChange={ev => onChange(ev.target.value.replace(/[^0-9.]/g, ''))}
                     placeholder='0'
-                    inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.92rem', fontWeight: 600, color: '#333' } }}
+                    inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.9825rem', fontWeight: 600, color: '#333' } }}
                 />
-                {unit && <Typography sx={{ fontSize: '0.78rem', color: '#aaa' }}>{unit}</Typography>}
+                {unit && <Typography sx={{ fontSize: '0.8425rem', color: '#aaa' }}>{unit}</Typography>}
             </Box>
         </Box>
     );
@@ -209,14 +209,14 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <ArrowBackIcon sx={{ fontSize: 20 }} />
                         </IconButton>
                         <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1.0125rem', color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {selectedRow.laborOfferItemName || selectedRow.catalogName}
                             </Typography>
                             {(selectedCovered > 0 || selectedPlanned > 0) && (
                                 <Box sx={{ display: 'flex', gap: 2, mt: 0.3 }}>
-                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {selectedCovered.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
-                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {selectedRemaining.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
-                                    {selectedPlanned > 0 && selectedRemaining <= 0 && <Typography sx={{ fontSize: '0.72rem', color: '#43a047' }}>✓ {t('Completed')}</Typography>}
+                                    {selectedCovered > 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {selectedCovered.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
+                                    {selectedPlanned > 0 && selectedRemaining > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#e65100' }}>Մնացորդ: {selectedRemaining.toLocaleString()} {selectedRow.unitSymbol}</Typography>}
+                                    {selectedPlanned > 0 && selectedRemaining <= 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#43a047' }}>✓ {t('Completed')}</Typography>}
                                 </Box>
                             )}
                         </Box>
@@ -268,7 +268,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                             <Box key={subName} sx={{ borderTop: '1px solid #f0f0f0' }}>
                                                 {hasMultipleSubs && (
                                                     <Box onClick={() => toggleSub(subKey)} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.7, bgcolor: '#fafafa', cursor: 'pointer', userSelect: 'none', '&:hover': { bgcolor: '#f3f3f3' } }}>
-                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: '#555', flex: 1 }}>{subName}</Typography>
+                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8625rem', color: '#555', flex: 1 }}>{subName}</Typography>
                                                         <ExpandMoreIcon sx={{ fontSize: 15, color: '#bbb', transition: 'transform 0.2s', transform: openedSubs.has(subKey) ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
                                                     </Box>
                                                 )}
@@ -294,14 +294,14 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 </Box>
                                                             )}
                                                             <Box sx={{ flex: 1 }}>
-                                                                <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: row.isGroupRow ? 600 : 500 }}>
+                                                                <Typography sx={{ fontSize: '0.8925rem', color: '#222', fontWeight: row.isGroupRow ? 600 : 500 }}>
                                                                     {row.laborOfferItemName || row.catalogName || '—'}
                                                                 </Typography>
                                                                 {!row.isGroupRow && (
                                                                     <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                                        {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                        {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                        {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                        {planned > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                        {covered > 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                        {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                                     </Box>
                                                                 )}
                                                             </Box>
@@ -315,8 +315,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                             <Box key={toId(child._id)} onClick={() => selectRow(child, row)}
                                                                 sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22`, cursor: 'pointer', '&:hover': { bgcolor: '#eef9fb' } }}>
                                                                 <Box sx={{ flex: 1 }}>
-                                                                    <Typography sx={{ fontSize: '0.8rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
-                                                                    {child.quantity > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
+                                                                    <Typography sx={{ fontSize: '0.8625rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
+                                                                    {child.quantity > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
                                                                 </Box>
                                                                 <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(child, row); }}>
                                                                     <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
@@ -338,7 +338,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                     <>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1, px: 1 }}>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
-                                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
+                                            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: '#e65100', whiteSpace: 'nowrap' }}>Չնախատեսված աշխատանքներ</Typography>
                                             <Box sx={{ flex: 1, height: '1px', bgcolor: '#ffe0cc' }} />
                                         </Box>
                                         {Array.from(new Set(filteredUfRows.map(r => r.sectionName || '—'))).map(secName => (
@@ -358,13 +358,13 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: '#fff8f4' } }}
                                                     >
                                                         <Box sx={{ flex: 1 }}>
-                                                            <Typography sx={{ fontSize: '0.83rem', color: '#222', fontWeight: 500 }}>
+                                                            <Typography sx={{ fontSize: '0.8925rem', color: '#222', fontWeight: 500 }}>
                                                                 {row.laborOfferItemName || row.catalogName || '—'}
                                                             </Typography>
                                                             <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
-                                                                {planned > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                {covered > 0 && <Typography sx={{ fontSize: '0.72rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                {planned > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                {covered > 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                             </Box>
                                                         </Box>
                                                         <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#e65100' } }} onClick={e => e.stopPropagation()}>
@@ -397,7 +397,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                         </>}
                         {type === 'miavorzham' && <NumInput label='Աշխատանքային ծավալ' value={workVolume} onChange={setWorkVolume} unit={selectedRow?.unitSymbol || ''} />}
                         <Box sx={{ ...INPUT_SX, alignItems: 'flex-start', flexDirection: 'column', gap: 0.5 }} onClick={() => document.getElementById('salary-notes-input')?.focus()}>
-                            <Typography sx={{ fontSize: '0.78rem', color: '#999', fontWeight: 600 }}>Նշումներ</Typography>
+                            <Typography sx={{ fontSize: '0.8425rem', color: '#999', fontWeight: 600 }}>Նշումներ</Typography>
                             <InputBase
                                 id='salary-notes-input'
                                 value={notes}
