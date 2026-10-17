@@ -14,7 +14,7 @@ import { type PahestEntry } from './PahestMainMaterials';
 
 const ACCENT = '#00A390';
 
-interface ActualEntry { quantity: string; unitPrice: string; spent?: string; }
+interface ActualEntry { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean; }
 type ActualData = Record<string, ActualEntry>;
 
 interface LaborRow {
@@ -148,7 +148,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
 
     const [groupDialog, setGroupDialog] = useState<{ open: boolean; groupName: string; items: any[]; loading: boolean }>({ open: false, groupName: '', items: [], loading: false });
     const [breakdownAnchor, setBreakdownAnchor] = useState<HTMLElement | null>(null);
-    const [breakdownData, setBreakdownData] = useState<{ salaryTotal: number; volumeTotal: number; matActTotal: number; mechanismTotal: number; subcontractorTotal: number; actTotal: number; actUP: number; unitSymbol: string } | null>(null);
+    const [breakdownData, setBreakdownData] = useState<{ salaryTotal: number; volumeTotal: number; matActTotal: number; mechanismTotal: number; subcontractorTotal: number; withoutMaterials: boolean; actTotal: number; actUP: number; unitSymbol: string } | null>(null);
 
     const handleGroupRowClick = useCallback(async (row: LaborRow) => {
         setGroupDialog({ open: true, groupName: row.laborOfferItemName || row.catalogName, items: [], loading: true });
@@ -438,6 +438,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const mechanismTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'mechanism').reduce((s, e) => s + e.total, 0);
         const subcontractorTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+        const withoutMats = a?.withoutMaterials ?? false;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism' && e.paymentMethod !== 'subcontractor').reduce((s, e) => s + e.total, 0);
         const gorcarqayanQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
         const matActTotal = calcMatActTotal(rowId);
@@ -479,7 +480,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 <td style={tdStyle({ textAlign: 'right', color: hasData ? '#555' : '#ccc' })}>
                     {hasData ? (
                         <span
-                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
+                            onClick={e => { setBreakdownAnchor(e.currentTarget as HTMLElement); setBreakdownData({ salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, withoutMaterials: withoutMats, actTotal, actUP, unitSymbol: row.unitSymbol }); }}
                             style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
                         >
                             {formatCurrencyRounded(actUP)}
@@ -828,11 +829,15 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                 PaperProps={{ sx: { borderRadius: 2, p: 2, minWidth: 220, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
             >
                 {breakdownData && (() => {
-                    const { salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, actTotal, actUP, unitSymbol } = breakdownData;
+                    const { salaryTotal, volumeTotal, matActTotal, mechanismTotal, subcontractorTotal, withoutMaterials, actTotal, actUP, unitSymbol } = breakdownData;
                     const q = actTotal > 0 && actUP > 0 ? actTotal / actUP : 1;
                     const fmtAMD = (v: number) => `${formatCurrencyRounded(Math.round(v))} AMD`;
+                    const effectiveSubVal = subcontractorTotal > 0
+                        ? (withoutMaterials ? subcontractorTotal + matActTotal : subcontractorTotal) / q
+                        : 0;
+                    const displayUP = subcontractorTotal > 0 ? effectiveSubVal : actUP;
                     const rows: { label: string; val: number }[] = subcontractorTotal > 0
-                        ? [{ label: 'Ենթակապալ', val: subcontractorTotal / q }]
+                        ? [{ label: 'Ենթակապալ', val: effectiveSubVal }]
                         : [
                             { label: t('Labor Cost'), val: salaryTotal / q },
                             { label: 'Volume / Spent', val: volumeTotal / q },
@@ -853,7 +858,7 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                             <Divider sx={{ my: 1 }} />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
                                 <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#222' }}>{t('Unit Price')}</Typography>
-                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: SA, whiteSpace: 'nowrap' }}>{fmtAMD(actUP)}</Typography>
+                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: SA, whiteSpace: 'nowrap' }}>{fmtAMD(displayUP)}</Typography>
                             </Box>
                         </Box>
                     );
