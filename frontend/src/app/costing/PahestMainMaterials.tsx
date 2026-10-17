@@ -295,7 +295,7 @@ export default function PahestMainMaterials({ estimateId, unforeseenEstimateId, 
                 }
             }
         }
-        return [...map.values()];
+        return [...map.values()].sort((a, b) => a.mat.name.localeCompare(b.mat.name));
     })();
 
     return (
