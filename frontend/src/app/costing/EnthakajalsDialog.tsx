@@ -81,8 +81,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
         const rowId = toRowId(row._id);
         const price = getUnitPrice(rowId);
         setInputPrice(price > 0 ? String(Math.round(price)) : '');
-        const savedQty = actualData[rowId]?.quantity;
-        setInputQty(savedQty && parseFloat(savedQty.replace(',', '.')) > 0 ? savedQty : String(Number(row.quantity)));
+        setInputQty('');
         setWithoutMaterials(actualData[rowId]?.withoutMaterials ?? false);
         setExpandedRowId(prev => prev === row._id ? null : row._id);
     };
