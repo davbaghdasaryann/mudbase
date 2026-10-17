@@ -1011,7 +1011,7 @@ export default function CostingPage() {
         // that have actualData saved but no costHistory entries yet.
         const snapshotLaborIds = new Set(
             (rec.estimateSnapshot?.laborRows ?? []).map(r =>
-                typeof r._id === 'object' && r._id !== null && 'oid' in (r._id as any) ? (r._id as any).oid : String(r._id ?? '')
+                typeof r._id === 'object' && r._id !== null ? ('oid' in (r._id as any) ? (r._id as any).oid : '$oid' in (r._id as any) ? (r._id as any).$oid : String(r._id ?? '')) : String(r._id ?? '')
             )
         );
         if (snapshotLaborIds.size > 0) {

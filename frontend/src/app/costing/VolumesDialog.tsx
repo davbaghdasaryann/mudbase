@@ -52,7 +52,11 @@ interface Props {
 function toId(v: unknown): string {
     if (!v) return '';
     if (typeof v === 'string') return v;
-    if (typeof v === 'object' && 'oid' in (v as any)) return (v as any).oid;
+    if (typeof v === 'object') {
+        const o = v as any;
+        if ('oid' in o) return o.oid;
+        if ('$oid' in o) return o.$oid;
+    }
     return String(v);
 }
 
