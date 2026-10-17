@@ -154,7 +154,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                 value={inputPrice}
                                 onChange={e => setInputPrice(e.target.value)}
                                 inputProps={{ inputMode: 'decimal' }}
-                                sx={{ width: 160, '& .MuiInputBase-root': { bgcolor: '#fff' } }}
+                                sx={{ width: 160, '& .MuiInputBase-root': { bgcolor: '#fff' }, '& .MuiInputLabel-root': { fontSize: '0.78rem', color: '#bbb' }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
                                 onKeyDown={e => { if (e.key === 'Enter') handleSave(rowId); if (e.key === 'Escape') setExpandedRowId(null); }}
                                 autoFocus
                             />
