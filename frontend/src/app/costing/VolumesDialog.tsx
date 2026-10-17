@@ -46,7 +46,7 @@ interface Props {
     unforeseenSnapshot?: SnapshotData | null;
     onCostAdded: (entry: CostHistoryEntry) => void;
     onActualUpdate?: (rowId: string, qty: number, spent: number) => void;
-    actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string }>;
+    actualData?: Record<string, { quantity: string; unitPrice: string; spent?: string; withoutMaterials?: boolean }>;
 }
 
 function toId(v: unknown): string {
@@ -158,16 +158,21 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
         const { row, value } = costModal;
         const qty = parseFloat(value.replace(',', '.')) || 0;
         if (qty <= 0) return;
-        onActualUpdate?.(toId(row._id), qty, 0);
+        const rowId = toId(row._id);
+        const subUnitPrice = parseFloat((actualData?.[rowId]?.unitPrice ?? '').replace(',', '.')) || 0;
+        const isSubRow = subUnitPrice > 0;
+        const total = isSubRow ? Math.round(qty * subUnitPrice) : 0;
+        onActualUpdate?.(rowId, qty, 0);
         onCostAdded({
             id: String(Date.now() + Math.random()),
             laborItemId: row._id,
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
             quantity: qty,
-            unitPrice: 0,
-            total: 0,
+            unitPrice: isSubRow ? subUnitPrice : 0,
+            total,
             addedAt: new Date(),
+            ...(isSubRow ? { paymentMethod: 'subcontractor' } : {}),
         });
         setCostModal(null);
     };
@@ -212,6 +217,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                         </Box>
                                         {subRows.length === 0 ? null : subRows.map((row, i) => {
                                             const gid = toId(row._id);
+                                            const subPrice = parseFloat((actualData?.[gid]?.unitPrice ?? '').replace(',', '.')) || 0;
                                             const actualQty = getActualQty(gid);
                                             const isExpanded = expandedGroups.has(gid);
                                             const isLoadingG = loadingGroups.has(gid);
@@ -230,9 +236,16 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                                 )
                                                             )}
                                                         </Box>
+                                                        <Box>
                                                         <Typography sx={{ fontSize: '0.8825rem', color: row.isGroupRow ? accentColor : '#333', fontWeight: row.isGroupRow ? 600 : 400 }}>
                                                             {row.laborOfferItemName || row.catalogName || '—'}
                                                         </Typography>
+                                                        {subPrice > 0 && (
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#00796b', mt: 0.3 }}>
+                                                                Ենթակապալ · {subPrice.toLocaleString('hy-AM')} ֏
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
                                                         <Typography sx={{ fontSize: '0.8825rem', color: '#666', textAlign: 'center' }}>{row.unitSymbol || '—'}</Typography>
                                                         <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: accentColor, textAlign: 'center' }}>{row.quantity?.toLocaleString(undefined, { maximumFractionDigits: 3 }) ?? '—'}</Typography>
                                                         <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
