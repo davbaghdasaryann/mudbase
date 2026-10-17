@@ -425,7 +425,10 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const matActTotal = calcMatActTotal(rowId);
-        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + matActTotal;
+        const subTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+        const withoutMats = a?.withoutMaterials ?? false;
+        const effectiveMat = (subTotal > 0 && !withoutMats) ? 0 : matActTotal;
+        const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + effectiveMat;
         const hasData = q > 0 && (row.isGroupRow ? salaryTotal > 0 : actTotal > 0);
         return { actTotal, hasData };
     };
