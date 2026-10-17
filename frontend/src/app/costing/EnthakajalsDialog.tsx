@@ -149,20 +149,14 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                         borderRadius: '0 0 8px 8px',
                         mb: 0.5,
                     }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 1.25, pl: 0.5 }}>
-                            <Box>
-                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Est</Typography>
-                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#555' }}>{Number(row.quantity).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}</Typography>
+                        {parseFloat((inputQty || '0').replace(',', '.')) > 0 && (
+                            <Box sx={{ mb: 1.25, pl: 0.5 }}>
+                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Remaining</Typography>
+                                <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: (Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)) < 0 ? '#c62828' : ACCENT }}>
+                                    {(Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
+                                </Typography>
                             </Box>
-                            {parseFloat((inputQty || '0').replace(',', '.')) > 0 && (
-                                <Box>
-                                    <Typography sx={{ fontSize: '0.7rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Remaining</Typography>
-                                    <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: (Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)) < 0 ? '#c62828' : ACCENT }}>
-                                        {(Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Box>
+                        )}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                             <TextField
                                 size="small"
