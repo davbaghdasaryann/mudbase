@@ -241,8 +241,16 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
             <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
 
             <DialogContent sx={{ p: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {!selectedRow ? (
-                    <Box sx={{ overflowY: 'auto', flex: 1 }}>
+                <Box sx={{
+                    display: 'flex',
+                    width: '200%',
+                    flex: 1,
+                    minHeight: 0,
+                    transform: selectedRow ? 'translateX(-50%)' : 'translateX(0)',
+                    transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+                }}>
+                {/* PAGE 1: Sections list */}
+                <Box sx={{ width: '50%', overflowY: 'auto' }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                                 <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
@@ -380,9 +388,9 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                 )}
                             </Box>
                         )}
-                    </Box>
-                ) : (
-                    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, overflowY: 'auto' }}>
+                </Box>
+                {/* PAGE 2: Salary form */}
+                <Box sx={{ width: '50%', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, overflowY: 'auto' }}>
                         <RadioGroup row value={type} onChange={ev => { setType(ev.target.value as SalaryType); setVal1(''); setVal2(''); }}>
                             <FormControlLabel value='gorcarqayin' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>Գործարքային</Typography>} />
                             <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>ժամավճարային</Typography>} />
@@ -417,8 +425,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                 </Typography>
                             </Box>
                         )}
-                    </Box>
-                )}
+                </Box>
+                </Box>
             </DialogContent>
 
             <DialogActions sx={{ px: 3, pb: 2, flexShrink: 0, gap: 1 }}>
