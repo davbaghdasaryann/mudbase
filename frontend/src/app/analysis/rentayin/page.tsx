@@ -172,7 +172,18 @@ export default function RentayinPage() {
     const [otherCostPercentages, setOtherCostPercentages] = useState<Record<string, number>>({});
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
-    const [profitSimOverrides, setProfitSimOverrides] = useState<Record<number, number>>({});
+    const lsKey = selectedId ? `rentayin_sim_${selectedId}` : null;
+    const [profitSimOverrides, setProfitSimOverridesRaw] = useState<Record<number, number>>(() => {
+        if (!selectedId) return {};
+        try { const s = localStorage.getItem(`rentayin_sim_${selectedId}`); return s ? JSON.parse(s) : {}; } catch { return {}; }
+    });
+    const setProfitSimOverrides = (updater: ((prev: Record<number, number>) => Record<number, number>) | Record<number, number>) => {
+        setProfitSimOverridesRaw(prev => {
+            const next = typeof updater === 'function' ? updater(prev) : updater;
+            try { if (lsKey) localStorage.setItem(lsKey, JSON.stringify(next)); } catch {}
+            return next;
+        });
+    };
     const handleRefresh = async (d: RentayinRecord) => {
         setRefreshing(true);
         try {
