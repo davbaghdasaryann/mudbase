@@ -55,6 +55,9 @@ export default function Footer() {
                     <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
                         Գաղտնիության Քաղաքականություն
                     </Typography>
+                    <Typography component="a" href="#" sx={{ display: 'block', mt: 1.5, fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                        Թխուկների քաղաքականություն
+                    </Typography>
                 </Box>
 
                 {/* Col 4: Contact + social + CTA */}
