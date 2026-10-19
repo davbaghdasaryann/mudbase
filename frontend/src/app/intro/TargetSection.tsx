@@ -227,9 +227,9 @@ export default function TargetSection() {
                                             <Box
                                                 component='button'
                                                 onClick={(e: any) => { e.stopPropagation(); setExpandedCard(i); }}
-                                                sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
+                                                sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '1rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
                                             >
-                                                Փեսնել ավելին
+                                                Տեսնել ավելին
                                             </Box>
                                             <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
                                                 ‹ Պտտել
