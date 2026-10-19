@@ -290,20 +290,20 @@ export default function TargetSection() {
                                 {idx === 5 && (
                                     <Box className='beta-pill' sx={{
                                         position: 'absolute',
-                                        top: 16,
-                                        right: 12,
+                                        top: 10,
+                                        right: 10,
                                         zIndex: 2,
-                                        width: 24,
-                                        height: 24,
+                                        width: 28,
+                                        height: 28,
                                         borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: 'transparent',
-                                        transition: 'background-color 0.2s',
+                                        bgcolor: 'rgba(0,171,190,0.12)',
+                                        border: '1px solid rgba(0,171,190,0.35)',
                                         pointerEvents: 'none',
                                     }}>
-                                        <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
+                                        <Box component='span' sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
                                             β
                                         </Box>
                                     </Box>
@@ -367,6 +367,8 @@ export default function TargetSection() {
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
                                 cursor: "default",
+                                "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)" },
+                                transition: "box-shadow 0.2s",
                             }}
                         >
                             <Typography sx={{
@@ -494,19 +496,20 @@ export default function TargetSection() {
 
                             <Box sx={{
                                 position: 'absolute',
-                                top: 16,
-                                right: 12,
+                                top: 10,
+                                right: 10,
                                 zIndex: 2,
-                                width: 24,
-                                height: 24,
+                                width: 28,
+                                height: 28,
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                backgroundColor: 'transparent',
+                                bgcolor: 'rgba(0,171,190,0.12)',
+                                border: '1px solid rgba(0,171,190,0.35)',
                                 pointerEvents: 'none',
                             }}>
-                                <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
+                                <Box component='span' sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
                                     β
                                 </Box>
                             </Box>
@@ -564,6 +567,8 @@ export default function TargetSection() {
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
                                 cursor: "default",
+                                "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)" },
+                                transition: "box-shadow 0.2s",
                             }}
                         >
                             <Typography sx={{
@@ -578,7 +583,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Նալագծերի կառավարում
+                                Նախագծերի կառավարում
                             </Typography>
                             <Box sx={{
                                 position: 'absolute',
@@ -666,6 +671,8 @@ export default function TargetSection() {
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
                                 cursor: "default",
+                                "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)" },
+                                transition: "box-shadow 0.2s",
                             }}
                         >
                             <Typography sx={{
