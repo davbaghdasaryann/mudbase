@@ -18,7 +18,7 @@ const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
 const CARD_DETAILS: Record<number, { title: string; description: string }> = {
     1: {
         title: 'Նախահաշվային գործիք',
-        description: 'Նախahashvayin gortsikը նakhatesvatsd е shinararakan ashkhataнкнери arjeqi hashharkman hamar։ Ayn arranjin gortsik е ev nerarkum е nakhahashivneri kazmman ev khmbagrman hamar anhratesht bolor tstragrayian hnaravoryutyunnere։ Arjeqi dzevagorman ev hashharki irakanacman hamar anhratesht tvatalnere bernutsum en himnakan shtemaranneric, artatsolelov shinararakan ashkhataнкнери ev nyuteri tvyal pahi dryutyamb hashharkvatsd mijinacvatsd arjeknerin։ Нakhahashivatsvatsd nakhahashivi hnaravore е artahanel tvayini tarber dzevachapherov, yste nakhapatkutyun։ Baci avd, himk endunelov nakhahashivayin tvatalnere, hnaravore е shinararakan kapali paymanagri hamar dzevorel ashkhatankeri tsavalatert։',
+        description: 'Նախահաշվային գործիքը նախատեսված է շինարարական աշխատանքների արժեքի հաշվարկման համար։ Այն առանձին գործիք է և ներառում է նախահաշիվների կազմման և խմբագրման համար անհրաժեշտ բոլոր ծրագրային հնարավորությունները։ Արժեքի ձևավորման և հաշվարկի իրականացման համար անհրաժեշտ տվյալները բեռնվում են հիմնական շտեմարաններից՝ արտացոլելով շինարարական աշխատանքների և նյութերի տվյալ պահի դրությամբ հաշվարկված միջինացված արժեքները։ Հաշվարկված նախահաշիվը հնարավոր է արտահանել թվային տարբեր ձևաչափերով՝ ըստ նախապատվության։ Բացի այդ, հիմք ընդունելով նախահաշվային տվյալները, հնարավոր է շինարարական կապալի պայմանագրի համար ձևավորել աշխատանքների ծավալաթերթ։',
     },
 };
 
