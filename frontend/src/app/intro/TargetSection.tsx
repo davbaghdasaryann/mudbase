@@ -381,7 +381,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Զամանակացույց
+                                Ժամանակացույց
                             </Typography>
                             <Box sx={{
                                 position: "absolute",
@@ -491,6 +491,25 @@ export default function TargetSection() {
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
                             }} />
+
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 16,
+                                right: 12,
+                                zIndex: 2,
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: 'transparent',
+                                pointerEvents: 'none',
+                            }}>
+                                <Box component='span' sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#00ABBE', lineHeight: 1 }}>
+                                    β
+                                </Box>
+                            </Box>
                         </Box>
                         {/* Back face */}
                         <Box
@@ -530,7 +549,6 @@ export default function TargetSection() {
                     }}>
                         {/* Front face */}
                         <Box
-                            onClick={() => toggle(8)}
                             sx={{
                                 position: "absolute",
                                 inset: 0,
@@ -544,12 +562,8 @@ export default function TargetSection() {
                                 border: "1.5px solid rgba(63,162,151,0.15)",
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
-                                overflow: "visible",
-                                cursor: "pointer",
-                                "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
-                                    '&:hover .beta-pill': { backgroundColor: 'rgba(0,171,190,0.12)' },
-                                    '&:hover .dev-stage-text': { opacity: 1 },
-                                transition: "box-shadow 0.2s, filter 0.2s",
+                                overflow: "hidden",
+                                cursor: "default",
                             }}
                         >
                             <Typography sx={{
@@ -564,7 +578,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Նախագծերի կառավարում
+                                Նալագծերի կառավարում
                             </Typography>
                             <Box sx={{
                                 position: 'absolute',
@@ -575,47 +589,25 @@ export default function TargetSection() {
                                 borderRadius: '18px',
                                 pointerEvents: 'none',
                             }} />
-                                {(
-                                    <>
-                                        <Box className='beta-pill' sx={{
-                                            position: 'absolute',
-                                            top: 16,
-                                            right: 12,
-                                            zIndex: 3,
-                                            width: 24,
-                                            height: 24,
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            backgroundColor: 'transparent',
-                                            transition: 'background-color 0.2s',
-                                            pointerEvents: 'none',
-                                        }}>
-                                            <ConstructionOutlinedIcon sx={{ fontSize: '0.85rem', color: '#00ABBE' }} />
-                                        </Box>
-                                        <Box className='dev-stage-text' sx={{
-                                            position: 'absolute',
-                                            top: 17,
-                                            left: 'calc(100% - 10px)',
-                                            zIndex: 4,
-                                            opacity: 0,
-                                            transition: 'opacity 0.2s',
-                                            pointerEvents: 'none',
-                                            backgroundColor: '#fff',
-                                            border: '1px solid rgba(0,171,190,0.3)',
-                                            borderRadius: '6px',
-                                            px: '6px',
-                                            py: '2px',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                            whiteSpace: 'nowrap',
-                                        }}>
-                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, lineHeight: 1.4 }}>
-                                                Մշակման փուլում
-                                            </Typography>
-                                        </Box>
-                                    </>
-                                )}
+                            <Tooltip title="Մշակման փուլում" placement="top" arrow>
+                                <Box sx={{
+                                    position: "absolute",
+                                    top: 10,
+                                    right: 10,
+                                    zIndex: 2,
+                                    bgcolor: "rgba(255,152,0,0.12)",
+                                    border: "1px solid rgba(255,152,0,0.35)",
+                                    borderRadius: "50%",
+                                    width: 28,
+                                    height: 28,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "help",
+                                }}>
+                                    <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
+                                </Box>
+                            </Tooltip>
                         </Box>
                         {/* Back face */}
                         <Box
@@ -657,9 +649,8 @@ export default function TargetSection() {
                         transition: "transform 0.6s cubic-bezier(0.4,0.2,0.2,1)",
                         transform: flipped === 9 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
-                        {/* Front face */}
+                                                {/* Front face */}
                         <Box
-                            onClick={() => toggle(9)}
                             sx={{
                                 position: "absolute",
                                 inset: 0,
@@ -673,12 +664,8 @@ export default function TargetSection() {
                                 border: "1.5px solid rgba(63,162,151,0.15)",
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
-                                overflow: "visible",
-                                cursor: "pointer",
-                                "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
-                                    '&:hover .beta-pill': { backgroundColor: 'rgba(0,171,190,0.12)' },
-                                    '&:hover .dev-stage-text': { opacity: 1 },
-                                transition: "box-shadow 0.2s, filter 0.2s",
+                                overflow: "hidden",
+                                cursor: "default",
                             }}
                         >
                             <Typography sx={{
@@ -704,47 +691,25 @@ export default function TargetSection() {
                                 borderRadius: '18px',
                                 pointerEvents: 'none',
                             }} />
-                                {(
-                                    <>
-                                        <Box className='beta-pill' sx={{
-                                            position: 'absolute',
-                                            top: 16,
-                                            right: 12,
-                                            zIndex: 3,
-                                            width: 24,
-                                            height: 24,
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            backgroundColor: 'transparent',
-                                            transition: 'background-color 0.2s',
-                                            pointerEvents: 'none',
-                                        }}>
-                                            <ConstructionOutlinedIcon sx={{ fontSize: '0.85rem', color: '#00ABBE' }} />
-                                        </Box>
-                                        <Box className='dev-stage-text' sx={{
-                                            position: 'absolute',
-                                            top: 17,
-                                            left: 'calc(100% - 10px)',
-                                            zIndex: 4,
-                                            opacity: 0,
-                                            transition: 'opacity 0.2s',
-                                            pointerEvents: 'none',
-                                            backgroundColor: '#fff',
-                                            border: '1px solid rgba(0,171,190,0.3)',
-                                            borderRadius: '6px',
-                                            px: '6px',
-                                            py: '2px',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                            whiteSpace: 'nowrap',
-                                        }}>
-                                            <Typography sx={{ fontSize: '0.72rem', color: '#00ABBE', fontWeight: 600, lineHeight: 1.4 }}>
-                                                Մշակման փուլում
-                                            </Typography>
-                                        </Box>
-                                    </>
-                                )}
+                            <Tooltip title="Մշակման փուլում" placement="top" arrow>
+                                <Box sx={{
+                                    position: "absolute",
+                                    top: 10,
+                                    right: 10,
+                                    zIndex: 2,
+                                    bgcolor: "rgba(255,152,0,0.12)",
+                                    border: "1px solid rgba(255,152,0,0.35)",
+                                    borderRadius: "50%",
+                                    width: 28,
+                                    height: 28,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "help",
+                                }}>
+                                    <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
+                                </Box>
+                            </Tooltip>
                         </Box>
                         {/* Back face */}
                         <Box
