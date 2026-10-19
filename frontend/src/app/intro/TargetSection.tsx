@@ -15,10 +15,17 @@ const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
     { Icon: DrawOutlinedIcon,         circleBg: 'rgba(0,171,190,0.10)',  iconColor: '#00ABBE' },
 ];
 
-const CARD_DETAILS: Record<number, { title: string; description: string }> = {
+const CARD_DETAILS: Record<number, { title: string; description: string; intro?: string; features?: string[]; callout?: string }> = {
     1: {
         title: 'Նախահաշվային գործիք',
         description: 'Նախահաշվային գործիքը նախատեսված է շինարարական աշխատանքների արժեքի հաշվարկման համար։ Այն առանձին գործիք է և ներառում է նախահաշիվների կազմման և խմբագրման համար անհրաժեշտ բոլոր ծրագրային հնարավորությունները։ Արժեքի ձևավորման և հաշվարկի իրականացման համար անհրաժեշտ տվյալները բեռնվում են հիմնական շտեմարաններից՝ արտացոլելով շինարարական աշխատանքների և նյութերի տվյալ պահի դրությամբ հաշվարկված միջինացված արժեքները։ Հաշվարկված նախահաշիվը հնարավոր է արտահանել թվային տարբեր ձևաչափերով՝ ըստ նախապատվության։ Բացի այդ, հիմք ընդունելով նախահաշվային տվյալները, հնարավոր է շինարարական կապալի պայմանագրի համար ձևավորել աշխատանքների ծավալաթերթ։',
+        intro: 'Նախահաշվային գործիքը նախատեսված է շինարարական աշխատանքների արժեքի հաշվարկման համար։',
+        features: [
+            'Այն առանձին գործիք է և ներառում է նախահաշիվների կազմման և խմբագրման համար անհրաժեշտ բոլոր ծրագրային հնարավորությունները։',
+            'Հաշվարկված նախահաշիվը հնարավոր է արտահանել թվային տարբեր ձևաչափերով՝ ըստ նախապատվության։',
+            'Բացի այդ, հիմք ընդունելով նախահաշվային տվյալները, հնարավոր է շինարարական կապալի պայմանագրի համար ձևավորել աշխատանքների ծավալաթերթ։',
+        ],
+        callout: 'Արժեքի ձևավորման և հաշվարկի իրականացման համար անհրաժեշտ տվյալները բեռնվում են հիմնական շտեմարաններից՝ արտացոլելով շինարարական աշխատանքների և նյութերի տվյալ պահի դրությամբ հաշվարկված միջինացված արժեքները։',
     },
 };
 
@@ -782,40 +789,70 @@ export default function TargetSection() {
             {expandedCard !== null && CARD_DETAILS[expandedCard] && (
                 <Box
                     onClick={() => setExpandedCard(null)}
-                    sx={{ position: 'fixed', inset: 0, zIndex: 1300, bgcolor: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}
+                    sx={{ position: 'fixed', inset: 0, zIndex: 1300, bgcolor: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: { xs: 2, md: 3 } }}
                 >
                     <Box
                         onClick={(e: any) => e.stopPropagation()}
                         sx={{
-                            bgcolor: 'rgba(255,255,255,0.08)',
+                            bgcolor: 'rgba(14,24,36,0.82)',
                             backdropFilter: 'blur(32px)',
                             WebkitBackdropFilter: 'blur(32px)',
-                            borderRadius: '24px',
-                            maxWidth: 620,
+                            borderRadius: '20px',
+                            maxWidth: 820,
                             width: '100%',
-                            border: '1px solid rgba(255,255,255,0.22)',
-                            boxShadow: '0 8px 32px rgba(31,38,135,0.25), 0 2px 8px rgba(0,0,0,0.2)',
-                            p: { xs: 3, md: 4 },
+                            border: '1px solid rgba(255,255,255,0.12)',
+                            boxShadow: '0 8px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)',
                             position: 'relative',
-                            maxHeight: '82vh',
-                            overflowY: 'auto',
+                            maxHeight: '88vh',
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' } as any,
+                            overflow: 'hidden',
                         }}
                     >
-                        <Box
-                            onClick={() => setExpandedCard(null)}
-                            sx={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, flexShrink: 0 }}
-                        >
+                        {/* Close */}
+                        <Box onClick={() => setExpandedCard(null)} sx={{ position: 'absolute', top: 14, right: 14, zIndex: 2, width: 30, height: 30, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.20)' } }}>
                             <Box component='span' sx={{ color: '#fff', fontSize: '1rem', lineHeight: 1, userSelect: 'none' }}>×</Box>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, pr: 4 }}>
-                            <Box sx={{ width: 4, height: 32, borderRadius: 2, bgcolor: CARDS[expandedCard]?.iconColor ?? '#00ABBE', flexShrink: 0 }} />
-                            <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: CARDS[expandedCard]?.iconColor ?? '#00ABBE', lineHeight: 1.3 }}>
+                        {/* Left panel */}
+                        <Box sx={{ width: { xs: '100%', md: '37%' }, flexShrink: 0, p: { xs: 3, md: 3.5 }, borderRight: { md: '1px solid rgba(255,255,255,0.08)' }, borderBottom: { xs: '1px solid rgba(255,255,255,0.08)', md: 'none' }, display: 'flex', flexDirection: 'column', gap: 2.5, pr: { xs: 3, md: 4.5 } }}>
+                            <Box sx={{ width: 54, height: 54, borderRadius: '50%', bgcolor: CARDS[expandedCard]?.circleBg ?? 'rgba(0,171,190,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {expandedCard < CARDS.length && (() => { const { Icon, iconColor } = CARDS[expandedCard]; return <Icon sx={{ fontSize: 27, color: iconColor }} />; })()}
+                            </Box>
+                            <Typography sx={{ fontWeight: 700, fontSize: '1.15rem', color: '#fff', lineHeight: 1.35, pr: 1 }}>
                                 {CARD_DETAILS[expandedCard].title}
                             </Typography>
+                            <Typography sx={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.50)', lineHeight: 1.82 }}>
+                                {CARD_DETAILS[expandedCard].intro ?? CARD_DETAILS[expandedCard].description}
+                            </Typography>
                         </Box>
-                        <Typography sx={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.87)', lineHeight: 1.9 }}>
-                            {CARD_DETAILS[expandedCard].description}
-                        </Typography>
+                        {/* Right panel */}
+                        <Box sx={{ flex: 1, p: { xs: 3, md: 3.5 }, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            {CARD_DETAILS[expandedCard].features ? (
+                                <>
+                                    {(CARD_DETAILS[expandedCard].features as string[]).map((feat: string, fi: number) => (
+                                        <Box key={fi} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', p: 1.5, borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                                            <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: CARDS[expandedCard]?.circleBg ?? 'rgba(57,176,117,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: '2px' }}>
+                                                <Box component='span' sx={{ color: CARDS[expandedCard]?.iconColor ?? '#39B075', fontSize: '0.68rem', fontWeight: 800, lineHeight: 1 }}>✓</Box>
+                                            </Box>
+                                            <Typography sx={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.80)', lineHeight: 1.75 }}>
+                                                {feat}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                    {CARD_DETAILS[expandedCard].callout && (
+                                        <Box sx={{ borderLeft: `3px solid ${CARDS[expandedCard]?.iconColor ?? '#39B075'}`, pl: 2, py: 1.5, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: '0 10px 10px 0', mt: 0.5 }}>
+                                            <Typography sx={{ fontSize: '0.80rem', color: 'rgba(255,255,255,0.50)', lineHeight: 1.82, fontStyle: 'italic' }}>
+                                                {CARD_DETAILS[expandedCard].callout}
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                </>
+                            ) : (
+                                <Typography sx={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.87)', lineHeight: 1.9 }}>
+                                    {CARD_DETAILS[expandedCard].description}
+                                </Typography>
+                            )}
+                        </Box>
                     </Box>
                 </Box>
             )}
