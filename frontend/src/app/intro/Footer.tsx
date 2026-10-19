@@ -48,16 +48,18 @@ export default function Footer() {
                 </Box>
 
                 {/* Col 3: Legal */}
-                <Box sx={{ flex: 1 }}>
+                <Box sx={{ flex: '0 0 auto', width: { xs: '100%', md: 'auto' } }}>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: '#00ABBE', textTransform: 'uppercase', mb: 2.5 }}>
                         Իրավական
                     </Typography>
-                    <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
-                        Գաղտնիության Քաղաքականություն
-                    </Typography>
-                    <Typography component="a" href="#" sx={{ display: 'block', mt: 1.5, fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
-                        Թխուկների քաղաքականություն
-                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3, flexWrap: 'nowrap' }}>
+                        <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
+                            Գաղտնիության Քաղաքականություն
+                        </Typography>
+                        <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
+                            Թխուկների քաղաքականություն
+                        </Typography>
+                    </Box>
                 </Box>
 
                 {/* Col 4: Contact + social + CTA */}
