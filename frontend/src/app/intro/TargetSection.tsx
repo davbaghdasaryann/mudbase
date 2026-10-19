@@ -794,7 +794,7 @@ export default function TargetSection() {
                     <Box
                         onClick={(e: any) => e.stopPropagation()}
                         sx={{
-                            bgcolor: 'rgba(14,24,36,0.38)',
+                            bgcolor: 'rgba(14,24,36,0.18)',
                             backdropFilter: 'blur(32px)',
                             WebkitBackdropFilter: 'blur(32px)',
                             borderRadius: '20px',
