@@ -1,6 +1,7 @@
 'use client';
 
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
 import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
@@ -351,7 +352,6 @@ export default function TargetSection() {
                     }}>
                         {/* Front face */}
                         <Box
-                            onClick={() => toggle(6)}
                             sx={{
                                 position: "absolute",
                                 inset: 0,
@@ -366,9 +366,7 @@ export default function TargetSection() {
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
-                                cursor: "pointer",
-                                "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)", filter: "brightness(0.93)" },
-                                transition: "box-shadow 0.2s, filter 0.2s",
+                                cursor: "default",
                             }}
                         >
                             <Typography sx={{
@@ -383,7 +381,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Ժամանակացույց
+                                Զամանակացույց
                             </Typography>
                             <Box sx={{
                                 position: "absolute",
@@ -393,6 +391,25 @@ export default function TargetSection() {
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
                             }} />
+                            <Tooltip title="Մշակման փուլում" placement="top" arrow>
+                                <Box sx={{
+                                    position: "absolute",
+                                    top: 10,
+                                    right: 10,
+                                    zIndex: 2,
+                                    bgcolor: "rgba(255,152,0,0.12)",
+                                    border: "1px solid rgba(255,152,0,0.35)",
+                                    borderRadius: "50%",
+                                    width: 28,
+                                    height: 28,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "help",
+                                }}>
+                                    <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
+                                </Box>
+                            </Tooltip>
                         </Box>
                         {/* Back face */}
                         <Box
