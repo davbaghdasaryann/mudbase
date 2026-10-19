@@ -351,6 +351,7 @@ export default function TargetSection() {
                         transform: flipped === 6 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
                         {/* Front face */}
+                        <Tooltip title="Մշակման փուլում" placement="top" arrow>
                         <Box
                             sx={{
                                 position: "absolute",
@@ -366,7 +367,7 @@ export default function TargetSection() {
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
-                                cursor: "default",
+                                cursor: "help",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)" },
                                 transition: "box-shadow 0.2s",
                             }}
@@ -393,26 +394,25 @@ export default function TargetSection() {
                                 backgroundPosition: "center",
                                 pointerEvents: "none",
                             }} />
-                            <Tooltip title="Մշակման փուլում" placement="top" arrow>
-                                <Box sx={{
-                                    position: "absolute",
-                                    top: 10,
-                                    right: 10,
-                                    zIndex: 2,
-                                    bgcolor: "rgba(255,152,0,0.12)",
-                                    border: "1px solid rgba(255,152,0,0.35)",
-                                    borderRadius: "50%",
-                                    width: 28,
-                                    height: 28,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    cursor: "help",
-                                }}>
-                                    <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
-                                </Box>
-                            </Tooltip>
+                            <Box sx={{
+                                position: "absolute",
+                                top: 10,
+                                right: 10,
+                                zIndex: 2,
+                                bgcolor: "rgba(255,152,0,0.12)",
+                                border: "1px solid rgba(255,152,0,0.35)",
+                                borderRadius: "50%",
+                                width: 28,
+                                height: 28,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                pointerEvents: "none",
+                            }}>
+                                <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
+                            </Box>
                         </Box>
+                        </Tooltip>
                         {/* Back face */}
                         <Box
                             onClick={() => toggle(6)}
@@ -551,6 +551,7 @@ export default function TargetSection() {
                         transform: flipped === 8 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
                         {/* Front face */}
+                        <Tooltip title="Մշակման փուլում" placement="top" arrow>
                         <Box
                             sx={{
                                 position: "absolute",
@@ -566,7 +567,7 @@ export default function TargetSection() {
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
-                                cursor: "default",
+                                cursor: "help",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)" },
                                 transition: "box-shadow 0.2s",
                             }}
@@ -594,26 +595,25 @@ export default function TargetSection() {
                                 borderRadius: '18px',
                                 pointerEvents: 'none',
                             }} />
-                            <Tooltip title="Մշակման փուլում" placement="top" arrow>
-                                <Box sx={{
-                                    position: "absolute",
-                                    top: 10,
-                                    right: 10,
-                                    zIndex: 2,
-                                    bgcolor: "rgba(255,152,0,0.12)",
-                                    border: "1px solid rgba(255,152,0,0.35)",
-                                    borderRadius: "50%",
-                                    width: 28,
-                                    height: 28,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    cursor: "help",
-                                }}>
-                                    <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
-                                </Box>
-                            </Tooltip>
+                            <Box sx={{
+                                position: "absolute",
+                                top: 10,
+                                right: 10,
+                                zIndex: 2,
+                                bgcolor: "rgba(255,152,0,0.12)",
+                                border: "1px solid rgba(255,152,0,0.35)",
+                                borderRadius: "50%",
+                                width: 28,
+                                height: 28,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                pointerEvents: "none",
+                            }}>
+                                <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
+                            </Box>
                         </Box>
+                        </Tooltip>
                         {/* Back face */}
                         <Box
                             onClick={() => toggle(8)}
@@ -655,6 +655,7 @@ export default function TargetSection() {
                         transform: flipped === 9 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
                                                 {/* Front face */}
+                        <Tooltip title="Մշակման փուլում" placement="top" arrow>
                         <Box
                             sx={{
                                 position: "absolute",
@@ -670,7 +671,7 @@ export default function TargetSection() {
                                 boxShadow: "0 4px 24px rgba(63,162,151,0.08), 0 1px 4px rgba(0,0,0,0.03)",
                                 backgroundColor: "#fff",
                                 overflow: "hidden",
-                                cursor: "default",
+                                cursor: "help",
                                 "&:hover": { boxShadow: "0 8px 32px rgba(63,162,151,0.15), 0 2px 8px rgba(0,0,0,0.05)" },
                                 transition: "box-shadow 0.2s",
                             }}
@@ -698,26 +699,25 @@ export default function TargetSection() {
                                 borderRadius: '18px',
                                 pointerEvents: 'none',
                             }} />
-                            <Tooltip title="Մշակման փուլում" placement="top" arrow>
-                                <Box sx={{
-                                    position: "absolute",
-                                    top: 10,
-                                    right: 10,
-                                    zIndex: 2,
-                                    bgcolor: "rgba(255,152,0,0.12)",
-                                    border: "1px solid rgba(255,152,0,0.35)",
-                                    borderRadius: "50%",
-                                    width: 28,
-                                    height: 28,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    cursor: "help",
-                                }}>
-                                    <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
-                                </Box>
-                            </Tooltip>
+                            <Box sx={{
+                                position: "absolute",
+                                top: 10,
+                                right: 10,
+                                zIndex: 2,
+                                bgcolor: "rgba(255,152,0,0.12)",
+                                border: "1px solid rgba(255,152,0,0.35)",
+                                borderRadius: "50%",
+                                width: 28,
+                                height: 28,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                pointerEvents: "none",
+                            }}>
+                                <BuildOutlinedIcon sx={{ fontSize: 15, color: "#e65100" }} />
+                            </Box>
                         </Box>
+                        </Tooltip>
                         {/* Back face */}
                         <Box
                             onClick={() => toggle(9)}
