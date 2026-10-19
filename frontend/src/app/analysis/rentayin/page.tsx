@@ -554,14 +554,14 @@ export default function RentayinPage() {
                                                                                 {simActTotal !== null ? Math.round(simActTotal).toLocaleString() : actTotal !== null && row.unitCostSource ? actTotal.toLocaleString() : '\u2014'}
                                                                             </td>
                                                                             <td style={tdStyle({ textAlign: 'center', borderLeft: GSEP, userSelect: 'none', padding: '2px 6px' })}>
-                                                                                {pct !== null && row.unitCostSource && estUnitFull > 0 ? (
+                                                                                {estUnitFull > 0 ? (
                                                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                                                                                         <span
-                                                                                            style={{ fontSize: '0.82rem', fontWeight: 600, color: pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888', borderBottom: simPct !== null ? '2px dashed #00CCDD' : 'none', cursor: simPct !== null ? 'pointer' : 'default' }}
+                                                                                            style={{ fontSize: '0.82rem', fontWeight: 600, color: pct !== null ? (pct > 0 ? '#2E7D32' : pct < 0 ? '#C62828' : '#888') : '#bbb', borderBottom: simPct !== null ? '2px dashed #00CCDD' : 'none', cursor: simPct !== null ? 'pointer' : 'default' }}
                                                                                             onClick={simPct !== null ? () => setProfitSimOverrides(prev => { const n = { ...prev }; delete n[globalIdx]; return n; }) : undefined}
                                                                                             title={simPct !== null ? 'Click to reset' : undefined}
                                                                                         >
-                                                                                            {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
+                                                                                            {pct !== null ? `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%` : '—'}
                                                                                         </span>
                                                                                         <div style={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                                                                                             <button onClick={() => { const cur = profitSimOverrides[globalIdx] ?? rawPct ?? 0; const next = Math.max(-100, Math.min(200, Math.round((cur + 0.5) * 10) / 10)); setProfitSimOverrides(prev => ({ ...prev, [globalIdx]: next })); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '1px 2px', lineHeight: 1, color: '#2E7D32', fontSize: '0.65rem', display: 'flex', alignItems: 'center' }}>▲</button>
