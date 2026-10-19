@@ -35,7 +35,7 @@ export default function LandingHeader() {
                 maxWidth: 760,
             }}>
                 {/* Logo — fixed left */}
-                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <Box component='a' href='/intro' sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
