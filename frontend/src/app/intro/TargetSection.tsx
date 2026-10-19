@@ -218,7 +218,7 @@ export default function TargetSection() {
                                             {CARD_DETAILS[i].title}
                                         </Typography>
                                         <Box sx={{ flex: 1, width: '100%', overflow: 'hidden', position: 'relative', mb: 1.5 }}>
-                                            <Typography sx={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            <Typography sx={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {CARD_DETAILS[i].description}
                                             </Typography>
                                             <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 32, background: 'linear-gradient(transparent, #fff)', pointerEvents: 'none' }} />
@@ -227,7 +227,7 @@ export default function TargetSection() {
                                             <Box
                                                 component='button'
                                                 onClick={(e: any) => { e.stopPropagation(); setExpandedCard(i); }}
-                                                sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '1rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
+                                                sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
                                             >
                                                 Տեսնել ավելին
                                             </Box>
