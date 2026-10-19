@@ -53,7 +53,7 @@ export default function Footer() {
                         Իրավական
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
+                        <Typography component="a" href="/privacy" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
                             Գաղտնիության Քաղաքականություն
                         </Typography>
                         <Typography component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
