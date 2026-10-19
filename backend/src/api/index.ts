@@ -109,6 +109,7 @@ export * from "./rentayin/rentayin_save_other_costs";
 export * from "./rentayin/rentayin_push_to_library";
 export * from "./rentayin/rentayin_push_all_to_library";
 export * from "./rentayin/rentayin_save_overhead_entries";
+export * from "./rentayin/rentayin_save_profit_sim_overrides";
 export * from "./karavarum/karavarum_create";
 export * from "./karavarum/karavarum_fetch_all";
 export * from "./karavarum/karavarum_delete";

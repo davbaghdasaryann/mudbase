@@ -49,6 +49,8 @@ export interface EntityRentayin {
     otherCostPercentages?: Record<string, number>;
     // free-form overhead cost entries
     overheadEntries?: RentayinOverheadEntry[];
+    // profit simulation overrides: key = row global index (as string), value = simulated profit %
+    profitSimOverrides?: Record<string, number>;
     deleted?: boolean;
     createdAt?: Date;
     updatedAt?: Date;

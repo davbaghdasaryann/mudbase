@@ -95,6 +95,7 @@ interface RentayinRecord {
     laborPriceOverrides?: Record<string, number>;
     materialPriceOverrides?: Record<string, number>;
     otherCostPercentages?: Record<string, number>;
+    profitSimOverrides?: Record<string, number>;
     estimateOtherExpenses?: Record<string, number>[];
     costingOtherActuals?: Record<string, number>;
     createdAt: string;
@@ -172,15 +173,17 @@ export default function RentayinPage() {
     const [otherCostPercentages, setOtherCostPercentages] = useState<Record<string, number>>({});
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
     const toggleSection = (key: string) => setCollapsedSections(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
-    const lsKey = selectedId ? `rentayin_sim_${selectedId}` : null;
-    const [profitSimOverrides, setProfitSimOverridesRaw] = useState<Record<number, number>>(() => {
-        if (!selectedId) return {};
-        try { const s = localStorage.getItem(`rentayin_sim_${selectedId}`); return s ? JSON.parse(s) : {}; } catch { return {}; }
-    });
+    const [profitSimOverrides, setProfitSimOverridesRaw] = useState<Record<number, number>>({});
+    const profitSimSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const setProfitSimOverrides = (updater: ((prev: Record<number, number>) => Record<number, number>) | Record<number, number>) => {
         setProfitSimOverridesRaw(prev => {
             const next = typeof updater === 'function' ? updater(prev) : updater;
-            try { if (lsKey) localStorage.setItem(lsKey, JSON.stringify(next)); } catch {}
+            if (selectedId) {
+                if (profitSimSaveTimerRef.current) clearTimeout(profitSimSaveTimerRef.current);
+                profitSimSaveTimerRef.current = setTimeout(() => {
+                    Api.requestSession({ command: 'rentayin/save_profit_sim_overrides', json: { id: selectedId, overrides: next } });
+                }, 600);
+            }
             return next;
         });
     };
@@ -256,6 +259,11 @@ export default function RentayinPage() {
                 ...e,
                 history: (e.history ?? []).map((h: any) => ({ ...h, addedAt: new Date(h.addedAt) })),
             })));
+            // Load persisted profit simulation overrides (keys stored as strings in DB)
+            const rawSim: Record<string, number> = (detail as any).profitSimOverrides ?? {};
+            const simAsNumbers: Record<number, number> = {};
+            for (const [k, v] of Object.entries(rawSim)) simAsNumbers[Number(k)] = v;
+            setProfitSimOverridesRaw(simAsNumbers);
         }
     }, [detail?._id]);
     useEffect(() => {
