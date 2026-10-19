@@ -15,8 +15,16 @@ const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
     { Icon: DrawOutlinedIcon,         circleBg: 'rgba(0,171,190,0.10)',  iconColor: '#00ABBE' },
 ];
 
+const CARD_DETAILS: Record<number, { title: string; description: string }> = {
+    1: {
+        title: 'Նախահաշվային գործիք',
+        description: 'Նախահաշվային գործիքը նախաթևսված և շինարարական աշխատանկնևրի արժևքի հաշվարկման համարկՓ։ Այն արանլին գործիք և և նևրարկում և նախահաշիվնևրի կազմման և խմբագրման համար անհրատևշտ բոլոր ծրագրային հնարավորություննևրև։ Արժևքի դզևվավորման և հաշվարկի իրականացման համար անհրատևշտ տվալնևրև բևրնվում ևն հիմնական շտևմարաննևրից, արտացոլևլով շինարարական աշխատանկնևրի և նյութևրի տվյալ պահի դրությամբ հաշվարկված միժինացված արժևքնևրը։ Հաշվարկված նախահաշիվը հնարավորև և արտահանևլ թվայինի տարբևր դզևվաչափհևրով, յսթև նախապատկություն։ Բացի այդ, հիմկ ևնդունևլով նախահաշիվային տվալնևրը, հնարավորև և շինարարական կապալի պայմանագրի համար դզևվավորևլ աշխատանկնևրի ծավալաթևրթ։',
+    },
+};
+
 export default function TargetSection() {
     const [flipped, setFlipped] = useState<number | null>(null);
+    const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
     const toggle = (i: number) =>
         setFlipped(prev => (prev === i ? null : i));
@@ -194,24 +202,45 @@ export default function TargetSection() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    justifyContent: 'flex-end',
+                                    justifyContent: CARD_DETAILS[i] ? 'space-between' : 'flex-end',
                                     borderRadius: '18px',
                                     border: `1px solid ${iconColor}`,
                                     boxShadow: `0 4px 24px ${iconColor}26, 0 1px 4px rgba(0,0,0,0.03)`,
                                     backgroundColor: '#fff',
                                     cursor: 'pointer',
-                                    pb: 3,
+                                    py: 3,
+                                    px: 2.5,
                                 }}
                             >
-                                <Typography sx={{
-                                    fontSize: '0.78rem',
-                                    color: '#94a3ac',
-                                    userSelect: 'none',
-                                    transition: 'color 0.15s',
-                                    '&:hover': { color: '#00ABBE' },
-                                }}>
-                                    ‹ Պտտել
-                                </Typography>
+                                {CARD_DETAILS[i] ? (
+                                    <>
+                                        <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b', mb: 1, alignSelf: 'flex-start', lineHeight: 1.3 }}>
+                                            {CARD_DETAILS[i].title}
+                                        </Typography>
+                                        <Box sx={{ flex: 1, width: '100%', overflow: 'hidden', position: 'relative', mb: 1.5 }}>
+                                            <Typography sx={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                {CARD_DETAILS[i].description}
+                                            </Typography>
+                                            <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 32, background: 'linear-gradient(transparent, #fff)', pointerEvents: 'none' }} />
+                                        </Box>
+                                        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                                            <Box
+                                                component='button'
+                                                onClick={(e: any) => { e.stopPropagation(); setExpandedCard(i); }}
+                                                sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
+                                            >
+                                                Փեսնել ավել
+                                            </Box>
+                                            <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
+                                                ‹ Պտտել
+                                            </Typography>
+                                        </Box>
+                                    </>
+                                ) : (
+                                    <Typography sx={{ fontSize: '0.78rem', color: '#94a3ac', userSelect: 'none', transition: 'color 0.15s', '&:hover': { color: '#00ABBE' } }}>
+                                        ‹ Պտտել
+                                    </Typography>
+                                )}
                             </Box>
                         </Box>
                     </Box>
@@ -748,6 +777,48 @@ export default function TargetSection() {
             </Box>
 
             </Box>
+
+            {/* Glassmorphism modal */}
+            {expandedCard !== null && CARD_DETAILS[expandedCard] && (
+                <Box
+                    onClick={() => setExpandedCard(null)}
+                    sx={{ position: 'fixed', inset: 0, zIndex: 1300, bgcolor: 'rgba(0,0,0,0.58)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}
+                >
+                    <Box
+                        onClick={(e: any) => e.stopPropagation()}
+                        sx={{
+                            bgcolor: 'rgba(14,24,33,0.93)',
+                            backdropFilter: 'blur(24px)',
+                            WebkitBackdropFilter: 'blur(24px)',
+                            borderRadius: '20px',
+                            maxWidth: 620,
+                            width: '100%',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
+                            p: { xs: 3, md: 4 },
+                            position: 'relative',
+                            maxHeight: '82vh',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        <Box
+                            onClick={() => setExpandedCard(null)}
+                            sx={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, flexShrink: 0 }}
+                        >
+                            <Box component='span' sx={{ color: '#fff', fontSize: '1rem', lineHeight: 1, userSelect: 'none' }}>×</Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, pr: 4 }}>
+                            <Box sx={{ width: 4, height: 32, borderRadius: 2, bgcolor: CARDS[expandedCard]?.iconColor ?? '#00ABBE', flexShrink: 0 }} />
+                            <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: CARDS[expandedCard]?.iconColor ?? '#00ABBE', lineHeight: 1.3 }}>
+                                {CARD_DETAILS[expandedCard].title}
+                            </Typography>
+                        </Box>
+                        <Typography sx={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.87)', lineHeight: 1.9 }}>
+                            {CARD_DETAILS[expandedCard].description}
+                        </Typography>
+                    </Box>
+                </Box>
+            )}
         </Box>
     );
 }
