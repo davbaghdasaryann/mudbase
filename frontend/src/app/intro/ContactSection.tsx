@@ -35,7 +35,7 @@ const inputSx = {
 
 export default function ContactSection() {
     return (
-        <Box sx={{
+        <Box id="contact" sx={{
             py: { xs: 8, md: 12 },
             px: { xs: 3, md: 8 },
             backgroundColor: '#fff',

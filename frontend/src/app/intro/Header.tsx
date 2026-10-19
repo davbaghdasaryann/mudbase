@@ -16,9 +16,9 @@ export default function LandingHeader() {
     const open = Boolean(anchorEl);
 
     const navLinks = [
-        { key: 'Tools', label: t('Tools') },
-        { key: 'Subscription', label: t('Subscription') },
-        { key: 'Contacts', label: t('Contacts') },
+        { key: 'Tools', label: t('Tools'), href: '/intro#tools' },
+        { key: 'Subscription', label: t('Subscription'), href: undefined },
+        { key: 'Contacts', label: t('Contacts'), href: '/intro#contact' },
     ];
 
     return (
@@ -44,6 +44,8 @@ export default function LandingHeader() {
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
+                            component={link.href ? 'a' : 'span'}
+                            href={link.href}
                             sx={{
                                 fontWeight: 700,
                                 fontSize: '0.88rem',
@@ -51,6 +53,7 @@ export default function LandingHeader() {
                                 cursor: 'pointer',
                                 whiteSpace: 'nowrap',
                                 transition: 'color 0.15s',
+                                textDecoration: 'none',
                                 '&:hover': { color: '#00ABBE' },
                             }}
                         >
@@ -171,8 +174,10 @@ export default function LandingHeader() {
                         {navLinks.map(link => (
                             <MenuItem
                                 key={link.key}
+                                component={link.href ? 'a' : 'li'}
+                                href={link.href}
                                 onClick={() => setAnchorEl(null)}
-                                sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', py: 1.25 }}
+                                sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222', py: 1.25, textDecoration: 'none' }}
                             >
                                 {link.label}
                             </MenuItem>

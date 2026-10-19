@@ -100,7 +100,7 @@ export default function TargetSection() {
         setFlipped(prev => (prev === i ? null : i));
 
     return (
-        <Box sx={{
+        <Box id="tools" sx={{
             pt: { xs: 2, md: 3 },
             pb: { xs: 3, md: 4 },
             px: { xs: 3, md: 6 },
