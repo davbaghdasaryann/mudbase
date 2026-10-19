@@ -560,6 +560,10 @@ export default function RentayinPage() {
                                                                     if (!sub || subRows.length === 0) return null;
                                                                     const subEstTotal = subRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
                                                                     const subActTotal = subRows.reduce((s, r) => {
+                                                                        const gi = rows.indexOf(r);
+                                                                        const simP = profitSimOverrides[gi] ?? null;
+                                                                        const estUF = r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0);
+                                                                        if (simP !== null && estUF > 0) return s + (estUF / (1 + simP / 100)) * r.quantity;
                                                                         const auc = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : r.actualUnitCost;
                                                                         return s + (auc !== null && auc > 0 && r.unitCostSource ? auc * r.quantity : 0);
                                                                     }, 0);
@@ -589,6 +593,10 @@ export default function RentayinPage() {
                                                         if (secRows.length === 0) return null;
                                                         const secEstTotal = secRows.reduce((s, r) => s + (r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0)) * r.quantity, 0);
                                                         const secActTotal = secRows.reduce((s, r) => {
+                                                            const gi = rows.indexOf(r);
+                                                            const simP = profitSimOverrides[gi] ?? null;
+                                                            const estUF = r.estimatedUnitCost + (r.estimatedMaterialUnitCost ?? 0);
+                                                            if (simP !== null && estUF > 0) return s + (estUF / (1 + simP / 100)) * r.quantity;
                                                             const auc = (r.unitCostSource === 'library' || r.unitCostSource === 'market') ? (r.actualUnitCost ?? 0) + (r.actualMaterialUnitCost ?? r.estimatedMaterialUnitCost ?? 0) : r.actualUnitCost;
                                                             return s + (auc !== null && auc > 0 && r.unitCostSource ? auc * r.quantity : 0);
                                                         }, 0);
