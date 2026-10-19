@@ -80,6 +80,16 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         ],
         callout: 'Ժամանակագրական վերլուծությունը ցույց է տալիս, թե որքան կարժենար տվյալ շինարարությունը տարբեր ժամանակահատվածներում։',
     },
+    7: {
+        title: 'Մոնիթորինգ',
+        description: '«Մոնիթորինգ» գործիքը նախատեսված է շուկայական արժեքների փոփոխությունների շարունակական դիտարկման համար։ Այս գործիքի միջոցով կազմակերպությունը կարող է մեկ էջում վիջեթների տեսքով հավաքել իր համար անհրաժեշտ վիճակագրական տվյալները։ Օրինակ՝ հնարավոր է հետևել, թե որքան է տատանվել որևէ շինարարական աշխատանքի արժեքը կամ աշխատանքի ընդհանուր հաշվարկը վերջին 15 կամ 30 օրվա ընթացքում։ Արդյունքում կազմակերպությունը մեկ էջում ստանում է շուկայական արժեքների փոփոխությունների ամփոփ և արագ ընկալելի պատկեր։',
+        intro: '«Մոնիթորինգ» գործիքը նախատեսված է շուկայական արժեքների փոփոխությունների շարունակական դիտարկման համար։',
+        features: [
+            'Այս գործիքի միջոցով կազմակերպությունը կարող է մեկ էջում վիջեթների տեսքով հավաքել իր համար անհրաժեշտ վիճակագրական տվյալները։',
+            'Օրինակ՝ հնարավոր է հետևել, թե որքան է տատանվել որևէ շինարարական աշխատանքի արժեքը կամ աշխատանքի ընդհանուր հաշվարկը վերջին 15 կամ 30 օրվա ընթացքում։',
+        ],
+        callout: 'Արդյունքում կազմակերպությունը մեկ էջում ստանում է շուկայական արժեքների փոփոխությունների ամփոփ և արագ ընկալելի պատկեր։',
+    },
 };
 
 export default function TargetSection() {
@@ -633,26 +643,44 @@ export default function TargetSection() {
                         <Box
                             onClick={() => toggle(7)}
                             sx={{
-                                position: "absolute",
+                                position: 'absolute',
                                 inset: 0,
-                                backfaceVisibility: "hidden",
-                                WebkitBackfaceVisibility: "hidden",
-                                transform: "rotateY(180deg)",
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "flex-end",
-                                borderRadius: "18px",
-                                border: "1px solid #00ABBE",
-                                boxShadow: "0 4px 24px rgba(0,171,190,0.15)",
-                                backgroundColor: "#fff",
-                                cursor: "pointer",
-                                pb: 3,
+                                backfaceVisibility: 'hidden',
+                                WebkitBackfaceVisibility: 'hidden',
+                                transform: 'rotateY(180deg)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                borderRadius: '18px',
+                                border: '1px solid #00ABBE',
+                                boxShadow: '0 4px 24px rgba(0,171,190,0.15)',
+                                backgroundColor: '#fff',
+                                cursor: 'pointer',
+                                py: 3, px: 2.5,
                             }}
                         >
-                            <Typography sx={{ fontSize: "0.78rem", color: "#94a3ac", userSelect: "none" }}>
-                                ‹ Պտտել
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b', mb: 1, alignSelf: 'flex-start', lineHeight: 1.3 }}>
+                                {CARD_DETAILS[7].title}
                             </Typography>
+                            <Box sx={{ flex: 1, width: '100%', overflow: 'hidden', position: 'relative', mb: 1.5 }}>
+                                <Typography sx={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                    {CARD_DETAILS[7].description}
+                                </Typography>
+                                <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 32, background: 'linear-gradient(transparent, #fff)', pointerEvents: 'none' }} />
+                            </Box>
+                            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                                <Box
+                                    component='button'
+                                    onClick={(e: any) => { e.stopPropagation(); setExpandedCard(7); }}
+                                    sx={{ border: 'none', bgcolor: '#00ABBE', color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
+                                >
+                                    Տեսնել ավելին
+                                </Box>
+                                <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
+                                    ‹ Պտտել
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
                 </Box>
