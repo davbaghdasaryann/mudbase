@@ -18,7 +18,7 @@ const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
 const CARD_DETAILS: Record<number, { title: string; description: string }> = {
     1: {
         title: 'Նախահաշվային գործիք',
-        description: 'Նախահաշվային գործիքը նախաթևսված և շինարարական աշխատանկնևրի արժևքի հաշվարկման համարկՓ։ Այն արանլին գործիք և և նևրարկում և նախահաշիվնևրի կազմման և խմբագրման համար անհրատևշտ բոլոր ծրագրային հնարավորություննևրև։ Արժևքի դզևվավորման և հաշվարկի իրականացման համար անհրատևշտ տվալնևրև բևրնվում ևն հիմնական շտևմարաննևրից, արտացոլևլով շինարարական աշխատանկնևրի և նյութևրի տվյալ պահի դրությամբ հաշվարկված միժինացված արժևքնևրը։ Հաշվարկված նախահաշիվը հնարավորև և արտահանևլ թվայինի տարբևր դզևվաչափհևրով, յսթև նախապատկություն։ Բացի այդ, հիմկ ևնդունևլով նախահաշիվային տվալնևրը, հնարավորև և շինարարական կապալի պայմանագրի համար դզևվավորևլ աշխատանկնևրի ծավալաթևրթ։',
+        description: 'Նախahashvayin gortsikը նakhatesvatsd е shinararakan ashkhataнкнери arjeqi hashharkman hamar։ Ayn arranjin gortsik е ev nerarkum е nakhahashivneri kazmman ev khmbagrman hamar anhratesht bolor tstragrayian hnaravoryutyunnere։ Arjeqi dzevagorman ev hashharki irakanacman hamar anhratesht tvatalnere bernutsum en himnakan shtemaranneric, artatsolelov shinararakan ashkhataнкнери ev nyuteri tvyal pahi dryutyamb hashharkvatsd mijinacvatsd arjeknerin։ Нakhahashivatsvatsd nakhahashivi hnaravore е artahanel tvayini tarber dzevachapherov, yste nakhapatkutyun։ Baci avd, himk endunelov nakhahashivayin tvatalnere, hnaravore е shinararakan kapali paymanagri hamar dzevorel ashkhatankeri tsavalatert։',
     },
 };
 
@@ -229,7 +229,7 @@ export default function TargetSection() {
                                                 onClick={(e: any) => { e.stopPropagation(); setExpandedCard(i); }}
                                                 sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
                                             >
-                                                Փեսնել ավել
+                                                Փեսնել ավելին
                                             </Box>
                                             <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
                                                 ‹ Պտտել
@@ -782,19 +782,19 @@ export default function TargetSection() {
             {expandedCard !== null && CARD_DETAILS[expandedCard] && (
                 <Box
                     onClick={() => setExpandedCard(null)}
-                    sx={{ position: 'fixed', inset: 0, zIndex: 1300, bgcolor: 'rgba(0,0,0,0.58)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}
+                    sx={{ position: 'fixed', inset: 0, zIndex: 1300, bgcolor: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}
                 >
                     <Box
                         onClick={(e: any) => e.stopPropagation()}
                         sx={{
-                            bgcolor: 'rgba(14,24,33,0.93)',
-                            backdropFilter: 'blur(24px)',
-                            WebkitBackdropFilter: 'blur(24px)',
-                            borderRadius: '20px',
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            backdropFilter: 'blur(32px)',
+                            WebkitBackdropFilter: 'blur(32px)',
+                            borderRadius: '24px',
                             maxWidth: 620,
                             width: '100%',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
+                            border: '1px solid rgba(255,255,255,0.22)',
+                            boxShadow: '0 8px 32px rgba(31,38,135,0.25), 0 2px 8px rgba(0,0,0,0.2)',
                             p: { xs: 3, md: 4 },
                             position: 'relative',
                             maxHeight: '82vh',
