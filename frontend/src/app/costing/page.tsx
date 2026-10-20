@@ -1397,7 +1397,7 @@ export default function CostingPage() {
                     actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
                     // For subcontractor-only rows, volume qty isn't tracked in actualData — pull it from cost history
                     if (actQty === 0) {
-                        actQty = costHistory.filter(e => e.laborItemId === rowId && e.isSubcontractor).reduce((s, e) => s + (e.quantity ?? 0), 0);
+                        actQty = costHistory.filter(e => e.laborItemId === rowId && (e.isSubcontractor || e.paymentMethod === 'subcontractor')).reduce((s, e) => s + (e.quantity ?? 0), 0);
                     }
                     salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                     matActTotal = costHistory.filter(e => {
