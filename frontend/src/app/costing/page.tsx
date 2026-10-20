@@ -41,6 +41,7 @@ import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
@@ -2092,8 +2093,24 @@ ${tableBodyHtml}
                 )}
 
                 {tab === 'main' && (
-                    <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                        <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
+                    <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0, position: 'relative' }}>
+                        <Box ref={mainScrollContainerRef} sx={{ height: '100%', overflow: 'auto' }}>
+                            <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
+                        </Box>
+                        <IconButton
+                            onClick={() => { if (mainScrollContainerRef.current) mainScrollContainerRef.current.scrollTop = 0; }}
+                            size='small'
+                            sx={{
+                                position: 'absolute', bottom: 20, right: 20,
+                                backgroundColor: 'rgba(0,171,190,0.12)',
+                                color: '#00ABBE',
+                                border: '1px solid rgba(0,171,190,0.25)',
+                                backdropFilter: 'blur(8px)',
+                                '&:hover': { backgroundColor: 'rgba(0,171,190,0.22)' },
+                            }}
+                        >
+                            <KeyboardArrowUpIcon />
+                        </IconButton>
                     </Box>
                 )}
 
