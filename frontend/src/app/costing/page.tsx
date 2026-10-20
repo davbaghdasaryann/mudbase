@@ -2094,8 +2094,8 @@ ${tableBodyHtml}
                 )}
 
                 {tab === 'main' && (
-                    <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0, position: 'relative' }}>
-                        <Box ref={mainScrollContainerRef} onScroll={(e) => setShowBackToTop((e.currentTarget as HTMLDivElement).scrollTop > 0)} sx={{ height: '100%', overflow: 'auto' }}>
+                    <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                        <Box ref={mainScrollContainerRef} onScroll={(e) => setShowBackToTop((e.currentTarget as HTMLDivElement).scrollTop > 0)} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                             <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                         </Box>
                         {showBackToTop && (
