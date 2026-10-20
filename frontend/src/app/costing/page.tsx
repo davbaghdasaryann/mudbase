@@ -41,7 +41,6 @@ import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ImgElement from '@/tsui/DomElements/ImgElement';
 import { useTranslation } from 'react-i18next';
 import PageContents from '@/components/PageContents';
@@ -884,7 +883,6 @@ export default function CostingPage() {
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
     const [tempPaymentValue, setTempPaymentValue] = useState('');
-    const [showBackToTop, setShowBackToTop] = useState(false);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const pendingFlushRef = useRef<{ url: string; body: string } | null>(null);
@@ -894,29 +892,6 @@ export default function CostingPage() {
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
     const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
-    const scrollParentRef = useRef<HTMLElement | null>(null);
-
-    useEffect(() => {
-        if (tab !== 'main') { setShowBackToTop(false); return; }
-        const findScrollParent = (el: HTMLElement | null): HTMLElement | null => {
-            if (!el || el === document.body) return null;
-            const oy = window.getComputedStyle(el).overflowY;
-            if (oy === 'auto' || oy === 'scroll') return el;
-            return findScrollParent(el.parentElement);
-        };
-        // capture:true catches scroll on any element in the subtree
-        const onScroll = (e: Event) => {
-            const target = e.target as HTMLElement;
-            if (target && target.scrollTop > 0) {
-                scrollParentRef.current = target;
-                setShowBackToTop(true);
-            } else if (scrollParentRef.current && scrollParentRef.current.scrollTop === 0) {
-                setShowBackToTop(false);
-            }
-        };
-        document.addEventListener('scroll', onScroll, { capture: true });
-        return () => document.removeEventListener('scroll', onScroll, { capture: true });
-    }, [tab]);
 
     const loadRecords = useCallback(() => {
         setLoading(true);
@@ -2121,23 +2096,6 @@ ${tableBodyHtml}
                         <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                     </Box>
                 )}
-                {tab === 'main' && showBackToTop && (
-                    <IconButton
-                        onClick={() => { if (scrollParentRef.current) { scrollParentRef.current.scrollTop = 0; setShowBackToTop(false); } }}
-                        size='small'
-                        sx={{
-                            position: 'fixed', bottom: 24, right: 24, zIndex: 1300,
-                            backgroundColor: 'rgba(0,171,190,0.12)',
-                            color: '#00ABBE',
-                            border: '1px solid rgba(0,171,190,0.25)',
-                            backdropFilter: 'blur(8px)',
-                            '&:hover': { backgroundColor: 'rgba(0,171,190,0.22)' },
-                        }}
-                    >
-                        <KeyboardArrowUpIcon />
-                    </IconButton>
-                )}
-
                 {tab === 'unforeseen' && (
                     <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                         {!unforeseenEstimate ? (

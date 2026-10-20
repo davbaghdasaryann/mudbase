@@ -18,6 +18,7 @@ import AppHeaderNoAppBar from './main/AppHeaderNoAppBar';
 import { MobileDrawerProvider } from './main/MobileDrawerContext';
 import AppFooterCopyrightNotice from './main/AppFooterCopyrightNotice';
 import AppCentralCompanyLogo from './main/AppCentralCompanyLogo';
+import BackToTopButton from './BackToTopButton';
 import Env from '../env';
 import {useTranslation} from 'react-i18next';
 
@@ -194,6 +195,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
                     {props.children}
                 </Stack>
             </Box>
+            <BackToTopButton />
         </Box>
     );
 }
