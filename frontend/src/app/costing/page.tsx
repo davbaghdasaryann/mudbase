@@ -1577,11 +1577,11 @@ export default function CostingPage() {
 
         // Summary rows (above grand total)
         const summaryRows: [string, string][] = [
-            ['Ընդհ. արժեք (Նախ. / Փաստ.)', `${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD`],
-            ['Նյութ. արժեք (Նախ. / Փաստ.)', `${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD`],
-            ['Աշխ. ծախս (Նախ. / Փաստ.)', `${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD`],
-            ...(constructionSurface > 0 ? [['Շինարա. մակերես', `${constructionSurface.toLocaleString()} մ²`] as [string, string]] : []),
-            ...(completionPct > 0 ? [['Կատ. տոկոս', `${completionPct}%`] as [string, string]] : []),
+            ['Ընդհանուր արժեք (Նախահաշիվ / Փաստացի)', `${estTotal > 0 ? fmtN(estTotal) : '—'} / ${grandActTotal > 0 ? fmtN(grandActTotal) : '—'} AMD`],
+            ['Նյութական արժեք (Նախահաշիվ / Փաստացի)', `${estMaterials > 0 ? fmtN(estMaterials) : '—'} / ${actMaterials > 0 ? fmtN(actMaterials) : '—'} AMD`],
+            ['Աշխատ. ծախս (Նախահաշիվ / Փաստացի)', `${estLabor > 0 ? fmtN(estLabor) : '—'} / ${actLabor > 0 ? fmtN(actLabor) : '—'} AMD`],
+            ...(constructionSurface > 0 ? [['Շինարական մակերես', `${constructionSurface.toLocaleString()} մ²`] as [string, string]] : []),
+            ...(completionPct > 0 ? [['Կատարման տոկոս', `${completionPct}%`] as [string, string]] : []),
             ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`] as [string, string]] : []),
         ];
         const summaryHeaderHtml = summaryRows.map(([lbl, val]) =>
