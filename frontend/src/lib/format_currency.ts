@@ -32,12 +32,6 @@ export function formatCurrencyThree(value: string | number | null | undefined): 
     if (value === undefined) return undefined;
     if (value === '') return '';
     if (typeof value === 'number' && isNaN(value)) return '0';
-    const num = typeof value === 'number' ? value : parseFloat(String(value));
-    if (isNaN(num)) return String(value);
-    const rounded = Math.round(num * 1000) / 1000;
-    if (Number.isInteger(rounded)) {
-        return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    }
-    const [intPart, decPart] = rounded.toFixed(3).split('.');
-    return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + '.' + decPart;
+    const sval = typeof value === 'number' ? (Math.round(value * 1000) / 1000).toString() : value;
+    return sval.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
