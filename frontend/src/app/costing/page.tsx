@@ -895,14 +895,6 @@ export default function CostingPage() {
     const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
 
-    useEffect(() => {
-        const el = mainScrollContainerRef.current;
-        if (!el) return;
-        const onScroll = () => setShowBackToTop(el.scrollTop > 0);
-        el.addEventListener('scroll', onScroll);
-        return () => el.removeEventListener('scroll', onScroll);
-    }, [tab]);
-
     const loadRecords = useCallback(() => {
         setLoading(true);
         Api.requestSession<CostingRecord[]>({ command: 'costing/fetch_all', args: {} })
@@ -2103,7 +2095,7 @@ ${tableBodyHtml}
 
                 {tab === 'main' && (
                     <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0, position: 'relative' }}>
-                        <Box ref={mainScrollContainerRef} sx={{ height: '100%', overflow: 'auto' }}>
+                        <Box ref={mainScrollContainerRef} onScroll={(e) => setShowBackToTop((e.currentTarget as HTMLDivElement).scrollTop > 0)} sx={{ height: '100%', overflow: 'auto' }}>
                             <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                         </Box>
                         {showBackToTop && (
