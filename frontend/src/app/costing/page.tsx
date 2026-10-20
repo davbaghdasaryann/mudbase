@@ -894,6 +894,23 @@ export default function CostingPage() {
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
     const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
+    const scrollParentRef = useRef<HTMLElement | null>(null);
+
+    useEffect(() => {
+        if (tab !== 'main') { setShowBackToTop(false); return; }
+        const findScrollParent = (el: HTMLElement | null): HTMLElement | null => {
+            if (!el || el === document.body) return null;
+            const oy = window.getComputedStyle(el).overflowY;
+            if (oy === 'auto' || oy === 'scroll') return el;
+            return findScrollParent(el.parentElement);
+        };
+        const sp = findScrollParent(mainScrollContainerRef.current);
+        scrollParentRef.current = sp;
+        if (!sp) return;
+        const onScroll = () => setShowBackToTop(sp.scrollTop > 0);
+        sp.addEventListener('scroll', onScroll);
+        return () => sp.removeEventListener('scroll', onScroll);
+    }, [tab]);
 
     const loadRecords = useCallback(() => {
         setLoading(true);
@@ -2094,16 +2111,16 @@ ${tableBodyHtml}
                 )}
 
                 {tab === 'main' && (
-                    <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                        <Box ref={mainScrollContainerRef} onScroll={(e) => setShowBackToTop((e.currentTarget as HTMLDivElement).scrollTop > 0)} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                    <Box sx={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                        <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
                             <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                         </Box>
                         {showBackToTop && (
                             <IconButton
-                                onClick={() => { if (mainScrollContainerRef.current) mainScrollContainerRef.current.scrollTop = 0; }}
+                                onClick={() => { if (scrollParentRef.current) scrollParentRef.current.scrollTop = 0; }}
                                 size='small'
                                 sx={{
-                                    position: 'absolute', bottom: 20, right: 20,
+                                    position: 'absolute', bottom: 20, right: 20, zIndex: 10,
                                     backgroundColor: 'rgba(0,171,190,0.12)',
                                     color: '#00ABBE',
                                     border: '1px solid rgba(0,171,190,0.25)',
