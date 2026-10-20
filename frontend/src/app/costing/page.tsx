@@ -315,15 +315,17 @@ function SectionBlock({ num, title, rows, onChange, onPlusClick, descLabel, disa
 }
 
 const COST_SEGMENTS = [
-    { key: 'labor',     inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
-    { key: 'materials', inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
-    { key: 'other',     inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
+    { key: 'labor',          inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
+    { key: 'materials',      inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
+    { key: 'other',          inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
+    { key: 'subcontractor',  inner: '#CE93D8', outer: '#7B1FA2', dot: '#9C27B0' },
 ];
 
 const ACTUAL_SEGMENTS = [
-    { key: 'labor',     inner: '#FF7043', outer: '#BF360C', dot: '#E64A19' },
-    { key: 'materials', inner: '#FFB300', outer: '#E65100', dot: '#F57C00' },
-    { key: 'other',     inner: '#FFE57F', outer: '#FF8F00', dot: '#FFA000' },
+    { key: 'labor',          inner: '#FF7043', outer: '#BF360C', dot: '#E64A19' },
+    { key: 'materials',      inner: '#FFB300', outer: '#E65100', dot: '#F57C00' },
+    { key: 'other',          inner: '#FFE57F', outer: '#FF8F00', dot: '#FFA000' },
+    { key: 'subcontractor',  inner: '#CE93D8', outer: '#7B1FA2', dot: '#9C27B0' },
 ];
 
 function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
@@ -331,17 +333,19 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     const chartHeight = Math.max(100, height - 72);
 
     const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+    const subcontractorTotal = costHistory.filter(e => e.paymentMethod === 'subcontractor' || !!e.isSubcontractor).reduce((s, e) => s + e.total, 0);
 
     const laborTotal = costHistory
-        .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead')
+        .filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'subcontractor' && !e.isSubcontractor)
         .reduce((s, e) => s + e.total, 0);
 
     const aylTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' || e.paymentMethod === 'overhead').reduce((s, e) => s + e.total, 0);
 
     const data = [
-        { key: 'labor',     name: t('Labor'),         value: laborTotal },
-        { key: 'materials', name: t('Materials'),      value: materialsTotal },
-        { key: 'other',     name: t('Other Expenses'), value: aylTotal },
+        { key: 'labor',         name: t('Labor'),         value: laborTotal },
+        { key: 'materials',     name: t('Materials'),      value: materialsTotal },
+        { key: 'other',         name: t('Other Expenses'), value: aylTotal },
+        { key: 'subcontractor', name: 'Ենթակապալ',      value: subcontractorTotal },
     ].filter(d => d.value > 0);
 
     const total = data.reduce((s, d) => s + d.value, 0);
@@ -411,12 +415,13 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
     const { t } = useTranslation();
     const chartH = Math.max(80, height - 80);
 
-    const ALL_KEYS = ['labor', 'materials', 'other'] as const;
-    const buildData = (labor: number, materials: number, other: number) => {
-        const total = labor + materials + other;
+    const ALL_KEYS = ['labor', 'materials', 'other', 'subcontractor'] as const;
+    const SUB_LABEL = 'Ենթակապալ';
+    const buildData = (labor: number, materials: number, other: number, subcontractor: number) => {
+        const total = labor + materials + other + subcontractor;
         return ALL_KEYS.map(key => {
-            const value = key === 'labor' ? labor : key === 'materials' ? materials : other;
-            return { key, name: t(key === 'labor' ? 'Labor' : key === 'materials' ? 'Materials' : 'Other Expenses'), value, pct: total > 0 ? ((value / total) * 100).toFixed(1) : '0.0' };
+            const value = key === 'labor' ? labor : key === 'materials' ? materials : key === 'other' ? other : subcontractor;
+            return { key, name: key === 'labor' ? t('Labor') : key === 'materials' ? t('Materials') : key === 'other' ? t('Other Expenses') : SUB_LABEL, value, pct: total > 0 ? ((value / total) * 100).toFixed(1) : '0.0' };
         });
     };
 
@@ -425,14 +430,15 @@ function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, 
         const materials = estimate.materialTotalCost ?? 0;
         const base = estimate.totalCost ?? 0;
         const other = Math.max(0, (estimate.totalCostWithOtherExpenses ?? base) - base);
-        return buildData(labor, materials, other);
+        return buildData(labor, materials, other, 0);
     })();
 
     const actData = (() => {
         const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
-        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead').reduce((s, e) => s + e.total, 0);
+        const subcontractorTotal = costHistory.filter(e => e.paymentMethod === 'subcontractor' || !!e.isSubcontractor).reduce((s, e) => s + e.total, 0);
+        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'subcontractor' && !e.isSubcontractor).reduce((s, e) => s + e.total, 0);
         const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' || e.paymentMethod === 'overhead').reduce((s, e) => s + e.total, 0);
-        return buildData(laborTotal, materialsTotal, aylMatTotal + extraActualCosts);
+        return buildData(laborTotal, materialsTotal, aylMatTotal + extraActualCosts, subcontractorTotal);
     })();
 
     const donut = (data: ReturnType<typeof buildData>, gradPrefix: string, segments = COST_SEGMENTS) => {
