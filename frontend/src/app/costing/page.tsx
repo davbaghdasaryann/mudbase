@@ -1413,8 +1413,8 @@ export default function CostingPage() {
                 const salUP  = upDivisor > 0 ? Math.round(salTotal / upDivisor) : 0;
                 const actUP  = upDivisor > 0 ? Math.round(actTotal / upDivisor) : 0;
 
-                // Skip rows with no costs (volume-only or empty group)
-                if (actTotal === 0) return '';
+                // Skip rows with no actual labor activity; material-only entries don't count
+                if (row.isGroupRow ? actTotal === 0 : (actQty === 0 && salTotal === 0)) return '';
 
                 // Materials for this labor row (derived from cost history)
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
