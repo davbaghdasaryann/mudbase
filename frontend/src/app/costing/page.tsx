@@ -1395,6 +1395,10 @@ export default function CostingPage() {
                     actTotal = salTotal + matActTotal;
                 } else {
                     actQty = parseFloat((actualData[rowId]?.quantity ?? '').replace(',', '.')) || 0;
+                    // For subcontractor-only rows, volume qty isn't tracked in actualData — pull it from cost history
+                    if (actQty === 0) {
+                        actQty = costHistory.filter(e => e.laborItemId === rowId && e.isSubcontractor).reduce((s, e) => s + (e.quantity ?? 0), 0);
+                    }
                     salTotal = costHistory.filter(e => e.laborItemId === rowId && !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
                     matActTotal = costHistory.filter(e => {
                         if (e.paymentMethod === 'nyuth_tsakhsagrum') {
@@ -1413,8 +1417,8 @@ export default function CostingPage() {
                 const salUP  = upDivisor > 0 ? Math.round(salTotal / upDivisor) : 0;
                 const actUP  = upDivisor > 0 ? Math.round(actTotal / upDivisor) : 0;
 
-                // Skip rows with no actual quantity registered (group rows: skip if zero total)
-                if (row.isGroupRow ? actTotal === 0 : actQty === 0) return '';
+                // Skip rows with no actual costs
+                if (actTotal === 0) return '';
 
                 // Materials for this labor row (derived from cost history)
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
