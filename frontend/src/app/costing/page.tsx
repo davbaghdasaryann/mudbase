@@ -1604,8 +1604,8 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 .lightGreen { background-color: #e2efd9; }
 .lightGray { background-color: lightgray; }
 .headerTable { border-collapse: collapse; width: auto; }
-.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; font-size: 11px; padding-left: 8px; padding-right: 16px; }
-.headerTableValue { padding-left: 8px; padding-right: 16px; }
+.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; font-size: 11px; padding-left: 8px; padding-right: 32px; }
+.headerTableValue { padding-left: 8px; padding-right: 32px; }
 .center { text-align: center; }
 .bold { font-weight: bolder; }
 .estimateTable { border-collapse: collapse; width: 100%; }
