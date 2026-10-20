@@ -26,3 +26,15 @@ export function formatCurrencyRounded(value: string | number | null | undefined)
 export function formatCurrencyRoundedSymbol(value: string | number | null | undefined): string {
     return formatCurrencyRounded(value) + ' AMD';
 }
+
+export function formatCurrencyThree(value: string | number | null | undefined): string | undefined | null {
+    if (value === null) return null;
+    if (value === undefined) return undefined;
+    if (value === '') return '';
+    if (typeof value === 'number' && isNaN(value)) return '0';
+    const num = typeof value === 'number' ? value : parseFloat(String(value));
+    if (isNaN(num)) return String(value);
+    const formatted = (Math.round(num * 1000) / 1000).toFixed(3);
+    const [intPart, decPart] = formatted.split('.');
+    return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + '.' + decPart;
+}

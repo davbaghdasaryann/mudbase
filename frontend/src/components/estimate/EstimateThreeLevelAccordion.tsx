@@ -46,7 +46,7 @@ import ImgElement from '../../tsui/DomElements/ImgElement';
 import { normalizeArmenianDecimalPoint, parseThousandsSeparator, roundNumber, roundToThree } from '@/tslib/parse';
 import { evaluateFormula } from '@/components/FormulaTextField';
 import { PageButton } from '@/tsui/Buttons/PageButton';
-import { formatCurrency, formatCurrencyRoundedSymbol } from '@/lib/format_currency';
+import { formatCurrency, formatCurrencyRoundedSymbol, formatCurrencyThree } from '@/lib/format_currency';
 import { EstimateRootAccordion, EstimateRootAccordionDetails, EstimateRootAccordionSummary } from '@/components/AccordionComponent';
 import MaterialsTwoPartDialog from '@/app/offers/MaterialsTwoPartDialog';
 import { makeMultilineTableCell } from '@/lib/format_date';
@@ -1364,7 +1364,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                     renderCell: (params) => {
                                                         const row = params.row as AccordionItem;
                                                         if (row.isGroupRow && (!params.value || params.value === 0)) return <></>;
-                                                        return <>{formatCurrency(params.value)}</>;
+                                                        return <>{formatCurrencyThree(params.value)}</>;
                                                     },
                                                     renderEditCell: (params) => {
                                                         const row = params.row as AccordionItem;
@@ -1843,7 +1843,7 @@ const EstimateThreeLevelNestedAccordion = forwardRef<EstimateThreeLevelNestedAcc
                                                                         renderCell: (params) => {
                                                                             const row = params.row as AccordionItem;
                                                                             if (row.isGroupRow && (!params.value || params.value === 0)) return <></>;
-                                                                            return <>{formatCurrency(params.value)}</>;
+                                                                            return <>{formatCurrencyThree(params.value)}</>;
                                                                         },
                                                                         renderEditCell: (params) => {
                                                                             const row = params.row as AccordionItem;
