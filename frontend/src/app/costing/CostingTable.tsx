@@ -424,12 +424,12 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const matActTotal = calcMatActTotal(rowId);
-        const subTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+        const subTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor)).reduce((s, e) => s + e.total, 0);
         const withoutMats = a?.withoutMaterials ?? false;
         if (subTotal > 0) {
             // Subcontractor row: ignore salary/volume; only sub + mat when withoutMaterials=true
             const actTotal = subTotal + (withoutMats ? matActTotal : 0);
-            return { actTotal, hasData: q > 0 && actTotal > 0 };
+            return { actTotal, hasData: actTotal > 0 };
         }
         const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
         const actTotal = (row.isGroupRow ? 0 : volumeTotal) + salaryTotal + matActTotal;
@@ -444,9 +444,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
         const q = parseFloat((a?.quantity ?? '').replace(',', '.')) || 0;
         const volumeTotal = parseFloat((a?.spent ?? '').replace(',', '.')) || 0;
         const mechanismTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'mechanism').reduce((s, e) => s + e.total, 0);
-        const subcontractorTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+        const subcontractorTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor)).reduce((s, e) => s + e.total, 0);
         const withoutMats = a?.withoutMaterials ?? false;
-        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism' && e.paymentMethod !== 'subcontractor').reduce((s, e) => s + e.total, 0);
+        const salaryTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism' && e.paymentMethod !== 'subcontractor' && !e.isSubcontractor).reduce((s, e) => s + e.total, 0);
         const gorcarqayanQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
         const matActTotal = calcMatActTotal(rowId);
         const { actTotal, hasData } = getRowActTotal(row);
@@ -849,9 +849,9 @@ export default function CostingTable({ estimate, estimateSnapshot, onCostAdded, 
                     const bq = parseFloat((ba?.quantity ?? '').replace(',', '.')) || 0;
                     const bVolumeTotal = parseFloat((ba?.spent ?? '').replace(',', '.')) || 0;
                     const bMechanismTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod === 'mechanism').reduce((s, e) => s + e.total, 0);
-                    const bSubcontractorTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod === 'subcontractor').reduce((s, e) => s + e.total, 0);
+                    const bSubcontractorTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor)).reduce((s, e) => s + e.total, 0);
                     const bWithoutMats = ba?.withoutMaterials ?? false;
-                    const bSalaryTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism' && e.paymentMethod !== 'subcontractor').reduce((s, e) => s + e.total, 0);
+                    const bSalaryTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'mechanism' && e.paymentMethod !== 'subcontractor' && !e.isSubcontractor).reduce((s, e) => s + e.total, 0);
                     const bMatActTotal = calcMatActTotal(breakdownRowId);
                     const bGorcarqayanQtyTotal = (costHistory ?? []).filter(e => e.laborItemId === breakdownRowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + (e.quantity ?? 0), 0);
                     const { actTotal: bActTotal } = getRowActTotal(bRow);
