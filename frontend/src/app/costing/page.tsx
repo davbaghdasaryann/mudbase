@@ -1286,7 +1286,7 @@ export default function CostingPage() {
 .lightGreen { background-color: #e2efd9; }
 .lightGray { background-color: lightgray; }
 .headerTable { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
-.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; padding-left: 4px; padding-right: 4px; }
+.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; font-size: 11px; padding-left: 4px; padding-right: 4px; }
 .headerTableValue { padding-left: 4px; padding-right: 4px; font-weight: bolder; }
 .estimateTable { border-collapse: collapse; width: 100%; }
 .estimateTable td, .estimateTable th { border: 1px solid black; text-align: center; padding: 4px 6px; }
@@ -1604,7 +1604,7 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 .lightGreen { background-color: #e2efd9; }
 .lightGray { background-color: lightgray; }
 .headerTable { border-collapse: collapse; width: 100%; }
-.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; padding-left: 4px; padding-right: 4px; }
+.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; font-size: 11px; padding-left: 4px; padding-right: 4px; }
 .headerTableValue { padding-left: 4px; padding-right: 4px; }
 .center { text-align: center; }
 .bold { font-weight: bolder; }
@@ -2405,7 +2405,7 @@ ${tableBodyHtml}
 .lightGreen { background-color: #e2efd9; }
 .lightGray { background-color: lightgray; }
 .headerTable { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
-.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; padding-left: 4px; padding-right: 4px; }
+.headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; font-size: 11px; padding-left: 4px; padding-right: 4px; }
 .headerTableValue { padding-left: 4px; padding-right: 4px; font-weight: bolder; }
 .estimateTable { border-collapse: collapse; width: 100%; }
 .estimateTable td, .estimateTable th { border: 1px solid black; text-align: center; padding: 4px 6px; }
