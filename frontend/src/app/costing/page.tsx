@@ -1603,7 +1603,7 @@ body { font-family: 'Noto Sans Armenian', Arial, sans-serif; margin: 0; padding:
 .lightBlue { background-color: #b4ccd6; }
 .lightGreen { background-color: #e2efd9; }
 .lightGray { background-color: lightgray; }
-.headerTable { border-collapse: collapse; width: 100%; }
+.headerTable { border-collapse: collapse; width: auto; }
 .headerTableName { border: 1px solid black; font-style: italic; white-space: nowrap; font-size: 11px; padding-left: 4px; padding-right: 4px; }
 .headerTableValue { padding-left: 4px; padding-right: 4px; }
 .center { text-align: center; }
