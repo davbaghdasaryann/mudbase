@@ -904,12 +904,18 @@ export default function CostingPage() {
             if (oy === 'auto' || oy === 'scroll') return el;
             return findScrollParent(el.parentElement);
         };
-        const sp = findScrollParent(mainScrollContainerRef.current);
-        scrollParentRef.current = sp;
-        if (!sp) return;
-        const onScroll = () => setShowBackToTop(sp.scrollTop > 0);
-        sp.addEventListener('scroll', onScroll);
-        return () => sp.removeEventListener('scroll', onScroll);
+        // capture:true catches scroll on any element in the subtree
+        const onScroll = (e: Event) => {
+            const target = e.target as HTMLElement;
+            if (target && target.scrollTop > 0) {
+                scrollParentRef.current = target;
+                setShowBackToTop(true);
+            } else if (scrollParentRef.current && scrollParentRef.current.scrollTop === 0) {
+                setShowBackToTop(false);
+            }
+        };
+        document.addEventListener('scroll', onScroll, { capture: true });
+        return () => document.removeEventListener('scroll', onScroll, { capture: true });
     }, [tab]);
 
     const loadRecords = useCallback(() => {
@@ -2111,27 +2117,25 @@ ${tableBodyHtml}
                 )}
 
                 {tab === 'main' && (
-                    <Box sx={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                        <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-                            <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
-                        </Box>
-                        {showBackToTop && (
-                            <IconButton
-                                onClick={() => { if (scrollParentRef.current) scrollParentRef.current.scrollTop = 0; }}
-                                size='small'
-                                sx={{
-                                    position: 'absolute', bottom: 20, right: 20, zIndex: 10,
-                                    backgroundColor: 'rgba(0,171,190,0.12)',
-                                    color: '#00ABBE',
-                                    border: '1px solid rgba(0,171,190,0.25)',
-                                    backdropFilter: 'blur(8px)',
-                                    '&:hover': { backgroundColor: 'rgba(0,171,190,0.22)' },
-                                }}
-                            >
-                                <KeyboardArrowUpIcon />
-                            </IconButton>
-                        )}
+                    <Box ref={mainScrollContainerRef} sx={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+                        <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                     </Box>
+                )}
+                {tab === 'main' && showBackToTop && (
+                    <IconButton
+                        onClick={() => { if (scrollParentRef.current) { scrollParentRef.current.scrollTop = 0; setShowBackToTop(false); } }}
+                        size='small'
+                        sx={{
+                            position: 'fixed', bottom: 24, right: 24, zIndex: 1300,
+                            backgroundColor: 'rgba(0,171,190,0.12)',
+                            color: '#00ABBE',
+                            border: '1px solid rgba(0,171,190,0.25)',
+                            backdropFilter: 'blur(8px)',
+                            '&:hover': { backgroundColor: 'rgba(0,171,190,0.22)' },
+                        }}
+                    >
+                        <KeyboardArrowUpIcon />
+                    </IconButton>
                 )}
 
                 {tab === 'unforeseen' && (
