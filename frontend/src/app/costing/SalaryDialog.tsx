@@ -158,8 +158,11 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const computedTotal = n1 * n2;
     const canAdd = computedTotal > 0;
 
-    const getSalaryCoveredQty = (rowId: string) =>
-        (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + e.quantity, 0);
+    const getSalaryCoveredQty = (rowId: string) => {
+        const salaryQty = (costHistory ?? []).filter(e => e.laborItemId === rowId && e.paymentMethod === 'salary_gorcarqayin').reduce((s, e) => s + e.quantity, 0);
+        const subQty = (costHistory ?? []).filter(e => e.laborItemId === rowId && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor)).reduce((s, e) => s + (e.quantity ?? 0), 0);
+        return salaryQty + subQty;
+    };
 
     const handleAdd = () => {
         if (!canAdd || !selectedRow) return;
