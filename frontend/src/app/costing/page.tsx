@@ -1413,8 +1413,8 @@ export default function CostingPage() {
                 const salUP  = upDivisor > 0 ? Math.round(salTotal / upDivisor) : 0;
                 const actUP  = upDivisor > 0 ? Math.round(actTotal / upDivisor) : 0;
 
-                // Skip rows with no actual labor activity; material-only entries don't count
-                if (row.isGroupRow ? actTotal === 0 : (actQty === 0 && salTotal === 0)) return '';
+                // Skip rows with no actual quantity registered (group rows: skip if zero total)
+                if (row.isGroupRow ? actTotal === 0 : actQty === 0) return '';
 
                 // Materials for this labor row (derived from cost history)
                 const nyuthForRow = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum' && e.laborItemId === rowId && e.materialItemId);
@@ -1541,13 +1541,13 @@ export default function CostingPage() {
             [t('stateDutiesAndFees'), stateFees],
         ].filter(([, v]) => (v as number) > 0) as [string, number][];
         if (overheadTotal > 0 || otherCostsList.length > 0) {
-            tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:left;font-weight:bold;padding:6px 8px;">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
+            tableBodyHtml += `<tr><td class="lightBlue" colspan="${COLS}" style="text-align:center;font-weight:bold;padding:6px 8px;">ԱՅԼ ԾԱԽՍԵՐ</td></tr>`;
             if (overheadTotal > 0) {
-                tableBodyHtml += `<tr><td class="importantInfo" colspan="13" style="text-align:left;font-weight:normal;">Վերադիր ծախսեր</td><td></td><td>${fmtN(overheadTotal)}</td></tr>`;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13" style="text-align:center;font-weight:normal;">Վերադիր ծախսեր</td><td></td><td>${fmtN(overheadTotal)}</td></tr>`;
                 grandActTotal += overheadTotal;
             }
             for (const [label, val] of otherCostsList) {
-                tableBodyHtml += `<tr><td class="importantInfo" colspan="13" style="text-align:left;font-weight:normal;">${esc(label)}</td><td></td><td>${fmtN(val as number)}</td></tr>`;
+                tableBodyHtml += `<tr><td class="importantInfo" colspan="13" style="text-align:center;font-weight:normal;">${esc(label)}</td><td></td><td>${fmtN(val as number)}</td></tr>`;
                 grandActTotal += val as number;
             }
         }
@@ -1581,7 +1581,7 @@ export default function CostingPage() {
             ...(constructionSurface > 0 && costPerSqm > 0 ? [['Ծախս 1 մ²-ի համար', `${fmtN(costPerSqm)} AMD`] as [string, string]] : []),
         ];
         const summaryHeaderHtml = summaryRows.map(([lbl, val]) =>
-            `<tr><td class="headerTableName lightGreen">Օբյեկտի անվանումը</td><td class="headerTableValue bold">${esc(val)}</td></tr>`
+            `<tr><td class="headerTableName lightGreen">${esc(lbl)}</td><td class="headerTableValue bold">${esc(val)}</td></tr>`
         ).join('');
         tableBodyHtml += `<tr class="lightBlue"><td class="subsection" colspan="13">ԸՆԴԱՄԵՆԸ՝</td><td class="subsection" colspan="2">${fmtN(grandActTotal)}</td></tr>`;
 
