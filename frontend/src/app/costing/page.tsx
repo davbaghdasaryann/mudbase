@@ -884,6 +884,7 @@ export default function CostingPage() {
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [tempPaymentMethod, setTempPaymentMethod] = useState('');
     const [tempPaymentValue, setTempPaymentValue] = useState('');
+    const [showBackToTop, setShowBackToTop] = useState(false);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const pendingFlushRef = useRef<{ url: string; body: string } | null>(null);
@@ -893,6 +894,14 @@ export default function CostingPage() {
     const unforeseenSectionRef = useRef<HTMLDivElement>(null);
     const mainScrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollToUnforeseenRef = useRef(false);
+
+    useEffect(() => {
+        const el = mainScrollContainerRef.current;
+        if (!el) return;
+        const onScroll = () => setShowBackToTop(el.scrollTop > 0);
+        el.addEventListener('scroll', onScroll);
+        return () => el.removeEventListener('scroll', onScroll);
+    }, [tab]);
 
     const loadRecords = useCallback(() => {
         setLoading(true);
@@ -2097,20 +2106,22 @@ ${tableBodyHtml}
                         <Box ref={mainScrollContainerRef} sx={{ height: '100%', overflow: 'auto' }}>
                             <CostingTable estimate={selectedEstimate} estimateSnapshot={estimateSnapshot} onCostAdded={handleCostAdded} actualData={actualData} onActualDataChange={setActualData} costHistory={costHistory} pahestEntries={pahestEntries} />
                         </Box>
-                        <IconButton
-                            onClick={() => { if (mainScrollContainerRef.current) mainScrollContainerRef.current.scrollTop = 0; }}
-                            size='small'
-                            sx={{
-                                position: 'absolute', bottom: 20, right: 20,
-                                backgroundColor: 'rgba(0,171,190,0.12)',
-                                color: '#00ABBE',
-                                border: '1px solid rgba(0,171,190,0.25)',
-                                backdropFilter: 'blur(8px)',
-                                '&:hover': { backgroundColor: 'rgba(0,171,190,0.22)' },
-                            }}
-                        >
-                            <KeyboardArrowUpIcon />
-                        </IconButton>
+                        {showBackToTop && (
+                            <IconButton
+                                onClick={() => { if (mainScrollContainerRef.current) mainScrollContainerRef.current.scrollTop = 0; }}
+                                size='small'
+                                sx={{
+                                    position: 'absolute', bottom: 20, right: 20,
+                                    backgroundColor: 'rgba(0,171,190,0.12)',
+                                    color: '#00ABBE',
+                                    border: '1px solid rgba(0,171,190,0.25)',
+                                    backdropFilter: 'blur(8px)',
+                                    '&:hover': { backgroundColor: 'rgba(0,171,190,0.22)' },
+                                }}
+                            >
+                                <KeyboardArrowUpIcon />
+                            </IconButton>
+                        )}
                     </Box>
                 )}
 
