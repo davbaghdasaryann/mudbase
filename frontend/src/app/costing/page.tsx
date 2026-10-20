@@ -318,14 +318,14 @@ const COST_SEGMENTS = [
     { key: 'labor',          inner: '#00CCDD', outer: '#00899B', dot: '#00899B' },
     { key: 'materials',      inner: '#4EE89A', outer: '#1CA461', dot: '#1CA461' },
     { key: 'other',          inner: '#A8DED9', outer: '#5CB8B0', dot: '#5CB8B0' },
-    { key: 'subcontractor',  inner: '#FFA726', outer: '#EF6C00', dot: '#FF9800' },
+    { key: 'subcontractor',  inner: '#FFE082', outer: '#F9A825', dot: '#FFD740' },
 ];
 
 const ACTUAL_SEGMENTS = [
     { key: 'labor',          inner: '#FF7043', outer: '#BF360C', dot: '#E64A19' },
     { key: 'materials',      inner: '#FFB300', outer: '#E65100', dot: '#F57C00' },
     { key: 'other',          inner: '#FFE57F', outer: '#FF8F00', dot: '#FFA000' },
-    { key: 'subcontractor',  inner: '#FFA726', outer: '#EF6C00', dot: '#FF9800' },
+    { key: 'subcontractor',  inner: '#FFE082', outer: '#F9A825', dot: '#FFD740' },
 ];
 
 function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; height?: number }) {
