@@ -148,7 +148,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 primary={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                         {item.title}
-                                        {segment === 'dashboard-builder' && (
+                                        {(segment === 'dashboard-builder' || segment === 'costing' || segment === 'haymnadits') && (
                                             <Box component='span' sx={{
                                                 fontSize: '0.75rem',
                                                 fontWeight: 600,
@@ -258,6 +258,8 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
 
             <List sx={{ px: 1, pt: 0, pb: 0 }}>
                 {([
+                    { labelKey: 'Schedule', icon: <CalendarMonthIcon /> },
+                    { labelKey: 'Karavarium', icon: <ManageAccountsOutlinedIcon /> },
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
                     <ListItem key={item.labelKey} sx={{ px: 0, py: 0 }}>
@@ -396,9 +398,6 @@ function useMainNavigation() {
         }
 
         navigation.push({segment: 'haymnadits', title: t('Haymnadits'), icon: <CorporateFareOutlinedIcon />});
-        navigation.push({segment: 'karavarum', title: t('Karavarium'), icon: <ManageAccountsOutlinedIcon />});
-
-        navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
 
         navigation.push({
             segment: 'catalog',
