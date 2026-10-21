@@ -648,7 +648,7 @@ export default function PackagesPage() {
                                 }}
                             >
                                 <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: form.numberOfEstimations === 0 ? BRAND : '#9ca3af', letterSpacing: '0.02em' }}>
-                                    ∞ Unlimited
+                                    ∞ {t('Unlimited')}
                                 </Typography>
                             </Box>
                         </Box>
