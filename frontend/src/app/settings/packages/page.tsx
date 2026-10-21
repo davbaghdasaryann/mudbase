@@ -536,7 +536,7 @@ export default function PackagesPage() {
                                     {/* Users / estimations */}
                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                         <Chip icon={<PeopleOutlinedIcon />} label={`${pkg.numberOfUsers} ${t('Users')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
-                                        <Chip icon={<CalculateOutlinedIcon />} label={`${pkg.numberOfEstimations} ${t('Estimations')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
+                                        <Chip icon={<CalculateOutlinedIcon />} label={pkg.numberOfEstimations === 0 ? t('Unlimited Estimations') : `${pkg.numberOfEstimations} ${t('Estimations')}`} size='small' sx={{ bgcolor: `${accentColor}12`, color: accentColor, fontWeight: 600, '& .MuiChip-icon': { color: accentColor } }} />
                                     </Box>
 
                                     <Divider sx={{ my: 0.25 }} />
@@ -624,13 +624,34 @@ export default function PackagesPage() {
                             inputProps={{ inputMode: 'numeric' }}
                             sx={numberFieldSx}
                         />
-                        <TextField
-                            label={t('Estimations')}
-                            value={form.numberOfEstimations || ''}
-                            onChange={e => set('numberOfEstimations')(Number(e.target.value.replace(/\D/g, '')) || 0)}
-                            inputProps={{ inputMode: 'numeric' }}
-                            sx={numberFieldSx}
-                        />
+                        <Box>
+                            <TextField
+                                label={t('Estimations')}
+                                value={form.numberOfEstimations === 0 ? '' : (form.numberOfEstimations || '')}
+                                onChange={e => set('numberOfEstimations')(Number(e.target.value.replace(/\D/g, '')) || 1)}
+                                inputProps={{ inputMode: 'numeric' }}
+                                disabled={form.numberOfEstimations === 0}
+                                placeholder={form.numberOfEstimations === 0 ? '∞' : ''}
+                                fullWidth
+                                sx={numberFieldSx}
+                            />
+                            <Box
+                                onClick={() => set('numberOfEstimations')(form.numberOfEstimations === 0 ? 1 : 0)}
+                                sx={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.75,
+                                    cursor: 'pointer', userSelect: 'none',
+                                    px: 1, py: 0.3, borderRadius: '6px',
+                                    bgcolor: form.numberOfEstimations === 0 ? `${BRAND}15` : 'transparent',
+                                    border: `1px solid ${form.numberOfEstimations === 0 ? BRAND + '55' : '#e5e7eb'}`,
+                                    transition: 'all 0.15s',
+                                    '&:hover': { bgcolor: `${BRAND}0d` },
+                                }}
+                            >
+                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: form.numberOfEstimations === 0 ? BRAND : '#9ca3af', letterSpacing: '0.02em' }}>
+                                    ∞ Unlimited
+                                </Typography>
+                            </Box>
+                        </Box>
                     </Box>
 
                     <Divider sx={{ my: 2.5 }} />
