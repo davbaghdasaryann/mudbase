@@ -410,7 +410,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                         </RadioGroup>
                         {type === 'gorcarqayin' && <>
                             <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} unit={selectedRow?.unitSymbol || ''} error={qtyOverLimit} />
-                            {qtyOverLimit && <Typography sx={{ fontSize: '0.75rem', color: '#c62828', mt: -1, px: 0.5 }}>Max: {selectedRemaining.toLocaleString()} {selectedRow?.unitSymbol}</Typography>}
+                            {qtyOverLimit && <Typography sx={{ fontSize: '0.75rem', color: '#c62828', mt: -1, px: 0.5 }}>առավելագույնը: {selectedRemaining.toLocaleString()} {selectedRow?.unitSymbol}</Typography>}
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
