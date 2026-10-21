@@ -55,16 +55,16 @@ interface Props {
 
 const INPUT_SX = { border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, cursor: 'text', transition: 'border-color 0.15s', '&:focus-within': { borderColor: '#00ABBE' } };
 
-function NumInput({ label, value, onChange, autoFocus, unit = 'AMD' }: { label: string; value: string; onChange: (v: string) => void; autoFocus?: boolean; unit?: string }) {
+function NumInput({ label, value, onChange, autoFocus, unit = 'AMD', error }: { label: string; value: string; onChange: (v: string) => void; autoFocus?: boolean; unit?: string; error?: boolean }) {
     const inputRef = React.useRef<HTMLInputElement>(null);
     return (
-        <Box sx={INPUT_SX} onClick={() => inputRef.current?.focus()}>
-            <Typography sx={{ fontSize: '0.9125rem', color: '#555', flex: 1 }}>{label}</Typography>
+        <Box sx={{ ...INPUT_SX, ...(error ? { borderColor: '#c62828', '&:focus-within': { borderColor: '#c62828' } } : {}) }} onClick={() => inputRef.current?.focus()}>
+            <Typography sx={{ fontSize: '0.9125rem', color: error ? '#c62828' : '#555', flex: 1 }}>{label}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <InputBase autoFocus={autoFocus} value={value} inputRef={inputRef}
                     onChange={ev => onChange(ev.target.value.replace(/[^0-9.]/g, ''))}
                     placeholder='0'
-                    inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.9825rem', fontWeight: 600, color: '#333' } }}
+                    inputProps={{ style: { textAlign: 'right', width: 110, padding: 0, fontSize: '0.9825rem', fontWeight: 600, color: error ? '#c62828' : '#333' } }}
                 />
                 {unit && <Typography sx={{ fontSize: '0.8425rem', color: '#aaa' }}>{unit}</Typography>}
             </Box>
@@ -200,6 +200,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
     const selectedCovered = billingRow ? getSalaryCoveredQty(billingRow._id) : 0;
     const selectedPlanned = billingRow ? parseFloat(actualData?.[billingRow._id]?.quantity || '0') || 0 : 0;
     const selectedRemaining = Math.max(0, selectedPlanned - selectedCovered);
+    const qtyOverLimit = type === 'gorcarqayin' && selectedPlanned > 0 && n1 > selectedRemaining;
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth
@@ -408,7 +409,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                             <FormControlLabel value='miavorzham' control={<Radio size='small' sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor } }} />} label={<Typography sx={{ fontSize: '0.82rem' }}>ժամավճարային</Typography>} />
                         </RadioGroup>
                         {type === 'gorcarqayin' && <>
-                            <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} unit={selectedRow?.unitSymbol || ''} />
+                            <NumInput autoFocus label='Քանակը' value={val1} onChange={setVal1} unit={selectedRow?.unitSymbol || ''} error={qtyOverLimit} />
+                            {qtyOverLimit && <Typography sx={{ fontSize: '0.75rem', color: '#c62828', mt: -1, px: 0.5 }}>Max: {selectedRemaining.toLocaleString()} {selectedRow?.unitSymbol}</Typography>}
                             <NumInput label='Միավորի արժեքը' value={val2} onChange={setVal2} />
                         </>}
                         {type === 'miavorzham' && <>
