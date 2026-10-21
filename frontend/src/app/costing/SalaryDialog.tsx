@@ -307,7 +307,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 {!row.isGroupRow && (
                                                                     <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
                                                                         {planned > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                        {covered > 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                        {covered > 0 && remaining <= 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
                                                                         {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                                     </Box>
                                                                 )}
@@ -382,7 +382,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                             </Typography>
                                                             <Box sx={{ display: 'flex', gap: 1.5, mt: 0.3, flexWrap: 'wrap' }}>
                                                                 {planned > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#888' }}>Չափագրված: {planned.toLocaleString()} {row.unitSymbol}</Typography>}
-                                                                {covered > 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
+                                                                {covered > 0 && remaining <= 0 && <Typography sx={{ fontSize: '0.7825rem', color: mainPrimaryColor }}>Ծախսագրված: {covered.toLocaleString()} {row.unitSymbol}</Typography>}
                                                                 {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                             </Box>
                                                         </Box>
