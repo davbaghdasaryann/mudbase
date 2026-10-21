@@ -286,11 +286,13 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const children = row.isGroupRow ? (groupChildren[gid] ?? []) : [];
                                                     const selectRow = (r: LaborRow, parent?: LaborRow) => { setSelectedRow(r); setParentGroupRow(parent ?? null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); };
                                                     const isSubRow = !row.isGroupRow && (costHistory ?? []).some(e => e.laborItemId === gid && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor));
+                                                    const done = !row.isGroupRow && planned > 0 && remaining <= 0;
+                                                    const blocked = isSubRow || done;
                                                     return (
                                                         <React.Fragment key={gid}>
                                                         <Box
-                                                            onClick={row.isGroupRow ? (e) => handleGroupToggle(e, gid, row) : isSubRow ? undefined : () => selectRow(row)}
-                                                            sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: row.isGroupRow || !isSubRow ? 'pointer' : 'default', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: row.isGroupRow ? '#f2fcfd' : isSubRow ? undefined : '#f2fcfd' } }}
+                                                            onClick={row.isGroupRow ? (e) => handleGroupToggle(e, gid, row) : blocked ? undefined : () => selectRow(row)}
+                                                            sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: row.isGroupRow || !blocked ? 'pointer' : 'default', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: row.isGroupRow ? '#f2fcfd' : blocked ? undefined : '#f2fcfd' } }}
                                                         >
                                                             {row.isGroupRow && (
                                                                 <Box sx={{ mr: 0.5, display: 'flex', alignItems: 'center' }}>
@@ -309,7 +311,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                     </Box>
                                                                 )}
                                                             </Box>
-                                                            {!row.isGroupRow && !isSubRow && (
+                                                            {!row.isGroupRow && !blocked && (
                                                                 <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(row); }}>
                                                                     <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                 </IconButton>
@@ -318,14 +320,18 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                         {isExpanded && children.map((child, ci) => {
                                                             const childId = toId(child._id);
                                                             const isSubChild = (costHistory ?? []).some(e => e.laborItemId === childId && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor));
+                                                            const childCovered = getSalaryCoveredQty(childId);
+                                                            const childPlanned = parseFloat(actualData?.[childId]?.quantity || '0') || 0;
+                                                            const childDone = childPlanned > 0 && childCovered >= childPlanned;
+                                                            const childBlocked = isSubChild || childDone;
                                                             return (
-                                                            <Box key={childId} onClick={isSubChild ? undefined : () => selectRow(child, row)}
-                                                                sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22`, cursor: isSubChild ? 'default' : 'pointer', '&:hover': { bgcolor: isSubChild ? undefined : '#eef9fb' } }}>
+                                                            <Box key={childId} onClick={childBlocked ? undefined : () => selectRow(child, row)}
+                                                                sx={{ display: 'flex', alignItems: 'center', pl: 4, pr: 2, py: 0.8, borderTop: '1px solid #f0fbfc', bgcolor: ci % 2 === 0 ? '#f8feff' : '#f3fbfc', borderLeft: `3px solid ${mainPrimaryColor}22`, cursor: childBlocked ? 'default' : 'pointer', '&:hover': { bgcolor: childBlocked ? undefined : '#eef9fb' } }}>
                                                                 <Box sx={{ flex: 1 }}>
                                                                     <Typography sx={{ fontSize: '0.8625rem', color: '#555' }}>{child.laborOfferItemName || child.catalogName || '—'}</Typography>
                                                                     {child.quantity > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#aaa' }}>{child.quantity.toLocaleString()} {child.unitSymbol}</Typography>}
                                                                 </Box>
-                                                                {!isSubChild && (
+                                                                {!childBlocked && (
                                                                     <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: mainPrimaryColor } }} onClick={e => { e.stopPropagation(); selectRow(child, row); }}>
                                                                         <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                     </IconButton>
@@ -363,9 +369,11 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const covered = getSalaryCoveredQty(row._id);
                                                     const remaining = Math.max(0, planned - covered);
                                                     const isSubRow = (costHistory ?? []).some(e => e.laborItemId === String(row._id) && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor));
+                                                    const done = planned > 0 && remaining <= 0;
+                                                    const blocked = isSubRow || done;
                                                     return (
-                                                    <Box key={String(row._id)} onClick={isSubRow ? undefined : () => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
-                                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: isSubRow ? 'default' : 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: isSubRow ? undefined : '#fff8f4' } }}
+                                                    <Box key={String(row._id)} onClick={blocked ? undefined : () => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
+                                                        sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: blocked ? 'default' : 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: blocked ? undefined : '#fff8f4' } }}
                                                     >
                                                         <Box sx={{ flex: 1 }}>
                                                             <Typography sx={{ fontSize: '0.8925rem', color: '#222', fontWeight: 500 }}>
@@ -377,7 +385,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                                 {planned > 0 && remaining > 0 && <Typography sx={{ fontSize: '0.7825rem', color: '#e65100' }}>Մնացորդ: {remaining.toLocaleString()} {row.unitSymbol}</Typography>}
                                                             </Box>
                                                         </Box>
-                                                        {!isSubRow && (
+                                                        {!blocked && (
                                                             <IconButton size='small' sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#e65100' } }} onClick={e => e.stopPropagation()}>
                                                                 <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                             </IconButton>
