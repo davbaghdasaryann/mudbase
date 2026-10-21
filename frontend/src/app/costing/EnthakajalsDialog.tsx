@@ -104,6 +104,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
         const unitPrice = getUnitPrice(rowId);
         const isCosted = unitPrice > 0;
         const isExpanded = expandedRowId === row._id;
+        const overLimit = (parseFloat((inputQty || '0').replace(',', '.')) || 0) > Number(row.quantity);
         return (
             <Box key={String(row._id)}>
                 <Box
@@ -152,7 +153,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                     }}>
                         {parseFloat((inputQty || '0').replace(',', '.')) > 0 && (
                             <Box sx={{ mb: 1.25, pl: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>'Մնացորդ'</Typography>
+                                <Typography sx={{ fontSize: '0.7rem', color: overLimit ? '#c62828' : '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>'Մնացորդ'</Typography>
                                 <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: (Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)) < 0 ? '#c62828' : ACCENT }}>
                                     {(Number(row.quantity) - (parseFloat(inputQty.replace(',', '.')) || 0)).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
                                 </Typography>
@@ -165,7 +166,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                 value={inputQty}
                                 onChange={e => setInputQty(e.target.value)}
                                 inputProps={{ inputMode: 'decimal' }}
-                                error={(parseFloat((inputQty || '0').replace(',', '.')) || 0) > Number(row.quantity)}
+                                error={overLimit}
                                 sx={{ width: 120, '& .MuiInputBase-root': { bgcolor: '#fff' }, '& .MuiInputLabel-root': { fontSize: '0.78rem', color: '#bbb' }, '& .MuiInputLabel-root.Mui-focused': { color: ACCENT } }}
                                 onKeyDown={e => { if (e.key === 'Enter') handleSave(rowId); if (e.key === 'Escape') setExpandedRowId(null); }}
                             />
@@ -195,7 +196,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                     sx={{ color: '#888', fontSize: '0.8125rem', textTransform: 'none' }}>
                                     {t('Cancel')}
                                 </Button>
-                                <Button size="small" variant="contained" onClick={() => handleSave(rowId)}
+                                <Button size="small" variant="contained" onClick={() => handleSave(rowId)} disabled={overLimit}
                                     sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: '#00695c' }, fontSize: '0.8125rem', textTransform: 'none', boxShadow: 'none' }}>
                                     {t('Save')}
                                 </Button>
