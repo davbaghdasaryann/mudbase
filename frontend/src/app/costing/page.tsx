@@ -2156,7 +2156,7 @@ ${tableBodyHtml}
                                             : pm === 'salary_miavorzham' ? 'Աշխատավարձ «Ժամավճարային»'
                                             : pm === 'pahest_main' || pm === 'pahest_ayl' ? 'Մուտք Պահեստ'
                                             : pm === 'nyuth_tsakhsagrum' || pm === 'pahest_ayl_cost' ? 'Նյութի Ծախսագրում'
-                                            : pm === 'subcontractor' ? 'Ենթակապալ'
+                                            : pm === 'subcontractor' ? 'Ծավալի հաշվառում'
                                             : pm === 'unforeseen' ? 'Չնախատեսված աշխատանքներ'
                                             : pm === 'overhead' ? 'Վերադիր ծախսեր'
                                             : pm === 'mechanism' ? 'Մեխանիզմի ծախսագրում'
