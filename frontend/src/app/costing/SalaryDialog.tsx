@@ -242,7 +242,7 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                     </Box>
                 )}
             </DialogTitle>
-            <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
+            <Divider sx={{ mx: 3, mt: 2, mb: 1.5 }} />
 
             <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {!selectedRow ? (
