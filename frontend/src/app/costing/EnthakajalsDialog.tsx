@@ -127,10 +127,10 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                             {row.laborOfferItemName || row.catalogName}
                         </Typography>
                     </Box>
-                    <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.8425rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
+                    <Typography sx={{ width: 80, textAlign: 'center', fontSize: '0.8425rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
                         {Number(row.quantity).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
                     </Typography>
-                    <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.8425rem', fontWeight: costedQty > 0 ? 600 : 400, color: costedQty > 0 ? ACCENT : '#bbb', flexShrink: 0 }}>
+                    <Typography sx={{ width: 90, textAlign: 'center', fontSize: '0.8425rem', fontWeight: costedQty > 0 ? 600 : 400, color: costedQty > 0 ? ACCENT : '#bbb', flexShrink: 0 }}>
                         {costedQty > 0 ? costedQty.toLocaleString('hy-AM', { maximumFractionDigits: 3 }) + ' ' + row.unitSymbol : '—'}
                     </Typography>
                     <IconButton
@@ -283,8 +283,8 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                             <Collapse in={!hasMultipleSubs || subName === '—' || openedSubs.has(subKey)}>
                                                 <Box sx={{ px: 1.5, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7', display: 'grid', gridTemplateColumns: '1fr 80px 90px 36px', columnGap: 1 }}>
                                                     <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af' }}>Աշխատանք</Typography>
-                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textAlign: 'right' }}>Քանակ</Typography>
-                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textAlign: 'right' }}>Ծախսագրում</Typography>
+                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textAlign: 'center' }}>Քանակ</Typography>
+                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textAlign: 'center' }}>Ծախսագրում</Typography>
                                                     <Box />
                                                 </Box>
                                                 {subRows.map((row, idx) => renderRow(row, idx))}
