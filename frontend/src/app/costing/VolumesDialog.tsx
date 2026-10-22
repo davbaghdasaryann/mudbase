@@ -219,6 +219,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                             const gid = toId(row._id);
                                             const subPrice = parseFloat((actualData?.[gid]?.unitPrice ?? '').replace(',', '.')) || 0;
                                             const actualQty = getActualQty(gid);
+                                            const remaining = (row.quantity || 0) - actualQty;
                                             const isExpanded = expandedGroups.has(gid);
                                             const isLoadingG = loadingGroups.has(gid);
                                             const children = groupChildren[gid] ?? [];
@@ -247,9 +248,9 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                                                             <Typography sx={{ fontSize: '0.8825rem', fontWeight: 600, color: '#555', textAlign: 'center' }}>{actualQty > 0 ? actualQty.toLocaleString(undefined, { maximumFractionDigits: 3 }) : '—'}</Typography>
                                                         )}
                                                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                            <Tooltip title={subPrice > 0 ? '' : t('Add new quantity')}>
+                                                            <Tooltip title={remaining <= 0 ? '' : t('Add new quantity')}>
                                                                 <span>
-                                                                <IconButton size='small' disabled={subPrice > 0} onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: subPrice > 0 ? '#ccc' : accentColor } }}>
+                                                                <IconButton size='small' disabled={remaining <= 0} onClick={() => setCostModal({ row, value: '', spent: '' })} sx={{ color: '#ccc', p: 0.3, '&:hover': { color: remaining <= 0 ? '#ccc' : accentColor } }}>
                                                                     <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                                                 </IconButton>
                                                                 </span>
@@ -327,17 +328,22 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
         </Dialog>
 
         {/* Cost entry sub-modal */}
+        {(() => {
+            const modalRemaining = costModal ? (costModal.row.quantity || 0) - getActualQty(toId(costModal.row._id)) : 0;
+            const modalInputQty = parseFloat((costModal?.value ?? '').replace(',', '.')) || 0;
+            const modalOverLimit = modalInputQty > modalRemaining;
+            return (
         <Dialog open={!!costModal} onClose={() => setCostModal(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
             <DialogTitle sx={{ fontWeight: 700, color: '#1a1a1a', pb: 1, fontSize: '1rem' }}>
-                Ծախսագրում
+                Ծախсагрум
             </DialogTitle>
             <DialogContent sx={{ pt: 1 }}>
                 <Typography sx={{ fontSize: '0.88rem', color: '#555', mb: 2 }}>
                     {costModal?.row.laborOfferItemName || costModal?.row.catalogName || '—'}
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box sx={{ border: '1px solid #e0f5f7', borderRadius: 1.5, px: 1.5, py: 1 }}>
-                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>Քանակը</Typography>
+                    <Box sx={{ border: `1px solid ${modalOverLimit ? '#c62828' : '#e0f5f7'}`, borderRadius: 1.5, px: 1.5, py: 1 }}>
+                        <Typography sx={{ fontSize: '0.7825rem', color: '#999', mb: 0.5 }}>Քанакы</Typography>
                         <InputBase
                             autoFocus
                             fullWidth
@@ -348,6 +354,9 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                             sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
                         />
                     </Box>
+                    <Typography sx={{ fontSize: '0.78rem', color: modalOverLimit ? '#c62828' : '#888' }}>
+                        {t('Remaining')}: {modalRemaining.toLocaleString(undefined, { maximumFractionDigits: 3 })} {costModal?.row.unitSymbol || ''}
+                    </Typography>
                 </Box>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
@@ -355,13 +364,15 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                 <Button
                     variant='contained'
                     onClick={handleConfirmCost}
-                    disabled={!costModal || !(parseFloat((costModal.value ?? '').replace(',', '.')) > 0)}
+                    disabled={!costModal || modalInputQty <= 0 || modalOverLimit}
                     sx={{ borderRadius: '20px', backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: '#009aab' } }}
                 >
                     {t('Add')}
                 </Button>
             </DialogActions>
         </Dialog>
+            );
+        })()}
         </>
     );
 }
