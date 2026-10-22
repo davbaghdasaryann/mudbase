@@ -348,7 +348,7 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
                             autoFocus
                             fullWidth
                             value={costModal?.value ?? ''}
-                            onChange={ev => setCostModal(prev => prev ? { ...prev, value: ev.target.value.replace(/[^0-9.]/g, '') } : prev)}
+                            onChange={ev => setCostModal(prev => prev ? { ...prev, value: ev.target.value.replace(/[^0-9.,]/g, '') } : prev)}
                             onKeyDown={ev => { if (ev.key === 'Escape') setCostModal(null); }}
                             placeholder='0'
                             sx={{ fontSize: '1rem', fontWeight: 600, color: '#333' }}
