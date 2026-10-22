@@ -286,9 +286,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const isLoadingG = row.isGroupRow && loadingGroups.has(gid);
                                                     const children = row.isGroupRow ? (groupChildren[gid] ?? []) : [];
                                                     const selectRow = (r: LaborRow, parent?: LaborRow) => { setSelectedRow(r); setParentGroupRow(parent ?? null); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); };
-                                                    const isSubRow = !row.isGroupRow && (costHistory ?? []).some(e => e.laborItemId === gid && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor));
                                                     const done = !row.isGroupRow && planned > 0 && remaining <= 0;
-                                                    const blocked = isSubRow || done;
+                                                    const blocked = done;
                                                     return (
                                                         <React.Fragment key={gid}>
                                                         <Box
@@ -369,9 +368,8 @@ export default function SalaryDialog({ open, onClose, estimate, estimateSnapshot
                                                     const planned = parseFloat(actualData?.[row._id]?.quantity || '0') || 0;
                                                     const covered = getSalaryCoveredQty(row._id);
                                                     const remaining = Math.max(0, planned - covered);
-                                                    const isSubRow = (costHistory ?? []).some(e => e.laborItemId === String(row._id) && (e.paymentMethod === 'subcontractor' || !!e.isSubcontractor));
                                                     const done = planned > 0 && remaining <= 0;
-                                                    const blocked = isSubRow || done;
+                                                    const blocked = done;
                                                     return (
                                                     <Box key={String(row._id)} onClick={blocked ? undefined : () => { setSelectedRow(row); setType('gorcarqayin'); setVal1(''); setVal2(''); setNotes(''); setWorkVolume(''); }}
                                                         sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.2, cursor: blocked ? 'default' : 'pointer', borderTop: '1px solid #f0fbfc', '&:hover': { bgcolor: blocked ? undefined : '#fff8f4' } }}

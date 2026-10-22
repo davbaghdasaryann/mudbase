@@ -159,9 +159,6 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
         const qty = parseFloat(value.replace(',', '.')) || 0;
         if (qty <= 0) return;
         const rowId = toId(row._id);
-        const subUnitPrice = parseFloat((actualData?.[rowId]?.unitPrice ?? '').replace(',', '.')) || 0;
-        const isSubRow = subUnitPrice > 0;
-        const total = isSubRow ? Math.round(qty * subUnitPrice) : 0;
         onActualUpdate?.(rowId, qty, 0);
         onCostAdded({
             id: String(Date.now() + Math.random()),
@@ -169,10 +166,9 @@ export default function VolumesDialog({ open, onClose, estimate, estimateSnapsho
             workName: row.laborOfferItemName || row.catalogName || '—',
             unit: row.unitSymbol || '',
             quantity: qty,
-            unitPrice: isSubRow ? subUnitPrice : 0,
-            total,
+            unitPrice: 0,
+            total: 0,
             addedAt: new Date(),
-            ...(isSubRow ? { paymentMethod: 'subcontractor' } : {}),
         });
         setCostModal(null);
     };
