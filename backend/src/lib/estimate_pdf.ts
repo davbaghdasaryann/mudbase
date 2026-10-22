@@ -854,7 +854,8 @@ ${styles}
     <tr>
         <td class="headerTableName lightGray">Կառուցապատված մակերեսը</td>
         <td class="headerTableValue">${ensureNotUndefined(estimate.builtUpArea)}</td>
-        <td colspan="2"></td>
+        <td class="headerTableName lightGray">Ծախս/մ²</td>
+        <td class="headerTableValue center bold">${estimate.constructionSurface ? Math.round(estimate.totalCostWithOtherExpenses / Number(estimate.constructionSurface)).toLocaleString() + ' AMD' : '—'}</td>
     </tr>
 </table>
 `;
