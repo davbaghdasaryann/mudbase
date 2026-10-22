@@ -218,7 +218,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                     <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${ACCENT}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <HandshakeOutlinedIcon sx={{ fontSize: 20, color: ACCENT }} />
                     </Box>
-                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                         <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', lineHeight: 1.2 }}>Ենթակապալ</Typography>
                         {rows.length > 0 && (
                             <Chip
