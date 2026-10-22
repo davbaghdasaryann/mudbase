@@ -278,9 +278,8 @@ html += vertSpacer;
 // Estimate report subheader tables
 // first column
 html += `
-<div class="stackContainer">
-<div class="columnHalf">
-<table class="headerTable">
+<div style="display:flex;gap:16px;align-items:flex-start;">
+<table style="border-collapse:collapse;">
     <tr>
         <td class="headerTableName lightGray">Կազմակերպության անվանումը</td>
         <td class="headerTableValue">${ensureNotUndefined(data.accountName)}</td>
@@ -301,9 +300,6 @@ html += `
         <td class="headerTableValue">${ensureNotUndefined(estimate.builtUpArea)}</td>
     </tr>
 </table>
-</div>
-
-<div style="flex-shrink:0;box-sizing:border-box;">
 <table style="border-collapse:collapse;">
     <tr>
         <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
@@ -320,7 +316,6 @@ html += `
         <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
     </tr>
 </table>
-</div>
 </div>
 `;
 
@@ -832,9 +827,8 @@ ${styles}
     html += vertSpacer;
 
     html += `
-<div class="stackContainer">
-<div style="flex:1;box-sizing:border-box;padding-right:10px;">
-<table class="headerTable">
+<div style="display:flex;gap:16px;align-items:flex-start;">
+<table style="border-collapse:collapse;">
     <tr>
         <td class="headerTableName lightGray">Կազմակերպության անվանումը</td>
         <td class="headerTableValue">${ensureNotUndefined(data.accountName)}</td>
@@ -848,8 +842,6 @@ ${styles}
         <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
     </tr>
 </table>
-</div>
-<div style="flex-shrink:0;box-sizing:border-box;">
 <table style="border-collapse:collapse;">
     <tr>
         <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
@@ -864,7 +856,6 @@ ${styles}
         <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
     </tr>
 </table>
-</div>
 </div>
 `;
 
