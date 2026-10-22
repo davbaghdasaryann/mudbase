@@ -110,7 +110,9 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
             <Box key={String(row._id)}>
                 <Box
                     sx={{
-                        display: 'flex',
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 80px 90px 36px',
+                        columnGap: 1,
                         alignItems: 'center',
                         px: 1.5,
                         py: 1,
@@ -121,22 +123,22 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                         transition: 'background-color 0.15s',
                     }}
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
                         {isCosted && <CheckCircleIcon sx={{ fontSize: 14, color: ACCENT, flexShrink: 0 }} />}
                         <Typography sx={{ fontSize: '0.8425rem', fontWeight: 600, color: isCosted ? ACCENT : '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {row.laborOfferItemName || row.catalogName}
                         </Typography>
                     </Box>
-                    <Typography sx={{ width: 80, textAlign: 'center', fontSize: '0.8425rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
+                    <Typography sx={{ textAlign: 'center', fontSize: '0.8425rem', fontWeight: 600, color: '#333' }}>
                         {Number(row.quantity).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
                     </Typography>
-                    <Typography sx={{ width: 90, textAlign: 'center', fontSize: '0.8425rem', fontWeight: costedQty > 0 ? 600 : 400, color: costedQty > 0 ? ACCENT : '#bbb', flexShrink: 0 }}>
+                    <Typography sx={{ textAlign: 'center', fontSize: '0.8425rem', fontWeight: costedQty > 0 ? 600 : 400, color: costedQty > 0 ? ACCENT : '#bbb' }}>
                         {costedQty > 0 ? costedQty.toLocaleString('hy-AM', { maximumFractionDigits: 3 }) + ' ' + row.unitSymbol : '—'}
                     </Typography>
                     <IconButton
                         className="add-btn"
                         size="small"
-                        sx={{ ml: 0.5, width: 28, height: 28, opacity: isExpanded ? 1 : 0.4, color: isExpanded ? ACCENT : mainPrimaryColor, transition: 'opacity 0.15s, color 0.15s', flexShrink: 0 }}
+                        sx={{ justifySelf: 'center', width: 28, height: 28, opacity: isExpanded ? 1 : 0.4, color: isExpanded ? ACCENT : mainPrimaryColor, transition: 'opacity 0.15s, color 0.15s' }}
                         onClick={() => handleOpenForm(row)}
                     >
                         <AddCircleOutlineIcon sx={{ fontSize: 18 }} />
