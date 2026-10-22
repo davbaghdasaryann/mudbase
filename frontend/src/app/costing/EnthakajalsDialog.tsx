@@ -281,10 +281,10 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                                                 </Box>
                                             )}
                                             <Collapse in={!hasMultipleSubs || subName === '—' || openedSubs.has(subKey)}>
-                                                <Box sx={{ px: 1.5, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7', display: 'grid', gridTemplateColumns: '1fr 80px 90px 36px' }}>
-                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Աշխատանք</Typography>
-                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'right' }}>Քանակ</Typography>
-                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'right' }}>Ծախսագրում</Typography>
+                                                <Box sx={{ px: 1.5, py: 0.5, bgcolor: '#f0fbfc', borderTop: '1px solid #e0f5f7', display: 'grid', gridTemplateColumns: '1fr 80px 90px 36px', columnGap: 1 }}>
+                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af' }}>Աշխատանք</Typography>
+                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textAlign: 'right' }}>Քանակ</Typography>
+                                                    <Typography sx={{ fontSize: '0.7425rem', fontWeight: 700, color: '#9ca3af', textAlign: 'right' }}>Ծախսագրում</Typography>
                                                     <Box />
                                                 </Box>
                                                 {subRows.map((row, idx) => renderRow(row, idx))}
