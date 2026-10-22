@@ -935,23 +935,6 @@ ${styles}
                     <td>${formatEstimateCurrency(totalCost)}</td>
                 </tr>`;
 
-                if (!isGroupRow && laborData.materials && laborData.materials.length > 0) {
-                    for (const material of laborData.materials) {
-                        ++itemIndex;
-                        const matUnit = material.changableAveragePrice * otherMultiplier;
-                        const matTotal = matUnit * material.quantity;
-
-                        html += `
-                        <tr style="background-color: #f9f9f9;">
-                            <td>${itemIndex}</td>
-                            <td style="text-align:left; padding-left: 20px;">└ ${ensureNotUndefined(material.materialOfferItemName)}</td>
-                            <td>${ensureNotUndefined(material.measurementUnitMongoId)}</td>
-                            <td>${fmt(material.quantity)}</td>
-                            <td>${formatEstimateCurrency(matUnit)}</td>
-                            <td>${formatEstimateCurrency(matTotal)}</td>
-                        </tr>`;
-                    }
-                }
             }
         }
     }
