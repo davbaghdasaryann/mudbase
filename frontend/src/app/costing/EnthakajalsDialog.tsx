@@ -103,6 +103,7 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
         const rowId = toRowId(row._id);
         const unitPrice = getUnitPrice(rowId);
         const isCosted = unitPrice > 0;
+        const costedQty = parseFloat(actualData[rowId]?.quantity || '0') || 0;
         const isExpanded = expandedRowId === row._id;
         const overLimit = (parseFloat((inputQty || '0').replace(',', '.')) || 0) > Number(row.quantity);
         return (
@@ -129,8 +130,8 @@ export default function EnthakajalsDialog({ open, onClose, laborRows, costHistor
                     <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.8425rem', fontWeight: 600, color: '#333', flexShrink: 0 }}>
                         {Number(row.quantity).toLocaleString('hy-AM', { maximumFractionDigits: 3 })} {row.unitSymbol}
                     </Typography>
-                    <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.8425rem', fontWeight: isCosted ? 600 : 400, color: isCosted ? ACCENT : '#bbb', flexShrink: 0 }}>
-                        {isCosted ? unitPrice.toLocaleString('hy-AM', { maximumFractionDigits: 0 }) : '—'}
+                    <Typography sx={{ width: 90, textAlign: 'right', fontSize: '0.8425rem', fontWeight: costedQty > 0 ? 600 : 400, color: costedQty > 0 ? ACCENT : '#bbb', flexShrink: 0 }}>
+                        {costedQty > 0 ? costedQty.toLocaleString('hy-AM', { maximumFractionDigits: 3 }) + ' ' + row.unitSymbol : '—'}
                     </Typography>
                     <IconButton
                         className="add-btn"
