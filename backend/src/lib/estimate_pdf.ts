@@ -707,6 +707,7 @@ export function generateBoQHTML(data: any, t: TFunction, opts: ExportOptions = {
 
     ts.cssRule('.stackContainer', {
         display: 'flex',
+        alignItems: 'flex-start',
     });
 
     ts.cssRule('.columnHalf', {
