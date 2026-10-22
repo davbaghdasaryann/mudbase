@@ -832,44 +832,31 @@ ${styles}
     html += vertSpacer;
 
     html += `
-<div class="stackContainer">
-<div class="columnHalf">
 <table class="headerTable">
     <tr>
         <td class="headerTableName lightGray">Կազմակերպության անվանումը</td>
         <td class="headerTableValue">${ensureNotUndefined(data.accountName)}</td>
-    </tr>
-    <tr>
-        <td class="headerTableName lightGray">Շինարարության տեսակը</td>
-        <td class="headerTableValue">${ensureNotUndefined(t(estimate.constructionType))}</td>
-    </tr>
-    <tr>
-        <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
-        <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
-    </tr>
-    <tr>
-        <td class="headerTableName lightGray">Կառուցապատված մակերեսը</td>
-        <td class="headerTableValue">${ensureNotUndefined(estimate.builtUpArea)}</td>
-    </tr>
-</table>
-</div>
-<div class="columnHalf">
-<table class="headerTable">
-    <tr>
         <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
         <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
     </tr>
     <tr>
+        <td class="headerTableName lightGray">Շինարարության տեսակը</td>
+        <td class="headerTableValue">${ensureNotUndefined(t(estimate.constructionType))}</td>
         <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
         <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
     </tr>
     <tr>
+        <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
+        <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
         <td class="headerTableName lightGray">Այլ ծախսեր</td>
         <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
     </tr>
+    <tr>
+        <td class="headerTableName lightGray">Կառուցապատված մակերեսը</td>
+        <td class="headerTableValue">${ensureNotUndefined(estimate.builtUpArea)}</td>
+        <td colspan="2"></td>
+    </tr>
 </table>
-</div>
-</div>
 `;
 
     html += vertSpacer;
