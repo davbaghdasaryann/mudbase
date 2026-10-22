@@ -2174,6 +2174,11 @@ ${tableBodyHtml}
                                                             {entry.groupName}
                                                         </Box>
                                                     )}
+                                                    {pm === 'subcontractor' && (
+                                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(0,121,107,0.12)', color: '#00796b', borderRadius: '999px', px: 1, py: 0.25, fontSize: '0.7rem', fontWeight: 600, flexShrink: 0 }}>
+                                                            Ենթակապալ
+                                                        </Box>
+                                                    )}
                                                 </Box>
                                             </TableCell>
                                             <TableCell align='center'>{entry.unit}</TableCell>
