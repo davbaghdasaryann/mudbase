@@ -832,26 +832,40 @@ ${styles}
     html += vertSpacer;
 
     html += `
+<div class="stackContainer">
+<div style="flex:1;box-sizing:border-box;padding-right:10px;">
 <table class="headerTable">
     <tr>
         <td class="headerTableName lightGray">Կազմակերպության անվանումը</td>
         <td class="headerTableValue">${ensureNotUndefined(data.accountName)}</td>
-        <td class="headerTableName lightGray" style="width:180px;">Ընդհանուր արժեքը</td>
-        <td class="headerTableValue bold" style="width:160px;white-space:nowrap;text-align:right;padding-right:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
     </tr>
     <tr>
         <td class="headerTableName lightGray">Շինարարության տեսակը</td>
         <td class="headerTableValue">${ensureNotUndefined(t(estimate.constructionType))}</td>
-        <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
-        <td class="headerTableValue bold" style="width:160px;white-space:nowrap;text-align:right;padding-right:6px;">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
     </tr>
     <tr>
         <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
         <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
-        <td class="headerTableName lightGray">Այլ ծախսեր</td>
-        <td class="headerTableValue bold" style="width:160px;white-space:nowrap;text-align:right;padding-right:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
     </tr>
 </table>
+</div>
+<div style="flex-shrink:0;box-sizing:border-box;">
+<table style="border-collapse:collapse;">
+    <tr>
+        <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
+        <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
+        <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
+    </tr>
+    <tr>
+        <td class="headerTableName lightGray">Այլ ծախսեր</td>
+        <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
+    </tr>
+</table>
+</div>
+</div>
 `;
 
     html += vertSpacer;
