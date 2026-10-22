@@ -832,40 +832,26 @@ ${styles}
     html += vertSpacer;
 
     html += `
-<div class="stackContainer">
-<div class="columnHalf">
 <table class="headerTable">
     <tr>
         <td class="headerTableName lightGray">Կազմակերպության անվանումը</td>
         <td class="headerTableValue">${ensureNotUndefined(data.accountName)}</td>
+        <td class="headerTableName lightGray" style="width:180px;">Ընդհանուր արժեքը</td>
+        <td class="headerTableValue bold" style="width:160px;white-space:nowrap;text-align:right;padding-right:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
     </tr>
     <tr>
         <td class="headerTableName lightGray">Շինարարության տեսակը</td>
         <td class="headerTableValue">${ensureNotUndefined(t(estimate.constructionType))}</td>
+        <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
+        <td class="headerTableValue bold" style="width:160px;white-space:nowrap;text-align:right;padding-right:6px;">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
     </tr>
     <tr>
         <td class="headerTableName lightGray">Կառուցապատման մակերեսը</td>
         <td class="headerTableValue">${ensureNotUndefined(estimate.constructionSurface)}</td>
-    </tr>
-</table>
-</div>
-<div class="columnHalf">
-<table class="headerTable">
-    <tr>
-        <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
-        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
-    </tr>
-    <tr>
-        <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
-        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
-    </tr>
-    <tr>
         <td class="headerTableName lightGray">Այլ ծախսեր</td>
-        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
+        <td class="headerTableValue bold" style="width:160px;white-space:nowrap;text-align:right;padding-right:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
     </tr>
 </table>
-</div>
-</div>
 `;
 
     html += vertSpacer;
