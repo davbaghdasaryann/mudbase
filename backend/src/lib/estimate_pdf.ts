@@ -303,21 +303,21 @@ html += `
 </table>
 </div>
 
-<div class="columnHalf">
-<table class="headerTable">
+<div style="flex-shrink:0;box-sizing:border-box;">
+<table style="border-collapse:collapse;">
     <tr>
         <td class="headerTableName lightGray">Ընդհանուր արժեքը</td>
-        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
+        <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses)}</td>
     </tr>
 
     <tr>
         <td class="headerTableName lightGray">Ուղղակի ծախսեր</td>
-        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
+        <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCost)}</td>
     </tr>
 
     <tr>
         <td class="headerTableName lightGray">Այլ ծախսեր</td>
-        <td class="headerTableValue center bold">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
+        <td class="headerTableValue bold" style="white-space:nowrap;padding-left:6px;">${formatEstimateCurrencySymbol(estimate.totalCostWithOtherExpenses - estimate.totalCost)}</td>
     </tr>
 </table>
 </div>
