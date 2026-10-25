@@ -172,7 +172,7 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
             <F.InputText form={form} id='middleName' autocomplete='given-name' label='Middle Name' value={user?.middleName} xsThird />
             <F.InputText form={form} id='lastName' value={apiUserData?.data?.lastName} label='Last Name' required xsThird />
 
-            <Divider sx={{ width: 1, my: 2 }} />
+            <Divider sx={{ width: 1, mt: 3, mb: 2 }} />
             <Box sx={{ width: 1 }}>
                 {/* Header row */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: 1 }}>
