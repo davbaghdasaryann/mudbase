@@ -254,13 +254,9 @@ export default function PackagesPage() {
                 <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', pt: 5 }}>
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 4, mt: 1 }}>
-                    <Typography variant='h5' fontWeight={700} sx={{ mb: 0.5 }}>
+                    <Typography variant='h5' fontWeight={700} sx={{ mb: 2 }}>
                         {t('Subscription Plans')}
                     </Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.95rem', mb: 2.5 }}>
-                        {t('Choose the best plan for you')}
-                    </Typography>
-
                     {/* Annual / Monthly toggle */}
                     <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(0,0,0,0.05)', borderRadius: '50px', p: '3px', gap: 0 }}>
                         {(['annual', 'monthly'] as const).map(period => (
