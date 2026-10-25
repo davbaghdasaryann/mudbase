@@ -7,23 +7,36 @@ import {usePermissions} from '../api/auth';
 import {
     Box,
     Button,
-    Paper,
-    Radio,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     ToggleButton,
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import BusinessIcon from '@mui/icons-material/Business';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import SpeedIcon from '@mui/icons-material/Speed';
+import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
 import {accountActivities, AccountActivity} from '../tsmudbase/company_activities';
 import ProgressIndicator from '../tsui/ProgressIndicator';
 import {useTranslation} from 'react-i18next';
 import {AllowedPage, getAllowedPagesByActivities, PermissionsId, RadioPermissionChoice} from '../tsmudbase/permissions_setup';
 import PageDialog from '../tsui/PageDialog';
+
+const BRAND = '#00abbe';
+
+const pageIcons: Record<PermissionsId, React.ElementType> = {
+    estimates: StackedLineChartIcon,
+    accountLaborOfferCatalog: MenuBookOutlinedIcon,
+    accountMaterialsOfferCatalog: Inventory2OutlinedIcon,
+    accountInfo: BusinessIcon,
+    costing: RequestQuoteOutlinedIcon,
+    analytics: BarChartIcon,
+    performance: SpeedIcon,
+    haymnadits: CorporateFareOutlinedIcon,
+};
 
 interface UserInviteDialogProps {
     show?: boolean;
@@ -199,58 +212,55 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                         <F.InputText id='firstName' label='First Name' required form={form} xsHalf />
                         <F.InputText id='lastName' label='Last Name' required form={form} xsHalf />
 
-                        <Paper sx={{padding: 3, width: 1, margin: 'auto'}}>
-                            <Typography variant='h6' gutterBottom>
-                                {t('Choose Permissions')}
+                        <Box sx={{ mt: 2, borderRadius: '10px', bgcolor: 'rgba(0,171,190,0.03)', p: 2, width: 1 }}>
+                            <Typography sx={{ fontSize: '0.70rem', letterSpacing: '0.06em', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600, mb: 1.5 }}>
+                                {t('Permissions')}
                             </Typography>
-                            <TableContainer>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell> </TableCell>
-                                            <TableCell align='center'>{t('View')}</TableCell>
-                                            <TableCell align='center'>{t('Edit')}</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {allowedPages.map((page) => (
-                                            <TableRow key={page.id}>
-                                                <TableCell>{t(page.name)}</TableCell>
-                                                {page.allowedPermission === 'viewOnly' ? (
-                                                    // For pages with viewOnly permission, show View as selected and disabled.
-                                                    <>
-                                                        <TableCell align='center'>
-                                                            <Radio checked disabled value='view' />
-                                                        </TableCell>
-                                                        <TableCell align='center'>-</TableCell>
-                                                    </>
-                                                ) : (
-                                                    // For pages with viewOrEdit permission, allow admin to choose.
-                                                    <>
-                                                        <TableCell align='center'>
-                                                            <Radio
-                                                                checked={pagePermissions[page.id] === 'view'}
-                                                                onChange={() => handlePermissionChange(page.id, 'view')}
-                                                                value='view'
-                                                                name={`permission-${page.id}`}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell align='center'>
-                                                            <Radio
-                                                                checked={pagePermissions[page.id] === 'edit'}
-                                                                onChange={() => handlePermissionChange(page.id, 'edit')}
-                                                                value='edit'
-                                                                name={`permission-${page.id}`}
-                                                            />
-                                                        </TableCell>
-                                                    </>
-                                                )}
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Paper>
+                            {allowedPages.map((page) => {
+                                const Icon = pageIcons[page.id];
+                                const isBeta = page.id === 'costing' || page.id === 'analytics';
+                                return (
+                                    <Box key={page.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.2, '&:not(:last-child)': { borderBottom: '1px solid rgba(0,0,0,0.05)' } }}>
+                                        <Box sx={{ width: 34, height: 34, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            {Icon && <Icon sx={{ fontSize: 17, color: BRAND }} />}
+                                        </Box>
+                                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary', flex: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                            {t(page.name)}
+                                            {isBeta && <Box component='span' sx={{ fontSize: '0.70rem', fontWeight: 600, color: BRAND, lineHeight: 1 }}>β</Box>}
+                                        </Typography>
+                                        {page.allowedPermission === 'viewOnly' ? (
+                                            <Box sx={{ px: 1.5, py: 0.4, borderRadius: '6px', bgcolor: 'rgba(0,0,0,0.05)', fontSize: '0.75rem', color: 'text.disabled', fontWeight: 500 }}>
+                                                {t('View')}
+                                            </Box>
+                                        ) : (
+                                            <ToggleButtonGroup
+                                                value={pagePermissions[page.id] ?? 'view'}
+                                                exclusive
+                                                onChange={(_, v) => v && handlePermissionChange(page.id, v as RadioPermissionChoice)}
+                                                size='small'
+                                                sx={{
+                                                    '& .MuiToggleButton-root': {
+                                                        border: '1px solid #e5e7eb',
+                                                        px: 1.5, py: 0.3,
+                                                        fontSize: '0.75rem', fontWeight: 500,
+                                                        color: 'text.secondary', textTransform: 'none',
+                                                        '&:first-of-type': { borderRadius: '6px 0 0 6px' },
+                                                        '&:last-of-type': { borderRadius: '0 6px 6px 0' },
+                                                        '&.Mui-selected': {
+                                                            backgroundColor: BRAND, color: '#fff', borderColor: BRAND,
+                                                            '&:hover': { backgroundColor: '#009aaa' },
+                                                        },
+                                                    },
+                                                }}
+                                            >
+                                                <ToggleButton value='view'>{t('View')}</ToggleButton>
+                                                <ToggleButton value='edit'>{t('Edit')}</ToggleButton>
+                                            </ToggleButtonGroup>
+                                        )}
+                                    </Box>
+                                );
+                            })}
+                        </Box>
                     </>
                 ) : (
                     <>
