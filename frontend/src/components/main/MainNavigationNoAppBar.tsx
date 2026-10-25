@@ -80,7 +80,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
     const myPkg = useMyPackage();
 
     const isNavLocked = React.useCallback((href: string): boolean => {
-        if (href.startsWith('/risk-monitoring')) return true;
         const isRestrictable = href.startsWith('/costing') || href.startsWith('/performance') || href.startsWith('/analysis');
         if (!isRestrictable) return false;
         if (myPkg === undefined) return false; // still loading — default to unlocked
@@ -108,6 +107,51 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                 const href = `${path}/${segment}`;
                 const isActive = isPathnameEqual(pathname, href);
 
+                if (segment === 'risk-monitoring') {
+                    return (
+                        <ListItem key={href} sx={{ px: 1, py: 0, overflowX: 'hidden' }}>
+                            <ListItemButton
+                                disableRipple
+                                sx={{
+                                    opacity: 0.38,
+                                    cursor: 'default',
+                                    borderRadius: 1,
+                                    '& .MuiListItemIcon-root': { color: iconColor },
+                                    '& .MuiSvgIcon-root': { color: iconColor },
+                                    '&:hover': { backgroundColor: 'transparent' },
+                                }}
+                            >
+                                {item.icon && <ListItemIcon sx={{ minWidth: listItemIconSize, mr: 1.2 }}>{item.icon}</ListItemIcon>}
+                                <ListItemText
+                                    primary={
+                                        <Tooltip
+                                            title={t('Coming soon')}
+                                            placement='right'
+                                            slotProps={{
+                                                popper: { sx: { zIndex: 2000 } },
+                                                tooltip: {
+                                                    sx: {
+                                                        backgroundColor: 'rgba(0,171,190,0.12)',
+                                                        backdropFilter: 'blur(8px)',
+                                                        color: '#00ABBE',
+                                                        border: '1px solid rgba(0,171,190,0.25)',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.72rem',
+                                                        px: 1.5,
+                                                        py: 0.4,
+                                                        boxShadow: 'none',
+                                                    },
+                                                },
+                                            }}
+                                        >
+                                            <Box component='span' sx={{ display: 'inline-block' }}>{item.title}</Box>
+                                        </Tooltip>
+                                    }
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                }
 
                 const locked = isNavLocked(href);
 

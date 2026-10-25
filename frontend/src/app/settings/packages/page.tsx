@@ -186,7 +186,10 @@ export default function PackagesPage() {
 
     useEffect(() => {
         if (showAll) {
-            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+            setTimeout(() => {
+                const main = document.querySelector('main');
+                if (main) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
+            }, 50);
         }
     }, [showAll]);
 
