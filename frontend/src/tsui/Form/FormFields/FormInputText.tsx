@@ -35,6 +35,9 @@ export interface InputTextProps extends FT.FieldProps {
 
     isThousandsSeparator?: boolean;
 
+    startIcon?: React.ReactNode;
+    tileChip?: React.ReactNode;
+
     sx?: SxProps<Theme>;
 
     // obsolete

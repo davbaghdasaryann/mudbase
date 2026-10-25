@@ -19,6 +19,8 @@ import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SpeedIcon from '@mui/icons-material/Speed';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
+import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import {accountActivities, AccountActivity} from '../tsmudbase/company_activities';
 import ProgressIndicator from '../tsui/ProgressIndicator';
 import {useTranslation} from 'react-i18next';
@@ -210,18 +212,18 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
             >
                 {session?.user && permissionsSet?.has?.('INV_SND_LOC') ? (
                     <>
-                        <F.InputText id='email' label='Email' validate='email' required form={form} xs={6} sx={tileSx} />
-                        <F.InputText id='accountName' label='Company' required readonly form={form} value={accountData?.companyName} xs={6} sx={tileSx} />
+                        <F.InputText id='email' label='Email' validate='email' required form={form} xs={6} tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><AlternateEmailIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
+                        <F.InputText id='accountName' label='Company' required readonly form={form} value={accountData?.companyName} xs={6} tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><BusinessIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
                     </>
                 ) : (
-                    <F.InputText id='email' label='Email' validate='email' required form={form} xs={12} sx={tileSx} />
+                    <F.InputText id='email' label='Email' validate='email' required form={form} xs={12} tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><AlternateEmailIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
                 )}
                 {session?.user && permissionsSet?.has?.('INV_SND_LOC') ? (
                     <>
-                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf sx={tileSx} />
-                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf sx={tileSx} />
+                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
+                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
 
-                        <Divider sx={{ width: 1, my: 2 }} />
+                        <Divider sx={{ width: 1, mt: 0, mb: 2 }} />
                         <Box sx={{ width: 1 }}>
                             {/* Header row */}
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: 1 }}>
@@ -236,8 +238,8 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                                 const isBeta = page.id === 'costing' || page.id === 'analytics';
                                 return (
                                     <Box key={page.id} sx={{ display: 'flex', alignItems: 'center', py: 0.8, '&:not(:last-child)': { borderBottom: '1px solid rgba(0,0,0,0.05)' } }}>
-                                        <Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            {Icon && <Icon sx={{ fontSize: 18, color: BRAND }} />}
+                                        <Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: page.allowedPermission === 'viewOnly' ? 'rgba(209,213,219,0.20)' : 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            {Icon && <Icon sx={{ fontSize: 18, color: page.allowedPermission === 'viewOnly' ? '#9ca3af' : BRAND }} />}
                                         </Box>
                                         <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary', flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, ml: 1.5 }}>
                                             {t(page.name)}
@@ -254,7 +256,12 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                                         </Box>
                                         <Box sx={{ width: 68, display: 'flex', justifyContent: 'center' }}>
                                             {page.allowedPermission === 'viewOnly' ? (
-                                                <Box sx={{ width: 20, height: 20 }} />
+                                                <Radio
+                                                    checked={false}
+                                                    disabled
+                                                    size='small'
+                                                    sx={{ p: 0.5, '&.Mui-disabled': { color: '#d1d5db', opacity: 0.5 } }}
+                                                />
                                             ) : (
                                                 <Radio
                                                     checked={pagePermissions[page.id] === 'edit'}
@@ -271,9 +278,9 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                     </>
                 ) : (
                     <>
-                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf sx={tileSx} />
+                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
                         {/* <F.InputText id='middleName' label='Middle Name' form={form} xsThird /> */}
-                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf sx={tileSx} />
+                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
                     </>
                 )}
 

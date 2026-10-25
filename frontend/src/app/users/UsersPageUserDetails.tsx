@@ -10,6 +10,9 @@ import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SpeedIcon from '@mui/icons-material/Speed';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
+import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 
 import * as Api from '@/api';
 import * as F from 'tsui/Form';
@@ -166,13 +169,13 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
 
     return (
         <F.PageFormDialog ignoreDataChecking title={t('User')} form={form} size='md' onSubmit={onSubmit} onClose={onClose}>
-            <F.InputText form={form} id='email' label='Email' value={user?.email} xs={6} readonly />
-            <F.InputText form={form} id='phoneNumber' autocomplete='tel' label='Phone Number' value={user?.phoneNumber} xs={6} />
-            <F.InputText form={form} id='firstName' value={apiUserData?.data?.firstName} label='First Name' required xsThird />
-            <F.InputText form={form} id='middleName' autocomplete='given-name' label='Middle Name' value={user?.middleName} xsThird />
-            <F.InputText form={form} id='lastName' value={apiUserData?.data?.lastName} label='Last Name' required xsThird />
+            <F.InputText form={form} id='email' label='Email' value={user?.email} xs={6} readonly tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><AlternateEmailIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
+            <F.InputText form={form} id='phoneNumber' autocomplete='tel' label='Phone Number' value={user?.phoneNumber} xs={6} tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PhoneOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
+            <F.InputText form={form} id='firstName' value={apiUserData?.data?.firstName} label='First Name' required xsThird tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
+            <F.InputText form={form} id='middleName' autocomplete='given-name' label='Middle Name' value={user?.middleName} xsThird tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
+            <F.InputText form={form} id='lastName' value={apiUserData?.data?.lastName} label='Last Name' required xsThird tileChip={<Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.25 }}><PersonOutlinedIcon sx={{ fontSize: 18, color: BRAND }} /></Box>} />
 
-            <Divider sx={{ width: 1, my: 2 }} />
+            <Divider sx={{ width: 1, mt: 0, mb: 2 }} />
             <Box sx={{ width: 1 }}>
                 {/* Header row */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: 1 }}>
@@ -187,8 +190,8 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
                     const isBeta = page.id === 'costing' || page.id === 'analytics';
                     return (
                         <Box key={page.id} sx={{ display: 'flex', alignItems: 'center', py: 0.8, '&:not(:last-child)': { borderBottom: '1px solid rgba(0,0,0,0.05)' } }}>
-                            <Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                {Icon && <Icon sx={{ fontSize: 18, color: BRAND }} />}
+                            <Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: page.allowedPermission === 'viewOnly' ? 'rgba(209,213,219,0.20)' : 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                {Icon && <Icon sx={{ fontSize: 18, color: page.allowedPermission === 'viewOnly' ? '#9ca3af' : BRAND }} />}
                             </Box>
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary', flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, ml: 1.5 }}>
                                 {t(page.name)}
@@ -205,7 +208,12 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
                             </Box>
                             <Box sx={{ width: 68, display: 'flex', justifyContent: 'center' }}>
                                 {page.allowedPermission === 'viewOnly' ? (
-                                    <Box sx={{ width: 20, height: 20 }} />
+                                    <Radio
+                                        checked={false}
+                                        disabled
+                                        size='small'
+                                        sx={{ p: 0.5, '&.Mui-disabled': { color: '#d1d5db', opacity: 0.5 } }}
+                                    />
                                 ) : (
                                     <Radio
                                         checked={pagePermissions[page.id] === 'edit'}

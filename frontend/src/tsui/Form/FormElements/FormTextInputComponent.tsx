@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import {IconButton, InputAdornment, Link, SxProps, TextField, TextFieldProps, Theme, useTheme} from '@mui/material';
+import {Box, IconButton, InputAdornment, Link, SxProps, TextField, TextFieldProps, Theme, Typography, useTheme} from '@mui/material';
 
 import * as CSS from 'csstype';
 
@@ -26,6 +26,8 @@ interface InputTextElementProps {
     fieldProps: InputTextProps;
     value?: FormValue | null;
 }
+
+const TILE_BRAND = '#00abbe';
 
 export default function InputTextElement(props: InputTextElementProps) {
     const form = props.form;
@@ -128,6 +130,51 @@ export default function InputTextElement(props: InputTextElementProps) {
         props.field.valueChanged = true;
         setCst(updateTextFieldState(theme, props));
     }, []);
+
+    if (fieldProps.tileChip) {
+        const labelText = `${field.tlabel ?? ''}${!cst.readonly && field.required ? ' *' : ''}`;
+        return (
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1.5,
+                p: 1.5,
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                minHeight: 68,
+                transition: 'border-color 0.18s ease',
+                '&:hover': { borderColor: 'rgba(0,171,190,0.35)' },
+                '&:focus-within': { borderColor: TILE_BRAND },
+                '&:focus-within [data-tile-label]': { color: TILE_BRAND },
+            }}>
+                {fieldProps.tileChip}
+                <Box sx={{ flex: 1, minWidth: 0, pt: 0.25 }}>
+                    <Typography
+                        variant='caption'
+                        data-tile-label='true'
+                        sx={{ display: 'block', color: 'text.disabled', fontSize: '0.70rem', letterSpacing: '0.05em', mb: 0.5, lineHeight: 1.2, transition: 'color 0.18s ease', userSelect: 'none' }}
+                    >
+                        {labelText}
+                    </Typography>
+                    <TextField
+                        {...cst.textFieldProps}
+                        variant='standard'
+                        label={undefined}
+                        value={value}
+                        onChange={!cst.readonly ? onValueChange : undefined}
+                        sx={{
+                            width: '100%',
+                            '& .MuiInput-root': { fontSize: '0.9rem', fontWeight: 500, color: 'text.primary' },
+                            '& .MuiInput-underline:before': { borderBottom: 'none' },
+                            '& .MuiInput-underline:after': { borderBottom: 'none' },
+                            '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+                            '& .MuiInputBase-input': { p: 0, lineHeight: 1.5 },
+                        }}
+                    />
+                </Box>
+            </Box>
+        );
+    }
 
     if (cst.readonly) {
         if (fieldProps.type === 'link') {
@@ -375,6 +422,17 @@ function updateTextFieldState(theme: Theme, props: InputTextElementProps): TextC
 
         InputLabelProps: {shrink: true},
     };
+
+    if (fieldProps.startIcon) {
+        tp.InputProps = {
+            ...(tp.InputProps ?? {}),
+            startAdornment: (
+                <InputAdornment position='start' sx={{pointerEvents: 'none'}}>
+                    {fieldProps.startIcon}
+                </InputAdornment>
+            ),
+        };
+    }
 
     if (fieldProps.suffix) {
         tp.InputProps = {
