@@ -230,10 +230,6 @@ export default function PackagesPage() {
         // Active first, then by price asc, zero-price (trial) last
         const myId = myPackage ? pkgIdStr(myPackage) : null;
         const sorted = [...allPackages].sort((a, b) => {
-            const aActive = myId ? pkgIdStr(a) === myId : false;
-            const bActive = myId ? pkgIdStr(b) === myId : false;
-            if (aActive) return -1;
-            if (bActive) return 1;
             if (!a.price && b.price) return 1;
             if (a.price && !b.price) return -1;
             return (a.price || 0) - (b.price || 0);
