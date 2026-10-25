@@ -86,9 +86,9 @@ export const Permissions = {
 
 
 
-export type PermissionsId = 'estimates' | 'accountLaborOfferCatalog' | 'accountMaterialsOfferCatalog' | 'accountInfo';
+export type PermissionsId = 'estimates' | 'accountLaborOfferCatalog' | 'accountMaterialsOfferCatalog' | 'accountInfo' | 'costing' | 'analytics' | 'performance' | 'haymnadits';
 
-export type PermissionsDisplay = 'Estimates' | 'Labor catalog' | 'Materials catalog' | 'Company profile';
+export type PermissionsDisplay = 'Estimates' | 'Labor catalog' | 'Materials catalog' | 'Company profile' | 'Costing' | 'Analytics' | 'Performance' | 'Haymnadits';
 export type RadioPermissionChoice = 'view' | 'edit';
 
 export interface AllowedPage {
@@ -117,6 +117,10 @@ export const pageDisplayNames: Record<PermissionsId, PermissionsDisplay> = {
     accountLaborOfferCatalog: "Labor catalog",
     accountMaterialsOfferCatalog: "Materials catalog",
     accountInfo: "Company profile",
+    costing: "Costing",
+    analytics: "Analytics",
+    performance: "Performance",
+    haymnadits: "Haymnadits",
 };
 
 const accountActivityToPagePermissions: Record<AccountActivity, Record<PermissionsId, PermissionLevel>> = {
@@ -125,42 +129,70 @@ const accountActivityToPagePermissions: Record<AccountActivity, Record<Permissio
         accountLaborOfferCatalog: 'viewOnly',
         accountMaterialsOfferCatalog: 'viewOnly',
         accountInfo: 'viewOrEdit',
+        costing: 'viewOrEdit',
+        analytics: 'viewOrEdit',
+        performance: 'viewOrEdit',
+        haymnadits: 'viewOrEdit',
     },
     B: { // Builder
         estimates: 'viewOrEdit',
         accountLaborOfferCatalog: 'viewOrEdit',
         accountMaterialsOfferCatalog: 'viewOrEdit',
         accountInfo: 'viewOrEdit',
+        costing: 'viewOrEdit',
+        analytics: 'viewOrEdit',
+        performance: 'viewOrEdit',
+        haymnadits: 'viewOrEdit',
     },
     D: { // Developer
         estimates: 'viewOrEdit',
         accountLaborOfferCatalog: 'viewOnly',
         accountMaterialsOfferCatalog: 'viewOnly',
         accountInfo: 'viewOrEdit',
+        costing: 'viewOrEdit',
+        analytics: 'viewOrEdit',
+        performance: 'viewOrEdit',
+        haymnadits: 'viewOrEdit',
     },
     V: { // Vendor
         estimates: 'none',
         accountLaborOfferCatalog: 'none',
         accountMaterialsOfferCatalog: 'viewOrEdit',
         accountInfo: 'viewOrEdit',
+        costing: 'none',
+        analytics: 'none',
+        performance: 'none',
+        haymnadits: 'none',
     },
     F: { // Financial
-        estimates: 'viewOrEdit', // 'viewOnly',
+        estimates: 'viewOrEdit',
         accountLaborOfferCatalog: 'viewOnly',
         accountMaterialsOfferCatalog: 'viewOnly',
         accountInfo: 'viewOrEdit',
+        costing: 'viewOrEdit',
+        analytics: 'viewOrEdit',
+        performance: 'viewOrEdit',
+        haymnadits: 'viewOrEdit',
     },
-    C: { // Credit (Added Key)
-        estimates: 'viewOrEdit', // 'viewOnly',
+    C: { // Credit
+        estimates: 'viewOrEdit',
         accountLaborOfferCatalog: 'viewOnly',
         accountMaterialsOfferCatalog: 'viewOnly',
         accountInfo: 'viewOrEdit',
+        costing: 'viewOrEdit',
+        analytics: 'viewOrEdit',
+        performance: 'viewOrEdit',
+        haymnadits: 'viewOrEdit',
     },
-    I: { // Insurance (Added Key)
-        estimates: 'viewOrEdit', // 'viewOnly',
+    I: { // Insurance
+        estimates: 'viewOrEdit',
         accountLaborOfferCatalog: 'viewOnly',
         accountMaterialsOfferCatalog: 'viewOnly',
         accountInfo: 'viewOrEdit',
+        costing: 'viewOrEdit',
+        analytics: 'viewOrEdit',
+        performance: 'viewOrEdit',
+        haymnadits: 'viewOrEdit',
     },
 };
 
@@ -180,7 +212,7 @@ function mergePermissionLevels(a: PermissionLevel, b: PermissionLevel): Permissi
 
 export function getAllowedPagesByActivities(accountData: AccountData): AllowedPage[] {
     const activities = accountData.accountActivity;
-    const allPageIds: PermissionsId[] = ['estimates', 'accountLaborOfferCatalog', 'accountMaterialsOfferCatalog', 'accountInfo'];
+    const allPageIds: PermissionsId[] = ['estimates', 'accountLaborOfferCatalog', 'accountMaterialsOfferCatalog', 'accountInfo', 'costing', 'analytics', 'performance', 'haymnadits'];
 
     return allPageIds.reduce<AllowedPage[]>((acc, pageId) => {
         // Start merging with "none".

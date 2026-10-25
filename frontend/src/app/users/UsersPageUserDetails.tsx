@@ -46,6 +46,10 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
         accountLaborOfferCatalog: 'view',
         accountMaterialsOfferCatalog: 'view',
         accountInfo: 'view',
+        costing: 'view',
+        analytics: 'view',
+        performance: 'view',
+        haymnadits: 'view',
     });
 
     const chosenPermissionsRadioRef = React.useRef<{ [pageId: string]: 'view' | 'edit' }>(pagePermissions);
