@@ -223,12 +223,12 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                         <Divider sx={{ width: 1, my: 1 }} />
                         <Box sx={{ pt: 1, width: 1 }}>
                             {/* Header row */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: 1 }}>
                                 <Typography sx={{ fontSize: '0.825rem', letterSpacing: '0.03em', color: 'text.secondary', fontWeight: 600, flex: 1 }}>
                                     {t('Permissions')}
                                 </Typography>
-                                <Box sx={{ width: 52, textAlign: 'center', fontSize: '0.825rem', color: 'text.secondary', fontWeight: 500 }}>{t('View')}</Box>
-                                <Box sx={{ width: 52, textAlign: 'center', fontSize: '0.825rem', color: 'text.secondary', fontWeight: 500 }}>{t('Edit')}</Box>
+                                <Box sx={{ width: 68, textAlign: 'center', fontSize: '0.825rem', color: 'text.secondary', fontWeight: 500 }}>{t('View')}</Box>
+                                <Box sx={{ width: 68, textAlign: 'center', fontSize: '0.825rem', color: 'text.secondary', fontWeight: 500 }}>{t('Edit')}</Box>
                             </Box>
                             {allowedPages.map((page) => {
                                 const Icon = pageIcons[page.id];
@@ -242,7 +242,7 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                                             {t(page.name)}
                                             {isBeta && <Box component='span' sx={{ fontSize: '0.70rem', fontWeight: 600, color: BRAND, lineHeight: 1 }}>β</Box>}
                                         </Typography>
-                                        <Box sx={{ width: 52, display: 'flex', justifyContent: 'center' }}>
+                                        <Box sx={{ width: 68, display: 'flex', justifyContent: 'center' }}>
                                             <Radio
                                                 checked={pagePermissions[page.id] === 'view' || page.allowedPermission === 'viewOnly'}
                                                 onChange={() => handlePermissionChange(page.id, 'view')}
@@ -251,7 +251,7 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                                                 sx={{ p: 0.5, color: '#d1d5db', '&.Mui-checked': { color: BRAND }, '&.Mui-disabled': { color: BRAND, opacity: 0.6 } }}
                                             />
                                         </Box>
-                                        <Box sx={{ width: 52, display: 'flex', justifyContent: 'center' }}>
+                                        <Box sx={{ width: 68, display: 'flex', justifyContent: 'center' }}>
                                             {page.allowedPermission === 'viewOnly' ? (
                                                 <Box sx={{ width: 20, height: 20 }} />
                                             ) : (
