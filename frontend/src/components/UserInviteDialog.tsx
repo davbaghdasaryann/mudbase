@@ -28,7 +28,7 @@ import PageDialog from '../tsui/PageDialog';
 const BRAND = '#00abbe';
 
 const tileSx = {
-    '& .MuiInputBase-root': { borderRadius: '10px' },
+    '& .MuiInputBase-root': { borderRadius: '10px', minHeight: 54 },
     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
     '& .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,171,190,0.35)' },
     '& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: BRAND },
@@ -223,12 +223,12 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                         <Divider sx={{ width: 1, my: 1 }} />
                         <Box sx={{ pt: 1, width: 1 }}>
                             {/* Header row */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.70rem', letterSpacing: '0.06em', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600, flex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <Typography sx={{ fontSize: '0.825rem', letterSpacing: '0.03em', color: 'text.secondary', fontWeight: 600, flex: 1 }}>
                                     {t('Permissions')}
                                 </Typography>
-                                <Box sx={{ width: 52, textAlign: 'center', fontSize: '0.70rem', color: 'text.secondary', letterSpacing: '0.03em' }}>{t('View')}</Box>
-                                <Box sx={{ width: 52, textAlign: 'center', fontSize: '0.70rem', color: 'text.secondary', letterSpacing: '0.03em' }}>{t('Edit')}</Box>
+                                <Box sx={{ width: 52, textAlign: 'center', fontSize: '0.825rem', color: 'text.secondary', fontWeight: 500 }}>{t('View')}</Box>
+                                <Box sx={{ width: 52, textAlign: 'center', fontSize: '0.825rem', color: 'text.secondary', fontWeight: 500 }}>{t('Edit')}</Box>
                             </Box>
                             {allowedPages.map((page) => {
                                 const Icon = pageIcons[page.id];
