@@ -220,8 +220,8 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                         <F.InputText id='firstName' label='First Name' required form={form} xsHalf sx={tileSx} />
                         <F.InputText id='lastName' label='Last Name' required form={form} xsHalf sx={tileSx} />
 
-                        <Divider sx={{ width: 1, my: 1 }} />
-                        <Box sx={{ pt: 1, width: 1 }}>
+                        <Divider sx={{ width: 1, my: 2 }} />
+                        <Box sx={{ width: 1 }}>
                             {/* Header row */}
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, pr: 1 }}>
                                 <Typography sx={{ fontSize: '0.825rem', letterSpacing: '0.03em', color: 'text.secondary', fontWeight: 600, flex: 1 }}>
