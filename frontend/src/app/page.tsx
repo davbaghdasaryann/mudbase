@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardBuilderPage from './dashboard-builder/page';
+import LandingPage from './intro/page';
 
-export default DashboardBuilderPage;
+export default LandingPage;
 
