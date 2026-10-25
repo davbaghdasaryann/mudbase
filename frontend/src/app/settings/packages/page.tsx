@@ -293,15 +293,16 @@ export default function PackagesPage() {
                                 const displayName = i18n.language === 'am' && pkg.nameAm ? pkg.nameAm : pkg.name;
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
                                 const cardGrad = CARD_GRADIENTS[cardIdx % CARD_GRADIENTS.length];
-                                const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
-                                const annualDiscounted = billingPeriod === 'annual' && pkg.price ? Math.round(pkg.price * (1 - ANNUAL_DISCOUNT)) : null;
+                                const monthlyPrice = pkg.price || 0;
+                                const annualFull = monthlyPrice * 12;
+                                const annualDiscounted = billingPeriod === 'annual' && monthlyPrice ? Math.round(annualFull * (1 - ANNUAL_DISCOUNT)) : null;
                                 const discountedMonthly = annualDiscounted ? Math.round(annualDiscounted / 12) : 0;
-                                const displayPrice = billingPeriod === 'annual' ? (annualDiscounted ?? pkg.price) : monthly;
-                                const originalAnnualPrice = billingPeriod === 'annual' && pkg.price ? pkg.price : null;
+                                const displayPrice = billingPeriod === 'annual' ? (annualDiscounted ?? annualFull) : monthlyPrice;
+                                const originalAnnualPrice = billingPeriod === 'annual' && monthlyPrice ? annualFull : null;
                                 const displaySuffix = `AMD /${billingPeriod === 'annual' ? t('year') : t('month')}`;
                                 const secondaryPrice = billingPeriod === 'annual'
                                     ? (discountedMonthly > 0 ? `${discountedMonthly.toLocaleString()} AMD /${t('month')}` : null)
-                                    : (pkg.price > 0 ? `${pkg.price.toLocaleString()} AMD /${t('year')}` : null);
+                                    : (annualFull > 0 ? `${annualFull.toLocaleString()} AMD /${t('year')}` : null);
                                 const secondaryColor = billingPeriod === 'annual' ? '#1CA461' : BRAND;
 
                                 const features: { label: string; Icon: React.ElementType }[] = [];
