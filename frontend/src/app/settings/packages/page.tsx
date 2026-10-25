@@ -186,10 +186,10 @@ export default function PackagesPage() {
 
     useEffect(() => {
         if (showAll) {
-            setTimeout(() => {
-                const main = document.querySelector('main');
-                if (main) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
-            }, 50);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                const container = document.getElementById('page-scroll-container');
+                if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }));
         }
     }, [showAll]);
 

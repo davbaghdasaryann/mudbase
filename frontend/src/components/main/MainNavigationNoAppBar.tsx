@@ -32,6 +32,7 @@ import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
@@ -125,7 +126,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 <ListItemText
                                     primary={
                                         <Tooltip
-                                            title={t('Coming soon')}
+                                            title={"Մշակման փուլում"}
                                             placement='right'
                                             slotProps={{
                                                 popper: { sx: { zIndex: 2000 } },
@@ -144,7 +145,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                                 },
                                             }}
                                         >
-                                            <Box component='span' sx={{ display: 'inline-block' }}>{item.title}</Box>
+                                            <Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+                                                            {item.title}
+                                                            <BuildOutlinedIcon sx={{ fontSize: '0.75rem', color: '#e65100', flexShrink: 0 }} />
+                                                        </Box>
                                         </Tooltip>
                                     }
                                 />
@@ -323,7 +327,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                             <ListItemText
                                 primary={
                                     <Tooltip
-                                        title={t('Coming soon')}
+                                        title={"Մշակման փուլում"}
                                         placement='right'
                                         slotProps={{
                                             popper: { sx: { zIndex: 2000 } },
@@ -342,7 +346,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                             },
                                         }}
                                     >
-                                        <Box component='span' sx={{ display: 'inline-block' }}>{t(item.labelKey)}</Box>
+                                        <Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+                                                            {t(item.labelKey)}
+                                                            <BuildOutlinedIcon sx={{ fontSize: '0.75rem', color: '#e65100', flexShrink: 0 }} />
+                                                        </Box>
                                     </Tooltip>
                                 }
                             />

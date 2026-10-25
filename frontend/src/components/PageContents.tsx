@@ -169,6 +169,7 @@ function PageContentsProtectedBody(props: PageContentsProps) {
             <AppHeaderNoAppBar {...props} />
 
             <Box
+                id="page-scroll-container"
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
