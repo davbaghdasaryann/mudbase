@@ -56,10 +56,8 @@ export async function authSignOut() {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : 'http://localhost';
     const rootUrl = new URL(currentUrl).origin;
 
-    await signOut({
-        redirect: false,
-        //callbackUrl: `${rootUrl}/login/`,
-    });
+    await signOut({ redirect: false });
+    window.location.href = rootUrl;
 }
 
 // export function submitRecoverPassCode(data: Record<string, string>): Promise<ApiSession> {
