@@ -11,7 +11,7 @@ export default function RootPage() {
 
     React.useEffect(() => {
         if (status === 'authenticated') {
-            router.replace('/monitoring');
+            router.replace('/dashboard-builder');
         }
     }, [status]);
 
