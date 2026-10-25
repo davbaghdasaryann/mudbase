@@ -184,6 +184,12 @@ export default function PackagesPage() {
         else { fetchAllPackages(); fetchMyPackage(); }
     }, [isSuperAdmin, fetchPackages, fetchMyPackage, fetchAllPackages]);
 
+    useEffect(() => {
+        if (showAll) {
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+        }
+    }, [showAll]);
+
     const openCreate = () => { setForm({ ...EMPTY_PKG }); setEditingId(null); setOpen(true); };
     const openEdit = (pkg: Package) => { setForm({ ...pkg }); setEditingId(pkg._id!); setOpen(true); };
 
@@ -305,15 +311,15 @@ export default function PackagesPage() {
                                     : (annualFull > 0 ? `${annualFull.toLocaleString()} AMD /${t('year')}` : null);
                                 const secondaryColor = billingPeriod === 'annual' ? '#1CA461' : BRAND;
 
-                                const features: { label: string; Icon: React.ElementType }[] = [];
+                                const features: { label: string; Icon: React.ElementType; beta?: boolean }[] = [];
                                 if (pkg.numberOfUsers) features.push({ label: `${pkg.numberOfUsers} ${t('Users')}`, Icon: PeopleOutlinedIcon });
                                 if (pkg.numberOfEstimations === 0) features.push({ label: t('Unlimited Estimations'), Icon: StackedLineChartIcon });
                                 else if (pkg.numberOfEstimations) features.push({ label: `${pkg.numberOfEstimations} ${t('Estimations')}`, Icon: StackedLineChartIcon });
                                 if (pkg.worksCatalog) features.push({ label: t('Works Catalog'), Icon: MenuBookOutlinedIcon });
                                 if (pkg.materialsCatalog) features.push({ label: t('Materials Catalog'), Icon: Inventory2OutlinedIcon });
                                 if (pkg.aggregatedCatalog) features.push({ label: t('Aggregated Catalog'), Icon: CategoryOutlinedIcon });
-                                if (pkg.costing) features.push({ label: 'Ծախսագրում', Icon: RequestQuoteOutlinedIcon });
-                                if (pkg.analysis) features.push({ label: 'Վերլուծություն', Icon: BarChartIcon });
+                                if (pkg.costing) features.push({ label: 'Ծախսագրում', Icon: RequestQuoteOutlinedIcon, beta: true });
+                                if (pkg.analysis) features.push({ label: 'Վերլուծություն', Icon: BarChartIcon, beta: true });
                                 if (pkg.performance) features.push({ label: 'Կատարողական', Icon: SpeedIcon });
                                 if (pkg.seeOffers) features.push({ label: t('See Offers'), Icon: SellOutlinedIcon });
                                 if (pkg.exportEstimation) features.push({ label: t('Export Estimation'), Icon: FileDownloadOutlinedIcon });
@@ -405,7 +411,10 @@ export default function PackagesPage() {
                                                         }}>
                                                             <f.Icon sx={{ fontSize: 14, color: BRAND }} />
                                                         </Box>
-                                                        <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4 }}>{f.label}</Typography>
+                                                        <Typography sx={{ fontSize: '0.85rem', color: '#1a3a4a', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            {f.label}
+                                                            {f.beta && <Box component='span' sx={{ fontSize: '0.75rem', fontWeight: 600, color: BRAND, lineHeight: 1, flexShrink: 0 }}>β</Box>}
+                                                        </Typography>
                                                     </Box>
                                                 ))}
                                             </Box>
