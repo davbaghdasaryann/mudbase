@@ -789,9 +789,10 @@ async function getJournalPointsInWindowDaily(
         : Db.getLaborPricesJournalCollection();
 
     // Fetch all journal entries up to endDate (including before window for starting prices)
+    // Secondary sort by _id ensures deterministic ordering when timestamps are equal (e.g. bulk-imported entries)
     const entries = await journalColl
         .find({ itemId: { $in: offerIds }, date: { $lte: endDate } })
-        .sort({ date: 1 })
+        .sort({ date: 1, _id: 1 })
         .toArray();
 
     // Build per-offer sorted timeline
