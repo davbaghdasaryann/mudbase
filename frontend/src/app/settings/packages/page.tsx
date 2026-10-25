@@ -33,6 +33,7 @@ import * as Api from 'api';
 import { usePermissions } from '@/api/auth';
 
 const BRAND = '#00abbe';
+const ANNUAL_DISCOUNT = 0.10;
 const CARD_GRADIENTS = [
     'linear-gradient(135deg, #ffffff 0%, #ffffff 55%, rgba(0,171,190,0.04) 100%)',
     'linear-gradient(135deg, #ffffff 0%, #ffffff 55%, rgba(0,80,170,0.04) 100%)',
@@ -293,10 +294,13 @@ export default function PackagesPage() {
                                 const active = myId ? pkgIdStr(pkg) === myId : false;
                                 const cardGrad = CARD_GRADIENTS[cardIdx % CARD_GRADIENTS.length];
                                 const monthly = pkg.price ? Math.round(pkg.price / 12) : 0;
-                                const displayPrice = billingPeriod === 'annual' ? pkg.price : monthly;
+                                const annualDiscounted = billingPeriod === 'annual' && pkg.price ? Math.round(pkg.price * (1 - ANNUAL_DISCOUNT)) : null;
+                                const discountedMonthly = annualDiscounted ? Math.round(annualDiscounted / 12) : 0;
+                                const displayPrice = billingPeriod === 'annual' ? (annualDiscounted ?? pkg.price) : monthly;
+                                const originalAnnualPrice = billingPeriod === 'annual' && pkg.price ? pkg.price : null;
                                 const displaySuffix = `AMD /${billingPeriod === 'annual' ? t('year') : t('month')}`;
                                 const secondaryPrice = billingPeriod === 'annual'
-                                    ? (monthly > 0 ? `${monthly.toLocaleString()} AMD /${t('month')}` : null)
+                                    ? (discountedMonthly > 0 ? `${discountedMonthly.toLocaleString()} AMD /${t('month')}` : null)
                                     : (pkg.price > 0 ? `${pkg.price.toLocaleString()} AMD /${t('year')}` : null);
                                 const secondaryColor = billingPeriod === 'annual' ? '#1CA461' : BRAND;
 
@@ -356,12 +360,24 @@ export default function PackagesPage() {
                                             </Typography>
                                             {displayPrice ? (
                                                 <Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                                                        <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1, color: 'text.primary' }}>
-                                                            {displayPrice.toLocaleString()}
-                                                        </Typography>
-                                                        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{displaySuffix}</Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+                                                            <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1, color: 'text.primary' }}>
+                                                                {displayPrice.toLocaleString()}
+                                                            </Typography>
+                                                            <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{displaySuffix}</Typography>
+                                                        </Box>
+                                                        {annualDiscounted && (
+                                                            <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(28,164,97,0.12)', color: '#1CA461', borderRadius: '999px', px: 1, py: 0.25, fontSize: '0.72rem', fontWeight: 700, flexShrink: 0 }}>
+                                                                −10%
+                                                            </Box>
+                                                        )}
                                                     </Box>
+                                                    {originalAnnualPrice && (
+                                                        <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled', textDecoration: 'line-through', mt: 0.25 }}>
+                                                            {originalAnnualPrice.toLocaleString()} AMD /{t('year')}
+                                                        </Typography>
+                                                    )}
                                                     {secondaryPrice && (
                                                         <Typography sx={{ fontSize: '0.8rem', color: secondaryColor, fontWeight: 600, mt: 0.25 }}>
                                                             {secondaryPrice}
