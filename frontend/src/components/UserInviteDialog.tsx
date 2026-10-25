@@ -7,6 +7,7 @@ import {usePermissions} from '../api/auth';
 import {
     Box,
     Button,
+    Divider,
     Radio,
     Typography,
 } from '@mui/material';
@@ -27,7 +28,7 @@ import PageDialog from '../tsui/PageDialog';
 const BRAND = '#00abbe';
 
 const tileSx = {
-    '& .MuiInputBase-root': { borderRadius: '10px', backgroundColor: '#fafafa' },
+    '& .MuiInputBase-root': { borderRadius: '10px' },
     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
     '& .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,171,190,0.35)' },
     '& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: BRAND },
@@ -219,7 +220,8 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                         <F.InputText id='firstName' label='First Name' required form={form} xsHalf sx={tileSx} />
                         <F.InputText id='lastName' label='Last Name' required form={form} xsHalf sx={tileSx} />
 
-                        <Box sx={{ mt: 2, borderRadius: '10px', bgcolor: 'rgba(0,171,190,0.03)', p: 2, width: 1 }}>
+                        <Divider sx={{ width: 1, my: 1 }} />
+                        <Box sx={{ pt: 1, width: 1 }}>
                             {/* Header row */}
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                                 <Typography sx={{ fontSize: '0.70rem', letterSpacing: '0.06em', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600, flex: 1 }}>
@@ -233,8 +235,8 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                                 const isBeta = page.id === 'costing' || page.id === 'analytics';
                                 return (
                                     <Box key={page.id} sx={{ display: 'flex', alignItems: 'center', py: 0.8, '&:not(:last-child)': { borderBottom: '1px solid rgba(0,0,0,0.05)' } }}>
-                                        <Box sx={{ width: 34, height: 34, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            {Icon && <Icon sx={{ fontSize: 17, color: BRAND }} />}
+                                        <Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            {Icon && <Icon sx={{ fontSize: 18, color: BRAND }} />}
                                         </Box>
                                         <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary', flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, ml: 1.5 }}>
                                             {t(page.name)}

@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Radio, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider, Radio, Typography } from '@mui/material';
 import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
@@ -172,7 +172,8 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
             <F.InputText form={form} id='middleName' autocomplete='given-name' label='Middle Name' value={user?.middleName} xsThird />
             <F.InputText form={form} id='lastName' value={apiUserData?.data?.lastName} label='Last Name' required xsThird />
 
-            <Box sx={{ mt: 2, borderRadius: '10px', bgcolor: 'rgba(0,171,190,0.03)', p: 2, width: 1 }}>
+            <Divider sx={{ width: 1, my: 1 }} />
+            <Box sx={{ pt: 1, width: 1 }}>
                 {/* Header row */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                     <Typography sx={{ fontSize: '0.70rem', letterSpacing: '0.06em', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600, flex: 1 }}>
@@ -186,8 +187,8 @@ export function UsersPageUserDetailsBody(props: UsersPageUserDetailsProps) {
                     const isBeta = page.id === 'costing' || page.id === 'analytics';
                     return (
                         <Box key={page.id} sx={{ display: 'flex', alignItems: 'center', py: 0.8, '&:not(:last-child)': { borderBottom: '1px solid rgba(0,0,0,0.05)' } }}>
-                            <Box sx={{ width: 34, height: 34, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                {Icon && <Icon sx={{ fontSize: 17, color: BRAND }} />}
+                            <Box sx={{ width: 38, height: 38, borderRadius: '8px', backgroundColor: 'rgba(0,171,190,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                {Icon && <Icon sx={{ fontSize: 18, color: BRAND }} />}
                             </Box>
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary', flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, ml: 1.5 }}>
                                 {t(page.name)}
