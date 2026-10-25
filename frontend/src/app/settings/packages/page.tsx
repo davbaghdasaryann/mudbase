@@ -426,7 +426,7 @@ export default function PackagesPage() {
                                 sx={{
                                     position: 'fixed',
                                     bottom: 28,
-                                    left: '50%',
+                                    left: { xs: '50%', md: 'calc(150px + 50vw)' },
                                     transform: 'translateX(-50%)',
                                     zIndex: 10,
                                     width: 52, height: 52, borderRadius: '50%',
