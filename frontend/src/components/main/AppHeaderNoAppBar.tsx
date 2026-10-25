@@ -52,9 +52,9 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
         const currentPath = pathname?.split('/')[1]; // Get first segment after /
 
         switch (currentPath) {
-            case '': // root path renders DashboardBuilderPage
+            case '': // root path renders LandingPage (redirects to monitoring)
             case 'dashboard':
-            case 'dashboard-builder':
+            case 'monitoring':
                 return <DashboardIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'catalog':
                 return <MenuBookIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;

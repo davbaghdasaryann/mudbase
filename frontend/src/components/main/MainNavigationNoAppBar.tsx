@@ -197,7 +197,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 primary={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                         {item.title}
-                                        {(segment === 'dashboard-builder' || segment === 'costing' || segment === 'haymnadits') && (
+                                        {(segment === 'monitoring' || segment === 'costing' || segment === 'haymnadits') && (
                                             <Box component='span' sx={{
                                                 fontSize: '0.75rem',
                                                 fontWeight: 600,
@@ -442,11 +442,11 @@ function useMainNavigation() {
 
         // Superadmin sees old dashboard with system stats
         if (isSuperAdmin) {
-            navigation.push({segment: 'monitoring', title: t('Monitoring'), icon: <DashboardIcon />});
+            navigation.push({segment: 'system-monitoring', title: t('Monitoring'), icon: <DashboardIcon />});
         }
-        // Regular users see widget builder
+        // Regular users see monitoring dashboard
         else if (session?.user) {
-            navigation.push({segment: 'dashboard-builder', title: t('Dashboard'), icon: <DashboardIcon />});
+            navigation.push({segment: 'monitoring', title: t('Monitoring'), icon: <DashboardIcon />});
         }
 
         navigation.push({segment: 'haymnadits', title: t('Haymnadits'), icon: <CorporateFareOutlinedIcon />});
