@@ -420,47 +420,40 @@ export default function PackagesPage() {
                         </Box>
                         </Box>
                         {rest.length > 0 && (
-                            <Box sx={{
-                                position: 'sticky',
-                                bottom: 24,
-                                zIndex: 10,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                mt: 3,
-                                pointerEvents: 'none',
-                            }}>
-                                <Box
-                                    onClick={() => setShowAll(v => !v)}
-                                    sx={{
-                                        pointerEvents: 'auto',
-                                        width: 52, height: 52, borderRadius: '50%',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        cursor: 'pointer',
-                                        background: 'rgba(255,255,255,0.82)',
-                                        backdropFilter: 'blur(14px)',
-                                        WebkitBackdropFilter: 'blur(14px)',
-                                        border: '1px solid rgba(255,255,255,0.75)',
-                                        boxShadow: '0 4px 18px rgba(0,0,0,0.14)',
-                                        color: '#374151',
-                                        transition: 'all 0.22s ease',
-                                        '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.18)', color: BRAND, border: `1px solid ${BRAND}44` },
-                                    }}
-                                >
-                                    <KeyboardDoubleArrowDownIcon sx={{
-                                        fontSize: 22,
-                                        ...(showAll ? {
-                                            transform: 'rotate(180deg)',
-                                            transition: 'transform 0.28s ease',
-                                        } : {
-                                            animation: 'nudgeDown 2.6s ease-in-out infinite',
-                                            '@keyframes nudgeDown': {
-                                                '0%, 100%': { transform: 'translateY(0px)' },
-                                                '20%': { transform: 'translateY(6px)' },
-                                                '40%': { transform: 'translateY(0px)' },
-                                            },
-                                        }),
-                                    }} />
-                                </Box>
+                            <Box
+                                onClick={() => setShowAll(v => !v)}
+                                sx={{
+                                    position: 'fixed',
+                                    bottom: 32,
+                                    right: 32,
+                                    zIndex: 10,
+                                    width: 52, height: 52, borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    background: 'rgba(255,255,255,0.88)',
+                                    backdropFilter: 'blur(14px)',
+                                    WebkitBackdropFilter: 'blur(14px)',
+                                    border: '1px solid rgba(255,255,255,0.75)',
+                                    boxShadow: '0 4px 18px rgba(0,0,0,0.14)',
+                                    color: '#374151',
+                                    transition: 'all 0.22s ease',
+                                    '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.18)', color: BRAND, border: `1px solid ${BRAND}44` },
+                                }}
+                            >
+                                <KeyboardDoubleArrowDownIcon sx={{
+                                    fontSize: 22,
+                                    ...(showAll ? {
+                                        transform: 'rotate(180deg)',
+                                        transition: 'transform 0.28s ease',
+                                    } : {
+                                        animation: 'nudgeDown 2.6s ease-in-out infinite',
+                                        '@keyframes nudgeDown': {
+                                            '0%, 100%': { transform: 'translateY(0px)' },
+                                            '20%': { transform: 'translateY(6px)' },
+                                            '40%': { transform: 'translateY(0px)' },
+                                        },
+                                    }),
+                                }} />
                             </Box>
                         )}
                     </>
