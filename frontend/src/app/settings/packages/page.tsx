@@ -419,18 +419,20 @@ export default function PackagesPage() {
                             })}
                         </Box>
                         </Box>
+                        {rest.length > 0 && <Box sx={{ height: 80 }} />}
                         {rest.length > 0 && (
                             <Box
                                 onClick={() => setShowAll(v => !v)}
                                 sx={{
                                     position: 'fixed',
-                                    bottom: 32,
-                                    right: 32,
+                                    bottom: 28,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
                                     zIndex: 10,
                                     width: 52, height: 52, borderRadius: '50%',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     cursor: 'pointer',
-                                    background: 'rgba(255,255,255,0.88)',
+                                    background: 'rgba(255,255,255,0.92)',
                                     backdropFilter: 'blur(14px)',
                                     WebkitBackdropFilter: 'blur(14px)',
                                     border: '1px solid rgba(255,255,255,0.75)',
