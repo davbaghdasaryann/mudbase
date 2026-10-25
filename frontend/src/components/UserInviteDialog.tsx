@@ -26,6 +26,14 @@ import PageDialog from '../tsui/PageDialog';
 
 const BRAND = '#00abbe';
 
+const tileSx = {
+    '& .MuiInputBase-root': { borderRadius: '10px', backgroundColor: '#fafafa' },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
+    '& .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,171,190,0.35)' },
+    '& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: BRAND },
+    '& .MuiInputLabel-root.Mui-focused': { color: BRAND },
+} as const;
+
 const pageIcons: Record<PermissionsId, React.ElementType> = {
     estimates: StackedLineChartIcon,
     accountLaborOfferCatalog: MenuBookOutlinedIcon,
@@ -189,7 +197,7 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
             <F.PageFormDialog
                 title='Invite User'
                 form={form}
-                size='md'
+                size='sm'
                 onSubmit={onSubmit}
                 onCloseFalse={props.onClose}
                 slotProps={{
@@ -200,16 +208,16 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
             >
                 {session?.user && permissionsSet?.has?.('INV_SND_LOC') ? (
                     <>
-                        <F.InputText id='email' label='Email' validate='email' required form={form} xs={6} />
-                        <F.InputText id='accountName' label='Company' required readonly form={form} value={accountData?.companyName} xs={6} />
+                        <F.InputText id='email' label='Email' validate='email' required form={form} xs={6} sx={tileSx} />
+                        <F.InputText id='accountName' label='Company' required readonly form={form} value={accountData?.companyName} xs={6} sx={tileSx} />
                     </>
                 ) : (
-                    <F.InputText id='email' label='Email' validate='email' required form={form} xs={12} />
+                    <F.InputText id='email' label='Email' validate='email' required form={form} xs={12} sx={tileSx} />
                 )}
                 {session?.user && permissionsSet?.has?.('INV_SND_LOC') ? (
                     <>
-                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf />
-                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf />
+                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf sx={tileSx} />
+                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf sx={tileSx} />
 
                         <Box sx={{ mt: 2, borderRadius: '10px', bgcolor: 'rgba(0,171,190,0.03)', p: 2, width: 1 }}>
                             {/* Header row */}
@@ -260,9 +268,9 @@ function UserInviteDialogBody(props: UserInviteDialogProps) {
                     </>
                 ) : (
                     <>
-                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf />
+                        <F.InputText id='firstName' label='First Name' required form={form} xsHalf sx={tileSx} />
                         {/* <F.InputText id='middleName' label='Middle Name' form={form} xsThird /> */}
-                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf />
+                        <F.InputText id='lastName' label='Last Name' required form={form} xsHalf sx={tileSx} />
                     </>
                 )}
 
