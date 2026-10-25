@@ -427,7 +427,7 @@ export default function PackagesPage() {
                                                         '&.Mui-disabled': { bgcolor: BRAND, color: '#fff', opacity: 0.45 },
                                                     }}
                                                 >
-                                                    {active ? t('Active') : t('Subscribe')}
+                                                    {t('Subscribe')}
                                                 </Button>
                                             </Box>
                                         </CardContent>
