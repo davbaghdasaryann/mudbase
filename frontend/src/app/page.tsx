@@ -15,7 +15,7 @@ export default function RootPage() {
         }
     }, [status]);
 
-    if (status === 'authenticated') return null;
+    if (status === 'loading' || status === 'authenticated') return null;
 
     return <LandingPage />;
 }
