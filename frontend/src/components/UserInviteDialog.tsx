@@ -29,6 +29,7 @@ const BRAND = '#00abbe';
 
 const tileSx = {
     '& .MuiInputBase-root': { borderRadius: '10px' },
+    '& .MuiInputBase-input': { py: 1.5 },
     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
     '& .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,171,190,0.35)' },
     '& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: BRAND },
