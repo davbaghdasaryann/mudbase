@@ -807,6 +807,21 @@ async function getJournalPointsInWindowDaily(
         });
     }
 
+    // Offers with no journal entries are excluded from historical computation but present in today's live stats.
+    // Fix: carry their current price back to all historical days so the chart stays consistent.
+    const offersInJournal = new Set(timelines.keys());
+    const offersWithoutJournal = offerIds.filter(id => !offersInJournal.has(id.toString()));
+    if (offersWithoutJournal.length > 0) {
+        const offerColl = dataSource === 'materials' ? Db.getMaterialOffersCollection() : Db.getLaborOffersCollection();
+        const currentPrices = await offerColl.find(
+            { _id: { $in: offersWithoutJournal }, price: { $ne: 0, $exists: true }, $or: [{ isArchived: false }, { isArchived: { $exists: false } }] },
+            { projection: { _id: 1, price: 1 } }
+        ).toArray();
+        for (const offer of currentPrices) {
+            timelines.set((offer as any)._id.toString(), [{ date: new Date(0), price: (offer as any).price, isArchived: false }]);
+        }
+    }
+
     const end = roundToDay(endDate);
     const start = new Date(end.getTime() - (dayCount - 1) * ONE_DAY_MS);
     const result: Array<{ timestamp: Date; value: number; min: number; max: number }> = [];
