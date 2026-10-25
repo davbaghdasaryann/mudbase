@@ -147,7 +147,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                         >
                                             <Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
                                                             {item.title}
-                                                            <BuildOutlinedIcon sx={{ fontSize: '0.75rem', color: '#e65100 !important', flexShrink: 0 }} />
+                                                            <BuildOutlinedIcon sx={{ fontSize: '0.75rem', color: '#00ABBE !important', flexShrink: 0 }} />
                                                         </Box>
                                         </Tooltip>
                                     }
@@ -348,7 +348,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                     >
                                         <Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
                                                             {t(item.labelKey)}
-                                                            <BuildOutlinedIcon sx={{ fontSize: '0.75rem', color: '#e65100 !important', flexShrink: 0 }} />
+                                                            <BuildOutlinedIcon sx={{ fontSize: '0.75rem', color: '#00ABBE !important', flexShrink: 0 }} />
                                                         </Box>
                                     </Tooltip>
                                 }
