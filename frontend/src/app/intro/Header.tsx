@@ -7,13 +7,26 @@ import EastIcon from '@mui/icons-material/East';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function LandingHeader() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const router = useRouter();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
+
+    const [currentLang, setCurrentLang] = useState(i18n.language || 'en');
+    useEffect(() => {
+        setCurrentLang(i18n.language || 'en');
+        const handler = (lng: string) => setCurrentLang(lng);
+        i18n.on('languageChanged', handler);
+        return () => { i18n.off('languageChanged', handler); };
+    }, [i18n]);
+    const handleLangChange = (code: string) => {
+        localStorage.setItem('i18nextLng', code);
+        i18n.changeLanguage(code);
+        if (typeof window !== 'undefined') window.location.reload();
+    };
 
     const navLinks = [
         { key: 'Ոլորտներ', label: 'Ոլորտներ', href: '/intro#industries' },
@@ -40,7 +53,7 @@ export default function LandingHeader() {
                 </Box>
 
                 {/* Desktop nav — mx:'auto' splits free space equally on both sides */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4, mx: 'auto' }}>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, mx: 'auto' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -60,6 +73,31 @@ export default function LandingHeader() {
                             {link.label}
                         </Typography>
                     ))}
+                    {/* Language toggle */}
+                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.25)', background: 'rgba(0,171,190,0.07)', backdropFilter: 'blur(6px)', p: 0.35, gap: 0.25 }}>
+                        {(['am', 'en'] as const).map(code => (
+                            <Box
+                                key={code}
+                                onClick={() => handleLangChange(code)}
+                                sx={{
+                                    px: 1.4, py: 0.35,
+                                    borderRadius: '100px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.04em',
+                                    transition: 'all 0.15s',
+                                    userSelect: 'none',
+                                    ...(currentLang === code
+                                        ? { background: '#00ABBE', color: '#fff' }
+                                        : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
+                                    ),
+                                }}
+                            >
+                                {code === 'am' ? 'ARM' : 'ENG'}
+                            </Box>
+                        ))}
+                    </Box>
                 </Box>
 
                 {/* Mobile: login + register buttons — mx:auto centers between logo and hamburger */}
@@ -182,6 +220,32 @@ export default function LandingHeader() {
                                 {link.label}
                             </MenuItem>
                         ))}
+                        <MenuItem sx={{ py: 1 }}>
+                            <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.25)', background: 'rgba(0,171,190,0.07)', p: 0.35, gap: 0.25 }}>
+                                {(['am', 'en'] as const).map(code => (
+                                    <Box
+                                        key={code}
+                                        onClick={() => { handleLangChange(code); setAnchorEl(null); }}
+                                        sx={{
+                                            px: 1.4, py: 0.35,
+                                            borderRadius: '100px',
+                                            cursor: 'pointer',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 700,
+                                            letterSpacing: '0.04em',
+                                            transition: 'all 0.15s',
+                                            userSelect: 'none',
+                                            ...(currentLang === code
+                                                ? { background: '#00ABBE', color: '#fff' }
+                                                : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
+                                            ),
+                                        }}
+                                    >
+                                        {code === 'am' ? 'ARM' : 'ENG'}
+                                    </Box>
+                                ))}
+                            </Box>
+                        </MenuItem>
                     </Menu>
                 </Box>
             </Box>
