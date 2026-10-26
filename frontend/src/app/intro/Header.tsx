@@ -17,6 +17,7 @@ export default function LandingHeader() {
 
     const navLinks = [
         { key: 'Tools', label: t('Tools'), href: '/intro#tools' },
+        { key: 'Ոլորտներ', label: 'Ոլորտներ', href: '/intro#industries' },
         { key: 'Contacts', label: t('Contacts'), href: '/intro#contact' },
     ];
 

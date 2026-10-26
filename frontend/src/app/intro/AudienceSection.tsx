@@ -20,7 +20,7 @@ const CARDS: { Icon: ElementType; label: string; color: string; bgColor: string 
 
 export default function AudienceSection() {
     return (
-        <Box sx={{
+        <Box id="industries" sx={{
             pt: { xs: 6, md: 10 },
             pb: { xs: 6, md: 10 },
             px: { xs: 2, md: 4 },
