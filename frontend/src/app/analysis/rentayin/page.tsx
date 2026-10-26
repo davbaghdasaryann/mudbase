@@ -1028,89 +1028,51 @@ export default function RentayinPage() {
                                                 </>
                                             );
                                         })()}
-                                            {/* Stat cards */}
-                                            {(() => {
-                                                const estUnitTime = (detail as any)?.estimateUnitTime ?? 0;
-                                                const estLaborCount = rows.length;
-                                                const estMatCount = rows.filter(r => (r.estimatedMaterialUnitCost ?? 0) > 0).length;
-                                                const statItems = [
-                                                    { label: t('Quantity of Labor'),   icon: <EngineeringIcon sx={{ fontSize: 22 }} />, value: estLaborCount },
-                                                    { label: t('Quantity of Materials'), icon: <BuildIcon sx={{ fontSize: 22 }} />,      value: estMatCount },
-                                                    { label: t('Unit Time'),             icon: <AccessTimeIcon sx={{ fontSize: 22 }} />,  value: estUnitTime },
-                                                ];
-                                                return (
-                                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2, position: 'relative', overflow: 'hidden',
-                                                        '&:hover .stat-disabled-overlay': { opacity: 1 },
-                                                    }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{t('Overview')}</Typography>
-                                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 1, opacity: 0.4, pointerEvents: 'none' }}>
-                                                            {statItems.map((s, i) => (
-                                                                <Box key={i} sx={{ border: '1px solid #E8E8E8', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                                    <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.2, fontSize: '0.68rem' }}>{s.label}</Typography>
-                                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.25 }}>
-                                                                        <Box sx={{ color: '#00899B' }}>{s.icon}</Box>
-                                                                        <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', lineHeight: 1 }}>{s.value}</Typography>
-                                                                    </Box>
-                                                                </Box>
-                                                            ))}
-                                                        </Box>
-                                                        {/* Disabled overlay */}
-                                                        <Box className="stat-disabled-overlay" sx={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, opacity: 0, transition: 'opacity 0.2s', borderRadius: 3 }}>
-                                                            <BuildIcon sx={{ fontSize: 32, color: '#9ca3af' }} />
-                                                            <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#6b7280', textAlign: 'center' }}>
-                                                                {'Մշակման փուլում'}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Paper>
-                                                );
-                                            })()}
-                                        </Box>
-                                        {/* Cost per m² row */}
+                                        {/* Cost per m² */}
                                         {(() => {
                                             const builtUpAreaStr: string | null = (detail as any)?.estimateBuiltUpArea ?? null;
-                                            const builtUpArea = builtUpAreaStr ? parseFloat(builtUpAreaStr) : NaN;
-                                            const hasArea = !isNaN(builtUpArea) && builtUpArea > 0;
+                                            const builtUpAreaParsed = builtUpAreaStr ? parseFloat(builtUpAreaStr) : NaN;
+                                            const hasArea = !isNaN(builtUpAreaParsed) && builtUpAreaParsed > 0;
                                             const totalEstAll = totalEstCost + totalEstOther;
                                             const totalActAll = totalActCost + totalActOther;
-                                            const estPerM2 = hasArea && totalEstAll > 0 ? totalEstAll / builtUpArea : null;
-                                            const actPerM2 = hasArea && totalActCost > 0 ? totalActAll / builtUpArea : null;
+                                            const estPerM2 = hasArea && totalEstAll > 0 ? totalEstAll / builtUpAreaParsed : null;
+                                            const actPerM2 = hasArea && totalActCost > 0 ? totalActAll / builtUpAreaParsed : null;
                                             const fmtPerM2 = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ռ/մ²';
                                             return (
-                                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2, mt: 0 }}>
-                                                    <Paper elevation={0} sx={{ flex: '0 0 auto', minWidth: 260, maxWidth: 400, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
-                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5, display: 'block' }}>
-                                                            {t('Cost per 1 m²')}
-                                                        </Typography>
-                                                        {hasArea ? (
-                                                            <>
-                                                                <Box sx={{ display: 'flex', gap: 1.5 }}>
-                                                                    <Box sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                                                                        <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Estimated')}</Typography>
-                                                                        <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#00A390', lineHeight: 1.3 }}>
-                                                                            {estPerM2 !== null ? fmtPerM2(estPerM2) : '—'}
-                                                                        </Typography>
+                                                        <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5, display: 'block' }}>
+                                                                {t('Cost per 1 m²')}
+                                                            </Typography>
+                                                            {hasArea ? (
+                                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
+                                                                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                                                        <Box sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                                                            <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Estimated')}</Typography>
+                                                                            <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#00A390', lineHeight: 1.3 }}>
+                                                                                {estPerM2 !== null ? fmtPerM2(estPerM2) : '—'}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        <Box sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                                                            <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Actual')}</Typography>
+                                                                            <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: actPerM2 !== null ? '#1565c0' : '#bbb', lineHeight: 1.3 }}>
+                                                                                {actPerM2 !== null ? fmtPerM2(actPerM2) : '—'}
+                                                                            </Typography>
+                                                                        </Box>
                                                                     </Box>
-                                                                    <Box sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                                                                        <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Actual')}</Typography>
-                                                                        <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: actPerM2 !== null ? '#1565c0' : '#bbb', lineHeight: 1.3 }}>
-                                                                            {actPerM2 !== null ? fmtPerM2(actPerM2) : '—'}
-                                                                        </Typography>
-                                                                    </Box>
+                                                                    <Typography sx={{ fontSize: '0.62rem', color: '#9ca3af', textAlign: 'center' }}>
+                                                                        {builtUpAreaParsed} մ² · {t('Based on estimate area')}
+                                                                    </Typography>
                                                                 </Box>
-                                                                <Typography sx={{ fontSize: '0.62rem', color: '#9ca3af', textAlign: 'center', mt: 1 }}>
-                                                                    {builtUpArea} մ² · {t('Based on estimate area')}
-                                                                </Typography>
-                                                            </>
-                                                        ) : (
-                                                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, py: 2 }}>
-                                                                <Typography sx={{ fontSize: '1.4rem', color: '#d0d0d0' }}>—</Typography>
-                                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'center' }}>{t('Set built-up area in estimate')}</Typography>
-                                                            </Box>
-                                                        )}
-                                                    </Paper>
-                                                </Box>
+                                                            ) : (
+                                                                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                                                    <Typography sx={{ fontSize: '1.4rem', color: '#d0d0d0' }}>&#x2014;</Typography>
+                                                                    <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'center' }}>{t('Set built-up area in estimate')}</Typography>
+                                                                </Box>
+                                                            )}
+                                                        </Paper>
                                             );
                                         })()}
+                                        </Box>
                                     </>}
                                     {/* Other Costs bar charts */}
                                     {(() => {
