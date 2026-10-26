@@ -73,31 +73,6 @@ export default function LandingHeader() {
                             {link.label}
                         </Typography>
                     ))}
-                    {/* Language toggle */}
-                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', backdropFilter: 'blur(8px)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)', ml: -1 }}>
-                        {(['am', 'en'] as const).map(code => (
-                            <Box
-                                key={code}
-                                onClick={() => handleLangChange(code)}
-                                sx={{
-                                    px: 1.4, py: 0.35,
-                                    borderRadius: '100px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.04em',
-                                    transition: 'all 0.15s',
-                                    userSelect: 'none',
-                                    ...(currentLang === code
-                                        ? { background: 'rgba(0,171,190,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 10px rgba(0,171,190,0.35)', border: '1px solid rgba(255,255,255,0.2)' }
-                                        : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
-                                    ),
-                                }}
-                            >
-                                {code === 'am' ? 'Հայ' : 'Eng'}
-                            </Box>
-                        ))}
-                    </Box>
                 </Box>
 
                 {/* Mobile: login + register buttons — mx:auto centers between logo and hamburger */}
@@ -143,6 +118,31 @@ export default function LandingHeader() {
 
                 {/* Desktop auth — fixed right, no auto margins */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                    {/* Language toggle */}
+                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)', mr: 1 }}>
+                        {(['am', 'en'] as const).map(code => (
+                            <Box
+                                key={code}
+                                onClick={() => handleLangChange(code)}
+                                sx={{
+                                    px: 1.4, py: 0.35,
+                                    borderRadius: '100px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.04em',
+                                    transition: 'all 0.15s',
+                                    userSelect: 'none',
+                                    ...(currentLang === code
+                                        ? { background: 'rgba(0,171,190,0.92)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 12px rgba(0,171,190,0.5)', border: '1px solid rgba(255,255,255,0.25)' }
+                                        : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
+                                    ),
+                                }}
+                            >
+                                {code === 'am' ? 'Հայ' : 'Eng'}
+                            </Box>
+                        ))}
+                    </Box>
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -236,7 +236,7 @@ export default function LandingHeader() {
                                             transition: 'all 0.15s',
                                             userSelect: 'none',
                                             ...(currentLang === code
-                                                ? { background: 'rgba(0,171,190,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 10px rgba(0,171,190,0.35)', border: '1px solid rgba(255,255,255,0.2)' }
+                                                ? { background: 'rgba(0,171,190,0.92)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 12px rgba(0,171,190,0.5)', border: '1px solid rgba(255,255,255,0.25)' }
                                                 : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                             ),
                                         }}
