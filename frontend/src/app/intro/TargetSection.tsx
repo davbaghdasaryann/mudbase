@@ -6,6 +6,7 @@ import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
 import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { ElementType, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const STROKE = '#3FA297';
 
@@ -15,9 +16,13 @@ const CARDS: { Icon: ElementType; circleBg: string; iconColor: string }[] = [
     { Icon: DrawOutlinedIcon,         circleBg: 'rgba(0,171,190,0.10)',  iconColor: '#00ABBE' },
 ];
 
+
+export default function TargetSection() {
+    const { t } = useTranslation();
+
 const CARD_DETAILS: Record<number, { title: string; description: string; intro?: string; features?: string[]; callout?: string }> = {
     1: {
-        title: 'Նախահաշվային գործիք',
+        title: t('landing.tool_estimate'),
         description: 'Նախահաշվային գործիքը նախատեսված է շինարարական աշխատանքների արժեքի հաշվարկման համար։ Այն առանձին գործիք է և ներառում է նախահաշիվների կազմման և խմբագրման համար անհրաժեշտ բոլոր ծրագրային հնարավորությունները։ Արժեքի ձևավորման և հաշվարկի իրականացման համար անհրաժեշտ տվյալները բեռնվում են հիմնական շտեմարաններից՝ արտացոլելով շինարարական աշխատանքների և նյութերի տվյալ պահի դրությամբ հաշվարկված միջինացված արժեքները։ Հաշվարկված նախահաշիվը հնարավոր է արտահանել թվային տարբեր ձևաչափերով՝ ըստ նախապատվության։ Բացի այդ, հիմք ընդունելով նախահաշվային տվյալները, հնարավոր է շինարարական կապալի պայմանագրի համար ձևավորել աշխատանքների ծավալաթերթ։',
         intro: 'Նախահաշվային գործիքը նախատեսված է շինարարական աշխատանքների արժեքի հաշվարկման համար։',
         features: [
@@ -28,7 +33,7 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Արժեքի ձևավորման և հաշվարկի իրականացման համար անհրաժեշտ տվյալները բեռնվում են հիմնական շտեմարաններից՝ արտացոլելով շինարարական աշխատանքների և նյութերի տվյալ պահի դրությամբ հաշվարկված միջինացված արժեքները։',
     },
     0: {
-        title: 'Տվյալների Շտեմարան',
+        title: t('landing.tool_data_catalog'),
         description: 'Շինարարական աշխատանքների շուկայական արժեքի հաշվարկի համար Մադբեյզ համակարգն առաջարկում է տվյալների երկու հիմնական շտեմարան՝ շինարարական աշխատանքների և շինարարական նյութերի։ Յուրաքանչյուր շտեմարանում պահպանվում են շուկայական արժեքների վերաբերյալ միջինացված տվյալները՝ դասակարգված ըստ տիպերի և առանձնահատկությունների։ Շտեմարաններում առկա տվյալները տրամադրվում են հայաստանյան շուկայում շինարարություն իրականացնող կազմակերպությունների կողմից։ Նոր արժեք մուտքագրվելիս համակարգն ավտոմատ թարմացնում է շտեմարանը և իրական ժամանակում հաշվարկում նոր միջին շուկայական արժեքը, ինչը թույլ է տալիս այլ կազմակերպություններին օգտվել իրական շուկայական տվյալներից։',
         intro: 'Շինարարական աշխատանքների շուկայական արժեքի հաշվարկի համար Մադբեյզ համակարգն առաջարկում է տվյալների երկու հիմնական շտեմարան՝ շինարարական աշխատանքների և շինարարական նյութերի։',
         features: [
@@ -38,9 +43,9 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Նոր արժեք մուտքագրվելիս համակարգն ավտոմատ թարմացնում է շտեմարանը և իրական ժամանակում հաշվարկում նոր միջին շուկայական արժեքը, ինչը թույլ է տալիս այլ կազմակերպություններին օգտվել իրական շուկայական տվյալներից։',
     },
     2: {
-        title: 'Խոշորացված Շտեմարան',
-        description: 'Խոշորացված շտեմարանում ներկայացված են տարբեր տեսակի օբյեկտների շինարարության խոշորացված արժեքները։ Յուրաքանչյուր հաշվարկի հիմքում ընկած են իրական մշակված նախագծային փաստաթղթերը և վերջիններիս հիման վրա կազմված շինարարական նախահաշիվը։ Արժեքները հաշվարկվում են՝ հիմք ընդունելով հիմնական շտեմարաններում տվյալ պահի դրությամբ առկա տվյալները։ Անհրաժեշտության դեպքում հաշվարկային նախահաշիվները հնարավոր է պատճենել՝ սեփական հաշվարկներ իրականացնելու նպատակով։ Հիմնական շտեմարաններում փոփոխությունների դեպքում համակարգն ինքնաշխատ իրականացնում է արժեքների վերահաշվարկ՝ տրամադրելով միշտ թարմացված տեղեկատվություն։',
-        intro: 'Խոշորացված շտեմարանում ներկայացված են տարբեր տեսակի օբյեկտների շինարարության խոշորացված արժեքները։',
+        title: t('landing.tool_consolidated'),
+        description: 'Խոշորացված Շտեմարանում ներկայացված են տարբեր տեսակի օբյեկտների շինարարության խոշորացված արժեքները։ Յուրաքանչյուր հաշվարկի հիմքում ընկած են իրական մշակված նախագծային փաստաթղթերը և վերջիններիս հիման վրա կազմված շինարարական նախահաշիվը։ Արժեքները հաշվարկվում են՝ հիմք ընդունելով հիմնական շտեմարաններում տվյալ պահի դրությամբ առկա տվյալները։ Անհրաժեշտության դեպքում հաշվարկային նախահաշիվները հնարավոր է պատճենել՝ սեփական հաշվարկներ իրականացնելու նպատակով։ Հիմնական շտեմարաններում փոփոխությունների դեպքում համակարգն ինքնաշխատ իրականացնում է արժեքների վերահաշվարկ՝ տրամադրելով միշտ թարմացված տեղեկատվություն։',
+        intro: 'Խոշորացված Շտեմարանում ներկայացված են տարբեր տեսակի օբյեկտների շինարարության խոշորացված արժեքները։',
         features: [
             'Յուրաքանչյուր հաշվարկի հիմքում ընկած են իրական մշակված նախագծային փաստաթղթերը և վերջիններիս հիման վրա կազմված շինարարական նախահաշիվը։',
             'Արժեքները հաշվարկվում են՝ հիմք ընդունելով հիմնական շտեմարաններում տվյալ պահի դրությամբ առկա տվյալները։',
@@ -49,7 +54,7 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Հիմնական շտեմարաններում փոփոխությունների դեպքում համակարգն ինքնաշխատ իրականացնում է արժեքների վերահաշվարկ՝ տրամադրելով միշտ թարմացված տեղեկատվություն։',
     },
     3: {
-        title: 'Ծախսագրում',
+        title: t('landing.tool_costing'),
         description: '«Ծախսագրում» գործիքը նախատեսված է շինարարության փաստացի ծախսերի հաշվառման և հաշվարկման համար։ Այս գործիքի միջոցով շինարարական կազմակերպությունը ողջ շինարարության ընթացքում մուտքագրում է իր հիմնական ծախսերի վերաբերյալ տեղեկատվությունը (աշխատավարձեր, մեքենա-մեխանիզմների շահագործման ծախսեր, ենթակապալառուներին վճարված գումարներ)։ Սույն գործիքի միջոցով հնարավոր է իրականացնել պահեստում առկա շինարարական նյութերի քանակական կառավարումը՝ վերահսկելով առկա մնացորդները և փաստացի ծախսը։ Գործիքը ներառում է նաև վերլուծական բաժին, որի միջոցով շինարարության ողջ ընթացքում հնարավոր է հետևել յուրաքանչյուր տեսակի աշխատանքի շահութաբերությանը կամ վնասաբերությանը։ Մուտքագրված բոլոր տվյալների հիման վրա հնարավոր է կազմել ամփոփ ծախսային հաշվարկ, որը թույլ կտա կազմակերպությանը գնահատել իր գործունեության արդյունավետությունը և կայացնել հիմնավորված կառավարչական որոշումներ։',
         intro: '«Ծախսագրում» գործիքը նախատեսված է շինարարության փաստացի ծախսերի հաշվառման և հաշվարկման համար։',
         features: [
@@ -60,7 +65,7 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Մուտքագրված բոլոր տվյալների հիման վրա հնարավոր է կազմել ամփոփ ծախսային հաշվարկ, որը թույլ կտա կազմակերպությանը գնահատել իր գործունեության արդյունավետությունը և կայացնել հիմնավորված կառավարչական որոշումներ։',
     },
     4: {
-        title: 'Կատարողական',
+        title: t('landing.tool_performance'),
         description: '«Կատարողական» գործիքը նախատեսված է շինարարական աշխատանքների կատարողականների կազմման համար։ Այս գործիքի միջոցով շինարարական կազմակերպությունը կարող է շինարարության յուրաքանչյուր փուլում ավարտված աշխատանքների հիման վրա կազմել կատարողական ակտեր։ Յուրաքանչյուր նոր կատարողական ակտ կազմելիս համակարգն ինքնաշխատ գումարում է նախկինում մուտքագրված տվյալները՝ ամփոփելով կատարված աշխատանքների ընդհանուր ծավալը։ Միաժամանակ հնարավորություն է տրվում անընդհատ վերահսկել մնացորդային աշխատանքների ծավալները։',
         intro: '«Կատարողական» գործիքը նախատեսված է շինարարական աշխատանքների կատարողականների կազմման համար։',
         features: [
@@ -70,7 +75,7 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Միաժամանակ հնարավորություն է տրվում անընդհատ վերահսկել մնացորդային աշխատանքների ծավալները։',
     },
     5: {
-        title: 'Վերլուծություն',
+        title: t('landing.tool_analysis'),
         description: 'Վերլուծության գործիքը նախատեսված է նախահաշվային տվյալների բազմակողմանի ուսումնասիրության համար և ներառում է վերլուծության չորս հիմնական տեսակ՝ կառուցվածքային, համեմատական, ռենտային և ժամանակագրական։ Կառուցվածքային վերլուծությունը թույլ է տալիս ուսումնասիրել հաշվարկված նախահաշվի ծախսային կառուցվածքը՝ աշխատանքների, նյութերի և այլ ծախսերի բաժինն ու քանակական ցուցանիշները։ Համեմատական վերլուծության միջոցով հնարավոր է նախահաշվային տվյալները համադրել համակարգում գրանցված այլ կազմակերպությունների տրամադրած արժեքների հետ, ինչպես նաև համեմատել տարբեր կազմակերպությունների կողմից նույն նախահաշվի համար կատարված հաշվարկները։ Ռենտային վերլուծությունը հնարավորություն է տալիս արագ գնահատել, թե ինչ շահութաբերությամբ կարող է կազմակերպությունն իրականացնել տվյալ շինարարությունը՝ հիմք ընդունելով «Ծախսագրում» գործիքում կամ շտեմարաններում առկա իր սեփական տվյալները։ Ժամանակագրական վերլուծությունը ցույց է տալիս, թե որքան կարժենար տվյալ շինարարությունը տարբեր ժամանակահատվածներում։',
         intro: 'Վերլուծության գործիքը նախատեսված է նախահաշվային տվյալների բազմակողմանի ուսումնասիրության համար և ներառում է վերլուծության չորս հիմնական տեսակ՝ կառուցվածքային, համեմատական, ռենտային և ժամանակագրական։',
         features: [
@@ -81,7 +86,7 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Ժամանակագրական վերլուծությունը ցույց է տալիս, թե որքան կարժենար տվյալ շինարարությունը տարբեր ժամանակահատվածներում։',
     },
     7: {
-        title: 'Մոնիթորինգ',
+        title: t('landing.tool_monitoring'),
         description: '«Մոնիթորինգ» գործիքը նախատեսված է շուկայական արժեքների փոփոխությունների շարունակական դիտարկման համար։ Այս գործիքի միջոցով կազմակերպությունը կարող է մեկ էջում վիջեթների տեսքով հավաքել իր համար անհրաժեշտ վիճակագրական տվյալները։ Օրինակ՝ հնարավոր է հետևել, թե որքան է տատանվել որևէ շինարարական աշխատանքի արժեքը կամ աշխատանքի ընդհանուր հաշվարկը վերջին 15 կամ 30 օրվա ընթացքում։ Արդյունքում կազմակերպությունը մեկ էջում ստանում է շուկայական արժեքների փոփոխությունների ամփոփ և արագ ընկալելի պատկեր։',
         intro: '«Մոնիթորինգ» գործիքը նախատեսված է շուկայական արժեքների փոփոխությունների շարունակական դիտարկման համար։',
         features: [
@@ -91,8 +96,6 @@ const CARD_DETAILS: Record<number, { title: string; description: string; intro?:
         callout: 'Արդյունքում կազմակերպությունը մեկ էջում ստանում է շուկայական արժեքների փոփոխությունների ամփոփ և արագ ընկալելի պատկեր։',
     },
 };
-
-export default function TargetSection() {
     const [flipped, setFlipped] = useState<number | null>(null);
     const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
@@ -119,7 +122,7 @@ export default function TargetSection() {
                     px: 2, py: 0.55,
                 }}>
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                        Գործիքներ
+                        {t('landing.tools_badge')}
                     </Typography>
                 </Box>
             </Box>
@@ -191,7 +194,7 @@ export default function TargetSection() {
                                         zIndex: 1,
                                         pointerEvents: 'none',
                                     }}>
-                                        Տվյալների շտեմարան
+                                        {t('landing.tool_data_catalog')}
                                     </Typography>
                                     <Box sx={{
                                         position: 'absolute',
@@ -218,7 +221,7 @@ export default function TargetSection() {
                                         zIndex: 1,
                                         pointerEvents: 'none',
                                     }}>
-                                        Խոշորացված շտեմարան
+                                        {t('landing.tool_consolidated')}
                                     </Typography>
                                     <Box sx={{
                                         position: 'absolute',
@@ -245,7 +248,7 @@ export default function TargetSection() {
                                         zIndex: 1,
                                         pointerEvents: 'none',
                                     }}>
-                                        Նախահաշվային գործիք
+                                        {t('landing.tool_estimate')}
                                     </Typography>
                                     <Box sx={{
                                         position: 'absolute',
@@ -299,16 +302,16 @@ export default function TargetSection() {
                                                 onClick={(e: any) => { e.stopPropagation(); setExpandedCard(i); }}
                                                 sx={{ border: 'none', bgcolor: iconColor, color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
                                             >
-                                                Տեսնել ավելին
+                                                {t('landing.see_more')}
                                             </Box>
                                             <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
-                                                ‹ Պտտել
+                                                {t('landing.rotate')}
                                             </Typography>
                                         </Box>
                                     </>
                                 ) : (
                                     <Typography sx={{ fontSize: '0.78rem', color: '#94a3ac', userSelect: 'none', transition: 'color 0.15s', '&:hover': { color: '#00ABBE' } }}>
-                                        ‹ Պտտել
+                                        {t('landing.rotate')}
                                     </Typography>
                                 )}
                             </Box>
@@ -326,9 +329,9 @@ export default function TargetSection() {
                 justifyContent: 'center',
             }}>
                 {[
-                    { idx: 3, label: 'Ծախսագրում',     bg: '/images/costing_card_bg.webp' },
-                    { idx: 4, label: 'Կատարողական', bg: '/images/performance_card_bg.webp' },
-                    { idx: 5, label: 'Վերլուծություններ', bg: '/images/analysis_card_bg.webp' },
+                    { idx: 3, label: t('landing.tool_costing'),     bg: '/images/costing_card_bg.webp' },
+                    { idx: 4, label: t('landing.tool_performance'), bg: '/images/performance_card_bg.webp' },
+                    { idx: 5, label: t('landing.tool_analysis'), bg: '/images/analysis_card_bg.webp' },
                 ].map(({ idx, label, bg }) => (
                     <Box key={idx} sx={{ flex: '1 1 0', minWidth: { xs: 200, md: 0 }, perspective: '1000px' }}>
                         <Box sx={{
@@ -446,16 +449,16 @@ export default function TargetSection() {
                                 onClick={(e: any) => { e.stopPropagation(); setExpandedCard(idx); }}
                                 sx={{ border: 'none', bgcolor: '#00ABBE', color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
                             >
-                                Տեսնել ավելին
+                                {t('landing.see_more')}
                             </Box>
                             <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
-                                ‹ Պտտել
+                                {t('landing.rotate')}
                             </Typography>
                         </Box>
                     </>
                 ) : (
                     <Typography sx={{ fontSize: '0.78rem', color: '#94a3ac', userSelect: 'none', transition: 'color 0.15s', '&:hover': { color: '#00ABBE' } }}>
-                        ‹ Պտտել
+                        {t('landing.rotate')}
                     </Typography>
                 )}
             </Box>
@@ -476,7 +479,7 @@ export default function TargetSection() {
                         transform: flipped === 6 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
                         {/* Front face */}
-                        <Tooltip title="Մշակման փուլում" placement="top" arrow>
+                        <Tooltip {...{title: t('landing.in_development')}} placement="top" arrow>
                         <Box
                             sx={{
                                 position: "absolute",
@@ -509,7 +512,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Ժամանակացույց
+                                {t('landing.tool_schedule')}
                             </Typography>
                             <Box sx={{
                                 position: "absolute",
@@ -560,7 +563,7 @@ export default function TargetSection() {
                             }}
                         >
                             <Typography sx={{ fontSize: "0.78rem", color: "#94a3ac", userSelect: "none" }}>
-                                ‹ Պտտել
+                                {t('landing.rotate')}
                             </Typography>
                         </Box>
                     </Box>
@@ -675,10 +678,10 @@ export default function TargetSection() {
                                     onClick={(e: any) => { e.stopPropagation(); setExpandedCard(7); }}
                                     sx={{ border: 'none', bgcolor: '#00ABBE', color: '#fff', borderRadius: '8px', px: 2.5, py: 0.8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', width: '100%', '&:hover': { filter: 'brightness(0.9)' } }}
                                 >
-                                    Տեսնել ավելին
+                                    {t('landing.see_more')}
                                 </Box>
                                 <Typography sx={{ fontSize: '0.75rem', color: '#94a3ac', userSelect: 'none', '&:hover': { color: '#00ABBE' } }}>
-                                    ‹ Պտտել
+                                    {t('landing.rotate')}
                                 </Typography>
                             </Box>
                         </Box>
@@ -694,7 +697,7 @@ export default function TargetSection() {
                         transform: flipped === 8 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
                         {/* Front face */}
-                        <Tooltip title="Մշակման փուլում" placement="top" arrow>
+                        <Tooltip {...{title: t('landing.in_development')}} placement="top" arrow>
                         <Box
                             sx={{
                                 position: "absolute",
@@ -727,7 +730,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Նախագծերի կառավարում
+                                {t('landing.tool_project_mgmt')}
                             </Typography>
                             <Box sx={{
                                 position: 'absolute',
@@ -779,7 +782,7 @@ export default function TargetSection() {
                             }}
                         >
                             <Typography sx={{ fontSize: "0.78rem", color: "#94a3ac", userSelect: "none" }}>
-                                ‹ Պտտել
+                                {t('landing.rotate')}
                             </Typography>
                         </Box>
                     </Box>
@@ -798,7 +801,7 @@ export default function TargetSection() {
                         transform: flipped === 9 ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}>
                                                 {/* Front face */}
-                        <Tooltip title="Մշակման փուլում" placement="top" arrow>
+                        <Tooltip {...{title: t('landing.in_development')}} placement="top" arrow>
                         <Box
                             sx={{
                                 position: "absolute",
@@ -831,7 +834,7 @@ export default function TargetSection() {
                                 zIndex: 1,
                                 pointerEvents: "none",
                             }}>
-                                Ռիսկերի մոնիթորինգ
+                                {t('landing.tool_risk_monitoring')}
                             </Typography>
                             <Box sx={{
                                 position: 'absolute',
@@ -883,7 +886,7 @@ export default function TargetSection() {
                             }}
                         >
                             <Typography sx={{ fontSize: "0.78rem", color: "#94a3ac", userSelect: "none" }}>
-                                ‹ Պտտել
+                                {t('landing.rotate')}
                             </Typography>
                         </Box>
                     </Box>

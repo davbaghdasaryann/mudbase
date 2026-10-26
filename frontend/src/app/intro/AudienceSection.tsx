@@ -8,17 +8,18 @@ import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { ElementType } from 'react';
-
-const CARDS: { Icon: ElementType; label: string; color: string; bgColor: string }[] = [
-    { Icon: ConstructionOutlinedIcon, label: 'Շինարարություն', color: '#00ABBE', bgColor: 'rgba(0,171,190,0.08)' },
-    { Icon: AccountBalanceOutlinedIcon, label: 'Ապահովագրական', color: '#41A240', bgColor: 'rgba(65,162,64,0.08)' },
-    { Icon: ApartmentOutlinedIcon,     label: 'Կառուցապատող', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
-    { Icon: DrawOutlinedIcon,          label: 'Նախագծում', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
-    { Icon: CalculateOutlinedIcon,     label: 'Գնահատող', color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
-    { Icon: EngineeringOutlinedIcon,     label: 'Բանկեր', color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function AudienceSection() {
+    const { t } = useTranslation();
+    const CARDS: { Icon: ElementType; label: string; color: string; bgColor: string }[] = [
+        { Icon: ConstructionOutlinedIcon, label: t('landing.industry_construction'), color: '#00ABBE', bgColor: 'rgba(0,171,190,0.08)' },
+        { Icon: AccountBalanceOutlinedIcon, label: t('landing.industry_insurance'), color: '#41A240', bgColor: 'rgba(65,162,64,0.08)' },
+        { Icon: ApartmentOutlinedIcon,     label: t('landing.industry_developer'),  color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
+        { Icon: DrawOutlinedIcon,          label: t('landing.industry_design'),      color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
+        { Icon: CalculateOutlinedIcon,     label: t('landing.industry_estimator'),   color: '#00A390', bgColor: 'rgba(0,163,144,0.08)' },
+        { Icon: EngineeringOutlinedIcon,   label: t('landing.industry_banks'),       color: '#1CA461', bgColor: 'rgba(28,164,97,0.08)' },
+    ];
     return (
         <Box id="industries" sx={{
             pt: { xs: 6, md: 10 },
@@ -39,7 +40,7 @@ export default function AudienceSection() {
                     px: 2, py: 0.55,
                 }}>
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.13em', color: '#00A390', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                        Ում համար է նախատասված Մադբեյզը
+                        {t('landing.audience_badge')}
                     </Typography>
                 </Box>
             </Box>
