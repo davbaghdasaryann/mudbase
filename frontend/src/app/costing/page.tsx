@@ -1982,6 +1982,46 @@ ${tableBodyHtml}
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} pahestEntries={pahestEntries} height={220} />
                             </Box>
+                            {(() => {
+                                const builtUpAreaStr = selectedEstimate.builtUpArea ?? null;
+                                const builtUpAreaParsed = builtUpAreaStr ? parseFloat(builtUpAreaStr) : NaN;
+                                const hasArea = !isNaN(builtUpAreaParsed) && builtUpAreaParsed > 0;
+                                const estTotal = selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0;
+                                const actTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_')).reduce((s, e) => s + e.total, 0);
+                                const estPerM2 = hasArea && estTotal > 0 ? estTotal / builtUpAreaParsed : null;
+                                const actPerM2 = hasArea && actTotal > 0 ? actTotal / builtUpAreaParsed : null;
+                                const fmtPerM2 = (n: number) => formatCurrencyRounded(Math.round(n)) + ' AMD/մ²';
+                                return (
+                                    <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 220, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{t('Cost per 1 m²')}</Typography>
+                                        {!hasArea ? (
+                                            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Typography variant='body2' color='text.secondary'>{t('Set built-up area in estimate')}</Typography>
+                                            </Box>
+                                        ) : (
+                                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 1 }}>
+                                                {[
+                                                    { label: t('Estimated'), value: estPerM2, c1: '#00CCDD', c2: '#00899B', barPct: 100 },
+                                                    { label: t('Actual'),    value: actPerM2, c1: '#4EE89A', c2: '#1CA461', barPct: estPerM2 && actPerM2 ? Math.min(150, (actPerM2 / estPerM2) * 100) : 0 },
+                                                ].map(({ label, value, c1, c2, barPct }) => (
+                                                    <Box key={label}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280' }}>{label}</Typography>
+                                                            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, background: `linear-gradient(90deg, ${c1}, ${c2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                                                {value !== null ? fmtPerM2(value) : '—'}
+                                                            </Typography>
+                                                        </Box>
+                                                        <Box sx={{ height: 10, bgcolor: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
+                                                            <Box sx={{ height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${c1}99, ${c2})`, width: `${value !== null ? Math.min(100, barPct) : 0}%`, transition: 'width 0.4s ease' }} />
+                                                        </Box>
+                                                    </Box>
+                                                ))}
+                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'right', mt: 0.5 }}>{builtUpAreaParsed} մ² · {t('Based on estimate area')}</Typography>
+                                            </Box>
+                                        )}
+                                    </Paper>
+                                );
+                            })()}
                         </Box>
                         {(() => {
                             const actualMaterials = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
