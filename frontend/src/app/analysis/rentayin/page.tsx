@@ -1049,7 +1049,7 @@ export default function RentayinPage() {
                                                                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 1 }}>
                                                                     {([
                                                                         { label: t('Estimated'), value: estPerM2, c1: '#00CCDD', c2: '#00899B', barPct: 100 },
-                                                                        { label: t('Actual'),    value: actPerM2, c1: '#4EE89A', c2: '#1CA461', barPct: estPerM2 && actPerM2 ? Math.min(150, (actPerM2 / estPerM2) * 100) : 0 },
+                                                                        { label: t('Calculated'),    value: actPerM2, c1: '#4EE89A', c2: '#1CA461', barPct: estPerM2 && actPerM2 ? Math.min(150, (actPerM2 / estPerM2) * 100) : 0 },
                                                                     ] as const).map(({ label, value, c1, c2, barPct }) => (
                                                                         <Box key={label}>
                                                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
