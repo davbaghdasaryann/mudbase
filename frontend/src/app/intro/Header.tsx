@@ -74,7 +74,7 @@ export default function LandingHeader() {
                         </Typography>
                     ))}
                     {/* Language toggle */}
-                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', backdropFilter: 'blur(8px)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)' }}>
+                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', backdropFilter: 'blur(8px)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)', ml: -1 }}>
                         {(['am', 'en'] as const).map(code => (
                             <Box
                                 key={code}
@@ -89,7 +89,7 @@ export default function LandingHeader() {
                                     transition: 'all 0.15s',
                                     userSelect: 'none',
                                     ...(currentLang === code
-                                        ? { background: '#00ABBE', color: '#fff', boxShadow: '0 2px 8px rgba(0,171,190,0.45)' }
+                                        ? { background: 'rgba(0,171,190,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 10px rgba(0,171,190,0.35)', border: '1px solid rgba(255,255,255,0.2)' }
                                         : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                     ),
                                 }}
@@ -236,7 +236,7 @@ export default function LandingHeader() {
                                             transition: 'all 0.15s',
                                             userSelect: 'none',
                                             ...(currentLang === code
-                                                ? { background: '#00ABBE', color: '#fff', boxShadow: '0 2px 8px rgba(0,171,190,0.45)' }
+                                                ? { background: 'rgba(0,171,190,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 10px rgba(0,171,190,0.35)', border: '1px solid rgba(255,255,255,0.2)' }
                                                 : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                             ),
                                         }}
