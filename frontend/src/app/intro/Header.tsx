@@ -44,7 +44,7 @@ export default function LandingHeader() {
                 px: 2,
                 py: 1.25,
                 width: '100%',
-                maxWidth: 1020,
+                maxWidth: 880,
             }}>
                 {/* Logo — fixed left */}
                 <Box sx={{ flex: { md: 1 }, display: 'flex', alignItems: 'center' }}>
@@ -154,7 +154,7 @@ export default function LandingHeader() {
                             fontWeight: 600,
                             textTransform: 'none',
                             fontSize: '0.88rem',
-                            minWidth: 88,
+                            minWidth: 0,
                             px: 1.5,
                             py: 0.75,
                             borderRadius: '8px',
