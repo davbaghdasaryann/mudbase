@@ -74,7 +74,7 @@ export default function LandingHeader() {
                         </Typography>
                     ))}
                     {/* Language toggle */}
-                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.25)', background: 'rgba(0,171,190,0.07)', backdropFilter: 'blur(6px)', p: 0.35, gap: 0.25 }}>
+                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', backdropFilter: 'blur(8px)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)' }}>
                         {(['am', 'en'] as const).map(code => (
                             <Box
                                 key={code}
@@ -89,12 +89,12 @@ export default function LandingHeader() {
                                     transition: 'all 0.15s',
                                     userSelect: 'none',
                                     ...(currentLang === code
-                                        ? { background: '#00ABBE', color: '#fff' }
+                                        ? { background: '#00ABBE', color: '#fff', boxShadow: '0 2px 8px rgba(0,171,190,0.45)' }
                                         : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                     ),
                                 }}
                             >
-                                {code === 'am' ? 'ARM' : 'ENG'}
+                                {code === 'am' ? 'Հայ' : 'Eng'}
                             </Box>
                         ))}
                     </Box>
@@ -221,7 +221,7 @@ export default function LandingHeader() {
                             </MenuItem>
                         ))}
                         <MenuItem sx={{ py: 1 }}>
-                            <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.25)', background: 'rgba(0,171,190,0.07)', p: 0.35, gap: 0.25 }}>
+                            <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)' }}>
                                 {(['am', 'en'] as const).map(code => (
                                     <Box
                                         key={code}
@@ -236,12 +236,12 @@ export default function LandingHeader() {
                                             transition: 'all 0.15s',
                                             userSelect: 'none',
                                             ...(currentLang === code
-                                                ? { background: '#00ABBE', color: '#fff' }
+                                                ? { background: '#00ABBE', color: '#fff', boxShadow: '0 2px 8px rgba(0,171,190,0.45)' }
                                                 : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                             ),
                                         }}
                                     >
-                                        {code === 'am' ? 'ARM' : 'ENG'}
+                                        {code === 'am' ? 'Հայ' : 'Eng'}
                                     </Box>
                                 ))}
                             </Box>
