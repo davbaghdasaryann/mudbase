@@ -20,7 +20,7 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
         const [est, latestCosting] = await Promise.all([
             Db.getEstimatesCollection().findOne(
                 { _id: doc.estimateId },
-                { projection: { otherExpenses: 1, unitTime: 1, laborItemCount: 1, materialItemCount: 1 } }
+                { projection: { otherExpenses: 1, unitTime: 1, laborItemCount: 1, materialItemCount: 1, builtUpArea: 1 } }
             ),
             Db.getCostingsCollection().findOne(
                 { accountId: session.mongoAccountId, estimateId: doc.estimateId, deleted: { $ne: true }, isUnforeseen: { $ne: true } },
@@ -33,6 +33,7 @@ registerApiSession('rentayin/fetch', async (req, res, session) => {
             (doc as any).estimateUnitTime = est.unitTime ?? 0;
             (doc as any).estimateLaborItemCount = est.laborItemCount ?? 0;
             (doc as any).estimateMaterialItemCount = est.materialItemCount ?? 0;
+            (doc as any).estimateBuiltUpArea = est.builtUpArea ?? null;
         }
         if (latestCosting) {
             costingOtherActuals = {

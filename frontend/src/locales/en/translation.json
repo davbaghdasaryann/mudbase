@@ -875,5 +875,8 @@
   "landing.tool_risk_monitoring": "Risk Monitoring",
   "landing.see_more": "See more",
   "landing.rotate": "‹ Rotate",
-  "landing.in_development": "Under development"
+  "landing.in_development": "Under development",
+  "Cost per 1 m²": "Cost per 1 m²",
+  "Based on estimate area": "Based on estimate area",
+  "Set built-up area in estimate": "Set built-up area in estimate"
 }

@@ -1065,6 +1065,52 @@ export default function RentayinPage() {
                                                 );
                                             })()}
                                         </Box>
+                                        {/* Cost per m² row */}
+                                        {(() => {
+                                            const builtUpAreaStr: string | null = (detail as any)?.estimateBuiltUpArea ?? null;
+                                            const builtUpArea = builtUpAreaStr ? parseFloat(builtUpAreaStr) : NaN;
+                                            const hasArea = !isNaN(builtUpArea) && builtUpArea > 0;
+                                            const totalEstAll = totalEstCost + totalEstOther;
+                                            const totalActAll = totalActCost + totalActOther;
+                                            const estPerM2 = hasArea && totalEstAll > 0 ? totalEstAll / builtUpArea : null;
+                                            const actPerM2 = hasArea && totalActCost > 0 ? totalActAll / builtUpArea : null;
+                                            const fmtPerM2 = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ռ/մ²';
+                                            return (
+                                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2, mt: 0 }}>
+                                                    <Paper elevation={0} sx={{ flex: '0 0 auto', minWidth: 260, maxWidth: 400, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
+                                                        <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 1.5, display: 'block' }}>
+                                                            {t('Cost per 1 m²')}
+                                                        </Typography>
+                                                        {hasArea ? (
+                                                            <>
+                                                                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                                                    <Box sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                                                        <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Estimated')}</Typography>
+                                                                        <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#00A390', lineHeight: 1.3 }}>
+                                                                            {estPerM2 !== null ? fmtPerM2(estPerM2) : '—'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                    <Box sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 2, p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                                                        <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Actual')}</Typography>
+                                                                        <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: actPerM2 !== null ? '#1565c0' : '#bbb', lineHeight: 1.3 }}>
+                                                                            {actPerM2 !== null ? fmtPerM2(actPerM2) : '—'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </Box>
+                                                                <Typography sx={{ fontSize: '0.62rem', color: '#9ca3af', textAlign: 'center', mt: 1 }}>
+                                                                    {builtUpArea} մ² · {t('Based on estimate area')}
+                                                                </Typography>
+                                                            </>
+                                                        ) : (
+                                                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, py: 2 }}>
+                                                                <Typography sx={{ fontSize: '1.4rem', color: '#d0d0d0' }}>—</Typography>
+                                                                <Typography sx={{ fontSize: '0.65rem', color: '#bbb', textAlign: 'center' }}>{t('Set built-up area in estimate')}</Typography>
+                                                            </Box>
+                                                        )}
+                                                    </Paper>
+                                                </Box>
+                                            );
+                                        })()}
                                     </>}
                                     {/* Other Costs bar charts */}
                                     {(() => {

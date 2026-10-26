@@ -849,5 +849,8 @@
   "landing.tool_risk_monitoring": "Ռիսկերի մոնիթորինգ",
   "landing.see_more": "Տեսնել ավելին",
   "landing.rotate": "‹ Պտտել",
-  "landing.in_development": "Մշակման փուլում"
+  "landing.in_development": "Մշակման փուլում",
+  "Cost per 1 m²": "Արժեք 1 մ²-ի",
+  "Based on estimate area": "Ըստ նախ. մ. տ.",
+  "Set built-up area in estimate": "ավելացրեք մակերեսը նախահաշվում"
 }
