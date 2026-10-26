@@ -25,7 +25,6 @@ export default function LandingHeader() {
     const handleLangChange = (code: string) => {
         localStorage.setItem('i18nextLng', code);
         i18n.changeLanguage(code);
-        if (typeof window !== 'undefined') window.location.reload();
     };
 
     const navLinks = [
@@ -135,7 +134,7 @@ export default function LandingHeader() {
                                     userSelect: 'none',
                                     ...(currentLang === code
                                         ? { background: 'rgba(0,171,190,0.92)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 12px rgba(0,171,190,0.5)', border: '1px solid rgba(255,255,255,0.25)' }
-                                        : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
+                                        : { background: 'transparent', color: '#00ABBE', border: '1px solid transparent', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                     ),
                                 }}
                             >
@@ -237,7 +236,7 @@ export default function LandingHeader() {
                                             userSelect: 'none',
                                             ...(currentLang === code
                                                 ? { background: 'rgba(0,171,190,0.92)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 12px rgba(0,171,190,0.5)', border: '1px solid rgba(255,255,255,0.25)' }
-                                                : { background: 'transparent', color: '#00ABBE', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
+                                                : { background: 'transparent', color: '#00ABBE', border: '1px solid transparent', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
                                             ),
                                         }}
                                     >
