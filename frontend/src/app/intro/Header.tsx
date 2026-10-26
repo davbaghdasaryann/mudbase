@@ -28,7 +28,7 @@ export default function LandingHeader() {
     };
 
     const navLinks = [
-        { key: 'Ոլորտներ', label: 'Ոլորտներ', href: '/intro#industries' },
+        { key: 'industries', label: t('landing.industries'), href: '/intro#industries' },
         { key: 'Tools', label: t('Tools'), href: '/intro#tools' },
         { key: 'Contacts', label: t('Contacts'), href: '/intro#contact' },
     ];

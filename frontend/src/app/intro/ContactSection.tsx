@@ -5,15 +5,11 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import { ElementType } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const TEAL = '#00A390';
 const ICON_BG = 'rgba(0,163,144,0.09)';
 
-const CONTACTS: { Icon: ElementType; label: string; value: string }[] = [
-    { Icon: EmailOutlinedIcon,      label: 'Էլ․ հասցե',   value: 'info@mudbase.am' },
-    { Icon: LocationOnOutlinedIcon, label: 'Հասցե',  value: 'Yerevan, Armenia' },
-    { Icon: PhoneOutlinedIcon,      label: 'Հեռախոս',  value: '+374 (10) 55-00-55' },
-];
 
 const inputSx = {
     '& .MuiOutlinedInput-root': {
@@ -34,6 +30,12 @@ const inputSx = {
 };
 
 export default function ContactSection() {
+    const { t } = useTranslation();
+    const CONTACTS: { Icon: ElementType; label: string; value: string }[] = [
+        { Icon: EmailOutlinedIcon,      label: t('Email'),                 value: 'info@mudbase.am' },
+        { Icon: LocationOnOutlinedIcon, label: t('Address'),               value: 'Yerevan, Armenia' },
+        { Icon: PhoneOutlinedIcon,      label: t('landing.contact_phone'), value: '+374 (10) 55-00-55' },
+    ];
     return (
         <Box id="contact" sx={{
             py: { xs: 8, md: 12 },
@@ -62,18 +64,18 @@ export default function ContactSection() {
                         px: 2, py: 0.55, mb: 2.5,
                     }}>
                         <Typography sx={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.13em', color: TEAL, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                            Հետադարձ կապ
+                            {t('landing.contact_badge')}
                         </Typography>
                     </Box>
 
                     {/* Heading */}
                     <Typography sx={{ fontWeight: 700, fontSize: { xs: '1.7rem', md: '2.1rem' }, color: '#1a2e35', lineHeight: 1.25, mb: 2 }}>
-                        Ունեք հարցե՞ր։ Պատրաստ ենք աջակցել
+                        {t('landing.contact_heading')}
                     </Typography>
 
                     {/* Description */}
                     <Typography sx={{ fontSize: '0.9rem', color: '#7a9098', lineHeight: 1.7, mb: 4 }}>
-                        Մեր թիմը սիրով կպատասխանի Ձեր հարցերին։
+                        {t('landing.contact_desc')}
                     </Typography>
 
                     {/* Contact items */}
@@ -119,7 +121,7 @@ export default function ContactSection() {
                     {/* Name + Email row */}
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                         <TextField
-                            label='Անուն Ազգանուն'
+                            label={t('landing.contact_full_name')}
                             placeholder='JOHN DOE'
                             fullWidth
                             size='medium'
@@ -127,7 +129,7 @@ export default function ContactSection() {
                             sx={{...inputSx}}
                         />
                         <TextField
-                            label='Էլ․ հասցե'
+                            label={t('Email')}
                             placeholder='johndoe@example.com'
                             fullWidth
                             size='medium'
@@ -138,7 +140,7 @@ export default function ContactSection() {
 
                     {/* Subject */}
                     <TextField
-                        label='Թեմա'
+                        label={t('landing.contact_subject')}
                         placeholder=''
                         fullWidth
                         size='small'
@@ -148,7 +150,7 @@ export default function ContactSection() {
 
                     {/* Message */}
                     <TextField
-                        label='Հաղորդագրություն'
+                        label={t('landing.contact_message')}
                         placeholder=''
                         fullWidth
                         multiline
@@ -180,7 +182,7 @@ export default function ContactSection() {
                             '&:hover': { backgroundColor: '#00897a', boxShadow: 'none' },
                         }}
                     >
-                        Ուղարկել
+                        {t('landing.contact_send')}
                     </Button>
                 </Box>
             </Box>

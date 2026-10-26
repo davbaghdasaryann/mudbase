@@ -6,11 +6,13 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
+import { useTranslation } from 'react-i18next';
 
 const BG   = '#07282C';
 const TEAL = '#00A390';
 
 export default function Footer() {
+    const { t } = useTranslation();
     return (
         <Box component="footer" sx={{ backgroundColor: BG, pt: { xs: 4, md: 5 }, pb: 0 }}>
             <Box sx={{
@@ -29,19 +31,23 @@ export default function Footer() {
                         <Image src="/images/logo_square.svg" alt="Mudbase" width={110} height={38} style={{ objectFit: 'contain', objectPosition: 'left' }} />
                     </Box>
                     <Typography sx={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, maxWidth: 260 }}>
-                        Շինարարական աշխատանքների արժեքի հաշվարկման եվ վերլուծման էլեկտրոնային համակարգ
+                        {t('landing.footer_desc')}
                     </Typography>
                 </Box>
 
                 {/* Col 2: Navigation */}
                 <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: TEAL, textTransform: 'uppercase', mb: 2.5 }}>
-                        Նավիգացիա
+                        {t('landing.footer_navigation')}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {['Գործիքներ', 'Բաժանանորդագրություն', 'Կապ'].map((link) => (
-                            <Typography key={link} component="a" href="#" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
-                                {link}
+                        {[
+                            { label: t('landing.footer_tools'), href: '/intro#tools' },
+                            { label: t('landing.footer_subscription'), href: '#' },
+                            { label: t('landing.footer_contact_link'), href: '/intro#contact' },
+                        ].map(({ label, href }) => (
+                            <Typography key={label} component="a" href={href} sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', '&:hover': { color: '#fff' } }}>
+                                {label}
                             </Typography>
                         ))}
                     </Box>
@@ -50,14 +56,14 @@ export default function Footer() {
                 {/* Col 3: Legal */}
                 <Box sx={{ flex: '0 0 auto', width: { xs: '100%', md: 'auto' } }}>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: '#00ABBE', textTransform: 'uppercase', mb: 2.5 }}>
-                        Իրավական
+                        {t('landing.footer_legal')}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         <Typography component="a" href="/privacy" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
-                            Գաղտնիության Քաղաքականություն
+                            {t('landing.footer_privacy')}
                         </Typography>
                         <Typography component="a" href="/cookies" sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}>
-                            Թխուկների քաղաքականություն
+                            {t('landing.footer_cookies')}
                         </Typography>
                     </Box>
                 </Box>
@@ -65,7 +71,7 @@ export default function Footer() {
                 {/* Col 4: Contact + social + CTA */}
                 <Box sx={{ flex: '0 0 auto', width: { xs: '100%', md: '22%' } }}>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', color: '#FFFFFF', textTransform: 'uppercase', mb: 2.5 }}>
-                        Կապ մեզ հետ
+                        {t('landing.footer_contact_us')}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
                         {[InstagramIcon, FacebookIcon, TelegramIcon, YouTubeIcon].map((Icon, i) => (
@@ -91,7 +97,7 @@ export default function Footer() {
                         textTransform: 'none',
                         '&:hover': { backgroundColor: '#009aab', boxShadow: 'none' },
                     }}>
-                        Գրանցվել →
+                        {t('Register')} →
                     </Button>
                 </Box>
             </Box>
