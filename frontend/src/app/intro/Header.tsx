@@ -17,7 +17,6 @@ export default function LandingHeader() {
 
     const navLinks = [
         { key: 'Tools', label: t('Tools'), href: '/intro#tools' },
-        { key: 'Subscription', label: t('Subscription'), href: undefined },
         { key: 'Contacts', label: t('Contacts'), href: '/intro#contact' },
     ];
 
