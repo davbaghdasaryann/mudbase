@@ -1037,7 +1037,7 @@ export default function RentayinPage() {
                                             const totalActAll = totalActCost + totalActOther;
                                             const estPerM2 = hasArea && totalEstAll > 0 ? totalEstAll / builtUpAreaParsed : null;
                                             const actPerM2 = hasArea && totalActCost > 0 ? totalActAll / builtUpAreaParsed : null;
-                                            const fmtPerM2 = (n: number) => formatCurrencyRounded(Math.round(n)) + ' ռ/մ²';
+                                            const fmtPerM2 = (n: number) => formatCurrencyRounded(Math.round(n)) + ' AMD/մ²';
                                             return (
                                                         <Paper elevation={0} sx={{ flex: 1, border: '1px solid #d0f0f4', borderRadius: 3, background: '#fff', minHeight: 260, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', p: 2 }}>
                                                             <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', mb: 1.5, display: 'block', textAlign: 'center' }}>{t('Cost per 1 m²')}</Typography>
