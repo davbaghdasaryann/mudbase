@@ -38,7 +38,6 @@ export default function LandingHeader() {
             <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
-                position: 'relative',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
                 boxShadow: '0 4px 32px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
@@ -53,7 +52,7 @@ export default function LandingHeader() {
                 </Box>
 
                 {/* Desktop nav — absolutely centered so auth buttons can't shift it */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, mx: 'auto' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -74,9 +73,6 @@ export default function LandingHeader() {
                         </Typography>
                     ))}
                 </Box>
-
-                {/* Spacer — pushes auth to the right (nav is absolute, doesn't affect flex) */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1 }} />
 
                 {/* Mobile: login + register buttons — mx:auto centers between logo and hamburger */}
                 <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', alignItems: 'center', gap: 1, mx: 'auto' }}>
@@ -156,7 +152,7 @@ export default function LandingHeader() {
                             fontWeight: 600,
                             textTransform: 'none',
                             fontSize: '0.88rem',
-                            minWidth: 0,
+                            minWidth: 88,
                             px: 1.5,
                             py: 0.75,
                             borderRadius: '8px',
@@ -177,6 +173,7 @@ export default function LandingHeader() {
                             fontWeight: 600,
                             fontSize: '0.88rem',
                             borderRadius: '10px',
+                            minWidth: 158,
                             px: 2.5,
                             py: 0.75,
                             boxShadow: 'none',
