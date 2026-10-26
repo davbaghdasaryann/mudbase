@@ -411,6 +411,85 @@ function ActualCostsChart({ pahestEntries, costHistory, height = 260 }: { pahest
     );
 }
 
+function SingleCostDonutWidget({ estimate, costHistory, extraActualCosts = 0, height = 240, side }: { estimate: EstimatesApi.ApiEstimate; costHistory: CostHistoryEntry[]; extraActualCosts?: number; height?: number; side: 'estimate' | 'actual' }) {
+    const { t } = useTranslation();
+    const chartH = Math.max(80, height - 80);
+    const ALL_KEYS = ['labor', 'materials', 'other', 'subcontractor'] as const;
+    const SUB_LABEL = 'Ենթակապալ';
+    const buildData = (labor: number, materials: number, other: number, subcontractor: number) => {
+        const total = labor + materials + other + subcontractor;
+        return ALL_KEYS.map(key => {
+            const value = key === 'labor' ? labor : key === 'materials' ? materials : key === 'other' ? other : subcontractor;
+            return { key, name: key === 'labor' ? t('Labor') : key === 'materials' ? t('Materials') : key === 'other' ? t('Other Expenses') : SUB_LABEL, value, pct: total > 0 ? ((value / total) * 100).toFixed(1) : '0.0' };
+        });
+    };
+    const data = side === 'estimate' ? (() => {
+        const labor = estimate.laborTotalCost ?? 0;
+        const materials = estimate.materialTotalCost ?? 0;
+        const base = estimate.totalCost ?? 0;
+        const other = Math.max(0, (estimate.totalCostWithOtherExpenses ?? base) - base);
+        return buildData(labor, materials, other, 0);
+    })() : (() => {
+        const materialsTotal = costHistory.filter(e => e.paymentMethod === 'nyuth_tsakhsagrum').reduce((s, e) => s + e.total, 0);
+        const subcontractorTotal = costHistory.filter(e => e.paymentMethod === 'subcontractor' || !!e.isSubcontractor).reduce((s, e) => s + e.total, 0);
+        const laborTotal = costHistory.filter(e => !e.paymentMethod?.startsWith('pahest_') && e.paymentMethod !== 'nyuth_tsakhsagrum' && e.paymentMethod !== 'overhead' && e.paymentMethod !== 'subcontractor' && !e.isSubcontractor).reduce((s, e) => s + e.total, 0);
+        const aylMatTotal = costHistory.filter(e => e.paymentMethod === 'pahest_ayl_cost' || e.paymentMethod === 'overhead').reduce((s, e) => s + e.total, 0);
+        return buildData(laborTotal, materialsTotal, aylMatTotal + extraActualCosts, subcontractorTotal);
+    })();
+    const segments = side === 'estimate' ? COST_SEGMENTS : ACTUAL_SEGMENTS;
+    const gradPrefix = side === 'estimate' ? 'sdw-est' : 'sdw-act';
+    const title = side === 'estimate' ? 'Նախահաշիվ' : 'Փաստացի';
+    const hasAny = data.some(d => d.value > 0);
+    return (
+        <Paper elevation={0} sx={{ height: '100%', border: '1px solid #d0f0f4', borderRadius: 3, p: 2, background: '#fff', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='caption' sx={{ fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.68rem', textAlign: 'center', mb: 0.5 }}>{title}</Typography>
+            <Box sx={{ flex: 1, minHeight: chartH }}>
+                <ResponsiveContainer width='100%' height='100%'>
+                    <PieChart>
+                        <defs>
+                            {segments.map(s => (
+                                <radialGradient key={s.key} id={`${gradPrefix}-${s.key}`} cx='50%' cy='50%' r='50%'>
+                                    <stop offset='0%' stopColor={s.inner} />
+                                    <stop offset='100%' stopColor={s.outer} />
+                                </radialGradient>
+                            ))}
+                        </defs>
+                        <Pie data={hasAny ? data : [{ key: 'empty', name: '', value: 1, pct: '0' }]} cx='50%' cy='50%' innerRadius={38} outerRadius={62} paddingAngle={hasAny ? 2 : 0} dataKey='value' strokeWidth={0} minAngle={hasAny ? 6 : 0}>
+                            {hasAny ? data.map(entry => {
+                                const seg = segments.find(s => s.key === entry.key);
+                                return <Cell key={entry.key} fill={entry.value > 0 ? (seg ? `url(#${gradPrefix}-${seg.key})` : '#ccc') : 'transparent'} stroke={entry.value > 0 ? (seg?.outer ?? '#ccc') : 'none'} strokeWidth={entry.value > 0 ? 0.5 : 0} />;
+                            }) : [<Cell key='empty' fill='#f0f0f0' stroke='none' />]}
+                        </Pie>
+                        {hasAny && <RechartsTooltip content={({ active, payload }: any) => {
+                            if (!active || !payload?.length || !payload[0].value) return null;
+                            const e = payload[0];
+                            return (
+                                <Paper elevation={3} sx={{ p: 1.5, borderRadius: 2, minWidth: 130 }}>
+                                    <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>{e.name}</Typography>
+                                    <Typography variant='body2' sx={{ color: '#00A390' }}>{Number(e.value).toLocaleString()} AMD</Typography>
+                                    <Typography variant='caption' sx={{ color: 'text.secondary' }}>{e.payload.pct}%</Typography>
+                                </Paper>
+                            );
+                        }} />}
+                    </PieChart>
+                </ResponsiveContainer>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }}>
+                {data.map(d => {
+                    const seg = segments.find(s => s.key === d.key);
+                    return (
+                        <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: d.value > 0 ? (seg?.dot ?? '#ccc') : '#e0e0e0', flexShrink: 0 }} />
+                            <Typography variant='caption' sx={{ color: d.value > 0 ? 'text.secondary' : '#bdbdbd', fontSize: '0.68rem' }}>{d.name} {d.value > 0 ? `${d.pct}%` : '—'}</Typography>
+                            <Typography variant='caption' sx={{ color: '#aaa', fontSize: '0.65rem', ml: 'auto' }}>{d.value > 0 ? Math.round(d.value).toLocaleString() : ''}</Typography>
+                        </Box>
+                    );
+                })}
+            </Box>
+        </Paper>
+    );
+}
+
 function CombinedCostWidget({ estimate, pahestEntries, costHistory, aylEntries, extraActualCosts = 0, height = 240 }: { estimate: EstimatesApi.ApiEstimate; pahestEntries: PahestEntry[]; costHistory: CostHistoryEntry[]; aylEntries?: AylEntry[]; extraActualCosts?: number; height?: number }) {
     const { t } = useTranslation();
     const chartH = Math.max(80, height - 80);
@@ -1973,8 +2052,11 @@ ${tableBodyHtml}
                             <ExpandMoreIcon sx={{ fontSize: 16, color: '#9ca3af', transform: collapsedSections.has('overview') ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                         </Box>
                         {!collapsedSections.has('overview') && <><Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'stretch', mb: 2 }}>
-                            <Box sx={{ flex: 1.5, minHeight: 220 }}>
-                                <CombinedCostWidget estimate={selectedEstimate} pahestEntries={pahestEntries} costHistory={costHistory} aylEntries={aylEntries} extraActualCosts={vatDeduction + climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees + Math.round(smallScaleEstimate?.totalCost ?? 0)} height={220} />
+                            <Box sx={{ flex: 1, minHeight: 220 }}>
+                                <SingleCostDonutWidget estimate={selectedEstimate} costHistory={costHistory} height={220} side='estimate' />
+                            </Box>
+                            <Box sx={{ flex: 1, minHeight: 220 }}>
+                                <SingleCostDonutWidget estimate={selectedEstimate} costHistory={costHistory} extraActualCosts={vatDeduction + climateImpact + temporaryStructures + transportationCosts + commissioningCosts + stateFees + Math.round(smallScaleEstimate?.totalCost ?? 0)} height={220} side='actual' />
                             </Box>
                             <Box sx={{ flex: 1, minHeight: 220 }}>
                                 <ProjectCompletionWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} height={220} />
