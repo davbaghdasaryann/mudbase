@@ -44,17 +44,15 @@ export default function LandingHeader() {
                 px: 2,
                 py: 1.25,
                 width: '100%',
-                maxWidth: 880,
+                maxWidth: 760,
             }}>
                 {/* Logo — fixed left */}
-                <Box sx={{ flex: { md: 1 }, display: 'flex', alignItems: 'center' }}>
                 <Box component='a' href='/intro' sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
-                </Box>
 
                 {/* Desktop nav — absolutely centered so auth buttons can't shift it */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3 }}>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, mx: 'auto' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -118,7 +116,7 @@ export default function LandingHeader() {
                 </Box>
 
                 {/* Desktop auth — fixed right, no auto margins */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: { md: 1 }, justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
                     {/* Language toggle */}
                     <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)', mr: 1 }}>
                         {(['am', 'en'] as const).map(code => (
