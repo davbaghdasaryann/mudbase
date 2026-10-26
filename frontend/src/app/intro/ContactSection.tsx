@@ -61,7 +61,7 @@ export default function ContactSection() {
                         borderRadius: '100px',
                         px: 2, py: 0.55, mb: 2.5,
                     }}>
-                        <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.13em', color: TEAL, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.13em', color: TEAL, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                             Հետադարձ կապ
                         </Typography>
                     </Box>
