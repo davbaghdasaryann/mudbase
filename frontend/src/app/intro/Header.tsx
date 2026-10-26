@@ -125,6 +125,8 @@ export default function LandingHeader() {
                                 onClick={() => handleLangChange(code)}
                                 sx={{
                                     px: 1.4, py: 0.35,
+                                    minWidth: 36,
+                                    textAlign: 'center',
                                     borderRadius: '100px',
                                     cursor: 'pointer',
                                     fontSize: '0.72rem',
@@ -227,6 +229,8 @@ export default function LandingHeader() {
                                         onClick={() => { handleLangChange(code); setAnchorEl(null); }}
                                         sx={{
                                             px: 1.4, py: 0.35,
+                                            minWidth: 36,
+                                            textAlign: 'center',
                                             borderRadius: '100px',
                                             cursor: 'pointer',
                                             fontSize: '0.72rem',
