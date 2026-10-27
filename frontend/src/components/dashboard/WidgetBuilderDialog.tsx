@@ -331,6 +331,7 @@ export default function WidgetBuilderDialog({ onClose, onSuccess, defaultGroupId
                             <WidgetEstimatesListPicker
                                 selectedIds={selectedItem ? [String(selectedItem._id)] : []}
                                 onSelect={(items) => setSelectedItem(items[0] ?? null)}
+                                singleSelect
                             />
                         ) : dataSource === 'eci' ? (
                             <WidgetEciHierarchyPicker

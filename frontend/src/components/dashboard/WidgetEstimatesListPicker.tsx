@@ -6,6 +6,7 @@ import {
     Typography,
     CircularProgress,
     Checkbox,
+    Radio,
     Table,
     TableHead,
     TableBody,
@@ -22,9 +23,10 @@ interface Props {
     onSelect: (items: any[]) => void;
     disabledIds?: string[];
     filterToCosting?: boolean;
+    singleSelect?: boolean;
 }
 
-export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disabledIds = [], filterToCosting = false }: Props) {
+export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disabledIds = [], filterToCosting = false, singleSelect = false }: Props) {
     const { t } = useTranslation();
     const [items, setItems] = useState<any[]>([]);
     const [allItems, setAllItems] = useState<any[]>([]);
@@ -72,6 +74,10 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
     const handleToggle = (item: any) => {
         const id = getId(item);
         const isSelected = selectedIds.includes(id);
+        if (singleSelect) {
+            onSelect(isSelected ? [] : [item]);
+            return;
+        }
         const currentSelected = allItems.filter(i => selectedIds.includes(getId(i)));
         if (isSelected) {
             onSelect(currentSelected.filter(i => getId(i) !== id));
@@ -106,7 +112,7 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
                         <TableCell sx={{ fontWeight: 600, width: 48, color: 'text.secondary' }}>{t('No.')}</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>{t('Name')}</TableCell>
                         <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', color: 'text.secondary' }}>{t('Date of Creation')}</TableCell>
-                        <TableCell align="right" sx={{ width: 48, pr: 1 }}>
+                        {!singleSelect && <TableCell align="right" sx={{ width: 48, pr: 1 }}>
                             <Checkbox
                                 checked={allSelected}
                                 indeterminate={someSelected && !allSelected}
@@ -115,7 +121,8 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
                                 onChange={handleToggleAll}
                                 sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, '&.MuiCheckbox-indeterminate': { color: mainPrimaryColor }, p: 0.5 }}
                             />
-                        </TableCell>
+                        </TableCell>}
+                        {singleSelect && <TableCell sx={{ width: 48 }} />}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -148,14 +155,25 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
                                     {item.createdAt ? formatDate(item.createdAt) : '—'}
                                 </TableCell>
                                 <TableCell align="right" sx={{ pr: 1 }}>
-                                    <Checkbox
-                                        checked={selected || disabled}
-                                        disabled={disabled}
-                                        size="small"
-                                        sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, p: 0.5 }}
-                                        onClick={e => e.stopPropagation()}
-                                        onChange={() => !disabled && handleToggle(item)}
-                                    />
+                                    {singleSelect ? (
+                                        <Radio
+                                            checked={selected}
+                                            disabled={disabled}
+                                            size="small"
+                                            sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, p: 0.5 }}
+                                            onClick={e => e.stopPropagation()}
+                                            onChange={() => !disabled && handleToggle(item)}
+                                        />
+                                    ) : (
+                                        <Checkbox
+                                            checked={selected || disabled}
+                                            disabled={disabled}
+                                            size="small"
+                                            sx={{ color: mainPrimaryColor, '&.Mui-checked': { color: mainPrimaryColor }, p: 0.5 }}
+                                            onClick={e => e.stopPropagation()}
+                                            onChange={() => !disabled && handleToggle(item)}
+                                        />
+                                    )}
                                 </TableCell>
                             </TableRow>
                         );
