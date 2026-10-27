@@ -853,5 +853,7 @@
   "Cost per 1 m²": "Արժեքը՝ 1 մ² համար",
   "Based on estimate area": "Ըստ կառուցապատման մակերեսի",
   "Set built-up area in estimate": "Ավելացրեք մակերեսը նախահաշվում",
-  "Calculated": "Հաշվարակային"
+  "Calculated": "Հաշվարակային",
+  "Are you sure you want to delete": "Վստա՞հ եք, որ ցանկանում եք ջնջել",
+  "All widgets in this group will also be deleted. This action cannot be undone.": "Խմբի բոլոր վիջեթներն նույնպես կջնջվեն։ Այս գործողությունն հնարավոր չէ հետ կանչել։"
 }

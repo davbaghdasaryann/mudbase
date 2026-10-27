@@ -879,5 +879,7 @@
   "Cost per 1 m²": "Cost per 1 m²",
   "Based on estimate area": "Based on estimate area",
   "Set built-up area in estimate": "Set construction area in estimate",
-  "Calculated": "Calculated"
+  "Calculated": "Calculated",
+  "Are you sure you want to delete": "Are you sure you want to delete",
+  "All widgets in this group will also be deleted. This action cannot be undone.": "All widgets in this group will also be deleted. This action cannot be undone."
 }

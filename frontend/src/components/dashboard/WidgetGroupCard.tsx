@@ -232,8 +232,8 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
             <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} maxWidth='xs' fullWidth
                 PaperProps={{ sx: { borderRadius: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' } }}>
                 <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, pb: 1 }}>
-                    <WarningAmberIcon sx={{ color: '#e65100', fontSize: 22 }} />
-                    {t('Delete Group')}
+                    <WarningAmberIcon sx={{ color: '#e53935', fontSize: 22 }} />
+                    {t('Delete group')}
                 </DialogTitle>
                 <DialogContent sx={{ pb: 1 }}>
                     <Typography variant='body2' color='text.secondary'>
@@ -246,7 +246,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
                         {t('Cancel')}
                     </Button>
                     <Button variant='contained' onClick={handleDeleteGroup}
-                        sx={{ borderRadius: '20px', px: 3, bgcolor: '#e65100', textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#bf360c' } }}>
+                        sx={{ borderRadius: '20px', px: 3, bgcolor: '#e53935', textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#c62828' } }}>
                         {t('Delete')}
                     </Button>
                 </DialogActions>
