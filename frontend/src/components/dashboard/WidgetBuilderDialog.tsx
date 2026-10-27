@@ -149,14 +149,14 @@ export default function WidgetBuilderDialog({ onClose, onSuccess, defaultGroupId
         <Dialog
             open
             onClose={onClose}
-            maxWidth={step === 3 ? 'lg' : 'md'}
+            maxWidth='md'
             fullWidth
             PaperProps={{
                 sx: {
                     borderRadius: 2,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                     overflow: 'visible',
-                    minHeight: step === 2 ? 520 : undefined,
+                    minHeight: 560,
                 },
             }}
         >
