@@ -36,23 +36,24 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 backgroundColor: '#fff',
                 borderRadius: '60px',
                 boxShadow: '0 4px 32px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
-                px: 2,
+                px: 3.5,
                 py: 1.25,
                 width: '100%',
-                maxWidth: 760,
+                maxWidth: 820,
             }}>
                 {/* Logo — fixed left */}
                 <Box component='a' href='/intro' sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop nav — flex:1 centers regardless of side widths */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, flex: 1, justifyContent: 'center' }}>
+                {/* Desktop nav — absolutely centered in pill so logo/auth widths don't affect it */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -115,8 +116,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Desktop auth — fixed right, no auto margins */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                {/* Desktop auth — pushed to right edge */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0, ml: 'auto' }}>
                     {/* Language toggle — hidden */}
                     <Button
                         onClick={() => router.push('/login')}
