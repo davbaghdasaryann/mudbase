@@ -221,7 +221,7 @@ export default function WidgetBuilderDialog({ onClose, onSuccess, defaultGroupId
                                 }}
                             />
                         </Box>
-                        <Box>
+                        {groups.length > 0 && <Box>
                             <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
                                 {t('Select Existing Group')}
                             </Typography>
@@ -265,7 +265,7 @@ export default function WidgetBuilderDialog({ onClose, onSuccess, defaultGroupId
                                     );
                                 })}
                             </Box>
-                        </Box>
+                        </Box>}
                     </Stack>
                 )}
 
