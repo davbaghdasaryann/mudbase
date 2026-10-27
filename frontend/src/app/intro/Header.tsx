@@ -117,33 +117,7 @@ export default function LandingHeader() {
 
                 {/* Desktop auth — fixed right, no auto margins */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                    {/* Language toggle */}
-                    <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)', mr: 1 }}>
-                        {(['am', 'en'] as const).map(code => (
-                            <Box
-                                key={code}
-                                onClick={() => handleLangChange(code)}
-                                sx={{
-                                    px: 1.4, py: 0.35,
-                                    minWidth: 36,
-                                    textAlign: 'center',
-                                    borderRadius: '100px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.04em',
-                                    transition: 'all 0.15s',
-                                    userSelect: 'none',
-                                    ...(currentLang === code
-                                        ? { background: 'rgba(0,171,190,0.92)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 12px rgba(0,171,190,0.5)', border: '1px solid rgba(255,255,255,0.25)' }
-                                        : { background: 'transparent', color: '#00ABBE', border: '1px solid transparent', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
-                                    ),
-                                }}
-                            >
-                                {code === 'am' ? 'Հայ' : 'Eng'}
-                            </Box>
-                        ))}
-                    </Box>
+                    {/* Language toggle — hidden */}
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -222,34 +196,7 @@ export default function LandingHeader() {
                                 {link.label}
                             </MenuItem>
                         ))}
-                        <MenuItem sx={{ py: 1 }}>
-                            <Box sx={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(0,171,190,0.3)', background: 'rgba(0,171,190,0.1)', p: 0.4, gap: 0.3, boxShadow: 'inset 0 1px 3px rgba(0,171,190,0.08)' }}>
-                                {(['am', 'en'] as const).map(code => (
-                                    <Box
-                                        key={code}
-                                        onClick={() => { handleLangChange(code); setAnchorEl(null); }}
-                                        sx={{
-                                            px: 1.4, py: 0.35,
-                                            minWidth: 36,
-                                            textAlign: 'center',
-                                            borderRadius: '100px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.72rem',
-                                            fontWeight: 700,
-                                            letterSpacing: '0.04em',
-                                            transition: 'all 0.15s',
-                                            userSelect: 'none',
-                                            ...(currentLang === code
-                                                ? { background: 'rgba(0,171,190,0.92)', color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 12px rgba(0,171,190,0.5)', border: '1px solid rgba(255,255,255,0.25)' }
-                                                : { background: 'transparent', color: '#00ABBE', border: '1px solid transparent', '&:hover': { background: 'rgba(0,171,190,0.14)' } }
-                                            ),
-                                        }}
-                                    >
-                                        {code === 'am' ? 'Հայ' : 'Eng'}
-                                    </Box>
-                                ))}
-                            </Box>
-                        </MenuItem>
+                        {/* Language toggle — hidden */}
                     </Menu>
                 </Box>
             </Box>
