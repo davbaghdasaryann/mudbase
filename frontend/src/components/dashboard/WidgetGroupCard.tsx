@@ -231,23 +231,17 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
 
             <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} maxWidth='xs' fullWidth
                 PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.14)' } }}>
-                <DialogContent sx={{ pt: 3, pb: 2, px: 3, textAlign: 'center' }}>
-                    <Box sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: 'rgba(229,57,53,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
-                        <WarningAmberIcon sx={{ color: '#e53935', fontSize: 22 }} />
-                    </Box>
-                    <Typography variant='h6' fontWeight={700} sx={{ mb: 0.5 }}>
-                        {t('Delete group')}
+                <DialogContent sx={{ pt: 4, pb: 2, px: 3, textAlign: 'center' }}>
+                    <Tooltip title={t('All widgets in this group will also be deleted. This action cannot be undone.')} placement='top' arrow>
+                        <Box sx={{ width: 80, height: 80, borderRadius: '50%', border: '3px solid #e53935', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5, cursor: 'default' }}>
+                            <WarningAmberIcon sx={{ color: '#e53935', fontSize: 42 }} />
+                        </Box>
+                    </Tooltip>
+                    <Typography variant='h6' fontWeight={700}>
+                        {t('Delete group?')}
                     </Typography>
-                    <Typography variant='body2' sx={{ color: '#e53935', fontWeight: 600, mb: 2 }}>
-                        "{group.name}"
-                    </Typography>
-                    <Box sx={{ bgcolor: 'rgba(0,171,190,0.06)', border: '1px solid rgba(0,171,190,0.15)', borderRadius: 1.5, px: 2, py: 1.25, textAlign: 'left' }}>
-                        <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.6, display: 'block' }}>
-                            {t('All widgets in this group will also be deleted. This action cannot be undone.')}
-                        </Typography>
-                    </Box>
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, gap: 1, justifyContent: 'center' }}>
+                <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1, justifyContent: 'center' }}>
                     <Button onClick={() => setConfirmDeleteOpen(false)} variant='outlined'
                         sx={{ borderRadius: '20px', px: 3, borderColor: 'divider', color: 'text.secondary', textTransform: 'none', fontWeight: 600, '&:hover': { borderColor: '#bbb', bgcolor: 'grey.50' } }}>
                         {t('Cancel')}
