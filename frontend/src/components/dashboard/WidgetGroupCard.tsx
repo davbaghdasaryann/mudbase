@@ -230,16 +230,16 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
             </Tooltip>
 
             <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} maxWidth='xs' fullWidth
-                PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.14)', overflow: 'hidden' } }}>
-                <DialogContent sx={{ pt: 4, pb: 2, px: 3, textAlign: 'center' }}>
-                    <Box sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: 'rgba(229,57,53,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-                        <WarningAmberIcon sx={{ color: '#e53935', fontSize: 28 }} />
+                PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.14)' } }}>
+                <DialogContent sx={{ pt: 3, pb: 2, px: 3, textAlign: 'center' }}>
+                    <Box sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: 'rgba(229,57,53,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
+                        <WarningAmberIcon sx={{ color: '#e53935', fontSize: 22 }} />
                     </Box>
-                    <Typography variant='h6' fontWeight={700} sx={{ mb: 1 }}>
+                    <Typography variant='h6' fontWeight={700} sx={{ mb: 0.5 }}>
                         {t('Delete group')}
                     </Typography>
-                    <Typography variant='body2' color='text.secondary' sx={{ mb: 2.5, lineHeight: 1.6 }}>
-                        {t('Are you sure you want to delete')} <strong>"{group.name}"</strong>?
+                    <Typography variant='body2' sx={{ color: '#e53935', fontWeight: 600, mb: 2 }}>
+                        "{group.name}"
                     </Typography>
                     <Box sx={{ bgcolor: 'rgba(0,171,190,0.06)', border: '1px solid rgba(0,171,190,0.15)', borderRadius: 1.5, px: 2, py: 1.25, textAlign: 'left' }}>
                         <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.6, display: 'block' }}>
@@ -247,7 +247,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
                         </Typography>
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3, pt: 1.5, gap: 1, justifyContent: 'center' }}>
+                <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, gap: 1, justifyContent: 'center' }}>
                     <Button onClick={() => setConfirmDeleteOpen(false)} variant='outlined'
                         sx={{ borderRadius: '20px', px: 3, borderColor: 'divider', color: 'text.secondary', textTransform: 'none', fontWeight: 600, '&:hover': { borderColor: '#bbb', bgcolor: 'grey.50' } }}>
                         {t('Cancel')}
