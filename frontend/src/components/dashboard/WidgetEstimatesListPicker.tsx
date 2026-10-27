@@ -21,9 +21,10 @@ interface Props {
     selectedIds: string[];
     onSelect: (items: any[]) => void;
     disabledIds?: string[];
+    filterToCosting?: boolean;
 }
 
-export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disabledIds = [] }: Props) {
+export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disabledIds = [], filterToCosting = false }: Props) {
     const { t } = useTranslation();
     const [items, setItems] = useState<any[]>([]);
     const [allItems, setAllItems] = useState<any[]>([]);
@@ -41,7 +42,7 @@ export default function WidgetEstimatesListPicker({ selectedIds, onSelect, disab
                 if (mounted) {
                     const all = Array.isArray(data) ? data : [];
                     setAllItems(all);
-                    setItems(all.filter(e => e.inCosting === true));
+                    setItems(filterToCosting ? all.filter(e => e.inCosting === true) : all);
                 }
             } catch (e) {
                 console.error('Failed to fetch estimates', e);

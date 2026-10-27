@@ -89,6 +89,7 @@ export default function FounderWidgetBuilderDialog({ onClose, onConfirm, existin
                             selectedIds={selectedItems.map(i => typeof i._id === 'string' ? i._id : String(i._id))}
                             onSelect={setSelectedItems}
                             disabledIds={existingIds}
+                            filterToCosting
                         />
                     </Box>
                 )}
