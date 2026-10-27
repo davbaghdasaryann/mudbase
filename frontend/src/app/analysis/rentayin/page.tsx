@@ -1030,7 +1030,7 @@ export default function RentayinPage() {
                                         })()}
                                         {/* Cost per m² */}
                                         {(() => {
-                                            const builtUpAreaStr: string | null = (detail as any)?.estimateBuiltUpArea ?? null;
+                                            const builtUpAreaStr: string | null = (detail as any)?.estimateConstructionSurface ?? null;
                                             const builtUpAreaParsed = builtUpAreaStr ? parseFloat(builtUpAreaStr) : NaN;
                                             const hasArea = !isNaN(builtUpAreaParsed) && builtUpAreaParsed > 0;
                                             const totalEstAll = totalEstCost + totalEstOther;

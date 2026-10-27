@@ -2065,7 +2065,7 @@ ${tableBodyHtml}
                                 <LaborProfitabilityWidget estimateSnapshot={estimateSnapshot} actualData={actualData} costHistory={costHistory} pahestEntries={pahestEntries} height={220} />
                             </Box>
                             {(() => {
-                                const builtUpAreaStr = selectedEstimate.builtUpArea ?? null;
+                                const builtUpAreaStr = selectedEstimate.constructionSurface ?? null;
                                 const builtUpAreaParsed = builtUpAreaStr ? parseFloat(builtUpAreaStr) : NaN;
                                 const hasArea = !isNaN(builtUpAreaParsed) && builtUpAreaParsed > 0;
                                 const estTotal = selectedEstimate.totalCostWithOtherExpenses ?? selectedEstimate.totalCost ?? 0;
