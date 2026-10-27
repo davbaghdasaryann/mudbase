@@ -42,21 +42,21 @@ export default function ContactSection() {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Box
               component="a"
-              href="tel:+37491570800"
+              href="tel:+37495036045"
               sx={{ color: '#00A390', mr: 1, display: 'flex' }}
             >
               <PhoneIcon />
             </Box>
             <Typography
               component="a"
-              href="tel:+37491570800"
+              href="tel:+37495036045"
               sx={{
                 color: '#282828',
                 textDecoration: 'none',
                 userSelect: 'text',
               }}
             >
-              +374 91 570 800
+              +374 95 03-60-45
             </Typography>
           </Box>
 

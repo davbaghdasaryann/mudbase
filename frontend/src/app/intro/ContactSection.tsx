@@ -34,7 +34,7 @@ export default function ContactSection() {
     const CONTACTS: { Icon: ElementType; label: string; value: string }[] = [
         { Icon: EmailOutlinedIcon,      label: t('Email'),                 value: 'info@mudbase.am' },
         { Icon: LocationOnOutlinedIcon, label: t('Address'),               value: 'Yerevan, Armenia' },
-        { Icon: PhoneOutlinedIcon,      label: t('landing.contact_phone'), value: '+374 (10) 55-00-55' },
+        { Icon: PhoneOutlinedIcon,      label: t('landing.contact_phone'), value: '+374 95 03-60-45' },
     ];
     return (
         <Box id="contact" sx={{
