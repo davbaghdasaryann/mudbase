@@ -233,8 +233,19 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
                 PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.14)' } }}>
                 <DialogContent sx={{ pt: 4, pb: 2, px: 3, textAlign: 'center' }}>
                     <Tooltip title={t('All widgets in this group will also be deleted. This action cannot be undone.')} placement='top' arrow>
-                        <Box sx={{ width: 80, height: 80, borderRadius: '50%', border: '3px solid #e53935', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5, cursor: 'default' }}>
-                            <WarningAmberIcon sx={{ color: '#e53935', fontSize: 42 }} />
+                        <Box sx={{
+                            width: 90, height: 90, borderRadius: '50%',
+                            border: '3px solid #e53935', bgcolor: 'rgba(229,57,53,0.08)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            mx: 'auto', mb: 2.5, cursor: 'default',
+                            animation: 'popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            '@keyframes popIn': {
+                                '0%': { transform: 'scale(0)', opacity: 0 },
+                                '60%': { transform: 'scale(1.18)', opacity: 1 },
+                                '100%': { transform: 'scale(1)', opacity: 1 },
+                            },
+                        }}>
+                            <WarningAmberIcon sx={{ fontSize: 48, color: '#e53935' }} />
                         </Box>
                     </Tooltip>
                     <Typography variant='h6' fontWeight={700}>
