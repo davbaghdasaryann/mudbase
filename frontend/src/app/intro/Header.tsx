@@ -44,7 +44,7 @@ export default function LandingHeader() {
                 px: 3.5,
                 py: 1.25,
                 width: '100%',
-                maxWidth: 820,
+                maxWidth: 720,
             }}>
                 {/* Logo — fixed left */}
                 <Box component='a' href='/intro' sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
