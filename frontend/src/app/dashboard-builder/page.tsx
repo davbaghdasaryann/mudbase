@@ -117,7 +117,7 @@ export default function DashboardBuilderPage() {
     return (
         <PageContents title={t('Dashboard')} sx={{ background: '#F5F9F9', minHeight: '100%' }}>
             <Stack spacing={3}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                {!loading && groups.length > 0 && <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                     <Stack direction='row' spacing={2}>
                         <Button
                             variant='outlined'
@@ -137,7 +137,7 @@ export default function DashboardBuilderPage() {
                             {t('Create Widget')}
                         </Button>
                     </Stack>
-                </Box>
+                </Box>}
 
                 {loading ? (
                     <Typography>{t('Loading...')}</Typography>
