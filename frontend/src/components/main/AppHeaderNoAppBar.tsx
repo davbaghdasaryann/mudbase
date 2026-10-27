@@ -148,7 +148,7 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 {!props.title && <Box sx={{ flexGrow: 1 }} />}
 
                 <TrialBanner />
-                <AppLangSelector />
+                {/* <AppLangSelector /> */}
                 {/* <AppThemeSwitcher /> */}
                 <AppHeaderAccount {...props} />
             </Stack>
