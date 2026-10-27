@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Box, IconButton, Stack, Typography, TextField, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Box, IconButton, Stack, Typography, TextField, Tooltip, Dialog, DialogContent, DialogActions, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -231,7 +231,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
 
             <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} maxWidth='xs' fullWidth
                 PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.14)' } }}>
-                <DialogContent sx={{ pt: 4, pb: 2, px: 3, textAlign: 'center' }}>
+                <DialogContent sx={{ pt: 4, pb: 2, px: 4, textAlign: 'center' }}>
                     <Tooltip title={t('All widgets in this group will also be deleted. This action cannot be undone.')} placement='top' arrow>
                         <Box sx={{
                             width: 90, height: 90, borderRadius: '50%',
