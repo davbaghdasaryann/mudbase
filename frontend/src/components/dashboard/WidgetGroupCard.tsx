@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Box, IconButton, Stack, Typography, TextField, Tooltip } from '@mui/material';
+import { Box, IconButton, Stack, Typography, TextField, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Widget1Day from './widgets/Widget1Day';
 import Widget15Day from './widgets/Widget15Day';
 import Widget30Day from './widgets/Widget30Day';
@@ -26,6 +27,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
     const [localWidgets, setLocalWidgets] = useState<any[]>(group.widgets ?? []);
     const [dragId, setDragId] = useState<string | null>(null);
     const [dragOverId, setDragOverId] = useState<string | null>(null);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
     React.useEffect(() => { setLocalWidgets(group.widgets ?? []); }, [group.widgets]);
 
@@ -54,12 +56,13 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
     const handleDragEnd = () => { setDragId(null); setDragOverId(null); };
 
     const handleDeleteGroup = async () => {
-        if (!confirm(t('Delete this widget group and all its widgets?'))) return;
         try {
             await Api.requestSession({ command: 'dashboard/group/delete', args: { groupId: group._id } });
             onUpdate();
         } catch (error) {
             console.error('Failed to delete group:', error);
+        } finally {
+            setConfirmDeleteOpen(false);
         }
     };
 
@@ -113,7 +116,7 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
                         </IconButton>
                     </Tooltip>
                     <Tooltip title={t('Delete group')} placement="top">
-                        <IconButton size='small' onClick={handleDeleteGroup} sx={iconSx}>
+                        <IconButton size='small' onClick={() => setConfirmDeleteOpen(true)} sx={iconSx}>
                             <DeleteIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                     </Tooltip>
@@ -225,6 +228,29 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
                     <AddIcon sx={{ fontSize: 34 }} />
                 </IconButton>
             </Tooltip>
+
+            <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} maxWidth='xs' fullWidth
+                PaperProps={{ sx: { borderRadius: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' } }}>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, pb: 1 }}>
+                    <WarningAmberIcon sx={{ color: '#e65100', fontSize: 22 }} />
+                    {t('Delete Group')}
+                </DialogTitle>
+                <DialogContent sx={{ pb: 1 }}>
+                    <Typography variant='body2' color='text.secondary'>
+                        {t('Are you sure you want to delete')} <strong>"{group.name}"</strong>? {t('All widgets in this group will also be deleted. This action cannot be undone.')}
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+                    <Button onClick={() => setConfirmDeleteOpen(false)}
+                        sx={{ color: '#00ABBE', textTransform: 'none', fontWeight: 600 }}>
+                        {t('Cancel')}
+                    </Button>
+                    <Button variant='contained' onClick={handleDeleteGroup}
+                        sx={{ borderRadius: '20px', px: 3, bgcolor: '#e65100', textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#bf360c' } }}>
+                        {t('Delete')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
