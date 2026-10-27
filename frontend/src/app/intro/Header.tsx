@@ -36,7 +36,6 @@ export default function LandingHeader() {
     return (
         <Box sx={{ position: 'fixed', top: 20, left: 0, right: 0, zIndex: 1200, display: 'flex', justifyContent: 'center', px: 3 }}>
             <Box sx={{
-                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 backgroundColor: '#fff',
@@ -52,8 +51,11 @@ export default function LandingHeader() {
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop nav — absolutely centered in pill so logo/auth widths don't affect it */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+                {/* Left spacer — equal to right spacer, centers nav between logo and auth */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1 }} />
+
+                {/* Desktop nav — centered between logo and auth via equal spacers */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, flexShrink: 0 }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
@@ -74,6 +76,9 @@ export default function LandingHeader() {
                         </Typography>
                     ))}
                 </Box>
+
+                {/* Right spacer — equal to left spacer */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1 }} />
 
                 {/* Mobile: login + register buttons — mx:auto centers between logo and hamburger */}
                 <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', alignItems: 'center', gap: 1, mx: 'auto' }}>
@@ -116,8 +121,8 @@ export default function LandingHeader() {
                     </Button>
                 </Box>
 
-                {/* Desktop auth — pushed to right edge */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0, ml: 'auto' }}>
+                {/* Desktop auth — fixed right */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
                     {/* Language toggle — hidden */}
                     <Button
                         onClick={() => router.push('/login')}
