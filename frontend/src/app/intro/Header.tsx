@@ -51,8 +51,8 @@ export default function LandingHeader() {
                     <Image src='/images/logo_square.svg' alt='Mudbase' width={34} height={34} />
                 </Box>
 
-                {/* Desktop nav — absolutely centered so auth buttons can't shift it */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, mx: 'auto' }}>
+                {/* Desktop nav — flex:1 centers regardless of side widths */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, flex: 1, justifyContent: 'center' }}>
                     {navLinks.map(link => (
                         <Typography
                             key={link.key}
