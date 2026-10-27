@@ -235,10 +235,15 @@ export default function WidgetGroupCard({ group, onUpdate, onAddWidget, refreshK
                     <WarningAmberIcon sx={{ color: '#e53935', fontSize: 22 }} />
                     {t('Delete group')}
                 </DialogTitle>
-                <DialogContent sx={{ pb: 1 }}>
-                    <Typography variant='body2' color='text.secondary'>
-                        {t('Are you sure you want to delete')} <strong>"{group.name}"</strong>? {t('All widgets in this group will also be deleted. This action cannot be undone.')}
+                <DialogContent sx={{ pb: 2 }}>
+                    <Typography variant='body1' sx={{ fontWeight: 500, color: 'text.primary', mb: 2 }}>
+                        {t('Are you sure you want to delete')} <strong>"{group.name}"</strong>?
                     </Typography>
+                    <Box sx={{ bgcolor: 'rgba(229,57,53,0.06)', border: '1px solid rgba(229,57,53,0.18)', borderRadius: 1.5, px: 2, py: 1.25 }}>
+                        <Typography variant='body2' sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+                            {t('All widgets in this group will also be deleted. This action cannot be undone.')}
+                        </Typography>
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
                     <Button onClick={() => setConfirmDeleteOpen(false)}
