@@ -138,7 +138,7 @@ export default function Widget1Day({ widget, onUpdate, refreshKey = 0, grouped =
                         return (
                             <ListItem
                                 key={index}
-                                sx={{ px: 1.5, minHeight: 50, borderBottom: '1px solid rgba(0,0,0,0.06)', transition: 'background 0.15s', '&:hover': { background: 'rgba(0,171,190,0.06)' } }}
+                                sx={{ pl: 1.5, pr: '120px', minHeight: 50, borderBottom: '1px solid rgba(0,0,0,0.06)', transition: 'background 0.15s', '&:hover': { background: 'rgba(0,171,190,0.06)' } }}
                                 secondaryAction={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                         {index > 0 && icon}
@@ -167,7 +167,7 @@ export default function Widget1Day({ widget, onUpdate, refreshKey = 0, grouped =
             ) : (
                 <List sx={{ py: 0 }}>
                     <ListItem
-                        sx={{ px: 1.5, minHeight: 50, transition: 'background 0.15s', '&:hover': { background: 'rgba(0,171,190,0.06)' } }}
+                        sx={{ pl: 1.5, pr: '120px', minHeight: 50, transition: 'background 0.15s', '&:hover': { background: 'rgba(0,171,190,0.06)' } }}
                         secondaryAction={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                 {merged.length > 1 && trendIcon}
