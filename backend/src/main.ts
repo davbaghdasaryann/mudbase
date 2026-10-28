@@ -19,7 +19,7 @@ export default async function main() {
     try {
         expressApp_.set('port', port);
 
-        dbInitConfig(config_.db);
+        await dbInitConfig(config_.db);
         await drizzleWarmUp();
         await drizzleMaintenance();
         await snapshotMaintenance();
