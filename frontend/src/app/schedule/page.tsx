@@ -476,7 +476,18 @@ export default function SchedulePage() {
             command: 'estimate/fetch_labor_for_analysis',
             args: { estimateId: selected.estimateId },
         })
-            .then(rows => setLaborRows(rows ?? []))
+            .then(rows => {
+                const fetched = rows ?? [];
+                setLaborRows(fetched);
+                // Rebuild from current schedule items so refresh doesn't lose state
+                const items = scheduleItemsRef.current;
+                const newMap: Record<string, { scheduleItemId: string; addedQty: number }> = {};
+                for (const row of fetched) {
+                    const match = items.find(i => !i.parentItemId && i.laborOfferItemName === row.laborOfferItemName);
+                    if (match) newMap[row._id] = { scheduleItemId: match._id, addedQty: match.quantity };
+                }
+                setAddedLaborMap(newMap);
+            })
             .catch(() => setLaborRows([]))
             .finally(() => setLaborLoading(false));
     };
