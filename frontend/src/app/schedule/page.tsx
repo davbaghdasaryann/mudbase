@@ -174,7 +174,6 @@ export default function SchedulePage() {
     // Time dialog for adding a labor item with custom duration
     const [qtyDialogRow, setQtyDialogRow] = useState<LaborRow | null>(null);
     const [timeInput, setTimeInput] = useState('');
-    const [timeUnit, setTimeUnit] = useState<'d' | 'h'>('d');
     // Maps laborRow._id → { scheduleItemId, addedQty }
     const [addedLaborMap, setAddedLaborMap] = useState<Record<string, { scheduleItemId: string; addedQty: number }>>({});
 
@@ -484,10 +483,9 @@ export default function SchedulePage() {
 
     const handleOpenQtyDialog = (row: LaborRow) => {
         setQtyDialogRow(row);
-        setTimeUnit('d');
         const lh = row.laborHours ?? 0;
-        const fullDays = lh > 0 ? (row.quantity / lh) / 8 : row.quantity;
-        setTimeInput(String(+fullDays.toFixed(2)));
+        const displayVal = lh > 0 ? row.quantity / lh : row.quantity;
+        setTimeInput(String(+displayVal.toFixed(2)));
     };
 
     const handleConfirmQtyAdd = async () => {
@@ -496,9 +494,7 @@ export default function SchedulePage() {
         const val = parseFloat(timeInput);
         if (isNaN(val) || val <= 0) return;
         const lh = row.laborHours ?? 0;
-        const qty = lh > 0
-            ? (timeUnit === 'h' ? val * lh : val * 8 * lh)
-            : val;
+        const qty = lh > 0 ? val * lh : val;
         setQtyDialogRow(null);
         setAddingId(row._id);
         const targetGroupId = addWorkForGroupId;
@@ -1582,61 +1578,31 @@ export default function SchedulePage() {
                 <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
                     {(() => {
                         const lh = qtyDialogRow?.laborHours ?? 0;
-                        const maxH = lh > 0 ? qtyDialogRow!.quantity / lh : 0;
-                        const maxD = maxH / 8;
+                        const maxVal = lh > 0 ? (qtyDialogRow?.quantity ?? 0) / lh : 0;
                         const val = parseFloat(timeInput);
-                        const maxForUnit = timeUnit === 'h' ? maxH : maxD;
-                        const exceedsMax = !isNaN(val) && val > 0 && maxForUnit > 0 && val > maxForUnit;
+                        const exceedsMax = !isNaN(val) && val > 0 && maxVal > 0 && val > maxVal;
                         return (
                             <>
-                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                    <TextField
-                                        autoFocus
-                                        type='number'
-                                        fullWidth
-                                        size='small'
-                                        label={timeUnit === 'd' ? t('Days') : t('Hours')}
-                                        value={timeInput}
-                                        onChange={e => setTimeInput(e.target.value)}
-                                        onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
-                                        error={exceedsMax}
-                                        helperText={exceedsMax ? t('Exceeds available time') : ''}
-                                        inputProps={{ min: 0, step: 'any' }}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-                                    />
-                                    {/* d / h toggle */}
-                                    <Box sx={{ display: 'flex', border: `1px solid rgba(0,0,0,0.23)`, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0, height: 40, alignSelf: 'flex-start' }}>
-                                        {(['d', 'h'] as const).map(u => (
-                                            <Box
-                                                key={u}
-                                                onClick={() => {
-                                                    if (u === timeUnit) return;
-                                                    const v = parseFloat(timeInput);
-                                                    if (!isNaN(v) && v > 0) {
-                                                        setTimeInput(u === 'h'
-                                                            ? String(+(v * 8).toFixed(2))
-                                                            : String(+(v / 8).toFixed(2)));
-                                                    }
-                                                    setTimeUnit(u);
-                                                }}
-                                                sx={{
-                                                    px: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                                                    bgcolor: timeUnit === u ? mainPrimaryColor : 'transparent',
-                                                    color: timeUnit === u ? '#fff' : '#666',
-                                                    transition: 'background 0.15s, color 0.15s',
-                                                    userSelect: 'none',
-                                                    '&:hover': { bgcolor: timeUnit === u ? mainPrimaryColor : `${mainPrimaryColor}15` },
-                                                }}
-                                            >
-                                                {u === 'd' ? t('Days').slice(0, 1) : t('Hours').slice(0, 1)}
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                </Box>
-                                {lh > 0 && (
+                                <TextField
+                                    autoFocus
+                                    type='number'
+                                    fullWidth
+                                    size='small'
+                                    label={t('Days')}
+                                    value={timeInput}
+                                    onChange={e => setTimeInput(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
+                                    error={exceedsMax}
+                                    helperText={exceedsMax ? t('Exceeds available time') : ''}
+                                    InputProps={{
+                                        endAdornment: <InputAdornment position='end'>{t('day_short')}</InputAdornment>,
+                                    }}
+                                    inputProps={{ min: 0, step: 'any' }}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                                />
+                                {maxVal > 0 && (
                                     <Typography variant='caption' sx={{ color: '#aaa', mt: exceedsMax ? 0 : 1, display: 'block' }}>
-                                        {t('Available')}: {+maxD.toFixed(2)} {t('Days')} / {+maxH.toFixed(2)} {t('Hours')}
+                                        {t('Available')}: {+maxVal.toFixed(2)} {t('day_short')}
                                     </Typography>
                                 )}
                             </>
@@ -1652,9 +1618,8 @@ export default function SchedulePage() {
                             const val = parseFloat(timeInput);
                             if (isNaN(val) || val <= 0) return true;
                             const lh = qtyDialogRow?.laborHours ?? 0;
-                            const maxH = lh > 0 ? (qtyDialogRow?.quantity ?? 0) / lh : Infinity;
-                            const maxForUnit = timeUnit === 'h' ? maxH : maxH / 8;
-                            return val > maxForUnit;
+                            const maxVal = lh > 0 ? (qtyDialogRow?.quantity ?? 0) / lh : Infinity;
+                            return val > maxVal;
                         })()}
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
                     >
