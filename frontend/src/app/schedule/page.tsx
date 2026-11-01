@@ -1500,13 +1500,16 @@ export default function SchedulePage() {
                                             </Typography>
                                         )}
                                     </Box>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.2, whiteSpace: 'nowrap' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
                                         {row.laborHours != null && row.laborHours > 0 && (
-                                            <Tooltip title={t('Labor Time')} placement='top' arrow>
-                                                <Typography sx={{ fontSize: '0.75rem', color: '#999', cursor: 'default' }}>
-                                                    {(row.quantity / row.laborHours).toFixed(2)} {t('day_short')}
-                                                </Typography>
-                                            </Tooltip>
+                                            <>
+                                                <Tooltip title={t('Labor Time')} placement='top' arrow>
+                                                    <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
+                                                        {(row.quantity / row.laborHours).toFixed(2)} {t('day_short')}
+                                                    </Typography>
+                                                </Tooltip>
+                                                <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
+                                            </>
                                         )}
                                         <Tooltip title={addedLaborMap[row._id] ? t('Remaining') : t('Quantity')} placement='top' arrow>
                                             <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
