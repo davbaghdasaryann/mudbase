@@ -12,7 +12,7 @@ import { i18nextLngId } from './data/global_dispatch';
 
 export function getUserStoredLanguage() {
     if (typeof window === 'undefined')
-        return 'en';
+        return 'am';
 
     let storedLang = localStorage.getItem(i18nextLngId);
     if (storedLang) return storedLang;
