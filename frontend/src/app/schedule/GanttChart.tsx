@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, CircularProgress, Typography, Paper } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import * as Api from '@/api';
@@ -56,6 +56,29 @@ export default function GanttChart({ estimate }: Props) {
     const { t } = useTranslation();
     const [data, setData] = useState<GanttData | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const drag = useRef({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
+
+    const onMouseDown = (e: React.MouseEvent) => {
+        if (e.button !== 0) return;
+        const el = scrollRef.current;
+        if (!el) return;
+        drag.current = { active: true, startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
+        el.style.cursor = 'grabbing';
+        e.preventDefault();
+    };
+    const onMouseMove = (e: React.MouseEvent) => {
+        if (!drag.current.active) return;
+        const el = scrollRef.current;
+        if (!el) return;
+        el.scrollLeft = drag.current.scrollLeft - (e.clientX - drag.current.startX);
+        el.scrollTop  = drag.current.scrollTop  - (e.clientY - drag.current.startY);
+    };
+    const onMouseUp = () => {
+        drag.current.active = false;
+        if (scrollRef.current) scrollRef.current.style.cursor = 'grab';
+    };
 
     useEffect(() => {
         setLoading(true);
@@ -137,7 +160,14 @@ export default function GanttChart({ estimate }: Props) {
             </Box>
 
             {/* Scrollable chart */}
-            <Box sx={{ overflowX: 'auto', overflowY: 'auto', flex: 1 }}>
+            <Box
+                ref={scrollRef}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseUp}
+                sx={{ overflowX: 'auto', overflowY: 'auto', flex: 1, cursor: 'grab', userSelect: 'none' }}
+            >
                 <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
 
                     {/* Day header */}
