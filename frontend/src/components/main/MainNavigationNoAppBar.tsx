@@ -307,7 +307,6 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
 
             <List sx={{ px: 1, pt: 0, pb: 0 }}>
                 {([
-                    { labelKey: 'Schedule', icon: <CalendarMonthIcon /> },
                     { labelKey: 'Karavarium', icon: <ManageAccountsOutlinedIcon /> },
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
@@ -473,6 +472,7 @@ function useMainNavigation() {
             navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
             navigation.push({segment: 'costing', title: t('Costing'), icon: <RequestQuoteOutlinedIcon />});
             navigation.push({segment: 'risk-monitoring', title: t('Risk Monitoring'), icon: <MonitorHeartOutlinedIcon />});
+            navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
         }
 
         if (isSuperAdmin) {
