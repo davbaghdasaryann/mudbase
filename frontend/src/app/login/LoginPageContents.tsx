@@ -13,6 +13,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { signInWithEmail } from '../../api/auth';
 import { useTranslation } from 'react-i18next';
 import { mainPrimaryColor, toolpadTextFieldSx } from '../../theme';
+import Image from 'next/image';
 
 export default function LoginPageContents() {
     const router = useRouter();
@@ -94,6 +95,7 @@ export default function LoginPageContents() {
         <Box
             sx={{
                 display: 'flex',
+                flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
@@ -113,6 +115,11 @@ export default function LoginPageContents() {
                 },
             }}
         >
+            {/* Logo — mobile only */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mb: 3 }}>
+                <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
+            </Box>
+
             <SignInPage
                 signIn={processSignIn}
                 providers={providers}
