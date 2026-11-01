@@ -171,9 +171,10 @@ export default function SchedulePage() {
     const [itemsLoading, setItemsLoading] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
 
-    // Qty dialog for adding a labor item with custom quantity
+    // Time dialog for adding a labor item with custom duration
     const [qtyDialogRow, setQtyDialogRow] = useState<LaborRow | null>(null);
-    const [qtyInput, setQtyInput] = useState('');
+    const [timeInput, setTimeInput] = useState('');
+    const [timeUnit, setTimeUnit] = useState<'d' | 'h'>('d');
     // Maps laborRow._id → { scheduleItemId, addedQty }
     const [addedLaborMap, setAddedLaborMap] = useState<Record<string, { scheduleItemId: string; addedQty: number }>>({});
 
@@ -483,14 +484,21 @@ export default function SchedulePage() {
 
     const handleOpenQtyDialog = (row: LaborRow) => {
         setQtyDialogRow(row);
-        setQtyInput(String(row.quantity));
+        setTimeUnit('d');
+        const lh = row.laborHours ?? 0;
+        const fullDays = lh > 0 ? (row.quantity / lh) / 8 : row.quantity;
+        setTimeInput(String(+fullDays.toFixed(2)));
     };
 
     const handleConfirmQtyAdd = async () => {
         const row = qtyDialogRow;
         if (!row || !selected) return;
-        const qty = parseFloat(qtyInput);
-        if (isNaN(qty) || qty <= 0) return;
+        const val = parseFloat(timeInput);
+        if (isNaN(val) || val <= 0) return;
+        const lh = row.laborHours ?? 0;
+        const qty = lh > 0
+            ? (timeUnit === 'h' ? val * lh : val * 8 * lh)
+            : val;
         setQtyDialogRow(null);
         setAddingId(row._id);
         const targetGroupId = addWorkForGroupId;
@@ -1572,26 +1580,53 @@ export default function SchedulePage() {
                 </DialogTitle>
                 <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
                 <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-                    <TextField
-                        autoFocus
-                        type='number'
-                        fullWidth
-                        size='small'
-                        label={t('Quantity')}
-                        value={qtyInput}
-                        onChange={e => setQtyInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
-                        InputProps={{
-                            endAdornment: qtyDialogRow?.unitSymbol
-                                ? <InputAdornment position='end'>{qtyDialogRow.unitSymbol}</InputAdornment>
-                                : undefined,
-                        }}
-                        inputProps={{ min: 0, step: 'any' }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-                    />
-                    {qtyDialogRow && (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <TextField
+                            autoFocus
+                            type='number'
+                            fullWidth
+                            size='small'
+                            label={timeUnit === 'd' ? t('Days') : t('Hours')}
+                            value={timeInput}
+                            onChange={e => setTimeInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
+                            inputProps={{ min: 0, step: 'any' }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                        />
+                        {/* d / h toggle */}
+                        <Box sx={{ display: 'flex', border: `1px solid rgba(0,0,0,0.23)`, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0, height: 40, alignSelf: 'flex-start', mt: 0 }}>
+                            {(['d', 'h'] as const).map(u => (
+                                <Box
+                                    key={u}
+                                    onClick={() => {
+                                        if (u === timeUnit) return;
+                                        const val = parseFloat(timeInput);
+                                        if (!isNaN(val) && val > 0) {
+                                            setTimeInput(u === 'h'
+                                                ? String(+(val * 8).toFixed(2))
+                                                : String(+(val / 8).toFixed(2)));
+                                        }
+                                        setTimeUnit(u);
+                                    }}
+                                    sx={{
+                                        px: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                                        bgcolor: timeUnit === u ? mainPrimaryColor : 'transparent',
+                                        color: timeUnit === u ? '#fff' : '#666',
+                                        transition: 'background 0.15s, color 0.15s',
+                                        userSelect: 'none',
+                                        '&:hover': { bgcolor: timeUnit === u ? mainPrimaryColor : `${mainPrimaryColor}15` },
+                                    }}
+                                >
+                                    {u}
+                                </Box>
+                            ))}
+                        </Box>
+                    </Box>
+                    {qtyDialogRow && qtyDialogRow.laborHours != null && qtyDialogRow.laborHours > 0 && (
                         <Typography variant='caption' sx={{ color: '#aaa', mt: 1, display: 'block' }}>
-                            {t('Available')}: {qtyDialogRow.quantity} {qtyDialogRow.unitSymbol}
+                            {t('Available')}: {+((qtyDialogRow.quantity / qtyDialogRow.laborHours) / 8).toFixed(2)}d
+                            {' / '}{+((qtyDialogRow.quantity / qtyDialogRow.laborHours)).toFixed(2)}h
                         </Typography>
                     )}
                 </DialogContent>
@@ -1600,7 +1635,7 @@ export default function SchedulePage() {
                     <Button
                         variant='contained'
                         onClick={handleConfirmQtyAdd}
-                        disabled={!qtyInput || isNaN(parseFloat(qtyInput)) || parseFloat(qtyInput) <= 0}
+                        disabled={!timeInput || isNaN(parseFloat(timeInput)) || parseFloat(timeInput) <= 0}
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
                     >
                         {t('Add')}
