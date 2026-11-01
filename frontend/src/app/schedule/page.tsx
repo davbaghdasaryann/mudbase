@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip, TextField,
-    Menu, MenuItem, ListItemIcon, ListItemText, Popover,
+    Menu, MenuItem, ListItemIcon, ListItemText, Popover, InputAdornment,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
@@ -169,6 +170,12 @@ export default function SchedulePage() {
     const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
     const [itemsLoading, setItemsLoading] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
+
+    // Qty dialog for adding a labor item with custom quantity
+    const [qtyDialogRow, setQtyDialogRow] = useState<LaborRow | null>(null);
+    const [qtyInput, setQtyInput] = useState('');
+    // Maps laborRow._id → { scheduleItemId, addedQty }
+    const [addedLaborMap, setAddedLaborMap] = useState<Record<string, { scheduleItemId: string; addedQty: number }>>({});
 
     const [groups, setGroups] = useState<ScheduleGroup[]>([]);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -474,8 +481,17 @@ export default function SchedulePage() {
             .finally(() => setLaborLoading(false));
     };
 
-    const handleAddItem = async (row: LaborRow) => {
-        if (!selected || addingId === row._id) return;
+    const handleOpenQtyDialog = (row: LaborRow) => {
+        setQtyDialogRow(row);
+        setQtyInput(String(row.quantity));
+    };
+
+    const handleConfirmQtyAdd = async () => {
+        const row = qtyDialogRow;
+        if (!row || !selected) return;
+        const qty = parseFloat(qtyInput);
+        if (isNaN(qty) || qty <= 0) return;
+        setQtyDialogRow(null);
         setAddingId(row._id);
         const targetGroupId = addWorkForGroupId;
         try {
@@ -483,7 +499,7 @@ export default function SchedulePage() {
             const args: Record<string, unknown> = {
                 scheduleId: selected._id,
                 laborOfferItemName: row.laborOfferItemName,
-                quantity: row.quantity,
+                quantity: qty,
                 laborHours: row.laborHours ?? 0,
                 unitSymbol: row.unitSymbol ?? '',
                 sectionName: row.sectionName ?? '',
@@ -498,10 +514,18 @@ export default function SchedulePage() {
                     startDay: created.startDay ?? startDay,
                     groupId: (created as ScheduleItem & { groupId?: string }).groupId ?? targetGroupId ?? undefined,
                 }]);
+                setAddedLaborMap(prev => ({ ...prev, [row._id]: { scheduleItemId: created._id, addedQty: qty } }));
             }
         } finally {
             setAddingId(null);
         }
+    };
+
+    const handleRemoveLaborItem = async (row: LaborRow) => {
+        const entry = addedLaborMap[row._id];
+        if (!entry) return;
+        await handleDeleteItem(entry.scheduleItemId);
+        setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
     };
 
     const handleDeleteItem = async (id: string) => {
@@ -1476,32 +1500,36 @@ export default function SchedulePage() {
                                             </Typography>
                                         )}
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.2, whiteSpace: 'nowrap' }}>
                                         {row.laborHours != null && row.laborHours > 0 && (
-                                            <>
-                                                <Tooltip title={t('Labor Time')} placement='top' arrow>
-                                                    <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
-                                                        {(row.quantity / row.laborHours).toFixed(2)}
-                                                    </Typography>
-                                                </Tooltip>
-                                                <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
-                                            </>
+                                            <Tooltip title={t('Labor Time')} placement='top' arrow>
+                                                <Typography sx={{ fontSize: '0.75rem', color: '#999', cursor: 'default' }}>
+                                                    {(row.quantity / row.laborHours).toFixed(2)} {t('day_short')}
+                                                </Typography>
+                                            </Tooltip>
                                         )}
-                                        <Tooltip title={t('Quantity')} placement='top' arrow>
-                                            <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
-                                                {row.quantity} {row.unitSymbol}
+                                        <Tooltip title={addedLaborMap[row._id] ? t('Remaining') : t('Quantity')} placement='top' arrow>
+                                            <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
+                                                {addedLaborMap[row._id]
+                                                    ? `${+(row.quantity - addedLaborMap[row._id].addedQty).toFixed(3)} ${row.unitSymbol}`
+                                                    : `${row.quantity} ${row.unitSymbol}`}
                                             </Typography>
                                         </Tooltip>
                                     </Box>
                                     <IconButton
                                         size='small'
-                                        onClick={() => handleAddItem(row)}
+                                        onClick={() => addedLaborMap[row._id] ? handleRemoveLaborItem(row) : handleOpenQtyDialog(row)}
                                         disabled={addingId === row._id}
-                                        sx={{ color: mainPrimaryColor, '&:hover': { bgcolor: `${mainPrimaryColor}15` } }}
+                                        sx={{
+                                            color: addedLaborMap[row._id] ? '#e53935' : mainPrimaryColor,
+                                            '&:hover': { bgcolor: addedLaborMap[row._id] ? 'rgba(229,57,53,0.08)' : `${mainPrimaryColor}15` },
+                                        }}
                                     >
                                         {addingId === row._id
                                             ? <CircularProgress size={16} sx={{ color: mainPrimaryColor }} />
-                                            : <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
+                                            : addedLaborMap[row._id]
+                                                ? <RemoveCircleOutlineIcon sx={{ fontSize: 20 }} />
+                                                : <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
                                         }
                                     </IconButton>
                                 </Box>
@@ -1512,6 +1540,68 @@ export default function SchedulePage() {
 
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={() => { setWorksOpen(false); setAddWorkForGroupId(undefined); }} sx={{ borderRadius: '20px', color: '#888' }}>{t('Cancel')}</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Quantity input dialog */}
+            <Dialog
+                open={!!qtyDialogRow}
+                onClose={() => setQtyDialogRow(null)}
+                maxWidth='xs'
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${mainPrimaryColor}1a`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.2 }}>
+                            <AddCircleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor }} />
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Enter Quantity')}</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {qtyDialogRow?.laborOfferItemName}
+                            </Typography>
+                        </Box>
+                        <IconButton size='small' onClick={() => setQtyDialogRow(null)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+                <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
+                <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+                    <TextField
+                        autoFocus
+                        type='number'
+                        fullWidth
+                        size='small'
+                        label={t('Quantity')}
+                        value={qtyInput}
+                        onChange={e => setQtyInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
+                        InputProps={{
+                            endAdornment: qtyDialogRow?.unitSymbol
+                                ? <InputAdornment position='end'>{qtyDialogRow.unitSymbol}</InputAdornment>
+                                : undefined,
+                        }}
+                        inputProps={{ min: 0, step: 'any' }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                    />
+                    {qtyDialogRow && (
+                        <Typography variant='caption' sx={{ color: '#aaa', mt: 1, display: 'block' }}>
+                            {t('Available')}: {qtyDialogRow.quantity} {qtyDialogRow.unitSymbol}
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+                    <Button onClick={() => setQtyDialogRow(null)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
+                    <Button
+                        variant='contained'
+                        onClick={handleConfirmQtyAdd}
+                        disabled={!qtyInput || isNaN(parseFloat(qtyInput)) || parseFloat(qtyInput) <= 0}
+                        sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
+                    >
+                        {t('Add')}
+                    </Button>
                 </DialogActions>
             </Dialog>
 
