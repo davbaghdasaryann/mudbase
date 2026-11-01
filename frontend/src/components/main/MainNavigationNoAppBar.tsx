@@ -448,6 +448,7 @@ function useMainNavigation() {
             navigation.push({segment: 'dashboard-builder', title: t('Dashboard'), icon: <DashboardIcon />});
         }
 
+        navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
         navigation.push({segment: 'haymnadits', title: t('Haymnadits'), icon: <CorporateFareOutlinedIcon />});
 
         navigation.push({
@@ -472,7 +473,6 @@ function useMainNavigation() {
             navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
             navigation.push({segment: 'costing', title: t('Costing'), icon: <RequestQuoteOutlinedIcon />});
             navigation.push({segment: 'risk-monitoring', title: t('Risk Monitoring'), icon: <MonitorHeartOutlinedIcon />});
-            navigation.push({segment: 'schedule', title: t('Schedule'), icon: <CalendarMonthIcon />});
         }
 
         if (isSuperAdmin) {
