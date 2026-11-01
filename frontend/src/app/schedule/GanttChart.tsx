@@ -131,8 +131,8 @@ export default function GanttChart({ estimate }: Props) {
         rows.push({ type: 'section', name: section.name, colorIndex: si });
         section.items.forEach(item => {
             const lh = item.laborHours ?? 0;
-            const hours = lh > 0 ? (item.quantity ?? 0) / lh : 0;
-            const duration = Math.max(1, Math.ceil(hours / 8));
+            const days = lh > 0 ? (item.quantity ?? 0) / lh : 0;
+            const duration = Math.max(1, Math.ceil(days));
             rows.push({ type: 'item', name: item.name, colorIndex: si, start: currentDay, duration });
             currentDay += duration;
         });

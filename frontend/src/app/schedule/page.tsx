@@ -115,7 +115,7 @@ function itemDuration(item: ScheduleItem): number {
     const lh = item.laborHours ?? 0;
     const qty = item.quantity;
     if (!qty || !lh || !isFinite(qty / lh)) return 1;
-    return Math.max(0.125, (qty / lh) / 8);
+    return Math.max(0.125, qty / lh);
 }
 
 function addDays(date: Date, days: number): Date {
