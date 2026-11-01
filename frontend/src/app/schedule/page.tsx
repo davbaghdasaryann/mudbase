@@ -1508,8 +1508,10 @@ export default function SchedulePage() {
                                         {row.laborHours != null && row.laborHours > 0 && (
                                             <>
                                                 <Tooltip title={t('Labor Time')} placement='top' arrow>
-                                                    <Typography sx={{ fontSize: '0.82rem', color: '#555', cursor: 'default' }}>
-                                                        {(row.quantity / row.laborHours).toFixed(2)} {t('day_short')}
+                                                    <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
+                                                        {addedLaborMap[row._id]
+                                                            ? `${+((row.quantity - addedLaborMap[row._id].addedQty) / row.laborHours).toFixed(2)} ${t('day_short')}`
+                                                            : `${(row.quantity / row.laborHours).toFixed(2)} ${t('day_short')}`}
                                                     </Typography>
                                                 </Tooltip>
                                                 <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
