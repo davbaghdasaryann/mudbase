@@ -101,6 +101,7 @@ export default function LoginPageContents() {
                 width: '100vw',
                 px: { xs: 2, sm: 3 },
                 boxSizing: 'border-box',
+                position: 'relative',
                 '& .MuiContainer-root': {
                     maxWidth: { xs: '100%', sm: '460px' },
                     width: '100%',
@@ -114,6 +115,17 @@ export default function LoginPageContents() {
                 },
             }}
         >
+            {/* Logo — mobile only, positioned near top of viewport above the card */}
+            <Box sx={{
+                display: { xs: 'flex', sm: 'none' },
+                position: 'absolute',
+                top: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+            }}>
+                <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
+            </Box>
+
             <SignInPage
                 signIn={processSignIn}
                 providers={providers}
@@ -154,14 +166,7 @@ export default function LoginPageContents() {
                     },
                 }}
                 localeText={{
-                    providerSignInTitle: () => (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
-                                <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
-                            </Box>
-                            <span>{t('Login to Mudbase')}</span>
-                        </Box>
-                    ) as any,
+                    providerSignInTitle: () => t("Login to Mudbase"),
                     signInTitle: t('Login'),
                     signInSubtitle: undefined,
                     email: t('Email'),
