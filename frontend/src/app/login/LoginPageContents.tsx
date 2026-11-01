@@ -95,7 +95,6 @@ export default function LoginPageContents() {
         <Box
             sx={{
                 display: 'flex',
-                flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
@@ -115,11 +114,6 @@ export default function LoginPageContents() {
                 },
             }}
         >
-            {/* Logo — mobile only */}
-            <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mb: 3 }}>
-                <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
-            </Box>
-
             <SignInPage
                 signIn={processSignIn}
                 providers={providers}
@@ -160,7 +154,14 @@ export default function LoginPageContents() {
                     },
                 }}
                 localeText={{
-                    providerSignInTitle: () => t("Login to Mudbase"),
+                    providerSignInTitle: () => (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
+                                <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
+                            </Box>
+                            <span>{t('Login to Mudbase')}</span>
+                        </Box>
+                    ) as any,
                     signInTitle: t('Login'),
                     signInSubtitle: undefined,
                     email: t('Email'),
