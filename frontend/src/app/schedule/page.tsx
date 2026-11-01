@@ -1592,8 +1592,9 @@ export default function SchedulePage() {
                     {(() => {
                         const lh = qtyDialogRow?.laborHours ?? 0;
                         const maxVal = lh > 0 ? (qtyDialogRow?.quantity ?? 0) / lh : 0;
+                        const maxValRounded = +maxVal.toFixed(2);
                         const val = parseFloat(timeInput);
-                        const exceedsMax = !isNaN(val) && val > 0 && maxVal > 0 && val > maxVal;
+                        const exceedsMax = !isNaN(val) && val > 0 && maxValRounded > 0 && val > maxValRounded;
                         return (
                             <>
                                 <TextField
@@ -1631,7 +1632,7 @@ export default function SchedulePage() {
                             const val = parseFloat(timeInput);
                             if (isNaN(val) || val <= 0) return true;
                             const lh = qtyDialogRow?.laborHours ?? 0;
-                            const maxVal = lh > 0 ? (qtyDialogRow?.quantity ?? 0) / lh : Infinity;
+                            const maxVal = lh > 0 ? +(((qtyDialogRow?.quantity ?? 0) / lh).toFixed(2)) : Infinity;
                             return val > maxVal;
                         })()}
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
