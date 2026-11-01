@@ -60,24 +60,36 @@ export default function GanttChart({ estimate }: Props) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const drag = useRef({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
 
+    useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            if (!drag.current.active) return;
+            const el = scrollRef.current;
+            if (!el) return;
+            el.scrollLeft = drag.current.scrollLeft - (e.clientX - drag.current.startX);
+            el.scrollTop  = drag.current.scrollTop  - (e.clientY - drag.current.startY);
+        };
+        const onUp = () => {
+            if (!drag.current.active) return;
+            drag.current.active = false;
+            document.body.style.cursor = '';
+            if (scrollRef.current) scrollRef.current.style.cursor = 'grab';
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        return () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+    }, []);
+
     const onMouseDown = (e: React.MouseEvent) => {
         if (e.button !== 0) return;
         const el = scrollRef.current;
         if (!el) return;
         drag.current = { active: true, startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
         el.style.cursor = 'grabbing';
+        document.body.style.cursor = 'grabbing';
         e.preventDefault();
-    };
-    const onMouseMove = (e: React.MouseEvent) => {
-        if (!drag.current.active) return;
-        const el = scrollRef.current;
-        if (!el) return;
-        el.scrollLeft = drag.current.scrollLeft - (e.clientX - drag.current.startX);
-        el.scrollTop  = drag.current.scrollTop  - (e.clientY - drag.current.startY);
-    };
-    const onMouseUp = () => {
-        drag.current.active = false;
-        if (scrollRef.current) scrollRef.current.style.cursor = 'grab';
     };
 
     useEffect(() => {
@@ -163,9 +175,6 @@ export default function GanttChart({ estimate }: Props) {
             <Box
                 ref={scrollRef}
                 onMouseDown={onMouseDown}
-                onMouseMove={onMouseMove}
-                onMouseUp={onMouseUp}
-                onMouseLeave={onMouseUp}
                 sx={{ overflowX: 'auto', overflowY: 'auto', flex: 1, cursor: 'grab', userSelect: 'none' }}
             >
                 <Box sx={{ display: 'inline-flex', flexDirection: 'column', minWidth: NAME_COL_W + totalDays * DAY_W }}>
