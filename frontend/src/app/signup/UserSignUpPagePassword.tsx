@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import {Button, Stack} from '@mui/material';
+import {Box, Button, Stack} from '@mui/material';
+import Image from 'next/image';
 
 import * as F from 'tsui/Form';
 import * as Api from 'api';
@@ -61,6 +62,18 @@ export default function UserSignUpPagePassword() {
 
     return (
         <>
+            {/* Logo — mobile only */}
+            <Box sx={{
+                display: { xs: 'flex', sm: 'none' },
+                position: 'fixed',
+                top: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+            }}>
+                <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
+            </Box>
+
             <F.PageFormDialog
                 type='confirm'
                 title='Sign Up'

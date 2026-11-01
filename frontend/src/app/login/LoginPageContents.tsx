@@ -118,10 +118,11 @@ export default function LoginPageContents() {
             {/* Logo — mobile only, positioned near top of viewport above the card */}
             <Box sx={{
                 display: { xs: 'flex', sm: 'none' },
-                position: 'absolute',
+                position: 'fixed',
                 top: 24,
                 left: '50%',
                 transform: 'translateX(-50%)',
+                zIndex: 10,
             }}>
                 <Image src='/images/logo_square.svg' alt='Mudbase' width={52} height={52} />
             </Box>
