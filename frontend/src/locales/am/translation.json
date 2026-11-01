@@ -856,5 +856,10 @@
   "Calculated": "Հաշվարակային",
   "Are you sure you want to delete": "Վստա՞հ եք, որ ցանկանում եք ջնջել",
   "All widgets in this group will also be deleted. This action cannot be undone.": "Խմբի բոլոր վիջեթներն նույնպես կջնջվեն։ Այս գործողությունն հնարավոր չէ հետ կանչել։",
-  "Delete group?": "Ջնջե՞լ խմբը"
+  "Delete group?": "Ջնջե՞լ խմբը",
+  "Enter Duration": "Ժամի մուտքագրում",
+  "Available": "Հասանելի",
+  "Days": "Օր",
+  "Hours": "Ժամ",
+  "Exceeds available time": "Գերազանցում է հասանելի ժամանակը"
 }

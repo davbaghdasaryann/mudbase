@@ -1568,7 +1568,7 @@ export default function SchedulePage() {
                             <AddCircleOutlineIcon sx={{ fontSize: 20, color: mainPrimaryColor }} />
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Enter Quantity')}</Typography>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Enter Duration')}</Typography>
                             <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {qtyDialogRow?.laborOfferItemName}
                             </Typography>
@@ -1580,62 +1580,82 @@ export default function SchedulePage() {
                 </DialogTitle>
                 <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
                 <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <TextField
-                            autoFocus
-                            type='number'
-                            fullWidth
-                            size='small'
-                            label={timeUnit === 'd' ? t('Days') : t('Hours')}
-                            value={timeInput}
-                            onChange={e => setTimeInput(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
-                            inputProps={{ min: 0, step: 'any' }}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-                        />
-                        {/* d / h toggle */}
-                        <Box sx={{ display: 'flex', border: `1px solid rgba(0,0,0,0.23)`, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0, height: 40, alignSelf: 'flex-start', mt: 0 }}>
-                            {(['d', 'h'] as const).map(u => (
-                                <Box
-                                    key={u}
-                                    onClick={() => {
-                                        if (u === timeUnit) return;
-                                        const val = parseFloat(timeInput);
-                                        if (!isNaN(val) && val > 0) {
-                                            setTimeInput(u === 'h'
-                                                ? String(+(val * 8).toFixed(2))
-                                                : String(+(val / 8).toFixed(2)));
-                                        }
-                                        setTimeUnit(u);
-                                    }}
-                                    sx={{
-                                        px: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                                        bgcolor: timeUnit === u ? mainPrimaryColor : 'transparent',
-                                        color: timeUnit === u ? '#fff' : '#666',
-                                        transition: 'background 0.15s, color 0.15s',
-                                        userSelect: 'none',
-                                        '&:hover': { bgcolor: timeUnit === u ? mainPrimaryColor : `${mainPrimaryColor}15` },
-                                    }}
-                                >
-                                    {u}
+                    {(() => {
+                        const lh = qtyDialogRow?.laborHours ?? 0;
+                        const maxH = lh > 0 ? qtyDialogRow!.quantity / lh : 0;
+                        const maxD = maxH / 8;
+                        const val = parseFloat(timeInput);
+                        const maxForUnit = timeUnit === 'h' ? maxH : maxD;
+                        const exceedsMax = !isNaN(val) && val > 0 && maxForUnit > 0 && val > maxForUnit;
+                        return (
+                            <>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <TextField
+                                        autoFocus
+                                        type='number'
+                                        fullWidth
+                                        size='small'
+                                        label={timeUnit === 'd' ? t('Days') : t('Hours')}
+                                        value={timeInput}
+                                        onChange={e => setTimeInput(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') handleConfirmQtyAdd(); }}
+                                        error={exceedsMax}
+                                        helperText={exceedsMax ? t('Exceeds available time') : ''}
+                                        inputProps={{ min: 0, step: 'any' }}
+                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                                    />
+                                    {/* d / h toggle */}
+                                    <Box sx={{ display: 'flex', border: `1px solid rgba(0,0,0,0.23)`, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0, height: 40, alignSelf: 'flex-start' }}>
+                                        {(['d', 'h'] as const).map(u => (
+                                            <Box
+                                                key={u}
+                                                onClick={() => {
+                                                    if (u === timeUnit) return;
+                                                    const v = parseFloat(timeInput);
+                                                    if (!isNaN(v) && v > 0) {
+                                                        setTimeInput(u === 'h'
+                                                            ? String(+(v * 8).toFixed(2))
+                                                            : String(+(v / 8).toFixed(2)));
+                                                    }
+                                                    setTimeUnit(u);
+                                                }}
+                                                sx={{
+                                                    px: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                                                    bgcolor: timeUnit === u ? mainPrimaryColor : 'transparent',
+                                                    color: timeUnit === u ? '#fff' : '#666',
+                                                    transition: 'background 0.15s, color 0.15s',
+                                                    userSelect: 'none',
+                                                    '&:hover': { bgcolor: timeUnit === u ? mainPrimaryColor : `${mainPrimaryColor}15` },
+                                                }}
+                                            >
+                                                {u === 'd' ? t('Days').slice(0, 1) : t('Hours').slice(0, 1)}
+                                            </Box>
+                                        ))}
+                                    </Box>
                                 </Box>
-                            ))}
-                        </Box>
-                    </Box>
-                    {qtyDialogRow && qtyDialogRow.laborHours != null && qtyDialogRow.laborHours > 0 && (
-                        <Typography variant='caption' sx={{ color: '#aaa', mt: 1, display: 'block' }}>
-                            {t('Available')}: {+((qtyDialogRow.quantity / qtyDialogRow.laborHours) / 8).toFixed(2)}d
-                            {' / '}{+((qtyDialogRow.quantity / qtyDialogRow.laborHours)).toFixed(2)}h
-                        </Typography>
-                    )}
+                                {lh > 0 && (
+                                    <Typography variant='caption' sx={{ color: '#aaa', mt: exceedsMax ? 0 : 1, display: 'block' }}>
+                                        {t('Available')}: {+maxD.toFixed(2)} {t('Days')} / {+maxH.toFixed(2)} {t('Hours')}
+                                    </Typography>
+                                )}
+                            </>
+                        );
+                    })()}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
                     <Button onClick={() => setQtyDialogRow(null)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
                     <Button
                         variant='contained'
                         onClick={handleConfirmQtyAdd}
-                        disabled={!timeInput || isNaN(parseFloat(timeInput)) || parseFloat(timeInput) <= 0}
+                        disabled={(() => {
+                            const val = parseFloat(timeInput);
+                            if (isNaN(val) || val <= 0) return true;
+                            const lh = qtyDialogRow?.laborHours ?? 0;
+                            const maxH = lh > 0 ? (qtyDialogRow?.quantity ?? 0) / lh : Infinity;
+                            const maxForUnit = timeUnit === 'h' ? maxH : maxH / 8;
+                            return val > maxForUnit;
+                        })()}
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
                     >
                         {t('Add')}
