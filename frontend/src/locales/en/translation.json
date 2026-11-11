@@ -888,5 +888,12 @@
   "Days": "Days",
   "Hours": "Hours",
   "Exceeds available time": "Exceeds available time",
-  "Hours per working day": "Hours per working day"
+  "Hours per working day": "Hours per working day",
+  "Split Work": "Split Work",
+  "Equal": "Equal",
+  "Unequal": "Unequal",
+  "Part": "Part",
+  "Sum": "Sum",
+  "Each part": "Each part",
+  "must equal total": "must equal total"
 }

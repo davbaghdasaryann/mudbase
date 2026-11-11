@@ -1842,7 +1842,7 @@ export default function SchedulePage() {
                             <CallSplitIcon sx={{ fontSize: 20, color: '#ff9800' }} />
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', lineHeight: 1.2 }}>Split Work</Typography>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', lineHeight: 1.2 }}>{t('Split Work')}</Typography>
                             <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {splitDialogItem?.laborOfferItemName}
                             </Typography>
@@ -1859,25 +1859,36 @@ export default function SchedulePage() {
                         const sumDays = splitPartDays.reduce((s, v) => s + (parseFloat(v) || 0), 0);
                         const sumOk = Math.abs(sumDays - totalDays) < 0.015;
                         return (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                 <Typography sx={{ fontSize: '0.8rem', color: '#888' }}>
-                                    Total: <strong>{+totalDays.toFixed(2)} {t('day_short')}</strong>
+                                    {t('Total')}: <strong>{+totalDays.toFixed(2)} {t('day_short')}</strong>
                                 </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Typography sx={{ fontSize: '0.88rem', color: '#444', flexShrink: 0 }}>Number of parts:</Typography>
-                                    <TextField
-                                        type='number'
-                                        size='small'
-                                        value={splitPartsCount}
-                                        onChange={e => {
-                                            const n = Math.max(2, Math.min(10, parseInt(e.target.value) || 2));
-                                            setSplitPartsCount(n);
-                                            setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
-                                        }}
-                                        inputProps={{ min: 2, max: 10, step: 1 }}
-                                        sx={{ width: 80, '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-                                    />
+                                {/* Parts count with +/- stepper */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Typography sx={{ fontSize: '0.85rem', color: '#444', flexShrink: 0 }}>{t('Number of parts')}:</Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.4)`, borderRadius: 2, overflow: 'hidden' }}>
+                                        <Box
+                                            onClick={() => {
+                                                const n = Math.max(2, splitPartsCount - 1);
+                                                setSplitPartsCount(n);
+                                                setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
+                                            }}
+                                            sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount <= 2 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount <= 2 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount <= 2 ? 'transparent' : `${mainPrimaryColor}11` } }}
+                                        >−</Box>
+                                        <Typography sx={{ px: 1.5, fontSize: '0.9rem', fontWeight: 600, color: '#1a1a1a', minWidth: 24, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>
+                                            {splitPartsCount}
+                                        </Typography>
+                                        <Box
+                                            onClick={() => {
+                                                const n = Math.min(10, splitPartsCount + 1);
+                                                setSplitPartsCount(n);
+                                                setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
+                                            }}
+                                            sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount >= 10 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount >= 10 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount >= 10 ? 'transparent' : `${mainPrimaryColor}11` } }}
+                                        >+</Box>
+                                    </Box>
                                 </Box>
+                                {/* Equal / Unequal toggle */}
                                 <Box sx={{ display: 'flex', gap: 0.5 }}>
                                     {(['equal', 'unequal'] as const).map(mode => (
                                         <Button
@@ -1889,25 +1900,25 @@ export default function SchedulePage() {
                                                 setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(+(totalDays / splitPartsCount).toFixed(2))));
                                             }}
                                             sx={{
-                                                borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem',
+                                                borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem', px: 2,
                                                 ...(splitEqualMode === (mode === 'equal')
                                                     ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
                                                     : { borderColor: mainPrimaryColor, color: mainPrimaryColor }),
                                             }}
                                         >
-                                            {mode === 'equal' ? 'Equal' : 'Unequal'}
+                                            {mode === 'equal' ? t('Equal') : t('Unequal')}
                                         </Button>
                                     ))}
                                 </Box>
                                 {splitEqualMode ? (
-                                    <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>
-                                        Each part: <strong>{+(totalDays / splitPartsCount).toFixed(2)} {t('day_short')}</strong>
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#666', pl: 0.5 }}>
+                                        {t('Each part')}: <strong>{+(totalDays / splitPartsCount).toFixed(2)} {t('day_short')}</strong>
                                     </Typography>
                                 ) : (
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                                         {Array.from({ length: splitPartsCount }, (_, i) => (
-                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                <Typography sx={{ fontSize: '0.8rem', color: '#888', minWidth: 48 }}>Part {i + 1}:</Typography>
+                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography sx={{ fontSize: '0.78rem', color: '#888', minWidth: 52, flexShrink: 0 }}>{t('Part')} {i + 1}:</Typography>
                                                 <TextField
                                                     type='number'
                                                     size='small'
@@ -1919,12 +1930,12 @@ export default function SchedulePage() {
                                                     }}
                                                     InputProps={{ endAdornment: <InputAdornment position='end'>{t('day_short')}</InputAdornment> }}
                                                     inputProps={{ min: 0.01, step: 0.01 }}
-                                                    sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                                                    sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& .MuiInputBase-input': { py: 0.6 } }}
                                                 />
                                             </Box>
                                         ))}
-                                        <Typography sx={{ fontSize: '0.78rem', color: sumOk ? '#43a047' : '#e53935', mt: 0.5 }}>
-                                            Sum: {+sumDays.toFixed(2)} / {+totalDays.toFixed(2)} {t('day_short')} {sumOk ? '✓' : '(must equal total)'}
+                                        <Typography sx={{ fontSize: '0.76rem', color: sumOk ? '#43a047' : '#e53935', mt: 0.25, pl: 0.5 }}>
+                                            {t('Sum')}: {+sumDays.toFixed(2)} / {+totalDays.toFixed(2)} {t('day_short')} {sumOk ? '✓' : `(${t('must equal total')})`}
                                         </Typography>
                                     </Box>
                                 )}
@@ -1941,7 +1952,7 @@ export default function SchedulePage() {
                             Math.abs(splitPartDays.reduce((s, v) => s + (parseFloat(v) || 0), 0) - itemDuration(splitDialogItem)) >= 0.015}
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' }, '&.Mui-disabled': { bgcolor: '#ff980044' } }}
                     >
-                        Split
+                        {t('Split')}
                     </Button>
                 </DialogActions>
             </Dialog>
