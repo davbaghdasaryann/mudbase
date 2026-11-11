@@ -228,6 +228,11 @@ export default function SchedulePage() {
     const [splitMode, setSplitMode] = useState<{ item: ScheduleItem; markers: number[] } | null>(null);
     const splitMarkerDragRef = useRef<{ index: number; startX: number; origOffset: number; hasMoved: boolean } | null>(null);
 
+    const [splitDialogItem, setSplitDialogItem] = useState<ScheduleItem | null>(null);
+    const [splitPartsCount, setSplitPartsCount] = useState(2);
+    const [splitEqualMode, setSplitEqualMode] = useState(true);
+    const [splitPartDays, setSplitPartDays] = useState<string[]>([]);
+
     const dateInputRef = useRef<HTMLInputElement>(null);
 
     const selectRecord = useCallback((rec: ScheduleRecord | null) => {
@@ -273,12 +278,22 @@ export default function SchedulePage() {
     const displayList = useMemo<FlatRow[]>(() => {
         const result: FlatRow[] = [];
 
+        const addItemWithSegments = (item: ScheduleItem, groupId: string | null) => {
+            result.push({ type: 'item', item, groupId });
+            const segs = scheduleItems
+                .filter(i => i.parentItemId === item._id)
+                .sort((a, b) => (a.startDay ?? 1) - (b.startDay ?? 1));
+            for (const seg of segs) {
+                result.push({ type: 'item', item: seg, groupId });
+            }
+        };
+
         // Ungrouped items at top (no label — they're the default state)
         const ungroupedItems = scheduleItems
             .filter(i => !i.groupId && !i.parentItemId)
             .sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
         for (const item of ungroupedItems) {
-            result.push({ type: 'item', item, groupId: null });
+            addItemWithSegments(item, null);
         }
 
         // Groups below
@@ -290,7 +305,7 @@ export default function SchedulePage() {
             result.push({ type: 'group', group, items: groupItems });
             if (!collapsedGroups.has(group._id)) {
                 for (const item of groupItems) {
-                    result.push({ type: 'item', item, groupId: group._id });
+                    addItemWithSegments(item, group._id);
                 }
             }
         }
@@ -301,17 +316,6 @@ export default function SchedulePage() {
     const displayListRef = useRef<FlatRow[]>([]);
     displayListRef.current = displayList;
 
-    const segmentsByParent = useMemo(() => {
-        const map = new Map<string, ScheduleItem[]>();
-        for (const item of scheduleItems) {
-            if (item.parentItemId) {
-                const arr = map.get(item.parentItemId) ?? [];
-                arr.push(item);
-                map.set(item.parentItemId, arr);
-            }
-        }
-        return map;
-    }, [scheduleItems]);
 
     // Live preview during row drag
     const displayedFlatRows = useMemo<FlatRow[]>(() => {
@@ -731,7 +735,12 @@ export default function SchedulePage() {
         if (!barContextMenu) return;
         const item = barContextMenu.item;
         setBarContextMenu(null);
-        setSplitMode({ item, markers: [] });
+        const totalDays = itemDuration(item);
+        const n = 2;
+        setSplitPartsCount(n);
+        setSplitEqualMode(true);
+        setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
+        setSplitDialogItem(item);
     };
 
     const handleSplitConfirm = async () => {
@@ -767,6 +776,48 @@ export default function SchedulePage() {
                 ...(item.groupId ? { groupId: item.groupId } : {}),
             }});
             setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay, startHour: newItem.startHour ?? startHour, parentItemId }]);
+        }
+    };
+
+    const handleConfirmSplitDialog = async () => {
+        if (!splitDialogItem || !selected) return;
+        const item = splitDialogItem;
+        setSplitDialogItem(null);
+        const lh = item.laborHours ?? 0;
+        if (lh <= 0) return;
+        const totalDays = itemDuration(item);
+        const partDaysArr = splitEqualMode
+            ? Array.from({ length: splitPartsCount }, () => totalDays / splitPartsCount)
+            : splitPartDays.map(d => parseFloat(d) || 0);
+        const quantities = partDaysArr.map(d => d * lh);
+        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: quantities[0] } : i));
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0] } });
+        let startFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+        for (let i = 1; i < quantities.length; i++) {
+            startFrac += partDaysArr[i - 1];
+            const nextStartDay = Math.floor(startFrac) + 1;
+            const nextStartHour = Math.round((startFrac % 1) * 24) % 24;
+            const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
+                scheduleId: selected._id,
+                laborOfferItemName: item.laborOfferItemName,
+                quantity: quantities[i],
+                laborHours: lh,
+                unitSymbol: item.unitSymbol ?? '',
+                sectionName: item.sectionName ?? '',
+                subsectionName: item.subsectionName ?? '',
+                startDay: nextStartDay,
+                startHour: nextStartHour,
+                parentItemId: item._id,
+                ...(item.groupId ? { groupId: item.groupId } : {}),
+            }});
+            if (newItem) {
+                setScheduleItems(prev => [...prev, {
+                    ...newItem,
+                    startDay: newItem.startDay ?? nextStartDay,
+                    startHour: newItem.startHour ?? nextStartHour,
+                    parentItemId: item._id,
+                }]);
+            }
         }
     };
 
@@ -1231,6 +1282,7 @@ export default function SchedulePage() {
                                 return (
                                     <Box
                                         key={item._id}
+                                        onContextMenu={e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item, anchorEl: e.currentTarget as HTMLElement }); }}
                                         sx={{
                                             display: 'flex', minHeight: ROW_H, alignItems: 'stretch',
                                             background: rowBg,
@@ -1250,14 +1302,17 @@ export default function SchedulePage() {
                                             display: 'flex', alignItems: 'center',
                                             borderRight: `1px solid ${mainPrimaryColor}18`,
                                             overflow: 'hidden', py: 0.5,
-                                            pl: groupId ? 2.5 : 0.5, pr: 0.5,
+                                            pl: item.parentItemId ? 3.5 : (groupId ? 2.5 : 0.5), pr: 0.5,
+                                            ...(item.parentItemId ? { borderLeft: `2px solid ${barColor}66` } : {}),
                                         }}>
-                                            {/* Drag handle */}
+                                            {/* Drag handle — hidden for sub-items */}
                                             <Box
-                                                onMouseDown={e => handleRowDragStart(e, item, fi)}
+                                                onMouseDown={e => { if (!item.parentItemId) handleRowDragStart(e, item, fi); }}
                                                 sx={{
                                                     display: 'flex', alignItems: 'center', flexShrink: 0,
-                                                    color: '#ccc', cursor: 'grab', px: 0.25,
+                                                    color: '#ccc', cursor: item.parentItemId ? 'default' : 'grab', px: 0.25,
+                                                    visibility: item.parentItemId ? 'hidden' : 'visible',
+                                                    width: item.parentItemId ? 0 : undefined,
                                                     '&:hover': { color: '#aaa' },
                                                     ...(isRowDraggingThis ? { cursor: 'grabbing', color: mainPrimaryColor } : {}),
                                                 }}
@@ -1429,43 +1484,6 @@ export default function SchedulePage() {
                                                     ))}
                                                 </Box>
                                             </Tooltip>
-                                            {/* Segment bars (split parts) */}
-                                            {(segmentsByParent.get(item._id) ?? []).map(seg => {
-                                                const segIsDragging = dragging?.id === seg._id;
-                                                const segBaseOffset = (seg.startDay - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
-                                                const segOffset = segIsDragging ? Math.max(0, segBaseOffset + dragging!.deltaX) : segBaseOffset;
-                                                const segDuration = itemDuration(seg);
-                                                const segWidth = Math.max(segDuration * DAY_W - 3, 12);
-                                                const segLabel = segDuration >= 1 ? `${Math.round(segDuration * 10) / 10}${t('day_short')}` : `${Math.round(segDuration * 8)}h`;
-                                                return (
-                                                    <Tooltip key={seg._id} title={seg.laborOfferItemName} placement='top' arrow>
-                                                        <Box
-                                                            onMouseDown={e => handleBarMouseDown(e, seg)}
-                                                            onClick={e => handleBarClick(e, seg)}
-                                                            onContextMenu={e => e.preventDefault()}
-                                                            sx={{
-                                                                position: 'absolute',
-                                                                left: segOffset + 2,
-                                                                top: 6, height: ROW_H - 12,
-                                                                width: segWidth,
-                                                                background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
-                                                                borderRadius: '5px',
-                                                                display: 'flex', alignItems: 'center',
-                                                                px: 1, overflow: 'hidden',
-                                                                boxShadow: segIsDragging ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                                cursor: segIsDragging ? 'grabbing' : 'grab',
-                                                                opacity: segIsDragging ? 0.9 : 1,
-                                                                transition: segIsDragging ? 'none' : 'box-shadow 0.15s',
-                                                                zIndex: segIsDragging ? 10 : 1,
-                                                            }}
-                                                        >
-                                                            <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-                                                                {segLabel}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Tooltip>
-                                                );
-                                            })}
                                         </Box>
                                     </Box>
                                 );
@@ -1816,6 +1834,118 @@ export default function SchedulePage() {
                 )}
             </Menu>
 
+            {/* Split Work dialog */}
+            <Dialog open={!!splitDialogItem} onClose={() => setSplitDialogItem(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(255,152,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.2 }}>
+                            <CallSplitIcon sx={{ fontSize: 20, color: '#ff9800' }} />
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a', lineHeight: 1.2 }}>Split Work</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {splitDialogItem?.laborOfferItemName}
+                            </Typography>
+                        </Box>
+                        <IconButton size='small' onClick={() => setSplitDialogItem(null)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+                <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
+                <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+                    {splitDialogItem && (() => {
+                        const totalDays = itemDuration(splitDialogItem);
+                        const sumDays = splitPartDays.reduce((s, v) => s + (parseFloat(v) || 0), 0);
+                        const sumOk = Math.abs(sumDays - totalDays) < 0.015;
+                        return (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Typography sx={{ fontSize: '0.8rem', color: '#888' }}>
+                                    Total: <strong>{+totalDays.toFixed(2)} {t('day_short')}</strong>
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Typography sx={{ fontSize: '0.88rem', color: '#444', flexShrink: 0 }}>Number of parts:</Typography>
+                                    <TextField
+                                        type='number'
+                                        size='small'
+                                        value={splitPartsCount}
+                                        onChange={e => {
+                                            const n = Math.max(2, Math.min(10, parseInt(e.target.value) || 2));
+                                            setSplitPartsCount(n);
+                                            setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
+                                        }}
+                                        inputProps={{ min: 2, max: 10, step: 1 }}
+                                        sx={{ width: 80, '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                                    />
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                    {(['equal', 'unequal'] as const).map(mode => (
+                                        <Button
+                                            key={mode}
+                                            size='small'
+                                            variant={splitEqualMode === (mode === 'equal') ? 'contained' : 'outlined'}
+                                            onClick={() => {
+                                                setSplitEqualMode(mode === 'equal');
+                                                setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(+(totalDays / splitPartsCount).toFixed(2))));
+                                            }}
+                                            sx={{
+                                                borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem',
+                                                ...(splitEqualMode === (mode === 'equal')
+                                                    ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
+                                                    : { borderColor: mainPrimaryColor, color: mainPrimaryColor }),
+                                            }}
+                                        >
+                                            {mode === 'equal' ? 'Equal' : 'Unequal'}
+                                        </Button>
+                                    ))}
+                                </Box>
+                                {splitEqualMode ? (
+                                    <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>
+                                        Each part: <strong>{+(totalDays / splitPartsCount).toFixed(2)} {t('day_short')}</strong>
+                                    </Typography>
+                                ) : (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {Array.from({ length: splitPartsCount }, (_, i) => (
+                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                <Typography sx={{ fontSize: '0.8rem', color: '#888', minWidth: 48 }}>Part {i + 1}:</Typography>
+                                                <TextField
+                                                    type='number'
+                                                    size='small'
+                                                    value={splitPartDays[i] ?? ''}
+                                                    onChange={e => {
+                                                        const updated = [...splitPartDays];
+                                                        updated[i] = e.target.value;
+                                                        setSplitPartDays(updated);
+                                                    }}
+                                                    InputProps={{ endAdornment: <InputAdornment position='end'>{t('day_short')}</InputAdornment> }}
+                                                    inputProps={{ min: 0.01, step: 0.01 }}
+                                                    sx={{ width: 120, '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                                                />
+                                            </Box>
+                                        ))}
+                                        <Typography sx={{ fontSize: '0.78rem', color: sumOk ? '#43a047' : '#e53935', mt: 0.5 }}>
+                                            Sum: {+sumDays.toFixed(2)} / {+totalDays.toFixed(2)} {t('day_short')} {sumOk ? '✓' : '(must equal total)'}
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+                        );
+                    })()}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+                    <Button onClick={() => setSplitDialogItem(null)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
+                    <Button
+                        variant='contained'
+                        onClick={handleConfirmSplitDialog}
+                        disabled={!splitEqualMode && splitDialogItem !== null &&
+                            Math.abs(splitPartDays.reduce((s, v) => s + (parseFloat(v) || 0), 0) - itemDuration(splitDialogItem)) >= 0.015}
+                        sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' }, '&.Mui-disabled': { bgcolor: '#ff980044' } }}
+                    >
+                        Split
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Bar right-click context menu */}
             <Menu
                 open={!!barContextMenu}
@@ -1824,10 +1954,12 @@ export default function SchedulePage() {
                 anchorPosition={barContextMenu ? { top: barContextMenu.mouseY, left: barContextMenu.mouseX } : undefined}
                 PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
             >
-                <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>
-                    <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
-                </MenuItem>
+                {!barContextMenu?.item.parentItemId && (
+                    <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                        <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
+                        <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
+                    </MenuItem>
+                )}
                 <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><LinkIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Կապել</ListItemText>
