@@ -5,6 +5,7 @@ import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip, TextField,
     Menu, MenuItem, ListItemIcon, ListItemText, Popover, InputAdornment,
+    Accordion, AccordionSummary, AccordionDetails,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -1495,71 +1496,141 @@ export default function SchedulePage() {
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                             <Typography variant='body2' color='text.secondary'>{t('No works found')}</Typography>
                         </Box>
-                    ) : (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                            {laborRows.map((row, index) => (
-                                <Box
-                                    key={row._id}
+                    ) : (() => {
+                        // Group by sectionName → subsectionName
+                        const sections = new Map<string, Map<string, typeof laborRows>>();
+                        for (const row of laborRows) {
+                            const sec = row.sectionName || '';
+                            const sub = row.subsectionName || '';
+                            if (!sections.has(sec)) sections.set(sec, new Map());
+                            const subsMap = sections.get(sec)!;
+                            if (!subsMap.has(sub)) subsMap.set(sub, []);
+                            subsMap.get(sub)!.push(row);
+                        }
+
+                        const renderRow = (row: LaborRow, index: number) => (
+                            <Box
+                                key={row._id}
+                                sx={{
+                                    display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.2,
+                                    bgcolor: index % 2 === 0 ? '#fff' : '#f8f9fa',
+                                    borderBottom: '1px solid #E3E6E6',
+                                    '&:hover': { bgcolor: `${mainPrimaryColor}0d` },
+                                }}
+                            >
+                                <Typography sx={{ fontSize: '0.72rem', color: '#aaa', fontWeight: 600, minWidth: 24 }}>{index + 1}</Typography>
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {row.laborOfferItemName}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
+                                    {row.laborHours != null && row.laborHours > 0 && (
+                                        <>
+                                            <Tooltip title={t('Labor Time')} placement='top' arrow>
+                                                <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
+                                                    {addedLaborMap[row._id]
+                                                        ? `${+((row.quantity - addedLaborMap[row._id].addedQty) / row.laborHours).toFixed(2)} ${t('day_short')}`
+                                                        : `${(row.quantity / row.laborHours).toFixed(2)} ${t('day_short')}`}
+                                                </Typography>
+                                            </Tooltip>
+                                            <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
+                                        </>
+                                    )}
+                                    <Tooltip title={addedLaborMap[row._id] ? t('Remaining') : t('Quantity')} placement='top' arrow>
+                                        <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
+                                            {addedLaborMap[row._id]
+                                                ? `${+(row.quantity - addedLaborMap[row._id].addedQty).toFixed(3)} ${row.unitSymbol}`
+                                                : `${row.quantity} ${row.unitSymbol}`}
+                                        </Typography>
+                                    </Tooltip>
+                                </Box>
+                                <IconButton
+                                    size='small'
+                                    onClick={() => addedLaborMap[row._id] ? handleRemoveLaborItem(row) : handleOpenQtyDialog(row)}
+                                    disabled={addingId === row._id}
                                     sx={{
-                                        display: 'flex', alignItems: 'center', gap: 2, px: 2, py: 1.2,
-                                        bgcolor: index % 2 === 0 ? '#fff' : '#f8f9fa',
-                                        borderRadius: 1.5,
-                                        border: '1px solid transparent',
-                                        '&:hover': { bgcolor: `${mainPrimaryColor}0d`, border: `1px solid ${mainPrimaryColor}33` },
+                                        color: addedLaborMap[row._id] ? '#e53935' : mainPrimaryColor,
+                                        '&:hover': { bgcolor: addedLaborMap[row._id] ? 'rgba(229,57,53,0.08)' : `${mainPrimaryColor}15` },
                                     }}
                                 >
-                                    <Typography sx={{ fontSize: '0.72rem', color: '#aaa', fontWeight: 600, minWidth: 24 }}>{index + 1}</Typography>
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {row.laborOfferItemName}
-                                        </Typography>
-                                        {(row.sectionName || row.subsectionName) && (
-                                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 0.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {[row.sectionName, row.subsectionName].filter(Boolean).join(' › ')}
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
-                                        {row.laborHours != null && row.laborHours > 0 && (
-                                            <>
-                                                <Tooltip title={t('Labor Time')} placement='top' arrow>
-                                                    <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
-                                                        {addedLaborMap[row._id]
-                                                            ? `${+((row.quantity - addedLaborMap[row._id].addedQty) / row.laborHours).toFixed(2)} ${t('day_short')}`
-                                                            : `${(row.quantity / row.laborHours).toFixed(2)} ${t('day_short')}`}
-                                                    </Typography>
-                                                </Tooltip>
-                                                <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
-                                            </>
-                                        )}
-                                        <Tooltip title={addedLaborMap[row._id] ? t('Remaining') : t('Quantity')} placement='top' arrow>
-                                            <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
-                                                {addedLaborMap[row._id]
-                                                    ? `${+(row.quantity - addedLaborMap[row._id].addedQty).toFixed(3)} ${row.unitSymbol}`
-                                                    : `${row.quantity} ${row.unitSymbol}`}
-                                            </Typography>
-                                        </Tooltip>
-                                    </Box>
-                                    <IconButton
-                                        size='small'
-                                        onClick={() => addedLaborMap[row._id] ? handleRemoveLaborItem(row) : handleOpenQtyDialog(row)}
-                                        disabled={addingId === row._id}
-                                        sx={{
-                                            color: addedLaborMap[row._id] ? '#e53935' : mainPrimaryColor,
-                                            '&:hover': { bgcolor: addedLaborMap[row._id] ? 'rgba(229,57,53,0.08)' : `${mainPrimaryColor}15` },
-                                        }}
+                                    {addingId === row._id
+                                        ? <CircularProgress size={16} sx={{ color: mainPrimaryColor }} />
+                                        : addedLaborMap[row._id]
+                                            ? <RemoveCircleOutlineIcon sx={{ fontSize: 20 }} />
+                                            : <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
+                                    }
+                                </IconButton>
+                            </Box>
+                        );
+
+                        return (
+                            <Box sx={{ border: '1px solid #E3E6E6', borderRadius: 1.5, overflow: 'hidden' }}>
+                                {Array.from(sections.entries()).map(([secName, subsMap]) => (
+                                    <Accordion
+                                        key={secName}
+                                        defaultExpanded
+                                        disableGutters
+                                        elevation={0}
+                                        sx={{ bgcolor: '#fff', '&::before': { display: 'none' }, borderBottom: '1px solid #E3E6E6', '&:last-child': { borderBottom: 'none' } }}
                                     >
-                                        {addingId === row._id
-                                            ? <CircularProgress size={16} sx={{ color: mainPrimaryColor }} />
-                                            : addedLaborMap[row._id]
-                                                ? <RemoveCircleOutlineIcon sx={{ fontSize: 20 }} />
-                                                : <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
-                                        }
-                                    </IconButton>
-                                </Box>
-                            ))}
-                        </Box>
-                    )}
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: '#607d8b' }} />}
+                                            sx={{
+                                                flexDirection: 'row-reverse', gap: 1, px: 1.5, minHeight: 40,
+                                                bgcolor: '#f5f9f9',
+                                                '&:hover': { bgcolor: '#E8EFEF' },
+                                                '& .MuiAccordionSummary-content': { margin: '8px 0' },
+                                            }}
+                                        >
+                                            <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#1a1a1a' }}>
+                                                {secName || t('General')}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', ml: 1 }}>
+                                                ({Array.from(subsMap.values()).flat().length})
+                                            </Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails sx={{ p: 0, bgcolor: '#F5F9F9', pl: 2, borderLeft: '1px solid #D9D9D9', ml: '22px' }}>
+                                            {Array.from(subsMap.entries()).map(([subName, rows]) =>
+                                                subName ? (
+                                                    <Accordion
+                                                        key={subName}
+                                                        defaultExpanded
+                                                        disableGutters
+                                                        elevation={0}
+                                                        sx={{ bgcolor: 'transparent', '&::before': { display: 'none' }, borderBottom: '1px solid #E3E6E6', '&:last-child': { borderBottom: 'none' } }}
+                                                    >
+                                                        <AccordionSummary
+                                                            expandIcon={<ExpandMoreIcon sx={{ fontSize: 16, color: '#90a4ae' }} />}
+                                                            sx={{
+                                                                flexDirection: 'row-reverse', gap: 1, px: 1.5, minHeight: 36,
+                                                                '&:hover': { bgcolor: '#E8EFEF' },
+                                                                '& .MuiAccordionSummary-content': { margin: '6px 0' },
+                                                            }}
+                                                        >
+                                                            <Typography sx={{ fontWeight: 600, fontSize: '0.78rem', color: '#444' }}>
+                                                                {subName}
+                                                            </Typography>
+                                                            <Typography sx={{ fontSize: '0.68rem', color: '#aaa', ml: 1 }}>
+                                                                ({rows.length})
+                                                            </Typography>
+                                                        </AccordionSummary>
+                                                        <AccordionDetails sx={{ p: 0 }}>
+                                                            {rows.map((row, i) => renderRow(row, i))}
+                                                        </AccordionDetails>
+                                                    </Accordion>
+                                                ) : (
+                                                    <Box key='__nosub'>
+                                                        {rows.map((row, i) => renderRow(row, i))}
+                                                    </Box>
+                                                )
+                                            )}
+                                        </AccordionDetails>
+                                    </Accordion>
+                                ))}
+                            </Box>
+                        );
+                    })()}
                 </DialogContent>
 
                 <DialogActions sx={{ px: 3, pb: 2 }}>
