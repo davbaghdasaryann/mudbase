@@ -280,12 +280,6 @@ export default function SchedulePage() {
 
         const addItemWithSegments = (item: ScheduleItem, groupId: string | null) => {
             result.push({ type: 'item', item, groupId });
-            const segs = scheduleItems
-                .filter(i => i.parentItemId === item._id)
-                .sort((a, b) => (a.startDay ?? 1) - (b.startDay ?? 1));
-            for (const seg of segs) {
-                result.push({ type: 'item', item: seg, groupId });
-            }
         };
 
         // Ungrouped items at top (no label — they're the default state)
@@ -316,6 +310,18 @@ export default function SchedulePage() {
     const displayListRef = useRef<FlatRow[]>([]);
     displayListRef.current = displayList;
 
+    const segmentsByParent = useMemo(() => {
+        const map = new Map<string, ScheduleItem[]>();
+        for (const item of scheduleItems) {
+            if (item.parentItemId) {
+                const arr = map.get(item.parentItemId) ?? [];
+                arr.push(item);
+                map.set(item.parentItemId, arr);
+            }
+        }
+        for (const arr of map.values()) arr.sort((a, b) => (a.startDay ?? 1) - (b.startDay ?? 1));
+        return map;
+    }, [scheduleItems]);
 
     // Live preview during row drag
     const displayedFlatRows = useMemo<FlatRow[]>(() => {
@@ -344,22 +350,23 @@ export default function SchedulePage() {
     useEffect(() => {
         if (!rowDragging) return;
         document.body.style.cursor = 'grabbing';
+        const isSubItem = (row: FlatRow) => row.type === 'item' && !!row.item.parentItemId;
         const onMove = (e: MouseEvent) => {
             const d = rowDraggingRef.current;
             if (!d) return;
             const deltaRows = Math.round((e.clientY - d.mouseStartY) / ROW_H);
             let newTarget = Math.max(0, Math.min(d.totalRows - 1, d.fromFlatIndex + deltaRows));
-            // Snap away from group header rows
+            // Snap away from group header rows and sub-item rows
             const dl = displayListRef.current;
             let attempts = 0;
             while (
                 attempts++ < d.totalRows &&
                 newTarget >= 0 && newTarget < d.totalRows &&
-                dl[newTarget]?.type === 'group'
+                (dl[newTarget]?.type === 'group' || isSubItem(dl[newTarget]))
             ) {
                 const dir = newTarget >= d.fromFlatIndex ? 1 : -1;
                 const next = newTarget + dir;
-                if (next < 0 || next >= d.totalRows || dl[next]?.type === 'group') break;
+                if (next < 0 || next >= d.totalRows || dl[next]?.type === 'group' || isSubItem(dl[next])) break;
                 newTarget = next;
             }
             newTarget = Math.max(0, Math.min(d.totalRows - 1, newTarget));
@@ -374,10 +381,10 @@ export default function SchedulePage() {
             }
             const dl = displayListRef.current;
 
-            // Build reordered flat list
+            // Build reordered flat list (parent items only — sub-items follow their parent)
             const arr = [...dl];
             const [draggedRow] = arr.splice(d.fromFlatIndex, 1);
-            if (draggedRow.type !== 'item') {
+            if (draggedRow.type !== 'item' || draggedRow.item.parentItemId) {
                 setRowDragging(null);
                 document.body.style.cursor = '';
                 return;
@@ -388,8 +395,7 @@ export default function SchedulePage() {
             if (arr[insertAt]?.type === 'group') insertAt = Math.min(arr.length, insertAt + 1);
             arr.splice(insertAt, 0, draggedRow);
 
-            // Extract group assignments from new order
-            // Ungrouped items appear before any group header (currentGroupId starts null)
+            // Extract group assignments from new order — skip sub-items (they stay with their parent)
             let currentGroupId: string | null = null;
             const groupCounters: Record<string, number> = {};
             const updates: { id: string; groupId: string | null; displayIndex: number }[] = [];
@@ -397,7 +403,7 @@ export default function SchedulePage() {
             for (const row of arr) {
                 if (row.type === 'group') {
                     currentGroupId = row.group._id;
-                } else if (row.type === 'item') {
+                } else if (row.type === 'item' && !row.item.parentItemId) {
                     const key = currentGroupId ?? '__ungrouped__';
                     const idx = groupCounters[key] ?? 0;
                     groupCounters[key] = idx + 1;
@@ -618,6 +624,8 @@ export default function SchedulePage() {
         const itemId = item._id;
         const origOffsetPx = (origStart - 1) * DAY_W + (origStartHour / 24) * DAY_W;
         const mouseDownX = e.clientX;
+        // Snapshot sub-items so they move with the parent
+        const subItemsSnap = scheduleItems.filter(i => i.parentItemId === itemId);
 
         setDragging({ id: itemId, origStart, origStartHour, deltaX: 0, mouseStartX: mouseDownX });
 
@@ -665,9 +673,18 @@ export default function SchedulePage() {
             window.removeEventListener('mouseup', onUp);
             const origFrac = (origStart - 1) + origStartHour / 24;
             const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
-            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, startDay: newStartDay } : i));
+            const dayDelta = newStartDay - origStart;
+            setScheduleItems(prev => prev.map(i => {
+                if (i._id === itemId) return { ...i, startDay: newStartDay };
+                if (i.parentItemId === itemId) return { ...i, startDay: Math.max(1, (i.startDay ?? 1) + dayDelta) };
+                return i;
+            }));
             setDragging(null);
             Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, startDay: newStartDay } });
+            for (const seg of subItemsSnap) {
+                const segNewDay = Math.max(1, (seg.startDay ?? 1) + dayDelta);
+                Api.requestSession({ command: 'schedule/item_update', args: { id: seg._id, startDay: segNewDay } });
+            }
         };
 
         window.addEventListener('mousemove', onMove);
@@ -687,6 +704,10 @@ export default function SchedulePage() {
         const origBarWidth = Math.max(itemDuration(item) * DAY_W - 3, 12);
         const mouseStartX = e.clientX;
         const itemId = item._id;
+        const origStartDay = item.startDay ?? 1;
+        const origStartHour = item.startHour ?? 0;
+        // Snapshot sub-items so their positions shift with the resize
+        const subItemsSnap = scheduleItems.filter(i => i.parentItemId === itemId);
         resizeDeltaRef.current = 0;
         setResizing({ id: itemId, origBarWidth, deltaX: 0 });
 
@@ -701,11 +722,22 @@ export default function SchedulePage() {
             window.removeEventListener('mouseup', onUp);
             const newWidth = Math.max(12, origBarWidth + resizeDeltaRef.current);
             const newDuration = Math.max(0.125, newWidth / DAY_W);
-            const newQuantity = lh > 0 ? newDuration * lh * 8 : 0;
-            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, quantity: newQuantity } : i));
+            const newQuantity = lh > 0 ? newDuration * lh : 0;
+            // Shift sub-items so they stay adjacent to the resized first segment
+            const origDuration = itemDuration(item);
+            const dayDelta = newDuration - origDuration;
+            setScheduleItems(prev => prev.map(i => {
+                if (i._id === itemId) return { ...i, quantity: newQuantity };
+                if (i.parentItemId === itemId) return { ...i, startDay: Math.max(1, (i.startDay ?? 1) + dayDelta) };
+                return i;
+            }));
             setResizing(null);
             if (lh > 0) {
                 Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
+            }
+            for (const seg of subItemsSnap) {
+                const segNewDay = Math.max(1, (seg.startDay ?? 1) + dayDelta);
+                Api.requestSession({ command: 'schedule/item_update', args: { id: seg._id, startDay: segNewDay } });
             }
         };
 
@@ -735,12 +767,15 @@ export default function SchedulePage() {
         if (!barContextMenu) return;
         const item = barContextMenu.item;
         setBarContextMenu(null);
-        const totalDays = itemDuration(item);
+        const existingSegs = segmentsByParent.get(item._id) ?? [];
+        const totalDays = itemDuration(item) + existingSegs.reduce((s, seg) => s + itemDuration(seg), 0);
+        const lh = item.laborHours ?? 0;
         const n = 2;
         setSplitPartsCount(n);
         setSplitEqualMode(true);
         setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
-        setSplitDialogItem(item);
+        // Pass item with restored full quantity so dialog and confirm see correct total
+        setSplitDialogItem(lh > 0 ? { ...item, quantity: lh * totalDays } : item);
     };
 
     const handleSplitConfirm = async () => {
@@ -757,6 +792,11 @@ export default function SchedulePage() {
         const fractions = [0, ...sortedMarkers.map(m => Math.max(0.001, Math.min(0.999, m / barWidthPx))), 1];
         const parentItemId = item.parentItemId ?? item._id;
         const baseStartFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+        // Delete any existing sub-items before re-splitting
+        for (const seg of (segmentsByParent.get(item._id) ?? [])) {
+            setScheduleItems(prev => prev.filter(i => i._id !== seg._id));
+            await Api.requestSession({ command: 'schedule/item_delete', args: { id: seg._id } });
+        }
         const firstQ = totalQ * (fractions[1] - fractions[0]);
         setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: firstQ } : i));
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: firstQ } });
@@ -790,6 +830,11 @@ export default function SchedulePage() {
             ? Array.from({ length: splitPartsCount }, () => totalDays / splitPartsCount)
             : splitPartDays.map(d => parseFloat(d) || 0);
         const quantities = partDaysArr.map(d => d * lh);
+        // Delete existing sub-items before re-splitting
+        for (const seg of (segmentsByParent.get(item._id) ?? [])) {
+            setScheduleItems(prev => prev.filter(i => i._id !== seg._id));
+            await Api.requestSession({ command: 'schedule/item_delete', args: { id: seg._id } });
+        }
         setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: quantities[0] } : i));
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0] } });
         let startFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
@@ -1302,17 +1347,14 @@ export default function SchedulePage() {
                                             display: 'flex', alignItems: 'center',
                                             borderRight: `1px solid ${mainPrimaryColor}18`,
                                             overflow: 'hidden', py: 0.5,
-                                            pl: item.parentItemId ? 3.5 : (groupId ? 2.5 : 0.5), pr: 0.5,
-                                            ...(item.parentItemId ? { borderLeft: `2px solid ${barColor}66` } : {}),
+                                            pl: groupId ? 2.5 : 0.5, pr: 0.5,
                                         }}>
-                                            {/* Drag handle — hidden for sub-items */}
+                                            {/* Drag handle */}
                                             <Box
-                                                onMouseDown={e => { if (!item.parentItemId) handleRowDragStart(e, item, fi); }}
+                                                onMouseDown={e => handleRowDragStart(e, item, fi)}
                                                 sx={{
                                                     display: 'flex', alignItems: 'center', flexShrink: 0,
-                                                    color: '#ccc', cursor: item.parentItemId ? 'default' : 'grab', px: 0.25,
-                                                    visibility: item.parentItemId ? 'hidden' : 'visible',
-                                                    width: item.parentItemId ? 0 : undefined,
+                                                    color: '#ccc', cursor: 'grab', px: 0.25,
                                                     '&:hover': { color: '#aaa' },
                                                     ...(isRowDraggingThis ? { cursor: 'grabbing', color: mainPrimaryColor } : {}),
                                                 }}
@@ -1385,7 +1427,7 @@ export default function SchedulePage() {
                                                         background: isSplitTarget
                                                             ? `linear-gradient(90deg, ${barColor}bb 0%, ${barColor}88 100%)`
                                                             : `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
-                                                        borderRadius: '5px',
+                                                        borderRadius: (segmentsByParent.get(item._id)?.length ?? 0) > 0 ? '5px 0 0 5px' : '5px',
                                                         display: 'flex', alignItems: 'center',
                                                         px: 1, overflow: 'visible',
                                                         boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
@@ -1484,6 +1526,35 @@ export default function SchedulePage() {
                                                     ))}
                                                 </Box>
                                             </Tooltip>
+                                            {/* Inline segment bars from split — white dividers give "divided bar" look */}
+                                            {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg, si, arr) => {
+                                                const segDur = itemDuration(seg);
+                                                const segOff = ((seg.startDay ?? 1) - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
+                                                const segW = Math.max(segDur * DAY_W - 3, 12);
+                                                const isLast = si === arr.length - 1;
+                                                return (
+                                                    <React.Fragment key={seg._id}>
+                                                        {/* White divider line at segment boundary */}
+                                                        <Box sx={{ position: 'absolute', left: segOff, top: 6, height: ROW_H - 12, width: 2, background: 'rgba(255,255,255,0.75)', zIndex: 3, pointerEvents: 'none' }} />
+                                                        {/* Segment bar — interactive, triggers parent drag */}
+                                                        <Box
+                                                            onMouseDown={e => handleBarMouseDown(e, item)}
+                                                            onContextMenu={e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item, anchorEl: e.currentTarget as HTMLElement }); }}
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                left: segOff + 2, top: 6, height: ROW_H - 12, width: segW,
+                                                                background: `linear-gradient(90deg, ${barColor}cc 0%, ${barColor}${isLast ? 'aa' : 'bb'} 100%)`,
+                                                                borderRadius: isLast ? '0 5px 5px 0' : '0',
+                                                                display: 'flex', alignItems: 'center', px: 0.75, overflow: 'hidden',
+                                                                zIndex: 2, cursor: isDraggingThis ? 'grabbing' : 'grab',
+                                                            }}>
+                                                            <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.6rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                                                {segDur >= 1 ? `${Math.round(segDur * 10) / 10}${t('day_short')}` : `${Math.round(segDur * 8)}h`}
+                                                            </Typography>
+                                                        </Box>
+                                                    </React.Fragment>
+                                                );
+                                            })}
                                         </Box>
                                     </Box>
                                 );
@@ -1863,9 +1934,8 @@ export default function SchedulePage() {
                                 <Typography sx={{ fontSize: '0.8rem', color: '#888' }}>
                                     {t('Total')}: <strong>{+totalDays.toFixed(2)} {t('day_short')}</strong>
                                 </Typography>
-                                {/* Parts count with +/- stepper */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <Typography sx={{ fontSize: '0.85rem', color: '#444', flexShrink: 0 }}>{t('Number of parts')}:</Typography>
+                                {/* Parts count + Equal/Unequal on one row */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.4)`, borderRadius: 2, overflow: 'hidden' }}>
                                         <Box
                                             onClick={() => {
@@ -1887,28 +1957,29 @@ export default function SchedulePage() {
                                             sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount >= 10 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount >= 10 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount >= 10 ? 'transparent' : `${mainPrimaryColor}11` } }}
                                         >+</Box>
                                     </Box>
-                                </Box>
-                                {/* Equal / Unequal toggle */}
-                                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                    {(['equal', 'unequal'] as const).map(mode => (
-                                        <Button
-                                            key={mode}
-                                            size='small'
-                                            variant={splitEqualMode === (mode === 'equal') ? 'contained' : 'outlined'}
-                                            onClick={() => {
-                                                setSplitEqualMode(mode === 'equal');
-                                                setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(+(totalDays / splitPartsCount).toFixed(2))));
-                                            }}
-                                            sx={{
-                                                borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem', px: 2,
-                                                ...(splitEqualMode === (mode === 'equal')
-                                                    ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
-                                                    : { borderColor: mainPrimaryColor, color: mainPrimaryColor }),
-                                            }}
-                                        >
-                                            {mode === 'equal' ? t('Equal') : t('Unequal')}
-                                        </Button>
-                                    ))}
+                                    <Typography sx={{ fontSize: '0.8rem', color: '#888' }}>{t('parts')}</Typography>
+                                    <Box sx={{ flex: 1 }} />
+                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                        {(['equal', 'unequal'] as const).map(mode => (
+                                            <Button
+                                                key={mode}
+                                                size='small'
+                                                variant={splitEqualMode === (mode === 'equal') ? 'contained' : 'outlined'}
+                                                onClick={() => {
+                                                    setSplitEqualMode(mode === 'equal');
+                                                    setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(+(totalDays / splitPartsCount).toFixed(2))));
+                                                }}
+                                                sx={{
+                                                    borderRadius: '20px', textTransform: 'none', fontSize: '0.78rem', px: 1.5, py: 0.4, minWidth: 0,
+                                                    ...(splitEqualMode === (mode === 'equal')
+                                                        ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
+                                                        : { borderColor: mainPrimaryColor, color: mainPrimaryColor }),
+                                                }}
+                                            >
+                                                {mode === 'equal' ? t('Equal') : t('Unequal')}
+                                            </Button>
+                                        ))}
+                                    </Box>
                                 </Box>
                                 {splitEqualMode ? (
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666', pl: 0.5 }}>

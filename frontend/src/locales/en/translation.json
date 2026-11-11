@@ -895,5 +895,6 @@
   "Part": "Part",
   "Sum": "Sum",
   "Each part": "Each part",
-  "must equal total": "must equal total"
+  "must equal total": "must equal total",
+  "parts": "parts"
 }
