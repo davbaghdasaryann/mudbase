@@ -887,5 +887,6 @@
   "Available": "Available",
   "Days": "Days",
   "Hours": "Hours",
-  "Exceeds available time": "Exceeds available time"
+  "Exceeds available time": "Exceeds available time",
+  "Hours per working day": "Hours per working day"
 }

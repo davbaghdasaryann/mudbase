@@ -861,5 +861,6 @@
   "Available": "Հասանելի",
   "Days": "Օր",
   "Hours": "Ժամ",
-  "Exceeds available time": "Գերազանցում է հասանելի ժամանակը"
+  "Exceeds available time": "Գերազանցում է հասանելի ժամանակը",
+  "Hours per working day": "Ժամ աշխատանքային օրում"
 }

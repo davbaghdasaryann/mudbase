@@ -163,6 +163,12 @@ export default function SchedulePage() {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const [worksOpen, setWorksOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [hoursPerDay, setHoursPerDay] = useState<number>(() => {
+        if (typeof window === 'undefined') return 8;
+        return parseInt(localStorage.getItem('schedule_hoursPerDay') ?? '8', 10) || 8;
+    });
+    const [hoursInput, setHoursInput] = useState('');
     const [laborRows, setLaborRows] = useState<LaborRow[]>([]);
     const [laborLoading, setLaborLoading] = useState(false);
     // Which group the "Choose a work" dialog is adding to (null = ungrouped, undefined = not open)
@@ -1455,15 +1461,15 @@ export default function SchedulePage() {
 
             {/* Action buttons — below Gantt, left-aligned */}
             <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
-                <Box onClick={handleGroupCreate} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 90, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                <Box onClick={handleGroupCreate} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
                     <CreateNewFolderOutlinedIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Add Group')}</Typography>
                 </Box>
-                <Box onClick={() => handleChooseWork(null)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 90, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: `rgba(0,171,190,0.06)` }, '&:hover svg': { opacity: '1 !important' } }}>
+                <Box onClick={() => handleChooseWork(null)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: `rgba(0,171,190,0.06)` }, '&:hover svg': { opacity: '1 !important' } }}>
                     <WorkOutlineIcon sx={{ fontSize: 22, color: mainPrimaryColor, opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Choose a work')}</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 90, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                <Box onClick={() => { setHoursInput(String(hoursPerDay)); setSettingsOpen(true); }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
                     <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
                 </Box>
@@ -1715,6 +1721,64 @@ export default function SchedulePage() {
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
                     >
                         {t('Add')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Settings dialog */}
+            <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(96,125,139,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <TuneIcon sx={{ fontSize: 20, color: '#607d8b' }} />
+                        </Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', flex: 1 }}>{t('Settings')}</Typography>
+                        <IconButton size='small' onClick={() => setSettingsOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+                <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
+                <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+                    <TextField
+                        autoFocus
+                        type='number'
+                        fullWidth
+                        size='small'
+                        label={t('Hours per working day')}
+                        value={hoursInput}
+                        onChange={e => setHoursInput(e.target.value)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                const v = parseInt(hoursInput, 10);
+                                if (v > 0 && v <= 24) {
+                                    setHoursPerDay(v);
+                                    localStorage.setItem('schedule_hoursPerDay', String(v));
+                                    setSettingsOpen(false);
+                                }
+                            }
+                        }}
+                        InputProps={{ endAdornment: <InputAdornment position='end'>h</InputAdornment> }}
+                        inputProps={{ min: 1, max: 24, step: 1 }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+                    <Button onClick={() => setSettingsOpen(false)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
+                    <Button
+                        variant='contained'
+                        onClick={() => {
+                            const v = parseInt(hoursInput, 10);
+                            if (v > 0 && v <= 24) {
+                                setHoursPerDay(v);
+                                localStorage.setItem('schedule_hoursPerDay', String(v));
+                                setSettingsOpen(false);
+                            }
+                        }}
+                        disabled={(() => { const v = parseInt(hoursInput, 10); return isNaN(v) || v <= 0 || v > 24; })()}
+                        sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' }, '&.Mui-disabled': { bgcolor: `${mainPrimaryColor}44` } }}
+                    >
+                        {t('Save')}
                     </Button>
                 </DialogActions>
             </Dialog>
