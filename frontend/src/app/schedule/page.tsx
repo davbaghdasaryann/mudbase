@@ -466,6 +466,20 @@ export default function SchedulePage() {
         return () => window.removeEventListener('keydown', onKey);
     }, []);
 
+    // Shift + wheel → horizontal scroll on Gantt
+    useEffect(() => {
+        const el = ganttScrollRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            if (e.shiftKey) {
+                e.preventDefault();
+                el.scrollLeft += e.deltaY;
+            }
+        };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, [ganttScrollRef.current]);
+
     const handleCreate = async (estimate: EstimatesApi.ApiEstimate) => {
         setDialogOpen(false);
         const created = await Api.requestSession<ScheduleRecord>({
@@ -624,8 +638,6 @@ export default function SchedulePage() {
         const itemId = item._id;
         const origOffsetPx = (origStart - 1) * DAY_W + (origStartHour / 24) * DAY_W;
         const mouseDownX = e.clientX;
-        // Snapshot sub-items so they move with the parent
-        const subItemsSnap = scheduleItems.filter(i => i.parentItemId === itemId);
 
         setDragging({ id: itemId, origStart, origStartHour, deltaX: 0, mouseStartX: mouseDownX });
 
@@ -673,18 +685,9 @@ export default function SchedulePage() {
             window.removeEventListener('mouseup', onUp);
             const origFrac = (origStart - 1) + origStartHour / 24;
             const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
-            const dayDelta = newStartDay - origStart;
-            setScheduleItems(prev => prev.map(i => {
-                if (i._id === itemId) return { ...i, startDay: newStartDay };
-                if (i.parentItemId === itemId) return { ...i, startDay: Math.max(1, (i.startDay ?? 1) + dayDelta) };
-                return i;
-            }));
+            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, startDay: newStartDay } : i));
             setDragging(null);
             Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, startDay: newStartDay } });
-            for (const seg of subItemsSnap) {
-                const segNewDay = Math.max(1, (seg.startDay ?? 1) + dayDelta);
-                Api.requestSession({ command: 'schedule/item_update', args: { id: seg._id, startDay: segNewDay } });
-            }
         };
 
         window.addEventListener('mousemove', onMove);
@@ -704,10 +707,6 @@ export default function SchedulePage() {
         const origBarWidth = Math.max(itemDuration(item) * DAY_W - 3, 12);
         const mouseStartX = e.clientX;
         const itemId = item._id;
-        const origStartDay = item.startDay ?? 1;
-        const origStartHour = item.startHour ?? 0;
-        // Snapshot sub-items so their positions shift with the resize
-        const subItemsSnap = scheduleItems.filter(i => i.parentItemId === itemId);
         resizeDeltaRef.current = 0;
         setResizing({ id: itemId, origBarWidth, deltaX: 0 });
 
@@ -723,21 +722,10 @@ export default function SchedulePage() {
             const newWidth = Math.max(12, origBarWidth + resizeDeltaRef.current);
             const newDuration = Math.max(0.125, newWidth / DAY_W);
             const newQuantity = lh > 0 ? newDuration * lh : 0;
-            // Shift sub-items so they stay adjacent to the resized first segment
-            const origDuration = itemDuration(item);
-            const dayDelta = newDuration - origDuration;
-            setScheduleItems(prev => prev.map(i => {
-                if (i._id === itemId) return { ...i, quantity: newQuantity };
-                if (i.parentItemId === itemId) return { ...i, startDay: Math.max(1, (i.startDay ?? 1) + dayDelta) };
-                return i;
-            }));
+            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, quantity: newQuantity } : i));
             setResizing(null);
             if (lh > 0) {
                 Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
-            }
-            for (const seg of subItemsSnap) {
-                const segNewDay = Math.max(1, (seg.startDay ?? 1) + dayDelta);
-                Api.requestSession({ command: 'schedule/item_update', args: { id: seg._id, startDay: segNewDay } });
             }
         };
 
@@ -1087,8 +1075,8 @@ export default function SchedulePage() {
                 </Box>
             </Box>
 
-            {/* Action buttons — above Gantt, left-aligned */}
-            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+            {/* Action buttons — sticky at top when scrolling */}
+            <Box sx={{ display: 'flex', gap: 1.5, mb: 2, position: 'sticky', top: 0, zIndex: 10, background: '#f6f9fa', py: 0.5 }}>
                 <Box onClick={handleGroupCreate} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
                     <CreateNewFolderOutlinedIcon sx={{ fontSize: 22, color: '#ff9800', opacity: 0.8 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Add Group')}</Typography>
@@ -1120,20 +1108,20 @@ export default function SchedulePage() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: nameColW + totalDays * DAY_W }}>
 
                             {/* Month header row */}
-                            <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: 'rgba(255,255,255,0.97)', borderBottom: `1px solid ${mainPrimaryColor}18` }}>
-                                <Box sx={{ width: nameColW, flexShrink: 0, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22` }} />
+                            <Box sx={{ display: 'flex', position: 'sticky', top: 0, zIndex: 3, background: '#fff', borderBottom: `1px solid ${mainPrimaryColor}18` }}>
+                                <Box sx={{ width: nameColW, flexShrink: 0, position: 'sticky', left: 0, zIndex: 4, background: '#fff', borderRight: `1px solid ${mainPrimaryColor}22` }} />
                                 {monthGroups.map((group, gi) => (
                                     <Box key={gi} sx={{ width: group.dayCount * DAY_W, flexShrink: 0, px: 1, py: 0.6, borderRight: `1px solid ${mainPrimaryColor}22`, background: gi % 2 === 0 ? 'rgba(0,171,190,0.04)' : 'transparent' }}>
                                         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: mainPrimaryColor, letterSpacing: '0.05em' }}>
-                                            {group.label}
+                                            {t('Month')} {gi + 1}
                                         </Typography>
                                     </Box>
                                 ))}
                             </Box>
 
                             {/* Day number header row */}
-                            <Box sx={{ display: 'flex', position: 'sticky', top: 28, zIndex: 3, background: 'rgba(255,255,255,0.95)', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
-                                <Box sx={{ width: nameColW, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: 'rgba(255,255,255,0.97)', borderRight: `1px solid ${mainPrimaryColor}22`, overflow: 'visible' }}>
+                            <Box sx={{ display: 'flex', position: 'sticky', top: 28, zIndex: 3, background: '#fff', borderBottom: `2px solid ${mainPrimaryColor}22` }}>
+                                <Box sx={{ width: nameColW, flexShrink: 0, px: 2, py: 0.8, position: 'sticky', left: 0, zIndex: 4, background: '#fff', borderRight: `1px solid ${mainPrimaryColor}22`, overflow: 'visible' }}>
                                     <Typography variant='caption' sx={{ color: mainPrimaryColor, fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                         {t('Task')}
                                     </Typography>
@@ -1200,7 +1188,7 @@ export default function SchedulePage() {
                                             <Box sx={{
                                                 width: nameColW, flexShrink: 0,
                                                 position: 'sticky', left: 0, zIndex: 2,
-                                                background: isGroupDragging ? `rgba(0,171,190,0.08)` : `rgba(0,171,190,0.05)`,
+                                                background: isGroupDragging ? `#e8f8f9` : `#f0fbfc`,
                                                 height: '100%',
                                                 display: 'flex', alignItems: 'center',
                                                 borderRight: `1px solid ${mainPrimaryColor}22`,
@@ -1343,7 +1331,7 @@ export default function SchedulePage() {
                                         <Box sx={{
                                             width: nameColW, flexShrink: 0,
                                             position: 'sticky', left: 0, zIndex: 2,
-                                            background: rowBg,
+                                            background: fi % 2 === 0 ? '#ffffff' : '#f8fdfe',
                                             display: 'flex', alignItems: 'center',
                                             borderRight: `1px solid ${mainPrimaryColor}18`,
                                             overflow: 'hidden', py: 0.5,
@@ -1400,7 +1388,7 @@ export default function SchedulePage() {
                                         </Box>
 
                                         {/* Bar area */}
-                                        <Box sx={{ position: 'relative', flex: 1, height: '100%' }}>
+                                        <Box sx={{ position: 'relative', flex: 1, height: ROW_H, overflow: 'hidden' }}>
                                             {days.map(d => {
                                                 const date = addDays(projectStartDate, d - 1);
                                                 const dayNum = date.getDate();
@@ -1427,7 +1415,7 @@ export default function SchedulePage() {
                                                         background: isSplitTarget
                                                             ? `linear-gradient(90deg, ${barColor}bb 0%, ${barColor}88 100%)`
                                                             : `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
-                                                        borderRadius: (segmentsByParent.get(item._id)?.length ?? 0) > 0 ? '5px 0 0 5px' : '5px',
+                                                        borderRadius: '5px',
                                                         display: 'flex', alignItems: 'center',
                                                         px: 1, overflow: 'visible',
                                                         boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
@@ -1526,33 +1514,50 @@ export default function SchedulePage() {
                                                     ))}
                                                 </Box>
                                             </Tooltip>
-                                            {/* Inline segment bars from split — white dividers give "divided bar" look */}
-                                            {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg, si, arr) => {
+                                            {/* Independent segment bars from split — each fully draggable and resizable */}
+                                            {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg) => {
                                                 const segDur = itemDuration(seg);
-                                                const segOff = ((seg.startDay ?? 1) - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
-                                                const segW = Math.max(segDur * DAY_W - 3, 12);
-                                                const isLast = si === arr.length - 1;
+                                                const segBaseOff = ((seg.startDay ?? 1) - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
+                                                const isDraggingThisSeg = dragging?.id === seg._id;
+                                                const isResizingThisSeg = resizing?.id === seg._id;
+                                                const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
+                                                const segBaseW = Math.max(segDur * DAY_W - 3, 12);
+                                                const segW = isResizingThisSeg ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 return (
-                                                    <React.Fragment key={seg._id}>
-                                                        {/* White divider line at segment boundary */}
-                                                        <Box sx={{ position: 'absolute', left: segOff, top: 6, height: ROW_H - 12, width: 2, background: 'rgba(255,255,255,0.75)', zIndex: 3, pointerEvents: 'none' }} />
-                                                        {/* Segment bar — interactive, triggers parent drag */}
+                                                    <Box
+                                                        key={seg._id}
+                                                        onMouseDown={e => handleBarMouseDown(e, seg)}
+                                                        onContextMenu={e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            left: segOff + 4, top: 6, height: ROW_H - 12, width: segW,
+                                                            background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                            borderRadius: '5px',
+                                                            display: 'flex', alignItems: 'center', px: 1, overflow: 'visible',
+                                                            boxShadow: (isDraggingThisSeg || isResizingThisSeg) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                            zIndex: (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
+                                                            cursor: isDraggingThisSeg ? 'grabbing' : 'grab',
+                                                            opacity: (isDraggingThisSeg || isResizingThisSeg) ? 0.9 : 1,
+                                                            transition: (isDraggingThisSeg || isResizingThisSeg) ? 'none' : 'box-shadow 0.15s',
+                                                        }}>
+                                                        <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
+                                                            {(() => { const d = isResizingThisSeg ? Math.max(0.125, segW / DAY_W) : segDur; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
+                                                        </Typography>
+                                                        {/* Resize handle */}
                                                         <Box
-                                                            onMouseDown={e => handleBarMouseDown(e, item)}
-                                                            onContextMenu={e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item, anchorEl: e.currentTarget as HTMLElement }); }}
+                                                            onMouseDown={e => handleResizeMouseDown(e, seg)}
+                                                            onClick={e => e.stopPropagation()}
                                                             sx={{
-                                                                position: 'absolute',
-                                                                left: segOff + 2, top: 6, height: ROW_H - 12, width: segW,
-                                                                background: `linear-gradient(90deg, ${barColor}cc 0%, ${barColor}${isLast ? 'aa' : 'bb'} 100%)`,
-                                                                borderRadius: isLast ? '0 5px 5px 0' : '0',
-                                                                display: 'flex', alignItems: 'center', px: 0.75, overflow: 'hidden',
-                                                                zIndex: 2, cursor: isDraggingThis ? 'grabbing' : 'grab',
-                                                            }}>
-                                                            <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.6rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-                                                                {segDur >= 1 ? `${Math.round(segDur * 10) / 10}${t('day_short')}` : `${Math.round(segDur * 8)}h`}
-                                                            </Typography>
+                                                                position: 'absolute', right: 0, top: 0, bottom: 0,
+                                                                width: 10, cursor: 'ew-resize',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                borderRadius: '0 5px 5px 0',
+                                                                '&:hover': { background: 'rgba(255,255,255,0.15)' },
+                                                            }}
+                                                        >
+                                                            <Box sx={{ width: 2, height: '55%', background: 'rgba(255,255,255,0.55)', borderRadius: 1, pointerEvents: 'none' }} />
                                                         </Box>
-                                                    </React.Fragment>
+                                                    </Box>
                                                 );
                                             })}
                                         </Box>
