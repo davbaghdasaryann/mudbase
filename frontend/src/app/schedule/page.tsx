@@ -1004,7 +1004,7 @@ export default function SchedulePage() {
                     overflow: 'hidden',
                     userSelect: 'none',
                 }}>
-                    <Box ref={ganttScrollRef} sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 155px)' }}>
+                    <Box ref={ganttScrollRef} sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 243px)' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: nameColW + totalDays * DAY_W }}>
 
                             {/* Month header row */}
