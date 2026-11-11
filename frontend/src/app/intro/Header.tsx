@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
+import AppLangSelector from '@/components/main/AppLangSelector';
 
 export default function LandingHeader() {
     const { t, i18n } = useTranslation();
@@ -123,7 +124,7 @@ export default function LandingHeader() {
 
                 {/* Desktop auth — fixed right */}
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                    {/* Language toggle — hidden */}
+                    <AppLangSelector />
                     <Button
                         onClick={() => router.push('/login')}
                         disableRipple
@@ -202,7 +203,9 @@ export default function LandingHeader() {
                                 {link.label}
                             </MenuItem>
                         ))}
-                        {/* Language toggle — hidden */}
+                        <MenuItem sx={{ py: 1.25 }}>
+                            <AppLangSelector />
+                        </MenuItem>
                     </Menu>
                 </Box>
             </Box>
