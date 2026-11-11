@@ -991,6 +991,22 @@ export default function SchedulePage() {
                 </Box>
             </Box>
 
+            {/* Action buttons — above Gantt, left-aligned */}
+            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+                <Box onClick={handleGroupCreate} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <CreateNewFolderOutlinedIcon sx={{ fontSize: 22, color: '#ff9800', opacity: 0.8 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Add Group')}</Typography>
+                </Box>
+                <Box onClick={() => handleChooseWork(null)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: `rgba(0,171,190,0.06)` }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <WorkOutlineIcon sx={{ fontSize: 22, color: mainPrimaryColor, opacity: 0.55 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Choose a work')}</Typography>
+                </Box>
+                <Box onClick={() => { setHoursInput(String(hoursPerDay)); setSettingsOpen(true); }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
+                </Box>
+            </Box>
+
             {/* Gantt table */}
             {itemsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -1004,7 +1020,7 @@ export default function SchedulePage() {
                     overflow: 'hidden',
                     userSelect: 'none',
                 }}>
-                    <Box ref={ganttScrollRef} sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 243px)' }}>
+                    <Box ref={ganttScrollRef} sx={{ overflowX: 'auto', overflowY: 'auto', height: 'calc(100vh - 155px)' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: nameColW + totalDays * DAY_W }}>
 
                             {/* Month header row */}
@@ -1458,22 +1474,6 @@ export default function SchedulePage() {
                     </Box>
                 </Box>
             )}
-
-            {/* Action buttons — below Gantt, left-aligned */}
-            <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
-                <Box onClick={handleGroupCreate} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
-                    <CreateNewFolderOutlinedIcon sx={{ fontSize: 22, color: '#ff9800', opacity: 0.8 }} />
-                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Add Group')}</Typography>
-                </Box>
-                <Box onClick={() => handleChooseWork(null)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: `rgba(0,171,190,0.06)` }, '&:hover svg': { opacity: '1 !important' } }}>
-                    <WorkOutlineIcon sx={{ fontSize: 22, color: mainPrimaryColor, opacity: 0.55 }} />
-                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Choose a work')}</Typography>
-                </Box>
-                <Box onClick={() => { setHoursInput(String(hoursPerDay)); setSettingsOpen(true); }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
-                    <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
-                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
-                </Box>
-            </Box>
 
             {/* Works modal */}
             <Dialog open={worksOpen} onClose={() => { setWorksOpen(false); setAddWorkForGroupId(undefined); }} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
