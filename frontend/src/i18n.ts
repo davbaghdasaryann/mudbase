@@ -32,17 +32,12 @@ export function getUserStoredLanguage() {
 export const i18nEnabled = true;
 
 i18n
-    // .use(Backend) // Load translations from /public/locales
-    //   .use(LanguageDetector) // Detect browser language
-    .use(initReactI18next) // Pass instance to react-i18next
+    .use(initReactI18next)
     .init({
-        ...nextI18NextConfig,
-        // lng: storedLanguage || 'en',
         lng: getUserStoredLanguage(),
         fallbackLng: 'en',
-        // debug: process.env.NODE_ENV === 'development', // Enable debug only in development
         interpolation: {
-            escapeValue: false, // React already escapes XSS
+            escapeValue: false,
         },
         resources: {
             en: {translation: enTranslation},

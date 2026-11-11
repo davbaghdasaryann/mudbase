@@ -53,6 +53,7 @@ export default function Providers({children, session}: {children: React.ReactNod
         // Set default language
         let lng = getUserStoredLanguage();
         Cookies.set('i18next', lng);
+        if (i18n.language !== lng) i18n.changeLanguage(lng);
 
         // console.log("Language is set to", lng);
         // initTheme();
