@@ -1463,6 +1463,10 @@ export default function SchedulePage() {
                     <WorkOutlineIcon sx={{ fontSize: 22, color: mainPrimaryColor, opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Choose a work')}</Typography>
                 </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 90, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
+                </Box>
             </Box>
 
             {/* Works modal */}
@@ -1569,7 +1573,6 @@ export default function SchedulePage() {
                                 {Array.from(sections.entries()).map(([secName, subsMap]) => (
                                     <Accordion
                                         key={secName}
-                                        defaultExpanded
                                         disableGutters
                                         elevation={0}
                                         sx={{ bgcolor: '#fff', '&::before': { display: 'none' }, borderBottom: '1px solid #E3E6E6', '&:last-child': { borderBottom: 'none' } }}
@@ -1595,7 +1598,6 @@ export default function SchedulePage() {
                                                 subName ? (
                                                     <Accordion
                                                         key={subName}
-                                                        defaultExpanded
                                                         disableGutters
                                                         elevation={0}
                                                         sx={{ bgcolor: 'transparent', '&::before': { display: 'none' }, borderBottom: '1px solid #E3E6E6', '&:last-child': { borderBottom: 'none' } }}
