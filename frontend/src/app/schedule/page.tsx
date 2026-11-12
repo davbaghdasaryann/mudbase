@@ -1373,6 +1373,7 @@ export default function SchedulePage() {
                                 const baseBarWidth = Math.max(duration * DAY_W - 3, 12);
                                 const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
                                 const isSplitTarget = splitMode?.item._id === item._id;
+                                const isUniteSelectTarget = uniteSelectMode?.parentItemId === item._id;
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
@@ -1490,11 +1491,12 @@ export default function SchedulePage() {
                                                         px: 1, overflow: 'visible',
                                                         boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
                                                         cursor: isSplitTarget ? 'crosshair' : (isDraggingThis ? 'grabbing' : 'grab'),
-                                                        opacity: (isDraggingThis || isResizingThis) ? 0.9 : 1,
+                                                        opacity: isUniteSelectTarget ? 0 : (isDraggingThis || isResizingThis) ? 0.9 : 1,
                                                         transition: (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
                                                         zIndex: isSplitTarget ? 10 : (isDraggingThis || isResizingThis) ? 10 : 1,
                                                         outline: isSplitTarget ? '2px dashed rgba(255,255,255,0.7)' : 'none',
                                                         outlineOffset: '0px',
+                                                        pointerEvents: isUniteSelectTarget ? 'none' : undefined,
                                                     }}
                                                 >
                                                     <Typography sx={{ color: isSplitTarget ? 'rgba(255,255,255,0.6)' : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
@@ -1599,12 +1601,12 @@ export default function SchedulePage() {
                                                     <Box
                                                         key={seg._id}
                                                         onMouseDown={inUniteMode ? e => e.preventDefault() : e => handleBarMouseDown(e, seg)}
-                                                        onClick={inUniteMode ? () => setUniteSelectMode(prev => {
+                                                        onClick={inUniteMode ? (e => { e.stopPropagation(); setUniteSelectMode(prev => {
                                                             if (!prev) return prev;
                                                             const next = new Set(prev.selectedIds);
                                                             if (next.has(seg._id)) next.delete(seg._id); else next.add(seg._id);
                                                             return { ...prev, selectedIds: next };
-                                                        }) : undefined}
+                                                        }); }) : undefined}
                                                         onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                         sx={{
                                                             position: 'absolute',
