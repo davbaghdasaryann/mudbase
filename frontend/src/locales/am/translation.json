@@ -874,5 +874,8 @@
   "Month": "Ամիս",
   "Day": "Օր",
   "hr_short": "ժ",
-  "Used to convert days to hours": "Օրերը ժամերի փոխարկելու համար"
+  "Used to convert days to hours": "Օրերը ժամերի փոխարկելու համար",
+  "Volume Monitor": "Ծավալների մոնիթորինգ",
+  "Scheduled": "Պլանավորված",
+  "Work": "Աշխատանք"
 }

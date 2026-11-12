@@ -26,6 +26,7 @@ import CallSplitIcon from '@mui/icons-material/CallSplit';
 import LinkIcon from '@mui/icons-material/Link';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TuneIcon from '@mui/icons-material/Tune';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -164,6 +165,7 @@ export default function SchedulePage() {
 
     const [worksOpen, setWorksOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [volumeMonitorOpen, setVolumeMonitorOpen] = useState(false);
     const [hoursPerDay, setHoursPerDay] = useState<number>(() => {
         if (typeof window === 'undefined') return 8;
         return parseInt(localStorage.getItem('schedule_hoursPerDay') ?? '8', 10) || 8;
@@ -1101,6 +1103,10 @@ export default function SchedulePage() {
                     <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
                 </Box>
+                <Box onClick={() => setVolumeMonitorOpen(true)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(76,175,80,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                    <AssessmentOutlinedIcon sx={{ fontSize: 22, color: '#4caf50', opacity: 0.7 }} />
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Volume Monitor')}</Typography>
+                </Box>
             </Box>
 
             {/* Gantt table */}
@@ -1888,6 +1894,67 @@ export default function SchedulePage() {
                         {t('Save')}
                     </Button>
                 </DialogActions>
+            </Dialog>
+
+            {/* Volume Monitor modal */}
+            <Dialog open={volumeMonitorOpen} onClose={() => setVolumeMonitorOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(76,175,80,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <AssessmentOutlinedIcon sx={{ fontSize: 20, color: '#4caf50' }} />
+                        </Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#1a1a1a', flex: 1 }}>{t('Volume Monitor')}</Typography>
+                        <IconButton size='small' onClick={() => setVolumeMonitorOpen(false)} sx={{ color: '#bbb', '&:hover': { color: '#555' } }}>
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+                <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
+                <DialogContent sx={{ px: 3, pt: 1.5, pb: 2 }}>
+                    {laborRows.length === 0 ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+                            <Typography variant='body2' color='text.secondary'>{t('No works found')}</Typography>
+                        </Box>
+                    ) : (
+                        <Box sx={{ border: '1px solid #E3E6E6', borderRadius: 1.5, overflow: 'hidden' }}>
+                            {/* Header */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, bgcolor: '#f5f9f9', borderBottom: '1px solid #E3E6E6' }}>
+                                <Typography sx={{ flex: 1, fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Work')}</Typography>
+                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Total')}</Typography>
+                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#4caf50', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Scheduled')}</Typography>
+                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#e53935', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Remaining')}</Typography>
+                            </Box>
+                            {laborRows.map((row, i) => {
+                                const scheduled = addedLaborMap[row._id]?.addedQty ?? 0;
+                                const remaining = Math.max(0, row.quantity - scheduled);
+                                const pct = row.quantity > 0 ? scheduled / row.quantity : 0;
+                                const remainColor = remaining <= 0 ? '#4caf50' : scheduled > 0 ? '#ff9800' : '#e53935';
+                                return (
+                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, bgcolor: i % 2 === 0 ? '#fff' : '#f8f9fa', borderBottom: i < laborRows.length - 1 ? '1px solid #E3E6E6' : 'none' }}>
+                                        <Box sx={{ flex: 1, minWidth: 0, pr: 1 }}>
+                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {row.laborOfferItemName}
+                                            </Typography>
+                                            {/* Progress bar */}
+                                            <Box sx={{ mt: 0.4, height: 3, borderRadius: 2, bgcolor: '#e8f5e9', overflow: 'hidden' }}>
+                                                <Box sx={{ height: '100%', width: `${Math.min(100, pct * 100)}%`, bgcolor: pct >= 1 ? '#4caf50' : pct > 0 ? '#ff9800' : '#e0e0e0', borderRadius: 2, transition: 'width 0.3s' }} />
+                                            </Box>
+                                        </Box>
+                                        <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.82rem', color: '#555', flexShrink: 0 }}>
+                                            {+row.quantity.toFixed(3)} <span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
+                                        </Typography>
+                                        <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.82rem', color: '#4caf50', fontWeight: scheduled > 0 ? 600 : 400, flexShrink: 0 }}>
+                                            {+scheduled.toFixed(3)} <span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
+                                        </Typography>
+                                        <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.82rem', color: remainColor, fontWeight: remaining > 0 ? 600 : 400, flexShrink: 0 }}>
+                                            {+remaining.toFixed(3)} <span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
+                                        </Typography>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                    )}
+                </DialogContent>
             </Dialog>
 
             {/* Move-to-group menu */}
