@@ -1859,7 +1859,7 @@ export default function SchedulePage() {
                                     sx={{ px: 1.2, py: 0.6, cursor: parseInt(hoursInput, 10) <= 1 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: parseInt(hoursInput, 10) <= 1 ? '#ccc' : '#607d8b', userSelect: 'none', '&:hover': { bgcolor: parseInt(hoursInput, 10) <= 1 ? 'transparent' : 'rgba(96,125,139,0.08)' } }}
                                 >−</Box>
                                 <Box sx={{ px: 1.5, borderLeft: '1px solid rgba(96,125,139,0.2)', borderRight: '1px solid rgba(96,125,139,0.2)', minWidth: 44, textAlign: 'center' }}>
-                                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#1a1a1a' }}>{hoursInput}h</Typography>
+                                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#1a1a1a' }}>{hoursInput}{t('hr_short')}</Typography>
                                 </Box>
                                 <Box
                                     onClick={() => { const v = Math.min(24, parseInt(hoursInput, 10) + 1); setHoursInput(String(v)); }}
