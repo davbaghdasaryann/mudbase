@@ -590,20 +590,33 @@ export default function SchedulePage() {
         setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
     };
 
+    const handleUniteScheduleItem = async (itemId: string) => {
+        const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
+        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
+        setScheduleItems(prev => prev.filter(i => i.parentItemId !== itemId));
+    };
+
+    const handleDeleteScheduleItemWithSubs = async (itemId: string) => {
+        const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
+        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
+        await handleDeleteItem(itemId);
+        setAddedLaborMap(prev => {
+            const copy = { ...prev };
+            for (const key of Object.keys(copy)) { if (copy[key].scheduleItemId === itemId) delete copy[key]; }
+            return copy;
+        });
+    };
+
     const handleUniteItem = async (row: LaborRow) => {
         const entry = addedLaborMap[row._id];
         if (!entry) return;
-        const subItems = scheduleItems.filter(i => i.parentItemId === entry.scheduleItemId);
-        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
-        setScheduleItems(prev => prev.filter(i => i.parentItemId !== entry.scheduleItemId));
+        await handleUniteScheduleItem(entry.scheduleItemId);
     };
 
     const handleDeleteWithSubItems = async (row: LaborRow) => {
         const entry = addedLaborMap[row._id];
         if (!entry) return;
-        const subItems = scheduleItems.filter(i => i.parentItemId === entry.scheduleItemId);
-        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
-        await handleDeleteItem(entry.scheduleItemId);
+        await handleDeleteScheduleItemWithSubs(entry.scheduleItemId);
         setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
     };
 
@@ -2315,6 +2328,29 @@ export default function SchedulePage() {
                 <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><TuneIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Կարգավորումներ</ListItemText>
+                </MenuItem>
+                <Divider sx={{ my: 0.5 }} />
+                {!barContextMenu?.item.parentItemId && (() => {
+                    const hasSplit = barContextMenu ? scheduleItems.some(i => i.parentItemId === barContextMenu.item._id) : false;
+                    return (
+                        <MenuItem
+                            disabled={!hasSplit}
+                            onClick={() => { if (barContextMenu) { handleUniteScheduleItem(barContextMenu.item._id); setBarContextMenu(null); } }}
+                            sx={{ fontSize: '0.85rem', py: 0.9 }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                <CallSplitIcon sx={{ fontSize: 18, color: hasSplit ? mainPrimaryColor : '#bbb', transform: 'rotate(180deg)' }} />
+                            </ListItemIcon>
+                            <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', color: hasSplit ? 'inherit' : '#bbb' }}>Միացնել</ListItemText>
+                        </MenuItem>
+                    );
+                })()}
+                <MenuItem
+                    onClick={() => { if (barContextMenu) { handleDeleteScheduleItemWithSubs(barContextMenu.item._id); setBarContextMenu(null); } }}
+                    sx={{ fontSize: '0.85rem', py: 0.9 }}
+                >
+                    <ListItemIcon sx={{ minWidth: 32 }}><DeleteOutlineIcon sx={{ fontSize: 18, color: '#e53935' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', color: '#e53935' }}>Ջնջել</ListItemText>
                 </MenuItem>
             </Menu>
 
