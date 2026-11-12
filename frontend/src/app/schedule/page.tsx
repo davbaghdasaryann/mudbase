@@ -1935,7 +1935,7 @@ export default function SchedulePage() {
                                 <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Scheduled')}</Typography>
                                 <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Remaining')}</Typography>
                             </Box>
-                            {laborRows.map((row, i) => {
+                            {[...laborRows].sort((a, b) => a.laborOfferItemName.localeCompare(b.laborOfferItemName)).map((row, i) => {
                                 const scheduled = addedLaborMap[row._id]?.addedQty ?? 0;
                                 const remaining = Math.max(0, row.quantity - scheduled);
                                 const pct = row.quantity > 0 ? scheduled / row.quantity : 0;
@@ -1943,9 +1943,9 @@ export default function SchedulePage() {
                                 const isPartial = !isDone && scheduled > 0;
                                 const remainColor = isDone ? '#9e9e9e' : isPartial ? '#ff9800' : '#e53935';
                                 return (
-                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.1, bgcolor: i % 2 === 0 ? '#fff' : '#f8f9fa', borderBottom: i < laborRows.length - 1 ? '1px solid #E3E6E6' : 'none' }}>
+                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'flex-start', px: 2, py: 1.1, bgcolor: i % 2 === 0 ? '#fff' : '#f8f9fa', borderBottom: i < laborRows.length - 1 ? '1px solid #E3E6E6' : 'none' }}>
                                         <Box sx={{ flex: 1, minWidth: 0, pr: 2 }}>
-                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#1a1a1a', lineHeight: 1.35 }}>
                                                 {row.laborOfferItemName}
                                             </Typography>
                                             {/* Progress bar */}
