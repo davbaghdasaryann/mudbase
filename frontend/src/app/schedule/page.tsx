@@ -1904,7 +1904,7 @@ export default function SchedulePage() {
             </Dialog>
 
             {/* Volume Monitor modal */}
-            <Dialog open={volumeMonitorOpen} onClose={() => setVolumeMonitorOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog open={volumeMonitorOpen} onClose={() => setVolumeMonitorOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'rgba(76,175,80,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1917,10 +1917,10 @@ export default function SchedulePage() {
                     </Box>
                 </DialogTitle>
                 <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
-                <DialogContent sx={{ px: 3, pt: 1.5, pb: 2 }}>
+                <DialogContent sx={{ px: 3, pt: 1.5, pb: 2, maxHeight: '70vh', overflowY: 'auto' }}>
                     {laborLoading ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                            <CircularProgress size={32} sx={{ color: '#4caf50' }} />
+                            <CircularProgress size={32} sx={{ color: mainPrimaryColor }} />
                         </Box>
                     ) : laborRows.length === 0 ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
@@ -1930,35 +1930,37 @@ export default function SchedulePage() {
                         <Box sx={{ border: '1px solid #E3E6E6', borderRadius: 1.5, overflow: 'hidden' }}>
                             {/* Header */}
                             <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, bgcolor: '#f5f9f9', borderBottom: '1px solid #E3E6E6' }}>
-                                <Typography sx={{ flex: 1, fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Work')}</Typography>
-                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Total')}</Typography>
-                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#4caf50', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Scheduled')}</Typography>
-                                <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#e53935', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('Remaining')}</Typography>
+                                <Typography sx={{ flex: 1, fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Work')}</Typography>
+                                <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Total')}</Typography>
+                                <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Scheduled')}</Typography>
+                                <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.72rem', fontWeight: 700, color: '#607d8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('Remaining')}</Typography>
                             </Box>
                             {laborRows.map((row, i) => {
                                 const scheduled = addedLaborMap[row._id]?.addedQty ?? 0;
                                 const remaining = Math.max(0, row.quantity - scheduled);
                                 const pct = row.quantity > 0 ? scheduled / row.quantity : 0;
-                                const remainColor = remaining <= 0 ? '#4caf50' : scheduled > 0 ? '#ff9800' : '#e53935';
+                                const isDone = remaining <= 0;
+                                const isPartial = !isDone && scheduled > 0;
+                                const remainColor = isDone ? '#9e9e9e' : isPartial ? '#ff9800' : '#e53935';
                                 return (
-                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, bgcolor: i % 2 === 0 ? '#fff' : '#f8f9fa', borderBottom: i < laborRows.length - 1 ? '1px solid #E3E6E6' : 'none' }}>
-                                        <Box sx={{ flex: 1, minWidth: 0, pr: 1 }}>
+                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.1, bgcolor: i % 2 === 0 ? '#fff' : '#f8f9fa', borderBottom: i < laborRows.length - 1 ? '1px solid #E3E6E6' : 'none' }}>
+                                        <Box sx={{ flex: 1, minWidth: 0, pr: 2 }}>
                                             <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {row.laborOfferItemName}
                                             </Typography>
                                             {/* Progress bar */}
-                                            <Box sx={{ mt: 0.4, height: 3, borderRadius: 2, bgcolor: '#e8f5e9', overflow: 'hidden' }}>
-                                                <Box sx={{ height: '100%', width: `${Math.min(100, pct * 100)}%`, bgcolor: pct >= 1 ? '#4caf50' : pct > 0 ? '#ff9800' : '#e0e0e0', borderRadius: 2, transition: 'width 0.3s' }} />
+                                            <Box sx={{ mt: 0.5, height: 4, borderRadius: 2, bgcolor: '#ececec', overflow: 'hidden' }}>
+                                                <Box sx={{ height: '100%', width: `${Math.min(100, pct * 100)}%`, bgcolor: isDone ? mainPrimaryColor : isPartial ? mainPrimaryColor : '#ccc', borderRadius: 2, opacity: isDone ? 1 : isPartial ? 0.65 : 0.3 }} />
                                             </Box>
                                         </Box>
-                                        <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.82rem', color: '#555', flexShrink: 0 }}>
-                                            {+row.quantity.toFixed(3)} <span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
+                                        <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.82rem', color: '#555', flexShrink: 0 }}>
+                                            {+row.quantity.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
                                         </Typography>
-                                        <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.82rem', color: '#4caf50', fontWeight: scheduled > 0 ? 600 : 400, flexShrink: 0 }}>
-                                            {+scheduled.toFixed(3)} <span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
+                                        <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.82rem', color: scheduled > 0 ? mainPrimaryColor : '#bbb', fontWeight: scheduled > 0 ? 600 : 400, flexShrink: 0 }}>
+                                            {+scheduled.toFixed(3)}&thinsp;<span style={{ color: scheduled > 0 ? `${mainPrimaryColor}99` : '#ccc', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
                                         </Typography>
-                                        <Typography sx={{ width: 80, textAlign: 'right', fontSize: '0.82rem', color: remainColor, fontWeight: remaining > 0 ? 600 : 400, flexShrink: 0 }}>
-                                            {+remaining.toFixed(3)} <span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
+                                        <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.82rem', color: remainColor, fontWeight: !isDone ? 600 : 400, flexShrink: 0 }}>
+                                            {+remaining.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.72rem' }}>{row.unitSymbol}</span>
                                         </Typography>
                                     </Box>
                                 );
