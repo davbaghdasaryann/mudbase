@@ -237,8 +237,7 @@ export default function SchedulePage() {
     const splitMarkerDragRef = useRef<{ index: number; startX: number; origOffset: number; hasMoved: boolean } | null>(null);
 
     const [splitDialogItem, setSplitDialogItem] = useState<ScheduleItem | null>(null);
-    const [uniteDialogItemId, setUniteDialogItemId] = useState<string | null>(null);
-    const [uniteMergeCount, setUniteMergeCount] = useState(2);
+    const [uniteSelectMode, setUniteSelectMode] = useState<{ parentItemId: string; selectedIds: Set<string> } | null>(null);
     const [splitPartsCount, setSplitPartsCount] = useState(2);
     const [splitEqualMode, setSplitEqualMode] = useState(true);
     const [splitPartDays, setSplitPartDays] = useState<string[]>([]);
@@ -592,20 +591,19 @@ export default function SchedulePage() {
         setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
     };
 
-    const handleUniteScheduleItem = async (itemId: string, mergeCount?: number) => {
-        const subItems = scheduleItems.filter(i => i.parentItemId === itemId).sort((a, b) => (a.startDay ?? 0) - (b.startDay ?? 0));
-        const toDelete = mergeCount != null ? subItems.slice(0, mergeCount) : subItems;
+    const handleUniteScheduleItem = async (itemId: string, selectedIds?: Set<string>) => {
+        const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
+        const toDelete = selectedIds ? subItems.filter(si => selectedIds.has(si._id)) : subItems;
         await Promise.all(toDelete.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
         const deleteIds = new Set(toDelete.map(si => si._id));
         setScheduleItems(prev => prev.filter(i => !deleteIds.has(i._id)));
     };
 
-    const openUniteDialog = (itemId: string) => {
+    const startUniteSelect = (itemId: string) => {
         const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
         if (subItems.length === 0) return;
         if (subItems.length === 1) { handleUniteScheduleItem(itemId); return; }
-        setUniteMergeCount(subItems.length);
-        setUniteDialogItemId(itemId);
+        setUniteSelectMode({ parentItemId: itemId, selectedIds: new Set() });
     };
 
     const handleDeleteScheduleItemWithSubs = async (itemId: string) => {
@@ -622,7 +620,7 @@ export default function SchedulePage() {
     const handleUniteItem = (row: LaborRow) => {
         const entry = addedLaborMap[row._id];
         if (!entry) return;
-        openUniteDialog(entry.scheduleItemId);
+        startUniteSelect(entry.scheduleItemId);
     };
 
     const handleDeleteWithSubItems = async (row: LaborRow) => {
@@ -1590,45 +1588,60 @@ export default function SchedulePage() {
                                             {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg) => {
                                                 const segDur = itemDuration(seg);
                                                 const segBaseOff = ((seg.startDay ?? 1) - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
-                                                const isDraggingThisSeg = dragging?.id === seg._id;
-                                                const isResizingThisSeg = resizing?.id === seg._id;
+                                                const inUniteMode = uniteSelectMode?.parentItemId === item._id;
+                                                const isSegSelected = inUniteMode && uniteSelectMode!.selectedIds.has(seg._id);
+                                                const isDraggingThisSeg = !inUniteMode && dragging?.id === seg._id;
+                                                const isResizingThisSeg = !inUniteMode && resizing?.id === seg._id;
                                                 const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
                                                 const segBaseW = Math.max(segDur * DAY_W - 3, 12);
                                                 const segW = isResizingThisSeg ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 return (
                                                     <Box
                                                         key={seg._id}
-                                                        onMouseDown={e => handleBarMouseDown(e, seg)}
-                                                        onContextMenu={e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
+                                                        onMouseDown={inUniteMode ? e => e.preventDefault() : e => handleBarMouseDown(e, seg)}
+                                                        onClick={inUniteMode ? () => setUniteSelectMode(prev => {
+                                                            if (!prev) return prev;
+                                                            const next = new Set(prev.selectedIds);
+                                                            if (next.has(seg._id)) next.delete(seg._id); else next.add(seg._id);
+                                                            return { ...prev, selectedIds: next };
+                                                        }) : undefined}
+                                                        onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                         sx={{
                                                             position: 'absolute',
                                                             left: segOff + 4, top: 6, height: ROW_H - 12, width: segW,
-                                                            background: `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                            background: isSegSelected
+                                                                ? `linear-gradient(90deg, #fff 0%, #f0fffe 100%)`
+                                                                : inUniteMode
+                                                                    ? `linear-gradient(90deg, ${barColor}99 0%, ${barColor}66 100%)`
+                                                                    : `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
                                                             borderRadius: '5px',
                                                             display: 'flex', alignItems: 'center', px: 1, overflow: 'visible',
-                                                            boxShadow: (isDraggingThisSeg || isResizingThisSeg) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                            zIndex: (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
-                                                            cursor: isDraggingThisSeg ? 'grabbing' : 'grab',
-                                                            opacity: (isDraggingThisSeg || isResizingThisSeg) ? 0.9 : 1,
-                                                            transition: (isDraggingThisSeg || isResizingThisSeg) ? 'none' : 'box-shadow 0.15s',
+                                                            boxShadow: isSegSelected
+                                                                ? `0 0 0 2.5px ${mainPrimaryColor}, 0 4px 16px ${mainPrimaryColor}44`
+                                                                : (isDraggingThisSeg || isResizingThisSeg) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                            zIndex: isSegSelected ? 5 : (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
+                                                            cursor: inUniteMode ? 'pointer' : (isDraggingThisSeg ? 'grabbing' : 'grab'),
+                                                            opacity: inUniteMode && !isSegSelected ? 0.6 : (isDraggingThisSeg || isResizingThisSeg) ? 0.9 : 1,
+                                                            transition: inUniteMode ? 'box-shadow 0.1s, opacity 0.1s' : (isDraggingThisSeg || isResizingThisSeg) ? 'none' : 'box-shadow 0.15s',
                                                         }}>
-                                                        <Typography sx={{ color: '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
+                                                        <Typography sx={{ color: isSegSelected ? mainPrimaryColor : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
                                                             {(() => { const d = isResizingThisSeg ? Math.max(0.125, segW / DAY_W) : segDur; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
                                                         </Typography>
-                                                        {/* Resize handle */}
-                                                        <Box
-                                                            onMouseDown={e => handleResizeMouseDown(e, seg)}
-                                                            onClick={e => e.stopPropagation()}
-                                                            sx={{
-                                                                position: 'absolute', right: 0, top: 0, bottom: 0,
-                                                                width: 10, cursor: 'ew-resize',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                borderRadius: '0 5px 5px 0',
-                                                                '&:hover': { background: 'rgba(255,255,255,0.15)' },
-                                                            }}
-                                                        >
-                                                            <Box sx={{ width: 2, height: '55%', background: 'rgba(255,255,255,0.55)', borderRadius: 1, pointerEvents: 'none' }} />
-                                                        </Box>
+                                                        {!inUniteMode && (
+                                                            <Box
+                                                                onMouseDown={e => handleResizeMouseDown(e, seg)}
+                                                                onClick={e => e.stopPropagation()}
+                                                                sx={{
+                                                                    position: 'absolute', right: 0, top: 0, bottom: 0,
+                                                                    width: 10, cursor: 'ew-resize',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    borderRadius: '0 5px 5px 0',
+                                                                    '&:hover': { background: 'rgba(255,255,255,0.15)' },
+                                                                }}
+                                                            >
+                                                                <Box sx={{ width: 2, height: '55%', background: 'rgba(255,255,255,0.55)', borderRadius: 1, pointerEvents: 'none' }} />
+                                                            </Box>
+                                                        )}
                                                     </Box>
                                                 );
                                             })}
@@ -2135,45 +2148,6 @@ export default function SchedulePage() {
                 )}
             </Menu>
 
-            {/* Unite Parts dialog */}
-            {uniteDialogItemId && (() => {
-                const subCount = scheduleItems.filter(i => i.parentItemId === uniteDialogItemId).length;
-                return (
-                    <Dialog open={!!uniteDialogItemId} onClose={() => setUniteDialogItemId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                        <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                                <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${mainPrimaryColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.2 }}>
-                                    <CallSplitIcon sx={{ fontSize: 20, color: mainPrimaryColor, transform: 'rotate(180deg)' }} />
-                                </Box>
-                                <Box>
-                                    <Typography fontWeight={700} fontSize='1rem'>{t('Merge parts')}</Typography>
-                                    <Typography fontSize='0.78rem' color='text.secondary' sx={{ mt: 0.3 }}>
-                                        {subCount} {t('parts')}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </DialogTitle>
-                        <DialogContent sx={{ px: 3, pt: 2.5, pb: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                                <Box onClick={() => setUniteMergeCount(c => Math.max(2, c - 1))} sx={{ width: 34, height: 34, borderRadius: 2, border: '1px solid rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uniteMergeCount <= 2 ? 'default' : 'pointer', opacity: uniteMergeCount <= 2 ? 0.3 : 1, fontSize: '1.2rem', userSelect: 'none' }}>−</Box>
-                                <Typography fontWeight={700} fontSize='1.05rem' sx={{ minWidth: 90, textAlign: 'center' }}>
-                                    {uniteMergeCount} {t('parts')}
-                                </Typography>
-                                <Box onClick={() => setUniteMergeCount(c => Math.min(subCount, c + 1))} sx={{ width: 34, height: 34, borderRadius: 2, border: '1px solid rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uniteMergeCount >= subCount ? 'default' : 'pointer', opacity: uniteMergeCount >= subCount ? 0.3 : 1, fontSize: '1.2rem', userSelect: 'none' }}>+</Box>
-                            </Box>
-                        </DialogContent>
-                        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-                            <Button onClick={() => setUniteDialogItemId(null)} sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('Cancel')}</Button>
-                            <Button variant='contained'
-                                onClick={() => { handleUniteScheduleItem(uniteDialogItemId, uniteMergeCount); setUniteDialogItemId(null); }}
-                                sx={{ bgcolor: mainPrimaryColor, fontWeight: 700, '&:hover': { bgcolor: '#00a398' } }}>
-                                {t('Confirm')}
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-                );
-            })()}
-
             {/* Split Work dialog */}
             <Dialog open={!!splitDialogItem} onClose={() => setSplitDialogItem(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
@@ -2386,7 +2360,7 @@ export default function SchedulePage() {
                     return (
                         <MenuItem
                             disabled={!hasSplit}
-                            onClick={() => { if (barContextMenu) { openUniteDialog(barContextMenu.item._id); setBarContextMenu(null); } }}
+                            onClick={() => { if (barContextMenu) { startUniteSelect(barContextMenu.item._id); setBarContextMenu(null); } }}
                             sx={{ fontSize: '0.85rem', py: 0.9 }}
                         >
                             <ListItemIcon sx={{ minWidth: 32 }}>
@@ -2472,6 +2446,38 @@ export default function SchedulePage() {
                             backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor },
                             '&.Mui-disabled': { backgroundColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)' } }}>
                         {t('Split')}
+                    </Button>
+                </Box>
+            )}
+
+            {/* Unite select mode floating toolbar */}
+            {uniteSelectMode && (
+                <Box sx={{
+                    position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 9999, display: 'flex', alignItems: 'center', gap: 1.5,
+                    bgcolor: 'rgba(28,28,28,0.93)', borderRadius: 3,
+                    px: 3, py: 1.2, boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+                    backdropFilter: 'blur(10px)',
+                }}>
+                    <Typography sx={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', mr: 0.5 }}>
+                        {uniteSelectMode.selectedIds.size === 0
+                            ? t('Click parts to select')
+                            : `${uniteSelectMode.selectedIds.size} ${t('parts')} ${t('selected')}`}
+                    </Typography>
+                    <Button onClick={() => setUniteSelectMode(null)}
+                        size='small'
+                        sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'none', fontSize: '0.8rem', minWidth: 0 }}>
+                        {t('Cancel')}
+                    </Button>
+                    <Button
+                        size='small'
+                        disabled={uniteSelectMode.selectedIds.size < 2}
+                        variant='contained'
+                        onClick={() => { handleUniteScheduleItem(uniteSelectMode.parentItemId, uniteSelectMode.selectedIds); setUniteSelectMode(null); }}
+                        sx={{ borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem',
+                            backgroundColor: mainPrimaryColor, '&:hover': { backgroundColor: mainPrimaryColor },
+                            '&.Mui-disabled': { backgroundColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)' } }}>
+                        {t('Merge parts')}
                     </Button>
                 </Box>
             )}
