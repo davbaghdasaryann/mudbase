@@ -166,6 +166,7 @@ export default function SchedulePage() {
     const [worksOpen, setWorksOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [volumeMonitorOpen, setVolumeMonitorOpen] = useState(false);
+    const [laborRowsLoaded, setLaborRowsLoaded] = useState(false);
     const [hoursPerDay, setHoursPerDay] = useState<number>(() => {
         if (typeof window === 'undefined') return 8;
         return parseInt(localStorage.getItem('schedule_hoursPerDay') ?? '8', 10) || 8;
@@ -502,10 +503,8 @@ export default function SchedulePage() {
         setRecords(prev => prev.filter(r => r._id !== id));
     };
 
-    const handleChooseWork = (groupId: string | null) => {
+    const fetchLaborRows = (onDone?: () => void) => {
         if (!selected) return;
-        setAddWorkForGroupId(groupId);
-        setWorksOpen(true);
         setLaborLoading(true);
         Api.requestSession<LaborRow[]>({
             command: 'estimate/fetch_labor_for_analysis',
@@ -514,7 +513,7 @@ export default function SchedulePage() {
             .then(rows => {
                 const fetched = rows ?? [];
                 setLaborRows(fetched);
-                // Rebuild from current schedule items so refresh doesn't lose state
+                setLaborRowsLoaded(true);
                 const items = scheduleItemsRef.current;
                 const newMap: Record<string, { scheduleItemId: string; addedQty: number }> = {};
                 for (const row of fetched) {
@@ -522,9 +521,17 @@ export default function SchedulePage() {
                     if (match) newMap[row._id] = { scheduleItemId: match._id, addedQty: match.quantity };
                 }
                 setAddedLaborMap(newMap);
+                onDone?.();
             })
             .catch(() => setLaborRows([]))
             .finally(() => setLaborLoading(false));
+    };
+
+    const handleChooseWork = (groupId: string | null) => {
+        if (!selected) return;
+        setAddWorkForGroupId(groupId);
+        setWorksOpen(true);
+        fetchLaborRows();
     };
 
     const handleOpenQtyDialog = (row: LaborRow) => {
@@ -1099,7 +1106,7 @@ export default function SchedulePage() {
                     <WorkOutlineIcon sx={{ fontSize: 22, color: mainPrimaryColor, opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Choose a work')}</Typography>
                 </Box>
-                <Box onClick={() => setVolumeMonitorOpen(true)} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(76,175,80,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
+                <Box onClick={() => { if (!laborRowsLoaded) fetchLaborRows(() => setVolumeMonitorOpen(true)); else setVolumeMonitorOpen(true); }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(76,175,80,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
                     <AssessmentOutlinedIcon sx={{ fontSize: 22, color: '#4caf50', opacity: 0.7 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Volume Monitor')}</Typography>
                 </Box>
@@ -1911,7 +1918,11 @@ export default function SchedulePage() {
                 </DialogTitle>
                 <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
                 <DialogContent sx={{ px: 3, pt: 1.5, pb: 2 }}>
-                    {laborRows.length === 0 ? (
+                    {laborLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                            <CircularProgress size={32} sx={{ color: '#4caf50' }} />
+                        </Box>
+                    ) : laborRows.length === 0 ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
                             <Typography variant='body2' color='text.secondary'>{t('No works found')}</Typography>
                         </Box>
