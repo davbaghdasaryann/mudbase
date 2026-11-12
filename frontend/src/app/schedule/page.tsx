@@ -232,6 +232,8 @@ export default function SchedulePage() {
     const [splitPartsCount, setSplitPartsCount] = useState(2);
     const [splitEqualMode, setSplitEqualMode] = useState(true);
     const [splitPartDays, setSplitPartDays] = useState<string[]>([]);
+    const [splitByHours, setSplitByHours] = useState(false);
+    const [splitPartStartDays, setSplitPartStartDays] = useState<number[]>([]);
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -759,9 +761,16 @@ export default function SchedulePage() {
         const totalDays = itemDuration(item) + existingSegs.reduce((s, seg) => s + itemDuration(seg), 0);
         const lh = item.laborHours ?? 0;
         const n = 2;
+        const eachDays = totalDays / n;
         setSplitPartsCount(n);
         setSplitEqualMode(true);
-        setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
+        setSplitPartDays(Array.from({ length: n }, () => String(+eachDays.toFixed(2))));
+        setSplitByHours(false);
+        // Initialize start days for parts 2+ sequentially
+        const initStarts: number[] = [];
+        let sf = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+        for (let i = 0; i < n - 1; i++) { sf += eachDays; initStarts.push(Math.floor(sf) + 1); }
+        setSplitPartStartDays(initStarts);
         // Pass item with restored full quantity so dialog and confirm see correct total
         setSplitDialogItem(lh > 0 ? { ...item, quantity: lh * totalDays } : item);
     };
@@ -814,9 +823,10 @@ export default function SchedulePage() {
         const lh = item.laborHours ?? 0;
         if (lh <= 0) return;
         const totalDays = itemDuration(item);
-        const partDaysArr = splitEqualMode
+        const rawDays = splitEqualMode
             ? Array.from({ length: splitPartsCount }, () => totalDays / splitPartsCount)
             : splitPartDays.map(d => parseFloat(d) || 0);
+        const partDaysArr = splitByHours ? rawDays.map(h => h / lh) : rawDays;
         const quantities = partDaysArr.map(d => d * lh);
         // Delete existing sub-items before re-splitting
         for (const seg of (segmentsByParent.get(item._id) ?? [])) {
@@ -827,9 +837,11 @@ export default function SchedulePage() {
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0] } });
         let startFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
         for (let i = 1; i < quantities.length; i++) {
+            // Use custom start day if set for this part (parts 2+ are index i-1 in splitPartStartDays)
+            const customStart = !splitEqualMode && splitPartStartDays[i - 1] > 0 ? splitPartStartDays[i - 1] : null;
             startFrac += partDaysArr[i - 1];
-            const nextStartDay = Math.floor(startFrac) + 1;
-            const nextStartHour = Math.round((startFrac % 1) * 24) % 24;
+            const nextStartDay = customStart ?? (Math.floor(startFrac) + 1);
+            const nextStartHour = customStart ? 0 : Math.round((startFrac % 1) * 24) % 24;
             const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
                 scheduleId: selected._id,
                 laborOfferItemName: item.laborOfferItemName,
@@ -1931,56 +1943,79 @@ export default function SchedulePage() {
                 <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
                 <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
                     {splitDialogItem && (() => {
+                        const lhD = splitDialogItem.laborHours ?? 0;
                         const totalDays = itemDuration(splitDialogItem);
-                        const sumDays = splitPartDays.reduce((s, v) => s + (parseFloat(v) || 0), 0);
-                        const sumOk = Math.abs(sumDays - totalDays) < 0.015;
+                        const totalHrs = totalDays * lhD;
+                        const unitSym = splitDialogItem.unitSymbol || (lhD > 0 ? t('hr_short') : t('day_short'));
+                        // helper: convert a "days or hours" input value to days
+                        const toDays = (v: string) => { const n = parseFloat(v) || 0; return splitByHours ? (lhD > 0 ? n / lhD : n) : n; };
+                        const toDisplay = (days: number) => splitByHours ? +(days * lhD).toFixed(2) : +days.toFixed(2);
+                        const sumRaw = splitPartDays.reduce((s, v) => s + toDays(v), 0);
+                        const sumOk = Math.abs(sumRaw - totalDays) < 0.015;
+                        // helpers for month/day conversion
+                        const dayToMD = (day: number) => {
+                            let rem = day - 1;
+                            for (let m = 0; m < monthGroups.length; m++) {
+                                if (rem < monthGroups[m].dayCount) return { m: m + 1, d: rem + 1 };
+                                rem -= monthGroups[m].dayCount;
+                            }
+                            return { m: monthGroups.length, d: monthGroups[monthGroups.length - 1]?.dayCount ?? 1 };
+                        };
+                        const mdToDay = (m: number, d: number) => {
+                            let result = 0;
+                            for (let i = 0; i < m - 1; i++) result += monthGroups[i]?.dayCount ?? 30;
+                            return result + d;
+                        };
+                        const changePartsCount = (n: number) => {
+                            setSplitPartsCount(n);
+                            const each = totalDays / n;
+                            setSplitPartDays(Array.from({ length: n }, () => String(toDisplay(each))));
+                            const starts: number[] = [];
+                            let sf = (splitDialogItem.startDay - 1) + (splitDialogItem.startHour ?? 0) / 24;
+                            for (let i = 0; i < n - 1; i++) { sf += each; starts.push(Math.floor(sf) + 1); }
+                            setSplitPartStartDays(starts);
+                        };
                         return (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                <Typography sx={{ fontSize: '0.8rem', color: '#888' }}>
-                                    {t('Total')}: <strong>{+totalDays.toFixed(2)} {t('day_short')}</strong>
-                                </Typography>
-                                {/* Parts count + Equal/Unequal on one row */}
+                                {/* Total + split-by toggle */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Typography sx={{ fontSize: '0.8rem', color: '#888', flex: 1 }}>
+                                        {t('Total')}: <strong>{+totalDays.toFixed(2)} {t('day_short')}{lhD > 0 ? ` (${+totalHrs.toFixed(2)} ${unitSym})` : ''}</strong>
+                                    </Typography>
+                                    {lhD > 0 && (
+                                        <Box sx={{ display: 'flex', borderRadius: '20px', border: `1px solid rgba(0,171,190,0.4)`, overflow: 'hidden' }}>
+                                            {[false, true].map(byH => (
+                                                <Box key={String(byH)} onClick={() => { setSplitByHours(byH); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); }}
+                                                    sx={{ px: 1.2, py: 0.3, cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, userSelect: 'none', transition: 'all 0.15s',
+                                                        bgcolor: splitByHours === byH ? mainPrimaryColor : 'transparent',
+                                                        color: splitByHours === byH ? '#fff' : mainPrimaryColor,
+                                                    }}>
+                                                    {byH ? unitSym : t('day_short')}
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    )}
+                                </Box>
+                                {/* Parts count + Equal/Unequal */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.4)`, borderRadius: 2, overflow: 'hidden' }}>
-                                        <Box
-                                            onClick={() => {
-                                                const n = Math.max(2, splitPartsCount - 1);
-                                                setSplitPartsCount(n);
-                                                setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
-                                            }}
-                                            sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount <= 2 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount <= 2 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount <= 2 ? 'transparent' : `${mainPrimaryColor}11` } }}
-                                        >−</Box>
+                                        <Box onClick={() => changePartsCount(Math.max(2, splitPartsCount - 1))}
+                                            sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount <= 2 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount <= 2 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount <= 2 ? 'transparent' : `${mainPrimaryColor}11` } }}>−</Box>
                                         <Typography sx={{ px: 1.5, fontSize: '0.9rem', fontWeight: 600, color: '#1a1a1a', minWidth: 24, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>
                                             {splitPartsCount}
                                         </Typography>
-                                        <Box
-                                            onClick={() => {
-                                                const n = Math.min(10, splitPartsCount + 1);
-                                                setSplitPartsCount(n);
-                                                setSplitPartDays(Array.from({ length: n }, () => String(+(totalDays / n).toFixed(2))));
-                                            }}
-                                            sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount >= 10 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount >= 10 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount >= 10 ? 'transparent' : `${mainPrimaryColor}11` } }}
-                                        >+</Box>
+                                        <Box onClick={() => changePartsCount(Math.min(10, splitPartsCount + 1))}
+                                            sx={{ px: 1.2, py: 0.5, cursor: splitPartsCount >= 10 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: splitPartsCount >= 10 ? '#ccc' : mainPrimaryColor, userSelect: 'none', '&:hover': { bgcolor: splitPartsCount >= 10 ? 'transparent' : `${mainPrimaryColor}11` } }}>+</Box>
                                     </Box>
                                     <Typography sx={{ fontSize: '0.8rem', color: '#888' }}>{t('parts')}</Typography>
                                     <Box sx={{ flex: 1 }} />
                                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                                         {(['equal', 'unequal'] as const).map(mode => (
-                                            <Button
-                                                key={mode}
-                                                size='small'
+                                            <Button key={mode} size='small'
                                                 variant={splitEqualMode === (mode === 'equal') ? 'contained' : 'outlined'}
-                                                onClick={() => {
-                                                    setSplitEqualMode(mode === 'equal');
-                                                    setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(+(totalDays / splitPartsCount).toFixed(2))));
-                                                }}
-                                                sx={{
-                                                    borderRadius: '20px', textTransform: 'none', fontSize: '0.78rem', px: 1.5, py: 0.4, minWidth: 0,
-                                                    ...(splitEqualMode === (mode === 'equal')
-                                                        ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
-                                                        : { borderColor: mainPrimaryColor, color: mainPrimaryColor }),
-                                                }}
-                                            >
+                                                onClick={() => { setSplitEqualMode(mode === 'equal'); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); }}
+                                                sx={{ borderRadius: '20px', textTransform: 'none', fontSize: '0.78rem', px: 1.5, py: 0.4, minWidth: 0,
+                                                    ...(splitEqualMode === (mode === 'equal') ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } } : { borderColor: mainPrimaryColor, color: mainPrimaryColor }) }}>
                                                 {mode === 'equal' ? t('Equal') : t('Unequal')}
                                             </Button>
                                         ))}
@@ -1988,30 +2023,64 @@ export default function SchedulePage() {
                                 </Box>
                                 {splitEqualMode ? (
                                     <Typography sx={{ fontSize: '0.82rem', color: '#666', pl: 0.5 }}>
-                                        {t('Each part')}: <strong>{+(totalDays / splitPartsCount).toFixed(2)} {t('day_short')}</strong>
+                                        {t('Each part')}: <strong>{toDisplay(totalDays / splitPartsCount)} {splitByHours ? unitSym : t('day_short')}</strong>
+                                        {lhD > 0 && !splitByHours && <span style={{ color: '#aaa' }}> ({+(totalDays / splitPartsCount * lhD).toFixed(2)} {unitSym})</span>}
                                     </Typography>
                                 ) : (
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                                        {Array.from({ length: splitPartsCount }, (_, i) => (
-                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Typography sx={{ fontSize: '0.78rem', color: '#888', minWidth: 52, flexShrink: 0 }}>{t('Part')} {i + 1}:</Typography>
-                                                <TextField
-                                                    type='number'
-                                                    size='small'
-                                                    value={splitPartDays[i] ?? ''}
-                                                    onChange={e => {
-                                                        const updated = [...splitPartDays];
-                                                        updated[i] = e.target.value;
-                                                        setSplitPartDays(updated);
-                                                    }}
-                                                    InputProps={{ endAdornment: <InputAdornment position='end'>{t('day_short')}</InputAdornment> }}
-                                                    inputProps={{ min: 0.01, step: 0.01 }}
-                                                    sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& .MuiInputBase-input': { py: 0.6 } }}
-                                                />
-                                            </Box>
-                                        ))}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {Array.from({ length: splitPartsCount }, (_, i) => {
+                                            const md = i > 0 ? dayToMD(splitPartStartDays[i - 1] ?? 1) : dayToMD(splitDialogItem.startDay ?? 1);
+                                            return (
+                                                <Box key={i} sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, p: 1, borderRadius: 2, bgcolor: 'rgba(0,171,190,0.04)', border: `1px solid rgba(0,171,190,0.12)` }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Typography sx={{ fontSize: '0.76rem', color: '#888', minWidth: 48, flexShrink: 0, fontWeight: 600 }}>{t('Part')} {i + 1}</Typography>
+                                                        <TextField type='number' size='small'
+                                                            value={splitPartDays[i] ?? ''}
+                                                            onChange={e => { const u = [...splitPartDays]; u[i] = e.target.value; setSplitPartDays(u); }}
+                                                            InputProps={{ endAdornment: <InputAdornment position='end'>{splitByHours ? unitSym : t('day_short')}</InputAdornment> }}
+                                                            inputProps={{ min: 0.01, step: 0.01 }}
+                                                            sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& .MuiInputBase-input': { py: 0.6 } }} />
+                                                        {lhD > 0 && (
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', flexShrink: 0 }}>
+                                                                {splitByHours
+                                                                    ? `${+(toDays(splitPartDays[i] ?? '0')).toFixed(2)}${t('day_short')}`
+                                                                    : `${+(toDays(splitPartDays[i] ?? '0') * lhD).toFixed(2)}${unitSym}`}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                    {/* Start day row */}
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                                        <Typography sx={{ fontSize: '0.72rem', color: '#aaa', minWidth: 48, flexShrink: 0 }}>{t('Start')}:</Typography>
+                                                        {i === 0 ? (
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
+                                                                {t('Month')} {md.m}, {t('Day')} {md.d}
+                                                            </Typography>
+                                                        ) : (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                <Typography sx={{ fontSize: '0.72rem', color: '#666' }}>{t('Month')}</Typography>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.3)`, borderRadius: 1.5, overflow: 'hidden' }}>
+                                                                    <Box onClick={() => { const nd = mdToDay(Math.max(1, md.m - 1), 1); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
+                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.m <= 1 ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.m <= 1 ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>‹</Box>
+                                                                    <Typography sx={{ px: 0.75, fontSize: '0.72rem', fontWeight: 600, color: '#1a1a1a', minWidth: 16, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>{md.m}</Typography>
+                                                                    <Box onClick={() => { const nd = mdToDay(Math.min(monthGroups.length, md.m + 1), 1); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
+                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.m >= monthGroups.length ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.m >= monthGroups.length ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>›</Box>
+                                                                </Box>
+                                                                <Typography sx={{ fontSize: '0.72rem', color: '#666' }}>{t('Day')}</Typography>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.3)`, borderRadius: 1.5, overflow: 'hidden' }}>
+                                                                    <Box onClick={() => { const nd = mdToDay(md.m, Math.max(1, md.d - 1)); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
+                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.d <= 1 ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.d <= 1 ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>‹</Box>
+                                                                    <Typography sx={{ px: 0.75, fontSize: '0.72rem', fontWeight: 600, color: '#1a1a1a', minWidth: 16, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>{md.d}</Typography>
+                                                                    <Box onClick={() => { const nd = mdToDay(md.m, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, md.d + 1)); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
+                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.d >= (monthGroups[md.m - 1]?.dayCount ?? 30) ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.d >= (monthGroups[md.m - 1]?.dayCount ?? 30) ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>›</Box>
+                                                                </Box>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            );
+                                        })}
                                         <Typography sx={{ fontSize: '0.76rem', color: sumOk ? '#43a047' : '#e53935', mt: 0.25, pl: 0.5 }}>
-                                            {t('Sum')}: {+sumDays.toFixed(2)} / {+totalDays.toFixed(2)} {t('day_short')} {sumOk ? '✓' : `(${t('must equal total')})`}
+                                            {t('Sum')}: {+(splitByHours ? sumRaw * lhD : sumRaw).toFixed(2)} / {+(splitByHours ? totalDays * lhD : totalDays).toFixed(2)} {splitByHours ? unitSym : t('day_short')} {sumOk ? '✓' : `(${t('must equal total')})`}
                                         </Typography>
                                     </Box>
                                 )}

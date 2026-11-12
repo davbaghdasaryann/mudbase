@@ -871,5 +871,7 @@
   "Each part": "Յուրականչ մաս",
   "must equal total": "Պիտի հավասար լինի",
   "parts": "մաս",
-  "Month": "Ամիս"
+  "Month": "Ամիս",
+  "Day": "Օր",
+  "hr_short": "ժ"
 }
