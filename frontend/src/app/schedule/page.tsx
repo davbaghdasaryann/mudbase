@@ -1698,10 +1698,10 @@ export default function SchedulePage() {
                                                 '& .MuiAccordionSummary-content': { margin: '8px 0' },
                                             }}
                                         >
-                                            <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#1a1a1a' }}>
+                                            <Typography sx={{ fontWeight: 700, fontSize: '0.86rem', color: '#1a1a1a' }}>
                                                 {secName || t('General')}
                                             </Typography>
-                                            <Typography sx={{ fontSize: '0.72rem', color: '#aaa', ml: 1 }}>
+                                            <Typography sx={{ fontSize: '0.76rem', color: '#aaa', ml: 1 }}>
                                                 ({Array.from(subsMap.values()).flat().length})
                                             </Typography>
                                         </AccordionSummary>
@@ -1722,10 +1722,10 @@ export default function SchedulePage() {
                                                                 '& .MuiAccordionSummary-content': { margin: '6px 0' },
                                                             }}
                                                         >
-                                                            <Typography sx={{ fontWeight: 600, fontSize: '0.78rem', color: '#444' }}>
+                                                            <Typography sx={{ fontWeight: 600, fontSize: '0.84rem', color: '#444' }}>
                                                                 {subName}
                                                             </Typography>
-                                                            <Typography sx={{ fontSize: '0.68rem', color: '#aaa', ml: 1 }}>
+                                                            <Typography sx={{ fontSize: '0.74rem', color: '#aaa', ml: 1 }}>
                                                                 ({rows.length})
                                                             </Typography>
                                                         </AccordionSummary>
