@@ -237,6 +237,8 @@ export default function SchedulePage() {
     const splitMarkerDragRef = useRef<{ index: number; startX: number; origOffset: number; hasMoved: boolean } | null>(null);
 
     const [splitDialogItem, setSplitDialogItem] = useState<ScheduleItem | null>(null);
+    const [uniteDialogItemId, setUniteDialogItemId] = useState<string | null>(null);
+    const [uniteMergeCount, setUniteMergeCount] = useState(2);
     const [splitPartsCount, setSplitPartsCount] = useState(2);
     const [splitEqualMode, setSplitEqualMode] = useState(true);
     const [splitPartDays, setSplitPartDays] = useState<string[]>([]);
@@ -590,10 +592,20 @@ export default function SchedulePage() {
         setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
     };
 
-    const handleUniteScheduleItem = async (itemId: string) => {
+    const handleUniteScheduleItem = async (itemId: string, mergeCount?: number) => {
+        const subItems = scheduleItems.filter(i => i.parentItemId === itemId).sort((a, b) => (a.startDay ?? 0) - (b.startDay ?? 0));
+        const toDelete = mergeCount != null ? subItems.slice(0, mergeCount) : subItems;
+        await Promise.all(toDelete.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
+        const deleteIds = new Set(toDelete.map(si => si._id));
+        setScheduleItems(prev => prev.filter(i => !deleteIds.has(i._id)));
+    };
+
+    const openUniteDialog = (itemId: string) => {
         const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
-        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
-        setScheduleItems(prev => prev.filter(i => i.parentItemId !== itemId));
+        if (subItems.length === 0) return;
+        if (subItems.length === 1) { handleUniteScheduleItem(itemId); return; }
+        setUniteMergeCount(subItems.length);
+        setUniteDialogItemId(itemId);
     };
 
     const handleDeleteScheduleItemWithSubs = async (itemId: string) => {
@@ -607,10 +619,10 @@ export default function SchedulePage() {
         });
     };
 
-    const handleUniteItem = async (row: LaborRow) => {
+    const handleUniteItem = (row: LaborRow) => {
         const entry = addedLaborMap[row._id];
         if (!entry) return;
-        await handleUniteScheduleItem(entry.scheduleItemId);
+        openUniteDialog(entry.scheduleItemId);
     };
 
     const handleDeleteWithSubItems = async (row: LaborRow) => {
@@ -2123,6 +2135,45 @@ export default function SchedulePage() {
                 )}
             </Menu>
 
+            {/* Unite Parts dialog */}
+            {uniteDialogItemId && (() => {
+                const subCount = scheduleItems.filter(i => i.parentItemId === uniteDialogItemId).length;
+                return (
+                    <Dialog open={!!uniteDialogItemId} onClose={() => setUniteDialogItemId(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                        <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                                <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: `${mainPrimaryColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.2 }}>
+                                    <CallSplitIcon sx={{ fontSize: 20, color: mainPrimaryColor, transform: 'rotate(180deg)' }} />
+                                </Box>
+                                <Box>
+                                    <Typography fontWeight={700} fontSize='1rem'>{t('Merge parts')}</Typography>
+                                    <Typography fontSize='0.78rem' color='text.secondary' sx={{ mt: 0.3 }}>
+                                        {subCount} {t('parts')}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </DialogTitle>
+                        <DialogContent sx={{ px: 3, pt: 2.5, pb: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                                <Box onClick={() => setUniteMergeCount(c => Math.max(2, c - 1))} sx={{ width: 34, height: 34, borderRadius: 2, border: '1px solid rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uniteMergeCount <= 2 ? 'default' : 'pointer', opacity: uniteMergeCount <= 2 ? 0.3 : 1, fontSize: '1.2rem', userSelect: 'none' }}>−</Box>
+                                <Typography fontWeight={700} fontSize='1.05rem' sx={{ minWidth: 90, textAlign: 'center' }}>
+                                    {uniteMergeCount} {t('parts')}
+                                </Typography>
+                                <Box onClick={() => setUniteMergeCount(c => Math.min(subCount, c + 1))} sx={{ width: 34, height: 34, borderRadius: 2, border: '1px solid rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uniteMergeCount >= subCount ? 'default' : 'pointer', opacity: uniteMergeCount >= subCount ? 0.3 : 1, fontSize: '1.2rem', userSelect: 'none' }}>+</Box>
+                            </Box>
+                        </DialogContent>
+                        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+                            <Button onClick={() => setUniteDialogItemId(null)} sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('Cancel')}</Button>
+                            <Button variant='contained'
+                                onClick={() => { handleUniteScheduleItem(uniteDialogItemId, uniteMergeCount); setUniteDialogItemId(null); }}
+                                sx={{ bgcolor: mainPrimaryColor, fontWeight: 700, '&:hover': { bgcolor: '#00a398' } }}>
+                                {t('Confirm')}
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                );
+            })()}
+
             {/* Split Work dialog */}
             <Dialog open={!!splitDialogItem} onClose={() => setSplitDialogItem(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ px: 3, pt: 2.5, pb: 0 }}>
@@ -2335,7 +2386,7 @@ export default function SchedulePage() {
                     return (
                         <MenuItem
                             disabled={!hasSplit}
-                            onClick={() => { if (barContextMenu) { handleUniteScheduleItem(barContextMenu.item._id); setBarContextMenu(null); } }}
+                            onClick={() => { if (barContextMenu) { openUniteDialog(barContextMenu.item._id); setBarContextMenu(null); } }}
                             sx={{ fontSize: '0.85rem', py: 0.9 }}
                         >
                             <ListItemIcon sx={{ minWidth: 32 }}>
