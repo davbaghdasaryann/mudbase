@@ -899,5 +899,6 @@
   "parts": "parts",
   "Month": "Month",
   "Day": "Day",
-  "hr_short": "hr"
+  "hr_short": "hr",
+  "Used to convert days to hours": "Used to convert days to hours"
 }

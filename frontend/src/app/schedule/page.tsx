@@ -1846,28 +1846,29 @@ export default function SchedulePage() {
                 </DialogTitle>
                 <Divider sx={{ mx: 3, mt: 2, mb: 0 }} />
                 <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-                    <TextField
-                        autoFocus
-                        type='number'
-                        fullWidth
-                        size='small'
-                        label={t('Hours per working day')}
-                        value={hoursInput}
-                        onChange={e => setHoursInput(e.target.value)}
-                        onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                                const v = parseInt(hoursInput, 10);
-                                if (v > 0 && v <= 24) {
-                                    setHoursPerDay(v);
-                                    localStorage.setItem('schedule_hoursPerDay', String(v));
-                                    setSettingsOpen(false);
-                                }
-                            }
-                        }}
-                        InputProps={{ endAdornment: <InputAdornment position='end'>h</InputAdornment> }}
-                        inputProps={{ min: 1, max: 24, step: 1 }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-                    />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {/* Parameter row: Hours per working day */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 1.5, py: 1.25, borderRadius: 2, border: '1px solid rgba(96,125,139,0.18)', bgcolor: '#f9fafb' }}>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#1a1a1a' }}>{t('Hours per working day')}</Typography>
+                                <Typography sx={{ fontSize: '0.74rem', color: '#aaa', mt: 0.2 }}>{t('Used to convert days to hours')}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(96,125,139,0.3)', borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
+                                <Box
+                                    onClick={() => { const v = Math.max(1, parseInt(hoursInput, 10) - 1); setHoursInput(String(v)); }}
+                                    sx={{ px: 1.2, py: 0.6, cursor: parseInt(hoursInput, 10) <= 1 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: parseInt(hoursInput, 10) <= 1 ? '#ccc' : '#607d8b', userSelect: 'none', '&:hover': { bgcolor: parseInt(hoursInput, 10) <= 1 ? 'transparent' : 'rgba(96,125,139,0.08)' } }}
+                                >−</Box>
+                                <Box sx={{ px: 1.5, borderLeft: '1px solid rgba(96,125,139,0.2)', borderRight: '1px solid rgba(96,125,139,0.2)', minWidth: 44, textAlign: 'center' }}>
+                                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#1a1a1a' }}>{hoursInput}h</Typography>
+                                </Box>
+                                <Box
+                                    onClick={() => { const v = Math.min(24, parseInt(hoursInput, 10) + 1); setHoursInput(String(v)); }}
+                                    sx={{ px: 1.2, py: 0.6, cursor: parseInt(hoursInput, 10) >= 24 ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 700, color: parseInt(hoursInput, 10) >= 24 ? '#ccc' : '#607d8b', userSelect: 'none', '&:hover': { bgcolor: parseInt(hoursInput, 10) >= 24 ? 'transparent' : 'rgba(96,125,139,0.08)' } }}
+                                >+</Box>
+                            </Box>
+                        </Box>
+                        {/* Future parameters go here */}
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
                     <Button onClick={() => setSettingsOpen(false)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>

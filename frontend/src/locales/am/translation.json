@@ -873,5 +873,6 @@
   "parts": "մաս",
   "Month": "Ամիս",
   "Day": "Օր",
-  "hr_short": "ժ"
+  "hr_short": "ժ",
+  "Used to convert days to hours": "Օրերը ժամերի փոխարկելու համար"
 }
