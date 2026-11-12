@@ -590,6 +590,23 @@ export default function SchedulePage() {
         setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
     };
 
+    const handleUniteItem = async (row: LaborRow) => {
+        const entry = addedLaborMap[row._id];
+        if (!entry) return;
+        const subItems = scheduleItems.filter(i => i.parentItemId === entry.scheduleItemId);
+        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
+        setScheduleItems(prev => prev.filter(i => i.parentItemId !== entry.scheduleItemId));
+    };
+
+    const handleDeleteWithSubItems = async (row: LaborRow) => {
+        const entry = addedLaborMap[row._id];
+        if (!entry) return;
+        const subItems = scheduleItems.filter(i => i.parentItemId === entry.scheduleItemId);
+        await Promise.all(subItems.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
+        await handleDeleteItem(entry.scheduleItemId);
+        setAddedLaborMap(prev => { const copy = { ...prev }; delete copy[row._id]; return copy; });
+    };
+
     const handleDeleteItem = async (id: string) => {
         await Api.requestSession({ command: 'schedule/item_delete', args: { id } });
         setScheduleItems(prev => prev.filter(i => i._id !== id));
@@ -1949,9 +1966,10 @@ export default function SchedulePage() {
                                 {/* Table header */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, bgcolor: '#f5f9f9', borderBottom: '1px solid #E3E6E6' }}>
                                     <Typography sx={{ flex: 1, ...colHdr }}>{t('Work')}</Typography>
-                                    <Typography sx={{ width: 110, textAlign: 'right', ...colHdr }}>{t('Total')}</Typography>
-                                    <Typography sx={{ width: 120, textAlign: 'right', ...colHdr }}>{t('Scheduled')}</Typography>
-                                    <Typography sx={{ width: 120, textAlign: 'right', ...colHdr }}>{t('Remaining')}</Typography>
+                                    <Typography sx={{ width: 100, textAlign: 'right', ...colHdr }}>{t('Total')}</Typography>
+                                    <Typography sx={{ width: 110, textAlign: 'right', ...colHdr }}>{t('Scheduled')}</Typography>
+                                    <Typography sx={{ width: 110, textAlign: 'right', ...colHdr }}>{t('Remaining')}</Typography>
+                                    <Box sx={{ width: 76 }} />
                                 </Box>
                                 {groups.map(([key, group], gi) => {
                                     const isOpen = vmExpanded[key] ?? false;
@@ -1985,15 +2003,16 @@ export default function SchedulePage() {
                                                         </Box>
                                                     </Box>
                                                 </Box>
-                                                <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.82rem', color: '#555', flexShrink: 0 }}>
+                                                <Typography sx={{ width: 100, textAlign: 'right', fontSize: '0.82rem', color: '#555', flexShrink: 0 }}>
                                                     {+totalQty.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.72rem' }}>{group.unitSymbol}</span>
                                                 </Typography>
-                                                <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.82rem', color: scheduledQty > 0 ? mainPrimaryColor : '#bbb', fontWeight: scheduledQty > 0 ? 600 : 400, flexShrink: 0 }}>
+                                                <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.82rem', color: scheduledQty > 0 ? mainPrimaryColor : '#bbb', fontWeight: scheduledQty > 0 ? 600 : 400, flexShrink: 0 }}>
                                                     {+scheduledQty.toFixed(3)}&thinsp;<span style={{ color: scheduledQty > 0 ? `${mainPrimaryColor}99` : '#ccc', fontSize: '0.72rem' }}>{group.unitSymbol}</span>
                                                 </Typography>
-                                                <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.82rem', color: remainColor, fontWeight: !isDone ? 600 : 400, flexShrink: 0 }}>
+                                                <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.82rem', color: remainColor, fontWeight: !isDone ? 600 : 400, flexShrink: 0 }}>
                                                     {+remainingQty.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.72rem' }}>{group.unitSymbol}</span>
                                                 </Typography>
+                                                <Box sx={{ width: 76 }} />
                                             </Box>
                                             {/* Sub-items */}
                                             {isOpen && group.rows.map((row, ri) => {
@@ -2003,19 +2022,49 @@ export default function SchedulePage() {
                                                 const rPartial = !rDone && sc > 0;
                                                 const rColor = rDone ? '#9e9e9e' : rPartial ? '#ff9800' : '#e53935';
                                                 return (
-                                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'flex-start', pl: 5, pr: 2, py: 0.9, bgcolor: ri % 2 === 0 ? '#fff' : '#f8fdfe', borderTop: '1px solid #f0f0f0' }}>
+                                                    <Box key={row._id} sx={{ display: 'flex', alignItems: 'flex-start', pl: 5, pr: 1, py: 0.9, bgcolor: ri % 2 === 0 ? '#fff' : '#f8fdfe', borderTop: '1px solid #f0f0f0' }}>
                                                         <Typography sx={{ flex: 1, minWidth: 0, pr: 2, fontSize: '0.80rem', color: '#444', lineHeight: 1.35 }}>
                                                             {row.catalogName || row.laborOfferItemName}
                                                         </Typography>
-                                                        <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.80rem', color: '#555', flexShrink: 0 }}>
+                                                        <Typography sx={{ width: 100, textAlign: 'right', fontSize: '0.80rem', color: '#555', flexShrink: 0 }}>
                                                             {+row.quantity.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.70rem' }}>{row.unitSymbol}</span>
                                                         </Typography>
-                                                        <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.80rem', color: sc > 0 ? mainPrimaryColor : '#bbb', fontWeight: sc > 0 ? 600 : 400, flexShrink: 0 }}>
+                                                        <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.80rem', color: sc > 0 ? mainPrimaryColor : '#bbb', fontWeight: sc > 0 ? 600 : 400, flexShrink: 0 }}>
                                                             {+sc.toFixed(3)}&thinsp;<span style={{ color: sc > 0 ? `${mainPrimaryColor}99` : '#ccc', fontSize: '0.70rem' }}>{row.unitSymbol}</span>
                                                         </Typography>
-                                                        <Typography sx={{ width: 120, textAlign: 'right', fontSize: '0.80rem', color: rColor, fontWeight: !rDone ? 600 : 400, flexShrink: 0 }}>
+                                                        <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.80rem', color: rColor, fontWeight: !rDone ? 600 : 400, flexShrink: 0 }}>
                                                             {+rem.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.70rem' }}>{row.unitSymbol}</span>
                                                         </Typography>
+                                                        {/* Actions */}
+                                                        <Box sx={{ width: 76, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.25, flexShrink: 0 }}>
+                                                            {(() => {
+                                                                const entry = addedLaborMap[row._id];
+                                                                const hasSplit = entry ? scheduleItems.some(si => si.parentItemId === entry.scheduleItemId) : false;
+                                                                const isScheduled = !!entry;
+                                                                return (
+                                                                    <>
+                                                                        <Tooltip title={t('Unite')} placement='top' arrow>
+                                                                            <span>
+                                                                                <IconButton size='small' disabled={!isScheduled || !hasSplit}
+                                                                                    onClick={e => { e.stopPropagation(); handleUniteItem(row); }}
+                                                                                    sx={{ color: mainPrimaryColor, opacity: (!isScheduled || !hasSplit) ? 0.25 : 1, '&:hover': { bgcolor: `${mainPrimaryColor}15` } }}>
+                                                                                    <CallSplitIcon sx={{ fontSize: 15, transform: 'rotate(180deg)' }} />
+                                                                                </IconButton>
+                                                                            </span>
+                                                                        </Tooltip>
+                                                                        <Tooltip title={t('Delete')} placement='top' arrow>
+                                                                            <span>
+                                                                                <IconButton size='small' disabled={!isScheduled}
+                                                                                    onClick={e => { e.stopPropagation(); handleDeleteWithSubItems(row); }}
+                                                                                    sx={{ color: '#e53935', opacity: !isScheduled ? 0.25 : 1, '&:hover': { bgcolor: 'rgba(229,57,53,0.08)' } }}>
+                                                                                    <DeleteOutlineIcon sx={{ fontSize: 15 }} />
+                                                                                </IconButton>
+                                                                            </span>
+                                                                        </Tooltip>
+                                                                    </>
+                                                                );
+                                                            })()}
+                                                        </Box>
                                                     </Box>
                                                 );
                                             })}
