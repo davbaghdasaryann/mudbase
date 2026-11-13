@@ -1411,7 +1411,8 @@ export default function SchedulePage() {
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
                                 const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
-                                const baseBarWidth = Math.max(duration * DAY_W - 3, 12);
+                                const hasSegs = (segmentsByParent.get(item._id) ?? []).length > 0;
+                                const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
                                 const isSplitTarget = splitMode?.item._id === item._id;
                                 const isUniteTarget = uniteSelectMode?.parentItemId === item._id;
