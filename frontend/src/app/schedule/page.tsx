@@ -2491,7 +2491,7 @@ export default function SchedulePage() {
                                     <Typography sx={{ fontSize: '0.68rem', color: '#aaa', mb: 0.3 }}>{t('Month')}</Typography>
                                     <Select size='small' fullWidth value={md.m}
                                         onChange={e => { const nm = Number(e.target.value); const nd = Math.min(md.d, monthGroups[nm - 1]?.dayCount ?? 30); setDay(pMDToDay(nm, nd)); }}
-                                        sx={{ fontSize: '0.82rem' }}>
+                                        sx={{ fontSize: '0.82rem', height: '40px' }}>
                                         {monthGroups.map((_, mi) => (
                                             <MenuItem key={mi} value={mi + 1} sx={{ fontSize: '0.82rem' }}>{t('Month')} {mi + 1}</MenuItem>
                                         ))}
@@ -2501,13 +2501,15 @@ export default function SchedulePage() {
                                     <Typography sx={{ fontSize: '0.68rem', color: '#aaa', mb: 0.3 }}>{t('Day')}</Typography>
                                     <TextField size='small' type='number' fullWidth value={md.d}
                                         onChange={e => { const nd = Math.max(1, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, parseInt(e.target.value) || 1)); setDay(pMDToDay(md.m, nd)); }}
-                                        inputProps={{ min: 1, max: monthGroups[md.m - 1]?.dayCount ?? 30, style: { textAlign: 'center' } }} />
+                                        inputProps={{ min: 1, max: monthGroups[md.m - 1]?.dayCount ?? 30, style: { textAlign: 'center' } }}
+                                        sx={{ '& .MuiInputBase-root': { height: '40px' } }} />
                                 </Box>
                                 <Box sx={{ flex: 1.1, minWidth: 0 }}>
                                     <Typography sx={{ fontSize: '0.68rem', color: '#aaa', mb: 0.3 }}>{t('Time')}</Typography>
                                     <TextField type='time' size='small' fullWidth value={timeVal}
                                         onChange={e => setTimeVal(e.target.value)}
-                                        inputProps={{ step: 3600 }} />
+                                        inputProps={{ step: 3600 }}
+                                        sx={{ '& .MuiInputBase-root': { height: '40px' } }} />
                                 </Box>
                             </Box>
                         </Box>
