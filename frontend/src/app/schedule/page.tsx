@@ -592,11 +592,18 @@ export default function SchedulePage() {
     };
 
     const handleUniteScheduleItem = async (itemId: string, selectedIds?: Set<string>) => {
+        const parentItem = scheduleItems.find(i => i._id === itemId);
+        if (!parentItem) return;
         const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
         const toDelete = selectedIds ? subItems.filter(si => selectedIds.has(si._id)) : subItems;
+        const restoredQty = (parentItem.quantity ?? 0) + toDelete.reduce((s, si) => s + (si.quantity ?? 0), 0);
         await Promise.all(toDelete.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
         const deleteIds = new Set(toDelete.map(si => si._id));
-        setScheduleItems(prev => prev.filter(i => !deleteIds.has(i._id)));
+        setScheduleItems(prev => prev
+            .filter(i => !deleteIds.has(i._id))
+            .map(i => i._id === itemId ? { ...i, quantity: restoredQty } : i)
+        );
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: restoredQty } });
     };
 
     const startUniteSelect = (itemId: string) => {
@@ -1376,7 +1383,7 @@ export default function SchedulePage() {
                                 const baseBarWidth = Math.max(duration * DAY_W - 3, 12);
                                 const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
                                 const isSplitTarget = splitMode?.item._id === item._id;
-                                const hasSegments = (segmentsByParent.get(item._id) ?? []).length > 0;
+                                const isUniteTarget = uniteSelectMode?.parentItemId === item._id;
                                 const rowBg = isRowDraggingThis
                                     ? `rgba(0,171,190,0.06)`
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
@@ -1471,7 +1478,7 @@ export default function SchedulePage() {
                                                     <Box key={d} sx={{ position: 'absolute', left: (d - 1) * DAY_W, top: 0, bottom: 0, width: isWeekend ? DAY_W : 1, background: 'transparent', zIndex: 0 }} />
                                                 );
                                             })}
-                                            {(!hasSegments || isSplitTarget) && <Tooltip title={isSplitTarget ? '' : tooltipLabel} placement='top' arrow>
+                                            <Tooltip title={isSplitTarget ? '' : tooltipLabel} placement='top' arrow>
                                                 <Box
                                                     onMouseDown={isSplitTarget ? (e => e.preventDefault()) : (e => handleBarMouseDown(e, item))}
                                                     onClick={isSplitTarget ? (e => {
@@ -1494,11 +1501,12 @@ export default function SchedulePage() {
                                                         px: 1, overflow: 'visible',
                                                         boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
                                                         cursor: isSplitTarget ? 'crosshair' : (isDraggingThis ? 'grabbing' : 'grab'),
-                                                        opacity: (isDraggingThis || isResizingThis) ? 0.9 : 1,
+                                                        opacity: isUniteTarget ? 0.45 : (isDraggingThis || isResizingThis) ? 0.9 : 1,
                                                         transition: (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
                                                         zIndex: isSplitTarget ? 10 : (isDraggingThis || isResizingThis) ? 10 : 1,
                                                         outline: isSplitTarget ? '2px dashed rgba(255,255,255,0.7)' : 'none',
                                                         outlineOffset: '0px',
+                                                        pointerEvents: isUniteTarget ? 'none' : undefined,
                                                     }}
                                                 >
                                                     <Typography sx={{ color: isSplitTarget ? 'rgba(255,255,255,0.6)' : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
@@ -1587,7 +1595,7 @@ export default function SchedulePage() {
                                                         />
                                                     ))}
                                                 </Box>
-                                            </Tooltip>}
+                                            </Tooltip>
                                             {/* Independent segment bars from split — each fully draggable and resizable */}
                                             {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg) => {
                                                 const segDur = itemDuration(seg);
