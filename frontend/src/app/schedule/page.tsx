@@ -1636,7 +1636,7 @@ export default function SchedulePage() {
                                                 const isDraggingThisSeg = !inUniteMode && dragging?.id === seg._id;
                                                 const isResizingThisSeg = !inUniteMode && resizing?.id === seg._id;
                                                 const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
-                                                const segBaseW = Math.max(segDur * DAY_W - 3, 12);
+                                                const segBaseW = Math.max(segDur * DAY_W - 1, 12);
                                                 const segW = isResizingThisSeg ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 return (
                                                     <Box
@@ -1651,7 +1651,7 @@ export default function SchedulePage() {
                                                         onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                         sx={{
                                                             position: 'absolute',
-                                                            left: segOff + 4, top: 6, height: ROW_H - 12, width: segW,
+                                                            left: segOff + 2, top: 6, height: ROW_H - 12, width: segW,
                                                             background: isSegSelected
                                                                 ? `linear-gradient(90deg, #fff 0%, #f0fffe 100%)`
                                                                 : inUniteMode
