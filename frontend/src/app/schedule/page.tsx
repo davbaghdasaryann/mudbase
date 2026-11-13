@@ -1543,8 +1543,13 @@ export default function SchedulePage() {
                                             })}
                                             <Tooltip title={isSplitTarget ? '' : tooltipLabel} placement='top' arrow>
                                                 <Box
-                                                    onMouseDown={isSplitTarget ? (e => e.preventDefault()) : (e => handleBarMouseDown(e, item))}
-                                                    onClick={isSplitTarget ? (e => {
+                                                    onMouseDown={isSplitTarget || isUniteTarget ? (e => e.preventDefault()) : (e => handleBarMouseDown(e, item))}
+                                                    onClick={isUniteTarget ? (e => { e.stopPropagation(); setUniteSelectMode(prev => {
+                                                        if (!prev) return prev;
+                                                        const next = new Set(prev.selectedIds);
+                                                        if (next.has(item._id)) next.delete(item._id); else next.add(item._id);
+                                                        return { ...prev, selectedIds: next };
+                                                    }); }) : isSplitTarget ? (e => {
                                                         e.stopPropagation();
                                                         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                                         const offset = Math.round(e.clientX - rect.left);
@@ -1563,13 +1568,12 @@ export default function SchedulePage() {
                                                         display: 'flex', alignItems: 'center',
                                                         px: 1, overflow: 'visible',
                                                         boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                        cursor: isSplitTarget ? 'crosshair' : (isDraggingThis ? 'grabbing' : 'grab'),
-                                                        opacity: isUniteTarget ? 0.45 : (isDraggingThis || isResizingThis) ? 0.9 : 1,
+                                                        opacity: isUniteTarget ? (uniteSelectMode!.selectedIds.has(item._id) ? 1 : 0.55) : (isDraggingThis || isResizingThis) ? 0.9 : 1,
                                                         transition: (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
                                                         zIndex: isSplitTarget ? 10 : (isDraggingThis || isResizingThis) ? 10 : 1,
-                                                        outline: isSplitTarget ? '2px dashed rgba(255,255,255,0.7)' : 'none',
-                                                        outlineOffset: '0px',
-                                                        pointerEvents: isUniteTarget ? 'none' : undefined,
+                                                        outline: isSplitTarget ? '2px dashed rgba(255,255,255,0.7)' : isUniteTarget ? (uniteSelectMode!.selectedIds.has(item._id) ? `2.5px solid ${barColor}` : `2px dashed ${barColor}88`) : 'none',
+                                                        outlineOffset: '2px',
+                                                        cursor: isUniteTarget ? 'pointer' : isSplitTarget ? 'crosshair' : (isDraggingThis ? 'grabbing' : 'grab'),
                                                     }}
                                                 >
                                                     <Typography sx={{ color: isSplitTarget ? 'rgba(255,255,255,0.6)' : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
@@ -2576,7 +2580,7 @@ export default function SchedulePage() {
                     </Button>
                     <Button
                         size='small'
-                        disabled={uniteSelectMode.selectedIds.size < 2}
+                        disabled={[...uniteSelectMode.selectedIds].filter(id => id !== uniteSelectMode.parentItemId).length < 1}
                         variant='contained'
                         onClick={() => { handleUniteScheduleItem(uniteSelectMode.parentItemId, uniteSelectMode.selectedIds); setUniteSelectMode(null); }}
                         sx={{ borderRadius: '20px', textTransform: 'none', fontSize: '0.8rem',
