@@ -2487,25 +2487,28 @@ export default function SchedulePage() {
                         <Box sx={{ mb: 2 }}>
                             <Typography sx={{ fontSize: '0.72rem', color: '#888', mb: 0.75 }}>{label}</Typography>
                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                <FormControl size='small' sx={{ flex: 1, minWidth: 0 }}>
-                                    <InputLabel shrink sx={{ fontSize: '0.8rem' }}>{t('Month')}</InputLabel>
-                                    <Select notched label={t('Month')} value={md.m}
+                                <Box sx={{ flex: 1.4, minWidth: 0 }}>
+                                    <Typography sx={{ fontSize: '0.68rem', color: '#aaa', mb: 0.3 }}>{t('Month')}</Typography>
+                                    <Select size='small' fullWidth value={md.m}
                                         onChange={e => { const nm = Number(e.target.value); const nd = Math.min(md.d, monthGroups[nm - 1]?.dayCount ?? 30); setDay(pMDToDay(nm, nd)); }}
                                         sx={{ fontSize: '0.82rem' }}>
                                         {monthGroups.map((_, mi) => (
                                             <MenuItem key={mi} value={mi + 1} sx={{ fontSize: '0.82rem' }}>{t('Month')} {mi + 1}</MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
-                                <TextField size='small' type='number' label={t('Day')} value={md.d}
-                                    onChange={e => { const nd = Math.max(1, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, parseInt(e.target.value) || 1)); setDay(pMDToDay(md.m, nd)); }}
-                                    inputProps={{ min: 1, max: monthGroups[md.m - 1]?.dayCount ?? 30, style: { textAlign: 'center' } }}
-                                    InputLabelProps={{ shrink: true }}
-                                    sx={{ flex: 1, minWidth: 0 }} />
-                                <TextField label={t('Time')} type='time' size='small' value={timeVal}
-                                    onChange={e => setTimeVal(e.target.value)}
-                                    inputProps={{ step: 3600 }} sx={{ flex: 1.4, minWidth: 0 }}
-                                    InputLabelProps={{ shrink: true }} />
+                                </Box>
+                                <Box sx={{ flex: 0.7, minWidth: 0 }}>
+                                    <Typography sx={{ fontSize: '0.68rem', color: '#aaa', mb: 0.3 }}>{t('Day')}</Typography>
+                                    <TextField size='small' type='number' fullWidth value={md.d}
+                                        onChange={e => { const nd = Math.max(1, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, parseInt(e.target.value) || 1)); setDay(pMDToDay(md.m, nd)); }}
+                                        inputProps={{ min: 1, max: monthGroups[md.m - 1]?.dayCount ?? 30, style: { textAlign: 'center' } }} />
+                                </Box>
+                                <Box sx={{ flex: 1.1, minWidth: 0 }}>
+                                    <Typography sx={{ fontSize: '0.68rem', color: '#aaa', mb: 0.3 }}>{t('Time')}</Typography>
+                                    <TextField type='time' size='small' fullWidth value={timeVal}
+                                        onChange={e => setTimeVal(e.target.value)}
+                                        inputProps={{ step: 3600 }} />
+                                </Box>
                             </Box>
                         </Box>
                     );
