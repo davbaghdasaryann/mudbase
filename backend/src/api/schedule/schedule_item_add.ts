@@ -17,9 +17,9 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
     const sectionName = getQueryParam(req, 'sectionName') ?? '';
     const subsectionName = getQueryParam(req, 'subsectionName') ?? '';
     const startDayParam = getQueryParam(req, 'startDay');
-    const startDay = startDayParam ? parseInt(startDayParam) : 1;
+    const startDay = startDayParam ? parseFloat(startDayParam) : 1;
     const startHourParam = getQueryParam(req, 'startHour');
-    const startHour = startHourParam ? parseInt(startHourParam) : undefined;
+    const startHour = startHourParam ? parseFloat(startHourParam) : undefined;
     const groupIdParam = getQueryParam(req, 'groupId');
     const parentItemIdParam = getQueryParam(req, 'parentItemId');
 
