@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
     Box, Typography, Button, Dialog, DialogTitle, DialogContent,
     DialogActions, IconButton, Divider, CircularProgress, Tooltip, TextField,
-    Menu, MenuItem, ListItemIcon, ListItemText, Popover, InputAdornment,
+    Menu, MenuItem, ListItemIcon, ListItemText, Popover, InputAdornment, Select, FormControl, InputLabel,
     Accordion, AccordionSummary, AccordionDetails,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -233,8 +233,8 @@ export default function SchedulePage() {
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
     const [popoverUnit, setPopoverUnit] = useState<'hour' | 'day' | 'week' | 'month'>('day');
-    const [popoverStartDate, setPopoverStartDate] = useState('');
-    const [popoverEndDate, setPopoverEndDate] = useState('');
+    const [popoverStartDay, setPopoverStartDay] = useState(1);
+    const [popoverEndDay, setPopoverEndDay] = useState(1);
     const [popoverEndTime, setPopoverEndTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
     const [splitMode, setSplitMode] = useState<{ item: ScheduleItem; markers: number[] } | null>(null);
@@ -835,15 +835,15 @@ export default function SchedulePage() {
         if (!barContextMenu || !selected) return;
         const item = barContextMenu.item;
         const h = item.startHour ?? 0;
-        const psd = selected.projectStartDate ? new Date(selected.projectStartDate) : new Date();
-        const startDateObj = addDays(psd, (item.startDay ?? 1) - 1);
+        const startDay = Math.max(1, Math.round(item.startDay ?? 1));
         const durationDays = itemDuration(item);
-        const endMs = startDateObj.getTime() + h * 3600000 + durationDays * 86400000;
-        const endDateObj = new Date(endMs);
-        setPopoverStartDate(toDateInputValue(startDateObj));
+        const endFrac = (startDay - 1) + h / 24 + durationDays;
+        const endDay = Math.max(1, Math.floor(endFrac) + 1);
+        const endH = Math.round((endFrac % 1) * 24) % 24;
+        setPopoverStartDay(startDay);
         setPopoverTime(`${String(h).padStart(2, '0')}:00`);
-        setPopoverEndDate(toDateInputValue(endDateObj));
-        setPopoverEndTime(`${String(endDateObj.getHours()).padStart(2, '0')}:00`);
+        setPopoverEndDay(endDay);
+        setPopoverEndTime(`${String(endH).padStart(2, '0')}:00`);
         setBarPopover({ itemId: item._id, anchorEl: barContextMenu.anchorEl, startHour: h });
         setBarContextMenu(null);
     };
@@ -852,19 +852,13 @@ export default function SchedulePage() {
         if (!barPopover || !selected) return;
         const item = scheduleItems.find(i => i._id === barPopover.itemId);
         if (!item) return;
-        const psd = selected.projectStartDate ? new Date(selected.projectStartDate) : new Date();
-        const refD = new Date(toDateInputValue(psd));
-        const startD = new Date(popoverStartDate);
-        const endD = new Date(popoverEndDate);
         const [sHStr] = popoverTime.split(':');
         const [eHStr] = popoverEndTime.split(':');
-        const startH = popoverUnit === 'hour' ? Math.min(23, Math.max(0, parseInt(sHStr) || 0)) : 0;
-        const endH = popoverUnit === 'hour' ? Math.min(23, Math.max(0, parseInt(eHStr) || 0)) : 0;
-        const startOffset = Math.round((startD.getTime() - refD.getTime()) / 86400000);
-        const endOffset = Math.round((endD.getTime() - refD.getTime()) / 86400000);
-        const newStartDay = Math.max(1, startOffset + 1);
+        const startH = Math.min(23, Math.max(0, parseInt(sHStr) || 0));
+        const endH = Math.min(23, Math.max(0, parseInt(eHStr) || 0));
+        const newStartDay = Math.max(1, popoverStartDay);
         const newStartHour = startH;
-        const durationDays = Math.max(0.125, (endOffset - startOffset) + (endH - startH) / 24);
+        const durationDays = Math.max(0.125, (popoverEndDay - popoverStartDay) + (endH - startH) / 24);
         const lh = item.laborHours ?? 0;
         const newQuantity = lh > 0 ? durationDays * lh : undefined;
         setScheduleItems(prev => prev.map(i => i._id === barPopover.itemId
@@ -1563,20 +1557,24 @@ export default function SchedulePage() {
                                                         width: barWidth,
                                                         background: isSplitTarget
                                                             ? `linear-gradient(90deg, ${barColor}bb 0%, ${barColor}88 100%)`
-                                                            : `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
+                                                            : isUniteTarget
+                                                                ? (uniteSelectMode!.selectedIds.has(item._id)
+                                                                    ? `linear-gradient(90deg, #fff 0%, #f0fffe 100%)`
+                                                                    : `linear-gradient(90deg, ${barColor}99 0%, ${barColor}66 100%)`)
+                                                                : `linear-gradient(90deg, ${barColor} 0%, ${barColor}cc 100%)`,
                                                         borderRadius: '5px',
                                                         display: 'flex', alignItems: 'center',
                                                         px: 1, overflow: 'visible',
-                                                        boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                        opacity: isUniteTarget ? (uniteSelectMode!.selectedIds.has(item._id) ? 1 : 0.55) : (isDraggingThis || isResizingThis) ? 0.9 : 1,
-                                                        transition: (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
+                                                        boxShadow: isSplitTarget ? `0 0 0 2px rgba(255,255,255,0.8), 0 4px 20px ${barColor}88` : (isUniteTarget && uniteSelectMode!.selectedIds.has(item._id)) ? `0 0 0 2.5px ${mainPrimaryColor}, 0 4px 16px ${mainPrimaryColor}44` : (isDraggingThis || isResizingThis) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                        opacity: isUniteTarget && !uniteSelectMode!.selectedIds.has(item._id) ? 0.6 : (isDraggingThis || isResizingThis) ? 0.9 : 1,
+                                                        transition: isUniteTarget ? 'box-shadow 0.1s, opacity 0.1s, background 0.1s' : (isDraggingThis || isResizingThis) ? 'none' : 'box-shadow 0.15s',
                                                         zIndex: isSplitTarget ? 10 : (isDraggingThis || isResizingThis) ? 10 : 1,
                                                         outline: isSplitTarget ? '2px dashed rgba(255,255,255,0.7)' : isUniteTarget ? (uniteSelectMode!.selectedIds.has(item._id) ? `2.5px solid ${barColor}` : `2px dashed ${barColor}88`) : 'none',
                                                         outlineOffset: '2px',
                                                         cursor: isUniteTarget ? 'pointer' : isSplitTarget ? 'crosshair' : (isDraggingThis ? 'grabbing' : 'grab'),
                                                     }}
                                                 >
-                                                    <Typography sx={{ color: isSplitTarget ? 'rgba(255,255,255,0.6)' : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
+                                                    <Typography sx={{ color: isSplitTarget ? 'rgba(255,255,255,0.6)' : (isUniteTarget && uniteSelectMode!.selectedIds.has(item._id)) ? mainPrimaryColor : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
                                                         {(() => { const d = isResizingThis ? Math.max(0.125, Math.max(12, resizing!.origBarWidth + resizing!.deltaX) / DAY_W) : duration; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
                                                     </Typography>
                                                     {/* Resize handle — hidden in split mode */}
@@ -2457,64 +2455,80 @@ export default function SchedulePage() {
             </Menu>
 
             {/* Bar time dialog */}
-            <Dialog open={!!barPopover} onClose={() => setBarPopover(null)} maxWidth='xs' fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}>
+            <Dialog open={!!barPopover} onClose={() => setBarPopover(null)} maxWidth='sm' fullWidth
+                PaperProps={{ sx: { borderRadius: 3, maxWidth: 480 } }}>
                 {barPopover && (() => {
                     const item = scheduleItems.find(i => i._id === barPopover.itemId);
-                    const startD = new Date(popoverStartDate);
-                    const endD = new Date(popoverEndDate);
-                    const sH = popoverUnit === 'hour' ? (parseInt(popoverTime.split(':')[0]) || 0) : 0;
-                    const eH = popoverUnit === 'hour' ? (parseInt(popoverEndTime.split(':')[0]) || 0) : 0;
-                    const dur = (endD.getTime() - startD.getTime()) / 86400000 + (eH - sH) / 24;
-                    const durDisplay = !isFinite(dur) || dur <= 0 ? '—'
-                        : popoverUnit === 'month' ? `${+(dur / 30).toFixed(1)} ${t('month')}`
-                        : popoverUnit === 'week' ? `${+(dur / 7).toFixed(1)} ${t('Week')}`
-                        : popoverUnit === 'hour' ? `${+(dur * 24).toFixed(1)} ${t('Hour')}`
-                        : `${+dur.toFixed(2)} ${t('Day')}`;
+                    const sH = parseInt(popoverTime.split(':')[0]) || 0;
+                    const eH = parseInt(popoverEndTime.split(':')[0]) || 0;
+                    const dur = (popoverEndDay - popoverStartDay) + (eH - sH) / 24;
+                    const durVal = !isFinite(dur) || dur <= 0 ? '—'
+                        : popoverUnit === 'month' ? `${+(dur / 30).toFixed(1)}`
+                        : popoverUnit === 'week' ? `${+(dur / 7).toFixed(1)}`
+                        : popoverUnit === 'hour' ? `${+(dur * 24).toFixed(1)}`
+                        : `${+dur.toFixed(2)}`;
+                    // dayToMD / mdToDay helpers (project-relative)
+                    const pDayToMD = (day: number) => {
+                        let rem = day - 1;
+                        for (let m = 0; m < monthGroups.length; m++) {
+                            if (rem < monthGroups[m].dayCount) return { m: m + 1, d: rem + 1 };
+                            rem -= monthGroups[m].dayCount;
+                        }
+                        return { m: monthGroups.length, d: monthGroups[monthGroups.length - 1]?.dayCount ?? 1 };
+                    };
+                    const pMDToDay = (m: number, d: number) => {
+                        let r = 0;
+                        for (let i = 0; i < m - 1; i++) r += monthGroups[i]?.dayCount ?? 30;
+                        return r + d;
+                    };
+                    const sMD = pDayToMD(popoverStartDay);
+                    const eMD = pDayToMD(popoverEndDay);
+                    const FieldRow = ({ label, md, setDay, timeVal, setTimeVal }: { label: string; md: { m: number; d: number }; setDay: (d: number) => void; timeVal: string; setTimeVal: (v: string) => void }) => (
+                        <Box sx={{ mb: 2 }}>
+                            <Typography sx={{ fontSize: '0.72rem', color: '#888', mb: 0.75 }}>{label}</Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <FormControl size='small' sx={{ flex: 1 }}>
+                                    <InputLabel shrink sx={{ fontSize: '0.8rem' }}>{t('Month')}</InputLabel>
+                                    <Select notched label={t('Month')} value={md.m}
+                                        onChange={e => { const nm = Number(e.target.value); const nd = Math.min(md.d, monthGroups[nm - 1]?.dayCount ?? 30); setDay(pMDToDay(nm, nd)); }}
+                                        sx={{ fontSize: '0.82rem' }}>
+                                        {monthGroups.map((_, mi) => (
+                                            <MenuItem key={mi} value={mi + 1} sx={{ fontSize: '0.82rem' }}>{t('Month')} {mi + 1}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <TextField size='small' type='number' label={t('Day')} value={md.d}
+                                    onChange={e => { const nd = Math.max(1, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, parseInt(e.target.value) || 1)); setDay(pMDToDay(md.m, nd)); }}
+                                    inputProps={{ min: 1, max: monthGroups[md.m - 1]?.dayCount ?? 30, style: { textAlign: 'center' } }}
+                                    InputLabelProps={{ shrink: true }}
+                                    sx={{ width: 72 }} />
+                                <TextField label={t('Time')} type='time' size='small' value={timeVal}
+                                    onChange={e => setTimeVal(e.target.value)}
+                                    inputProps={{ step: 3600 }} sx={{ width: 148 }}
+                                    InputLabelProps={{ shrink: true }} />
+                            </Box>
+                        </Box>
+                    );
                     return (
                         <>
                             <DialogTitle sx={{ pb: 0.5, fontSize: '0.95rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {item?.laborOfferItemName}
                             </DialogTitle>
-                            <DialogContent>
-                                <Box sx={{ display: 'flex', gap: 0.5, mb: 2, mt: 0.5 }}>
-                                    {(['hour', 'day', 'week', 'month'] as const).map(u => (
-                                        <Button key={u} size='small'
-                                            variant={popoverUnit === u ? 'contained' : 'outlined'}
-                                            onClick={() => setPopoverUnit(u)}
-                                            sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontSize: '0.75rem', minWidth: 0,
-                                                ...(popoverUnit === u
-                                                    ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
-                                                    : { borderColor: '#ddd', color: '#555' }) }}>
-                                            {t(u === 'hour' ? 'Hour' : u === 'day' ? 'Day' : u === 'week' ? 'Week' : 'Month')}
-                                        </Button>
-                                    ))}
+                            <DialogContent sx={{ pt: 1.5 }}>
+                                <FieldRow label={t('Start')} md={sMD} setDay={setPopoverStartDay} timeVal={popoverTime} setTimeVal={setPopoverTime} />
+                                <FieldRow label={t('End')} md={eMD} setDay={setPopoverEndDay} timeVal={popoverEndTime} setTimeVal={setPopoverEndTime} />
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{t('Duration')}:</Typography>
+                                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#333' }}>{durVal}</Typography>
+                                    <Select size='small' value={popoverUnit}
+                                        onChange={e => setPopoverUnit(e.target.value as 'hour' | 'day' | 'week' | 'month')}
+                                        sx={{ fontSize: '0.75rem', height: 28, '.MuiSelect-select': { py: '4px', px: '8px' } }}>
+                                        <MenuItem value='month' sx={{ fontSize: '0.8rem' }}>{t('Month')}</MenuItem>
+                                        <MenuItem value='week' sx={{ fontSize: '0.8rem' }}>{t('Week')}</MenuItem>
+                                        <MenuItem value='day' sx={{ fontSize: '0.8rem' }}>{t('Day')}</MenuItem>
+                                        <MenuItem value='hour' sx={{ fontSize: '0.8rem' }}>{t('Hour')}</MenuItem>
+                                    </Select>
                                 </Box>
-                                <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-                                    <TextField label={t('Start Date')} type='date' size='small' value={popoverStartDate}
-                                        onChange={e => setPopoverStartDate(e.target.value)}
-                                        InputLabelProps={{ shrink: true }} sx={{ flex: 1 }} />
-                                    {popoverUnit === 'hour' && (
-                                        <TextField label={t('Time')} type='time' size='small' value={popoverTime}
-                                            onChange={e => setPopoverTime(e.target.value)}
-                                            inputProps={{ step: 3600 }} sx={{ width: 110 }}
-                                            InputLabelProps={{ shrink: true }} />
-                                    )}
-                                </Box>
-                                <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-                                    <TextField label={t('End Date')} type='date' size='small' value={popoverEndDate}
-                                        onChange={e => setPopoverEndDate(e.target.value)}
-                                        InputLabelProps={{ shrink: true }} sx={{ flex: 1 }} />
-                                    {popoverUnit === 'hour' && (
-                                        <TextField label={t('Time')} type='time' size='small' value={popoverEndTime}
-                                            onChange={e => setPopoverEndTime(e.target.value)}
-                                            inputProps={{ step: 3600 }} sx={{ width: 110 }}
-                                            InputLabelProps={{ shrink: true }} />
-                                    )}
-                                </Box>
-                                <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
-                                    {t('Duration')}: <strong style={{ color: '#444' }}>{durDisplay}</strong>
-                                </Typography>
                             </DialogContent>
                             <DialogActions sx={{ px: 2, pb: 1.5 }}>
                                 <Button size='small' onClick={() => setBarPopover(null)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
