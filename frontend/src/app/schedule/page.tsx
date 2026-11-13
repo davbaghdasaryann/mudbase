@@ -707,7 +707,7 @@ export default function SchedulePage() {
         // Start auto-scroll rAF loop immediately
         const loop = () => {
             const scroller = ganttScrollRef.current;
-            if (scroller) {
+            if (scroller && dragMovedRef.current) {
                 const rect = scroller.getBoundingClientRect();
                 const mx = mouseXRef.current;
                 const ZONE = 80;
@@ -746,6 +746,10 @@ export default function SchedulePage() {
             }
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
+            if (!dragMovedRef.current) {
+                setDragging(null);
+                return;
+            }
             const origFrac = (origStart - 1) + origStartHour / 24;
             const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
             setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, startDay: newStartDay } : i));
@@ -1616,7 +1620,7 @@ export default function SchedulePage() {
                                                             const next = new Set(prev.selectedIds);
                                                             if (next.has(seg._id)) next.delete(seg._id); else next.add(seg._id);
                                                             return { ...prev, selectedIds: next };
-                                                        }); }) : undefined}
+                                                        }); }) : (e => { if (!dragMovedRef.current) { e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); } })}
                                                         onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                         sx={{
                                                             position: 'absolute',
