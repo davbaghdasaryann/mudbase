@@ -2487,7 +2487,7 @@ export default function SchedulePage() {
                         <Box sx={{ mb: 2 }}>
                             <Typography sx={{ fontSize: '0.72rem', color: '#888', mb: 0.75 }}>{label}</Typography>
                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                <FormControl size='small' sx={{ flex: 1 }}>
+                                <FormControl size='small' sx={{ flex: 1, minWidth: 0 }}>
                                     <InputLabel shrink sx={{ fontSize: '0.8rem' }}>{t('Month')}</InputLabel>
                                     <Select notched label={t('Month')} value={md.m}
                                         onChange={e => { const nm = Number(e.target.value); const nd = Math.min(md.d, monthGroups[nm - 1]?.dayCount ?? 30); setDay(pMDToDay(nm, nd)); }}
@@ -2501,10 +2501,10 @@ export default function SchedulePage() {
                                     onChange={e => { const nd = Math.max(1, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, parseInt(e.target.value) || 1)); setDay(pMDToDay(md.m, nd)); }}
                                     inputProps={{ min: 1, max: monthGroups[md.m - 1]?.dayCount ?? 30, style: { textAlign: 'center' } }}
                                     InputLabelProps={{ shrink: true }}
-                                    sx={{ width: 72 }} />
+                                    sx={{ flex: 1, minWidth: 0 }} />
                                 <TextField label={t('Time')} type='time' size='small' value={timeVal}
                                     onChange={e => setTimeVal(e.target.value)}
-                                    inputProps={{ step: 3600 }} sx={{ width: 148 }}
+                                    inputProps={{ step: 3600 }} sx={{ flex: 1.4, minWidth: 0 }}
                                     InputLabelProps={{ shrink: true }} />
                             </Box>
                         </Box>
