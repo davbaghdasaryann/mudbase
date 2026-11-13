@@ -837,7 +837,7 @@ export default function SchedulePage() {
         if (sortedMarkers.length === 0) return;
         const lh = item.laborHours ?? 0;
         const totalQ = item.quantity ?? 0;
-        if (lh <= 0 || totalQ <= 0) return;
+        if (totalQ <= 0) return;
         const barWidthPx = Math.max(itemDuration(item) * DAY_W - 3, 12);
         const totalDuration = itemDuration(item);
         const fractions = [0, ...sortedMarkers.map(m => Math.max(0.001, Math.min(0.999, m / barWidthPx))), 1];
@@ -875,13 +875,16 @@ export default function SchedulePage() {
         const item = splitDialogItem;
         setSplitDialogItem(null);
         const lh = item.laborHours ?? 0;
-        if (lh <= 0) return;
+        const totalQty = item.quantity ?? 0;
         const totalDays = itemDuration(item);
         const rawDays = splitEqualMode
             ? Array.from({ length: splitPartsCount }, () => totalDays / splitPartsCount)
             : splitPartDays.map(d => parseFloat(d) || 0);
-        const partDaysArr = splitByHours ? rawDays.map(h => h / lh) : rawDays;
-        const quantities = partDaysArr.map(d => d * lh);
+        const partDaysArr = splitByHours && lh > 0 ? rawDays.map(h => h / lh) : rawDays;
+        const quantities = lh > 0
+            ? partDaysArr.map(d => d * lh)
+            : partDaysArr.map(d => totalQty * (totalDays > 0 ? d / totalDays : 1 / splitPartsCount));
+        const newParentId = item.parentItemId ?? item._id;
         // Delete existing sub-items before re-splitting
         for (const seg of (segmentsByParent.get(item._id) ?? [])) {
             setScheduleItems(prev => prev.filter(i => i._id !== seg._id));
@@ -906,7 +909,7 @@ export default function SchedulePage() {
                 subsectionName: item.subsectionName ?? '',
                 startDay: nextStartDay,
                 startHour: nextStartHour,
-                parentItemId: item._id,
+                parentItemId: newParentId,
                 ...(item.groupId ? { groupId: item.groupId } : {}),
             }});
             if (newItem) {
@@ -914,7 +917,7 @@ export default function SchedulePage() {
                     ...newItem,
                     startDay: newItem.startDay ?? nextStartDay,
                     startHour: newItem.startHour ?? nextStartHour,
-                    parentItemId: item._id,
+                    parentItemId: newParentId,
                 }]);
             }
         }
@@ -2337,12 +2340,10 @@ export default function SchedulePage() {
                 anchorPosition={barContextMenu ? { top: barContextMenu.mouseY, left: barContextMenu.mouseX } : undefined}
                 PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
             >
-                {!barContextMenu?.item.parentItemId && (
-                    <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>
-                        <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
-                        <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
-                    </MenuItem>
-                )}
+                <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
+                </MenuItem>
                 <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><LinkIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Կապել</ListItemText>
