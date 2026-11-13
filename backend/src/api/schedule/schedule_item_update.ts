@@ -10,10 +10,10 @@ registerApiSession('schedule/item_update', async (req, res, session) => {
     const update: Partial<Db.EntityScheduleItem> = {};
 
     const startDayParam = getQueryParam(req, 'startDay');
-    if (startDayParam !== null) update.startDay = parseInt(startDayParam);
+    if (startDayParam !== null) { const v = parseFloat(startDayParam); if (isFinite(v)) update.startDay = v; }
 
     const startHourParam = getQueryParam(req, 'startHour');
-    if (startHourParam !== null) update.startHour = parseInt(startHourParam);
+    if (startHourParam !== null) { const v = parseFloat(startHourParam); if (isFinite(v)) update.startHour = v; }
 
     const quantityParam = getQueryParam(req, 'quantity');
     if (quantityParam !== null) {
