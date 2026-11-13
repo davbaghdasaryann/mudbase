@@ -701,6 +701,10 @@ export default function SchedulePage() {
         const itemId = item._id;
         const origOffsetPx = (origStart - 1) * DAY_W + (origStartHour / 24) * DAY_W;
         const mouseDownX = e.clientX;
+        const parentId = item.parentItemId ?? item._id;
+        const groupSiblings = scheduleItems.filter(i =>
+            i._id !== item._id && (i._id === parentId || i.parentItemId === parentId)
+        );
 
         setDragging({ id: itemId, origStart, origStartHour, deltaX: 0, mouseStartX: mouseDownX });
 
@@ -751,10 +755,33 @@ export default function SchedulePage() {
                 return;
             }
             const origFrac = (origStart - 1) + origStartHour / 24;
-            const newStartDay = Math.max(1, Math.round(origFrac + dragDeltaRef.current / DAY_W) + 1);
-            setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, startDay: newStartDay } : i));
+            const candidateFrac = origFrac + dragDeltaRef.current / DAY_W;
+            const myDur = itemDuration(item);
+            const SNAP_THRESHOLD = 1.0;
+            let bestSnapFrac: number | null = null;
+            let bestDist = SNAP_THRESHOLD;
+            for (const sib of groupSiblings) {
+                const sibFrac = ((sib.startDay ?? 1) - 1) + ((sib.startHour ?? 0) / 24);
+                const sibEndFrac = sibFrac + itemDuration(sib);
+                const dStart = Math.abs(candidateFrac - sibEndFrac);
+                if (dStart < bestDist) { bestDist = dStart; bestSnapFrac = sibEndFrac; }
+                const dEnd = Math.abs(candidateFrac + myDur - sibFrac);
+                if (dEnd < bestDist) { bestDist = dEnd; bestSnapFrac = sibFrac - myDur; }
+            }
+            let newStartDay: number;
+            let newStartHour: number | undefined;
+            if (bestSnapFrac !== null) {
+                newStartDay = Math.max(1, bestSnapFrac + 1);
+                newStartHour = 0;
+            } else {
+                newStartDay = Math.max(1, Math.round(candidateFrac) + 1);
+                newStartHour = undefined;
+            }
+            setScheduleItems(prev => prev.map(i => i._id === itemId
+                ? { ...i, startDay: newStartDay, ...(newStartHour !== undefined ? { startHour: newStartHour } : {}) }
+                : i));
             setDragging(null);
-            Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, startDay: newStartDay } });
+            Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, startDay: newStartDay, ...(newStartHour !== undefined ? { startHour: newStartHour } : {}) } });
         };
 
         window.addEventListener('mousemove', onMove);
