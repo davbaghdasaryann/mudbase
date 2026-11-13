@@ -232,6 +232,10 @@ export default function SchedulePage() {
     const [nameColW, setNameColW] = useState(NAME_COL_W);
     const [barPopover, setBarPopover] = useState<{ itemId: string; anchorEl: HTMLElement; startHour: number } | null>(null);
     const [popoverTime, setPopoverTime] = useState('00:00');
+    const [popoverUnit, setPopoverUnit] = useState<'hour' | 'day' | 'week' | 'month'>('day');
+    const [popoverStartDate, setPopoverStartDate] = useState('');
+    const [popoverEndDate, setPopoverEndDate] = useState('');
+    const [popoverEndTime, setPopoverEndTime] = useState('00:00');
     const [barContextMenu, setBarContextMenu] = useState<{ mouseX: number; mouseY: number; item: ScheduleItem; anchorEl: HTMLElement } | null>(null);
     const [splitMode, setSplitMode] = useState<{ item: ScheduleItem; markers: number[] } | null>(null);
     const splitMarkerDragRef = useRef<{ index: number; startX: number; origOffset: number; hasMoved: boolean } | null>(null);
@@ -828,21 +832,48 @@ export default function SchedulePage() {
     };
 
     const handleOpenTimePopover = () => {
-        if (!barContextMenu) return;
+        if (!barContextMenu || !selected) return;
         const item = barContextMenu.item;
         const h = item.startHour ?? 0;
+        const psd = selected.projectStartDate ? new Date(selected.projectStartDate) : new Date();
+        const startDateObj = addDays(psd, (item.startDay ?? 1) - 1);
+        const durationDays = itemDuration(item);
+        const endMs = startDateObj.getTime() + h * 3600000 + durationDays * 86400000;
+        const endDateObj = new Date(endMs);
+        setPopoverStartDate(toDateInputValue(startDateObj));
         setPopoverTime(`${String(h).padStart(2, '0')}:00`);
+        setPopoverEndDate(toDateInputValue(endDateObj));
+        setPopoverEndTime(`${String(endDateObj.getHours()).padStart(2, '0')}:00`);
         setBarPopover({ itemId: item._id, anchorEl: barContextMenu.anchorEl, startHour: h });
         setBarContextMenu(null);
     };
 
     const handleBarPopoverSave = async () => {
-        if (!barPopover) return;
-        const [hStr] = popoverTime.split(':');
-        const newHour = Math.min(23, Math.max(0, parseInt(hStr) || 0));
-        setScheduleItems(prev => prev.map(i => i._id === barPopover.itemId ? { ...i, startHour: newHour } : i));
+        if (!barPopover || !selected) return;
+        const item = scheduleItems.find(i => i._id === barPopover.itemId);
+        if (!item) return;
+        const psd = selected.projectStartDate ? new Date(selected.projectStartDate) : new Date();
+        const refD = new Date(toDateInputValue(psd));
+        const startD = new Date(popoverStartDate);
+        const endD = new Date(popoverEndDate);
+        const [sHStr] = popoverTime.split(':');
+        const [eHStr] = popoverEndTime.split(':');
+        const startH = popoverUnit === 'hour' ? Math.min(23, Math.max(0, parseInt(sHStr) || 0)) : 0;
+        const endH = popoverUnit === 'hour' ? Math.min(23, Math.max(0, parseInt(eHStr) || 0)) : 0;
+        const startOffset = Math.round((startD.getTime() - refD.getTime()) / 86400000);
+        const endOffset = Math.round((endD.getTime() - refD.getTime()) / 86400000);
+        const newStartDay = Math.max(1, startOffset + 1);
+        const newStartHour = startH;
+        const durationDays = Math.max(0.125, (endOffset - startOffset) + (endH - startH) / 24);
+        const lh = item.laborHours ?? 0;
+        const newQuantity = lh > 0 ? durationDays * lh : undefined;
+        setScheduleItems(prev => prev.map(i => i._id === barPopover.itemId
+            ? { ...i, startDay: newStartDay, startHour: newStartHour, ...(newQuantity !== undefined ? { quantity: newQuantity } : {}) }
+            : i));
         setBarPopover(null);
-        await Api.requestSession({ command: 'schedule/item_update', args: { id: barPopover.itemId, startHour: newHour } });
+        const updateArgs: Record<string, unknown> = { id: barPopover.itemId, startDay: newStartDay, startHour: newStartHour };
+        if (newQuantity !== undefined) updateArgs.quantity = newQuantity;
+        await Api.requestSession({ command: 'schedule/item_update', args: updateArgs });
     };
 
     const handleSplitItem = () => {
@@ -2421,45 +2452,77 @@ export default function SchedulePage() {
                 </MenuItem>
             </Menu>
 
-            {/* Bar time popover */}
-            <Popover
-                open={!!barPopover}
-                anchorEl={barPopover?.anchorEl}
-                onClose={() => setBarPopover(null)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                PaperProps={{ sx: { borderRadius: 2.5, p: 2, minWidth: 200, boxShadow: '0 4px 20px rgba(0,0,0,0.14)' } }}
-            >
+            {/* Bar time dialog */}
+            <Dialog open={!!barPopover} onClose={() => setBarPopover(null)} maxWidth='xs' fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}>
                 {barPopover && (() => {
                     const item = scheduleItems.find(i => i._id === barPopover.itemId);
-                    const startDay = item?.startDay ?? 1;
-                    const startDate = addDays(projectStartDate, startDay - 1);
+                    const startD = new Date(popoverStartDate);
+                    const endD = new Date(popoverEndDate);
+                    const sH = popoverUnit === 'hour' ? (parseInt(popoverTime.split(':')[0]) || 0) : 0;
+                    const eH = popoverUnit === 'hour' ? (parseInt(popoverEndTime.split(':')[0]) || 0) : 0;
+                    const dur = (endD.getTime() - startD.getTime()) / 86400000 + (eH - sH) / 24;
+                    const durDisplay = !isFinite(dur) || dur <= 0 ? '—'
+                        : popoverUnit === 'month' ? `${+(dur / 30).toFixed(1)} ${t('month')}`
+                        : popoverUnit === 'week' ? `${+(dur / 7).toFixed(1)} ${t('Week')}`
+                        : popoverUnit === 'hour' ? `${+(dur * 24).toFixed(1)} ${t('Hour')}`
+                        : `${+dur.toFixed(2)} ${t('Day')}`;
                     return (
-                        <Box>
-                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1.5 }}>
-                                {startDate.toLocaleDateString()}
-                            </Typography>
-                            <Typography sx={{ fontSize: '0.78rem', color: '#444', mb: 1.5, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+                        <>
+                            <DialogTitle sx={{ pb: 0.5, fontSize: '0.95rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {item?.laborOfferItemName}
-                            </Typography>
-                            <TextField
-                                label={t('Start') + ' ' + t('Labor Time')}
-                                type='time'
-                                size='small'
-                                value={popoverTime}
-                                onChange={e => setPopoverTime(e.target.value)}
-                                inputProps={{ step: 3600 }}
-                                fullWidth
-                                sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-                            />
-                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                            </DialogTitle>
+                            <DialogContent>
+                                <Box sx={{ display: 'flex', gap: 0.5, mb: 2, mt: 0.5 }}>
+                                    {(['hour', 'day', 'week', 'month'] as const).map(u => (
+                                        <Button key={u} size='small'
+                                            variant={popoverUnit === u ? 'contained' : 'outlined'}
+                                            onClick={() => setPopoverUnit(u)}
+                                            sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontSize: '0.75rem', minWidth: 0,
+                                                ...(popoverUnit === u
+                                                    ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }
+                                                    : { borderColor: '#ddd', color: '#555' }) }}>
+                                            {t(u === 'hour' ? 'Hour' : u === 'day' ? 'Day' : u === 'week' ? 'Week' : 'Month')}
+                                        </Button>
+                                    ))}
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+                                    <TextField label={t('Start Date')} type='date' size='small' value={popoverStartDate}
+                                        onChange={e => setPopoverStartDate(e.target.value)}
+                                        InputLabelProps={{ shrink: true }} sx={{ flex: 1 }} />
+                                    {popoverUnit === 'hour' && (
+                                        <TextField label={t('Time')} type='time' size='small' value={popoverTime}
+                                            onChange={e => setPopoverTime(e.target.value)}
+                                            inputProps={{ step: 3600 }} sx={{ width: 110 }}
+                                            InputLabelProps={{ shrink: true }} />
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+                                    <TextField label={t('End Date')} type='date' size='small' value={popoverEndDate}
+                                        onChange={e => setPopoverEndDate(e.target.value)}
+                                        InputLabelProps={{ shrink: true }} sx={{ flex: 1 }} />
+                                    {popoverUnit === 'hour' && (
+                                        <TextField label={t('Time')} type='time' size='small' value={popoverEndTime}
+                                            onChange={e => setPopoverEndTime(e.target.value)}
+                                            inputProps={{ step: 3600 }} sx={{ width: 110 }}
+                                            InputLabelProps={{ shrink: true }} />
+                                    )}
+                                </Box>
+                                <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>
+                                    {t('Duration')}: <strong style={{ color: '#444' }}>{durDisplay}</strong>
+                                </Typography>
+                            </DialogContent>
+                            <DialogActions sx={{ px: 2, pb: 1.5 }}>
                                 <Button size='small' onClick={() => setBarPopover(null)} sx={{ borderRadius: '20px', color: '#888', textTransform: 'none' }}>{t('Cancel')}</Button>
-                                <Button size='small' variant='contained' onClick={handleBarPopoverSave} sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }}>{t('Save')}</Button>
-                            </Box>
-                        </Box>
+                                <Button size='small' variant='contained' onClick={handleBarPopoverSave}
+                                    sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } }}>
+                                    {t('Save')}
+                                </Button>
+                            </DialogActions>
+                        </>
                     );
                 })()}
-            </Popover>
+            </Dialog>
 
             {/* Split mode floating toolbar */}
             {splitMode && (
