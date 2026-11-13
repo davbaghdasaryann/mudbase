@@ -1617,7 +1617,7 @@ export default function SchedulePage() {
                                                             if (next.has(seg._id)) next.delete(seg._id); else next.add(seg._id);
                                                             return { ...prev, selectedIds: next };
                                                         }); }) : undefined}
-                                                        onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
+                                                        onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                         sx={{
                                                             position: 'absolute',
                                                             left: segOff + 4, top: 6, height: ROW_H - 12, width: segW,
