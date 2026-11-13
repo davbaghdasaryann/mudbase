@@ -2084,7 +2084,6 @@ export default function SchedulePage() {
                                     <Typography sx={{ width: 100, textAlign: 'right', ...colHdr }}>{t('Total')}</Typography>
                                     <Typography sx={{ width: 110, textAlign: 'right', ...colHdr }}>{t('Scheduled')}</Typography>
                                     <Typography sx={{ width: 110, textAlign: 'right', ...colHdr }}>{t('Remaining')}</Typography>
-                                    <Box sx={{ width: 76 }} />
                                 </Box>
                                 {groups.map(([key, group], gi) => {
                                     const isOpen = vmExpanded[key] ?? false;
@@ -2127,7 +2126,6 @@ export default function SchedulePage() {
                                                 <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.82rem', color: remainColor, fontWeight: !isDone ? 600 : 400, flexShrink: 0 }}>
                                                     {+remainingQty.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.72rem' }}>{group.unitSymbol}</span>
                                                 </Typography>
-                                                <Box sx={{ width: 76 }} />
                                             </Box>
                                             {/* Sub-items */}
                                             {isOpen && group.rows.map((row, ri) => {
@@ -2150,36 +2148,7 @@ export default function SchedulePage() {
                                                         <Typography sx={{ width: 110, textAlign: 'right', fontSize: '0.80rem', color: rColor, fontWeight: !rDone ? 600 : 400, flexShrink: 0 }}>
                                                             {+rem.toFixed(3)}&thinsp;<span style={{ color: '#aaa', fontSize: '0.70rem' }}>{row.unitSymbol}</span>
                                                         </Typography>
-                                                        {/* Actions */}
-                                                        <Box sx={{ width: 76, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.25, flexShrink: 0 }}>
-                                                            {(() => {
-                                                                const entry = addedLaborMap[row._id];
-                                                                const hasSplit = entry ? scheduleItems.some(si => si.parentItemId === entry.scheduleItemId) : false;
-                                                                const isScheduled = !!entry;
-                                                                return (
-                                                                    <>
-                                                                        <Tooltip title={t('Unite')} placement='top' arrow>
-                                                                            <span>
-                                                                                <IconButton size='small' disabled={!isScheduled || !hasSplit}
-                                                                                    onClick={e => { e.stopPropagation(); handleUniteItem(row); }}
-                                                                                    sx={{ color: mainPrimaryColor, opacity: (!isScheduled || !hasSplit) ? 0.25 : 1, '&:hover': { bgcolor: `${mainPrimaryColor}15` } }}>
-                                                                                    <CallSplitIcon sx={{ fontSize: 15, transform: 'rotate(180deg)' }} />
-                                                                                </IconButton>
-                                                                            </span>
-                                                                        </Tooltip>
-                                                                        <Tooltip title={t('Delete')} placement='top' arrow>
-                                                                            <span>
-                                                                                <IconButton size='small' disabled={!isScheduled}
-                                                                                    onClick={e => { e.stopPropagation(); handleDeleteWithSubItems(row); }}
-                                                                                    sx={{ color: '#e53935', opacity: !isScheduled ? 0.25 : 1, '&:hover': { bgcolor: 'rgba(229,57,53,0.08)' } }}>
-                                                                                    <DeleteOutlineIcon sx={{ fontSize: 15 }} />
-                                                                                </IconButton>
-                                                                            </span>
-                                                                        </Tooltip>
-                                                                    </>
-                                                                );
-                                                            })()}
-                                                        </Box>
+                                                        <Box sx={{ width: 16, flexShrink: 0 }} />
                                                     </Box>
                                                 );
                                             })}
