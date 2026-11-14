@@ -911,5 +911,8 @@
   "Volume Monitor": "Volume Monitor",
   "Unite": "Unite",
   "Scheduled": "Scheduled",
-  "Work": "Work"
+  "Work": "Work",
+  "Pause": "Pause",
+  "Pause duration": "Pause duration (days)",
+  "Split at day": "Split at day"
 }

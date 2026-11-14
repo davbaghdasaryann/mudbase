@@ -2490,12 +2490,12 @@ export default function SchedulePage() {
 
             {/* Technological pause dialog */}
             <Dialog open={!!pauseDialogItem} onClose={() => setPauseDialogItem(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ pb: 1, fontWeight: 600 }}>{`Pause / Դադար`}</DialogTitle>
+                <DialogTitle sx={{ pb: 1, fontWeight: 600 }}>{t('Pause')}</DialogTitle>
                 <DialogContent sx={{ pt: 1 }}>
                     {pauseDialogItem && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                             <TextField
-                                label={`Split at day (of ${itemDuration(pauseDialogItem).toFixed(2)})`}
+                                label={`${t('Split at day')} (1–${itemDuration(pauseDialogItem).toFixed(2)})`}
                                 value={pauseSplitAt}
                                 onChange={e => setPauseSplitAt(e.target.value)}
                                 type="number"
@@ -2504,7 +2504,7 @@ export default function SchedulePage() {
                                 fullWidth
                             />
                             <TextField
-                                label="Pause duration (days)"
+                                label={t('Pause duration')}
                                 value={pauseDurationDays}
                                 onChange={e => setPauseDurationDays(e.target.value)}
                                 type="number"
@@ -2547,7 +2547,7 @@ export default function SchedulePage() {
                 </MenuItem>
                 <MenuItem onClick={handleOpenPauseDialog} sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><PauseCircleOutlineIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>{`Pause / Դադար`}</ListItemText>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>{t('Pause')}</ListItemText>
                 </MenuItem>
                 <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><LinkIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>
