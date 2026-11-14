@@ -27,6 +27,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TuneIcon from '@mui/icons-material/Tune';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -87,6 +88,7 @@ interface ScheduleItem {
     displayIndex?: number;
     groupId?: string;
     parentItemId?: string; // set on segment items — they render within parent's row
+    isPause?: boolean;
 }
 
 interface DragState {
@@ -247,6 +249,9 @@ export default function SchedulePage() {
     const [splitPartDays, setSplitPartDays] = useState<string[]>([]);
     const [splitByHours, setSplitByHours] = useState(false);
     const [splitPartStartDays, setSplitPartStartDays] = useState<number[]>([]);
+    const [pauseDialogItem, setPauseDialogItem] = useState<ScheduleItem | null>(null);
+    const [pauseSplitAt, setPauseSplitAt] = useState('');
+    const [pauseDurationDays, setPauseDurationDays] = useState('');
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -884,6 +889,64 @@ export default function SchedulePage() {
         setSplitByHours(false);
         setSplitPartStartDays([]);
         setSplitDialogItem(lh > 0 ? { ...item, quantity: lh * totalDays } : item);
+    };
+
+    const handleOpenPauseDialog = () => {
+        if (!barContextMenu) return;
+        const item = barContextMenu.item;
+        setBarContextMenu(null);
+        const dur = itemDuration(item);
+        setPauseSplitAt(String(+(dur / 2).toFixed(2)));
+        setPauseDurationDays('1');
+        setPauseDialogItem(item);
+    };
+
+    const handleConfirmPauseDialog = async () => {
+        if (!pauseDialogItem || !selected) return;
+        const item = pauseDialogItem;
+        setPauseDialogItem(null);
+        const splitAt = parseFloat(pauseSplitAt) || 0;
+        const pauseDays = parseFloat(pauseDurationDays) || 0;
+        const totalDays = itemDuration(item);
+        if (splitAt <= 0 || splitAt >= totalDays || pauseDays <= 0) return;
+        const lh = item.laborHours ?? 0;
+        const part2Days = totalDays - splitAt;
+        const newParentId = item.parentItemId ?? item._id;
+
+        // Update original item to part1 duration
+        const newQty1 = lh > 0 ? splitAt * lh : (item.quantity ?? 0) * (splitAt / totalDays);
+        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: newQty1 } : i));
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: newQty1 } });
+
+        // Pause start position
+        const pauseStartFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24 + splitAt;
+        const pauseStartDay = Math.floor(pauseStartFrac) + 1;
+        const pauseStartHour = Math.round((pauseStartFrac % 1) * 24) % 24;
+
+        // Create pause item (laborHours=1 so duration=quantity=pauseDays)
+        const pauseItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
+            scheduleId: selected._id, laborOfferItemName: item.laborOfferItemName,
+            quantity: pauseDays, laborHours: 1, unitSymbol: '',
+            sectionName: item.sectionName ?? '', subsectionName: item.subsectionName ?? '',
+            startDay: pauseStartDay, startHour: pauseStartHour,
+            parentItemId: newParentId, isPause: true,
+        }});
+        if (pauseItem) setScheduleItems(prev => [...prev, { ...pauseItem, isPause: true, startDay: pauseStartDay, startHour: pauseStartHour, parentItemId: newParentId }]);
+
+        // Part2 start position
+        const part2StartFrac = pauseStartFrac + pauseDays;
+        const part2StartDay = Math.floor(part2StartFrac) + 1;
+        const part2StartHour = Math.round((part2StartFrac % 1) * 24) % 24;
+        const newQty2 = lh > 0 ? part2Days * lh : (item.quantity ?? 0) * (part2Days / totalDays);
+        const part2Item = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
+            scheduleId: selected._id, laborOfferItemName: item.laborOfferItemName,
+            quantity: newQty2, laborHours: lh, unitSymbol: item.unitSymbol ?? '',
+            sectionName: item.sectionName ?? '', subsectionName: item.subsectionName ?? '',
+            startDay: part2StartDay, startHour: part2StartHour,
+            parentItemId: newParentId,
+            ...(item.groupId ? { groupId: item.groupId } : {}),
+        }});
+        if (part2Item) setScheduleItems(prev => [...prev, { ...part2Item, startDay: part2StartDay, startHour: part2StartHour, parentItemId: newParentId }]);
     };
 
     const handleSplitConfirm = async () => {
@@ -1654,13 +1717,54 @@ export default function SchedulePage() {
                                             {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg) => {
                                                 const segDur = itemDuration(seg);
                                                 const segBaseOff = ((seg.startDay ?? 1) - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
+                                                const segBaseW = Math.max(segDur * DAY_W - 1, 12);
+                                                const isDraggingThisSeg = dragging?.id === seg._id;
+                                                const isResizingThisSeg = resizing?.id === seg._id;
+                                                const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
+                                                const segW = isResizingThisSeg ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
+
+                                                // Pause bar: grey diagonal stripes, tooltip, no unite interaction
+                                                if (seg.isPause) {
+                                                    return (
+                                                        <Tooltip key={seg._id} title={`Տեխնոլոգիական դադար`} arrow>
+                                                            <Box
+                                                                onMouseDown={e => handleBarMouseDown(e, seg)}
+                                                                onContextMenu={e => { e.preventDefault(); e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
+                                                                sx={{
+                                                                    position: 'absolute',
+                                                                    left: segOff + 2, top: 6, height: ROW_H - 12, width: segW,
+                                                                    background: 'repeating-linear-gradient(-45deg, #bdbdbd, #bdbdbd 4px, #f5f5f5 4px, #f5f5f5 10px)',
+                                                                    borderRadius: '5px',
+                                                                    border: '1px solid #9e9e9e',
+                                                                    zIndex: (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
+                                                                    cursor: isDraggingThisSeg ? 'grabbing' : 'grab',
+                                                                    display: 'flex', alignItems: 'center', px: 0.5, overflow: 'hidden',
+                                                                    boxShadow: (isDraggingThisSeg || isResizingThisSeg) ? '0 4px 16px rgba(0,0,0,0.2)' : '0 1px 4px rgba(0,0,0,0.12)',
+                                                                }}
+                                                            >
+                                                                <Box
+                                                                    onMouseDown={e => handleResizeMouseDown(e, seg)}
+                                                                    onClick={e => e.stopPropagation()}
+                                                                    sx={{
+                                                                        position: 'absolute', right: 0, top: 0, bottom: 0,
+                                                                        width: 10, cursor: 'ew-resize',
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        borderRadius: '0 5px 5px 0',
+                                                                    }}
+                                                                >
+                                                                    <Box sx={{ width: 2, height: '55%', background: 'rgba(0,0,0,0.2)', borderRadius: 1, pointerEvents: 'none' }} />
+                                                                </Box>
+                                                            </Box>
+                                                        </Tooltip>
+                                                    );
+                                                }
+
                                                 const inUniteMode = uniteSelectMode?.parentItemId === item._id;
                                                 const isSegSelected = inUniteMode && uniteSelectMode!.selectedIds.has(seg._id);
-                                                const isDraggingThisSeg = !inUniteMode && dragging?.id === seg._id;
-                                                const isResizingThisSeg = !inUniteMode && resizing?.id === seg._id;
-                                                const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
-                                                const segBaseW = Math.max(segDur * DAY_W - 1, 12);
-                                                const segW = isResizingThisSeg ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
+                                                const isDraggingThisSegU = !inUniteMode && dragging?.id === seg._id;
+                                                const isResizingThisSegU = !inUniteMode && resizing?.id === seg._id;
+                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
+                                                const segWU = isResizingThisSegU ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 return (
                                                     <Box
                                                         key={seg._id}
@@ -1674,7 +1778,7 @@ export default function SchedulePage() {
                                                         onContextMenu={inUniteMode ? e => e.preventDefault() : e => { e.preventDefault(); e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                         sx={{
                                                             position: 'absolute',
-                                                            left: segOff + 2, top: 6, height: ROW_H - 12, width: segW,
+                                                            left: segOffU + 2, top: 6, height: ROW_H - 12, width: segWU,
                                                             background: isSegSelected
                                                                 ? `linear-gradient(90deg, #fff 0%, #f0fffe 100%)`
                                                                 : inUniteMode
@@ -1684,14 +1788,14 @@ export default function SchedulePage() {
                                                             display: 'flex', alignItems: 'center', px: 1, overflow: 'visible',
                                                             boxShadow: isSegSelected
                                                                 ? `0 0 0 2.5px ${mainPrimaryColor}, 0 4px 16px ${mainPrimaryColor}44`
-                                                                : (isDraggingThisSeg || isResizingThisSeg) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
-                                                            zIndex: isSegSelected ? 5 : (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
-                                                            cursor: inUniteMode ? 'pointer' : (isDraggingThisSeg ? 'grabbing' : 'grab'),
-                                                            opacity: inUniteMode && !isSegSelected ? 0.6 : (isDraggingThisSeg || isResizingThisSeg) ? 0.9 : 1,
-                                                            transition: inUniteMode ? 'box-shadow 0.1s, opacity 0.1s' : (isDraggingThisSeg || isResizingThisSeg) ? 'none' : 'box-shadow 0.15s',
+                                                                : (isDraggingThisSegU || isResizingThisSegU) ? `0 4px 16px ${barColor}88` : `0 2px 8px ${barColor}55`,
+                                                            zIndex: isSegSelected ? 5 : (isDraggingThisSegU || isResizingThisSegU) ? 10 : 1,
+                                                            cursor: inUniteMode ? 'pointer' : (isDraggingThisSegU ? 'grabbing' : 'grab'),
+                                                            opacity: inUniteMode && !isSegSelected ? 0.6 : (isDraggingThisSegU || isResizingThisSegU) ? 0.9 : 1,
+                                                            transition: inUniteMode ? 'box-shadow 0.1s, opacity 0.1s' : (isDraggingThisSegU || isResizingThisSegU) ? 'none' : 'box-shadow 0.15s',
                                                         }}>
                                                         <Typography sx={{ color: isSegSelected ? mainPrimaryColor : '#fff', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', pointerEvents: 'none', flex: 1, overflow: 'hidden' }}>
-                                                            {(() => { const d = isResizingThisSeg ? Math.max(0.125, segW / DAY_W) : segDur; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
+                                                            {(() => { const d = isResizingThisSegU ? Math.max(0.125, segWU / DAY_W) : segDur; return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`; })()}
                                                         </Typography>
                                                         {!inUniteMode && (
                                                             <Box
@@ -2384,6 +2488,51 @@ export default function SchedulePage() {
                 </DialogActions>
             </Dialog>
 
+            {/* Technological pause dialog */}
+            <Dialog open={!!pauseDialogItem} onClose={() => setPauseDialogItem(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ pb: 1, fontWeight: 600 }}>{`Pause / Դադար`}</DialogTitle>
+                <DialogContent sx={{ pt: 1 }}>
+                    {pauseDialogItem && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                            <TextField
+                                label={`Split at day (of ${itemDuration(pauseDialogItem).toFixed(2)})`}
+                                value={pauseSplitAt}
+                                onChange={e => setPauseSplitAt(e.target.value)}
+                                type="number"
+                                size="small"
+                                inputProps={{ min: 0.125, max: itemDuration(pauseDialogItem) - 0.125, step: 0.125 }}
+                                fullWidth
+                            />
+                            <TextField
+                                label="Pause duration (days)"
+                                value={pauseDurationDays}
+                                onChange={e => setPauseDurationDays(e.target.value)}
+                                type="number"
+                                size="small"
+                                inputProps={{ min: 0.125, step: 0.125 }}
+                                fullWidth
+                            />
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                    <Button onClick={() => setPauseDialogItem(null)} sx={{ borderRadius: '20px', textTransform: 'none' }}>{t('Cancel')}</Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleConfirmPauseDialog}
+                        disabled={!pauseDialogItem || (() => {
+                            const splitAt = parseFloat(pauseSplitAt) || 0;
+                            const dur = parseFloat(pauseDurationDays) || 0;
+                            const total = pauseDialogItem ? itemDuration(pauseDialogItem) : 0;
+                            return splitAt <= 0 || splitAt >= total || dur <= 0;
+                        })()}
+                        sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: '#00abbe', '&:hover': { bgcolor: '#0097a7' }, '&.Mui-disabled': { bgcolor: '#00abbd44' } }}
+                    >
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Bar right-click context menu */}
             <Menu
                 open={!!barContextMenu}
@@ -2395,6 +2544,10 @@ export default function SchedulePage() {
                 <MenuItem onClick={handleSplitItem} sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleOpenPauseDialog} sx={{ fontSize: '0.85rem', py: 0.9 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}><PauseCircleOutlineIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>{`Pause / Դադար`}</ListItemText>
                 </MenuItem>
                 <MenuItem disabled sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><LinkIcon sx={{ fontSize: 18, color: '#bbb' }} /></ListItemIcon>

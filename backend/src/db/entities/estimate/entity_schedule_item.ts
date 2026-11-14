@@ -15,6 +15,7 @@ export interface EntityScheduleItem {
     displayIndex?: number;
     groupId?: ObjectId;
     parentItemId?: ObjectId;
+    isPause?: boolean;
     createdAt?: Date;
 }
 

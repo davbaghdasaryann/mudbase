@@ -33,6 +33,9 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         ...groupFilter,
     });
 
+    const isPauseParam = getQueryParam(req, 'isPause');
+    const isPause = isPauseParam === 'true' ? true : undefined;
+
     const doc: Db.EntityScheduleItem = {
         scheduleId: new ObjectId(scheduleId),
         accountId: session.mongoAccountId,
@@ -47,6 +50,7 @@ registerApiSession('schedule/item_add', async (req, res, session) => {
         displayIndex,
         ...(groupIdParam ? { groupId: new ObjectId(groupIdParam) } : {}),
         ...(parentItemIdParam ? { parentItemId: new ObjectId(parentItemIdParam) } : {}),
+        ...(isPause ? { isPause } : {}),
         createdAt: new Date(),
     };
     const result = await col.insertOne(doc);
