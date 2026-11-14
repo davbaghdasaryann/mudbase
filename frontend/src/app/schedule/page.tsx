@@ -2308,7 +2308,18 @@ export default function SchedulePage() {
                                                         <Typography sx={{ fontSize: '0.76rem', color: '#888', minWidth: 48, flexShrink: 0, fontWeight: 600 }}>{t('Part')} {i + 1}</Typography>
                                                         <TextField type='number' size='small'
                                                             value={splitPartDays[i] ?? ''}
-                                                            onChange={e => { const u = [...splitPartDays]; u[i] = e.target.value; setSplitPartDays(u); }}
+                                                            onChange={e => {
+                                                                const u = [...splitPartDays];
+                                                                u[i] = e.target.value;
+                                                                if (splitPartsCount > 1) {
+                                                                    const compIdx = i === splitPartsCount - 1 ? i - 1 : i + 1;
+                                                                    const totalDisp = toDisplay(totalDays);
+                                                                    const others = u.reduce((s, v, j) => j !== i && j !== compIdx ? s + (parseFloat(v) || 0) : s, 0);
+                                                                    const newComp = totalDisp - (parseFloat(e.target.value) || 0) - others;
+                                                                    u[compIdx] = String(+Math.max(0.01, newComp).toFixed(2));
+                                                                }
+                                                                setSplitPartDays(u);
+                                                            }}
                                                             InputProps={{ endAdornment: <InputAdornment position='end'>{splitByHours ? unitSym : t('day_short')}</InputAdornment> }}
                                                             inputProps={{ min: 0.01, step: 0.01 }}
                                                             sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& .MuiInputBase-input': { py: 0.6 } }} />
