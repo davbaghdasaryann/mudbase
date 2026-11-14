@@ -494,7 +494,7 @@ export default function SchedulePage() {
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [handleUndo, handleRedo]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Shift + wheel → horizontal scroll on Gantt
     useEffect(() => {
