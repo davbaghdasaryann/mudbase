@@ -883,11 +883,7 @@ export default function SchedulePage() {
         setSplitEqualMode(true);
         setSplitPartDays(Array.from({ length: n }, () => String(+eachDays.toFixed(2))));
         setSplitByHours(false);
-        // Initialize start days for parts 2+ sequentially
-        const initStarts: number[] = [];
-        let sf = (item.startDay - 1) + (item.startHour ?? 0) / 24;
-        for (let i = 0; i < n - 1; i++) { sf += eachDays; initStarts.push(Math.floor(sf) + 1); }
-        setSplitPartStartDays(initStarts);
+        setSplitPartStartDays([]);
         // Pass item with restored full quantity so dialog and confirm see correct total
         setSplitDialogItem(lh > 0 ? { ...item, quantity: lh * totalDays } : item);
     };
@@ -2242,10 +2238,7 @@ export default function SchedulePage() {
                             setSplitPartsCount(n);
                             const each = totalDays / n;
                             setSplitPartDays(Array.from({ length: n }, () => String(toDisplay(each))));
-                            const starts: number[] = [];
-                            let sf = (splitDialogItem.startDay - 1) + (splitDialogItem.startHour ?? 0) / 24;
-                            for (let i = 0; i < n - 1; i++) { sf += each; starts.push(Math.floor(sf) + 1); }
-                            setSplitPartStartDays(starts);
+                            setSplitPartStartDays([]);
                         };
                         return (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -2285,7 +2278,7 @@ export default function SchedulePage() {
                                         {(['equal', 'unequal'] as const).map(mode => (
                                             <Button key={mode} size='small'
                                                 variant={splitEqualMode === (mode === 'equal') ? 'contained' : 'outlined'}
-                                                onClick={() => { setSplitEqualMode(mode === 'equal'); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); }}
+                                                onClick={() => { setSplitEqualMode(mode === 'equal'); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); setSplitPartStartDays([]); }}
                                                 sx={{ borderRadius: '20px', textTransform: 'none', fontSize: '0.78rem', px: 1.5, py: 0.4, minWidth: 0,
                                                     ...(splitEqualMode === (mode === 'equal') ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } } : { borderColor: mainPrimaryColor, color: mainPrimaryColor }) }}>
                                                 {mode === 'equal' ? t('Equal') : t('Unequal')}
@@ -2301,7 +2294,14 @@ export default function SchedulePage() {
                                 ) : (
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                         {Array.from({ length: splitPartsCount }, (_, i) => {
-                                            const md = i > 0 ? dayToMD(splitPartStartDays[i - 1] ?? 1) : dayToMD(splitDialogItem.startDay ?? 1);
+                                            const md = (() => {
+                                                if (i === 0) return dayToMD(splitDialogItem.startDay ?? 1);
+                                                const manual = splitPartStartDays[i - 1];
+                                                if (manual > 0) return dayToMD(manual);
+                                                let sf = (splitDialogItem.startDay ?? 1) - 1 + (splitDialogItem.startHour ?? 0) / 24;
+                                                for (let p = 0; p < i; p++) sf += toDays(splitPartDays[p] ?? '0');
+                                                return dayToMD(Math.floor(sf) + 1);
+                                            })();
                                             return (
                                                 <Box key={i} sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, p: 1, borderRadius: 2, bgcolor: 'rgba(0,171,190,0.04)', border: `1px solid rgba(0,171,190,0.12)` }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
