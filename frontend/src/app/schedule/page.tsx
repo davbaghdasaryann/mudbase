@@ -28,6 +28,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TuneIcon from '@mui/icons-material/Tune';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageContents from '@/components/PageContents';
@@ -252,6 +254,10 @@ export default function SchedulePage() {
     const [pauseDialogItem, setPauseDialogItem] = useState<ScheduleItem | null>(null);
     const [pauseSplitAt, setPauseSplitAt] = useState('');
     const [pauseDurationDays, setPauseDurationDays] = useState('');
+    const undoStackRef = useRef<ScheduleItem[][]>([]);
+    const redoStackRef = useRef<ScheduleItem[][]>([]);
+    const [canUndo, setCanUndo] = useState(false);
+    const [canRedo, setCanRedo] = useState(false);
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -481,10 +487,14 @@ export default function SchedulePage() {
     }, [groupDragging]);
 
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSplitMode(null); };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setSplitMode(null);
+            if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+            if ((e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey) || (e.key === 'y' && (e.ctrlKey || e.metaKey))) { e.preventDefault(); handleRedo(); }
+        };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, []);
+    }, [handleUndo, handleRedo]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Shift + wheel → horizontal scroll on Gantt
     useEffect(() => {
@@ -682,6 +692,7 @@ export default function SchedulePage() {
     };
 
     const handleMoveToGroup = async (itemId: string, targetGroupId: string | null) => {
+        pushUndo();
         setMoveGroupMenu(null);
         const targetItems = scheduleItemsRef.current.filter(i =>
             targetGroupId ? i.groupId === targetGroupId : !i.groupId
@@ -695,6 +706,56 @@ export default function SchedulePage() {
             values: { items: [{ id: itemId, groupId: targetGroupId, displayIndex }] },
         });
     };
+
+    const pushUndo = useCallback(() => {
+        const snap = scheduleItemsRef.current.map(i => ({ ...i }));
+        undoStackRef.current = [...undoStackRef.current, snap].slice(-20);
+        redoStackRef.current = [];
+        setCanUndo(true);
+        setCanRedo(false);
+    }, []);
+
+    const syncToBackend = useCallback(async (target: ScheduleItem[], current: ScheduleItem[]) => {
+        const currentById = new Map(current.map(i => [i._id, i]));
+        const targetById = new Map(target.map(i => [i._id, i]));
+        for (const [id] of currentById) {
+            if (!targetById.has(id)) {
+                await Api.requestSession({ command: 'schedule/item_delete', args: { id } });
+            }
+        }
+        for (const [id, t] of targetById) {
+            const c = currentById.get(id);
+            if (c && (c.startDay !== t.startDay || c.startHour !== t.startHour || c.quantity !== t.quantity)) {
+                await Api.requestSession({ command: 'schedule/item_update', args: { id, startDay: t.startDay, startHour: t.startHour, quantity: t.quantity } });
+            }
+        }
+    }, []);
+
+    const handleUndo = useCallback(async () => {
+        const stack = undoStackRef.current;
+        if (stack.length === 0) return;
+        const snapshot = stack[stack.length - 1];
+        const current = scheduleItemsRef.current.map(i => ({ ...i }));
+        undoStackRef.current = stack.slice(0, -1);
+        redoStackRef.current = [...redoStackRef.current, current];
+        setCanUndo(undoStackRef.current.length > 0);
+        setCanRedo(true);
+        setScheduleItems(snapshot);
+        await syncToBackend(snapshot, current);
+    }, [syncToBackend]);
+
+    const handleRedo = useCallback(async () => {
+        const stack = redoStackRef.current;
+        if (stack.length === 0) return;
+        const snapshot = stack[stack.length - 1];
+        const current = scheduleItemsRef.current.map(i => ({ ...i }));
+        redoStackRef.current = stack.slice(0, -1);
+        undoStackRef.current = [...undoStackRef.current, current];
+        setCanUndo(true);
+        setCanRedo(redoStackRef.current.length > 0);
+        setScheduleItems(snapshot);
+        await syncToBackend(snapshot, current);
+    }, [syncToBackend]);
 
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
         if (rowDragging) return;
@@ -763,6 +824,7 @@ export default function SchedulePage() {
                 setDragging(null);
                 return;
             }
+            pushUndo();
             const origFrac = (origStart - 1) + origStartHour / 24;
             const candidateFrac = origFrac + dragDeltaRef.current / DAY_W;
             const myDur = itemDuration(item);
@@ -822,6 +884,7 @@ export default function SchedulePage() {
         const onUp = () => {
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
+            pushUndo();
             const newWidth = Math.max(12, origBarWidth + resizeDeltaRef.current);
             const newDuration = Math.max(0.125, newWidth / DAY_W);
             const newQuantity = lh > 0 ? newDuration * lh : 0;
@@ -857,6 +920,7 @@ export default function SchedulePage() {
         if (!barPopover || !selected) return;
         const item = scheduleItems.find(i => i._id === barPopover.itemId);
         if (!item) return;
+        pushUndo();
         const [sHStr] = popoverTime.split(':');
         const [eHStr] = popoverEndTime.split(':');
         const startH = Math.min(23, Math.max(0, parseInt(sHStr) || 0));
@@ -903,6 +967,7 @@ export default function SchedulePage() {
 
     const handleConfirmPauseDialog = async () => {
         if (!pauseDialogItem || !selected) return;
+        pushUndo();
         const item = pauseDialogItem;
         setPauseDialogItem(null);
         const splitAt = parseFloat(pauseSplitAt) || 0;
@@ -951,6 +1016,7 @@ export default function SchedulePage() {
 
     const handleSplitConfirm = async () => {
         if (!splitMode || !selected) return;
+        pushUndo();
         const item = splitMode.item;
         const sortedMarkers = [...splitMode.markers].sort((a, b) => a - b);
         setSplitMode(null);
@@ -992,6 +1058,7 @@ export default function SchedulePage() {
 
     const handleConfirmSplitDialog = async () => {
         if (!splitDialogItem || !selected) return;
+        pushUndo();
         const item = splitDialogItem;
         setSplitDialogItem(null);
         const lh = item.laborHours ?? 0;
@@ -1276,6 +1343,22 @@ export default function SchedulePage() {
                 <Box onClick={() => { setHoursInput(String(hoursPerDay)); setSettingsOpen(true); }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
                     <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 'auto', justifyContent: 'center' }}>
+                    <Tooltip title={`${t('Undo')} (Ctrl+Z)`} arrow>
+                        <span>
+                            <IconButton size='small' disabled={!canUndo} onClick={handleUndo} sx={{ color: canUndo ? '#607d8b' : '#ccc', bgcolor: '#fff', border: '1px solid', borderColor: canUndo ? '#607d8b44' : '#eee', borderRadius: 2, '&:hover': { bgcolor: 'rgba(96,125,139,0.08)' } }}>
+                                <UndoIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                    <Tooltip title={`${t('Redo')} (Ctrl+Shift+Z)`} arrow>
+                        <span>
+                            <IconButton size='small' disabled={!canRedo} onClick={handleRedo} sx={{ color: canRedo ? '#607d8b' : '#ccc', bgcolor: '#fff', border: '1px solid', borderColor: canRedo ? '#607d8b44' : '#eee', borderRadius: 2, '&:hover': { bgcolor: 'rgba(96,125,139,0.08)' } }}>
+                                <RedoIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
                 </Box>
             </Box>
 
