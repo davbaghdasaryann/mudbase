@@ -943,7 +943,7 @@ export default function SchedulePage() {
         const rawDays = splitEqualMode
             ? Array.from({ length: splitPartsCount }, () => totalDays / splitPartsCount)
             : splitPartDays.map(d => parseFloat(d) || 0);
-        const partDaysArr = splitByHours && lh > 0 ? rawDays.map(h => h / lh) : rawDays;
+        const partDaysArr = !splitEqualMode && splitByHours && lh > 0 ? rawDays.map(h => h / lh) : rawDays;
         const quantities = lh > 0
             ? partDaysArr.map(d => d * lh)
             : partDaysArr.map(d => totalQty * (totalDays > 0 ? d / totalDays : 1 / splitPartsCount));
@@ -2257,7 +2257,7 @@ export default function SchedulePage() {
                                     {lhD > 0 && (
                                         <Box sx={{ display: 'flex', borderRadius: '20px', border: `1px solid rgba(0,171,190,0.4)`, overflow: 'hidden' }}>
                                             {[false, true].map(byH => (
-                                                <Box key={String(byH)} onClick={() => { setSplitByHours(byH); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); }}
+                                                <Box key={String(byH)} onClick={() => { setSplitByHours(byH); const each = totalDays / splitPartsCount; const displayVal = byH ? +(each * lhD).toFixed(2) : +each.toFixed(2); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(displayVal))); }}
                                                     sx={{ px: 1.2, py: 0.3, cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, userSelect: 'none', transition: 'all 0.15s',
                                                         bgcolor: splitByHours === byH ? mainPrimaryColor : 'transparent',
                                                         color: splitByHours === byH ? '#fff' : mainPrimaryColor,
@@ -2365,8 +2365,14 @@ export default function SchedulePage() {
                     <Button
                         variant='contained'
                         onClick={handleConfirmSplitDialog}
-                        disabled={!splitEqualMode && splitDialogItem !== null &&
-                            Math.abs(splitPartDays.reduce((s, v) => s + (parseFloat(v) || 0), 0) - itemDuration(splitDialogItem)) >= 0.015}
+                        disabled={!splitEqualMode && splitDialogItem !== null && (() => {
+                            const lhCheck = splitDialogItem.laborHours ?? 0;
+                            const sumDays = splitPartDays.reduce((s, v) => {
+                                const n = parseFloat(v) || 0;
+                                return s + (splitByHours && lhCheck > 0 ? n / lhCheck : n);
+                            }, 0);
+                            return Math.abs(sumDays - itemDuration(splitDialogItem)) >= 0.015;
+                        })()}
                         sx={{ borderRadius: '20px', textTransform: 'none', bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' }, '&.Mui-disabled': { bgcolor: '#ff980044' } }}
                     >
                         {t('Split')}

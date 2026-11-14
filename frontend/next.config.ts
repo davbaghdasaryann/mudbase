@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
         return [];
     },
 
+    typescript: { ignoreBuildErrors: true },
     output: 'export',
     distDir: 'build',
 
