@@ -874,8 +874,7 @@ export default function SchedulePage() {
         if (!barContextMenu) return;
         const item = barContextMenu.item;
         setBarContextMenu(null);
-        const existingSegs = segmentsByParent.get(item._id) ?? [];
-        const totalDays = itemDuration(item) + existingSegs.reduce((s, seg) => s + itemDuration(seg), 0);
+        const totalDays = itemDuration(item);
         const lh = item.laborHours ?? 0;
         const n = 2;
         const eachDays = totalDays / n;
@@ -884,7 +883,6 @@ export default function SchedulePage() {
         setSplitPartDays(Array.from({ length: n }, () => String(+eachDays.toFixed(2))));
         setSplitByHours(false);
         setSplitPartStartDays([]);
-        // Pass item with restored full quantity so dialog and confirm see correct total
         setSplitDialogItem(lh > 0 ? { ...item, quantity: lh * totalDays } : item);
     };
 
@@ -944,11 +942,6 @@ export default function SchedulePage() {
             ? partDaysArr.map(d => d * lh)
             : partDaysArr.map(d => totalQty * (totalDays > 0 ? d / totalDays : 1 / splitPartsCount));
         const newParentId = item.parentItemId ?? item._id;
-        // Delete existing sub-items before re-splitting
-        for (const seg of (segmentsByParent.get(item._id) ?? [])) {
-            setScheduleItems(prev => prev.filter(i => i._id !== seg._id));
-            await Api.requestSession({ command: 'schedule/item_delete', args: { id: seg._id } });
-        }
         setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: quantities[0] } : i));
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0] } });
         let startFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
