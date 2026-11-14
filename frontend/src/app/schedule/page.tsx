@@ -1742,6 +1742,12 @@ export default function SchedulePage() {
                                                                     boxShadow: (isDraggingThisSeg || isResizingThisSeg) ? '0 4px 16px rgba(0,0,0,0.2)' : '0 1px 4px rgba(0,0,0,0.12)',
                                                                 }}
                                                             >
+                                                                <Typography sx={{ color: '#616161', fontSize: '0.63rem', fontWeight: 600, whiteSpace: 'nowrap', flex: 1, overflow: 'hidden', pointerEvents: 'none', pl: 0.5 }}>
+                                                                    {(() => {
+                                                                        const d = isResizingThisSeg ? Math.max(0.125, segW / DAY_W) : segDur;
+                                                                        return d >= 1 ? `${Math.round(d * 10) / 10}${t('day_short')}` : `${Math.round(d * 8)}h`;
+                                                                    })()}
+                                                                </Typography>
                                                                 <Box
                                                                     onMouseDown={e => handleResizeMouseDown(e, seg)}
                                                                     onClick={e => e.stopPropagation()}
