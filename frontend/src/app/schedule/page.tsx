@@ -1340,25 +1340,21 @@ export default function SchedulePage() {
                     <AssessmentOutlinedIcon sx={{ fontSize: 22, color: '#4caf50', opacity: 0.7 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Volume Monitor')}</Typography>
                 </Box>
+                <Tooltip title="Ctrl+Z" arrow>
+                    <Box onClick={canUndo ? handleUndo : undefined} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default', ...(canUndo ? { '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } } : {}) }}>
+                        <UndoIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
+                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Undo')}</Typography>
+                    </Box>
+                </Tooltip>
+                <Tooltip title="Ctrl+Shift+Z" arrow>
+                    <Box onClick={canRedo ? handleRedo : undefined} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', opacity: canRedo ? 1 : 0.4, cursor: canRedo ? 'pointer' : 'default', ...(canRedo ? { '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } } : {}) }}>
+                        <RedoIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
+                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Redo')}</Typography>
+                    </Box>
+                </Tooltip>
                 <Box onClick={() => { setHoursInput(String(hoursPerDay)); setSettingsOpen(true); }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, width: 110, height: 72, px: 1, py: 1, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer', flexShrink: 0, transition: 'box-shadow 0.2s, transform 0.15s, background-color 0.15s', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.13)', transform: 'translateY(-2px)', bgcolor: 'rgba(96,125,139,0.06)' }, '&:hover svg': { opacity: '1 !important' } }}>
                     <TuneIcon sx={{ fontSize: 22, color: '#607d8b', opacity: 0.55 }} />
                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: '#1a1a1a', textAlign: 'center', lineHeight: 1.25 }}>{t('Settings')}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 'auto', justifyContent: 'center' }}>
-                    <Tooltip title={`${t('Undo')} (Ctrl+Z)`} arrow>
-                        <span>
-                            <IconButton size='small' disabled={!canUndo} onClick={handleUndo} sx={{ color: canUndo ? '#607d8b' : '#ccc', bgcolor: '#fff', border: '1px solid', borderColor: canUndo ? '#607d8b44' : '#eee', borderRadius: 2, '&:hover': { bgcolor: 'rgba(96,125,139,0.08)' } }}>
-                                <UndoIcon sx={{ fontSize: 20 }} />
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                    <Tooltip title={`${t('Redo')} (Ctrl+Shift+Z)`} arrow>
-                        <span>
-                            <IconButton size='small' disabled={!canRedo} onClick={handleRedo} sx={{ color: canRedo ? '#607d8b' : '#ccc', bgcolor: '#fff', border: '1px solid', borderColor: canRedo ? '#607d8b44' : '#eee', borderRadius: 2, '&:hover': { bgcolor: 'rgba(96,125,139,0.08)' } }}>
-                                <RedoIcon sx={{ fontSize: 20 }} />
-                            </IconButton>
-                        </span>
-                    </Tooltip>
                 </Box>
             </Box>
 
