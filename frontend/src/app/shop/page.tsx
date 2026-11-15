@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box, Typography, IconButton, TextField, CircularProgress, Tooltip, Collapse,
 } from '@mui/material';
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -211,12 +210,7 @@ export default function ShopPage() {
     if (loading) return <PageContents><Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={28} sx={{ color: mainColor }} /></Box></PageContents>;
 
     return (
-        <PageContents>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                <StorefrontOutlinedIcon sx={{ fontSize: 28, color: mainColor }} />
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1a1a' }}>{t('Shop')}</Typography>
-            </Box>
-
+        <PageContents title='Shop'>
             {isSuperAdmin && (
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>

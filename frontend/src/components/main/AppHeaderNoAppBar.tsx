@@ -34,6 +34,8 @@ import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import WorkOutlinedIcon from '@mui/icons-material/WorkOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 
 export default function AppHeaderNoAppBar(props: PageContentsProps) {
     const { t } = useTranslation();
@@ -84,6 +86,10 @@ export default function AppHeaderNoAppBar(props: PageContentsProps) {
                 return <ManageAccountsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'risk-monitoring':
                 return <MonitorHeartOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'personnel-bank':
+                return <WorkOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
+            case 'shop':
+                return <StorefrontOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
             case 'settings':
                 if (pathname === '/settings/packages') return <Inventory2OutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
                 if (pathname === '/settings/payments') return <PaymentsOutlinedIcon sx={{ height: 30, width: 30, color: '#00ABBE' }} />;
