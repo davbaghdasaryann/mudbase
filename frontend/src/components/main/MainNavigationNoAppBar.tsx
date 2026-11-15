@@ -36,6 +36,8 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import WorkOutlinedIcon from '@mui/icons-material/WorkOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 
 import {PageContentsProps} from '../PageContents';
 
@@ -456,6 +458,9 @@ function useMainNavigation() {
             title: t('Catalogs'),
             icon: <MenuBookIcon />,
         });
+
+        navigation.push({segment: 'personnel-bank', title: t('Personnel Bank'), icon: <WorkOutlinedIcon />});
+        navigation.push({segment: 'shop', title: t('Shop'), icon: <StorefrontOutlinedIcon />});
 
         if (session?.user && permissionsSet?.has('EST_USE')) {
             navigation.push({segment: 'estimates', title: t('Estimates'), icon: <StackedLineChartIcon />});
