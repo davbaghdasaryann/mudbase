@@ -22,6 +22,8 @@ import DatasetIcon from '@mui/icons-material/Dataset';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import BusinessIcon from '@mui/icons-material/Business';
+import WorkIcon from '@mui/icons-material/Work';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import { PageContentsProps } from '../PageContents';
 
 import { useTranslation } from 'react-i18next';
@@ -213,6 +215,18 @@ function useMainNavigation() {
             segment: 'catalog',
             title: t('Catalogs'),
             icon: <DatasetIcon />,
+        });
+
+        navigation.push({
+            segment: 'personnel-bank',
+            title: t('Personnel Bank'),
+            icon: <WorkIcon />,
+        });
+
+        navigation.push({
+            segment: 'shop',
+            title: t('Shop'),
+            icon: <StorefrontIcon />,
         });
 
         if (Env.isDev) {
