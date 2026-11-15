@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    Box, Typography, IconButton, TextField, Button, Collapse,
-    List, ListItem, ListItemText, ListItemIcon, CircularProgress, Tooltip,
+    Box, Typography, IconButton, TextField, CircularProgress, Tooltip, Collapse,
 } from '@mui/material';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,7 +13,6 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
-import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
 import { usePermissions } from '@/api/auth';
@@ -28,6 +26,119 @@ interface ShopCategory {
 }
 
 const mainColor = '#00abbe';
+const MAX_DEPTH = 5;
+
+interface CategoryNodeProps {
+    cat: ShopCategory;
+    depth: number;
+    allCategories: ShopCategory[];
+    expanded: Set<string>;
+    editingId: string | null;
+    editingName: string;
+    addingParentId: string;
+    addingName: string;
+    saving: boolean;
+    onToggleExpand: (id: string) => void;
+    onStartEdit: (id: string, name: string) => void;
+    onEditNameChange: (name: string) => void;
+    onRename: (id: string) => void;
+    onCancelEdit: () => void;
+    onDelete: (id: string) => void;
+    onStartAdd: (parentId: string) => void;
+    onAddNameChange: (name: string) => void;
+    onAdd: (parentId: string) => void;
+    onCancelAdd: () => void;
+}
+
+function CategoryNode({
+    cat, depth, allCategories, expanded, editingId, editingName, addingParentId, addingName,
+    saving, onToggleExpand, onStartEdit, onEditNameChange, onRename, onCancelEdit,
+    onDelete, onStartAdd, onAddNameChange, onAdd, onCancelAdd,
+}: CategoryNodeProps) {
+    const { t } = useTranslation();
+    const children = allCategories
+        .filter(c => c.parentId === cat._id)
+        .sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
+    const isExpanded = expanded.has(cat._id);
+    const isEditing = editingId === cat._id;
+    const indent = depth * 20;
+
+    return (
+        <Box>
+            <Box sx={{
+                display: 'flex', alignItems: 'center', gap: 0.5,
+                pl: `${indent + 4}px`, pr: 1, py: 0.5,
+                borderRadius: 1,
+                '&:hover': { bgcolor: depth === 0 ? 'transparent' : '#f5f5f5' },
+                borderBottom: depth === 0 ? '1px solid rgba(0,171,190,0.08)' : 'none',
+            }}>
+                <IconButton size='small' onClick={() => onToggleExpand(cat._id)}
+                    sx={{ color: children.length > 0 ? '#90a4ae' : 'transparent', flexShrink: 0, mr: 0.25 }}>
+                    {isExpanded ? <ExpandMoreIcon sx={{ fontSize: 16 }} /> : <ChevronRightIcon sx={{ fontSize: 16 }} />}
+                </IconButton>
+
+                {isEditing ? (
+                    <>
+                        <TextField autoFocus size='small' value={editingName}
+                            onChange={e => onEditNameChange(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') onRename(cat._id); if (e.key === 'Escape') onCancelEdit(); }}
+                            variant='standard' sx={{ flex: 1 }} />
+                        <IconButton size='small' onClick={() => onRename(cat._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton>
+                        <IconButton size='small' onClick={onCancelEdit} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>
+                    </>
+                ) : (
+                    <>
+                        <Typography sx={{ flex: 1, fontWeight: depth === 0 ? 600 : 400, fontSize: depth === 0 ? '0.9rem' : '0.85rem', color: depth === 0 ? '#1a1a1a' : '#424242' }}>
+                            {cat.name}
+                        </Typography>
+                        {children.length > 0 && (
+                            <Typography sx={{ fontSize: '0.7rem', color: '#b0bec5', mr: 0.5 }}>{children.length}</Typography>
+                        )}
+                        {depth < MAX_DEPTH - 1 && (
+                            <Tooltip title={t('Add subcategory')} arrow>
+                                <IconButton size='small' onClick={() => { onStartAdd(cat._id); onToggleExpand(cat._id); }}
+                                    sx={{ color: '#b0bec5', '&:hover': { color: mainColor } }}>
+                                    <AddIcon sx={{ fontSize: 15 }} />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                        <IconButton size='small' onClick={() => onStartEdit(cat._id, cat.name)}
+                            sx={{ color: '#b0bec5', '&:hover': { color: '#607d8b' } }}>
+                            <EditIcon sx={{ fontSize: 15 }} />
+                        </IconButton>
+                        <IconButton size='small' onClick={() => onDelete(cat._id)}
+                            sx={{ color: '#b0bec5', '&:hover': { color: '#e53935' } }}>
+                            <DeleteOutlineIcon sx={{ fontSize: 15 }} />
+                        </IconButton>
+                    </>
+                )}
+            </Box>
+
+            <Collapse in={isExpanded}>
+                <Box>
+                    {children.map(child => (
+                        <CategoryNode key={child._id} cat={child} depth={depth + 1} allCategories={allCategories}
+                            expanded={expanded} editingId={editingId} editingName={editingName}
+                            addingParentId={addingParentId} addingName={addingName} saving={saving}
+                            onToggleExpand={onToggleExpand} onStartEdit={onStartEdit} onEditNameChange={onEditNameChange}
+                            onRename={onRename} onCancelEdit={onCancelEdit} onDelete={onDelete}
+                            onStartAdd={onStartAdd} onAddNameChange={onAddNameChange} onAdd={onAdd} onCancelAdd={onCancelAdd} />
+                    ))}
+                    {addingParentId === cat._id && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pl: `${indent + 44}px`, pr: 1, py: 0.5 }}>
+                            <TextField autoFocus size='small' value={addingName}
+                                onChange={e => onAddNameChange(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') onAdd(cat._id); if (e.key === 'Escape') onCancelAdd(); }}
+                                placeholder={t('Subcategory name')} variant='standard' sx={{ flex: 1 }} />
+                            <IconButton size='small' disabled={saving} onClick={() => onAdd(cat._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 15 }} /></IconButton>
+                            <IconButton size='small' onClick={onCancelAdd} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 15 }} /></IconButton>
+                        </Box>
+                    )}
+                </Box>
+            </Collapse>
+        </Box>
+    );
+}
 
 export default function ShopPage() {
     const { t } = useTranslation();
@@ -39,7 +150,7 @@ export default function ShopPage() {
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
-    const [addingParentId, setAddingParentId] = useState<string | null | 'root'>('none');
+    const [addingParentId, setAddingParentId] = useState<string>('');
     const [addingName, setAddingName] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -52,21 +163,17 @@ export default function ShopPage() {
     useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
     const topLevel = categories.filter(c => !c.parentId).sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
-    const subOf = (parentId: string) => categories.filter(c => c.parentId === parentId).sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0));
 
-    const handleAddCategory = async (parentId: string | null) => {
+    const handleAdd = async (parentId: string | null) => {
         if (!addingName.trim()) return;
         setSaving(true);
         const created = await Api.requestSession<ShopCategory>({
             command: 'shop/category_create',
             args: { name: addingName.trim(), ...(parentId ? { parentId } : {}) },
         });
-        if (created) {
-            setCategories(prev => [...prev, created]);
-            if (parentId) setExpanded(prev => new Set([...prev, parentId]));
-        }
+        if (created) setCategories(prev => [...prev, created]);
         setAddingName('');
-        setAddingParentId('none');
+        setAddingParentId('');
         setSaving(false);
     };
 
@@ -78,8 +185,14 @@ export default function ShopPage() {
     };
 
     const handleDelete = async (id: string) => {
+        // collect all descendant ids to remove from local state
+        const toDelete = new Set<string>([id]);
+        const collect = (parentId: string) => {
+            categories.filter(c => c.parentId === parentId).forEach(c => { toDelete.add(c._id); collect(c._id); });
+        };
+        collect(id);
         await Api.requestSession({ command: 'shop/category_delete', args: { id } });
-        setCategories(prev => prev.filter(c => c._id !== id && c.parentId !== id));
+        setCategories(prev => prev.filter(c => !toDelete.has(c._id)));
     };
 
     const toggleExpand = (id: string) => setExpanded(prev => {
@@ -88,130 +201,68 @@ export default function ShopPage() {
         return next;
     });
 
-    const cardSx = { bgcolor: '#fff', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', border: '1px solid rgba(0,171,190,0.12)', mb: 1 };
+    const startAdd = (parentId: string) => {
+        setAddingParentId(parentId);
+        setAddingName('');
+        setExpanded(prev => new Set([...prev, parentId]));
+    };
 
     if (loading) return <PageContents><Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={28} sx={{ color: mainColor }} /></Box></PageContents>;
 
     return (
         <PageContents>
-            {/* Header */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                 <StorefrontOutlinedIcon sx={{ fontSize: 28, color: mainColor }} />
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
-                    {t('Shop')}
-                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1a1a' }}>{t('Shop')}</Typography>
             </Box>
 
             {isSuperAdmin && (
                 <Box>
-                    {/* Section title */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <CategoryOutlinedIcon sx={{ fontSize: 20, color: '#607d8b' }} />
-                            <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#424242' }}>
-                                {t('Categories')}
-                            </Typography>
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: '#424242' }}>{t('Categories')}</Typography>
                         </Box>
                         <Tooltip title={t('Add category')} arrow>
-                            <IconButton size='small' onClick={() => { setAddingParentId('root'); setAddingName(''); }}
+                            <IconButton size='small' onClick={() => { setAddingParentId('__root__'); setAddingName(''); }}
                                 sx={{ color: mainColor, bgcolor: `${mainColor}12`, '&:hover': { bgcolor: `${mainColor}22` } }}>
                                 <AddIcon sx={{ fontSize: 18 }} />
                             </IconButton>
                         </Tooltip>
                     </Box>
 
-                    {/* Add top-level category */}
-                    {addingParentId === 'root' && (
-                        <Box sx={{ ...cardSx, display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, mb: 2 }}>
+                    {/* Add root-level category */}
+                    {addingParentId === '__root__' && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1, mb: 1, bgcolor: '#fff', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', border: '1px solid rgba(0,171,190,0.12)' }}>
                             <TextField autoFocus size='small' value={addingName} onChange={e => setAddingName(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') handleAddCategory(null); if (e.key === 'Escape') setAddingParentId('none'); }}
+                                onKeyDown={e => { if (e.key === 'Enter') handleAdd(null); if (e.key === 'Escape') setAddingParentId(''); }}
                                 placeholder={t('Category name')} variant='standard' sx={{ flex: 1 }} />
-                            <IconButton size='small' disabled={saving} onClick={() => handleAddCategory(null)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 18 }} /></IconButton>
-                            <IconButton size='small' onClick={() => setAddingParentId('none')} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
+                            <IconButton size='small' disabled={saving} onClick={() => handleAdd(null)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 18 }} /></IconButton>
+                            <IconButton size='small' onClick={() => setAddingParentId('')} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
                         </Box>
                     )}
 
-                    {/* Category list */}
-                    {topLevel.length === 0 && addingParentId !== 'root' && (
+                    {topLevel.length === 0 && addingParentId !== '__root__' && (
                         <Typography sx={{ color: '#aaa', fontSize: '0.85rem', py: 2 }}>{t('No categories yet')}</Typography>
                     )}
 
-                    {topLevel.map(cat => {
-                        const subs = subOf(cat._id);
-                        const isExpanded = expanded.has(cat._id);
-                        const isEditing = editingId === cat._id;
-                        return (
-                            <Box key={cat._id} sx={cardSx}>
-                                {/* Category row */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, gap: 0.5 }}>
-                                    <IconButton size='small' onClick={() => toggleExpand(cat._id)} sx={{ color: '#90a4ae', mr: 0.5 }}>
-                                        {isExpanded ? <ExpandMoreIcon sx={{ fontSize: 18 }} /> : <ChevronRightIcon sx={{ fontSize: 18 }} />}
-                                    </IconButton>
-                                    {isEditing ? (
-                                        <>
-                                            <TextField autoFocus size='small' value={editingName} onChange={e => setEditingName(e.target.value)}
-                                                onKeyDown={e => { if (e.key === 'Enter') handleRename(cat._id); if (e.key === 'Escape') setEditingId(null); }}
-                                                variant='standard' sx={{ flex: 1 }} />
-                                            <IconButton size='small' onClick={() => handleRename(cat._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 18 }} /></IconButton>
-                                            <IconButton size='small' onClick={() => setEditingId(null)} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Typography sx={{ flex: 1, fontWeight: 600, fontSize: '0.9rem' }}>{cat.name}</Typography>
-                                            {subs.length > 0 && <Typography sx={{ fontSize: '0.72rem', color: '#90a4ae', mr: 1 }}>{subs.length}</Typography>}
-                                            <Tooltip title={t('Add subcategory')} arrow>
-                                                <IconButton size='small' onClick={() => { setAddingParentId(cat._id); setAddingName(''); setExpanded(prev => new Set([...prev, cat._id])); }}
-                                                    sx={{ color: '#90a4ae', '&:hover': { color: mainColor } }}><AddIcon sx={{ fontSize: 16 }} /></IconButton>
-                                            </Tooltip>
-                                            <IconButton size='small' onClick={() => { setEditingId(cat._id); setEditingName(cat.name); }}
-                                                sx={{ color: '#90a4ae', '&:hover': { color: '#607d8b' } }}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
-                                            <IconButton size='small' onClick={() => handleDelete(cat._id)}
-                                                sx={{ color: '#90a4ae', '&:hover': { color: '#e53935' } }}><DeleteOutlineIcon sx={{ fontSize: 16 }} /></IconButton>
-                                        </>
-                                    )}
-                                </Box>
-
-                                {/* Subcategories */}
-                                <Collapse in={isExpanded}>
-                                    <Box sx={{ pl: 5, pb: 0.5 }}>
-                                        {subs.map(sub => (
-                                            <Box key={sub._id} sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.5, gap: 0.5, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
-                                                <SubdirectoryArrowRightIcon sx={{ fontSize: 14, color: '#bdbdbd', mr: 0.5, flexShrink: 0 }} />
-                                                {editingId === sub._id ? (
-                                                    <>
-                                                        <TextField autoFocus size='small' value={editingName} onChange={e => setEditingName(e.target.value)}
-                                                            onKeyDown={e => { if (e.key === 'Enter') handleRename(sub._id); if (e.key === 'Escape') setEditingId(null); }}
-                                                            variant='standard' sx={{ flex: 1 }} />
-                                                        <IconButton size='small' onClick={() => handleRename(sub._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton>
-                                                        <IconButton size='small' onClick={() => setEditingId(null)} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Typography sx={{ flex: 1, fontSize: '0.85rem', color: '#424242' }}>{sub.name}</Typography>
-                                                        <IconButton size='small' onClick={() => { setEditingId(sub._id); setEditingName(sub.name); }}
-                                                            sx={{ color: '#bdbdbd', '&:hover': { color: '#607d8b' } }}><EditIcon sx={{ fontSize: 14 }} /></IconButton>
-                                                        <IconButton size='small' onClick={() => handleDelete(sub._id)}
-                                                            sx={{ color: '#bdbdbd', '&:hover': { color: '#e53935' } }}><DeleteOutlineIcon sx={{ fontSize: 14 }} /></IconButton>
-                                                    </>
-                                                )}
-                                            </Box>
-                                        ))}
-                                        {/* Add subcategory inline */}
-                                        {addingParentId === cat._id && (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.5 }}>
-                                                <SubdirectoryArrowRightIcon sx={{ fontSize: 14, color: '#bdbdbd', mr: 0.5 }} />
-                                                <TextField autoFocus size='small' value={addingName} onChange={e => setAddingName(e.target.value)}
-                                                    onKeyDown={e => { if (e.key === 'Enter') handleAddCategory(cat._id); if (e.key === 'Escape') setAddingParentId('none'); }}
-                                                    placeholder={t('Subcategory name')} variant='standard' sx={{ flex: 1 }} />
-                                                <IconButton size='small' disabled={saving} onClick={() => handleAddCategory(cat._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton>
-                                                <IconButton size='small' onClick={() => setAddingParentId('none')} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>
-                                            </Box>
-                                        )}
-                                    </Box>
-                                </Collapse>
-                            </Box>
-                        );
-                    })}
+                    <Box sx={{ bgcolor: '#fff', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', border: '1px solid rgba(0,171,190,0.12)', overflow: 'hidden' }}>
+                        {topLevel.map(cat => (
+                            <CategoryNode key={cat._id} cat={cat} depth={0} allCategories={categories}
+                                expanded={expanded} editingId={editingId} editingName={editingName}
+                                addingParentId={addingParentId} addingName={addingName} saving={saving}
+                                onToggleExpand={toggleExpand}
+                                onStartEdit={(id, name) => { setEditingId(id); setEditingName(name); }}
+                                onEditNameChange={setEditingName}
+                                onRename={handleRename}
+                                onCancelEdit={() => setEditingId(null)}
+                                onDelete={handleDelete}
+                                onStartAdd={startAdd}
+                                onAddNameChange={setAddingName}
+                                onAdd={handleAdd}
+                                onCancelAdd={() => setAddingParentId('')} />
+                        ))}
+                    </Box>
                 </Box>
             )}
 
