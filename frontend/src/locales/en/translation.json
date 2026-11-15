@@ -916,5 +916,11 @@
   "Pause duration": "Pause duration (days)",
   "Split at day": "Split at day",
   "Personnel Bank": "Personnel Bank",
-  "Shop": "Shop"
+  "Shop": "Shop",
+  "Categories": "Categories",
+  "Add category": "Add category",
+  "Category name": "Category name",
+  "No categories yet": "No categories yet",
+  "Add subcategory": "Add subcategory",
+  "Subcategory name": "Subcategory name"
 }

@@ -890,5 +890,11 @@
   "Pause duration": "Դադարի Տևողություն",
   "Split at day": "Բաժանել օր",
   "Personnel Bank": "Կադրային բանկ",
-  "Shop": "Խանութ"
+  "Shop": "Խանութ",
+  "Categories": "Կատեգորիաներ",
+  "Add category": "Ավելացնել կատեգորիա",
+  "Category name": "Կատեգորիայի անուն",
+  "No categories yet": "Կատեգորիաներ չկան",
+  "Add subcategory": "Ավելացնել ենթակատեգորիա",
+  "Subcategory name": "Ենթակատեգորիայի անուն"
 }
