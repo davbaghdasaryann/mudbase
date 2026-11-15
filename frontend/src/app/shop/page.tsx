@@ -82,7 +82,7 @@ function CategoryNode({
                         <TextField autoFocus size='small' value={editingName}
                             onChange={e => onEditNameChange(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') onRename(cat._id); if (e.key === 'Escape') onCancelEdit(); }}
-                            variant='standard' sx={{ flex: 1 }} />
+                            variant='standard' inputProps={{ style: { fontSize: '0.875rem' } }} sx={{ flex: 1 }} />
                         <IconButton size='small' onClick={() => onRename(cat._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton>
                         <IconButton size='small' onClick={onCancelEdit} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>
                     </>
@@ -96,7 +96,7 @@ function CategoryNode({
                         )}
                         {depth < MAX_DEPTH - 1 && (
                             <Tooltip title={t('Add subcategory')} arrow>
-                                <IconButton size='small' onClick={() => { onStartAdd(cat._id); onToggleExpand(cat._id); }}
+                                <IconButton size='small' onClick={() => onStartAdd(cat._id)}
                                     sx={{ color: '#b0bec5', '&:hover': { color: mainColor } }}>
                                     <AddIcon sx={{ fontSize: 15 }} />
                                 </IconButton>
@@ -129,7 +129,8 @@ function CategoryNode({
                             <TextField autoFocus size='small' value={addingName}
                                 onChange={e => onAddNameChange(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') onAdd(cat._id); if (e.key === 'Escape') onCancelAdd(); }}
-                                placeholder={t('Subcategory name')} variant='standard' sx={{ flex: 1 }} />
+                                placeholder={t('Subcategory name')} variant='standard'
+                                inputProps={{ style: { fontSize: '0.875rem' } }} sx={{ flex: 1 }} />
                             <IconButton size='small' disabled={saving} onClick={() => onAdd(cat._id)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 15 }} /></IconButton>
                             <IconButton size='small' onClick={onCancelAdd} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 15 }} /></IconButton>
                         </Box>
@@ -167,13 +168,13 @@ export default function ShopPage() {
     const handleAdd = async (parentId: string | null) => {
         if (!addingName.trim()) return;
         setSaving(true);
-        const created = await Api.requestSession<ShopCategory>({
+        await Api.requestSession<ShopCategory>({
             command: 'shop/category_create',
             args: { name: addingName.trim(), ...(parentId ? { parentId } : {}) },
         });
-        if (created) setCategories(prev => [...prev, created]);
         setAddingName('');
         setAddingParentId('');
+        await fetchCategories();
         setSaving(false);
     };
 
@@ -236,7 +237,8 @@ export default function ShopPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1, mb: 1, bgcolor: '#fff', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', border: '1px solid rgba(0,171,190,0.12)' }}>
                             <TextField autoFocus size='small' value={addingName} onChange={e => setAddingName(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') handleAdd(null); if (e.key === 'Escape') setAddingParentId(''); }}
-                                placeholder={t('Category name')} variant='standard' sx={{ flex: 1 }} />
+                                placeholder={t('Category name')} variant='standard'
+                                inputProps={{ style: { fontSize: '0.875rem' } }} sx={{ flex: 1 }} />
                             <IconButton size='small' disabled={saving} onClick={() => handleAdd(null)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 18 }} /></IconButton>
                             <IconButton size='small' onClick={() => setAddingParentId('')} sx={{ color: '#bbb' }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
                         </Box>
