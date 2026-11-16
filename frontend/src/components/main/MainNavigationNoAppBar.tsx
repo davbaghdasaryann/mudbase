@@ -309,6 +309,10 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
 
             <List sx={{ px: 1, pt: 0, pb: 0 }}>
                 {([
+                    ...(!isSuperAdmin ? [
+                        { labelKey: 'Personnel Bank', icon: <WorkOutlinedIcon /> },
+                        { labelKey: 'Shop', icon: <StorefrontOutlinedIcon /> },
+                    ] : []),
                     { labelKey: 'Karavarium', icon: <ManageAccountsOutlinedIcon /> },
                     { labelKey: 'Guide', icon: <AutoStoriesOutlinedIcon /> },
                 ] as { labelKey: string; icon: React.ReactNode }[]).map((item) => (
