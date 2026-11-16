@@ -932,5 +932,8 @@
   "Description": "Description",
   "None": "None",
   "draft": "Draft",
-  "published": "Published"
+  "published": "Published",
+  "Pick from library": "Pick from library",
+  "Search library...": "Search library...",
+  "No results": "No results"
 }

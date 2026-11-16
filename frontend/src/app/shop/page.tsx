@@ -16,6 +16,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import SearchIcon from '@mui/icons-material/Search';
+import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import PageContents from '@/components/PageContents';
 import { useTranslation } from 'react-i18next';
@@ -178,9 +179,11 @@ interface AddListingDialogProps {
 
 function AddListingDialog({ open, categories, onClose, onCreated }: AddListingDialogProps) {
     const { t } = useTranslation();
-    const [materialSearch, setMaterialSearch] = useState('');
-    const [materialResults, setMaterialResults] = useState<MaterialItem[]>([]);
-    const [selectedMaterial, setSelectedMaterial] = useState<MaterialItem | null>(null);
+    const [materialName, setMaterialName] = useState('');
+    const [linkedMaterial, setLinkedMaterial] = useState<MaterialItem | null>(null);
+    const [libraryOpen, setLibraryOpen] = useState(false);
+    const [librarySearch, setLibrarySearch] = useState('');
+    const [libraryResults, setLibraryResults] = useState<MaterialItem[]>([]);
     const [searching, setSearching] = useState(false);
     const [categoryId, setCategoryId] = useState('');
     const [price, setPrice] = useState('');
@@ -190,41 +193,43 @@ function AddListingDialog({ open, categories, onClose, onCreated }: AddListingDi
 
     useEffect(() => {
         if (!open) {
-            setMaterialSearch(''); setMaterialResults([]); setSelectedMaterial(null);
+            setMaterialName(''); setLinkedMaterial(null); setLibraryOpen(false);
+            setLibrarySearch(''); setLibraryResults([]);
             setCategoryId(''); setPrice(''); setDescription(''); setSaving(false);
         }
     }, [open]);
 
-    const searchMaterials = useCallback(async (q: string) => {
-        if (!q.trim()) { setMaterialResults([]); return; }
+    const searchLibrary = useCallback(async (q: string) => {
+        if (!q.trim()) { setLibraryResults([]); return; }
         setSearching(true);
         const res = await Api.requestSession<MaterialItem[]>({ command: 'material/fetch_items', args: { searchVal: q.trim() } });
-        setMaterialResults(res ?? []);
+        setLibraryResults(res ?? []);
         setSearching(false);
     }, []);
 
-    const handleSearchChange = (val: string) => {
-        setMaterialSearch(val);
-        setSelectedMaterial(null);
+    const handleLibrarySearchChange = (val: string) => {
+        setLibrarySearch(val);
         if (searchTimer.current) clearTimeout(searchTimer.current);
-        searchTimer.current = setTimeout(() => searchMaterials(val), 350);
+        searchTimer.current = setTimeout(() => searchLibrary(val), 350);
     };
 
-    const handleSelectMaterial = (m: MaterialItem) => {
-        setSelectedMaterial(m);
-        setMaterialSearch(m.name);
-        setMaterialResults([]);
+    const handleSelectFromLibrary = (m: MaterialItem) => {
+        setLinkedMaterial(m);
+        setMaterialName(m.name);
+        setLibraryOpen(false);
+        setLibrarySearch('');
+        setLibraryResults([]);
     };
 
     const flatCategories = (cats: ShopCategory[], result: { id: string; label: string }[] = [], depth = 0, parentId?: string): { id: string; label: string }[] => {
         cats.filter(c => c.parentId === parentId).sort((a, b) => (a.displayIndex ?? 0) - (b.displayIndex ?? 0)).forEach(c => {
-            result.push({ id: c._id, label: ' '.repeat(depth * 3) + c.name });
+            result.push({ id: c._id, label: '\u00a0'.repeat(depth * 3) + c.name });
             flatCategories(cats, result, depth + 1, c._id);
         });
         return result;
     };
 
-    const canSave = selectedMaterial && price && parseFloat(price) > 0;
+    const canSave = materialName.trim() && price && parseFloat(price) > 0;
 
     const handleSave = async () => {
         if (!canSave) return;
@@ -232,10 +237,9 @@ function AddListingDialog({ open, categories, onClose, onCreated }: AddListingDi
         await Api.requestSession({
             command: 'shop/listing_create',
             args: {
-                materialId: selectedMaterial!._id,
-                materialName: selectedMaterial!.name,
-                materialCode: selectedMaterial!.fullCode ?? '',
-                price: price,
+                materialName: materialName.trim(),
+                ...(linkedMaterial ? { materialId: linkedMaterial._id, materialCode: linkedMaterial.fullCode ?? '' } : {}),
+                price,
                 ...(categoryId ? { categoryId } : {}),
                 description,
             },
@@ -248,25 +252,51 @@ function AddListingDialog({ open, categories, onClose, onCreated }: AddListingDi
         <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
             <DialogTitle sx={{ fontWeight: 700, fontSize: '1rem', pb: 1 }}>{t('Add listing')}</DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
-                {/* Material search */}
+
+                {/* Material name — free text + optional library link */}
                 <Box sx={{ position: 'relative' }}>
-                    <TextField fullWidth size='small' label={t('Material')} value={materialSearch}
-                        onChange={e => handleSearchChange(e.target.value)}
-                        InputProps={{ endAdornment: <InputAdornment position='end'>{searching ? <CircularProgress size={16} /> : <SearchIcon sx={{ fontSize: 18, color: '#bbb' }} />}</InputAdornment> }} />
-                    {materialResults.length > 0 && (
-                        <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 200, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
-                            <List dense disablePadding>
-                                {materialResults.map(m => (
-                                    <ListItemButton key={m._id} onClick={() => handleSelectMaterial(m)}>
+                    <TextField fullWidth size='small' label={t('Material')} value={materialName}
+                        onChange={e => { setMaterialName(e.target.value); if (linkedMaterial && e.target.value !== linkedMaterial.name) setLinkedMaterial(null); }}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position='end'>
+                                    <Tooltip title={t('Pick from library')} arrow>
+                                        <IconButton size='small' onClick={() => setLibraryOpen(v => !v)}
+                                            sx={{ color: libraryOpen ? mainColor : '#b0bec5', '&:hover': { color: mainColor } }}>
+                                            <LibraryBooksOutlinedIcon sx={{ fontSize: 18 }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                </InputAdornment>
+                            ),
+                        }} />
+
+                    {/* Library picker dropdown */}
+                    {libraryOpen && (
+                        <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', mt: 0.5 }}>
+                            <Box sx={{ p: 1 }}>
+                                <TextField autoFocus fullWidth size='small' placeholder={t('Search library...')} value={librarySearch}
+                                    onChange={e => handleLibrarySearchChange(e.target.value)}
+                                    InputProps={{ startAdornment: <InputAdornment position='start'>{searching ? <CircularProgress size={14} /> : <SearchIcon sx={{ fontSize: 16, color: '#bbb' }} />}</InputAdornment> }} />
+                            </Box>
+                            <List dense disablePadding sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                {libraryResults.length === 0 && librarySearch && !searching && (
+                                    <ListItemButton disabled><ListItemText primary={t('No results')} primaryTypographyProps={{ fontSize: '0.8rem', color: '#aaa' }} /></ListItemButton>
+                                )}
+                                {libraryResults.map(m => (
+                                    <ListItemButton key={m._id} onClick={() => handleSelectFromLibrary(m)}>
                                         <ListItemText primary={m.name} secondary={m.fullCode} primaryTypographyProps={{ fontSize: '0.85rem' }} secondaryTypographyProps={{ fontSize: '0.75rem' }} />
                                     </ListItemButton>
                                 ))}
                             </List>
                         </Paper>
                     )}
-                    {selectedMaterial && (
-                        <Chip label={selectedMaterial.name} size='small' onDelete={() => { setSelectedMaterial(null); setMaterialSearch(''); }}
-                            sx={{ mt: 0.75, bgcolor: `${mainColor}18`, color: mainColor, fontWeight: 600 }} />
+
+                    {/* Library link badge */}
+                    {linkedMaterial && (
+                        <Chip icon={<LibraryBooksOutlinedIcon sx={{ fontSize: '14px !important' }} />}
+                            label={linkedMaterial.fullCode || linkedMaterial.name} size='small'
+                            onDelete={() => setLinkedMaterial(null)}
+                            sx={{ mt: 0.75, bgcolor: `${mainColor}18`, color: mainColor, fontWeight: 600, fontSize: '0.72rem' }} />
                     )}
                 </Box>
 
