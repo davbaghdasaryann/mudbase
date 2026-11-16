@@ -459,8 +459,10 @@ function useMainNavigation() {
             icon: <MenuBookIcon />,
         });
 
-        navigation.push({segment: 'personnel-bank', title: t('Personnel Bank'), icon: <WorkOutlinedIcon />});
-        navigation.push({segment: 'shop', title: t('Shop'), icon: <StorefrontOutlinedIcon />});
+        if (isSuperAdmin) {
+            navigation.push({segment: 'personnel-bank', title: t('Personnel Bank'), icon: <WorkOutlinedIcon />});
+            navigation.push({segment: 'shop', title: t('Shop'), icon: <StorefrontOutlinedIcon />});
+        }
 
         if (session?.user && permissionsSet?.has('EST_USE')) {
             navigation.push({segment: 'estimates', title: t('Estimates'), icon: <StackedLineChartIcon />});
