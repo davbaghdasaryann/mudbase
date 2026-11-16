@@ -11,3 +11,5 @@ export * from './comparative';
 export * from './chronological';
 export * from './structural';
 export * from './entity_package';
+export * from './shop/entity_shop_category';
+export * from './shop/entity_shop_listing';

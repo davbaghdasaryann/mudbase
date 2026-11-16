@@ -922,5 +922,15 @@
   "Category name": "Category name",
   "No categories yet": "No categories yet",
   "Add subcategory": "Add subcategory",
-  "Subcategory name": "Subcategory name"
+  "Subcategory name": "Subcategory name",
+  "Add listing": "Add listing",
+  "My Listings": "My Listings",
+  "No listings yet": "No listings yet",
+  "Material": "Material",
+  "Category": "Category",
+  "Price": "Price",
+  "Description": "Description",
+  "None": "None",
+  "draft": "Draft",
+  "published": "Published"
 }
