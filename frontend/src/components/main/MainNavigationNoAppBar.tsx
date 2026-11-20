@@ -199,7 +199,7 @@ export default function MainNavigationNoAppBar(props: PageContentsProps) {
                                 primary={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                         {item.title}
-                                        {(segment === 'dashboard-builder' || segment === 'costing' || segment === 'haymnadits') && (
+                                        {(segment === 'dashboard-builder' || segment === 'costing' || segment === 'haymnadits' || segment === 'schedule' || segment === 'performance') && (
                                             <Box component='span' sx={{
                                                 fontSize: '0.75rem',
                                                 fontWeight: 600,
