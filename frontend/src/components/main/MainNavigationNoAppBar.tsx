@@ -483,7 +483,6 @@ function useMainNavigation() {
             });
             navigation.push({segment: 'performance', title: t('Performance'), icon: <SpeedIcon />});
             navigation.push({segment: 'costing', title: t('Costing'), icon: <RequestQuoteOutlinedIcon />});
-            navigation.push({segment: 'risk-monitoring', title: t('Risk Monitoring'), icon: <MonitorHeartOutlinedIcon />});
         }
 
         if (isSuperAdmin) {
