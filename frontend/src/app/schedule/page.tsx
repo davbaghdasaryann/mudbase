@@ -899,28 +899,23 @@ export default function SchedulePage() {
         resizeDeltaRef.current = 0;
         setResizing({ id: itemId, origBarWidth, deltaX: 0 });
 
-        // Capture siblings that come after this pause (for auto-push on resize)
-        const isPauseItem = item.isPause ?? false;
-        const parentIdStr = item.parentItemId?.toString();
-        const origPauseStart = item.startDay ?? 1;
-        const siblingsSnapshot = isPauseItem && parentIdStr
-            ? scheduleItems.filter(i =>
-                i.parentItemId?.toString() === parentIdStr &&
-                (i.startDay ?? 1) > origPauseStart &&
-                i._id !== item._id
-              )
-            : [];
+        // Find all siblings that start at or after this item's right edge — push them when this item grows
+        const resizeGroupId = item.parentItemId ? item.parentItemId.toString() : item._id.toString();
+        const origItemEnd = (item.startDay ?? 1) + origDuration;
+        const siblingsSnapshot = scheduleItems.filter(i =>
+            i._id !== item._id &&
+            i.parentItemId?.toString() === resizeGroupId &&
+            (i.startDay ?? 1) + 0.001 >= origItemEnd
+        );
 
         const onMove = (ev: MouseEvent) => {
             const delta = ev.clientX - mouseStartX;
             resizeDeltaRef.current = delta;
             setResizing(prev => prev ? { ...prev, deltaX: delta } : null);
-            // Live-push siblings while resizing a pause
-            if (isPauseItem && siblingsSnapshot.length > 0) {
-                const curW = Math.max(12, origBarWidth + delta);
-                const curDur = Math.max(0.125, curW / DAY_W);
-                const liveDelta = curDur - origDuration;
-                setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: liveDelta });
+            // Live-push all right siblings during any resize
+            if (siblingsSnapshot.length > 0) {
+                const curDur = Math.max(0.125, Math.max(12, origBarWidth + delta) / DAY_W);
+                setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: curDur - origDuration });
             }
         };
 
@@ -937,8 +932,8 @@ export default function SchedulePage() {
             if (lh > 0) {
                 Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
             }
-            // Auto-push siblings after a pause resize
-            if (isPauseItem && siblingsSnapshot.length > 0) {
+            // Push all right siblings by the actual delta
+            if (siblingsSnapshot.length > 0) {
                 const deltaDays = newDuration - origDuration;
                 if (Math.abs(deltaDays) > 0.001) {
                     setScheduleItems(prev => prev.map(i => {
@@ -1859,7 +1854,8 @@ export default function SchedulePage() {
                                                 const segBaseW = Math.max(segDur * DAY_W - 1, 12);
                                                 const isDraggingThisSeg = dragging?.id === seg._id;
                                                 const isResizingThisSeg = resizing?.id === seg._id;
-                                                const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
+                                                const segPushShift = !isDraggingThisSeg && !isResizingThisSeg && pauseResizeShift?.siblingIds.has(seg._id) ? pauseResizeShift.deltaDays * DAY_W : 0;
+                                                const segOff = isDraggingThisSeg ? Math.max(0, segBaseOff + dragging!.deltaX) : (segBaseOff + segPushShift);
                                                 const segW = isResizingThisSeg ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
 
                                                 // Pause bar: grey diagonal stripes, tooltip, no unite interaction
@@ -1916,8 +1912,7 @@ export default function SchedulePage() {
                                                 const isSegSelected = inUniteMode && uniteSelectMode!.selectedIds.has(seg._id);
                                                 const isDraggingThisSegU = !inUniteMode && dragging?.id === seg._id;
                                                 const isResizingThisSegU = !inUniteMode && resizing?.id === seg._id;
-                                                const sibShift = !isDraggingThisSegU && pauseResizeShift?.siblingIds.has(seg._id) ? pauseResizeShift.deltaDays * DAY_W : 0;
-                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : (segBaseOff + sibShift);
+                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : (segBaseOff + segPushShift);
                                                 const segWU = isResizingThisSegU ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 const segStartDate = addDays(projectStartDate, Math.floor((seg.startDay ?? 1) - 1));
                                                 const segEndDate = addDays(projectStartDate, Math.ceil((seg.startDay ?? 1) + segDur - 2));
