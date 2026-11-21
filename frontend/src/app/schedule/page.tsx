@@ -1656,18 +1656,15 @@ export default function SchedulePage() {
                                 const hasSegs = segsForItem.length > 0;
                                 const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
-                                // When hasSegs, derive left position from first segment so a stale startDay
-                                // (from a prior drag of the parent bar) cannot create a ghost at the wrong spot.
-                                const firstChildSeg = segsForItem[0];
-                                const firstChildBaseOff = firstChildSeg
-                                    ? ((firstChildSeg.startDay ?? 1) - 1) * DAY_W + ((firstChildSeg.startHour ?? 0) / 24) * DAY_W
+                                // If the parent bar's stored startDay places it overlapping into child segments
+                                // (corruption from an old drag), clamp it to its correct position.
+                                const firstChildBaseOff = segsForItem[0]
+                                    ? ((segsForItem[0].startDay ?? 1) - 1) * DAY_W + ((segsForItem[0].startHour ?? 0) / 24) * DAY_W
                                     : null;
-                                const correctedBaseOffset = hasSegs && firstChildBaseOff !== null
+                                const correctedBaseOffset = hasSegs && firstChildBaseOff !== null && baseOffset + baseBarWidth > firstChildBaseOff
                                     ? Math.max(0, firstChildBaseOff - baseBarWidth)
                                     : baseOffset;
-                                const startOffset = isDraggingThis
-                                    ? Math.max(0, correctedBaseOffset + dragging!.deltaX)
-                                    : correctedBaseOffset;
+                                const startOffset = isDraggingThis ? Math.max(0, correctedBaseOffset + dragging!.deltaX) : correctedBaseOffset;
                                 const lrMaxQtyRaw = !item.isPause ? (laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName)?.quantity ?? Infinity) : Infinity;
                                 const sibQtyForBarW = !item.isPause ? scheduleItems
                                     .filter(i => i._id !== item._id && !i.isPause && i.parentItemId?.toString() === item._id.toString())
