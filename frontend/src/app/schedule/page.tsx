@@ -2721,6 +2721,23 @@ export default function SchedulePage() {
                     <ListItemIcon sx={{ minWidth: 32 }}><CallSplitIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Բաժանել</ListItemText>
                 </MenuItem>
+                {(() => {
+                    const ci = barContextMenu?.item;
+                    const uniteParentId = ci?.parentItemId?.toString() ?? ci?._id;
+                    const hasSplit = uniteParentId ? scheduleItems.some(i => i.parentItemId?.toString() === uniteParentId) : false;
+                    return (
+                        <MenuItem
+                            disabled={!hasSplit}
+                            onClick={() => { if (ci && uniteParentId) { startUniteSelect(uniteParentId); setBarContextMenu(null); } }}
+                            sx={{ fontSize: '0.85rem', py: 0.9 }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                <CallSplitIcon sx={{ fontSize: 18, color: hasSplit ? mainPrimaryColor : '#bbb', transform: 'rotate(180deg)' }} />
+                            </ListItemIcon>
+                            <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', color: hasSplit ? 'inherit' : '#bbb' }}>Միացնել</ListItemText>
+                        </MenuItem>
+                    );
+                })()}
                 <MenuItem onClick={handleOpenPauseDialog} sx={{ fontSize: '0.85rem', py: 0.9 }}>
                     <ListItemIcon sx={{ minWidth: 32 }}><PauseCircleOutlineIcon sx={{ fontSize: 18, color: '#555' }} /></ListItemIcon>
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>{t('Pause')}</ListItemText>
@@ -2738,21 +2755,6 @@ export default function SchedulePage() {
                     <ListItemText primaryTypographyProps={{ fontSize: '0.85rem' }}>Կարգավորումներ</ListItemText>
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
-                {!barContextMenu?.item.parentItemId && (() => {
-                    const hasSplit = barContextMenu ? scheduleItems.some(i => i.parentItemId === barContextMenu.item._id) : false;
-                    return (
-                        <MenuItem
-                            disabled={!hasSplit}
-                            onClick={() => { if (barContextMenu) { startUniteSelect(barContextMenu.item._id); setBarContextMenu(null); } }}
-                            sx={{ fontSize: '0.85rem', py: 0.9 }}
-                        >
-                            <ListItemIcon sx={{ minWidth: 32 }}>
-                                <CallSplitIcon sx={{ fontSize: 18, color: hasSplit ? mainPrimaryColor : '#bbb', transform: 'rotate(180deg)' }} />
-                            </ListItemIcon>
-                            <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', color: hasSplit ? 'inherit' : '#bbb' }}>Միացնել</ListItemText>
-                        </MenuItem>
-                    );
-                })()}
                 <MenuItem
                     onClick={() => { if (barContextMenu) { handleDeleteScheduleItemWithSubs(barContextMenu.item._id); setBarContextMenu(null); } }}
                     sx={{ fontSize: '0.85rem', py: 0.9 }}
