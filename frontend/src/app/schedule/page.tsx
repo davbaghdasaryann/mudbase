@@ -530,6 +530,13 @@ export default function SchedulePage() {
         setRecords(prev => prev.filter(r => r._id !== id));
     };
 
+    // Returns the CURRENT scheduled quantity for a labor row (live from scheduleItems, not stale addedQty)
+    const getLiveScheduledQty = (rowId: string) => {
+        const entry = addedLaborMap[rowId];
+        if (!entry) return 0;
+        return scheduleItems.find(i => i._id === entry.scheduleItemId)?.quantity ?? entry.addedQty;
+    };
+
     const fetchLaborRows = (onDone?: () => void) => {
         if (!selected) return;
         setLaborLoading(true);
@@ -899,6 +906,11 @@ export default function SchedulePage() {
         resizeDeltaRef.current = 0;
         setResizing({ id: itemId, origBarWidth, deltaX: 0 });
 
+        // Cap resize at total labor row quantity
+        const lrForResize = laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName);
+        const maxResizeQty = lrForResize?.quantity ?? Infinity;
+        const maxResizeBarW = lh > 0 && isFinite(maxResizeQty) ? (maxResizeQty / lh) * DAY_W + 3 : Infinity;
+
         // Find all siblings that start at or after this item's right edge — push them when this item grows
         const resizeGroupId = item.parentItemId ? item.parentItemId.toString() : item._id.toString();
         const origItemEnd = (item.startDay ?? 1) + origDuration;
@@ -911,10 +923,11 @@ export default function SchedulePage() {
         const onMove = (ev: MouseEvent) => {
             const delta = ev.clientX - mouseStartX;
             resizeDeltaRef.current = delta;
-            setResizing(prev => prev ? { ...prev, deltaX: delta } : null);
+            const clampedDelta = isFinite(maxResizeBarW) ? Math.min(delta, maxResizeBarW - origBarWidth) : delta;
+            setResizing(prev => prev ? { ...prev, deltaX: clampedDelta } : null);
             // Live-push all right siblings during any resize
             if (siblingsSnapshot.length > 0) {
-                const curDur = Math.max(0.125, Math.max(12, origBarWidth + delta) / DAY_W);
+                const curDur = Math.max(0.125, Math.max(12, origBarWidth + clampedDelta) / DAY_W);
                 setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: curDur - origDuration });
             }
         };
@@ -924,7 +937,7 @@ export default function SchedulePage() {
             window.removeEventListener('mouseup', onUp);
             setPauseResizeShift(null);
             pushUndo();
-            const newWidth = Math.max(12, origBarWidth + resizeDeltaRef.current);
+            const newWidth = Math.max(12, Math.min(maxResizeBarW, origBarWidth + resizeDeltaRef.current));
             const newDuration = Math.max(0.125, newWidth / DAY_W);
             const newQuantity = lh > 0 ? newDuration * lh : 0;
             setScheduleItems(prev => prev.map(i => i._id === itemId ? { ...i, quantity: newQuantity } : i));
@@ -1624,7 +1637,9 @@ export default function SchedulePage() {
                                 const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
                                 const hasSegs = (segmentsByParent.get(item._id) ?? []).length > 0;
                                 const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
-                                const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
+                                const lrMaxQty = laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName)?.quantity ?? Infinity;
+                                const maxBarW = item.laborHours && item.laborHours > 0 && isFinite(lrMaxQty) ? (lrMaxQty / item.laborHours) * DAY_W + 3 : Infinity;
+                                const barWidth = isResizingThis ? Math.max(12, Math.min(maxBarW, resizing!.origBarWidth + resizing!.deltaX)) : baseBarWidth;
                                 const isSplitTarget = splitMode?.item._id === item._id;
                                 const isUniteTarget = uniteSelectMode?.parentItemId === item._id;
                                 const rowBg = isRowDraggingThis
@@ -2038,25 +2053,34 @@ export default function SchedulePage() {
                                     </Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
-                                    {row.laborHours != null && row.laborHours > 0 && (
-                                        <>
-                                            <Tooltip title={t('Labor Time')} placement='top' arrow>
-                                                <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
-                                                    {addedLaborMap[row._id]
-                                                        ? `${+((row.quantity - addedLaborMap[row._id].addedQty) / row.laborHours).toFixed(2)} ${t('day_short')}`
-                                                        : `${(row.quantity / row.laborHours).toFixed(2)} ${t('day_short')}`}
-                                                </Typography>
-                                            </Tooltip>
-                                            <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
-                                        </>
-                                    )}
-                                    <Tooltip title={addedLaborMap[row._id] ? t('Remaining') : t('Quantity')} placement='top' arrow>
-                                        <Typography sx={{ fontSize: '0.82rem', color: addedLaborMap[row._id] ? mainPrimaryColor : '#555', fontWeight: addedLaborMap[row._id] ? 600 : 400, cursor: 'default' }}>
-                                            {addedLaborMap[row._id]
-                                                ? `${+(row.quantity - addedLaborMap[row._id].addedQty).toFixed(3)} ${row.unitSymbol}`
-                                                : `${row.quantity} ${row.unitSymbol}`}
-                                        </Typography>
-                                    </Tooltip>
+                                    {(() => {
+                                        const liveQty = getLiveScheduledQty(row._id);
+                                        const remaining = row.quantity - liveQty;
+                                        const isAdded = !!addedLaborMap[row._id];
+                                        return (
+                                            <>
+                                                {row.laborHours != null && row.laborHours > 0 && (
+                                                    <>
+                                                        <Tooltip title={t('Labor Time')} placement='top' arrow>
+                                                            <Typography sx={{ fontSize: '0.82rem', color: isAdded ? mainPrimaryColor : '#555', fontWeight: isAdded ? 600 : 400, cursor: 'default' }}>
+                                                                {isAdded
+                                                                    ? `${+(remaining / row.laborHours).toFixed(2)} ${t('day_short')}`
+                                                                    : `${(row.quantity / row.laborHours).toFixed(2)} ${t('day_short')}`}
+                                                            </Typography>
+                                                        </Tooltip>
+                                                        <Typography sx={{ fontSize: '0.82rem', color: '#bbb' }}>/</Typography>
+                                                    </>
+                                                )}
+                                                <Tooltip title={isAdded ? t('Remaining') : t('Quantity')} placement='top' arrow>
+                                                    <Typography sx={{ fontSize: '0.82rem', color: isAdded ? mainPrimaryColor : '#555', fontWeight: isAdded ? 600 : 400, cursor: 'default' }}>
+                                                        {isAdded
+                                                            ? `${+remaining.toFixed(3)} ${row.unitSymbol}`
+                                                            : `${row.quantity} ${row.unitSymbol}`}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </>
+                                        );
+                                    })()}
                                 </Box>
                                 <IconButton
                                     size='small'
@@ -2336,7 +2360,7 @@ export default function SchedulePage() {
                                     const isOpen = vmExpanded[key] ?? false;
                                     // Aggregate totals for the group
                                     const totalQty = group.rows.reduce((s, r) => s + r.quantity, 0);
-                                    const scheduledQty = group.rows.reduce((s, r) => s + (addedLaborMap[r._id]?.addedQty ?? 0), 0);
+                                    const scheduledQty = group.rows.reduce((s, r) => s + getLiveScheduledQty(r._id), 0);
                                     const remainingQty = Math.max(0, totalQty - scheduledQty);
                                     const pct = totalQty > 0 ? scheduledQty / totalQty : 0;
                                     const isDone = remainingQty <= 0;
@@ -2376,7 +2400,7 @@ export default function SchedulePage() {
                                             </Box>
                                             {/* Sub-items */}
                                             {isOpen && group.rows.map((row, ri) => {
-                                                const sc = addedLaborMap[row._id]?.addedQty ?? 0;
+                                                const sc = getLiveScheduledQty(row._id);
                                                 const rem = Math.max(0, row.quantity - sc);
                                                 const rDone = rem <= 0;
                                                 const rPartial = !rDone && sc > 0;
