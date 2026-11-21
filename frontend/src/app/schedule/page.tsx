@@ -1083,8 +1083,8 @@ export default function SchedulePage() {
             // Use custom start day if set for this part (parts 2+ are index i-1 in splitPartStartDays)
             const customStart = !splitEqualMode && splitPartStartDays[i - 1] > 0 ? splitPartStartDays[i - 1] : null;
             startFrac += partDaysArr[i - 1];
-            const nextStartDay = customStart ?? (Math.floor(startFrac) + 1);
-            const nextStartHour = customStart ? 0 : Math.round((startFrac % 1) * 24) % 24;
+            const nextStartDay = customStart ?? (startFrac + 1);
+            const nextStartHour = 0;
             const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
                 scheduleId: selected._id,
                 laborOfferItemName: item.laborOfferItemName,
