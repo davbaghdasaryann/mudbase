@@ -785,13 +785,19 @@ export default function SchedulePage() {
             i._id !== item._id && (i._id === parentId || i.parentItemId === parentId)
         );
 
-        // For any segment in a split group: clamp drag so parts can't overlap or leave empty gaps
+        // For any segment in a split group: clamp drag so parts can't overlap or leave empty gaps.
+        // Use only direct children (parentItemId matches) — excludes the parent container bar whose
+        // end-position spans the whole group and would produce a wrong minDragDelta for children.
         const origItemDurPx = itemDuration(item) * DAY_W;
+        const parentIdStr = parentId.toString();
+        const constraintSibs = scheduleItems.filter(i =>
+            i._id !== item._id && i.parentItemId?.toString() === parentIdStr
+        );
         let minDragDelta = -origOffsetPx;
         let maxDragDelta = Infinity;
-        if (groupSiblings.length > 0) {
-            const leftSibs = groupSiblings.filter(s => (s.startDay ?? 1) <= (item.startDay ?? 1));
-            const rightSibs = groupSiblings.filter(s => (s.startDay ?? 1) >= (item.startDay ?? 1) + itemDuration(item));
+        if (constraintSibs.length > 0) {
+            const leftSibs = constraintSibs.filter(s => (s.startDay ?? 1) <= (item.startDay ?? 1));
+            const rightSibs = constraintSibs.filter(s => (s.startDay ?? 1) >= (item.startDay ?? 1) + itemDuration(item));
             if (leftSibs.length > 0) {
                 const nearest = leftSibs.reduce((best, s) => (s.startDay ?? 1) > (best.startDay ?? 1) ? s : best, leftSibs[0]);
                 const nearestEndPx = ((nearest.startDay ?? 1) - 1 + (nearest.startHour ?? 0) / 24 + itemDuration(nearest)) * DAY_W;
@@ -837,7 +843,7 @@ export default function SchedulePage() {
             if (Math.abs(ev.clientX - mouseDownX) > 2) dragMovedRef.current = true;
             if (incr !== 0) {
                 const raw = Math.max(-origOffsetPx, dragDeltaRef.current + incr);
-                dragDeltaRef.current = groupSiblings.length > 0 ? Math.max(minDragDelta, Math.min(maxDragDelta, raw)) : raw;
+                dragDeltaRef.current = constraintSibs.length > 0 ? Math.max(minDragDelta, Math.min(maxDragDelta, raw)) : raw;
                 setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
             }
         };
@@ -911,8 +917,10 @@ export default function SchedulePage() {
             .filter(i => i._id !== item._id && !i.isPause &&
                 (i._id.toString() === resizeGroupId || i.parentItemId?.toString() === resizeGroupId))
             .reduce((sum, i) => sum + (i.quantity ?? 0), 0) : 0;
-        const lrForResize = !item.isPause ? laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName) : null;
-        const maxResizeQty = lrForResize ? Math.max(0.125 * (lh || 1), lrForResize.quantity - siblingQtyUsed) : Infinity;
+        const lrForResize = laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName);
+        const maxResizeQty = item.isPause
+            ? (lrForResize?.quantity ?? Infinity)
+            : lrForResize ? Math.max(0.125 * (lh || 1), lrForResize.quantity - siblingQtyUsed) : Infinity;
         const maxResizeBarW = lh > 0 && isFinite(maxResizeQty) ? (maxResizeQty / lh) * DAY_W + 3 : Infinity;
 
         // Find all siblings that start at or after this item's right edge — push them when this item grows
