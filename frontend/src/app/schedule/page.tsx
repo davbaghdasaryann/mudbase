@@ -1652,6 +1652,9 @@ export default function SchedulePage() {
                                 const startHour = item.startHour ?? 0;
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
+                                const segsForItem = segmentsByParent.get(item._id.toString()) ?? [];
+                                const hasSegs = segsForItem.length > 0;
+                                const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
                                 // When hasSegs, derive left position from first segment so a stale startDay
                                 // (from a prior drag of the parent bar) cannot create a ghost at the wrong spot.
@@ -1665,9 +1668,6 @@ export default function SchedulePage() {
                                 const startOffset = isDraggingThis
                                     ? Math.max(0, correctedBaseOffset + dragging!.deltaX)
                                     : correctedBaseOffset;
-                                const segsForItem = segmentsByParent.get(item._id.toString()) ?? [];
-                                const hasSegs = segsForItem.length > 0;
-                                const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const lrMaxQtyRaw = !item.isPause ? (laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName)?.quantity ?? Infinity) : Infinity;
                                 const sibQtyForBarW = !item.isPause ? scheduleItems
                                     .filter(i => i._id !== item._id && !i.isPause && i.parentItemId?.toString() === item._id.toString())
