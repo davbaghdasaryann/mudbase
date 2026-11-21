@@ -231,6 +231,7 @@ export default function SchedulePage() {
     // Bar resize state
     const [resizing, setResizing] = useState<{ id: string; origBarWidth: number; deltaX: number } | null>(null);
     const resizeDeltaRef = useRef(0);
+    const [pauseResizeShift, setPauseResizeShift] = useState<{ siblingIds: Set<string>; deltaDays: number } | null>(null);
 
     // Name column width (resizable)
     const [nameColW, setNameColW] = useState(NAME_COL_W);
@@ -893,11 +894,19 @@ export default function SchedulePage() {
             const delta = ev.clientX - mouseStartX;
             resizeDeltaRef.current = delta;
             setResizing(prev => prev ? { ...prev, deltaX: delta } : null);
+            // Live-push siblings while resizing a pause
+            if (isPauseItem && siblingsSnapshot.length > 0) {
+                const curW = Math.max(12, origBarWidth + delta);
+                const curDur = Math.max(0.125, curW / DAY_W);
+                const liveDelta = curDur - origDuration;
+                setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: liveDelta });
+            }
         };
 
         const onUp = () => {
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
+            setPauseResizeShift(null);
             pushUndo();
             const newWidth = Math.max(12, origBarWidth + resizeDeltaRef.current);
             const newDuration = Math.max(0.125, newWidth / DAY_W);
@@ -1853,7 +1862,7 @@ export default function SchedulePage() {
                                                                     background: 'repeating-linear-gradient(-45deg, #d4d4d4, #d4d4d4 3px, #f9f9f9 3px, #f9f9f9 10px)',
                                                                     borderRadius: '5px',
                                                                     border: '1px solid #c8c8c8',
-                                                                    zIndex: (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
+                                                                    zIndex: (isDraggingThisSeg || isResizingThisSeg) ? 10 : 2,
                                                                     cursor: isDraggingThisSeg ? 'grabbing' : 'grab',
                                                                     display: 'flex', alignItems: 'center', px: 0.5, overflow: 'hidden',
                                                                     boxShadow: (isDraggingThisSeg || isResizingThisSeg) ? '0 4px 16px rgba(0,0,0,0.2)' : '0 1px 4px rgba(0,0,0,0.12)',
@@ -1886,7 +1895,8 @@ export default function SchedulePage() {
                                                 const isSegSelected = inUniteMode && uniteSelectMode!.selectedIds.has(seg._id);
                                                 const isDraggingThisSegU = !inUniteMode && dragging?.id === seg._id;
                                                 const isResizingThisSegU = !inUniteMode && resizing?.id === seg._id;
-                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
+                                                const sibShift = !isDraggingThisSegU && pauseResizeShift?.siblingIds.has(seg._id) ? pauseResizeShift.deltaDays * DAY_W : 0;
+                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : (segBaseOff + sibShift);
                                                 const segWU = isResizingThisSegU ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 const segStartDate = addDays(projectStartDate, Math.floor((seg.startDay ?? 1) - 1));
                                                 const segEndDate = addDays(projectStartDate, Math.ceil((seg.startDay ?? 1) + segDur - 2));
