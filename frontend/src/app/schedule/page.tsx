@@ -870,11 +870,24 @@ export default function SchedulePage() {
         e.preventDefault();
         e.stopPropagation();
         const lh = item.laborHours ?? 0;
-        const origBarWidth = Math.max(itemDuration(item) * DAY_W - 3, 12);
+        const origDuration = itemDuration(item);
+        const origBarWidth = Math.max(origDuration * DAY_W - 3, 12);
         const mouseStartX = e.clientX;
         const itemId = item._id;
         resizeDeltaRef.current = 0;
         setResizing({ id: itemId, origBarWidth, deltaX: 0 });
+
+        // Capture siblings that come after this pause (for auto-push on resize)
+        const isPauseItem = item.isPause ?? false;
+        const parentIdStr = item.parentItemId?.toString();
+        const origPauseStart = item.startDay ?? 1;
+        const siblingsSnapshot = isPauseItem && parentIdStr
+            ? scheduleItems.filter(i =>
+                i.parentItemId?.toString() === parentIdStr &&
+                (i.startDay ?? 1) > origPauseStart &&
+                i._id !== item._id
+              )
+            : [];
 
         const onMove = (ev: MouseEvent) => {
             const delta = ev.clientX - mouseStartX;
@@ -893,6 +906,19 @@ export default function SchedulePage() {
             setResizing(null);
             if (lh > 0) {
                 Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
+            }
+            // Auto-push siblings after a pause resize
+            if (isPauseItem && siblingsSnapshot.length > 0) {
+                const deltaDays = newDuration - origDuration;
+                if (Math.abs(deltaDays) > 0.001) {
+                    setScheduleItems(prev => prev.map(i => {
+                        const sib = siblingsSnapshot.find(s => s._id === i._id);
+                        return sib ? { ...i, startDay: (sib.startDay ?? 1) + deltaDays } : i;
+                    }));
+                    siblingsSnapshot.forEach(sib => {
+                        Api.requestSession({ command: 'schedule/item_update', args: { id: sib._id, startDay: (sib.startDay ?? 1) + deltaDays } });
+                    });
+                }
             }
         };
 
