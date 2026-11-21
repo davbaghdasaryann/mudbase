@@ -232,6 +232,7 @@ export default function SchedulePage() {
     const [resizing, setResizing] = useState<{ id: string; origBarWidth: number; deltaX: number } | null>(null);
     const resizeDeltaRef = useRef(0);
     const [pauseResizeShift, setPauseResizeShift] = useState<{ siblingIds: Set<string>; deltaDays: number } | null>(null);
+    const [pauseDragShift, setPauseDragShift] = useState<{ leftSibIds: Set<string>; rightSibIds: Set<string> } | null>(null);
 
     // Name column width (resizable)
     const [nameColW, setNameColW] = useState(NAME_COL_W);
@@ -778,6 +779,19 @@ export default function SchedulePage() {
             i._id !== item._id && (i._id === parentId || i.parentItemId === parentId)
         );
 
+        // For pause bars: capture left/right siblings for live-push during drag
+        const isPauseBar = item.isPause ?? false;
+        const origPauseStartDay = item.startDay ?? 1;
+        const pauseLeftSibIds = isPauseBar
+            ? new Set(groupSiblings.filter(s => (s.startDay ?? 1) < origPauseStartDay).map(s => s._id))
+            : new Set<string>();
+        const pauseRightSibIds = isPauseBar
+            ? new Set(groupSiblings.filter(s => (s.startDay ?? 1) > origPauseStartDay).map(s => s._id))
+            : new Set<string>();
+        if (isPauseBar && (pauseLeftSibIds.size > 0 || pauseRightSibIds.size > 0)) {
+            setPauseDragShift({ leftSibIds: pauseLeftSibIds, rightSibIds: pauseRightSibIds });
+        }
+
         setDragging({ id: itemId, origStart, origStartHour, deltaX: 0, mouseStartX: mouseDownX });
 
         // Start auto-scroll rAF loop immediately
@@ -822,6 +836,7 @@ export default function SchedulePage() {
             }
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
+            setPauseDragShift(null);
             if (!dragMovedRef.current) {
                 setDragging(null);
                 return;
@@ -850,11 +865,23 @@ export default function SchedulePage() {
                 newStartDay = Math.max(1, Math.round(candidateFrac) + 1);
                 newStartHour = undefined;
             }
-            setScheduleItems(prev => prev.map(i => i._id === itemId
-                ? { ...i, startDay: newStartDay, ...(newStartHour !== undefined ? { startHour: newStartHour } : {}) }
-                : i));
+            // For pause bars: push left or right siblings by the actual drag delta
+            const actualDeltaDays = newStartDay - origStart;
+            const affectedSibIds = isPauseBar
+                ? (actualDeltaDays < 0 ? pauseLeftSibIds : actualDeltaDays > 0 ? pauseRightSibIds : new Set<string>())
+                : new Set<string>();
+            setScheduleItems(prev => prev.map(i => {
+                if (i._id === itemId) return { ...i, startDay: newStartDay, ...(newStartHour !== undefined ? { startHour: newStartHour } : {}) };
+                if (affectedSibIds.has(i._id)) return { ...i, startDay: (i.startDay ?? 1) + actualDeltaDays };
+                return i;
+            }));
             setDragging(null);
             Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, startDay: newStartDay, ...(newStartHour !== undefined ? { startHour: newStartHour } : {}) } });
+            if (isPauseBar && affectedSibIds.size > 0) {
+                groupSiblings.filter(s => affectedSibIds.has(s._id)).forEach(sib => {
+                    Api.requestSession({ command: 'schedule/item_update', args: { id: sib._id, startDay: (sib.startDay ?? 1) + actualDeltaDays } });
+                });
+            }
         };
 
         window.addEventListener('mousemove', onMove);
@@ -1605,7 +1632,11 @@ export default function SchedulePage() {
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
-                                const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
+                                const parentPauseShiftPx = !isDraggingThis && pauseDragShift && dragging && (
+                                    (dragging.deltaX < 0 && pauseDragShift.leftSibIds.has(item._id)) ||
+                                    (dragging.deltaX > 0 && pauseDragShift.rightSibIds.has(item._id))
+                                ) ? dragging.deltaX : 0;
+                                const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : (baseOffset + parentPauseShiftPx);
                                 const hasSegs = (segmentsByParent.get(item._id) ?? []).length > 0;
                                 const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const barWidth = isResizingThis ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : baseBarWidth;
@@ -1896,7 +1927,11 @@ export default function SchedulePage() {
                                                 const isDraggingThisSegU = !inUniteMode && dragging?.id === seg._id;
                                                 const isResizingThisSegU = !inUniteMode && resizing?.id === seg._id;
                                                 const sibShift = !isDraggingThisSegU && pauseResizeShift?.siblingIds.has(seg._id) ? pauseResizeShift.deltaDays * DAY_W : 0;
-                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : (segBaseOff + sibShift);
+                                                const sibDragShift = !isDraggingThisSegU && pauseDragShift && dragging && (
+                                                    (dragging.deltaX < 0 && pauseDragShift.leftSibIds.has(seg._id)) ||
+                                                    (dragging.deltaX > 0 && pauseDragShift.rightSibIds.has(seg._id))
+                                                ) ? dragging.deltaX : 0;
+                                                const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : (segBaseOff + sibShift + sibDragShift);
                                                 const segWU = isResizingThisSegU ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
                                                 const segStartDate = addDays(projectStartDate, Math.floor((seg.startDay ?? 1) - 1));
                                                 const segEndDate = addDays(projectStartDate, Math.ceil((seg.startDay ?? 1) + segDur - 2));
