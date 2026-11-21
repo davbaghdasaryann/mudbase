@@ -768,6 +768,9 @@ export default function SchedulePage() {
 
     const handleBarMouseDown = (e: React.MouseEvent, item: ScheduleItem) => {
         if (rowDragging) return;
+        // Parent container bar must not be dragged independently — its segments cover it and
+        // moving it alone creates a ghost duplicate. Segments are dragged directly instead.
+        if ((segmentsByParent.get(item._id) ?? []).length > 0) return;
         e.preventDefault();
         dragMovedRef.current = false;
         dragDeltaRef.current = 0;
@@ -866,7 +869,7 @@ export default function SchedulePage() {
             const SNAP_THRESHOLD = 1.0;
             let bestSnapFrac: number | null = null;
             let bestDist = SNAP_THRESHOLD;
-            for (const sib of groupSiblings) {
+            for (const sib of constraintSibs) {
                 const sibFrac = ((sib.startDay ?? 1) - 1) + ((sib.startHour ?? 0) / 24);
                 const sibEndFrac = sibFrac + itemDuration(sib);
                 const dStart = Math.abs(candidateFrac - sibEndFrac);
