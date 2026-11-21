@@ -1810,12 +1810,10 @@ export default function SchedulePage() {
                                                 if (seg.isPause) {
                                                     const pauseStart = addDays(projectStartDate, (seg.startDay ?? 1) - 1);
                                                     const pauseEnd = addDays(projectStartDate, (seg.startDay ?? 1) + segDur - 2);
-                                                    const pauseDurLabel = segDur >= 1 ? `${Math.round(segDur * 10) / 10}${t('day_short')}` : `${Math.round(segDur * 8)}h`;
                                                     const pauseTooltip = (
                                                         <Box>
-                                                            <Box sx={{ fontWeight: 600 }}>Տեխնոլոգիական դադար</Box>
-                                                            <Box sx={{ opacity: 0.85, fontSize: '0.75rem' }}>{pauseStart.toLocaleDateString()} → {pauseEnd.toLocaleDateString()}</Box>
-                                                            <Box sx={{ opacity: 0.85, fontSize: '0.75rem' }}>{pauseDurLabel}</Box>
+                                                            <Box>{pauseStart.toLocaleDateString()} → {pauseEnd.toLocaleDateString()}</Box>
+                                                            <Box sx={{ opacity: 0.85, fontSize: '0.75rem' }}>Տեխնոլոգիական դադար</Box>
                                                         </Box>
                                                     );
                                                     return (
