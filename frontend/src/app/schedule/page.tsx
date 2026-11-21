@@ -1808,8 +1808,8 @@ export default function SchedulePage() {
 
                                                 // Pause bar: grey diagonal stripes, tooltip, no unite interaction
                                                 if (seg.isPause) {
-                                                    const pauseStart = addDays(projectStartDate, (seg.startDay ?? 1) - 1);
-                                                    const pauseEnd = addDays(projectStartDate, (seg.startDay ?? 1) + segDur - 2);
+                                                    const pauseStart = addDays(projectStartDate, Math.floor((seg.startDay ?? 1) - 1));
+                                                    const pauseEnd = addDays(projectStartDate, Math.ceil((seg.startDay ?? 1) + segDur - 2));
                                                     const pauseTooltip = (
                                                         <Box>
                                                             <Box>{pauseStart.toLocaleDateString()} → {pauseEnd.toLocaleDateString()}</Box>
@@ -1862,7 +1862,11 @@ export default function SchedulePage() {
                                                 const isResizingThisSegU = !inUniteMode && resizing?.id === seg._id;
                                                 const segOffU = isDraggingThisSegU ? Math.max(0, segBaseOff + dragging!.deltaX) : segBaseOff;
                                                 const segWU = isResizingThisSegU ? Math.max(12, resizing!.origBarWidth + resizing!.deltaX) : segBaseW;
+                                                const segStartDate = addDays(projectStartDate, Math.floor((seg.startDay ?? 1) - 1));
+                                                const segEndDate = addDays(projectStartDate, Math.ceil((seg.startDay ?? 1) + segDur - 2));
+                                                const segTooltipLabel = `${segStartDate.toLocaleDateString()} → ${segEndDate.toLocaleDateString()}`;
                                                 return (
+                                                    <Tooltip key={seg._id} title={segTooltipLabel} arrow>
                                                     <Box
                                                         key={seg._id}
                                                         onMouseDown={inUniteMode ? e => e.preventDefault() : e => handleBarMouseDown(e, seg)}
@@ -1910,6 +1914,7 @@ export default function SchedulePage() {
                                                             </Box>
                                                         )}
                                                     </Box>
+                                                    </Tooltip>
                                                 );
                                             })}
                                         </Box>
