@@ -1808,17 +1808,27 @@ export default function SchedulePage() {
 
                                                 // Pause bar: grey diagonal stripes, tooltip, no unite interaction
                                                 if (seg.isPause) {
+                                                    const pauseStart = addDays(projectStartDate, (seg.startDay ?? 1) - 1);
+                                                    const pauseEnd = addDays(projectStartDate, (seg.startDay ?? 1) + segDur - 2);
+                                                    const pauseDurLabel = segDur >= 1 ? `${Math.round(segDur * 10) / 10}${t('day_short')}` : `${Math.round(segDur * 8)}h`;
+                                                    const pauseTooltip = (
+                                                        <Box>
+                                                            <Box sx={{ fontWeight: 600 }}>Տեխնոլոգիական դադար</Box>
+                                                            <Box sx={{ opacity: 0.85, fontSize: '0.75rem' }}>{pauseStart.toLocaleDateString()} → {pauseEnd.toLocaleDateString()}</Box>
+                                                            <Box sx={{ opacity: 0.85, fontSize: '0.75rem' }}>{pauseDurLabel}</Box>
+                                                        </Box>
+                                                    );
                                                     return (
-                                                        <Tooltip key={seg._id} title={`Տեխնոլոգիական դադար`} arrow>
+                                                        <Tooltip key={seg._id} title={pauseTooltip} arrow>
                                                             <Box
                                                                 onMouseDown={e => handleBarMouseDown(e, seg)}
                                                                 onContextMenu={e => { e.preventDefault(); e.stopPropagation(); setBarContextMenu({ mouseX: e.clientX, mouseY: e.clientY, item: seg, anchorEl: e.currentTarget as HTMLElement }); }}
                                                                 sx={{
                                                                     position: 'absolute',
                                                                     left: segOff + 2, top: 6, height: ROW_H - 12, width: segW,
-                                                                    background: 'repeating-linear-gradient(-45deg, #bdbdbd, #bdbdbd 4px, #f5f5f5 4px, #f5f5f5 10px)',
+                                                                    background: 'repeating-linear-gradient(-45deg, #d4d4d4, #d4d4d4 3px, #f9f9f9 3px, #f9f9f9 10px)',
                                                                     borderRadius: '5px',
-                                                                    border: '1px solid #9e9e9e',
+                                                                    border: '1px solid #c8c8c8',
                                                                     zIndex: (isDraggingThisSeg || isResizingThisSeg) ? 10 : 1,
                                                                     cursor: isDraggingThisSeg ? 'grabbing' : 'grab',
                                                                     display: 'flex', alignItems: 'center', px: 0.5, overflow: 'hidden',
