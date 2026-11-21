@@ -251,6 +251,7 @@ export default function SchedulePage() {
     const [splitPartDays, setSplitPartDays] = useState<string[]>([]);
     const [splitByHours, setSplitByHours] = useState(false);
     const [splitPartStartDays, setSplitPartStartDays] = useState<number[]>([]);
+    const [splitPart0StartDay, setSplitPart0StartDay] = useState<number>(0);
     const [pauseDialogItem, setPauseDialogItem] = useState<ScheduleItem | null>(null);
     const [pauseSplitAt, setPauseSplitAt] = useState('');
     const [pauseDurationDays, setPauseDurationDays] = useState('');
@@ -952,6 +953,7 @@ export default function SchedulePage() {
         setSplitPartDays(Array.from({ length: n }, () => String(+eachDays.toFixed(2))));
         setSplitByHours(false);
         setSplitPartStartDays([]);
+        setSplitPart0StartDay(0);
         setSplitDialogItem(lh > 0 ? { ...item, quantity: lh * totalDays } : item);
     };
 
@@ -1072,9 +1074,11 @@ export default function SchedulePage() {
             ? partDaysArr.map(d => d * lh)
             : partDaysArr.map(d => totalQty * (totalDays > 0 ? d / totalDays : 1 / splitPartsCount));
         const newParentId = item.parentItemId ?? item._id;
-        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: quantities[0] } : i));
-        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0] } });
-        let startFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
+        const part0StartDay = splitPart0StartDay > 0 ? splitPart0StartDay : item.startDay;
+        const part0StartHour = splitPart0StartDay > 0 ? 0 : (item.startHour ?? 0);
+        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: quantities[0], startDay: part0StartDay, startHour: part0StartHour } : i));
+        await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0], startDay: part0StartDay, startHour: part0StartHour } });
+        let startFrac = (part0StartDay - 1) + part0StartHour / 24;
         for (let i = 1; i < quantities.length; i++) {
             // Use custom start day if set for this part (parts 2+ are index i-1 in splitPartStartDays)
             const customStart = !splitEqualMode && splitPartStartDays[i - 1] > 0 ? splitPartStartDays[i - 1] : null;
@@ -2421,6 +2425,7 @@ export default function SchedulePage() {
                             const each = totalDays / n;
                             setSplitPartDays(Array.from({ length: n }, () => String(toDisplay(each))));
                             setSplitPartStartDays([]);
+                            setSplitPart0StartDay(0);
                         };
                         return (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -2460,7 +2465,7 @@ export default function SchedulePage() {
                                         {(['equal', 'unequal'] as const).map(mode => (
                                             <Button key={mode} size='small'
                                                 variant={splitEqualMode === (mode === 'equal') ? 'contained' : 'outlined'}
-                                                onClick={() => { setSplitEqualMode(mode === 'equal'); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); setSplitPartStartDays([]); }}
+                                                onClick={() => { setSplitEqualMode(mode === 'equal'); setSplitPartDays(Array.from({ length: splitPartsCount }, () => String(toDisplay(totalDays / splitPartsCount)))); setSplitPartStartDays([]); setSplitPart0StartDay(0); }}
                                                 sx={{ borderRadius: '20px', textTransform: 'none', fontSize: '0.78rem', px: 1.5, py: 0.4, minWidth: 0,
                                                     ...(splitEqualMode === (mode === 'equal') ? { bgcolor: mainPrimaryColor, '&:hover': { bgcolor: '#009aab' } } : { borderColor: mainPrimaryColor, color: mainPrimaryColor }) }}>
                                                 {mode === 'equal' ? t('Equal') : t('Unequal')}
@@ -2477,7 +2482,7 @@ export default function SchedulePage() {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                         {Array.from({ length: splitPartsCount }, (_, i) => {
                                             const md = (() => {
-                                                if (i === 0) return dayToMD(splitDialogItem.startDay ?? 1);
+                                                if (i === 0) return dayToMD(splitPart0StartDay > 0 ? splitPart0StartDay : (splitDialogItem.startDay ?? 1));
                                                 const manual = splitPartStartDays[i - 1];
                                                 if (manual > 0) return dayToMD(manual);
                                                 let sf = (splitDialogItem.startDay ?? 1) - 1 + (splitDialogItem.startHour ?? 0) / 24;
@@ -2516,30 +2521,32 @@ export default function SchedulePage() {
                                                     {/* Start day row */}
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                                         <Typography sx={{ fontSize: '0.72rem', color: '#aaa', minWidth: 48, flexShrink: 0 }}>{t('Start')}:</Typography>
-                                                        {i === 0 ? (
-                                                            <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                                                                {t('Month')} {md.m}, {t('Day')} {md.d}
-                                                            </Typography>
-                                                        ) : (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                                <Typography sx={{ fontSize: '0.72rem', color: '#666' }}>{t('Month')}</Typography>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.3)`, borderRadius: 1.5, overflow: 'hidden' }}>
-                                                                    <Box onClick={() => { const nd = mdToDay(Math.max(1, md.m - 1), 1); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
-                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.m <= 1 ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.m <= 1 ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>‹</Box>
-                                                                    <Typography sx={{ px: 0.75, fontSize: '0.72rem', fontWeight: 600, color: '#1a1a1a', minWidth: 16, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>{md.m}</Typography>
-                                                                    <Box onClick={() => { const nd = mdToDay(Math.min(monthGroups.length, md.m + 1), 1); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
-                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.m >= monthGroups.length ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.m >= monthGroups.length ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>›</Box>
-                                                                </Box>
-                                                                <Typography sx={{ fontSize: '0.72rem', color: '#666' }}>{t('Day')}</Typography>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.3)`, borderRadius: 1.5, overflow: 'hidden' }}>
-                                                                    <Box onClick={() => { const nd = mdToDay(md.m, Math.max(1, md.d - 1)); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
-                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.d <= 1 ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.d <= 1 ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>‹</Box>
-                                                                    <Typography sx={{ px: 0.75, fontSize: '0.72rem', fontWeight: 600, color: '#1a1a1a', minWidth: 16, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>{md.d}</Typography>
-                                                                    <Box onClick={() => { const nd = mdToDay(md.m, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, md.d + 1)); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }}
-                                                                        sx={{ px: 0.8, py: 0.2, cursor: md.d >= (monthGroups[md.m - 1]?.dayCount ?? 30) ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.d >= (monthGroups[md.m - 1]?.dayCount ?? 30) ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>›</Box>
-                                                                </Box>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#666' }}>{t('Month')}</Typography>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.3)`, borderRadius: 1.5, overflow: 'hidden' }}>
+                                                                <Box onClick={() => {
+                                                                    if (i === 0) { const nd = mdToDay(Math.max(1, md.m - 1), md.d); setSplitPart0StartDay(nd); }
+                                                                    else { const nd = mdToDay(Math.max(1, md.m - 1), 1); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }
+                                                                }} sx={{ px: 0.8, py: 0.2, cursor: md.m <= 1 ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.m <= 1 ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>‹</Box>
+                                                                <Typography sx={{ px: 0.75, fontSize: '0.72rem', fontWeight: 600, color: '#1a1a1a', minWidth: 16, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>{md.m}</Typography>
+                                                                <Box onClick={() => {
+                                                                    if (i === 0) { const nd = mdToDay(Math.min(monthGroups.length, md.m + 1), md.d); setSplitPart0StartDay(nd); }
+                                                                    else { const nd = mdToDay(Math.min(monthGroups.length, md.m + 1), 1); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }
+                                                                }} sx={{ px: 0.8, py: 0.2, cursor: md.m >= monthGroups.length ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.m >= monthGroups.length ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>›</Box>
                                                             </Box>
-                                                        )}
+                                                            <Typography sx={{ fontSize: '0.72rem', color: '#666' }}>{t('Day')}</Typography>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid rgba(0,171,190,0.3)`, borderRadius: 1.5, overflow: 'hidden' }}>
+                                                                <Box onClick={() => {
+                                                                    if (i === 0) { const nd = mdToDay(md.m, Math.max(1, md.d - 1)); setSplitPart0StartDay(nd); }
+                                                                    else { const nd = mdToDay(md.m, Math.max(1, md.d - 1)); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }
+                                                                }} sx={{ px: 0.8, py: 0.2, cursor: md.d <= 1 ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.d <= 1 ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>‹</Box>
+                                                                <Typography sx={{ px: 0.75, fontSize: '0.72rem', fontWeight: 600, color: '#1a1a1a', minWidth: 16, textAlign: 'center', borderLeft: `1px solid rgba(0,171,190,0.2)`, borderRight: `1px solid rgba(0,171,190,0.2)` }}>{md.d}</Typography>
+                                                                <Box onClick={() => {
+                                                                    if (i === 0) { const nd = mdToDay(md.m, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, md.d + 1)); setSplitPart0StartDay(nd); }
+                                                                    else { const nd = mdToDay(md.m, Math.min(monthGroups[md.m - 1]?.dayCount ?? 30, md.d + 1)); const u = [...splitPartStartDays]; u[i - 1] = nd; setSplitPartStartDays(u); }
+                                                                }} sx={{ px: 0.8, py: 0.2, cursor: md.d >= (monthGroups[md.m - 1]?.dayCount ?? 30) ? 'default' : 'pointer', fontSize: '0.8rem', fontWeight: 700, color: md.d >= (monthGroups[md.m - 1]?.dayCount ?? 30) ? '#ccc' : mainPrimaryColor, userSelect: 'none' }}>›</Box>
+                                                            </Box>
+                                                        </Box>
                                                     </Box>
                                                 </Box>
                                             );
