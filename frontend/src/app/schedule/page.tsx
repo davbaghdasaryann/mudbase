@@ -340,11 +340,16 @@ export default function SchedulePage() {
 
     const segmentsByParent = useMemo(() => {
         const map = new Map<string, ScheduleItem[]>();
+        const seenIds = new Set<string>();
         for (const item of scheduleItems) {
             if (item.parentItemId) {
-                const arr = map.get(item.parentItemId) ?? [];
+                const idStr = item._id.toString();
+                if (seenIds.has(idStr)) continue;
+                seenIds.add(idStr);
+                const parentKey = item.parentItemId.toString();
+                const arr = map.get(parentKey) ?? [];
                 arr.push(item);
-                map.set(item.parentItemId, arr);
+                map.set(parentKey, arr);
             }
         }
         for (const arr of map.values()) arr.sort((a, b) => (a.startDay ?? 1) - (b.startDay ?? 1));
@@ -770,7 +775,7 @@ export default function SchedulePage() {
         if (rowDragging) return;
         // Parent container bar must not be dragged independently — its segments cover it and
         // moving it alone creates a ghost duplicate. Segments are dragged directly instead.
-        if ((segmentsByParent.get(item._id) ?? []).length > 0) return;
+        if ((segmentsByParent.get(item._id.toString()) ?? []).length > 0) return;
         e.preventDefault();
         dragMovedRef.current = false;
         dragDeltaRef.current = 0;
@@ -1110,7 +1115,7 @@ export default function SchedulePage() {
         const parentItemId = item.parentItemId ?? item._id;
         const baseStartFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
         // Delete any existing sub-items before re-splitting
-        for (const seg of (segmentsByParent.get(item._id) ?? [])) {
+        for (const seg of (segmentsByParent.get(item._id.toString()) ?? [])) {
             setScheduleItems(prev => prev.filter(i => i._id !== seg._id));
             await Api.requestSession({ command: 'schedule/item_delete', args: { id: seg._id } });
         }
@@ -1648,8 +1653,20 @@ export default function SchedulePage() {
                                 const duration = itemDuration(item);
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
-                                const startOffset = isDraggingThis ? Math.max(0, baseOffset + dragging!.deltaX) : baseOffset;
-                                const hasSegs = (segmentsByParent.get(item._id) ?? []).length > 0;
+                                // When hasSegs, derive left position from first segment so a stale startDay
+                                // (from a prior drag of the parent bar) cannot create a ghost at the wrong spot.
+                                const firstChildSeg = segsForItem[0];
+                                const firstChildBaseOff = firstChildSeg
+                                    ? ((firstChildSeg.startDay ?? 1) - 1) * DAY_W + ((firstChildSeg.startHour ?? 0) / 24) * DAY_W
+                                    : null;
+                                const correctedBaseOffset = hasSegs && firstChildBaseOff !== null
+                                    ? Math.max(0, firstChildBaseOff - baseBarWidth)
+                                    : baseOffset;
+                                const startOffset = isDraggingThis
+                                    ? Math.max(0, correctedBaseOffset + dragging!.deltaX)
+                                    : correctedBaseOffset;
+                                const segsForItem = segmentsByParent.get(item._id.toString()) ?? [];
+                                const hasSegs = segsForItem.length > 0;
                                 const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const lrMaxQtyRaw = !item.isPause ? (laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName)?.quantity ?? Infinity) : Infinity;
                                 const sibQtyForBarW = !item.isPause ? scheduleItems
@@ -1881,7 +1898,7 @@ export default function SchedulePage() {
                                                 </Box>
                                             </Tooltip>
                                             {/* Independent segment bars from split — each fully draggable and resizable */}
-                                            {!isSplitTarget && (segmentsByParent.get(item._id) ?? []).map((seg) => {
+                                            {!isSplitTarget && segsForItem.map((seg) => {
                                                 const segDur = itemDuration(seg);
                                                 const segBaseOff = ((seg.startDay ?? 1) - 1) * DAY_W + ((seg.startHour ?? 0) / 24) * DAY_W;
                                                 const segBaseW = Math.max(segDur * DAY_W - 1, 12);
