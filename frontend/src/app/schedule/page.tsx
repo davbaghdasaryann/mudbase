@@ -2482,7 +2482,7 @@ export default function SchedulePage() {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                         {Array.from({ length: splitPartsCount }, (_, i) => {
                                             const md = (() => {
-                                                if (i === 0) return dayToMD(splitPart0StartDay > 0 ? splitPart0StartDay : (splitDialogItem.startDay ?? 1));
+                                                if (i === 0) return dayToMD(splitPart0StartDay > 0 ? splitPart0StartDay : Math.max(1, Math.round(splitDialogItem.startDay ?? 1)));
                                                 const manual = splitPartStartDays[i - 1];
                                                 if (manual > 0) return dayToMD(manual);
                                                 let sf = (splitDialogItem.startDay ?? 1) - 1 + (splitDialogItem.startHour ?? 0) / 24;
