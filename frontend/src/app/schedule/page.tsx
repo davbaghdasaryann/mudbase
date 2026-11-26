@@ -801,6 +801,11 @@ export default function SchedulePage() {
         const constraintSibs = scheduleItems.filter(i =>
             i._id !== item._id && i.parentItemId?.toString() === parentIdStr
         );
+        // Parent container item (Part1) — used as the hard left wall for all children so the first
+        // gap cannot slide left into or past the parent's visual area.
+        const parentContainerItem = item.parentItemId
+            ? scheduleItems.find(i => i._id.toString() === parentIdStr) ?? null
+            : null;
         let minDragDelta = -origOffsetPx;
         let maxDragDelta = Infinity;
         if (constraintSibs.length > 0) {
@@ -816,6 +821,13 @@ export default function SchedulePage() {
                 const nearestStartPx = ((nearest.startDay ?? 1) - 1 + (nearest.startHour ?? 0) / 24) * DAY_W;
                 maxDragDelta = nearestStartPx - origOffsetPx - origItemDurPx;
             }
+        }
+        // Apply parent container as the hard left wall — prevents the first gap/part from sliding
+        // left past the parent bar's right edge. Done after the sibling check so it can only
+        // tighten (never loosen) the left bound. Snap logic stays on constraintSibs only.
+        if (parentContainerItem) {
+            const parentEndPx = ((parentContainerItem.startDay ?? 1) - 1 + (parentContainerItem.startHour ?? 0) / 24 + itemDuration(parentContainerItem)) * DAY_W;
+            minDragDelta = Math.max(minDragDelta, parentEndPx - origOffsetPx);
         }
 
         setDragging({ id: itemId, origStart, origStartHour, deltaX: 0, mouseStartX: mouseDownX });
@@ -851,7 +863,7 @@ export default function SchedulePage() {
             if (Math.abs(ev.clientX - mouseDownX) > 2) dragMovedRef.current = true;
             if (incr !== 0) {
                 const raw = Math.max(-origOffsetPx, dragDeltaRef.current + incr);
-                dragDeltaRef.current = constraintSibs.length > 0 ? Math.max(minDragDelta, Math.min(maxDragDelta, raw)) : raw;
+                dragDeltaRef.current = (constraintSibs.length > 0 || parentContainerItem) ? Math.max(minDragDelta, Math.min(maxDragDelta, raw)) : raw;
                 setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
             }
         };
