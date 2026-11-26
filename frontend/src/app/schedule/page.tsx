@@ -847,7 +847,10 @@ export default function SchedulePage() {
                     scroller.scrollLeft += speed;
                     const actual = scroller.scrollLeft - before;
                     if (actual !== 0) {
-                        dragDeltaRef.current += actual;
+                        const rawDelta = Math.max(-origOffsetPx, dragDeltaRef.current + actual);
+                        dragDeltaRef.current = (constraintSibs.length > 0 || parentContainerItem)
+                            ? Math.max(minDragDelta, Math.min(maxDragDelta, rawDelta))
+                            : rawDelta;
                         setDragging(prev => prev ? { ...prev, deltaX: dragDeltaRef.current } : null);
                     }
                 }
