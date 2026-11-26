@@ -956,10 +956,16 @@ export default function SchedulePage() {
             resizeDeltaRef.current = delta;
             const clampedDelta = isFinite(maxResizeBarW) ? Math.min(delta, maxResizeBarW - origBarWidth) : delta;
             setResizing(prev => prev ? { ...prev, deltaX: clampedDelta } : null);
-            // Live-push all right siblings during any resize
             if (siblingsSnapshot.length > 0) {
                 const curDur = Math.max(0.125, Math.max(12, origBarWidth + clampedDelta) / DAY_W);
-                setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: curDur - origDuration });
+                const shiftDays = curDur - origDuration;
+                // Push siblings right when growing; for non-pause parts shrinking just frees space
+                // (siblings don't follow left). For pause bars, pull-left is correct (gap shrinks).
+                if (item.isPause || shiftDays > 0) {
+                    setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: shiftDays });
+                } else {
+                    setPauseResizeShift(null);
+                }
             }
         };
 
@@ -976,12 +982,15 @@ export default function SchedulePage() {
             if (lh > 0) {
                 Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
             }
-            // Push all right siblings by the actual delta
+            // Shift siblings: when growing always push right; when shrinking only pull left for pauses.
             if (siblingsSnapshot.length > 0) {
                 const deltaDays = newDuration - origDuration;
-                if (Math.abs(deltaDays) > 0.001) {
+                const shouldShift = Math.abs(deltaDays) > 0.001 && (item.isPause || deltaDays > 0);
+                if (shouldShift) {
+                    const sibIdSet = new Set(siblingsSnapshot.map(s => s._id.toString()));
                     setScheduleItems(prev => prev.map(i => {
-                        const sib = siblingsSnapshot.find(s => s._id === i._id);
+                        if (!sibIdSet.has(i._id.toString())) return i;
+                        const sib = siblingsSnapshot.find(s => s._id.toString() === i._id.toString());
                         return sib ? { ...i, startDay: (sib.startDay ?? 1) + deltaDays } : i;
                     }));
                     siblingsSnapshot.forEach(sib => {
