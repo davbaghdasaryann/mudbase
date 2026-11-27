@@ -2927,7 +2927,33 @@ export default function SchedulePage() {
                                 {item?.laborOfferItemName}
                             </DialogTitle>
                             <DialogContent sx={{ pt: 1.5 }}>
-                                <FieldRow label={t('Start')} md={sMD} setDay={setPopoverStartDay} timeVal={popoverTime} setTimeVal={setPopoverTime} />
+                                <FieldRow label={t('Start')} md={sMD}
+                                    setDay={nd => {
+                                        const sH = parseInt(popoverTime.split(':')[0]) || 0;
+                                        const eH = parseInt(popoverEndTime.split(':')[0]) || 0;
+                                        const dur = (popoverEndDay - popoverStartDay) + (eH - sH) / 24;
+                                        const newEndFrac = (nd - 1) + sH / 24 + Math.max(0.125, dur);
+                                        let newEndDay = Math.floor(newEndFrac) + 1;
+                                        let newEndH = Math.round((newEndFrac % 1) * 24);
+                                        if (newEndH >= 24) { newEndH = 0; newEndDay += 1; }
+                                        setPopoverStartDay(nd);
+                                        setPopoverEndDay(newEndDay);
+                                        setPopoverEndTime(`${String(newEndH).padStart(2, '0')}:00`);
+                                    }}
+                                    timeVal={popoverTime}
+                                    setTimeVal={v => {
+                                        const newSH = parseInt(v.split(':')[0]) || 0;
+                                        const prevSH = parseInt(popoverTime.split(':')[0]) || 0;
+                                        const eH = parseInt(popoverEndTime.split(':')[0]) || 0;
+                                        const dur = (popoverEndDay - popoverStartDay) + (eH - prevSH) / 24;
+                                        const newEndFrac = (popoverStartDay - 1) + newSH / 24 + Math.max(0.125, dur);
+                                        let newEndDay = Math.floor(newEndFrac) + 1;
+                                        let newEndH = Math.round((newEndFrac % 1) * 24);
+                                        if (newEndH >= 24) { newEndH = 0; newEndDay += 1; }
+                                        setPopoverTime(v);
+                                        setPopoverEndDay(newEndDay);
+                                        setPopoverEndTime(`${String(newEndH).padStart(2, '0')}:00`);
+                                    }} />
                                 <FieldRow label={t('End')} md={eMD} setDay={setPopoverEndDay} timeVal={popoverEndTime} setTimeVal={setPopoverEndTime} />
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{t('Duration')}:</Typography>
