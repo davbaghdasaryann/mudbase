@@ -1156,31 +1156,33 @@ export default function SchedulePage() {
     const handleSplitConfirm = async () => {
         if (!splitMode || !selected) return;
         pushUndo();
-        const item = splitMode.item;
+        const snapItem = splitMode.item;
         const sortedMarkers = [...splitMode.markers].sort((a, b) => a - b);
         setSplitMode(null);
         if (sortedMarkers.length === 0) return;
+        const item = scheduleItems.find(i => i._id.toString() === snapItem._id.toString()) ?? snapItem;
         const lh = item.laborHours ?? 0;
         const totalQ = item.quantity ?? 0;
         if (totalQ <= 0) return;
         const barWidthPx = Math.max(itemDuration(item) * DAY_W - 3, 12);
         const totalDuration = itemDuration(item);
         const fractions = [0, ...sortedMarkers.map(m => Math.max(0.001, Math.min(0.999, m / barWidthPx))), 1];
-        const parentItemId = item.parentItemId ?? item._id;
+        const parentItemId = (item.parentItemId ?? item._id).toString();
         const baseStartFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24;
         // Delete any existing sub-items before re-splitting
         for (const seg of (segmentsByParent.get(item._id.toString()) ?? [])) {
-            setScheduleItems(prev => prev.filter(i => i._id !== seg._id));
+            setScheduleItems(prev => prev.filter(i => i._id.toString() !== seg._id.toString()));
             await Api.requestSession({ command: 'schedule/item_delete', args: { id: seg._id } });
         }
         const firstQ = totalQ * (fractions[1] - fractions[0]);
-        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: firstQ } : i));
+        setScheduleItems(prev => prev.map(i => i._id.toString() === item._id.toString() ? { ...i, quantity: firstQ } : i));
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: firstQ } });
         for (let i = 1; i < fractions.length - 1; i++) {
             const segQ = totalQ * (fractions[i + 1] - fractions[i]);
             const startFracAbs = baseStartFrac + fractions[i] * totalDuration;
-            const startDay = Math.floor(startFracAbs) + 1;
-            const startHour = Math.round((startFracAbs % 1) * 24) % 24;
+            let startDay = Math.floor(startFracAbs) + 1;
+            let startHour = Math.round((startFracAbs % 1) * 24);
+            if (startHour >= 24) { startHour = 0; startDay += 1; }
             const newItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
                 scheduleId: selected._id,
                 laborOfferItemName: item.laborOfferItemName,
@@ -1191,15 +1193,16 @@ export default function SchedulePage() {
                 startDay, startHour, parentItemId,
                 ...(item.groupId ? { groupId: item.groupId } : {}),
             }});
-            setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay, startHour: newItem.startHour ?? startHour, parentItemId }]);
+            if (newItem) setScheduleItems(prev => [...prev, { ...newItem, startDay: newItem.startDay ?? startDay, startHour: newItem.startHour ?? startHour, parentItemId }]);
         }
     };
 
     const handleConfirmSplitDialog = async () => {
         if (!splitDialogItem || !selected) return;
         pushUndo();
-        const item = splitDialogItem;
+        const snapItem = splitDialogItem;
         setSplitDialogItem(null);
+        const item = scheduleItems.find(i => i._id.toString() === snapItem._id.toString()) ?? snapItem;
         const lh = item.laborHours ?? 0;
         const totalQty = item.quantity ?? 0;
         const totalDays = itemDuration(item);
@@ -1210,10 +1213,10 @@ export default function SchedulePage() {
         const quantities = lh > 0
             ? partDaysArr.map(d => d * lh)
             : partDaysArr.map(d => totalQty * (totalDays > 0 ? d / totalDays : 1 / splitPartsCount));
-        const newParentId = item.parentItemId ?? item._id;
+        const newParentId = (item.parentItemId ?? item._id).toString();
         const part0StartDay = splitPart0StartDay > 0 ? splitPart0StartDay : item.startDay;
         const part0StartHour = splitPart0StartDay > 0 ? 0 : (item.startHour ?? 0);
-        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: quantities[0], startDay: part0StartDay, startHour: part0StartHour } : i));
+        setScheduleItems(prev => prev.map(i => i._id.toString() === item._id.toString() ? { ...i, quantity: quantities[0], startDay: part0StartDay, startHour: part0StartHour } : i));
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: quantities[0], startDay: part0StartDay, startHour: part0StartHour } });
         let startFrac = (part0StartDay - 1) + part0StartHour / 24;
         for (let i = 1; i < quantities.length; i++) {
@@ -1708,16 +1711,20 @@ export default function SchedulePage() {
                                 const barColor = BAR_COLORS[fi % BAR_COLORS.length];
                                 const segsForItem = segmentsByParent.get(item._id.toString()) ?? [];
                                 const hasSegs = segsForItem.length > 0;
-                                const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const baseOffset = (startDay - 1) * DAY_W + (startHour / 24) * DAY_W;
                                 // If the parent bar's stored startDay places it overlapping into child segments
                                 // (corruption from an old drag), clamp it to its correct position.
                                 const firstChildBaseOff = segsForItem[0]
                                     ? ((segsForItem[0].startDay ?? 1) - 1) * DAY_W + ((segsForItem[0].startHour ?? 0) / 24) * DAY_W
                                     : null;
+                                const baseBarWidth = Math.max(duration * DAY_W - (hasSegs ? 1 : 3), 12);
                                 const correctedBaseOffset = hasSegs && firstChildBaseOff !== null && baseOffset + baseBarWidth > firstChildBaseOff
                                     ? Math.max(0, firstChildBaseOff - baseBarWidth)
                                     : baseOffset;
+                                // Prevent ghost: clamp bar width so it never extends past the first child
+                                const correctedBarWidth = hasSegs && firstChildBaseOff !== null
+                                    ? Math.max(Math.min(baseBarWidth, firstChildBaseOff - correctedBaseOffset - 1), 12)
+                                    : baseBarWidth;
                                 const startOffset = isDraggingThis ? Math.max(0, correctedBaseOffset + dragging!.deltaX) : correctedBaseOffset;
                                 const lrMaxQtyRaw = !item.isPause ? (laborRows.find(r => r.laborOfferItemName === item.laborOfferItemName)?.quantity ?? Infinity) : Infinity;
                                 const sibQtyForBarW = !item.isPause ? scheduleItems
@@ -1725,7 +1732,7 @@ export default function SchedulePage() {
                                     .reduce((sum, i) => sum + (i.quantity ?? 0), 0) : 0;
                                 const lrNetMaxQty = isFinite(lrMaxQtyRaw) ? Math.max(item.quantity ?? 0.125, lrMaxQtyRaw - sibQtyForBarW) : Infinity;
                                 const maxBarW = item.laborHours && item.laborHours > 0 && isFinite(lrNetMaxQty) ? (lrNetMaxQty / item.laborHours) * DAY_W + 3 : Infinity;
-                                const barWidth = isResizingThis ? Math.max(12, Math.min(maxBarW, resizing!.origBarWidth + resizing!.deltaX)) : baseBarWidth;
+                                const barWidth = isResizingThis ? Math.max(12, Math.min(maxBarW, resizing!.origBarWidth + resizing!.deltaX)) : correctedBarWidth;
                                 const isSplitTarget = splitMode?.item._id === item._id;
                                 const isUniteTarget = uniteSelectMode?.parentItemId === item._id;
                                 const rowBg = isRowDraggingThis
