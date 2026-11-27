@@ -625,22 +625,29 @@ export default function SchedulePage() {
     };
 
     const handleUniteScheduleItem = async (itemId: string, selectedIds?: Set<string>) => {
-        const parentItem = scheduleItems.find(i => i._id === itemId);
+        const parentItem = scheduleItems.find(i => i._id.toString() === itemId);
         if (!parentItem) return;
-        const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
-        const toDelete = selectedIds ? subItems.filter(si => selectedIds.has(si._id)) : subItems;
-        const restoredQty = (parentItem.quantity ?? 0) + toDelete.reduce((s, si) => s + (si.quantity ?? 0), 0);
+        const allSubItems = scheduleItems.filter(i => i.parentItemId?.toString() === itemId);
+        // Parts to merge (non-pause): use selectedIds if provided, else all non-pause sub-items
+        const partsToMerge = selectedIds
+            ? allSubItems.filter(si => !si.isPause && selectedIds.has(si._id))
+            : allSubItems.filter(si => !si.isPause);
+        // Always delete all pause (gap) sub-items — gaps have no meaning without the parts
+        const pausesToDelete = allSubItems.filter(si => si.isPause);
+        const toDelete = [...partsToMerge, ...pausesToDelete];
+        // Only restore work quantity from non-pause parts (gap quantity is duration, not work)
+        const restoredQty = (parentItem.quantity ?? 0) + partsToMerge.reduce((s, si) => s + (si.quantity ?? 0), 0);
         await Promise.all(toDelete.map(si => Api.requestSession({ command: 'schedule/item_delete', args: { id: si._id } })));
         const deleteIds = new Set(toDelete.map(si => si._id));
         setScheduleItems(prev => prev
             .filter(i => !deleteIds.has(i._id))
-            .map(i => i._id === itemId ? { ...i, quantity: restoredQty } : i)
+            .map(i => i._id.toString() === itemId ? { ...i, quantity: restoredQty } : i)
         );
         await Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: restoredQty } });
     };
 
     const startUniteSelect = (itemId: string) => {
-        const subItems = scheduleItems.filter(i => i.parentItemId === itemId);
+        const subItems = scheduleItems.filter(i => i.parentItemId?.toString() === itemId);
         if (subItems.length === 0) return;
         if (subItems.length === 1) { handleUniteScheduleItem(itemId); return; }
         setUniteSelectMode({ parentItemId: itemId, selectedIds: new Set() });
