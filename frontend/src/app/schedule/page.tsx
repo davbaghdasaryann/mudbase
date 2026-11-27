@@ -1033,13 +1033,16 @@ export default function SchedulePage() {
     const handleOpenTimePopover = () => {
         if (!barContextMenu || !selected) return;
         const item = barContextMenu.item;
-        const h = item.startHour ?? 0;
-        const startDay = Math.max(1, Math.round(item.startDay ?? 1));
+        // Derive integer day + hour from fractional startDay (sibling shifts can leave fractional values)
+        const startFrac = (item.startDay ?? 1) - 1 + (item.startHour ?? 0) / 24;
+        const startDayInt = Math.max(1, Math.floor(startFrac) + 1);
+        const h = Math.round((startFrac % 1) * 24) % 24;
         const durationDays = itemDuration(item);
-        const endFrac = (startDay - 1) + h / 24 + durationDays;
-        const endDay = Math.max(1, Math.floor(endFrac) + 1);
-        const endH = Math.round((endFrac % 1) * 24) % 24;
-        setPopoverStartDay(startDay);
+        const endFrac = startFrac + durationDays;
+        let endDay = Math.max(1, Math.floor(endFrac) + 1);
+        let endH = Math.round((endFrac % 1) * 24);
+        if (endH >= 24) { endH = 0; endDay += 1; }
+        setPopoverStartDay(startDayInt);
         setPopoverTime(`${String(h).padStart(2, '0')}:00`);
         setPopoverEndDay(endDay);
         setPopoverEndTime(`${String(endH).padStart(2, '0')}:00`);
@@ -1726,9 +1729,12 @@ export default function SchedulePage() {
                                     : fi % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(248,253,254,0.9)';
                                 const startDate = addDays(projectStartDate, startDay - 1);
                                 if (startHour > 0) startDate.setHours(startHour);
-                                const endDate = addDays(projectStartDate, startDay + duration - 2);
+                                const endFracForTip = (startDay - 1) + startHour / 24 + duration;
+                                const endDate = addDays(projectStartDate, Math.floor(endFracForTip));
+                                const endHourForTip = Math.round((endFracForTip % 1) * 24) % 24;
                                 const timeLabel = startHour > 0 ? ` ${String(startHour).padStart(2, '0')}:00` : '';
-                                const tooltipLabel = `${startDate.toLocaleDateString()}${timeLabel} → ${endDate.toLocaleDateString()}`;
+                                const endTimeLabel = endHourForTip > 0 ? ` ${String(endHourForTip).padStart(2, '0')}:00` : '';
+                                const tooltipLabel = `${startDate.toLocaleDateString()}${timeLabel} → ${endDate.toLocaleDateString()}${endTimeLabel}`;
 
                                 return (
                                     <Box
