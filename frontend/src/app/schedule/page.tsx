@@ -1103,25 +1103,28 @@ export default function SchedulePage() {
     const handleConfirmPauseDialog = async () => {
         if (!pauseDialogItem || !selected) return;
         pushUndo();
-        const item = pauseDialogItem;
+        const snapItem = pauseDialogItem;
         setPauseDialogItem(null);
         const splitAt = parseFloat(pauseSplitAt) || 0;
         const pauseDays = parseFloat(pauseDurationDays) || 0;
+        // Use fresh item from state (by _id) so startDay/startHour reflect latest position
+        const item = scheduleItems.find(i => i._id.toString() === snapItem._id.toString()) ?? snapItem;
         const totalDays = itemDuration(item);
         if (splitAt <= 0 || splitAt >= totalDays || pauseDays <= 0) return;
         const lh = item.laborHours ?? 0;
         const part2Days = totalDays - splitAt;
-        const newParentId = item.parentItemId ?? item._id;
+        const newParentId = (item.parentItemId ?? item._id).toString();
 
         // Update original item to part1 duration
         const newQty1 = lh > 0 ? splitAt * lh : (item.quantity ?? 0) * (splitAt / totalDays);
-        setScheduleItems(prev => prev.map(i => i._id === item._id ? { ...i, quantity: newQty1 } : i));
+        setScheduleItems(prev => prev.map(i => i._id.toString() === item._id.toString() ? { ...i, quantity: newQty1 } : i));
         await Api.requestSession({ command: 'schedule/item_update', args: { id: item._id, quantity: newQty1 } });
 
         // Pause start position
         const pauseStartFrac = (item.startDay - 1) + (item.startHour ?? 0) / 24 + splitAt;
-        const pauseStartDay = Math.floor(pauseStartFrac) + 1;
-        const pauseStartHour = Math.round((pauseStartFrac % 1) * 24) % 24;
+        let pauseStartDay = Math.floor(pauseStartFrac) + 1;
+        let pauseStartHour = Math.round((pauseStartFrac % 1) * 24);
+        if (pauseStartHour >= 24) { pauseStartHour = 0; pauseStartDay += 1; }
 
         // Create pause item (laborHours=1 so duration=quantity=pauseDays)
         const pauseItem = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
@@ -1135,8 +1138,9 @@ export default function SchedulePage() {
 
         // Part2 start position
         const part2StartFrac = pauseStartFrac + pauseDays;
-        const part2StartDay = Math.floor(part2StartFrac) + 1;
-        const part2StartHour = Math.round((part2StartFrac % 1) * 24) % 24;
+        let part2StartDay = Math.floor(part2StartFrac) + 1;
+        let part2StartHour = Math.round((part2StartFrac % 1) * 24);
+        if (part2StartHour >= 24) { part2StartHour = 0; part2StartDay += 1; }
         const newQty2 = lh > 0 ? part2Days * lh : (item.quantity ?? 0) * (part2Days / totalDays);
         const part2Item = await Api.requestSession<ScheduleItem>({ command: 'schedule/item_add', args: {
             scheduleId: selected._id, laborOfferItemName: item.laborOfferItemName,
