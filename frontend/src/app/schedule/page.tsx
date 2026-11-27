@@ -953,13 +953,23 @@ export default function SchedulePage() {
             : lrForResize ? Math.max(0.125 * (lh || 1), lrForResize.quantity - siblingQtyUsed) : Infinity;
         const maxResizeBarW = lh > 0 && isFinite(maxResizeQty) ? (maxResizeQty / lh) * DAY_W + 3 : Infinity;
 
-        // Find all siblings that start at or after this item's right edge — push them when this item grows
-        const origItemEnd = (item.startDay ?? 1) + origDuration;
-        const siblingsSnapshot = scheduleItems.filter(i =>
-            i._id !== item._id &&
-            i.parentItemId?.toString() === resizeGroupId &&
-            (i.startDay ?? 1) + 0.001 >= origItemEnd
-        );
+        // Fractional start of this item (days from row origin, 0-based)
+        const itemStartFrac = (item.startDay ?? 1) - 1 + (item.startHour ?? 0) / 24;
+        const origItemEndFrac = itemStartFrac + origDuration;
+
+        // Find siblings at or after this item's right edge — use fractional offsets so half-day
+        // startHour values are captured correctly (integer startDay alone would miss them)
+        const siblingsSnapshot = scheduleItems.filter(i => {
+            if (i._id === item._id) return false;
+            if (i.parentItemId?.toString() !== resizeGroupId) return false;
+            const sFrac = (i.startDay ?? 1) - 1 + (i.startHour ?? 0) / 24;
+            return sFrac + 0.001 >= origItemEndFrac;
+        });
+
+        // Original fractional start of the nearest sibling — used for overlap-push logic
+        const firstSibFrac = siblingsSnapshot.length > 0
+            ? Math.min(...siblingsSnapshot.map(s => (s.startDay ?? 1) - 1 + (s.startHour ?? 0) / 24))
+            : Infinity;
 
         const onMove = (ev: MouseEvent) => {
             const delta = ev.clientX - mouseStartX;
@@ -968,9 +978,12 @@ export default function SchedulePage() {
             setResizing(prev => prev ? { ...prev, deltaX: clampedDelta } : null);
             if (siblingsSnapshot.length > 0) {
                 const curDur = Math.max(0.125, Math.max(12, origBarWidth + clampedDelta) / DAY_W);
-                const shiftDays = curDur - origDuration;
-                // Push siblings right when growing; for non-pause parts shrinking just frees space
-                // (siblings don't follow left). For pause bars, pull-left is correct (gap shrinks).
+                // Pauses: siblings shift by full delta (shrink pulls left, grow pushes right).
+                // Non-pause parts: only push siblings when the resized item overlaps their original
+                // start — this lets the user fill free space without moving the gap.
+                const shiftDays = item.isPause
+                    ? curDur - origDuration
+                    : Math.max(0, itemStartFrac + curDur - firstSibFrac);
                 if (item.isPause || shiftDays > 0) {
                     setPauseResizeShift({ siblingIds: new Set(siblingsSnapshot.map(s => s._id)), deltaDays: shiftDays });
                 } else {
@@ -992,9 +1005,12 @@ export default function SchedulePage() {
             if (lh > 0) {
                 Api.requestSession({ command: 'schedule/item_update', args: { id: itemId, quantity: newQuantity } });
             }
-            // Shift siblings: when growing always push right; when shrinking only pull left for pauses.
             if (siblingsSnapshot.length > 0) {
-                const deltaDays = newDuration - origDuration;
+                // For pauses: shift by full delta (pull left on shrink, push right on grow).
+                // For non-pause parts: shift only by the overlap into the first sibling's position.
+                const deltaDays = item.isPause
+                    ? newDuration - origDuration
+                    : Math.max(0, itemStartFrac + newDuration - firstSibFrac);
                 const shouldShift = Math.abs(deltaDays) > 0.001 && (item.isPause || deltaDays > 0);
                 if (shouldShift) {
                     const sibIdSet = new Set(siblingsSnapshot.map(s => s._id.toString()));
